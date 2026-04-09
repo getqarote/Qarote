@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Users, X } from "lucide-react";
+import { Info, Loader2, Search, Users, X } from "lucide-react";
 
 import { UserRole } from "@/lib/api";
 import { User } from "@/lib/api/authTypes";
@@ -24,6 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { PaginationControls } from "@/components/ui/PaginationControls";
 import {
   Table,
@@ -33,6 +34,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
@@ -52,6 +59,7 @@ interface EnhancedTeamTabProps {
   onRemoveUser: (userId: string, userName: string) => void;
   isInviting: boolean;
   isRemoving: boolean;
+  removingUserId: string | null;
   canInviteMoreUsers: boolean;
   emailEnabled?: boolean;
   usersTotal: number;
@@ -74,6 +82,7 @@ export const EnhancedTeamTab = ({
   onRemoveUser,
   isInviting,
   isRemoving,
+  removingUserId,
   canInviteMoreUsers,
   emailEnabled,
   usersTotal,
@@ -102,6 +111,18 @@ export const EnhancedTeamTab = ({
     name: string;
     email: string;
   } | null>(null);
+  const [query, setQuery] = useState("");
+
+  const filteredUsers = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return workspaceUsers;
+    return workspaceUsers.filter((u) => {
+      const fullName = `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim();
+      return (
+        fullName.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+      );
+    });
+  }, [query, workspaceUsers]);
 
   // Handler for opening confirmation dialog
   const handleRemoveUserClick = (workspaceUser: User) => {
@@ -146,14 +167,16 @@ export const EnhancedTeamTab = ({
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              <span>{t("team.title")}</span>
+              <span>{t("team.workspaceMembersTitle")}</span>
               <span className="text-sm font-normal text-muted-foreground">
                 {totalUsers}{" "}
                 {totalUsers === 1 ? t("team.user") : t("team.users")}
                 {pendingInvitations > 0 && (
                   <>
                     {" "}
-                    · {pendingInvitations} {t("team.pending")}
+                    <span title={t("team.pendingHelp")}>
+                      · {pendingInvitations} {t("team.pending")}
+                    </span>
                   </>
                 )}
                 {maxUsers && (
@@ -175,7 +198,10 @@ export const EnhancedTeamTab = ({
             {/* Workspace-level invitations disabled — use org invitations instead */}
           </CardTitle>
           {workspace?.name && (
-            <CardDescription>{workspace.name}</CardDescription>
+            <CardDescription className="space-y-1">
+              <div>{workspace.name}</div>
+              <div>{t("team.scopeHelp")}</div>
+            </CardDescription>
           )}
         </CardHeader>
         <CardContent>
@@ -185,87 +211,177 @@ export const EnhancedTeamTab = ({
                 <div key={i} className="h-12 bg-muted rounded animate-pulse" />
               ))}
             </div>
-          ) : workspaceUsers.length > 0 ? (
+          ) : filteredUsers.length > 0 ? (
             <>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pb-3">
+                <div className="relative w-full sm:max-w-sm">
+                  <Search
+                    className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                  <Input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder={t("team.searchPlaceholder")}
+                    className="pl-9"
+                  />
+                </div>
+                {query.trim() && (
+                  <p className="text-sm text-muted-foreground">
+                    {t("team.searchResults", {
+                      shown: filteredUsers.length,
+                      total: workspaceUsers.length,
+                    })}
+                  </p>
+                )}
+              </div>
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t("team.tableUser")}</TableHead>
-                    <TableHead>{t("team.tableRole")}</TableHead>
+                    <TableHead>
+                      <div className="inline-flex items-center gap-1">
+                        <span>{t("team.tableRole")}</span>
+                        <TooltipProvider delayDuration={150}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                className="inline-flex items-center justify-center h-6 w-6 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                                aria-label={t("team.roleHelp")}
+                              >
+                                <Info
+                                  className="h-3.5 w-3.5"
+                                  aria-hidden="true"
+                                />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs">
+                              <div className="space-y-1">
+                                <p className="font-medium">
+                                  {t("team.roleHelpTitle")}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  <span className="font-medium text-foreground">
+                                    {t("org.roleAdmin")}:
+                                  </span>{" "}
+                                  {t("org.roleDescWsAdmin")}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  <span className="font-medium text-foreground">
+                                    {t("org.roleMember")}:
+                                  </span>{" "}
+                                  {t("org.roleDescWsMember")}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  <span className="font-medium text-foreground">
+                                    {t("org.roleReadonly")}:
+                                  </span>{" "}
+                                  {t("org.roleDescWsReadonly")}
+                                </p>
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </TableHead>
                     <TableHead>{t("team.tableStatus")}</TableHead>
-                    <TableHead>{t("team.tableLastLogin")}</TableHead>
-                    <TableHead>{t("team.tableJoined")}</TableHead>
+                    <TableHead>{t("team.tableActivity")}</TableHead>
                     <TableHead>{t("team.tableActions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {workspaceUsers.map((workspaceUser) => (
-                    <TableRow key={workspaceUser.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback>
-                              {workspaceUser.firstName?.[0]}
-                              {workspaceUser.lastName?.[0]}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium">
-                              {workspaceUser.firstName} {workspaceUser.lastName}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {workspaceUser.email}
-                            </p>
+                  {filteredUsers.map((workspaceUser) => {
+                    const isRowRemoving = removingUserId === workspaceUser.id;
+                    const removeDisabled =
+                      isRemoving && removingUserId !== workspaceUser.id;
+                    return (
+                      <TableRow key={workspaceUser.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback>
+                                {workspaceUser.firstName?.[0]}
+                                {workspaceUser.lastName?.[0]}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">
+                                {workspaceUser.firstName}{" "}
+                                {workspaceUser.lastName}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {workspaceUser.email}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="soft-muted">
-                          {workspaceUser.role.charAt(0) +
-                            workspaceUser.role.slice(1).toLowerCase()}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            workspaceUser.isActive
-                              ? "soft-success"
-                              : "soft-muted"
-                          }
-                        >
-                          {workspaceUser.isActive
-                            ? t("team.active")
-                            : t("team.inactive")}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {workspaceUser.lastLogin
-                          ? formatDate(workspaceUser.lastLogin)
-                          : t("team.never")}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {formatDate(workspaceUser.createdAt)}
-                      </TableCell>
-                      <TableCell>
-                        {workspaceUser.id !== user?.id &&
-                          (isWorkspaceOwner ||
-                            workspaceUser.role !== UserRole.ADMIN) && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                handleRemoveUserClick(workspaceUser)
-                              }
-                              disabled={isRemoving}
-                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                              title={t("team.removeUser")}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="soft-muted">
+                            {workspaceUser.role.charAt(0) +
+                              workspaceUser.role.slice(1).toLowerCase()}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              workspaceUser.isActive
+                                ? "soft-success"
+                                : "soft-muted"
+                            }
+                          >
+                            {workspaceUser.isActive
+                              ? t("team.active")
+                              : t("team.inactive")}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          <div className="leading-tight">
+                            <div>
+                              {workspaceUser.lastLogin
+                                ? formatDate(workspaceUser.lastLogin)
+                                : t("team.never")}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {t("team.joinedOn", {
+                                date: formatDate(workspaceUser.createdAt),
+                              })}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end">
+                            {workspaceUser.id !== user?.id &&
+                              (isWorkspaceOwner ||
+                                workspaceUser.role !== UserRole.ADMIN) && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() =>
+                                    handleRemoveUserClick(workspaceUser)
+                                  }
+                                  disabled={removeDisabled || isRowRemoving}
+                                  className="text-destructive hover:text-destructive hover:bg-destructive/10 lg:min-w-24"
+                                  title={t("team.removeUser")}
+                                >
+                                  {isRowRemoving ? (
+                                    <Loader2
+                                      className="h-4 w-4 animate-spin"
+                                      aria-hidden="true"
+                                    />
+                                  ) : (
+                                    <X className="h-4 w-4" />
+                                  )}
+                                  <span className="hidden lg:inline">
+                                    {t("team.remove")}
+                                  </span>
+                                </Button>
+                              )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
               <PaginationControls

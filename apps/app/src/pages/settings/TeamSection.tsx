@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 
 import { FolderOpen, UserPlus, Users } from "lucide-react";
 import { toast } from "sonner";
@@ -73,6 +74,7 @@ const TeamSection = () => {
   });
   const [inviteLinks, setInviteLinks] = useState<InviteLink[]>([]);
   const [addFromOrgOpen, setAddFromOrgOpen] = useState(false);
+  const [removingUserId, setRemovingUserId] = useState<string | null>(null);
 
   const profile = profileData?.user;
   const isAdmin = profile?.role === UserRole.ADMIN;
@@ -94,7 +96,7 @@ const TeamSection = () => {
     return (
       <Alert>
         <AlertDescription>
-          {t("tabs.team")} — Admin access required
+          {t("team.workspaceMembersTitle")} — {t("team.adminOnly")}
         </AlertDescription>
       </Alert>
     );
@@ -152,9 +154,12 @@ const TeamSection = () => {
           onError: (error) => {
             logger.error("Invitation error:", error);
             const errorMessage = extractErrorMessage(error);
-            toast.error(
-              t("toast.invitationFailed", { email, error: errorMessage })
-            );
+            toast.error(t("team.toast.inviteFailed"), {
+              description: t("toast.invitationFailed", {
+                email,
+                error: errorMessage,
+              }),
+            });
             pendingCount--;
             if (pendingCount === 0 && collectedLinks.length > 0) {
               setInviteLinks(collectedLinks);
@@ -173,6 +178,7 @@ const TeamSection = () => {
       return;
     }
     try {
+      setRemovingUserId(userId);
       await removeUserMutation.mutateAsync({
         workspaceId: effectiveWorkspaceId,
         userId,
@@ -180,8 +186,11 @@ const TeamSection = () => {
       toast.success(t("toast.userRemoved", { name: userName }));
     } catch (error) {
       logger.error("Remove user error:", error);
-      const errorMessage = extractErrorMessage(error);
-      toast.error(errorMessage);
+      toast.error(t("team.toast.removeFailed"), {
+        description: extractErrorMessage(error),
+      });
+    } finally {
+      setRemovingUserId(null);
     }
   };
 
@@ -200,10 +209,18 @@ const TeamSection = () => {
           </div>
           <div className="min-w-0">
             <h2 className="text-lg font-semibold leading-tight">
-              {t("tabs.team")}
+              {t("team.workspaceMembersTitle")}
             </h2>
             <p className="text-sm text-muted-foreground">
-              {selectedWorkspaceName}
+              {t("team.workspaceMembersSubtitle", {
+                workspace: selectedWorkspaceName,
+              })}{" "}
+              <Link
+                to="/settings/organization"
+                className="underline underline-offset-4 decoration-border hover:decoration-foreground hover:text-foreground"
+              >
+                {t("team.manageOrgMembersLink")}
+              </Link>
             </p>
           </div>
         </div>
@@ -259,6 +276,7 @@ const TeamSection = () => {
         onRemoveUser={handleRemoveUser}
         isInviting={sendInvitationMutation.isPending}
         isRemoving={removeUserMutation.isPending}
+        removingUserId={removingUserId}
         canInviteMoreUsers={canInviteMoreUsers()}
         emailEnabled={publicConfig?.emailEnabled ?? true}
         usersTotal={usersTotal}

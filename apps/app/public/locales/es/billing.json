@@ -5,6 +5,27 @@
     "noInfo": "No hay información de facturación disponible.",
     "billingTitle": "Facturación"
   },
+  "header": {
+    "title": "Facturación y uso",
+    "subtitle": "Gestiona tu suscripción y métodos de pago",
+    "backAriaLabel": "Volver a la suscripción"
+  },
+  "errors": {
+    "loadTitle": "No se pudo cargar la información de facturación",
+    "loadDescription": "Por favor, inténtalo más tarde o contacta con soporte."
+  },
+  "recentPayments": {
+    "title": "Pagos recientes",
+    "subtitle": "Tus últimas transacciones",
+    "defaultDescription": "Pago de suscripción"
+  },
+  "paymentStatus": {
+    "succeeded": "Completado",
+    "failed": "Fallido",
+    "canceled": "Cancelado",
+    "pending": "Pendiente",
+    "requiresAction": "Acción requerida"
+  },
   "plans": {
     "chooseYourPlan": "Elige tu plan",
     "subtitle": "Escala tu monitoreo de RabbitMQ con planes diseñados para equipos de todos los tamaños.",
@@ -114,7 +135,13 @@
     "trialActiveWithPayment": "Tu prueba está activa hasta el {{date}}. Tu suscripción comenzará automáticamente cuando termine la prueba.",
     "cancelTrial": "Cancelar prueba",
     "trialCanceled": "Prueba cancelada",
-    "trialEndsOnDate": "Tu prueba terminará el {{date}}. Serás degradado al plan Gratuito."
+    "trialEndsOnDate": "Tu prueba terminará el {{date}}. Serás degradado al plan Gratuito.",
+    "started": "Prueba iniciada",
+    "endsDate": "La prueba termina el {{date}}",
+    "daysRemaining_one": "{{count}} día restante en la prueba",
+    "daysRemaining_other": "{{count}} días restantes en la prueba",
+    "daysLeft_one": "{{count}} día restante",
+    "daysLeft_other": "{{count}} días restantes"
   },
   "currentPlan": {
     "noSubscription": "No se requiere suscripción",
@@ -125,7 +152,10 @@
     "paymentMethod": "Método de pago",
     "planName": "Plan {{plan}}",
     "activeSubscription": "Tu suscripción activa",
-    "changePaymentMethod": "Cambiar método de pago"
+    "changePaymentMethod": "Cambiar método de pago",
+    "toDate": "hasta el {{date}}",
+    "canceling": "Cancelando",
+    "addPaymentMethodCta": "Añadir método de pago"
   },
   "status": {
     "active": "Activo"

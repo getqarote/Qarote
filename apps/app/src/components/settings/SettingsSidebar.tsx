@@ -177,7 +177,9 @@ export const SettingsSidebar = () => {
     return (
       <nav className="flex gap-1 overflow-x-auto pb-2 -mx-1 px-1">
         {allItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive =
+            location.pathname === item.path ||
+            location.pathname.startsWith(item.path + "/");
           return (
             <Link
               key={item.key}
@@ -224,7 +226,9 @@ export const SettingsSidebar = () => {
             )}
             <ul className="space-y-0.5">
               {group.items.map((item) => {
-                const isActive = location.pathname === item.path;
+                const isActive =
+                  location.pathname === item.path ||
+                  location.pathname.startsWith(item.path + "/");
                 return (
                   <li key={item.key}>
                     <Link

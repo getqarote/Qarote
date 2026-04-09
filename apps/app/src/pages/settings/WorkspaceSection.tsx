@@ -36,16 +36,18 @@ const WorkspaceSection = () => {
   const profile = profileData?.user;
   const isAdmin = profile?.role === UserRole.ADMIN;
 
-  // Initialize form when workspace data first loads
-  const [prevWorkspaceId, setPrevWorkspaceId] = useState<string | null>(null);
-  if (workspace?.id && workspace.id !== prevWorkspaceId) {
-    setPrevWorkspaceId(workspace.id);
+  const resetFormFromWorkspace = () => {
     setWorkspaceForm({
-      name: workspace.name || "",
-      contactEmail: workspace.contactEmail || "",
-      tags: workspace.tags || [],
+      name: workspace?.name || "",
+      contactEmail: workspace?.contactEmail || "",
+      tags: workspace?.tags || [],
     });
-  }
+  };
+
+  const extractSafeErrorMessage = (error: unknown) => {
+    if (error instanceof Error) return error.message;
+    return undefined;
+  };
 
   const handleDeleteWorkspace = async () => {
     if (!workspace?.id) return;
@@ -93,8 +95,10 @@ const WorkspaceSection = () => {
       setEditingWorkspace(false);
       await refetchWorkspace();
       toast.success(t("toast.workspaceUpdated"));
-    } catch {
-      toast.error(t("toast.workspaceUpdateFailed"));
+    } catch (error) {
+      toast.error(t("toast.workspaceUpdateFailed"), {
+        description: extractSafeErrorMessage(error),
+      });
     }
   };
 
@@ -107,6 +111,14 @@ const WorkspaceSection = () => {
         workspaceForm={workspaceForm}
         setWorkspaceForm={setWorkspaceForm}
         setEditingWorkspace={setEditingWorkspace}
+        onStartEdit={() => {
+          resetFormFromWorkspace();
+          setEditingWorkspace(true);
+        }}
+        onCancelEdit={() => {
+          resetFormFromWorkspace();
+          setEditingWorkspace(false);
+        }}
         onUpdateWorkspace={handleUpdateWorkspace}
         isUpdating={updateWorkspaceMutation.isPending}
         onDeleteWorkspace={handleDeleteWorkspace}

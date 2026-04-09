@@ -86,7 +86,7 @@ const OrganizationSection = lazy(() =>
   }))
 );
 const SubscriptionSection = lazy(() =>
-  import("./pages/settings/BillingSection").then((m) => ({
+  import("./pages/settings/SubscriptionSection").then((m) => ({
     default: m.default,
   }))
 );
@@ -385,9 +385,16 @@ const AppCore = () => (
                               element={<SubscriptionSection />}
                             />
                             <Route
+                              path="subscription/billing"
+                              element={<Billing />}
+                            />
+                            <Route
                               path="billing"
                               element={
-                                <Navigate to="/settings/subscription" replace />
+                                <Navigate
+                                  to="/settings/subscription/billing"
+                                  replace
+                                />
                               }
                             />
                             <Route path="sso" element={<SSOSection />} />
@@ -410,11 +417,10 @@ const AppCore = () => (
                           <Route
                             path="/billing"
                             element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <Billing />
-                                </Layout>
-                              </ProtectedRoute>
+                              <Navigate
+                                to="/settings/subscription/billing"
+                                replace
+                              />
                             }
                           />
                           <Route

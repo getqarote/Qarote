@@ -20,6 +20,21 @@ interface WorkspaceFormFieldsProps {
   userEmail?: string;
 }
 
+function ReadOnlyRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+      <div className="text-xs font-medium text-muted-foreground">{label}</div>
+      <div className="text-sm text-foreground sm:text-right">{value}</div>
+    </div>
+  );
+}
+
 export const WorkspaceFormFields = ({
   editingWorkspace,
   isAdmin,
@@ -31,23 +46,61 @@ export const WorkspaceFormFields = ({
   const { t } = useTranslation("profile");
   return (
     <>
-      <div className="space-y-2">
-        <Label htmlFor="workspaceName">{t("workspace.name")}</Label>
+      <div className="space-y-4">
         {editingWorkspace && isAdmin ? (
-          <Input
-            id="workspaceName"
-            value={workspaceForm.name}
-            onChange={(e) =>
-              setWorkspaceForm({
-                ...workspaceForm,
-                name: e.target.value,
-              })
-            }
-          />
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="workspaceName">{t("workspace.name")}</Label>
+              <Input
+                id="workspaceName"
+                value={workspaceForm.name}
+                onChange={(e) =>
+                  setWorkspaceForm({
+                    ...workspaceForm,
+                    name: e.target.value,
+                  })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="workspaceContactEmail">
+                {t("workspace.contactEmail")}
+              </Label>
+              <Input
+                id="workspaceContactEmail"
+                type="email"
+                value={workspaceForm.contactEmail}
+                onChange={(e) =>
+                  setWorkspaceForm({
+                    ...workspaceForm,
+                    contactEmail: e.target.value,
+                  })
+                }
+                placeholder={t("workspace.contactEmailPlaceholder")}
+              />
+              <p className="text-xs text-muted-foreground">
+                {t("workspace.contactEmailDesc")}
+              </p>
+            </div>
+          </>
         ) : (
-          <p className="text-sm p-2 border rounded-md bg-muted">
-            {workspace.name}
-          </p>
+          <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+            <ReadOnlyRow label={t("workspace.name")} value={workspace.name} />
+            <ReadOnlyRow
+              label={t("workspace.contactEmail")}
+              value={
+                workspace.contactEmail ? (
+                  <span className="font-mono text-sm">
+                    {workspace.contactEmail}
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">
+                    {t("workspace.notSet")}
+                  </span>
+                )
+              }
+            />
+          </div>
         )}
       </div>
       <div className="space-y-2">

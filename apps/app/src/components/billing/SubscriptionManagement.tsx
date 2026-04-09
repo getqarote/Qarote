@@ -67,14 +67,17 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
   return (
     <>
       <Card>
-        <CardContent className="pt-6 pb-6 px-6">
+        <CardContent className="p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                <Settings className="w-4 h-4 text-muted-foreground" />
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className="flex items-center justify-center h-9 w-9 rounded-lg bg-primary/10 shrink-0"
+                aria-hidden="true"
+              >
+                <Settings className="h-4 w-4 text-primary" />
               </div>
-              <div>
-                <h3 className="font-semibold text-sm">
+              <div className="min-w-0">
+                <h3 className="font-semibold text-sm leading-tight">
                   {t("subscriptionManagement.title")}
                 </h3>
                 <p className="text-xs text-muted-foreground">
@@ -92,10 +95,9 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                 <Button
                   onClick={onRenewSubscription}
                   size="sm"
-                  className="btn-primary"
                   disabled={isLoading}
                 >
-                  <RefreshCw className="w-4 h-4 mr-2" />
+                  <RefreshCw className="w-4 h-4 mr-2" aria-hidden="true" />
                   {t("subscriptionManagement.renewPlan", { plan: lastPlan })}
                 </Button>
               ) : currentPlan !== UserPlan.FREE ? (
@@ -106,10 +108,12 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                         <Button
                           onClick={onRenewSubscription}
                           size="sm"
-                          className="btn-primary"
                           disabled={isLoading}
                         >
-                          <RefreshCw className="w-4 h-4 mr-2" />
+                          <RefreshCw
+                            className="w-4 h-4 mr-2"
+                            aria-hidden="true"
+                          />
                           {t("subscriptionManagement.reactivate")}
                         </Button>
                       )}

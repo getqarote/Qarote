@@ -326,7 +326,7 @@ export const billingRouter = router({
 
         const session = await StripeService.createPortalSession(
           stripeCustomerId,
-          `${config.FRONTEND_URL}/billing`
+          `${config.FRONTEND_URL}/settings/subscription/billing`
         );
 
         return { url: session.url };
@@ -366,7 +366,7 @@ export const billingRouter = router({
 
         const session = await StripeService.createPortalSession(
           stripeCustomerId,
-          `${config.FRONTEND_URL}/billing`
+          `${config.FRONTEND_URL}/settings/subscription/billing`
         );
 
         return { url: session.url };

@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 
 import {
   useInviteOrgMember,
@@ -235,17 +236,20 @@ export function InviteMemberDialog({
                     </SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-muted-foreground">
+                  {form.role === "ADMIN"
+                    ? t("org.roleDescOrgAdmin")
+                    : t("org.roleDescOrgMember")}
+                </p>
               </div>
 
               <WorkspaceAccessSection
                 allWorkspaces={form.allWorkspaces}
-                onToggleAll={() =>
+                onAllWorkspacesChange={(all) =>
                   setForm((prev) => ({
                     ...prev,
-                    allWorkspaces: !prev.allWorkspaces,
-                    wsAssignments: prev.allWorkspaces
-                      ? prev.wsAssignments
-                      : new Map(),
+                    allWorkspaces: all,
+                    wsAssignments: all ? new Map() : prev.wsAssignments,
                   }))
                 }
                 workspaces={orgWorkspaces}
@@ -291,7 +295,7 @@ export function InviteMemberDialog({
  */
 function WorkspaceAccessSection({
   allWorkspaces,
-  onToggleAll,
+  onAllWorkspacesChange,
   workspaces,
   workspacesLoading,
   assignments,
@@ -299,7 +303,7 @@ function WorkspaceAccessSection({
   onRoleChange,
 }: {
   allWorkspaces: boolean;
-  onToggleAll: () => void;
+  onAllWorkspacesChange: (all: boolean) => void;
   workspaces: Array<{ id: string; name: string }>;
   workspacesLoading: boolean;
   assignments: Map<string, WsRole>;
@@ -311,20 +315,21 @@ function WorkspaceAccessSection({
   return (
     <div className="space-y-2">
       <Label>{t("org.workspaceAccess")}</Label>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className={`w-full justify-start ${allWorkspaces ? "bg-accent border-primary/30" : ""}`}
-        onClick={onToggleAll}
-      >
-        {allWorkspaces ? (
-          <Check className="h-4 w-4 mr-2" aria-hidden="true" />
-        ) : (
-          <Check className="h-4 w-4 mr-2 opacity-20" aria-hidden="true" />
-        )}
-        {t("org.grantAllWorkspaces")}
-      </Button>
+      <div className="flex items-start justify-between gap-4 rounded-lg border p-3">
+        <div className="space-y-1 min-w-0">
+          <p className="text-sm font-medium">{t("org.grantAllWorkspaces")}</p>
+          <p className="text-xs text-muted-foreground">
+            {allWorkspaces
+              ? t("org.grantAllWorkspacesDesc")
+              : t("org.selectWorkspacesDesc")}
+          </p>
+        </div>
+        <Switch
+          checked={allWorkspaces}
+          onCheckedChange={onAllWorkspacesChange}
+          aria-label={t("org.grantAllWorkspaces")}
+        />
+      </div>
 
       {!allWorkspaces && (
         <div className="space-y-2 max-h-48 overflow-y-auto pt-2">

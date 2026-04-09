@@ -19,7 +19,7 @@ import { formatDate } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 import { useAllPlans } from "@/hooks/queries/usePlans";
 import { usePlanUpgrade } from "@/hooks/ui/usePlanUpgrade";
@@ -31,6 +31,32 @@ interface PlansSummaryTabProps {
   currentPlan: UserPlan;
   className?: string;
 }
+
+interface PlanStyle {
+  icon: React.ReactNode;
+  iconColor: string;
+  iconBg: string;
+}
+
+// Plan presentation (icon + tint). No raw Tailwind palette classes —
+// everything goes through the design-system color tokens.
+const PLAN_STYLE: Record<string, PlanStyle> = {
+  [UserPlan.FREE]: {
+    icon: <Users className="h-5 w-5" aria-hidden="true" />,
+    iconColor: "text-muted-foreground",
+    iconBg: "bg-muted",
+  },
+  [UserPlan.DEVELOPER]: {
+    icon: <Zap className="h-5 w-5" aria-hidden="true" />,
+    iconColor: "text-primary",
+    iconBg: "bg-primary/10",
+  },
+  [UserPlan.ENTERPRISE]: {
+    icon: <Crown className="h-5 w-5" aria-hidden="true" />,
+    iconColor: "text-primary",
+    iconBg: "bg-primary/10",
+  },
+};
 
 export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
   currentPlan,
@@ -46,7 +72,6 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
     ? new Date(planData.user.trialEnd)
     : null;
 
-  // Helper function to get next plan
   const getNextPlan = (plan: UserPlan): UserPlan | null => {
     switch (plan) {
       case UserPlan.FREE:
@@ -58,35 +83,11 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
     }
   };
 
-  // UI styling per plan (icons/colors are purely presentational)
-  const planStyle: Record<
-    string,
-    { icon: React.ReactNode; color: string; bgColor: string }
-  > = {
-    [UserPlan.FREE]: {
-      icon: <Users className="w-5 h-5" />,
-      color: "text-muted-foreground",
-      bgColor: "bg-muted",
-    },
-    [UserPlan.DEVELOPER]: {
-      icon: <Zap className="w-5 h-5" />,
-      color: "text-info",
-      bgColor: "bg-info-muted",
-    },
-    [UserPlan.ENTERPRISE]: {
-      icon: <Crown className="w-5 h-5" />,
-      color: "text-muted-foreground",
-      bgColor: "bg-muted dark:bg-muted/20",
-    },
-  };
-
-  // Get featureDescriptions from the API, falling back to current plan data
   const getBenefits = (plan: UserPlan): string[] => {
     if (allPlansData?.plans) {
       const found = allPlansData.plans.find((p) => p.plan === plan);
       if (found?.featureDescriptions) return found.featureDescriptions;
     }
-    // Fallback to current plan's features when allPlans is loading/errored
     if (plan === currentPlan && planData?.planFeatures?.featureDescriptions) {
       return planData.planFeatures.featureDescriptions;
     }
@@ -96,54 +97,56 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
   const navigate = useNavigate();
   const selfHosted = isSelfHostedMode();
   const isAdmin = user.role === UserRole.ADMIN;
-  const currentPlanStyle = planStyle[currentPlan] ?? planStyle[UserPlan.FREE];
+  const currentPlanStyle = PLAN_STYLE[currentPlan] ?? PLAN_STYLE[UserPlan.FREE];
   const currentBenefits = getBenefits(currentPlan);
   const nextPlan = getNextPlan(currentPlan);
-  const nextPlanStyle = nextPlan ? planStyle[nextPlan] : null;
+  const nextPlanStyle = nextPlan ? PLAN_STYLE[nextPlan] : null;
   const nextPlanBenefits = nextPlan ? getBenefits(nextPlan) : [];
 
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Current Plan Card */}
-      <Card className="border-l-4 border-l-blue-500">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${currentPlanStyle.bgColor}`}>
-                <div className={currentPlanStyle.color}>
-                  {currentPlanStyle.icon}
-                </div>
-              </div>
-              <div>
-                <CardTitle className="flex items-center gap-2">
+      <Card>
+        <CardContent className="p-6 space-y-6">
+          <div className="flex items-start gap-3">
+            <div
+              className={`flex items-center justify-center h-10 w-10 rounded-lg shrink-0 ${currentPlanStyle.iconBg}`}
+              aria-hidden="true"
+            >
+              <span className={currentPlanStyle.iconColor}>
+                {currentPlanStyle.icon}
+              </span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-lg font-semibold leading-tight">
                   {t("currentPlan.planName", {
                     plan: getPlanDisplayName(currentPlan),
                   })}
-                  <Badge variant="outline" className="text-xs">
-                    {t("status.active", "Active")}
+                </h3>
+                <Badge variant="outline" className="text-xs">
+                  {t("status.active")}
+                </Badge>
+                {isTrialing && (
+                  <Badge
+                    variant="outline"
+                    className="text-xs border-warning/40 text-warning bg-warning-muted"
+                  >
+                    {t("trial.badge")}
                   </Badge>
-                  {isTrialing && (
-                    <Badge
-                      variant="outline"
-                      className="text-xs border-border text-muted-foreground"
-                    >
-                      {t("trial.badge")}
-                    </Badge>
-                  )}
-                </CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {isTrialing && trialEndDate
-                    ? `${t("trial.endsOn")}: ${formatDate(trialEndDate)}`
-                    : t("currentPlan.activeSubscription")}
-                </p>
+                )}
               </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                {isTrialing && trialEndDate
+                  ? `${t("trial.endsOn")}: ${formatDate(trialEndDate)}`
+                  : t("currentPlan.activeSubscription")}
+              </p>
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+
+          {currentBenefits.length > 0 && (
             <div>
-              <h4 className="font-medium text-foreground mb-2">
+              <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
                 {t("plansSummary.whatsIncluded")}
               </h4>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -152,41 +155,42 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                     key={index}
                     className="flex items-center gap-2 text-sm text-muted-foreground"
                   >
-                    <div className="w-1.5 h-1.5 bg-info-muted rounded-full"></div>
+                    <div
+                      className="h-1.5 w-1.5 rounded-full bg-primary/60 shrink-0"
+                      aria-hidden="true"
+                    />
                     {benefit}
                   </li>
                 ))}
               </ul>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
       {/* Upgrade Suggestion */}
       {selfHosted && currentPlan === UserPlan.FREE ? (
-        <Card className="border border-border bg-linear-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
+        <Card>
           <CardContent className="p-6">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 rounded-lg bg-muted dark:bg-muted/20">
-                    <Key className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground">
-                      {t("plansSummary.unlockPremium")}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {t("plansSummary.unlockPremiumDesc")}
-                    </p>
-                  </div>
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+              <div className="flex items-start gap-3 min-w-0 flex-1">
+                <div
+                  className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10 shrink-0"
+                  aria-hidden="true"
+                >
+                  <Key className="h-5 w-5 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-semibold leading-tight">
+                    {t("plansSummary.unlockPremium")}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {t("plansSummary.unlockPremiumDesc")}
+                  </p>
                 </div>
               </div>
-              <div className="ml-4 flex gap-2">
-                <Button
-                  onClick={() => navigate("/settings/license")}
-                  className="btn-primary"
-                >
+              <div className="flex gap-2 sm:shrink-0">
+                <Button onClick={() => navigate("/settings/license")}>
                   {t("plansSummary.activateLicense")}
                 </Button>
                 <Button
@@ -206,55 +210,40 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
           </CardContent>
         </Card>
       ) : !selfHosted && nextPlan && nextPlanStyle ? (
-        <Card className="border border-border bg-linear-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className={`p-2 rounded-lg ${nextPlanStyle.bgColor}`}>
-                    <div className={nextPlanStyle.color}>
-                      {nextPlanStyle.icon}
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground">
-                      {t("plansSummary.readyToGrow", {
-                        plan: getPlanDisplayName(nextPlan),
-                      })}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {t("plansSummary.unlockMore")}
-                    </p>
-                  </div>
+        <Card>
+          <CardContent className="p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+              <div className="flex items-start gap-3 min-w-0 flex-1">
+                <div
+                  className={`flex items-center justify-center h-10 w-10 rounded-lg shrink-0 ${nextPlanStyle.iconBg}`}
+                  aria-hidden="true"
+                >
+                  <span className={nextPlanStyle.iconColor}>
+                    {nextPlanStyle.icon}
+                  </span>
                 </div>
-
-                <div className="mb-4">
-                  <h4 className="font-medium text-foreground mb-2">
-                    {t("plansSummary.youllGet")}
-                  </h4>
-                  <ul className="grid grid-cols-1 md:grid-cols-2 gap-1">
-                    {nextPlanBenefits.map((benefit, index) => (
-                      <li
-                        key={index}
-                        className="flex items-center gap-2 text-sm text-muted-foreground"
-                      >
-                        <div className="w-1.5 h-1.5 bg-muted dark:bg-muted/200 rounded-full"></div>
-                        {benefit}
-                      </li>
-                    ))}
-                  </ul>
+                <div className="min-w-0">
+                  <h3 className="font-semibold leading-tight">
+                    {t("plansSummary.readyToGrow", {
+                      plan: getPlanDisplayName(nextPlan),
+                    })}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {t("plansSummary.unlockMore")}
+                  </p>
                 </div>
               </div>
-
-              <div className="ml-4">
+              <div className="sm:shrink-0">
                 <Button
                   onClick={() => handleUpgrade(nextPlan)}
-                  className="btn-primary"
                   disabled={isUpgrading}
                 >
                   {isUpgrading ? (
                     <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      <Loader2
+                        className="w-4 h-4 mr-2 animate-spin"
+                        aria-hidden="true"
+                      />
                       {t("plansSummary.processing")}
                     </>
                   ) : (
@@ -263,91 +252,137 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                 </Button>
               </div>
             </div>
+
+            {nextPlanBenefits.length > 0 && (
+              <div>
+                <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
+                  {t("plansSummary.youllGet")}
+                </h4>
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {nextPlanBenefits.map((benefit, index) => (
+                    <li
+                      key={index}
+                      className="flex items-center gap-2 text-sm text-muted-foreground"
+                    >
+                      <div
+                        className="h-1.5 w-1.5 rounded-full bg-primary/60 shrink-0"
+                        aria-hidden="true"
+                      />
+                      {benefit}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </CardContent>
         </Card>
       ) : null}
 
       {/* Quick Actions - Only show for admins */}
       {isAdmin && (
-        <div
-          className={`grid grid-cols-1 ${selfHosted ? "" : "md:grid-cols-2"} gap-4`}
-        >
-          {selfHosted ? (
-            <Link to="/settings/license">
-              <Card className="cursor-pointer hover:border-primary/30 transition-colors">
-                <CardContent className="flex items-center justify-between py-4">
-                  <div>
-                    <p className="font-medium">{t("plansSummary.license")}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {t("plansSummary.manageLicense")}
-                    </p>
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-muted-foreground" />
-                </CardContent>
-              </Card>
-            </Link>
-          ) : (
-            <>
-              <Link to="/billing">
-                <Card className="cursor-pointer hover:border-primary/30 transition-colors h-full">
-                  <CardContent className="flex items-center justify-between py-4">
-                    <div>
-                      <p className="font-medium">
-                        {t("plansSummary.billingUsage")}
+        <Card>
+          <CardContent className="p-0">
+            <ul className="divide-y divide-border">
+              {selfHosted ? (
+                <li>
+                  <Link
+                    to="/settings/license"
+                    className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-muted/50 transition-colors rounded-lg"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm">
+                        {t("plansSummary.license")}
                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        {t("plansSummary.manageSubscription")}
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {t("plansSummary.manageLicense")}
                       </p>
                     </div>
-                    <ArrowRight className="h-5 w-5 text-muted-foreground shrink-0" />
-                  </CardContent>
-                </Card>
-              </Link>
-
-              <Link to="/plans">
-                <Card className="cursor-pointer hover:border-primary/30 transition-colors h-full">
-                  <CardContent className="flex items-center justify-between py-4">
-                    <div>
-                      <p className="font-medium">
-                        {t("plansSummary.comparePlans")}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {t("plansSummary.seeAllOptions")}
-                      </p>
-                    </div>
-                    <ArrowRight className="h-5 w-5 text-muted-foreground shrink-0" />
-                  </CardContent>
-                </Card>
-              </Link>
-            </>
-          )}
-        </div>
+                    <ArrowRight
+                      className="h-4 w-4 text-muted-foreground shrink-0"
+                      aria-hidden="true"
+                    />
+                  </Link>
+                </li>
+              ) : (
+                <>
+                  <li>
+                    <Link
+                      to="/settings/subscription/billing"
+                      className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm">
+                          {t("plansSummary.billingUsage")}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {t("plansSummary.manageSubscription")}
+                        </p>
+                      </div>
+                      <ArrowRight
+                        className="h-4 w-4 text-muted-foreground shrink-0"
+                        aria-hidden="true"
+                      />
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/plans"
+                      className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm">
+                          {t("plansSummary.comparePlans")}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {t("plansSummary.seeAllOptions")}
+                        </p>
+                      </div>
+                      <ArrowRight
+                        className="h-4 w-4 text-muted-foreground shrink-0"
+                        aria-hidden="true"
+                      />
+                    </Link>
+                  </li>
+                </>
+              )}
+            </ul>
+          </CardContent>
+        </Card>
       )}
 
       {/* Self-host callout - Only show in cloud mode */}
       {!selfHosted && (
-        <a
-          href={`${import.meta.env.VITE_PORTAL_URL}/documentation`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Card className="cursor-pointer hover:border-primary/30 transition-colors">
-            <CardContent className="flex items-center justify-between py-4">
-              <div className="flex items-center gap-3">
-                <Server className="h-5 w-5 text-muted-foreground shrink-0" />
-                <div>
-                  <p className="font-medium">
+        <Card>
+          <CardContent className="p-0">
+            <a
+              href={`${import.meta.env.VITE_PORTAL_URL}/documentation`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-muted/50 transition-colors rounded-lg"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div
+                  className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10 shrink-0"
+                  aria-hidden="true"
+                >
+                  <Server className="h-5 w-5 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-medium text-sm">
                     {t("plansSummary.preferSelfHost")}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {t("plansSummary.preferSelfHostDesc")}
                   </p>
                 </div>
               </div>
-              <ExternalLink className="h-5 w-5 text-muted-foreground shrink-0" />
-            </CardContent>
-          </Card>
-        </a>
+              <ExternalLink
+                className="h-4 w-4 text-muted-foreground shrink-0"
+                aria-hidden="true"
+              />
+            </a>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

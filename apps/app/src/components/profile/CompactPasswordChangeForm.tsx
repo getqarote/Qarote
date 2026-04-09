@@ -1,7 +1,7 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Eye, EyeOff, Shield } from "lucide-react";
-import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
 
@@ -21,6 +21,7 @@ interface CompactPasswordChangeFormProps {
 export const CompactPasswordChangeForm: React.FC<
   CompactPasswordChangeFormProps
 > = ({ onPasswordChange, isLoading = false }) => {
+  const { t } = useTranslation("profile");
   const [formData, setFormData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -81,7 +82,6 @@ export const CompactPasswordChangeForm: React.FC<
         confirmPassword: "",
       });
       setErrors({});
-      toast.success("Password changed successfully");
     } catch (error) {
       logger.error("Password change error:", error);
       // Error handling is done by the parent component
@@ -102,7 +102,7 @@ export const CompactPasswordChangeForm: React.FC<
           {/* Current Password */}
           <div className="space-y-2">
             <Label htmlFor="currentPassword" className="text-sm">
-              Current Password
+              {t("personal.changePassword")}
             </Label>
             <div className="relative">
               <Input

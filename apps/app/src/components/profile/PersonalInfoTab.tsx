@@ -28,6 +28,8 @@ interface PersonalInfoTabProps {
   profileForm: ProfileFormState;
   setProfileForm: (form: ProfileFormState) => void;
   setEditingProfile: (editing: boolean) => void;
+  onStartEdit: () => void;
+  onCancelEdit: () => void;
   onUpdateProfile: () => void;
   onPasswordChange: (data: {
     currentPassword: string;
@@ -54,7 +56,9 @@ export const PersonalInfoTab = ({
   editingProfile,
   profileForm,
   setProfileForm,
-  setEditingProfile,
+  setEditingProfile: _setEditingProfile,
+  onStartEdit,
+  onCancelEdit,
   onUpdateProfile,
   onPasswordChange,
   onEmailChangeRequest,
@@ -71,8 +75,8 @@ export const PersonalInfoTab = ({
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+          <CardTitle className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-center gap-3 min-w-0">
               <Avatar className="h-10 w-10">
                 <AvatarImage src={profile.image || ""} />
                 <AvatarFallback>
@@ -80,16 +84,51 @@ export const PersonalInfoTab = ({
                   {profile.lastName?.[0]}
                 </AvatarFallback>
               </Avatar>
-              <div>
-                <h2 className="text-xl font-semibold">
+              <div className="min-w-0">
+                <h2 className="text-xl font-semibold truncate">
                   {profile.firstName} {profile.lastName}
                 </h2>
-                <p className="text-sm text-muted-foreground">{profile.email}</p>
+                <p className="text-sm text-muted-foreground truncate">
+                  {profile.email}
+                </p>
               </div>
             </div>
-            <Badge variant="soft-muted">
-              {profile.role.charAt(0) + profile.role.slice(1).toLowerCase()}
-            </Badge>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <Badge variant="soft-muted">
+                {profile.role.charAt(0) + profile.role.slice(1).toLowerCase()}
+              </Badge>
+              {editingProfile ? (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={onCancelEdit}
+                    disabled={isUpdating}
+                    className="h-9"
+                  >
+                    <X className="h-4 w-4" aria-hidden="true" />
+                    <span className="hidden sm:inline">
+                      {t("personal.cancel")}
+                    </span>
+                  </Button>
+                  <Button
+                    onClick={onUpdateProfile}
+                    disabled={isUpdating}
+                    className="btn-primary h-9"
+                  >
+                    <Save className="h-4 w-4" aria-hidden="true" />
+                    <span className="hidden sm:inline">
+                      {t("personal.saveChanges")}
+                    </span>
+                  </Button>
+                </>
+              ) : (
+                <Button onClick={onStartEdit} className="btn-primary h-9">
+                  <Edit className="h-4 w-4" aria-hidden="true" />
+                  {t("personal.editProfile")}
+                </Button>
+              )}
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -156,37 +195,6 @@ export const PersonalInfoTab = ({
                   {t("personal.lastLogin")} {formatDate(profile.lastLogin)}
                 </span>
               </div>
-            )}
-          </div>
-
-          <div className="flex justify-end gap-2">
-            {editingProfile ? (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => setEditingProfile(false)}
-                  disabled={isUpdating}
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  {t("personal.cancel")}
-                </Button>
-                <Button
-                  onClick={onUpdateProfile}
-                  disabled={isUpdating}
-                  className="btn-primary"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {t("personal.saveChanges")}
-                </Button>
-              </>
-            ) : (
-              <Button
-                onClick={() => setEditingProfile(true)}
-                className="btn-primary"
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                {t("personal.editProfile")}
-              </Button>
             )}
           </div>
         </CardContent>

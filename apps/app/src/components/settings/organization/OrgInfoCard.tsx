@@ -48,7 +48,7 @@ interface OrgInfoCardProps {
  * cascading render.
  */
 export function OrgInfoCard({ org, isOrgAdmin }: OrgInfoCardProps) {
-  const { t } = useTranslation("profile");
+  const { t, i18n } = useTranslation("profile");
   const updateOrgMutation = useUpdateOrganization();
 
   const [editing, setEditing] = useState(false);
@@ -151,11 +151,11 @@ export function OrgInfoCard({ org, isOrgAdmin }: OrgInfoCardProps) {
             <span className="inline-flex items-center gap-1.5">
               <Calendar className="h-4 w-4" aria-hidden="true" />
               {t("org.created")}:{" "}
-              {new Date(org.createdAt).toLocaleDateString(undefined, {
+              {new Intl.DateTimeFormat(i18n.language, {
                 year: "numeric",
                 month: "long",
                 day: "numeric",
-              })}
+              }).format(new Date(org.createdAt))}
             </span>
           </div>
         )}

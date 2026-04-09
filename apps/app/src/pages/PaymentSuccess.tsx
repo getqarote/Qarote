@@ -153,7 +153,7 @@ const PaymentSuccess: React.FC = () => {
           </button>
 
           <button
-            onClick={() => navigate("/billing")}
+            onClick={() => navigate("/settings/subscription/billing")}
             className="w-full bg-muted hover:bg-border text-foreground py-2 px-4 rounded-lg font-medium transition-colors"
           >
             {t("paymentSuccess.manageSubscription")}

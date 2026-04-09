@@ -4,6 +4,7 @@ import { Trans, useTranslation } from "react-i18next";
 import {
   Building2,
   Calendar,
+  ChevronRight,
   Edit,
   Save,
   Settings,
@@ -12,6 +13,12 @@ import {
   X,
 } from "lucide-react";
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,6 +50,8 @@ interface WorkspaceInfoTabProps {
   workspaceForm: WorkspaceFormState;
   setWorkspaceForm: (form: WorkspaceFormState) => void;
   setEditingWorkspace: (editing: boolean) => void;
+  onStartEdit: () => void;
+  onCancelEdit: () => void;
   onUpdateWorkspace: () => void;
   isUpdating: boolean;
   onDeleteWorkspace: () => void;
@@ -55,7 +64,9 @@ export const WorkspaceInfoTab = ({
   editingWorkspace,
   workspaceForm,
   setWorkspaceForm,
-  setEditingWorkspace,
+  setEditingWorkspace: _setEditingWorkspace,
+  onStartEdit,
+  onCancelEdit,
   onUpdateWorkspace,
   isUpdating,
   onDeleteWorkspace,
@@ -74,12 +85,63 @@ export const WorkspaceInfoTab = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Building2 className="h-6 w-6" />
-            <span>{t("workspace.information")}</span>
+        <CardTitle className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-start gap-3 min-w-0">
+            <div
+              className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10 shrink-0"
+              aria-hidden="true"
+            >
+              <Building2 className="h-5 w-5 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-semibold leading-tight">
+                  {t("workspace.information")}
+                </span>
+                <PlanBadge />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {editingWorkspace
+                  ? t("workspace.subtitleEditing")
+                  : t("workspace.subtitleViewing")}
+              </p>
+            </div>
           </div>
-          <PlanBadge />
+
+          {isAdmin && (
+            <div className="flex items-center gap-2 shrink-0">
+              {editingWorkspace ? (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={onCancelEdit}
+                    disabled={isUpdating}
+                    className="h-9"
+                  >
+                    <X className="h-4 w-4" aria-hidden="true" />
+                    <span className="hidden sm:inline">
+                      {t("workspace.cancel")}
+                    </span>
+                  </Button>
+                  <Button
+                    onClick={onUpdateWorkspace}
+                    disabled={isUpdating}
+                    className="btn-primary h-9"
+                  >
+                    <Save className="h-4 w-4" aria-hidden="true" />
+                    <span className="hidden sm:inline">
+                      {t("workspace.saveChanges")}
+                    </span>
+                  </Button>
+                </>
+              ) : (
+                <Button onClick={onStartEdit} className="btn-primary h-9">
+                  <Edit className="h-4 w-4" aria-hidden="true" />
+                  {t("workspace.editWorkspace")}
+                </Button>
+              )}
+            </div>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -92,81 +154,95 @@ export const WorkspaceInfoTab = ({
           userEmail={user.email}
         />
 
-        <Separator />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            <span>
-              {t("workspace.users")} {planData?.usage.users.current || 0}
-            </span>
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold text-foreground">
+            {t("workspace.facts")}
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 rounded-lg border bg-muted/30 p-3">
+            <div className="flex items-center gap-2">
+              <Users
+                className="h-4 w-4 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <div className="min-w-0">
+                <div className="text-xs text-muted-foreground">
+                  {t("workspace.users")}
+                </div>
+                <div className="font-mono tabular-nums text-sm text-foreground">
+                  {planData?.usage.users.current ?? "—"}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Settings
+                className="h-4 w-4 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <div className="min-w-0">
+                <div className="text-xs text-muted-foreground">
+                  {t("workspace.servers")}
+                </div>
+                <div className="font-mono tabular-nums text-sm text-foreground">
+                  {planData?.usage.servers.current ?? "—"}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar
+                className="h-4 w-4 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <div className="min-w-0">
+                <div className="text-xs text-muted-foreground">
+                  {t("workspace.created")}
+                </div>
+                <div className="text-sm text-foreground truncate">
+                  {formatDate(workspace.createdAt)}
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            <span>
-              {t("workspace.servers")} {planData?.usage.servers.current || 0}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
-            <span>
-              {t("workspace.created")} {formatDate(workspace.createdAt)}
-            </span>
-          </div>
+          {!editingWorkspace && (
+            <p className="text-xs text-muted-foreground">
+              {t("workspace.factsHint")}
+            </p>
+          )}
         </div>
-
-        {isAdmin && (
-          <div className="flex justify-end gap-2">
-            {editingWorkspace ? (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => setEditingWorkspace(false)}
-                  disabled={isUpdating}
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  {t("workspace.cancel")}
-                </Button>
-                <Button
-                  onClick={onUpdateWorkspace}
-                  disabled={isUpdating}
-                  className="btn-primary"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {t("workspace.saveChanges")}
-                </Button>
-              </>
-            ) : (
-              <Button
-                onClick={() => setEditingWorkspace(true)}
-                className="btn-primary"
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                {t("workspace.editWorkspace")}
-              </Button>
-            )}
-          </div>
-        )}
 
         {isAdmin && (
           <>
             <Separator />
 
-            <div className="rounded-lg border border-destructive/50 p-4 space-y-3">
-              <h3 className="text-lg font-semibold text-destructive">
-                {t("workspace.dangerZone")}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {t("workspace.deleteDescription")}
-              </p>
-              <Button
-                variant="destructive"
-                onClick={() => setDeleteDialogOpen(true)}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                {t("workspace.deleteWorkspace")}
-              </Button>
-            </div>
+            <Accordion type="single" collapsible>
+              <AccordionItem value="danger" className="border rounded-lg px-4">
+                <AccordionTrigger className="py-3 hover:no-underline">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-destructive">
+                    {t("workspace.dangerZone")}
+                    <ChevronRight
+                      className="h-4 w-4 text-muted-foreground"
+                      aria-hidden="true"
+                    />
+                    <span className="text-sm font-normal text-muted-foreground">
+                      {t("workspace.dangerZoneHint")}
+                    </span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="pt-1">
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      {t("workspace.deleteDescription")}
+                    </p>
+                    <Button
+                      variant="destructive"
+                      onClick={() => setDeleteDialogOpen(true)}
+                    >
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
+                      {t("workspace.deleteWorkspace")}
+                    </Button>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
 
             <AlertDialog
               open={deleteDialogOpen}

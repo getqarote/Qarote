@@ -2,6 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 
+import { AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
@@ -9,11 +10,12 @@ import { trpc } from "@/lib/trpc/client";
 
 import {
   BillingHeader,
-  BillingLayout,
   CurrentPlanCard,
   RecentPayments,
   SubscriptionManagement,
 } from "@/components/billing";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
@@ -31,6 +33,13 @@ interface ExtendedStripeSubscription {
   [key: string]: unknown;
 }
 
+/**
+ * Billing detail view mounted at `/settings/subscription/billing`.
+ * Rendered inside the Settings layout's `<Outlet>`, so the settings
+ * sidebar (with "Subscription" highlighted) is the back affordance —
+ * this component only owns the content inside the outlet and does
+ * not wrap itself in a PageShell or a standalone back button.
+ */
 const Billing: React.FC = () => {
   const { t } = useTranslation("billing");
   const { user } = useUser();
@@ -43,10 +52,9 @@ const Billing: React.FC = () => {
     error,
   } = trpc.payment.billing.getBillingOverview.useQuery(undefined, {
     enabled: !!user.id,
-    staleTime: 2 * 60 * 1000, // 2 minutes - billing data doesn't change frequently
-    refetchOnWindowFocus: true, // Refetch when returning from Stripe billing portal
+    staleTime: 2 * 60 * 1000,
+    refetchOnWindowFocus: true,
     retry: (failureCount: number, error: unknown) => {
-      // Don't retry on 429 (rate limit) errors
       if (
         error &&
         typeof error === "object" &&
@@ -55,7 +63,6 @@ const Billing: React.FC = () => {
       ) {
         return false;
       }
-      // Retry up to 1 time for other errors
       return failureCount < 1;
     },
   });
@@ -65,13 +72,10 @@ const Billing: React.FC = () => {
       onSuccess: (response: { message: string }) => {
         logger.info("Subscription canceled successfully", response);
 
-        // Show success message to user
         if (response.message) {
-          // You might want to show a toast notification here
           logger.info("Cancellation message:", response.message);
         }
 
-        // Refetch billing data to update the UI
         queryClient.invalidateQueries({
           queryKey: ["billing", user.id, workspace?.id],
         });
@@ -90,7 +94,7 @@ const Billing: React.FC = () => {
       return await cancelSubscriptionMutation.mutateAsync(data);
     } catch (error) {
       logger.error("Failed to cancel subscription:", error);
-      throw error; // Re-throw so the modal can handle the error
+      throw error;
     }
   };
 
@@ -122,7 +126,6 @@ const Billing: React.FC = () => {
 
   const handleRenewSubscription = async () => {
     try {
-      // Determine the plan to renew based on subscription history
       const planToRenew = billingData?.subscription?.plan || UserPlan.DEVELOPER;
       renewSubscriptionMutation.mutate({
         plan: planToRenew,
@@ -133,19 +136,12 @@ const Billing: React.FC = () => {
     }
   };
 
-  // Determine if the subscription was canceled
-  // A subscription is considered canceled if:
-  // 1. Current plan is FREE
-  // 2. Status is CANCELED
-  // 3. There was a previous paid plan (we check payment history)
   const subscriptionCanceled =
     billingData?.subscription?.plan === UserPlan.FREE &&
     billingData?.subscription?.status === "CANCELED" &&
     billingData?.recentPayments &&
-    billingData.recentPayments.length > 0; // Has payment history
+    billingData.recentPayments.length > 0;
 
-  // Get the last plan they had before canceling
-  // For now, we'll use a default since we don't have historical plan data
   const lastPlan = subscriptionCanceled ? UserPlan.DEVELOPER : undefined;
 
   const isTrialing = billingData?.subscription?.status === "TRIALING";
@@ -155,49 +151,74 @@ const Billing: React.FC = () => {
     (billingData?.subscription as ExtendedSubscription)?.cancelAtPeriodEnd ||
     false;
 
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-10 w-10 rounded-lg" />
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+        </div>
+        <Skeleton className="h-48 w-full rounded-lg" />
+        <Skeleton className="h-32 w-full rounded-lg" />
+      </div>
+    );
+  }
+
+  if (error || !billingData) {
+    return (
+      <div className="space-y-6">
+        <BillingHeader />
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>{t("errors.loadTitle")}</AlertTitle>
+          <AlertDescription>{t("errors.loadDescription")}</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
-    <BillingLayout isLoading={isLoading} error={!!error || !billingData}>
-      {billingData && (
-        <>
-          <BillingHeader />
+    <div className="space-y-6">
+      <BillingHeader />
 
-          <CurrentPlanCard
-            subscription={billingData.subscription}
-            stripeSubscription={billingData.stripeSubscription}
-            paymentMethod={billingData.paymentMethod}
-            onManagePaymentMethod={handleOpenBillingPortal}
-            onCancelSubscription={
-              isTrialing && !cancelAtPeriodEnd && billingData.paymentMethod
-                ? handleCancelSubscription
-                : undefined
-            }
-            isLoading={isLoading}
-            cancelAtPeriodEnd={cancelAtPeriodEnd}
-          />
+      <CurrentPlanCard
+        subscription={billingData.subscription}
+        stripeSubscription={billingData.stripeSubscription}
+        paymentMethod={billingData.paymentMethod}
+        onManagePaymentMethod={handleOpenBillingPortal}
+        onCancelSubscription={
+          isTrialing && !cancelAtPeriodEnd && billingData.paymentMethod
+            ? handleCancelSubscription
+            : undefined
+        }
+        isLoading={isLoading}
+        cancelAtPeriodEnd={cancelAtPeriodEnd}
+      />
 
-          {!isTrialing && (
-            <SubscriptionManagement
-              currentPlan={billingData.subscription?.plan || UserPlan.FREE}
-              onRenewSubscription={handleRenewSubscription}
-              onCancelSubscription={handleCancelSubscription}
-              periodEnd={
-                billingData.stripeSubscription?.current_period_end
-                  ? new Date(
-                      billingData.stripeSubscription.current_period_end * 1000
-                    ).toISOString()
-                  : undefined
-              }
-              isLoading={isLoading}
-              cancelAtPeriodEnd={cancelAtPeriodEnd}
-              subscriptionCanceled={subscriptionCanceled}
-              lastPlan={lastPlan}
-            />
-          )}
-
-          <RecentPayments recentPayments={billingData.recentPayments} />
-        </>
+      {!isTrialing && (
+        <SubscriptionManagement
+          currentPlan={billingData.subscription?.plan || UserPlan.FREE}
+          onRenewSubscription={handleRenewSubscription}
+          onCancelSubscription={handleCancelSubscription}
+          periodEnd={
+            billingData.stripeSubscription?.current_period_end
+              ? new Date(
+                  billingData.stripeSubscription.current_period_end * 1000
+                ).toISOString()
+              : undefined
+          }
+          isLoading={isLoading}
+          cancelAtPeriodEnd={cancelAtPeriodEnd}
+          subscriptionCanceled={subscriptionCanceled}
+          lastPlan={lastPlan}
+        />
       )}
-    </BillingLayout>
+
+      <RecentPayments recentPayments={billingData.recentPayments} />
+    </div>
   );
 };
 

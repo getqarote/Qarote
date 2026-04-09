@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggleGroup";
 
 import { useTheme } from "@/contexts/ThemeContext";
 
@@ -43,42 +44,55 @@ const AppearanceSection = () => {
         <p className="text-muted-foreground">{t("subtitle")}</p>
       </div>
 
-      <Card className="border-0 shadow-md">
+      <Card>
         <CardHeader>
           <CardTitle>{t("themeTitle")}</CardTitle>
-          <CardDescription>{t("themeDescription")}</CardDescription>
+          <CardDescription>
+            {t("themeDescription")}{" "}
+            <span className="text-muted-foreground">
+              {t("themeSystemHint")}
+            </span>
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-3 gap-4">
-            {themes.map(({ value, icon: Icon, labelKey }) => (
-              <button
-                key={value}
-                onClick={() => setTheme(value)}
-                className={`flex flex-col items-center gap-3 p-4 rounded-lg border-2 motion-safe:transition-all cursor-pointer ${
-                  theme === value
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-muted-foreground/30 hover:bg-muted/50"
-                }`}
-              >
-                <Icon
-                  className={`h-6 w-6 ${
-                    theme === value ? "text-primary" : "text-muted-foreground"
-                  }`}
-                />
-                <span
-                  className={`text-sm font-medium ${
-                    theme === value ? "text-primary" : "text-muted-foreground"
+          <ToggleGroup
+            type="single"
+            value={theme}
+            onValueChange={(v) => {
+              if (!v) return;
+              setTheme(v as typeof theme);
+            }}
+            role="radiogroup"
+            aria-label={t("themeTitle")}
+            className="grid grid-cols-1 sm:grid-cols-3 gap-2"
+          >
+            {themes.map(({ value, icon: Icon, labelKey }) => {
+              const selected = theme === value;
+              return (
+                <ToggleGroupItem
+                  key={value}
+                  value={value}
+                  role="radio"
+                  aria-checked={selected}
+                  className={`h-auto flex flex-col items-center justify-center gap-2 rounded-lg border px-4 py-3 data-[state=on]:border-primary/60 data-[state=on]:bg-primary/5 ${
+                    selected
+                      ? "text-primary"
+                      : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                   }`}
                 >
-                  {t(labelKey)}
-                </span>
-              </button>
-            ))}
-          </div>
+                  <Icon
+                    className={`h-5 w-5 ${selected ? "text-primary" : ""}`}
+                    aria-hidden="true"
+                  />
+                  <span className="text-sm font-medium">{t(labelKey)}</span>
+                </ToggleGroupItem>
+              );
+            })}
+          </ToggleGroup>
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-md">
+      <Card>
         <CardHeader>
           <CardTitle>{t("languageTitle")}</CardTitle>
           <CardDescription>{t("languageDescription")}</CardDescription>
@@ -88,10 +102,10 @@ const AppearanceSection = () => {
             value={currentLocale}
             onValueChange={(v) => i18n.changeLanguage(v)}
           >
-            <SelectTrigger className="w-64">
+            <SelectTrigger className="w-full sm:w-72">
               <SelectValue>
                 <div className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 shrink-0" />
+                  <Globe className="h-4 w-4 shrink-0" aria-hidden="true" />
                   <span>
                     {LOCALE_FLAGS[currentLocale]} {LOCALE_LABELS[currentLocale]}
                   </span>

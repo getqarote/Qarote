@@ -5,6 +5,27 @@
     "noInfo": "No organization billing information available.",
     "billingTitle": "Billing"
   },
+  "header": {
+    "title": "Billing & usage",
+    "subtitle": "Manage your subscription and payment details",
+    "backAriaLabel": "Back to subscription"
+  },
+  "errors": {
+    "loadTitle": "Unable to load billing information",
+    "loadDescription": "Please try again later or contact support."
+  },
+  "recentPayments": {
+    "title": "Recent payments",
+    "subtitle": "Your latest transactions",
+    "defaultDescription": "Subscription payment"
+  },
+  "paymentStatus": {
+    "succeeded": "Succeeded",
+    "failed": "Failed",
+    "canceled": "Canceled",
+    "pending": "Pending",
+    "requiresAction": "Action required"
+  },
   "plans": {
     "chooseYourPlan": "Choose Your Plan",
     "subtitle": "Scale your RabbitMQ monitoring with plans designed for teams of all sizes.",
@@ -114,7 +135,13 @@
     "trialActiveWithPayment": "Your trial is active until {{date}}. Your subscription will start automatically when the trial ends.",
     "cancelTrial": "Cancel Trial",
     "trialCanceled": "Trial canceled",
-    "trialEndsOnDate": "Your trial will end on {{date}}. You will be downgraded to the Free plan."
+    "trialEndsOnDate": "Your trial will end on {{date}}. You will be downgraded to the Free plan.",
+    "started": "Trial started",
+    "endsDate": "Trial ends {{date}}",
+    "daysRemaining_one": "{{count}} day remaining in trial",
+    "daysRemaining_other": "{{count}} days remaining in trial",
+    "daysLeft_one": "{{count}} day left",
+    "daysLeft_other": "{{count}} days left"
   },
   "currentPlan": {
     "noSubscription": "No subscription required",
@@ -125,7 +152,10 @@
     "paymentMethod": "Payment Method",
     "planName": "{{plan}} Plan",
     "activeSubscription": "Your active subscription",
-    "changePaymentMethod": "Change payment method"
+    "changePaymentMethod": "Change payment method",
+    "toDate": "to {{date}}",
+    "canceling": "Canceling",
+    "addPaymentMethodCta": "Add payment method"
   },
   "status": {
     "active": "Active"

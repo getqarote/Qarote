@@ -84,9 +84,9 @@ export function OrgMembersCard({
       toast.success(t("toast.roleUpdated"));
     } catch (error) {
       logger.error({ error }, "Role change error");
-      const msg =
-        error instanceof Error ? error.message : "Failed to update role";
-      toast.error(msg);
+      toast.error(t("toast.roleUpdateFailed"), {
+        description: error instanceof Error ? error.message : undefined,
+      });
     }
   };
 

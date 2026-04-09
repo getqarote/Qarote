@@ -102,7 +102,9 @@ export function AddFromOrgDialog({
       );
     } catch (error) {
       logger.error("Add from org error:", error);
-      toast.error(extractErrorMessage(error));
+      toast.error(t("team.toast.addFailed"), {
+        description: extractErrorMessage(error),
+      });
     } finally {
       setPendingUserId(null);
     }
