@@ -5,7 +5,6 @@ import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardFooter } from "@/components/ui/card";
 
 import {
   useRegisterSsoProvider,
@@ -14,7 +13,6 @@ import {
 
 import { DeleteSSOProviderDialog } from "./DeleteSSOProviderDialog";
 import { SSOCallbackUrlsCard } from "./SSOCallbackUrlsCard";
-import { SSODomainCard } from "./SSODomainCard";
 import { SSOHeader } from "./SSOHeader";
 import {
   buildOidcCallbackUrl,
@@ -29,20 +27,24 @@ import type { ProviderConfig, SSOFormValues } from "./types";
 /**
  * Unified SSO provider form. Handles both "set up a new provider"
  * and "edit an existing provider" via a discriminated union on
- * `mode`:
+ * `mode`. The two flows share the same cards but order them
+ * differently:
  *
- *   - `mode: "setup"` — empty initial values, register mutation,
- *     no delete button, callback URLs card shows "save first"
- *   - `mode: "edit"` — hydrated from existing provider, update
- *     mutation, delete button, callback URLs card shows the real
- *     registered URLs
+ *   - **Setup**: Header → Protocol (with preset chips) → Save
+ *     Operators configuring for the first time get a provider
+ *     preset head-start, then fill in credentials, then save.
+ *     The callback URLs don't exist yet, so no URLs card appears.
  *
- * The original code had two separate ~240-line components
- * (`SSOForm` and `SetupForm`) that were ~90% duplicated — identical
- * cards, identical fields, identical layout, but each with their own
- * local state and their own differently-named handlers. Collapsing
- * them into a single parametric form makes future changes land in
- * one place.
+ *   - **Edit**: Header → **Callback URLs (at top)** → Protocol →
+ *     Save/Delete. Operators editing an existing provider almost
+ *     always came here to copy the callback URLs into their IdP
+ *     (they rarely change the client ID / secret). URLs go first
+ *     so they're the first thing on screen.
+ *
+ * The save button used to live in its own `<Card><CardFooter>`
+ * wrapper — chrome for a single button. It's now a plain flex
+ * div at the bottom with save on the left and (in edit mode)
+ * delete on the right.
  */
 type SSOProviderFormProps =
   | {
@@ -110,60 +112,62 @@ export function SSOProviderForm(props: SSOProviderFormProps) {
       <SSOHeader
         title={t("title")}
         description={
-          props.mode === "edit"
-            ? t("description")
-            : t("setupDescription", {
-                defaultValue:
-                  "Configure your SSO provider to enable single sign-on.",
-              })
+          props.mode === "edit" ? t("description") : t("setupDescription")
         }
       />
 
-      <SSOProtocolCard values={values} onChange={handlePatch} />
+      {/* Edit mode surfaces callback URLs first — that's usually
+          what the operator came for */}
+      {props.mode === "edit" && (
+        <SSOCallbackUrlsCard
+          type={values.type}
+          oidcCallbackUrl={oidcCallbackUrl}
+          samlAcsUrl={samlAcsUrl}
+        />
+      )}
 
-      <SSOCallbackUrlsCard
-        type={values.type}
-        oidcCallbackUrl={oidcCallbackUrl}
-        samlAcsUrl={samlAcsUrl}
+      <SSOProtocolCard
+        values={values}
+        onChange={handlePatch}
+        mode={props.mode}
       />
 
-      <SSODomainCard
-        value={values.domain}
-        onChange={(domain) => handlePatch({ domain })}
-      />
+      {/* Plain action row — no Card wrapper. Save left, delete
+          right when editing (space-between), save alone when
+          setting up. */}
+      <div className="flex items-center justify-between pt-2">
+        <Button
+          type="button"
+          onClick={handleSave}
+          disabled={activeMutation.isPending}
+        >
+          {activeMutation.isPending ? (
+            <>
+              <Loader2
+                className="h-4 w-4 mr-2 animate-spin"
+                aria-hidden="true"
+              />
+              {t("saving")}
+            </>
+          ) : props.mode === "setup" ? (
+            t("saveAndContinue")
+          ) : (
+            t("save")
+          )}
+        </Button>
 
-      <Card>
-        <CardFooter className="pt-6 flex justify-between">
+        {props.mode === "edit" && (
           <Button
             type="button"
-            onClick={handleSave}
-            disabled={activeMutation.isPending}
+            variant="outline"
+            onClick={() => setIsDeleteOpen(true)}
+            className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
           >
-            {activeMutation.isPending ? (
-              <>
-                <Loader2
-                  className="h-4 w-4 mr-2 animate-spin"
-                  aria-hidden="true"
-                />
-                {t("saving")}
-              </>
-            ) : (
-              t("save")
-            )}
+            <Trash2 className="h-4 w-4 mr-2" aria-hidden="true" />
+            {t("delete")}
           </Button>
-
-          {props.mode === "edit" && (
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={() => setIsDeleteOpen(true)}
-            >
-              <Trash2 className="h-4 w-4 mr-2" aria-hidden="true" />
-              {t("delete", { defaultValue: "Delete provider" })}
-            </Button>
-          )}
-        </CardFooter>
-      </Card>
+        )}
+      </div>
 
       {props.mode === "edit" && (
         <DeleteSSOProviderDialog
