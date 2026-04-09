@@ -18,11 +18,8 @@ export function AddUserButton({ serverId, onSuccess }: AddUserButtonProps) {
 
   return (
     <>
-      <Button
-        onClick={() => setShowCreateModal(true)}
-        className="btn-primary flex items-center gap-2"
-      >
-        <Plus className="w-4 h-4" />
+      <Button onClick={() => setShowCreateModal(true)}>
+        <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
         {t("addUser")}
       </Button>
       <CreateUserModal

@@ -2,12 +2,13 @@ import { MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
-import { Trash2, User } from "lucide-react";
+import { KeyRound, ShieldAlert, Trash2, User } from "lucide-react";
 
 import type { RabbitMQUser } from "@/lib/api/userTypes";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { TableCell, TableRow } from "@/components/ui/table";
 
 interface UsersTableRowProps {
@@ -19,28 +20,53 @@ interface UsersTableRowProps {
    * right-click / middle-click / Cmd+click for new-tab behaviour.
    */
   href: string;
+  /**
+   * Whether this row is currently selected in the bulk-action pool.
+   * Undefined on protected rows (the checkbox is hidden entirely
+   * rather than disabled).
+   */
+  selected?: boolean;
+  /**
+   * Called when the operator toggles the row's selection checkbox.
+   * Undefined for protected rows (admin, anything tagged `protected`).
+   */
+  onToggleSelect?: () => void;
   onDelete: () => void;
 }
 
 /**
- * A single row in the users list. The user's name is a real `<Link>`
- * that owns the primary affordance — clicking it (or pressing Enter
- * with it focused) opens the detail page. The Delete icon is a
- * secondary action for admins; clicking it must NOT follow the link,
- * so it stops click propagation defensively even though the link is
- * scoped to the name cell.
+ * A single row in the users list.
  *
- * The admin user and any user tagged `protected` cannot be deleted —
- * their Delete button is hidden outright rather than disabled, because
- * a ghosted button in the middle of a table row is visual noise the
- * operator has to parse every time.
+ * The user's name is a real `<Link>` that owns the primary
+ * affordance — clicking it (or pressing Enter with it focused) opens
+ * the detail page. The Delete icon is a secondary action; clicking it
+ * must NOT follow the link, so it stops propagation defensively even
+ * though the link is scoped to the name cell.
+ *
+ * The admin user and any user tagged `protected` cannot be deleted
+ * nor bulk-selected — both their checkbox and Delete button are
+ * hidden outright rather than disabled, because a ghosted control in
+ * the middle of a table row is visual noise the operator has to
+ * parse every time.
+ *
+ * Password state is rendered as an icon pair (KeyRound / KeyOff)
+ * rather than a color-only dot. This keeps the meaning accessible to
+ * colorblind sighted users who can see the dot but can't distinguish
+ * red from green — color becomes the secondary channel and icon
+ * shape is primary.
  *
  * Previous implementation used `<TableRow onClick={navigate}>` which
  * was keyboard-inaccessible: mouse users could click anywhere in the
  * row, but keyboard users had no way to activate it short of Tab-ing
  * to the icon buttons. WCAG 2.1.1 Keyboard violation — fixed here.
  */
-export function UsersTableRow({ user, href, onDelete }: UsersTableRowProps) {
+export function UsersTableRow({
+  user,
+  href,
+  selected,
+  onToggleSelect,
+  onDelete,
+}: UsersTableRowProps) {
   const { t } = useTranslation("users");
 
   const isProtected = user.name === "admin" || user.tags?.includes("protected");
@@ -53,29 +79,53 @@ export function UsersTableRow({ user, href, onDelete }: UsersTableRowProps) {
   };
 
   return (
-    <TableRow className="hover:bg-muted/50">
-      <TableCell className="font-medium max-w-[300px]">
+    <TableRow
+      data-state={selected ? "selected" : undefined}
+      className="hover:bg-muted/50"
+    >
+      <TableCell className="w-[44px] pr-0">
+        {!isProtected && onToggleSelect ? (
+          <Checkbox
+            checked={!!selected}
+            onCheckedChange={onToggleSelect}
+            aria-label={t("selectRow", { name: user.name })}
+          />
+        ) : null}
+      </TableCell>
+      <TableCell className="font-medium">
         <Link
           to={href}
-          className="flex items-center gap-2 min-w-0 rounded-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="inline-flex items-start gap-2 rounded-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <User
-            className="h-4 w-4 shrink-0 text-muted-foreground"
+            className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground"
             aria-hidden="true"
           />
-          <span className="truncate" title={user.name}>
-            {user.name}
-          </span>
+          <span className="break-all">{user.name}</span>
         </Link>
       </TableCell>
       <TableCell>
         {user.tags?.length ? (
           <div className="flex flex-wrap gap-1">
-            {user.tags.map((tag) => (
-              <Badge key={tag} variant="secondary" className="text-xs">
-                {tag}
-              </Badge>
-            ))}
+            {user.tags.map((tag) => {
+              const isAdmin = tag === "administrator";
+              const isProtectedTag = tag === "protected";
+              return (
+                <Badge
+                  key={tag}
+                  variant={isAdmin || isProtectedTag ? "outline" : "secondary"}
+                  className={
+                    isAdmin
+                      ? "text-xs bg-primary/10 border-primary/50 text-foreground font-semibold"
+                      : isProtectedTag
+                        ? "text-xs border-dashed border-border text-foreground/75"
+                        : "text-xs"
+                  }
+                >
+                  {tag}
+                </Badge>
+              );
+            })}
           </div>
         ) : (
           <span className="text-muted-foreground">—</span>
@@ -96,28 +146,43 @@ export function UsersTableRow({ user, href, onDelete }: UsersTableRowProps) {
       </TableCell>
       <TableCell>
         <div
-          className={`w-2 h-2 rounded-full ${
-            hasPassword ? "bg-success" : "bg-destructive"
-          }`}
-          role="img"
-          aria-label={hasPassword ? t("passwordSet") : t("noPassword")}
+          className="inline-flex items-center gap-1.5"
           title={hasPassword ? t("passwordSet") : t("noPassword")}
-        />
-      </TableCell>
-      <TableCell>
-        <div className="flex items-center justify-end gap-1">
-          {!isProtected && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={stopAnd(onDelete)}
-              className="h-9 w-9 p-0 text-destructive hover:text-destructive"
-              aria-label={t("deleteUser") + ": " + user.name}
-            >
-              <Trash2 className="h-4 w-4" aria-hidden="true" />
-            </Button>
+        >
+          {hasPassword ? (
+            <KeyRound
+              className="h-4 w-4 text-success"
+              aria-label={t("passwordSet")}
+              role="img"
+            />
+          ) : (
+            <ShieldAlert
+              className="h-4 w-4 text-warning"
+              aria-label={t("noPassword")}
+              role="img"
+            />
           )}
+          <span
+            className={`text-xs ${
+              hasPassword ? "text-muted-foreground" : "text-warning"
+            }`}
+          >
+            {hasPassword ? t("passwordSet") : t("noPassword")}
+          </span>
         </div>
+      </TableCell>
+      <TableCell className="w-[56px] text-right">
+        {!isProtected && !selected && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={stopAnd(onDelete)}
+            className="h-9 w-9 text-muted-foreground hover:text-destructive"
+            aria-label={t("deleteUser") + ": " + user.name}
+          >
+            <Trash2 className="h-4 w-4" aria-hidden="true" />
+          </Button>
+        )}
       </TableCell>
     </TableRow>
   );
