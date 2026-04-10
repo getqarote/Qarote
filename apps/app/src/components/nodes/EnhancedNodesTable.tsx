@@ -10,7 +10,6 @@ import {
   Clock,
   Cpu,
   Database,
-  HardDrive,
   HelpCircle,
   Info,
   MemoryStick,
@@ -61,8 +60,6 @@ type SortField =
   | "diskFree"
   | "uptime"
   | "sockets"
-  | "fdUsed"
-  | "ioActivity"
   | "connections";
 type SortDirection = "asc" | "desc";
 
@@ -205,14 +202,6 @@ export const EnhancedNodesTable = ({
         aValue = a.sockets_used || 0;
         bValue = b.sockets_used || 0;
         break;
-      case "fdUsed":
-        aValue = a.fd_used || 0;
-        bValue = b.fd_used || 0;
-        break;
-      case "ioActivity":
-        aValue = (a.io_read_count || 0) + (a.io_write_count || 0);
-        bValue = (b.io_read_count || 0) + (b.io_write_count || 0);
-        break;
       case "connections":
         aValue = a.connection_created || 0;
         bValue = b.connection_created || 0;
@@ -237,10 +226,7 @@ export const EnhancedNodesTable = ({
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <Server className="h-5 w-5" />
-            Cluster Nodes
-          </CardTitle>
+          <CardTitle className="title-section">Nodes</CardTitle>
         </CardHeader>
         <CardContent>
           <RabbitMQPermissionError
@@ -256,16 +242,7 @@ export const EnhancedNodesTable = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
-          <Server className="h-5 w-5 text-muted-foreground" />
-          <span className="text-muted-foreground">
-            Cluster Nodes ({nodes.length})
-          </span>
-        </CardTitle>
-        <p className="text-sm text-muted-foreground mt-1">
-          Detailed node metrics and health status. Click on any row to expand
-          for more details.
-        </p>
+        <CardTitle className="title-section">Nodes</CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -281,7 +258,7 @@ export const EnhancedNodesTable = ({
                 <TableHead className="w-12"></TableHead>
                 <TableHead>
                   <SortButton onSort={handleSort} field="name">
-                    RabbitMQNode Name
+                    Node
                   </SortButton>
                 </TableHead>
                 <TableHead>Status</TableHead>
@@ -301,18 +278,8 @@ export const EnhancedNodesTable = ({
                   </SortButton>
                 </TableHead>
                 <TableHead>
-                  <SortButton onSort={handleSort} field="ioActivity">
-                    I/O Activity
-                  </SortButton>
-                </TableHead>
-                <TableHead>
                   <SortButton onSort={handleSort} field="connections">
                     Connections
-                  </SortButton>
-                </TableHead>
-                <TableHead>
-                  <SortButton onSort={handleSort} field="fdUsed">
-                    File Descriptors
                   </SortButton>
                 </TableHead>
               </TableRow>
@@ -324,10 +291,6 @@ export const EnhancedNodesTable = ({
                 const memoryUsage =
                   node.mem_used && node.mem_limit
                     ? (node.mem_used / node.mem_limit) * 100
-                    : 0;
-                const fdUsage =
-                  node.fd_used && node.fd_total
-                    ? (node.fd_used / node.fd_total) * 100
                     : 0;
                 const isExpanded = expandedNodes.has(node.name);
 
@@ -406,38 +369,6 @@ export const EnhancedNodesTable = ({
                       <TableCell>
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 text-sm">
-                            <HardDrive className="w-3 h-3 text-muted-foreground" />
-                            <span className="text-xs font-mono tabular-nums font-medium text-foreground">
-                              R:{" "}
-                              {node.io_read_count
-                                ? formatNumber(node.io_read_count)
-                                : "N/A"}
-                            </span>
-                            <span className="text-xs font-mono tabular-nums font-medium text-foreground">
-                              W:{" "}
-                              {node.io_write_count
-                                ? formatNumber(node.io_write_count)
-                                : "N/A"}
-                            </span>
-                          </div>
-                          <div className="text-xs text-muted-foreground font-mono tabular-nums">
-                            <span className="text-muted-foreground">
-                              {node.io_read_count_details?.rate
-                                ? formatRate(node.io_read_count_details.rate)
-                                : "0/s"}
-                            </span>{" "}
-                            /{" "}
-                            <span className="text-muted-foreground">
-                              {node.io_write_count_details?.rate
-                                ? formatRate(node.io_write_count_details.rate)
-                                : "0/s"}
-                            </span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 text-sm">
                             <Users className="w-3 h-3 text-muted-foreground" />
                             <span className="font-mono tabular-nums font-medium text-foreground">
                               {node.connection_created
@@ -455,38 +386,12 @@ export const EnhancedNodesTable = ({
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="font-mono tabular-nums">
-                              {node.fd_used ? node.fd_used : "N/A"}
-                            </span>
-                            <span className="font-mono tabular-nums text-muted-foreground">
-                              / {node.fd_total ? node.fd_total : "N/A"}
-                            </span>
-                          </div>
-                          {node.fd_used && node.fd_total ? (
-                            <Progress
-                              value={fdUsage}
-                              className={`h-2 w-16 ${
-                                fdUsage > 80
-                                  ? "[&>div]:bg-destructive"
-                                  : fdUsage > 60
-                                    ? "[&>div]:bg-warning"
-                                    : "[&>div]:bg-success"
-                              }`}
-                            />
-                          ) : (
-                            <div className="h-2 w-16 bg-border rounded"></div>
-                          )}
-                        </div>
-                      </TableCell>
                     </TableRow>
 
                     {/* Expanded Details Row */}
                     {isExpanded && (
                       <TableRow>
-                        <TableCell colSpan={9} className="bg-muted/50 p-6">
+                        <TableCell colSpan={7} className="bg-muted/50 p-6">
                           <TooltipProvider>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                               {/* Memory Details */}
