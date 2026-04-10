@@ -1,28 +1,16 @@
 import { Fragment, useState } from "react";
 
 import {
-  Activity,
   AlertTriangle,
   ArrowUpDown,
   CheckCircle,
   ChevronDown,
   ChevronRight,
-  Clock,
-  Cpu,
-  Database,
-  HelpCircle,
-  Info,
-  MemoryStick,
-  Network,
   Server,
-  Settings,
-  Users,
-  Wifi,
   XCircle,
 } from "lucide-react";
 
 import { RabbitMQNode } from "@/lib/api";
-import { getUsageTone } from "@/lib/health-tones";
 
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { Badge } from "@/components/ui/badge";
@@ -38,12 +26,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 import { isRabbitMQAuthError } from "@/types/apiErrors";
 
@@ -81,6 +63,56 @@ const SortButton = ({
     {children}
     <ArrowUpDown className="ml-1 h-3 w-3" />
   </Button>
+);
+
+/** Label + value row for the expanded detail sections. */
+const ExpandedRow = ({
+  label,
+  value,
+  mono = false,
+  tone,
+}: {
+  label: string;
+  value: string | number;
+  mono?: boolean;
+  tone?: "success" | "warning" | "destructive";
+}) => {
+  const toneClass =
+    tone === "success"
+      ? "text-success"
+      : tone === "warning"
+        ? "text-warning"
+        : tone === "destructive"
+          ? "text-destructive"
+          : "text-foreground";
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <dt className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
+        {label}
+      </dt>
+      <dd
+        className={`text-xs font-medium text-right ${toneClass} ${mono ? "font-mono tabular-nums" : ""}`}
+      >
+        {value}
+      </dd>
+    </div>
+  );
+};
+
+/** Compact inline label + value for the database strip. */
+const InlineMetric = ({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number;
+}) => (
+  <div className="flex items-baseline gap-1.5">
+    <span className="text-xs text-muted-foreground">{label}</span>
+    <span className="text-xs font-mono tabular-nums text-muted-foreground/80">
+      {value}
+    </span>
+  </div>
 );
 
 export const EnhancedNodesTable = ({
@@ -307,16 +339,13 @@ export const EnhancedNodesTable = ({
                           <ChevronRight className="h-4 w-4 text-muted-foreground" />
                         )}
                       </TableCell>
-                      <TableCell className="font-medium max-w-[300px]">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <Server className="h-4 w-4 text-muted-foreground shrink-0" />
-                          <span
-                            className="text-foreground truncate"
-                            title={node.name}
-                          >
-                            {node.name}
-                          </span>
-                        </div>
+                      <TableCell className="max-w-[280px]">
+                        <span
+                          className="font-mono text-sm text-foreground truncate block"
+                          title={node.name}
+                        >
+                          {node.name}
+                        </span>
                       </TableCell>
                       <TableCell>
                         <Badge className={status.color}>
@@ -358,791 +387,350 @@ export const EnhancedNodesTable = ({
                       <TableCell className="font-mono tabular-nums">
                         {node.disk_free ? formatBytes(node.disk_free) : "N/A"}
                       </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-muted-foreground" />
-                          <span className="text-muted-foreground">
-                            {node.uptime ? formatUptime(node.uptime) : "N/A"}
-                          </span>
-                        </div>
+                      <TableCell className="font-mono tabular-nums text-sm text-muted-foreground">
+                        {node.uptime ? formatUptime(node.uptime) : "—"}
                       </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 text-sm">
-                            <Users className="w-3 h-3 text-muted-foreground" />
-                            <span className="font-mono tabular-nums font-medium text-foreground">
-                              {node.connection_created
-                                ? formatNumber(node.connection_created)
-                                : "N/A"}
-                            </span>
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            Active:{" "}
-                            <span className="font-mono tabular-nums text-muted-foreground font-medium">
-                              {node.sockets_used
-                                ? formatNumber(node.sockets_used)
-                                : "N/A"}
-                            </span>
-                          </div>
-                        </div>
+                      <TableCell className="font-mono tabular-nums text-sm">
+                        {node.sockets_used !== undefined
+                          ? formatNumber(node.sockets_used)
+                          : "—"}
                       </TableCell>
                     </TableRow>
 
                     {/* Expanded Details Row */}
                     {isExpanded && (
-                      <TableRow>
-                        <TableCell colSpan={7} className="bg-muted/50 p-6">
-                          <TooltipProvider>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                              {/* Memory Details */}
-                              <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
-                                <div className="flex items-center gap-2">
-                                  <h4 className="font-medium text-foreground flex items-center gap-2">
-                                    <MemoryStick className="h-4 w-4 text-muted-foreground" />
-                                    <span className="text-foreground">
-                                      Memory Details
-                                    </span>
-                                  </h4>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Info className="h-4 w-4 text-muted-foreground hover:text-muted-foreground cursor-help" />
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-sm">
-                                      <div className="space-y-2">
-                                        <p className="font-medium">
-                                          Memory Usage & Limits
-                                        </p>
-                                        <p className="text-sm">
-                                          Shows how much RAM this RabbitMQ node
-                                          is using. Monitor for:
-                                        </p>
-                                        <ul className="text-sm space-y-1 ml-4">
-                                          <li>
-                                            • High usage (&gt;80%) - may cause
-                                            performance issues
-                                          </li>
-                                          <li>
-                                            • Memory alarms - node will throttle
-                                            publishers
-                                          </li>
-                                          <li>
-                                            • Usage trending upward over time
-                                          </li>
-                                        </ul>
-                                      </div>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </div>
-                                <div className="space-y-2 text-sm">
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Used:
-                                    </span>
-                                    <span className="font-mono tabular-nums font-medium text-foreground">
-                                      {node.mem_used
-                                        ? formatBytes(node.mem_used)
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Limit:
-                                    </span>
-                                    <span className="font-mono tabular-nums font-medium">
-                                      {node.mem_limit
-                                        ? formatBytes(node.mem_limit)
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Usage:
-                                    </span>
-                                    <span
-                                      className={`font-medium ${getUsageTone(memoryUsage)}`}
-                                    >
-                                      {node.mem_used && node.mem_limit
-                                        ? `${memoryUsage.toFixed(1)}%`
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Alarm:
-                                    </span>
-                                    <Badge
-                                      variant={
-                                        node.mem_alarm
-                                          ? "destructive"
-                                          : "secondary"
-                                      }
-                                    >
-                                      {node.mem_alarm ? "Active" : "None"}
-                                    </Badge>
-                                  </div>
-                                </div>
+                      <TableRow className="hover:bg-transparent">
+                        <TableCell colSpan={7} className="p-0">
+                          <div className="bg-muted/40 border-b border-border">
+                            {/* Primary metrics band — 5 equal sections */}
+                            <div className="grid grid-cols-5 divide-x divide-border">
+                              {/* Health */}
+                              <div className="px-5 py-4">
+                                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+                                  Health
+                                </p>
+                                <dl className="space-y-2">
+                                  <ExpandedRow
+                                    label="Running"
+                                    value={node.running ? "Yes" : "No"}
+                                    tone={
+                                      node.running ? "success" : "destructive"
+                                    }
+                                  />
+                                  <ExpandedRow
+                                    label="Draining"
+                                    value={node.being_drained ? "Yes" : "No"}
+                                    tone={
+                                      node.being_drained ? "warning" : undefined
+                                    }
+                                  />
+                                  <ExpandedRow
+                                    label="Mem alarm"
+                                    value={node.mem_alarm ? "Active" : "None"}
+                                    tone={
+                                      node.mem_alarm ? "destructive" : undefined
+                                    }
+                                  />
+                                  <ExpandedRow
+                                    label="Disk alarm"
+                                    value={
+                                      node.disk_free_alarm ? "Active" : "None"
+                                    }
+                                    tone={
+                                      node.disk_free_alarm
+                                        ? "destructive"
+                                        : undefined
+                                    }
+                                  />
+                                  <ExpandedRow
+                                    label="Partitions"
+                                    value={node.partitions?.length ?? 0}
+                                    mono
+                                    tone={
+                                      (node.partitions?.length ?? 0) > 0
+                                        ? "destructive"
+                                        : undefined
+                                    }
+                                  />
+                                </dl>
                               </div>
 
-                              {/* I/O Performance */}
-                              <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
-                                <div className="flex items-center gap-2">
-                                  <h4 className="font-medium text-foreground flex items-center gap-2">
-                                    <Activity className="h-4 w-4 text-muted-foreground" />
-                                    <span className="text-foreground">
-                                      I/O Performance
-                                    </span>
-                                  </h4>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-muted-foreground cursor-help" />
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-sm">
-                                      <div className="space-y-2">
-                                        <p className="font-medium">
-                                          Disk I/O Operations
-                                        </p>
-                                        <p className="text-sm">
-                                          Tracks disk read/write activity.
-                                          Important for:
-                                        </p>
-                                        <ul className="text-sm space-y-1 ml-4">
-                                          <li>
-                                            • High I/O rates may indicate heavy
-                                            message persistence
-                                          </li>
-                                          <li>
-                                            • Slow avg times suggest disk
-                                            bottlenecks
-                                          </li>
-                                          <li>
-                                            • Monitor during peak message loads
-                                          </li>
-                                        </ul>
-                                      </div>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </div>
-                                <div className="space-y-2 text-sm">
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Read Ops:
-                                    </span>
-                                    <span className="font-mono tabular-nums font-medium text-foreground">
-                                      {node.io_read_count
+                              {/* Memory */}
+                              <div className="px-5 py-4">
+                                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+                                  Memory
+                                </p>
+                                <dl className="space-y-2">
+                                  <ExpandedRow
+                                    label="Used"
+                                    value={
+                                      node.mem_used
+                                        ? formatBytes(node.mem_used)
+                                        : "—"
+                                    }
+                                    mono
+                                  />
+                                  <ExpandedRow
+                                    label="Limit"
+                                    value={
+                                      node.mem_limit
+                                        ? formatBytes(node.mem_limit)
+                                        : "—"
+                                    }
+                                    mono
+                                  />
+                                  <ExpandedRow
+                                    label="Usage"
+                                    value={
+                                      node.mem_used && node.mem_limit
+                                        ? `${memoryUsage.toFixed(1)}%`
+                                        : "—"
+                                    }
+                                    mono
+                                    tone={
+                                      memoryUsage > 90
+                                        ? "destructive"
+                                        : memoryUsage > 75
+                                          ? "warning"
+                                          : undefined
+                                    }
+                                  />
+                                  <ExpandedRow
+                                    label="Disk free"
+                                    value={
+                                      node.disk_free
+                                        ? formatBytes(node.disk_free)
+                                        : "—"
+                                    }
+                                    mono
+                                  />
+                                </dl>
+                              </div>
+
+                              {/* Disk I/O */}
+                              <div className="px-5 py-4">
+                                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+                                  Disk I/O
+                                </p>
+                                <dl className="space-y-2">
+                                  <ExpandedRow
+                                    label="Reads"
+                                    value={
+                                      node.io_read_count
                                         ? formatNumber(node.io_read_count)
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Write Ops:
-                                    </span>
-                                    <span className="font-mono tabular-nums font-medium text-foreground">
-                                      {node.io_write_count
+                                        : "—"
+                                    }
+                                    mono
+                                  />
+                                  <ExpandedRow
+                                    label="Writes"
+                                    value={
+                                      node.io_write_count
                                         ? formatNumber(node.io_write_count)
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Read Rate:
-                                    </span>
-                                    <span className="font-medium text-muted-foreground">
-                                      {node.io_read_count_details?.rate
+                                        : "—"
+                                    }
+                                    mono
+                                  />
+                                  <ExpandedRow
+                                    label="Read rate"
+                                    value={
+                                      node.io_read_count_details?.rate
                                         ? formatRate(
                                             node.io_read_count_details.rate
                                           )
-                                        : "0/s"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Write Rate:
-                                    </span>
-                                    <span className="font-medium text-muted-foreground">
-                                      {node.io_write_count_details?.rate
+                                        : "0/s"
+                                    }
+                                    mono
+                                  />
+                                  <ExpandedRow
+                                    label="Write rate"
+                                    value={
+                                      node.io_write_count_details?.rate
                                         ? formatRate(
                                             node.io_write_count_details.rate
                                           )
-                                        : "0/s"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Avg Read Time:
-                                    </span>
-                                    <span className="font-mono tabular-nums font-medium text-foreground">
-                                      {node.io_read_avg_time
+                                        : "0/s"
+                                    }
+                                    mono
+                                  />
+                                  <ExpandedRow
+                                    label="Avg read"
+                                    value={
+                                      node.io_read_avg_time
                                         ? `${node.io_read_avg_time.toFixed(2)}ms`
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Avg Write Time:
-                                    </span>
-                                    <span className="font-mono tabular-nums font-medium text-foreground">
-                                      {node.io_write_avg_time
+                                        : "—"
+                                    }
+                                    mono
+                                  />
+                                  <ExpandedRow
+                                    label="Avg write"
+                                    value={
+                                      node.io_write_avg_time
                                         ? `${node.io_write_avg_time.toFixed(2)}ms`
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                </div>
+                                        : "—"
+                                    }
+                                    mono
+                                  />
+                                </dl>
                               </div>
 
-                              {/* Network & Connections */}
-                              <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
-                                <div className="flex items-center gap-2">
-                                  <h4 className="font-medium text-foreground flex items-center gap-2">
-                                    <Network className="h-4 w-4 text-muted-foreground" />
-                                    <span className="text-foreground">
-                                      Network Activity
-                                    </span>
-                                  </h4>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Info className="h-4 w-4 text-muted-foreground hover:text-muted-foreground cursor-help" />
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-sm">
-                                      <div className="space-y-2">
-                                        <p className="font-medium">
-                                          Connection & Channel Management
-                                        </p>
-                                        <p className="text-sm">
-                                          Shows network activity and client
-                                          connections. Watch for:
-                                        </p>
-                                        <ul className="text-sm space-y-1 ml-4">
-                                          <li>
-                                            • High connection churn (creates vs
-                                            closes)
-                                          </li>
-                                          <li>
-                                            • Socket exhaustion (near total
-                                            limit)
-                                          </li>
-                                          <li>
-                                            • Channel leaks (channels not
-                                            properly closed)
-                                          </li>
-                                        </ul>
-                                      </div>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </div>
-                                <div className="space-y-2 text-sm">
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Connections Created:
-                                    </span>
-                                    <span className="font-mono tabular-nums font-medium text-foreground">
-                                      {node.connection_created
+                              {/* Connections */}
+                              <div className="px-5 py-4">
+                                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+                                  Connections
+                                </p>
+                                <dl className="space-y-2">
+                                  <ExpandedRow
+                                    label="Sockets"
+                                    value={
+                                      node.sockets_used !== undefined
+                                        ? `${node.sockets_used} / ${node.sockets_total ?? 0}`
+                                        : "—"
+                                    }
+                                    mono
+                                  />
+                                  <ExpandedRow
+                                    label="Created"
+                                    value={
+                                      node.connection_created
                                         ? formatNumber(node.connection_created)
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Connections Closed:
-                                    </span>
-                                    <span className="font-mono tabular-nums font-medium text-foreground">
-                                      {node.connection_closed
+                                        : "—"
+                                    }
+                                    mono
+                                  />
+                                  <ExpandedRow
+                                    label="Closed"
+                                    value={
+                                      node.connection_closed
                                         ? formatNumber(node.connection_closed)
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Channels Created:
-                                    </span>
-                                    <span className="font-medium text-muted-foreground">
-                                      {node.channel_created
+                                        : "—"
+                                    }
+                                    mono
+                                  />
+                                  <ExpandedRow
+                                    label="Channels"
+                                    value={
+                                      node.channel_created
                                         ? formatNumber(node.channel_created)
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Channels Closed:
-                                    </span>
-                                    <span className="font-medium text-muted-foreground">
-                                      {node.channel_closed
-                                        ? formatNumber(node.channel_closed)
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Active Sockets:
-                                    </span>
-                                    <span className="font-mono tabular-nums font-medium text-foreground">
-                                      {node.sockets_used !== undefined
-                                        ? `${node.sockets_used} / ${node.sockets_total || 0}`
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Net Ticktime:
-                                    </span>
-                                    <span className="font-mono tabular-nums font-medium">
-                                      {node.net_ticktime
+                                        : "—"
+                                    }
+                                    mono
+                                  />
+                                  <ExpandedRow
+                                    label="Net tick"
+                                    value={
+                                      node.net_ticktime
                                         ? `${node.net_ticktime}s`
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                </div>
+                                        : "—"
+                                    }
+                                    mono
+                                  />
+                                </dl>
                               </div>
 
-                              {/* Database & Queue Activity */}
-                              <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
-                                <div className="flex items-center gap-2">
-                                  <h4 className="font-medium text-foreground flex items-center gap-2">
-                                    <Database className="h-4 w-4 text-muted-foreground" />
-                                    <span className="text-foreground">
-                                      Database Activity
-                                    </span>
-                                  </h4>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-muted-foreground cursor-help" />
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-sm">
-                                      <div className="space-y-2">
-                                        <p className="font-medium">
-                                          Database & Message Store Operations
-                                        </p>
-                                        <p className="text-sm">
-                                          Internal RabbitMQ database activity.
-                                          Key indicators:
-                                        </p>
-                                        <ul className="text-sm space-y-1 ml-4">
-                                          <li>
-                                            • Mnesia transactions manage
-                                            queue/exchange metadata
-                                          </li>
-                                          <li>
-                                            • Message store operations handle
-                                            persistent messages
-                                          </li>
-                                          <li>
-                                            • Queue index tracks message
-                                            positions
-                                          </li>
-                                          <li>
-                                            • High activity during heavy message
-                                            loads
-                                          </li>
-                                        </ul>
-                                      </div>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </div>
-                                <div className="space-y-2 text-sm">
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Mnesia RAM Tx:
-                                    </span>
-                                    <span className="font-mono tabular-nums font-medium text-foreground">
-                                      {node.mnesia_ram_tx_count
-                                        ? formatNumber(node.mnesia_ram_tx_count)
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Mnesia Disk Tx:
-                                    </span>
-                                    <span className="font-mono tabular-nums font-medium text-foreground">
-                                      {node.mnesia_disk_tx_count
-                                        ? formatNumber(
-                                            node.mnesia_disk_tx_count
-                                          )
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Msg Store Reads:
-                                    </span>
-                                    <span className="font-mono tabular-nums font-medium text-foreground">
-                                      {node.msg_store_read_count
-                                        ? formatNumber(
-                                            node.msg_store_read_count
-                                          )
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Msg Store Writes:
-                                    </span>
-                                    <span className="font-mono tabular-nums font-medium text-foreground">
-                                      {node.msg_store_write_count
-                                        ? formatNumber(
-                                            node.msg_store_write_count
-                                          )
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Queue Index Reads:
-                                    </span>
-                                    <span className="font-mono tabular-nums font-medium text-foreground">
-                                      {node.queue_index_read_count
-                                        ? formatNumber(
-                                            node.queue_index_read_count
-                                          )
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Queue Index Writes:
-                                    </span>
-                                    <span className="font-mono tabular-nums font-medium text-foreground">
-                                      {node.queue_index_write_count
-                                        ? formatNumber(
-                                            node.queue_index_write_count
-                                          )
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                </div>
+                              {/* System */}
+                              <div className="px-5 py-4">
+                                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+                                  System
+                                </p>
+                                <dl className="space-y-2">
+                                  <ExpandedRow
+                                    label="Type"
+                                    value={node.type ?? "—"}
+                                  />
+                                  <ExpandedRow
+                                    label="Processors"
+                                    value={node.processors ?? "—"}
+                                    mono
+                                  />
+                                  <ExpandedRow
+                                    label="OS PID"
+                                    value={node.os_pid ?? "—"}
+                                    mono
+                                  />
+                                  <ExpandedRow
+                                    label="Run queue"
+                                    value={
+                                      node.run_queue !== undefined
+                                        ? node.run_queue
+                                        : "—"
+                                    }
+                                    mono
+                                  />
+                                  <ExpandedRow
+                                    label="Processes"
+                                    value={
+                                      node.proc_used !== undefined &&
+                                      node.proc_total !== undefined
+                                        ? `${node.proc_used} / ${node.proc_total}`
+                                        : "—"
+                                    }
+                                    mono
+                                  />
+                                  <ExpandedRow
+                                    label="Plugins"
+                                    value={node.enabled_plugins?.length ?? 0}
+                                    mono
+                                  />
+                                </dl>
                               </div>
                             </div>
 
-                            {/* Additional System Information */}
-                            <div className="mt-6 pt-6 border-t border-border">
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                {/* System Details */}
-                                <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
-                                  <div className="flex items-center gap-2">
-                                    <h4 className="font-medium text-foreground flex items-center gap-2">
-                                      <Cpu className="h-4 w-4 text-muted-foreground" />
-                                      <span className="text-foreground">
-                                        System Details
-                                      </span>
-                                    </h4>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Info className="h-4 w-4 text-muted-foreground hover:text-muted-foreground cursor-help" />
-                                      </TooltipTrigger>
-                                      <TooltipContent className="max-w-sm">
-                                        <div className="space-y-2">
-                                          <p className="font-medium">
-                                            System Resources & Configuration
-                                          </p>
-                                          <p className="text-sm">
-                                            Core system information about this
-                                            node:
-                                          </p>
-                                          <ul className="text-sm space-y-1 ml-4">
-                                            <li>
-                                              • RabbitMQNode type: disk
-                                              (persistent) or ram (temporary)
-                                            </li>
-                                            <li>
-                                              • CPU cores available for Erlang
-                                              processing
-                                            </li>
-                                            <li>
-                                              • Process limits and current usage
-                                            </li>
-                                            <li>
-                                              • Run queue shows system load
-                                            </li>
-                                          </ul>
-                                        </div>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </div>
-                                  <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">
-                                        Type:
-                                      </span>
-                                      <Badge
-                                        variant="outline"
-                                        className="border-border text-foreground"
-                                      >
-                                        {node.type}
-                                      </Badge>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">
-                                        Processors:
-                                      </span>
-                                      <span className="font-mono tabular-nums font-medium text-foreground">
-                                        {node.processors || "N/A"}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">
-                                        OS PID:
-                                      </span>
-                                      <span className="font-mono text-xs text-foreground">
-                                        {node.os_pid || "N/A"}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">
-                                        Run Queue:
-                                      </span>
-                                      <span className="font-mono tabular-nums font-medium text-foreground">
-                                        {node.run_queue !== undefined
-                                          ? node.run_queue
-                                          : "N/A"}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">
-                                        Processes:
-                                      </span>
-                                      <span className="font-mono tabular-nums font-medium text-foreground">
-                                        {node.proc_used !== undefined &&
-                                        node.proc_total !== undefined
-                                          ? `${node.proc_used} / ${node.proc_total}`
-                                          : "N/A"}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* Runtime Information */}
-                                <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
-                                  <div className="flex items-center gap-2">
-                                    <h4 className="font-medium text-foreground flex items-center gap-2">
-                                      <Settings className="h-4 w-4 text-muted-foreground" />
-                                      <span className="text-foreground">
-                                        Runtime Info
-                                      </span>
-                                    </h4>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-muted-foreground cursor-help" />
-                                      </TooltipTrigger>
-                                      <TooltipContent className="max-w-sm">
-                                        <div className="space-y-2">
-                                          <p className="font-medium">
-                                            Runtime Configuration
-                                          </p>
-                                          <p className="text-sm">
-                                            Shows current runtime configuration:
-                                          </p>
-                                          <ul className="text-sm space-y-1 ml-4">
-                                            <li>
-                                              • Enabled plugins extend RabbitMQ
-                                              functionality
-                                            </li>
-                                            <li>
-                                              • Auth mechanisms available for
-                                              client connections
-                                            </li>
-                                            <li>
-                                              • Exchange types supported by this
-                                              node
-                                            </li>
-                                            <li>
-                                              • Configuration and log file
-                                              counts
-                                            </li>
-                                          </ul>
-                                        </div>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </div>
-                                  <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">
-                                        Enabled Plugins:
-                                      </span>
-                                      <span className="font-mono tabular-nums font-medium text-foreground">
-                                        {node.enabled_plugins?.length || 0}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">
-                                        Auth Mechanisms:
-                                      </span>
-                                      <span className="font-mono tabular-nums font-medium text-foreground">
-                                        {node.auth_mechanisms?.length || 0}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">
-                                        Exchange Types:
-                                      </span>
-                                      <span className="font-medium text-muted-foreground">
-                                        {node.exchange_types?.length || 0}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">
-                                        Config Files:
-                                      </span>
-                                      <span className="font-medium text-muted-foreground">
-                                        {node.config_files?.length || 0}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">
-                                        Log Files:
-                                      </span>
-                                      <span className="font-medium text-muted-foreground">
-                                        {node.log_files?.length || 0}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* Health Status */}
-                                <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
-                                  <div className="flex items-center gap-2">
-                                    <h4 className="font-medium text-foreground flex items-center gap-2">
-                                      <Wifi className="h-4 w-4 text-muted-foreground" />
-                                      <span className="text-foreground">
-                                        Health Status
-                                      </span>
-                                    </h4>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Info className="h-4 w-4 text-muted-foreground hover:text-muted-foreground cursor-help" />
-                                      </TooltipTrigger>
-                                      <TooltipContent className="max-w-sm">
-                                        <div className="space-y-2">
-                                          <p className="font-medium">
-                                            RabbitMQNode Health & Alarms
-                                          </p>
-                                          <p className="text-sm">
-                                            Critical health indicators to
-                                            monitor:
-                                          </p>
-                                          <ul className="text-sm space-y-1 ml-4">
-                                            <li>
-                                              • Running status - node
-                                              operational state
-                                            </li>
-                                            <li>
-                                              • Memory/disk alarms - resource
-                                              warnings
-                                            </li>
-                                            <li>
-                                              • Being drained - maintenance mode
-                                            </li>
-                                            <li>
-                                              • Partitions - network split-brain
-                                              issues
-                                            </li>
-                                          </ul>
-                                        </div>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </div>
-                                  <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">
-                                        Running:
-                                      </span>
-                                      <Badge
-                                        variant={
-                                          node.running
-                                            ? "secondary"
-                                            : "destructive"
-                                        }
-                                        className={
-                                          node.running
-                                            ? "bg-success-muted text-success border-success/30"
-                                            : ""
-                                        }
-                                      >
-                                        {node.running ? "Yes" : "No"}
-                                      </Badge>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">
-                                        Being Drained:
-                                      </span>
-                                      <Badge
-                                        variant={
-                                          node.being_drained
-                                            ? "destructive"
-                                            : "secondary"
-                                        }
-                                        className={
-                                          !node.being_drained
-                                            ? "bg-success-muted text-success border-success/30"
-                                            : ""
-                                        }
-                                      >
-                                        {node.being_drained ? "Yes" : "No"}
-                                      </Badge>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">
-                                        Memory Alarm:
-                                      </span>
-                                      <Badge
-                                        variant={
-                                          node.mem_alarm
-                                            ? "destructive"
-                                            : "secondary"
-                                        }
-                                        className={
-                                          !node.mem_alarm
-                                            ? "bg-success-muted text-success border-success/30"
-                                            : ""
-                                        }
-                                      >
-                                        {node.mem_alarm ? "Active" : "None"}
-                                      </Badge>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">
-                                        Disk Alarm:
-                                      </span>
-                                      <Badge
-                                        variant={
-                                          node.disk_free_alarm
-                                            ? "destructive"
-                                            : "secondary"
-                                        }
-                                        className={
-                                          !node.disk_free_alarm
-                                            ? "bg-success-muted text-success border-success/30"
-                                            : ""
-                                        }
-                                      >
-                                        {node.disk_free_alarm
-                                          ? "Active"
-                                          : "None"}
-                                      </Badge>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">
-                                        Partitions:
-                                      </span>
-                                      <Badge
-                                        variant={
-                                          node.partitions?.length > 0
-                                            ? "destructive"
-                                            : "secondary"
-                                        }
-                                        className={
-                                          (node.partitions?.length || 0) === 0
-                                            ? "bg-success-muted text-success border-success/30"
-                                            : ""
-                                        }
-                                      >
-                                        {node.partitions?.length || 0}
-                                      </Badge>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                            {/* Internal store — secondary diagnostic strip */}
+                            <div className="px-5 py-3 border-t border-border/60 flex flex-wrap gap-x-6 gap-y-1.5">
+                              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest w-full mb-0.5">
+                                Internal store
+                              </p>
+                              <InlineMetric
+                                label="Mnesia RAM"
+                                value={
+                                  node.mnesia_ram_tx_count
+                                    ? formatNumber(node.mnesia_ram_tx_count)
+                                    : "—"
+                                }
+                              />
+                              <InlineMetric
+                                label="Mnesia disk"
+                                value={
+                                  node.mnesia_disk_tx_count
+                                    ? formatNumber(node.mnesia_disk_tx_count)
+                                    : "—"
+                                }
+                              />
+                              <InlineMetric
+                                label="Msg reads"
+                                value={
+                                  node.msg_store_read_count
+                                    ? formatNumber(node.msg_store_read_count)
+                                    : "—"
+                                }
+                              />
+                              <InlineMetric
+                                label="Msg writes"
+                                value={
+                                  node.msg_store_write_count
+                                    ? formatNumber(node.msg_store_write_count)
+                                    : "—"
+                                }
+                              />
+                              <InlineMetric
+                                label="Queue idx R"
+                                value={
+                                  node.queue_index_read_count
+                                    ? formatNumber(node.queue_index_read_count)
+                                    : "—"
+                                }
+                              />
+                              <InlineMetric
+                                label="Queue idx W"
+                                value={
+                                  node.queue_index_write_count
+                                    ? formatNumber(node.queue_index_write_count)
+                                    : "—"
+                                }
+                              />
                             </div>
-                          </TooltipProvider>
+                          </div>
                         </TableCell>
                       </TableRow>
                     )}
