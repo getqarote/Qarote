@@ -17,6 +17,7 @@
   "filterHint": "Prueba ^prod o .*service.* \u2014 regex compatible",
   "filterShortcut": "Pulsa / para filtrar",
   "clearFilter": "Limpiar filtro",
+  "regexInvalid": "Regex no válida — mostrando coincidencias de subcadena",
   "noMatches": "Sin resultados para \u00ab{{query}}\u00bb",
   "shortcuts": {
     "title": "Atajos de teclado",

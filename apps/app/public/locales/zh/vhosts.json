@@ -8,7 +8,8 @@
   "accessDenied": "访问被拒绝。虚拟主机管理仅对管理员开放。",
   "title": "虚拟主机",
   "name": "名称",
-  "usersCol": "用户",
+  "usersCol": "权限",
+  "permissionsColTooltip": "对此虚拟主机具有明确权限的用户",
   "ready": "就绪",
   "unacked": "未确认",
   "total": "总计",
@@ -91,5 +92,7 @@
   "sortAscending": "升序排列",
   "sortDescending": "降序排列",
   "emptyFilterState": "没有虚拟主机匹配此过滤条件",
-  "emptyFilterStateAction": "清除过滤器"
+  "emptyFilterStateAction": "清除过滤器",
+  "noVhostsYet": "尚未配置虚拟主机",
+  "noVhostsDescription": "添加您的第一个虚拟主机，按环境或应用程序隔离 RabbitMQ 资源。"
 }

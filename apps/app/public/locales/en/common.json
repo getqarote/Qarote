@@ -17,6 +17,7 @@
   "filterHint": "Try ^prod or .*service.* \u2014 regex supported",
   "filterShortcut": "Press / to filter",
   "clearFilter": "Clear filter",
+  "regexInvalid": "Invalid regex — showing substring matches",
   "noMatches": "No matches for \"{{query}}\"",
   "shortcuts": {
     "title": "Keyboard shortcuts",

@@ -60,6 +60,7 @@ export default function VHostsPage() {
   const [deleteVHost, setDeleteVHost] = useState<VHostListItem | null>(null);
   const [filterRegex, setFilterRegex] = useState("");
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const filterInputRef = useRef<HTMLInputElement>(null);
 
   const currentServerId = serverId || selectedServerId;
@@ -194,7 +195,11 @@ export default function VHostsPage() {
             {t("pageTitle")}
           </TitleWithCount>
         </div>
-        <AddVirtualHostButton serverId={currentServerId} />
+        <AddVirtualHostButton
+          serverId={currentServerId}
+          open={createOpen}
+          onOpenChange={setCreateOpen}
+        />
       </div>
 
       <RegexFilterInput
@@ -208,8 +213,10 @@ export default function VHostsPage() {
         vhosts={filteredVhosts}
         buildHref={(v) => `/vhosts/${encodeURIComponent(v.name)}`}
         onDelete={(v) => setDeleteVHost(v)}
+        totalCount={vhosts.length}
         filterQuery={filterRegex}
         onClearFilter={() => setFilterRegex("")}
+        onAddFirst={() => setCreateOpen(true)}
       />
 
       {deleteVHost && (

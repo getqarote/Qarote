@@ -8,7 +8,8 @@
   "accessDenied": "Accès refusé. La gestion des hôtes virtuels est réservée aux administrateurs.",
   "title": "Hôtes virtuels",
   "name": "Nom",
-  "usersCol": "Utilisateurs",
+  "usersCol": "Permissions",
+  "permissionsColTooltip": "Utilisateurs avec des permissions explicites sur ce vhost",
   "ready": "Prêt",
   "unacked": "Non acquitté",
   "total": "Total",
@@ -91,5 +92,7 @@
   "sortAscending": "Trié par ordre croissant",
   "sortDescending": "Trié par ordre décroissant",
   "emptyFilterState": "Aucun hôte virtuel ne correspond à ce filtre",
-  "emptyFilterStateAction": "Effacer le filtre"
+  "emptyFilterStateAction": "Effacer le filtre",
+  "noVhostsYet": "Aucun hôte virtuel configuré",
+  "noVhostsDescription": "Ajoutez votre premier hôte virtuel pour isoler les ressources RabbitMQ par environnement ou application."
 }

@@ -8,7 +8,8 @@
   "accessDenied": "Access denied. Virtual host management is only available to administrators.",
   "title": "Virtual Hosts",
   "name": "Name",
-  "usersCol": "Users",
+  "usersCol": "Permissions",
+  "permissionsColTooltip": "Users with explicit permissions on this vhost",
   "ready": "Ready",
   "unacked": "Unacked",
   "total": "Total",
@@ -91,5 +92,7 @@
   "sortAscending": "Sorted ascending",
   "sortDescending": "Sorted descending",
   "emptyFilterState": "No virtual hosts match this filter",
-  "emptyFilterStateAction": "Clear filter"
+  "emptyFilterStateAction": "Clear filter",
+  "noVhostsYet": "No virtual hosts configured",
+  "noVhostsDescription": "Add your first virtual host to isolate RabbitMQ resources by environment or application."
 }

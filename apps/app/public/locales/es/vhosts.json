@@ -8,7 +8,8 @@
   "accessDenied": "Acceso denegado. La administraci\u00f3n de hosts virtuales solo est\u00e1 disponible para administradores.",
   "title": "Hosts virtuales",
   "name": "Nombre",
-  "usersCol": "Usuarios",
+  "usersCol": "Permisos",
+  "permissionsColTooltip": "Usuarios con permisos explícitos en este vhost",
   "ready": "Listos",
   "unacked": "Sin confirmar",
   "total": "Total",
@@ -91,5 +92,7 @@
   "sortAscending": "Orden ascendente",
   "sortDescending": "Orden descendente",
   "emptyFilterState": "Ningún host virtual coincide con este filtro",
-  "emptyFilterStateAction": "Limpiar filtro"
+  "emptyFilterStateAction": "Limpiar filtro",
+  "noVhostsYet": "No hay hosts virtuales configurados",
+  "noVhostsDescription": "Agrega tu primer host virtual para aislar los recursos de RabbitMQ por entorno o aplicación."
 }

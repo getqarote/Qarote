@@ -17,6 +17,7 @@
   "filterHint": "试试 ^prod 或 .*service.* — 支持正则表达式",
   "filterShortcut": "按 / 聚焦筛选框",
   "clearFilter": "清除筛选",
+  "regexInvalid": "正则表达式无效 — 显示子字符串匹配结果",
   "noMatches": "没有匹配\"{{query}}\"的结果",
   "shortcuts": {
     "title": "键盘快捷键",

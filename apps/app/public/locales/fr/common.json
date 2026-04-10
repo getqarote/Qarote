@@ -17,6 +17,7 @@
   "filterHint": "Essayez ^prod ou .*service.* \u2014 regex prise en charge",
   "filterShortcut": "Appuyez sur / pour filtrer",
   "clearFilter": "Effacer le filtre",
+  "regexInvalid": "Regex invalide — affichage des correspondances de sous-chaîne",
   "noMatches": "Aucun r\u00e9sultat pour \u00ab\u202f{{query}}\u202f\u00bb",
   "shortcuts": {
     "title": "Raccourcis clavier",
