@@ -13,5 +13,11 @@
       "runtimeArgs": ["-c", "source ~/.nvm/nvm.sh && nvm use && pnpm --filter @qarote/i18n build && pnpm --filter ./apps/web dev"],
       "port": 4321
     }
+    ,{
+      "name": "mockup",
+      "runtimeExecutable": "/bin/zsh",
+      "runtimeArgs": ["-c", "python3 -m http.server 9090 --directory /tmp"],
+      "port": 9090
+    }
   ]
 }
