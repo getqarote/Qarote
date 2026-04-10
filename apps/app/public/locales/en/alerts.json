@@ -7,6 +7,15 @@
   "notificationSettings": "Notification Settings",
   "activeAlerts": "Active Alerts",
   "resolvedAlerts": "Resolved Alerts",
+  "active": {
+    "noneTitle": "No active alerts",
+    "noneDesc": "Your RabbitMQ cluster is running smoothly with no alerts.",
+    "upgradeTitleWithCount": "You have {{count}} active alert",
+    "upgradeTitleWithCount_other": "You have {{count}} active alerts",
+    "upgradeSubtitle": "Upgrade to view detailed alert information and configure thresholds.",
+    "upgradeHint": "Developer and Enterprise unlock alert details, rules, and notification channels.",
+    "upgradeCta": "Upgrade now"
+  },
   "failedToLoad": "Failed to load alerts data. Please try again.",
   "loadingResolved": "Loading resolved alerts...",
   "failedToLoadResolved": "Failed to load resolved alerts. Please try again.",
@@ -71,6 +80,34 @@
   "rules.toast.createError": "Failed to create alert rule",
   "rules.toast.deleteError": "Failed to delete alert rule",
   "rules.toast.selectServer": "Please select a server first",
+  "rules.searchPlaceholder": "Search rules by name or type...",
+  "rules.actions.edit": "Edit",
+  "rules.actions.delete": "Delete",
+  "rules.badge.default": "Default",
+  "item": {
+    "scope": {
+      "vhost": "vhost: {{vhost}}",
+      "defaultVhost": "Default",
+      "cluster": "cluster"
+    },
+    "detail": {
+      "current": "Current",
+      "threshold": "Threshold",
+      "affected": "Affected",
+      "recommended": "Recommended"
+    },
+    "meta": {
+      "duration": "Duration",
+      "durationHours": "{{count}} hour",
+      "durationHours_other": "{{count}} hours",
+      "durationMinutes": "{{count}} minute",
+      "durationMinutes_other": "{{count}} minutes",
+      "unknown": "Unknown",
+      "firstSeen": "First seen",
+      "resolved": "Resolved",
+      "source": "{{type}}: {{name}}"
+    }
+  },
   "modal": {
     "title": "Alert Notification Settings",
     "description": "Configure email and webhook notifications for new alerts. Select which alert severities you want to receive notifications for.",

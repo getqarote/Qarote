@@ -1,7 +1,8 @@
 import { useTranslation } from "react-i18next";
 
-import { AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 
+import { CleanupRabbit } from "@/components/CleanupRabbit";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PaginationControls } from "@/components/ui/PaginationControls";
 
@@ -73,9 +74,13 @@ export const ResolvedAlertsList = ({
   if (alerts.length === 0) {
     return (
       <div className="text-center py-8">
-        <CheckCircle className="h-12 w-12 mx-auto text-success mb-4" />
+        <div className="text-muted-foreground/70">
+          <CleanupRabbit />
+        </div>
         <h3 className="text-lg font-medium mb-2">{t("noResolvedAlerts")}</h3>
-        <p className="text-muted-foreground">{t("noAlertsResolvedYet")}</p>
+        <p className="text-muted-foreground max-w-md mx-auto">
+          {t("noAlertsResolvedYet")}
+        </p>
       </div>
     );
   }
@@ -86,14 +91,16 @@ export const ResolvedAlertsList = ({
         <AlertItem key={alert.id} alert={alert} isResolved={true} />
       ))}
 
-      <PaginationControls
-        total={total}
-        page={page}
-        pageSize={pageSize}
-        onPageChange={onPageChange}
-        onPageSizeChange={onPageSizeChange}
-        itemLabel={t("resolvedAlertsLabel")}
-      />
+      {total > pageSize && (
+        <PaginationControls
+          total={total}
+          page={page}
+          pageSize={pageSize}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+          itemLabel={t("resolvedAlertsLabel")}
+        />
+      )}
     </div>
   );
 };

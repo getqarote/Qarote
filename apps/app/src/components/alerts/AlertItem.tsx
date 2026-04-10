@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { CheckCircle } from "lucide-react";
 
 import {
@@ -44,13 +46,15 @@ interface ResolvedAlertItem {
 }
 
 export const AlertItem = ({ alert, isResolved = false }: AlertItemProps) => {
+  const { t } = useTranslation("alerts");
   const severity = alert.severity as RabbitMQAlertSeverity;
   const category = alert.category as RabbitMQAlertCategory;
+  const hasDetails = !!alert.details;
 
   return (
     <div
       className={`flex items-start gap-4 p-4 border rounded-lg ${
-        isResolved ? "bg-muted/50" : ""
+        isResolved ? "bg-muted/30" : ""
       }`}
     >
       <div className="shrink-0 mt-1">
@@ -61,10 +65,10 @@ export const AlertItem = ({ alert, isResolved = false }: AlertItemProps) => {
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h4 className="font-medium">{alert.title}</h4>
+              <h4 className="font-medium leading-snug">{alert.title}</h4>
               <Badge variant={getSeverityBadgeVariant(severity)}>
                 {alert.severity}
               </Badge>
@@ -82,7 +86,12 @@ export const AlertItem = ({ alert, isResolved = false }: AlertItemProps) => {
                       variant="secondary"
                       className="flex items-center gap-1"
                     >
-                      vhost: {alert.vhost === "/" ? "Default" : alert.vhost}
+                      {t("item.scope.vhost", {
+                        vhost:
+                          alert.vhost === "/"
+                            ? t("item.scope.defaultVhost")
+                            : alert.vhost,
+                      })}
                     </Badge>
                   );
                 } else if (
@@ -94,7 +103,7 @@ export const AlertItem = ({ alert, isResolved = false }: AlertItemProps) => {
                       variant="secondary"
                       className="flex items-center gap-1"
                     >
-                      cluster
+                      {t("item.scope.cluster")}
                     </Badge>
                   );
                 }
@@ -104,29 +113,59 @@ export const AlertItem = ({ alert, isResolved = false }: AlertItemProps) => {
             <p className="text-sm text-muted-foreground mb-2">
               {alert.description}
             </p>
-            {alert.details && (
-              <div className="text-xs text-muted-foreground space-y-1">
-                {alert.details.current !== undefined && (
-                  <div>Current: {String(alert.details.current)}</div>
-                )}
-                {alert.details.threshold !== undefined && (
-                  <div>Threshold: {String(alert.details.threshold)}</div>
-                )}
-                {alert.details.recommended && (
-                  <div>Recommended: {String(alert.details.recommended)}</div>
-                )}
-                {alert.details.affected &&
-                  Array.isArray(alert.details.affected) &&
-                  alert.details.affected.length > 0 && (
-                    <div>Affected: {alert.details.affected.join(", ")}</div>
+            {hasDetails && (
+              <div className="mt-3 rounded-md border bg-background/40 p-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  {alert.details?.current !== undefined && (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-muted-foreground">
+                        {t("item.detail.current")}
+                      </span>
+                      <span className="font-mono tabular-nums text-foreground">
+                        {String(alert.details.current)}
+                      </span>
+                    </div>
                   )}
+                  {alert.details?.threshold !== undefined && (
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-muted-foreground">
+                        {t("item.detail.threshold")}
+                      </span>
+                      <span className="font-mono tabular-nums text-foreground">
+                        {String(alert.details.threshold)}
+                      </span>
+                    </div>
+                  )}
+                  {alert.details?.affected &&
+                    Array.isArray(alert.details.affected) &&
+                    alert.details.affected.length > 0 && (
+                      <div className="sm:col-span-2 flex items-start justify-between gap-2">
+                        <span className="text-muted-foreground">
+                          {t("item.detail.affected")}
+                        </span>
+                        <span className="text-foreground text-right">
+                          {alert.details.affected.join(", ")}
+                        </span>
+                      </div>
+                    )}
+                </div>
+                {alert.details?.recommended && (
+                  <div className="mt-2 text-xs">
+                    <span className="text-muted-foreground">
+                      {t("item.detail.recommended")}
+                    </span>
+                    <p className="text-foreground mt-1">
+                      {String(alert.details.recommended)}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
             {isResolved && "firstSeenAt" in alert && alert.firstSeenAt && (
               <div className="mt-2 text-xs text-muted-foreground">
                 {alert.duration && (
                   <div>
-                    Duration:{" "}
+                    {t("item.meta.duration")}:{" "}
                     {(() => {
                       const durationMinutes = alert.duration
                         ? Math.round(alert.duration / 1000 / 60)
@@ -135,28 +174,36 @@ export const AlertItem = ({ alert, isResolved = false }: AlertItemProps) => {
                         ? Math.round(durationMinutes / 60)
                         : null;
                       return durationHours
-                        ? `${durationHours} hour${durationHours > 1 ? "s" : ""}`
+                        ? t("item.meta.durationHours", { count: durationHours })
                         : durationMinutes
-                          ? `${durationMinutes} minute${durationMinutes > 1 ? "s" : ""}`
-                          : "Unknown";
+                          ? t("item.meta.durationMinutes", {
+                              count: durationMinutes,
+                            })
+                          : t("item.meta.unknown");
                     })()}
                   </div>
                 )}
-                <div>First seen: {formatTimestamp(alert.firstSeenAt)}</div>
+                <div>
+                  {t("item.meta.firstSeen")}:{" "}
+                  {formatTimestamp(alert.firstSeenAt)}
+                </div>
               </div>
             )}
           </div>
           <div className="shrink-0 text-right">
             <div className="text-xs text-muted-foreground">
               {isResolved && "resolvedAt" in alert && alert.resolvedAt
-                ? `Resolved: ${formatTimestamp(alert.resolvedAt)}`
+                ? `${t("item.meta.resolved")}: ${formatTimestamp(alert.resolvedAt)}`
                 : "timestamp" in alert && alert.timestamp
                   ? formatTimestamp(alert.timestamp)
                   : ""}
             </div>
             {alert.source && (
               <div className="text-xs text-muted-foreground mt-1">
-                {alert.source.type}: {alert.source.name}
+                {t("item.meta.source", {
+                  type: alert.source.type,
+                  name: alert.source.name,
+                })}
               </div>
             )}
           </div>

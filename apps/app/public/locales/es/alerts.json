@@ -7,6 +7,15 @@
   "notificationSettings": "Configuración de notificaciones",
   "activeAlerts": "Alertas activas",
   "resolvedAlerts": "Alertas resueltas",
+  "active": {
+    "noneTitle": "Sin alertas activas",
+    "noneDesc": "Tu clúster de RabbitMQ está funcionando sin alertas.",
+    "upgradeTitleWithCount": "Tienes {{count}} alerta activa",
+    "upgradeTitleWithCount_other": "Tienes {{count}} alertas activas",
+    "upgradeSubtitle": "Actualiza para ver detalles de alertas y configurar umbrales.",
+    "upgradeHint": "Developer y Enterprise desbloquean detalles, reglas y canales de notificación.",
+    "upgradeCta": "Actualizar ahora"
+  },
   "failedToLoad": "No se pudieron cargar los datos de alertas. Por favor inténtalo de nuevo.",
   "loadingResolved": "Cargando alertas resueltas...",
   "failedToLoadResolved": "No se pudieron cargar las alertas resueltas. Por favor inténtalo de nuevo.",
@@ -71,6 +80,34 @@
   "rules.toast.createError": "Error al crear la regla de alerta",
   "rules.toast.deleteError": "Error al eliminar la regla de alerta",
   "rules.toast.selectServer": "Por favor selecciona un servidor primero",
+  "rules.searchPlaceholder": "Buscar reglas por nombre o tipo...",
+  "rules.actions.edit": "Editar",
+  "rules.actions.delete": "Eliminar",
+  "rules.badge.default": "Predeterminada",
+  "item": {
+    "scope": {
+      "vhost": "vhost: {{vhost}}",
+      "defaultVhost": "Predeterminado",
+      "cluster": "clúster"
+    },
+    "detail": {
+      "current": "Actual",
+      "threshold": "Umbral",
+      "affected": "Afectado",
+      "recommended": "Recomendado"
+    },
+    "meta": {
+      "duration": "Duración",
+      "durationHours": "{{count}} hora",
+      "durationHours_other": "{{count}} horas",
+      "durationMinutes": "{{count}} minuto",
+      "durationMinutes_other": "{{count}} minutos",
+      "unknown": "Desconocido",
+      "firstSeen": "Visto por primera vez",
+      "resolved": "Resuelto",
+      "source": "{{type}}: {{name}}"
+    }
+  },
   "modal": {
     "title": "Configuración de notificaciones de alertas",
     "description": "Configura las notificaciones por correo electrónico y webhook para nuevas alertas. Selecciona los niveles de gravedad para los que deseas recibir notificaciones.",

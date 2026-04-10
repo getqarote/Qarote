@@ -7,6 +7,15 @@
   "notificationSettings": "Paramètres de notification",
   "activeAlerts": "Alertes actives",
   "resolvedAlerts": "Alertes résolues",
+  "active": {
+    "noneTitle": "Aucune alerte active",
+    "noneDesc": "Votre cluster RabbitMQ fonctionne sans alerte.",
+    "upgradeTitleWithCount": "Vous avez {{count}} alerte active",
+    "upgradeTitleWithCount_other": "Vous avez {{count}} alertes actives",
+    "upgradeSubtitle": "Passez à une offre supérieure pour voir les détails et configurer les seuils.",
+    "upgradeHint": "Developer et Enterprise débloquent les détails, les règles et les canaux de notification.",
+    "upgradeCta": "Mettre à niveau"
+  },
   "failedToLoad": "Échec du chargement des données d'alertes. Veuillez réessayer.",
   "loadingResolved": "Chargement des alertes résolues...",
   "failedToLoadResolved": "Échec du chargement des alertes résolues. Veuillez réessayer.",
@@ -71,6 +80,34 @@
   "rules.toast.createError": "Échec de la création de la règle d'alerte",
   "rules.toast.deleteError": "Échec de la suppression de la règle d'alerte",
   "rules.toast.selectServer": "Veuillez d'abord sélectionner un serveur",
+  "rules.searchPlaceholder": "Rechercher des règles par nom ou type...",
+  "rules.actions.edit": "Modifier",
+  "rules.actions.delete": "Supprimer",
+  "rules.badge.default": "Par défaut",
+  "item": {
+    "scope": {
+      "vhost": "vhost : {{vhost}}",
+      "defaultVhost": "Par défaut",
+      "cluster": "cluster"
+    },
+    "detail": {
+      "current": "Actuel",
+      "threshold": "Seuil",
+      "affected": "Affecté",
+      "recommended": "Recommandé"
+    },
+    "meta": {
+      "duration": "Durée",
+      "durationHours": "{{count}} heure",
+      "durationHours_other": "{{count}} heures",
+      "durationMinutes": "{{count}} minute",
+      "durationMinutes_other": "{{count}} minutes",
+      "unknown": "Inconnu",
+      "firstSeen": "Vu pour la première fois",
+      "resolved": "Résolu",
+      "source": "{{type}} : {{name}}"
+    }
+  },
   "modal": {
     "title": "Paramètres de notification d'alertes",
     "description": "Configurez les notifications par e-mail et webhook pour les nouvelles alertes. Sélectionnez les niveaux de gravité pour lesquels vous souhaitez recevoir des notifications.",

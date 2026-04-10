@@ -7,6 +7,15 @@
   "notificationSettings": "通知设置",
   "activeAlerts": "活跃告警",
   "resolvedAlerts": "已解决告警",
+  "active": {
+    "noneTitle": "暂无活跃告警",
+    "noneDesc": "你的 RabbitMQ 集群运行正常，没有告警。",
+    "upgradeTitleWithCount": "你有 {{count}} 条活跃告警",
+    "upgradeTitleWithCount_other": "你有 {{count}} 条活跃告警",
+    "upgradeSubtitle": "升级后可查看告警详情并配置阈值。",
+    "upgradeHint": "Developer 与 Enterprise 解锁告警详情、规则与通知渠道。",
+    "upgradeCta": "立即升级"
+  },
   "failedToLoad": "加载告警数据失败，请重试。",
   "loadingResolved": "正在加载已解决的告警...",
   "failedToLoadResolved": "加载已解决的告警失败，请重试。",
@@ -71,6 +80,34 @@
   "rules.toast.createError": "告警规则创建失败",
   "rules.toast.deleteError": "告警规则删除失败",
   "rules.toast.selectServer": "请先选择一个服务器",
+  "rules.searchPlaceholder": "按名称或类型搜索规则...",
+  "rules.actions.edit": "编辑",
+  "rules.actions.delete": "删除",
+  "rules.badge.default": "默认",
+  "item": {
+    "scope": {
+      "vhost": "vhost：{{vhost}}",
+      "defaultVhost": "默认",
+      "cluster": "集群"
+    },
+    "detail": {
+      "current": "当前值",
+      "threshold": "阈值",
+      "affected": "影响范围",
+      "recommended": "建议"
+    },
+    "meta": {
+      "duration": "持续时间",
+      "durationHours": "{{count}} 小时",
+      "durationHours_other": "{{count}} 小时",
+      "durationMinutes": "{{count}} 分钟",
+      "durationMinutes_other": "{{count}} 分钟",
+      "unknown": "未知",
+      "firstSeen": "首次出现",
+      "resolved": "已解决",
+      "source": "{{type}}：{{name}}"
+    }
+  },
   "modal": {
     "title": "告警通知设置",
     "description": "配置新告警的电子邮件和 Webhook 通知。选择您希望接收通知的告警严重级别。",

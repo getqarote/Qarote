@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useSearchParams } from "react-router";
 
@@ -49,21 +49,21 @@ const Alerts = () => {
     useState(false);
   const [showAlertRulesModal, setShowAlertRulesModal] = useState(false);
 
-  // Open notification settings from query param only for admins.
-  // Wait for user context to hydrate so isAdmin is accurate before evaluating
-  // the deep-link param; also cleans up the param from the URL here so a
-  // separate cleanup effect is not needed.
+  const shouldOpenNotificationSettingsFromUrl = useMemo(() => {
+    if (isUserLoading) return false;
+    if (!isAdmin) return false;
+    return searchParams.get("openNotificationSettings") === "true";
+  }, [isAdmin, isUserLoading, searchParams]);
+
+  // Clean up deep-link param from the URL (opening is derived — no setState).
   useEffect(() => {
-    const shouldOpen = searchParams.get("openNotificationSettings") === "true";
-    if (isUserLoading || !shouldOpen) return;
-
-    if (isAdmin) {
-      setShowNotificationSettingsModal(true);
-    }
-
+    if (!shouldOpenNotificationSettingsFromUrl) return;
     searchParams.delete("openNotificationSettings");
     setSearchParams(searchParams, { replace: true });
-  }, [isAdmin, isUserLoading, searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, shouldOpenNotificationSettingsFromUrl]);
+
+  const isNotificationSettingsOpen =
+    showNotificationSettingsModal || shouldOpenNotificationSettingsFromUrl;
   const [viewMode, setViewMode] = useState<"active" | "resolved">("active");
 
   // Pagination state for Active Alerts
@@ -320,7 +320,7 @@ const Alerts = () => {
       {/* Notification Settings Modal */}
       {isAdmin && (
         <AlertNotificationSettingsModal
-          isOpen={showNotificationSettingsModal}
+          isOpen={isNotificationSettingsOpen}
           onClose={() => setShowNotificationSettingsModal(false)}
         />
       )}

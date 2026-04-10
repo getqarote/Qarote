@@ -53,12 +53,19 @@ interface AlertNotificationSettingsModalProps {
   onClose: () => void;
 }
 
+const EMPTY_SERVERS: Array<{
+  id: string;
+  name: string;
+  host: string;
+  port: number;
+}> = [];
+
 function StatusDot({ enabled }: { enabled: boolean }) {
   return (
     <span
       aria-hidden="true"
       className={`h-2 w-2 rounded-full shrink-0 ${
-        enabled ? "bg-success-muted0" : "bg-muted-foreground/30"
+        enabled ? "bg-success" : "bg-muted-foreground/30"
       }`}
     />
   );
@@ -107,7 +114,7 @@ export function AlertNotificationSettingsModal({
 
   // Query for servers
   const { data: serversData } = useServers();
-  const servers = serversData?.servers || [];
+  const servers = serversData?.servers ?? EMPTY_SERVERS;
 
   // Get selected server objects
   const selectedServers = useMemo(() => {
@@ -190,7 +197,7 @@ export function AlertNotificationSettingsModal({
       }, 200);
       return () => clearTimeout(timeoutId);
     }
-  }, [settingsData, workspace?.contactEmail]);
+  }, [settingsData, user?.email, workspace?.contactEmail]);
 
   // Update webhook fields from first webhook
   useEffect(() => {
@@ -266,12 +273,14 @@ export function AlertNotificationSettingsModal({
         skipValidation?: boolean;
         onlyBrowserNotifications?: boolean;
         onlyEmailNotifications?: boolean;
+        silent?: boolean;
       } = {}
     ) => {
       const {
         skipValidation = false,
         onlyBrowserNotifications = false,
         onlyEmailNotifications = false,
+        silent = false,
       } = options;
       const currentEnabled = emailNotificationsEnabledRef.current;
       const currentEmail = contactEmailRef.current;
@@ -337,7 +346,9 @@ export function AlertNotificationSettingsModal({
 
       updateSettingsMutation.mutate(updatePayload, {
         onSuccess: () => {
-          toast.success(t("modal.toastSettingsUpdated"));
+          if (!silent) {
+            toast.success(t("modal.toastSettingsUpdated"));
+          }
         },
         onError: (error: ApiError) => {
           const errorMessage =
@@ -347,7 +358,7 @@ export function AlertNotificationSettingsModal({
         },
       });
     },
-    [updateSettingsMutation]
+    [notificationServerIds, t, updateSettingsMutation]
   );
 
   // Auto-save when email notifications toggle changes
@@ -357,6 +368,7 @@ export function AlertNotificationSettingsModal({
       autoSaveSettings({
         skipValidation: !emailNotificationsEnabled,
         onlyEmailNotifications: true,
+        silent: true,
       });
     }, 100);
     return () => clearTimeout(timeoutId);
@@ -368,7 +380,7 @@ export function AlertNotificationSettingsModal({
     if (isInitialMount.current) return;
     const timeoutId = setTimeout(() => {
       if (emailNotificationsEnabled) {
-        autoSaveSettings({ onlyEmailNotifications: true });
+        autoSaveSettings({ onlyEmailNotifications: true, silent: true });
       }
     }, 100);
     return () => clearTimeout(timeoutId);
@@ -380,7 +392,7 @@ export function AlertNotificationSettingsModal({
     if (isInitialMount.current) return;
     const timeoutId = setTimeout(() => {
       if (emailNotificationsEnabled) {
-        autoSaveSettings({ onlyEmailNotifications: true });
+        autoSaveSettings({ onlyEmailNotifications: true, silent: true });
       }
     }, 100);
     return () => clearTimeout(timeoutId);
@@ -394,6 +406,7 @@ export function AlertNotificationSettingsModal({
       autoSaveSettings({
         skipValidation: !browserNotificationsEnabled,
         onlyBrowserNotifications: true,
+        silent: true,
       });
     }, 100);
     return () => clearTimeout(timeoutId);
@@ -405,7 +418,7 @@ export function AlertNotificationSettingsModal({
     if (isInitialMount.current) return;
     const timeoutId = setTimeout(() => {
       if (browserNotificationsEnabled) {
-        autoSaveSettings({ onlyBrowserNotifications: true });
+        autoSaveSettings({ onlyBrowserNotifications: true, silent: true });
       }
     }, 100);
     return () => clearTimeout(timeoutId);

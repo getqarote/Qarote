@@ -6,6 +6,7 @@ import {
   CheckCircle,
   Loader2,
   Plus,
+  Search,
   Settings,
   Trash2,
   XCircle,
@@ -50,6 +51,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import { useServerContext } from "@/contexts/ServerContext";
 
@@ -329,6 +335,7 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
   const [editingRule, setEditingRule] = useState<AlertRule | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [ruleToDelete, setRuleToDelete] = useState<AlertRule | null>(null);
+  const [query, setQuery] = useState("");
 
   const { data: alertRules, isLoading } = useAlertRules();
   const deleteMutation = useDeleteAlertRule();
@@ -401,8 +408,19 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
     }
   };
 
-  const filteredRules =
-    alertRules?.filter((rule) => rule.serverId === selectedServerId) || [];
+  const filteredRules = (
+    alertRules?.filter((rule) => rule.serverId === selectedServerId) || []
+  ).filter((rule) => {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    const typeLabel =
+      ALERT_TYPE_KEYS.find((at) => at.value === rule.type)?.key ?? rule.type;
+    return (
+      rule.name.toLowerCase().includes(q) ||
+      rule.type.toLowerCase().includes(q) ||
+      t(typeLabel).toLowerCase().includes(q)
+    );
+  });
 
   return (
     <>
@@ -448,6 +466,17 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
               </div>
             ) : (
               <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Input
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      placeholder={t("rules.searchPlaceholder")}
+                      className="pl-9"
+                    />
+                  </div>
+                </div>
                 {filteredRules.map((rule) => (
                   <div
                     key={rule.id}
@@ -469,6 +498,11 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
                           >
                             <XCircle className="h-3 w-3 mr-1" />
                             {t("rules.badge.disabled")}
+                          </Badge>
+                        )}
+                        {rule.isDefault && (
+                          <Badge variant="secondary">
+                            {t("rules.badge.default")}
                           </Badge>
                         )}
                       </div>
@@ -513,22 +547,47 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(rule)}
-                      >
-                        <Settings className="h-4 w-4" />
-                      </Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(rule)}
+                            aria-label={t("rules.actions.edit")}
+                          >
+                            <Settings className="h-4 w-4" aria-hidden="true" />
+                            <span className="hidden sm:inline ml-2">
+                              {t("rules.actions.edit")}
+                            </span>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {t("rules.actions.edit")}
+                        </TooltipContent>
+                      </Tooltip>
                       {!rule.isDefault && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteClick(rule)}
-                          disabled={deleteMutation.isPending}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteClick(rule)}
+                              disabled={deleteMutation.isPending}
+                              aria-label={t("rules.actions.delete")}
+                            >
+                              <Trash2
+                                className="h-4 w-4 text-destructive"
+                                aria-hidden="true"
+                              />
+                              <span className="hidden sm:inline ml-2 text-destructive">
+                                {t("rules.actions.delete")}
+                              </span>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {t("rules.actions.delete")}
+                          </TooltipContent>
+                        </Tooltip>
                       )}
                     </div>
                   </div>

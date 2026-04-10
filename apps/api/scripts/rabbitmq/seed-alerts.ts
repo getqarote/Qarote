@@ -12,6 +12,8 @@
  *   tsx scripts/rabbitmq/generate-alerts.ts no-consumer 500
  */
 
+import { fileURLToPath } from "node:url";
+
 import amqp from "amqplib";
 
 class AlertGenerator {
@@ -276,7 +278,10 @@ process.on("SIGINT", () => {
   process.exit(0);
 });
 
-if (require.main === module) {
+const isDirectRun =
+  process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
+
+if (isDirectRun) {
   main().catch((error) => {
     console.error("💥 Unhandled error:", error);
     process.exit(1);
