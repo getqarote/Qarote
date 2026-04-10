@@ -10,6 +10,8 @@
   "name": "名称",
   "usersCol": "权限",
   "permissionsColTooltip": "对此虚拟主机具有明确权限的用户",
+  "permissionsCount_one": "{{count}} 个用户",
+  "permissionsCount_other": "{{count}} 个用户",
   "ready": "就绪",
   "unacked": "未确认",
   "total": "总计",

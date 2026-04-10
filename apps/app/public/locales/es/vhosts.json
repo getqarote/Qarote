@@ -10,6 +10,8 @@
   "name": "Nombre",
   "usersCol": "Permisos",
   "permissionsColTooltip": "Usuarios con permisos explícitos en este vhost",
+  "permissionsCount_one": "{{count}} usuario",
+  "permissionsCount_other": "{{count}} usuarios",
   "ready": "Listos",
   "unacked": "Sin confirmar",
   "total": "Total",
