@@ -17,6 +17,10 @@
 }
 
 @theme {
+  /* Heading font: Bricolage Grotesque variable — H1 page titles and H2
+     section headers. The optical-size axis (opsz 12–96) sharpens detail
+     at display sizes and softens it at small sizes automatically. */
+  --font-heading: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
   /* UI font: system-native first (SF Pro on macOS, Segoe UI on Windows,
      Cantarell/Ubuntu/DejaVu on Linux). No external web font request — respects
      the self-hosted ethos and ships zero bytes. Arial is kept only as a late
@@ -25,9 +29,8 @@
     ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
     Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
     "Noto Color Emoji";
-  /* Numeric font: Fragment Mono is the aspirational first choice but is not
-     currently loaded — falls through to the system monospace, which is high
-     quality on all platforms. Used for all numeric data. */
+  /* Numeric font: Fragment Mono — loaded via Google Fonts. Used for all
+     metric numbers, queue depths, rates, IDs, routing keys, and code. */
   --font-mono:
     "Fragment Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco,
     Consolas, "Liberation Mono", "Courier New", monospace;
@@ -98,11 +101,15 @@
   --backdrop-blur-dialog: 2px;
 
   --animate-rabbit-bounce: rabbit-bounce 2s ease-in-out infinite;
+  --animate-rabbit-bob: rabbit-bob 2.6s ease-in-out infinite;
   --animate-ear-twitch-left: ear-twitch-left 4s ease-in-out infinite;
   --animate-ear-twitch-right: ear-twitch-right 4s ease-in-out infinite 0.5s;
   --animate-blink: blink 5s ease-in-out infinite;
   --animate-blink-delayed: blink 5s ease-in-out infinite 0.15s;
   --animate-nose-wiggle: nose-wiggle 1.5s ease-in-out infinite;
+  --animate-broom-swish: broom-swish 3.5s ease-in-out infinite;
+  --animate-dust-fade: dust-fade 3.5s ease-in-out infinite;
+  --animate-badge-pop: badge-pop 3s ease-in-out infinite;
 
   @keyframes rabbit-bounce {
     0%,
@@ -111,6 +118,15 @@
     }
     50% {
       transform: translateY(-12px);
+    }
+  }
+  @keyframes rabbit-bob {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
     }
   }
   @keyframes ear-twitch-left {
@@ -162,6 +178,54 @@
     }
     75% {
       transform: scale(1.1, 0.95);
+    }
+  }
+
+  @keyframes broom-swish {
+    0%,
+    75%,
+    100% {
+      transform: rotate(0deg) translateY(0);
+    }
+    82% {
+      transform: rotate(-10deg) translateY(-1px);
+    }
+    90% {
+      transform: rotate(6deg) translateY(0);
+    }
+  }
+
+  @keyframes dust-fade {
+    0%,
+    75%,
+    100% {
+      opacity: 0;
+      transform: translateX(0) translateY(0) scale(1);
+    }
+    82% {
+      opacity: 0.7;
+      transform: translateX(-4px) translateY(-2px) scale(1.05);
+    }
+    90% {
+      opacity: 0;
+      transform: translateX(-8px) translateY(-4px) scale(0.98);
+    }
+  }
+
+  @keyframes badge-pop {
+    0%,
+    70%,
+    100% {
+      transform: scale(1);
+    }
+    78% {
+      transform: scale(1.08);
+    }
+    84% {
+      transform: scale(0.98);
+    }
+    90% {
+      transform: scale(1);
     }
   }
 
@@ -263,12 +327,18 @@
 
 @utility title-page {
   /* Quieter: solid foreground, weight carries hierarchy. The brand gradient
-     is reserved for the wordmark only (title-gradient utility). */
-  @apply text-3xl font-semibold text-foreground tracking-tight;
+     is reserved for the wordmark only (title-gradient utility).
+     Bricolage Grotesque with optical sizing active — opsz auto sharpens
+     letterforms at the 30px display size used here. */
+  @apply text-3xl font-bold text-foreground tracking-tight;
+  font-family: var(--font-heading);
+  font-optical-sizing: auto;
 }
 
 @utility title-section {
   @apply text-xl font-semibold text-foreground tracking-tight;
+  font-family: var(--font-heading);
+  font-optical-sizing: auto;
 }
 
 @utility main-content {

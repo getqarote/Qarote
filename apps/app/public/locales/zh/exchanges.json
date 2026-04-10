@@ -30,6 +30,7 @@
   "vhost": "虚拟主机",
   "policy": "策略",
   "arguments": "参数",
+  "lastActionBy": "最后操作者",
   "bindings": "绑定",
   "messagesPublishedIn": "已发布入站消息",
   "messagesPublishedOut": "已发布出站消息",

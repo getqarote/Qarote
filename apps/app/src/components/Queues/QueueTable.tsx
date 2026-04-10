@@ -151,7 +151,9 @@ export function QueueTable({
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Users className="w-3 h-3 text-muted-foreground" />
-                          {metrics.consumers}
+                          <span className="font-mono tabular-nums">
+                            {metrics.consumers}
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell className="font-mono">

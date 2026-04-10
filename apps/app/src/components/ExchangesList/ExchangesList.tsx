@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 
 import { Activity, Shuffle } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { ExchangeRow } from "./ExchangeRow";
@@ -67,47 +66,52 @@ export function ExchangesList({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <CardTitle className="title-section flex items-center gap-2">
-            <Shuffle className="h-5 w-5" aria-hidden="true" />
-            {t("exchangesTitle")}
-          </CardTitle>
-          <ExchangeTypeFilter
-            value={typeFilter}
-            onChange={onTypeFilterChange}
-          />
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="flex items-center justify-between gap-4 px-4 py-3 border-b border-border">
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          <Shuffle className="h-4 w-4" aria-hidden="true" />
+          {t("exchangesTitle")}
         </div>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full rounded-lg" />
-            ))}
-          </div>
-        ) : exchanges.length === 0 ? (
-          <EmptyState typeFilter={typeFilter} />
-        ) : (
-          <div className="space-y-4">
-            {exchanges.map((exchange) => {
-              const key = exchangeKey(exchange);
-              return (
-                <ExchangeRow
-                  key={key}
-                  exchange={exchange}
-                  isOpen={expandedKeys.has(key)}
-                  onOpenChange={(open) => toggleExpanded(key, open)}
-                  onDelete={onDelete ? () => onDelete(exchange) : undefined}
-                  isDeleting={isDeleting}
-                />
-              );
-            })}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+        <ExchangeTypeFilter value={typeFilter} onChange={onTypeFilterChange} />
+      </div>
+
+      {isLoading ? (
+        <div className="divide-y divide-border">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between px-4 py-4"
+            >
+              <div className="flex items-center gap-4">
+                <Skeleton className="h-4 w-4 rounded" />
+                <Skeleton className="h-4 w-44" />
+                <Skeleton className="h-5 w-14 rounded-full" />
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </div>
+              <Skeleton className="h-4 w-20" />
+            </div>
+          ))}
+        </div>
+      ) : exchanges.length === 0 ? (
+        <EmptyState typeFilter={typeFilter} />
+      ) : (
+        <div className="divide-y divide-border">
+          {exchanges.map((exchange) => {
+            const key = exchangeKey(exchange);
+            return (
+              <ExchangeRow
+                key={key}
+                exchange={exchange}
+                isOpen={expandedKeys.has(key)}
+                onOpenChange={(open) => toggleExpanded(key, open)}
+                onDelete={onDelete ? () => onDelete(exchange) : undefined}
+                isDeleting={isDeleting}
+              />
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 

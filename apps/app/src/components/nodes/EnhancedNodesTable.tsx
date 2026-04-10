@@ -364,12 +364,12 @@ export const EnhancedNodesTable = ({
                       <TableCell>
                         <div className="space-y-1">
                           <div className="flex items-center justify-between text-sm">
-                            <span>
+                            <span className="font-mono tabular-nums">
                               {node.mem_used
                                 ? formatBytes(node.mem_used)
                                 : "N/A"}
                             </span>
-                            <span className="text-muted-foreground">
+                            <span className="font-mono tabular-nums text-muted-foreground">
                               /{" "}
                               {node.mem_limit
                                 ? formatBytes(node.mem_limit)
@@ -392,7 +392,7 @@ export const EnhancedNodesTable = ({
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="font-mono tabular-nums">
                         {node.disk_free ? formatBytes(node.disk_free) : "N/A"}
                       </TableCell>
                       <TableCell>
@@ -407,20 +407,20 @@ export const EnhancedNodesTable = ({
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 text-sm">
                             <HardDrive className="w-3 h-3 text-muted-foreground" />
-                            <span className="text-xs font-medium text-foreground">
+                            <span className="text-xs font-mono tabular-nums font-medium text-foreground">
                               R:{" "}
                               {node.io_read_count
                                 ? formatNumber(node.io_read_count)
                                 : "N/A"}
                             </span>
-                            <span className="text-xs font-medium text-foreground">
+                            <span className="text-xs font-mono tabular-nums font-medium text-foreground">
                               W:{" "}
                               {node.io_write_count
                                 ? formatNumber(node.io_write_count)
                                 : "N/A"}
                             </span>
                           </div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-xs text-muted-foreground font-mono tabular-nums">
                             <span className="text-muted-foreground">
                               {node.io_read_count_details?.rate
                                 ? formatRate(node.io_read_count_details.rate)
@@ -439,7 +439,7 @@ export const EnhancedNodesTable = ({
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 text-sm">
                             <Users className="w-3 h-3 text-muted-foreground" />
-                            <span className="font-medium text-foreground">
+                            <span className="font-mono tabular-nums font-medium text-foreground">
                               {node.connection_created
                                 ? formatNumber(node.connection_created)
                                 : "N/A"}
@@ -447,7 +447,7 @@ export const EnhancedNodesTable = ({
                           </div>
                           <div className="text-xs text-muted-foreground">
                             Active:{" "}
-                            <span className="text-muted-foreground font-medium">
+                            <span className="font-mono tabular-nums text-muted-foreground font-medium">
                               {node.sockets_used
                                 ? formatNumber(node.sockets_used)
                                 : "N/A"}
@@ -458,8 +458,10 @@ export const EnhancedNodesTable = ({
                       <TableCell>
                         <div className="space-y-1">
                           <div className="flex items-center justify-between text-sm">
-                            <span>{node.fd_used ? node.fd_used : "N/A"}</span>
-                            <span className="text-muted-foreground">
+                            <span className="font-mono tabular-nums">
+                              {node.fd_used ? node.fd_used : "N/A"}
+                            </span>
+                            <span className="font-mono tabular-nums text-muted-foreground">
                               / {node.fd_total ? node.fd_total : "N/A"}
                             </span>
                           </div>
@@ -531,7 +533,7 @@ export const EnhancedNodesTable = ({
                                     <span className="text-muted-foreground">
                                       Used:
                                     </span>
-                                    <span className="font-medium text-foreground">
+                                    <span className="font-mono tabular-nums font-medium text-foreground">
                                       {node.mem_used
                                         ? formatBytes(node.mem_used)
                                         : "N/A"}
@@ -541,7 +543,7 @@ export const EnhancedNodesTable = ({
                                     <span className="text-muted-foreground">
                                       Limit:
                                     </span>
-                                    <span className="font-medium">
+                                    <span className="font-mono tabular-nums font-medium">
                                       {node.mem_limit
                                         ? formatBytes(node.mem_limit)
                                         : "N/A"}
@@ -620,7 +622,7 @@ export const EnhancedNodesTable = ({
                                     <span className="text-muted-foreground">
                                       Read Ops:
                                     </span>
-                                    <span className="font-medium text-foreground">
+                                    <span className="font-mono tabular-nums font-medium text-foreground">
                                       {node.io_read_count
                                         ? formatNumber(node.io_read_count)
                                         : "N/A"}
@@ -630,7 +632,7 @@ export const EnhancedNodesTable = ({
                                     <span className="text-muted-foreground">
                                       Write Ops:
                                     </span>
-                                    <span className="font-medium text-foreground">
+                                    <span className="font-mono tabular-nums font-medium text-foreground">
                                       {node.io_write_count
                                         ? formatNumber(node.io_write_count)
                                         : "N/A"}
@@ -664,7 +666,7 @@ export const EnhancedNodesTable = ({
                                     <span className="text-muted-foreground">
                                       Avg Read Time:
                                     </span>
-                                    <span className="font-medium text-foreground">
+                                    <span className="font-mono tabular-nums font-medium text-foreground">
                                       {node.io_read_avg_time
                                         ? `${node.io_read_avg_time.toFixed(2)}ms`
                                         : "N/A"}
@@ -674,7 +676,7 @@ export const EnhancedNodesTable = ({
                                     <span className="text-muted-foreground">
                                       Avg Write Time:
                                     </span>
-                                    <span className="font-medium text-foreground">
+                                    <span className="font-mono tabular-nums font-medium text-foreground">
                                       {node.io_write_avg_time
                                         ? `${node.io_write_avg_time.toFixed(2)}ms`
                                         : "N/A"}
@@ -728,7 +730,7 @@ export const EnhancedNodesTable = ({
                                     <span className="text-muted-foreground">
                                       Connections Created:
                                     </span>
-                                    <span className="font-medium text-foreground">
+                                    <span className="font-mono tabular-nums font-medium text-foreground">
                                       {node.connection_created
                                         ? formatNumber(node.connection_created)
                                         : "N/A"}
@@ -738,7 +740,7 @@ export const EnhancedNodesTable = ({
                                     <span className="text-muted-foreground">
                                       Connections Closed:
                                     </span>
-                                    <span className="font-medium text-foreground">
+                                    <span className="font-mono tabular-nums font-medium text-foreground">
                                       {node.connection_closed
                                         ? formatNumber(node.connection_closed)
                                         : "N/A"}
@@ -768,7 +770,7 @@ export const EnhancedNodesTable = ({
                                     <span className="text-muted-foreground">
                                       Active Sockets:
                                     </span>
-                                    <span className="font-medium text-foreground">
+                                    <span className="font-mono tabular-nums font-medium text-foreground">
                                       {node.sockets_used !== undefined
                                         ? `${node.sockets_used} / ${node.sockets_total || 0}`
                                         : "N/A"}
@@ -778,7 +780,7 @@ export const EnhancedNodesTable = ({
                                     <span className="text-muted-foreground">
                                       Net Ticktime:
                                     </span>
-                                    <span className="font-medium">
+                                    <span className="font-mono tabular-nums font-medium">
                                       {node.net_ticktime
                                         ? `${node.net_ticktime}s`
                                         : "N/A"}
@@ -836,7 +838,7 @@ export const EnhancedNodesTable = ({
                                     <span className="text-muted-foreground">
                                       Mnesia RAM Tx:
                                     </span>
-                                    <span className="font-medium text-foreground">
+                                    <span className="font-mono tabular-nums font-medium text-foreground">
                                       {node.mnesia_ram_tx_count
                                         ? formatNumber(node.mnesia_ram_tx_count)
                                         : "N/A"}
@@ -846,7 +848,7 @@ export const EnhancedNodesTable = ({
                                     <span className="text-muted-foreground">
                                       Mnesia Disk Tx:
                                     </span>
-                                    <span className="font-medium text-foreground">
+                                    <span className="font-mono tabular-nums font-medium text-foreground">
                                       {node.mnesia_disk_tx_count
                                         ? formatNumber(
                                             node.mnesia_disk_tx_count
@@ -858,7 +860,7 @@ export const EnhancedNodesTable = ({
                                     <span className="text-muted-foreground">
                                       Msg Store Reads:
                                     </span>
-                                    <span className="font-medium text-foreground">
+                                    <span className="font-mono tabular-nums font-medium text-foreground">
                                       {node.msg_store_read_count
                                         ? formatNumber(
                                             node.msg_store_read_count
@@ -870,7 +872,7 @@ export const EnhancedNodesTable = ({
                                     <span className="text-muted-foreground">
                                       Msg Store Writes:
                                     </span>
-                                    <span className="font-medium text-foreground">
+                                    <span className="font-mono tabular-nums font-medium text-foreground">
                                       {node.msg_store_write_count
                                         ? formatNumber(
                                             node.msg_store_write_count
@@ -882,7 +884,7 @@ export const EnhancedNodesTable = ({
                                     <span className="text-muted-foreground">
                                       Queue Index Reads:
                                     </span>
-                                    <span className="font-medium text-foreground">
+                                    <span className="font-mono tabular-nums font-medium text-foreground">
                                       {node.queue_index_read_count
                                         ? formatNumber(
                                             node.queue_index_read_count
@@ -894,7 +896,7 @@ export const EnhancedNodesTable = ({
                                     <span className="text-muted-foreground">
                                       Queue Index Writes:
                                     </span>
-                                    <span className="font-medium text-foreground">
+                                    <span className="font-mono tabular-nums font-medium text-foreground">
                                       {node.queue_index_write_count
                                         ? formatNumber(
                                             node.queue_index_write_count
@@ -967,7 +969,7 @@ export const EnhancedNodesTable = ({
                                       <span className="text-muted-foreground">
                                         Processors:
                                       </span>
-                                      <span className="font-medium text-foreground">
+                                      <span className="font-mono tabular-nums font-medium text-foreground">
                                         {node.processors || "N/A"}
                                       </span>
                                     </div>
@@ -983,7 +985,7 @@ export const EnhancedNodesTable = ({
                                       <span className="text-muted-foreground">
                                         Run Queue:
                                       </span>
-                                      <span className="font-medium text-foreground">
+                                      <span className="font-mono tabular-nums font-medium text-foreground">
                                         {node.run_queue !== undefined
                                           ? node.run_queue
                                           : "N/A"}
@@ -993,7 +995,7 @@ export const EnhancedNodesTable = ({
                                       <span className="text-muted-foreground">
                                         Processes:
                                       </span>
-                                      <span className="font-medium text-foreground">
+                                      <span className="font-mono tabular-nums font-medium text-foreground">
                                         {node.proc_used !== undefined &&
                                         node.proc_total !== undefined
                                           ? `${node.proc_used} / ${node.proc_total}`
@@ -1051,7 +1053,7 @@ export const EnhancedNodesTable = ({
                                       <span className="text-muted-foreground">
                                         Enabled Plugins:
                                       </span>
-                                      <span className="font-medium text-foreground">
+                                      <span className="font-mono tabular-nums font-medium text-foreground">
                                         {node.enabled_plugins?.length || 0}
                                       </span>
                                     </div>
@@ -1059,7 +1061,7 @@ export const EnhancedNodesTable = ({
                                       <span className="text-muted-foreground">
                                         Auth Mechanisms:
                                       </span>
-                                      <span className="font-medium text-foreground">
+                                      <span className="font-mono tabular-nums font-medium text-foreground">
                                         {node.auth_mechanisms?.length || 0}
                                       </span>
                                     </div>

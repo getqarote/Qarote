@@ -30,6 +30,7 @@
   "vhost": "Host virtual",
   "policy": "Pol\u00edtica",
   "arguments": "Argumentos",
+  "lastActionBy": "Última acción por",
   "bindings": "Enlaces",
   "messagesPublishedIn": "Mensajes publicados entrantes",
   "messagesPublishedOut": "Mensajes publicados salientes",

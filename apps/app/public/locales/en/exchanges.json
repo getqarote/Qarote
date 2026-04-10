@@ -30,6 +30,7 @@
   "vhost": "Virtual Host",
   "policy": "Policy",
   "arguments": "Arguments",
+  "lastActionBy": "Last action by",
   "bindings": "Bindings",
   "messagesPublishedIn": "Messages Published In",
   "messagesPublishedOut": "Messages Published Out",

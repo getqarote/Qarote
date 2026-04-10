@@ -30,6 +30,7 @@
   "vhost": "Hôte virtuel",
   "policy": "Politique",
   "arguments": "Arguments",
+  "lastActionBy": "Dernière action par",
   "bindings": "Liaisons",
   "messagesPublishedIn": "Messages publiés entrants",
   "messagesPublishedOut": "Messages publiés sortants",
