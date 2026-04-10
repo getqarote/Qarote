@@ -82,5 +82,14 @@
   "create": "创建",
   "creating": "创建中...",
   "createSuccess": "虚拟主机创建成功",
-  "createError": "虚拟主机创建失败"
+  "createError": "虚拟主机创建失败",
+  "deleteError": "虚拟主机删除失败",
+  "sortByName": "按名称排序",
+  "sortByReady": "按就绪消息排序",
+  "sortByUnacked": "按未确认消息排序",
+  "sortByTotal": "按消息总数排序",
+  "sortAscending": "升序排列",
+  "sortDescending": "降序排列",
+  "emptyFilterState": "没有虚拟主机匹配此过滤条件",
+  "emptyFilterStateAction": "清除过滤器"
 }

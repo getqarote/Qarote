@@ -82,5 +82,14 @@
   "create": "Create",
   "creating": "Creating...",
   "createSuccess": "Virtual host created successfully",
-  "createError": "Failed to create virtual host"
+  "createError": "Failed to create virtual host",
+  "deleteError": "Failed to delete virtual host",
+  "sortByName": "Sort by name",
+  "sortByReady": "Sort by ready messages",
+  "sortByUnacked": "Sort by unacknowledged messages",
+  "sortByTotal": "Sort by total messages",
+  "sortAscending": "Sorted ascending",
+  "sortDescending": "Sorted descending",
+  "emptyFilterState": "No virtual hosts match this filter",
+  "emptyFilterStateAction": "Clear filter"
 }

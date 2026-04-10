@@ -82,5 +82,14 @@
   "create": "Crear",
   "creating": "Creando...",
   "createSuccess": "Host virtual creado con éxito",
-  "createError": "Error al crear el host virtual"
+  "createError": "Error al crear el host virtual",
+  "deleteError": "Error al eliminar el host virtual",
+  "sortByName": "Ordenar por nombre",
+  "sortByReady": "Ordenar por mensajes listos",
+  "sortByUnacked": "Ordenar por mensajes sin confirmar",
+  "sortByTotal": "Ordenar por total de mensajes",
+  "sortAscending": "Orden ascendente",
+  "sortDescending": "Orden descendente",
+  "emptyFilterState": "Ningún host virtual coincide con este filtro",
+  "emptyFilterStateAction": "Limpiar filtro"
 }

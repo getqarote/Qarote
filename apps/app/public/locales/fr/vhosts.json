@@ -82,5 +82,14 @@
   "create": "Créer",
   "creating": "Création...",
   "createSuccess": "Hôte virtuel créé avec succès",
-  "createError": "Échec de la création de l'hôte virtuel"
+  "createError": "Échec de la création de l'hôte virtuel",
+  "deleteError": "Échec de la suppression de l'hôte virtuel",
+  "sortByName": "Trier par nom",
+  "sortByReady": "Trier par messages prêts",
+  "sortByUnacked": "Trier par messages non acquittés",
+  "sortByTotal": "Trier par total de messages",
+  "sortAscending": "Trié par ordre croissant",
+  "sortDescending": "Trié par ordre décroissant",
+  "emptyFilterState": "Aucun hôte virtuel ne correspond à ce filtre",
+  "emptyFilterStateAction": "Effacer le filtre"
 }
