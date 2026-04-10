@@ -16,6 +16,8 @@ export type PrismaWorkspaceWithDates = {
   browserNotificationsEnabled: boolean;
   browserNotificationSeverities: unknown;
   notificationServerIds: unknown;
+  unackedWarnThreshold: number;
+  vhostThresholds: unknown;
   createdAt: Date;
   updatedAt: Date;
   _count?: {
@@ -38,6 +40,8 @@ export type WorkspaceApiResponse = {
   browserNotificationsEnabled: boolean;
   browserNotificationSeverities: unknown;
   notificationServerIds: unknown;
+  unackedWarnThreshold: number;
+  vhostThresholds: unknown;
   createdAt: string;
   updatedAt: string;
   _count?: {

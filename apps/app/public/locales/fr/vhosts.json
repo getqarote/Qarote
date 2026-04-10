@@ -96,5 +96,13 @@
   "emptyFilterState": "Aucun hôte virtuel ne correspond à ce filtre",
   "emptyFilterStateAction": "Effacer le filtre",
   "noVhostsYet": "Aucun hôte virtuel configuré",
-  "noVhostsDescription": "Ajoutez votre premier hôte virtuel pour isoler les ressources RabbitMQ par environnement ou application."
+  "noVhostsDescription": "Ajoutez votre premier hôte virtuel pour isoler les ressources RabbitMQ par environnement ou application.",
+  "monitoring": "Surveillance",
+  "unackedThresholdLabel": "Seuil d'alerte non acquittés",
+  "thresholdSaved": "Seuil enregistré",
+  "thresholdReset": "Seuil réinitialisé au défaut de l'espace de travail",
+  "thresholdSaveError": "Échec de l'enregistrement du seuil",
+  "thresholdResetToDefault": "Réinitialiser au défaut ({{default}})",
+  "thresholdOverrideActive": "Remplacement actif — alerte si non acquittés > {{value}}",
+  "thresholdUsingDefault": "Défaut de l'espace de travail — alerte si non acquittés > {{default}}"
 }

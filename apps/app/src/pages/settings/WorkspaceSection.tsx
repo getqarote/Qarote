@@ -31,6 +31,7 @@ const WorkspaceSection = () => {
     name: "",
     contactEmail: "",
     tags: [],
+    unackedWarnThreshold: 100,
   });
 
   const profile = profileData?.user;
@@ -41,6 +42,7 @@ const WorkspaceSection = () => {
       name: workspace?.name || "",
       contactEmail: workspace?.contactEmail || "",
       tags: workspace?.tags || [],
+      unackedWarnThreshold: workspace?.unackedWarnThreshold ?? 100,
     });
   };
 
@@ -91,6 +93,7 @@ const WorkspaceSection = () => {
         name: workspaceForm.name,
         contactEmail: workspaceForm.contactEmail || undefined,
         tags: workspaceForm.tags.length > 0 ? workspaceForm.tags : undefined,
+        unackedWarnThreshold: workspaceForm.unackedWarnThreshold,
       });
       setEditingWorkspace(false);
       await refetchWorkspace();

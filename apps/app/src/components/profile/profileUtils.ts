@@ -11,6 +11,7 @@ export interface WorkspaceFormState {
   name: string;
   contactEmail: string;
   tags: string[];
+  unackedWarnThreshold: number;
 }
 
 export interface InviteFormState {

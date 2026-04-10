@@ -96,5 +96,13 @@
   "emptyFilterState": "没有虚拟主机匹配此过滤条件",
   "emptyFilterStateAction": "清除过滤器",
   "noVhostsYet": "尚未配置虚拟主机",
-  "noVhostsDescription": "添加您的第一个虚拟主机，按环境或应用程序隔离 RabbitMQ 资源。"
+  "noVhostsDescription": "添加您的第一个虚拟主机，按环境或应用程序隔离 RabbitMQ 资源。",
+  "monitoring": "监控",
+  "unackedThresholdLabel": "未确认消息警告阈值",
+  "thresholdSaved": "阈值已保存",
+  "thresholdReset": "阈值已重置为工作区默认值",
+  "thresholdSaveError": "保存阈值失败",
+  "thresholdResetToDefault": "重置为默认值 ({{default}})",
+  "thresholdOverrideActive": "已启用覆盖 — 未确认消息超过 {{value}} 时警告",
+  "thresholdUsingDefault": "使用工作区默认值 — 未确认消息超过 {{default}} 时警告"
 }

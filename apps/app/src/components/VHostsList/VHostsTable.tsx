@@ -61,6 +61,12 @@ interface VHostsTableProps {
    * filter is active.
    */
   onAddFirst?: () => void;
+  /**
+   * Returns the unacknowledged warning threshold for a given vhost name.
+   * Resolves per-vhost overrides first, then the workspace default.
+   * Defaults to 100 when the workspace hasn't loaded yet.
+   */
+  getThreshold?: (vhostName: string) => number;
 }
 
 /**
@@ -90,6 +96,7 @@ export function VHostsTable({
   filterQuery,
   onClearFilter,
   onAddFirst,
+  getThreshold,
 }: VHostsTableProps) {
   const { t } = useTranslation("vhosts");
   const [sortKey, setSortKey] = useState<SortKey>("name");
@@ -291,6 +298,9 @@ export function VHostsTable({
                 vhost={vhost}
                 href={buildHref(vhost)}
                 onDelete={() => onDelete(vhost)}
+                unackedWarnThreshold={
+                  getThreshold ? getThreshold(vhost.name) : 100
+                }
               />
             ))
           )}

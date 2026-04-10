@@ -8,6 +8,10 @@ import { UserRole } from "@/lib/api";
 
 import { PageError } from "@/components/PageError";
 import { FullPageAlert, PageShell } from "@/components/PageShell";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { LoadingSkeleton } from "@/components/VHostDetail/LoadingSkeleton";
 import { SetVHostLimitsForm } from "@/components/VHostDetail/SetVHostLimitsForm";
 import { SetVHostPermissionsForm } from "@/components/VHostDetail/SetVHostPermissionsForm";
@@ -31,6 +35,7 @@ import {
   useVHost,
 } from "@/hooks/queries/useRabbitMQVHosts";
 import { useServers } from "@/hooks/queries/useServer";
+import { useUpdateWorkspace } from "@/hooks/queries/useWorkspaceApi";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 export default function VHostDetailsPage() {
@@ -82,7 +87,23 @@ export default function VHostDetailsPage() {
   const setPermissionsMutation = useSetVHostPermissions();
   const setLimitsMutation = useSetVHostLimit();
   const clearPermissionsMutation = useDeleteVHostPermissions();
-  const { workspace } = useWorkspace();
+  const updateWorkspaceMutation = useUpdateWorkspace();
+  const { workspace, refetch: refetchWorkspace } = useWorkspace();
+
+  const thresholdKey = currentServerId
+    ? `${currentServerId}:${decodedVHostName}`
+    : null;
+  const workspaceDefault = workspace?.unackedWarnThreshold ?? 100;
+  const vhostThresholds = workspace?.vhostThresholds as
+    | Record<string, number>
+    | undefined;
+  const storedOverride = thresholdKey
+    ? vhostThresholds?.[thresholdKey]
+    : undefined;
+
+  const [thresholdInput, setThresholdInput] = useState<string>(
+    storedOverride !== undefined ? String(storedOverride) : ""
+  );
 
   const derivedDefaultUser = useMemo(() => {
     if (usersData?.users?.length) {
@@ -205,6 +226,40 @@ export default function VHostDetailsPage() {
     }
   };
 
+  const handleSaveThreshold = async () => {
+    if (!workspace?.id || !thresholdKey) return;
+    const value = parseInt(thresholdInput, 10);
+    if (isNaN(value) || value < 0) return;
+    const updated = { ...(vhostThresholds ?? {}), [thresholdKey]: value };
+    try {
+      await updateWorkspaceMutation.mutateAsync({
+        workspaceId: workspace.id,
+        vhostThresholds: updated,
+      });
+      await refetchWorkspace();
+      toast.success(t("thresholdSaved"));
+    } catch {
+      toast.error(t("thresholdSaveError"));
+    }
+  };
+
+  const handleClearThreshold = async () => {
+    if (!workspace?.id || !thresholdKey) return;
+    const updated = { ...(vhostThresholds ?? {}) };
+    delete updated[thresholdKey];
+    try {
+      await updateWorkspaceMutation.mutateAsync({
+        workspaceId: workspace.id,
+        vhostThresholds: updated,
+      });
+      await refetchWorkspace();
+      setThresholdInput("");
+      toast.success(t("thresholdReset"));
+    } catch {
+      toast.error(t("thresholdSaveError"));
+    }
+  };
+
   // Guard: non-admins cannot reach this page at all
   if (user?.role !== UserRole.ADMIN) {
     return (
@@ -260,6 +315,55 @@ export default function VHostDetailsPage() {
       <VHostStats vhost={vhost} />
 
       <VHostLimits vhost={vhost} />
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("monitoring")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="vhostThreshold">{t("unackedThresholdLabel")}</Label>
+            <div className="flex items-center gap-2">
+              <Input
+                id="vhostThreshold"
+                type="number"
+                min={0}
+                max={100000}
+                className="w-36"
+                placeholder={String(workspaceDefault)}
+                value={thresholdInput}
+                onChange={(e) => setThresholdInput(e.target.value)}
+              />
+              <Button
+                size="sm"
+                onClick={handleSaveThreshold}
+                disabled={
+                  updateWorkspaceMutation.isPending ||
+                  thresholdInput === "" ||
+                  isNaN(parseInt(thresholdInput, 10))
+                }
+              >
+                {t("common:save")}
+              </Button>
+              {storedOverride !== undefined && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleClearThreshold}
+                  disabled={updateWorkspaceMutation.isPending}
+                >
+                  {t("thresholdResetToDefault", { default: workspaceDefault })}
+                </Button>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {storedOverride !== undefined
+                ? t("thresholdOverrideActive", { value: storedOverride })
+                : t("thresholdUsingDefault", { default: workspaceDefault })}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       <VHostPermissionsTable
         permissions={vhost.permissions ?? []}

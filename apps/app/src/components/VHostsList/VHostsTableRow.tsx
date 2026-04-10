@@ -32,6 +32,11 @@ interface VHostsTableRowProps {
    */
   href: string;
   onDelete: () => void;
+  /**
+   * Unacknowledged message count above which the unacked cell is
+   * highlighted in warning colour. Sourced from workspace settings.
+   */
+  unackedWarnThreshold?: number;
 }
 
 /**
@@ -56,14 +61,12 @@ interface VHostsTableRowProps {
  * write descriptive vhost descriptions; a 300 px max-width silently
  * amputates them with no way to read the full text.
  */
-/**
- * Unacknowledged messages above this count are highlighted in warning
- * colour. A small unacked count is normal — consumers are mid-flight.
- * Only flag when backpressure is clearly building.
- */
-const UNACKED_WARN_THRESHOLD = 100;
-
-export function VHostsTableRow({ vhost, href, onDelete }: VHostsTableRowProps) {
+export function VHostsTableRow({
+  vhost,
+  href,
+  onDelete,
+  unackedWarnThreshold = 100,
+}: VHostsTableRowProps) {
   const { t } = useTranslation("vhosts");
 
   const isDefault = vhost.name === "/";
@@ -128,7 +131,7 @@ export function VHostsTableRow({ vhost, href, onDelete }: VHostsTableRowProps) {
         {ready.toLocaleString()}
       </TableCell>
       <TableCell
-        className={`font-mono tabular-nums ${unacked > UNACKED_WARN_THRESHOLD ? "text-warning" : ""}`}
+        className={`font-mono tabular-nums ${unacked > unackedWarnThreshold ? "text-warning" : ""}`}
       >
         {unacked.toLocaleString()}
       </TableCell>

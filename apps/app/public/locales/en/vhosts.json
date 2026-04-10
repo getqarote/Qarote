@@ -96,5 +96,13 @@
   "emptyFilterState": "No virtual hosts match this filter",
   "emptyFilterStateAction": "Clear filter",
   "noVhostsYet": "No virtual hosts configured",
-  "noVhostsDescription": "Add your first virtual host to isolate RabbitMQ resources by environment or application."
+  "noVhostsDescription": "Add your first virtual host to isolate RabbitMQ resources by environment or application.",
+  "monitoring": "Monitoring",
+  "unackedThresholdLabel": "Unacked warning threshold",
+  "thresholdSaved": "Threshold saved",
+  "thresholdReset": "Threshold reset to workspace default",
+  "thresholdSaveError": "Failed to save threshold",
+  "thresholdResetToDefault": "Reset to default ({{default}})",
+  "thresholdOverrideActive": "Override active — warning when unacked > {{value}}",
+  "thresholdUsingDefault": "Using workspace default — warning when unacked > {{default}}"
 }

@@ -217,6 +217,16 @@ export default function VHostsPage() {
         filterQuery={filterRegex}
         onClearFilter={() => setFilterRegex("")}
         onAddFirst={() => setCreateOpen(true)}
+        getThreshold={(vhostName) => {
+          const key = `${currentServerId}:${vhostName}`;
+          return (
+            (
+              workspace?.vhostThresholds as Record<string, number> | undefined
+            )?.[key] ??
+            workspace?.unackedWarnThreshold ??
+            100
+          );
+        }}
       />
 
       {deleteVHost && (

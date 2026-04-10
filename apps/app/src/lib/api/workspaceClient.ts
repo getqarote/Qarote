@@ -11,6 +11,8 @@ export interface Workspace {
   tags?: string[];
   plan: string;
   ownerId?: string;
+  unackedWarnThreshold?: number;
+  vhostThresholds?: Record<string, number>;
   createdAt: string;
   updatedAt: string;
 }

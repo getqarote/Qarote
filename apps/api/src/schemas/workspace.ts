@@ -24,6 +24,10 @@ export const UpdateWorkspaceSchema = z.object({
     .array(z.string().min(1).max(20))
     .max(10, "Maximum 10 tags allowed")
     .optional(),
+  unackedWarnThreshold: z.number().int().min(0).max(100_000).optional(),
+  vhostThresholds: z
+    .record(z.string(), z.number().int().min(0).max(100_000))
+    .optional(),
 });
 
 // Schema for workspace ID parameter

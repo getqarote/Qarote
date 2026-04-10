@@ -96,5 +96,13 @@
   "emptyFilterState": "Ningún host virtual coincide con este filtro",
   "emptyFilterStateAction": "Limpiar filtro",
   "noVhostsYet": "No hay hosts virtuales configurados",
-  "noVhostsDescription": "Agrega tu primer host virtual para aislar los recursos de RabbitMQ por entorno o aplicación."
+  "noVhostsDescription": "Agrega tu primer host virtual para aislar los recursos de RabbitMQ por entorno o aplicación.",
+  "monitoring": "Supervisión",
+  "unackedThresholdLabel": "Umbral de advertencia de mensajes sin confirmar",
+  "thresholdSaved": "Umbral guardado",
+  "thresholdReset": "Umbral restablecido al valor predeterminado del espacio de trabajo",
+  "thresholdSaveError": "Error al guardar el umbral",
+  "thresholdResetToDefault": "Restablecer al predeterminado ({{default}})",
+  "thresholdOverrideActive": "Anulación activa — advertencia cuando sin confirmar > {{value}}",
+  "thresholdUsingDefault": "Usando el predeterminado del espacio de trabajo — advertencia cuando sin confirmar > {{default}}"
 }
