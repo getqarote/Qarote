@@ -20,6 +20,7 @@
     "title": "Contacter le support",
     "description": "Besoin d'aide personnalisée ? Contactez notre équipe de support.",
     "generalSupport": "Support général",
+    "copyEmailAria": "Copier l'adresse e-mail du support",
     "responseTime": "Nous répondons généralement sous 24 heures les jours ouvrables. Vous ne pouvez pas ouvrir votre client de messagerie ? Utilisez le bouton de copie pour obtenir notre adresse e-mail."
   },
   "toast": {
@@ -39,6 +40,10 @@
     "description": "Rejoignez notre communauté Discord pour obtenir de l'aide des autres utilisateurs et de l'équipe."
   },
   "faqTitle": "Questions fréquemment posées",
+  "faqSearchHint": "Recherchez par question ou mot-clé.",
+  "faqSearchPlaceholder": "Rechercher dans les FAQ",
+  "faqNoResultsTitle": "Aucun résultat",
+  "faqNoResultsDesc": "Essayez une autre recherche, ou contactez le support via les options à gauche.",
   "faqs": {
     "connectServer": {
       "question": "Comment me connecter à mon serveur RabbitMQ ?",

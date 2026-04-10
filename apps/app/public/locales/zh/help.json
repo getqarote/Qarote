@@ -20,6 +20,7 @@
     "title": "联系支持",
     "description": "需要个性化帮助？请联系我们的支持团队。",
     "generalSupport": "常规支持",
+    "copyEmailAria": "复制支持邮箱地址",
     "responseTime": "我们通常在工作日 24 小时内回复。无法打开邮件客户端？使用复制按钮获取我们的邮箱地址。"
   },
   "toast": {
@@ -39,6 +40,10 @@
     "description": "加入我们的 Discord 社区，从其他用户和团队获取帮助。"
   },
   "faqTitle": "常见问题",
+  "faqSearchHint": "按问题或关键字搜索。",
+  "faqSearchPlaceholder": "搜索常见问题",
+  "faqNoResultsTitle": "未找到结果",
+  "faqNoResultsDesc": "尝试更换搜索词，或使用左侧选项联系支持。",
   "faqs": {
     "connectServer": {
       "question": "如何连接到我的 RabbitMQ 服务器？",
