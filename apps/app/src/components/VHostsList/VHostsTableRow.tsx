@@ -82,7 +82,7 @@ export function VHostsTableRow({ vhost, href, onDelete }: VHostsTableRowProps) {
             className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground"
             aria-hidden="true"
           />
-          <div className="min-w-0">
+          <div className="min-w-0 overflow-hidden">
             <div className="flex items-center gap-2">
               <span className="break-all">{vhost.name}</span>
               {vhost.protected_from_deletion && (
@@ -105,7 +105,7 @@ export function VHostsTableRow({ vhost, href, onDelete }: VHostsTableRowProps) {
               )}
             </div>
             {vhost.description && (
-              <p className="text-xs text-muted-foreground font-normal mt-0.5 break-words">
+              <p className="text-xs text-muted-foreground font-normal mt-0.5 line-clamp-2 break-all">
                 {vhost.description}
               </p>
             )}
