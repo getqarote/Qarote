@@ -32,7 +32,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { PlanBadge } from "@/components/ui/PlanBadge";
 import { Separator } from "@/components/ui/separator";
 
 import { ExtendedWorkspace } from "@/contexts/WorkspaceContextDefinition";
@@ -96,7 +95,6 @@ export const WorkspaceInfoTab = ({
                 <span className="text-lg font-semibold leading-tight">
                   {t("workspace.information")}
                 </span>
-                <PlanBadge />
               </div>
               <p className="text-sm text-muted-foreground">
                 {editingWorkspace

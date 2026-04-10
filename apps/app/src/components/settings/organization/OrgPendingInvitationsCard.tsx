@@ -14,6 +14,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { PaginationControls } from "@/components/ui/PaginationControls";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import {
   useCancelOrgInvitation,
@@ -34,7 +39,7 @@ import type { PendingOrgInvitation } from "./types";
  * has no further consequences that the parent needs to coordinate.
  */
 export function OrgPendingInvitationsCard() {
-  const { t } = useTranslation("profile");
+  const { t, i18n } = useTranslation("profile");
   const roleLabels = useRoleLabels();
 
   const [page, setPage] = useState(1);
@@ -66,6 +71,12 @@ export function OrgPendingInvitationsCard() {
     );
   };
 
+  const dateFormatter = new Intl.DateTimeFormat(i18n.language, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+
   return (
     <Card>
       <CardHeader>
@@ -92,7 +103,7 @@ export function OrgPendingInvitationsCard() {
                   })}{" "}
                   &middot;{" "}
                   {t("org.expires", {
-                    date: new Date(inv.expiresAt).toLocaleDateString(),
+                    date: dateFormatter.format(new Date(inv.expiresAt)),
                   })}
                 </div>
               </div>
@@ -103,31 +114,41 @@ export function OrgPendingInvitationsCard() {
                     {roleLabels[inv.role] ?? inv.role}
                   </span>
                 </Badge>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                  disabled={cancelMutation.isPending}
-                  onClick={() => handleCancel(inv.id, inv.email)}
-                  aria-label={t("org.remove") + ": " + inv.email}
-                >
-                  <X className="h-4 w-4" aria-hidden="true" />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs gap-1"
+                      disabled={cancelMutation.isPending}
+                      onClick={() => handleCancel(inv.id, inv.email)}
+                      aria-label={t("org.cancelInvite") + ": " + inv.email}
+                    >
+                      <X className="h-3.5 w-3.5" aria-hidden="true" />
+                      <span className="hidden sm:inline">
+                        {t("org.cancelInvite")}
+                      </span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{t("org.cancelInvite")}</TooltipContent>
+                </Tooltip>
               </div>
             </div>
           ))}
         </div>
-        <PaginationControls
-          total={total}
-          page={page}
-          pageSize={pageSize}
-          onPageChange={setPage}
-          onPageSizeChange={(size) => {
-            setPageSize(size);
-            setPage(1);
-          }}
-          itemLabel="invitations"
-        />
+        {total > pageSize && (
+          <PaginationControls
+            total={total}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setPage(1);
+            }}
+            itemLabel="invitations"
+          />
+        )}
       </CardContent>
     </Card>
   );

@@ -133,30 +133,42 @@ export function OrgInfoCard({ org, isOrgAdmin }: OrgInfoCardProps) {
         </div>
 
         {!editing && (
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5">
-              <Users className="h-4 w-4" aria-hidden="true" />
-              {t("org.members")}:{" "}
-              <span className="font-mono tabular-nums">
-                {org._count?.members ?? 0}
+          <div className="rounded-lg border bg-muted/20 p-3 space-y-2">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-medium text-foreground">
+                {t("org.facts")}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {t("org.factsHint")}
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5">
+                <Users className="h-4 w-4" aria-hidden="true" />
+                {t("org.members")}:{" "}
+                <span className="font-mono tabular-nums text-foreground">
+                  {org._count?.members ?? 0}
+                </span>
               </span>
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Settings className="h-4 w-4" aria-hidden="true" />
-              {t("org.workspaces")}:{" "}
-              <span className="font-mono tabular-nums">
-                {org._count?.workspaces ?? 0}
+              <span className="inline-flex items-center gap-1.5">
+                <Settings className="h-4 w-4" aria-hidden="true" />
+                {t("org.workspaces")}:{" "}
+                <span className="font-mono tabular-nums text-foreground">
+                  {org._count?.workspaces ?? 0}
+                </span>
               </span>
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Calendar className="h-4 w-4" aria-hidden="true" />
-              {t("org.created")}:{" "}
-              {new Intl.DateTimeFormat(i18n.language, {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              }).format(new Date(org.createdAt))}
-            </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Calendar className="h-4 w-4" aria-hidden="true" />
+                {t("org.created")}:{" "}
+                <span className="text-foreground">
+                  {new Intl.DateTimeFormat(i18n.language, {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  }).format(new Date(org.createdAt))}
+                </span>
+              </span>
+            </div>
           </div>
         )}
 

@@ -1,7 +1,15 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Mail, Settings, Trash2, User, UserPlus, Users } from "lucide-react";
+import {
+  Info,
+  Mail,
+  Settings,
+  Trash2,
+  User,
+  UserPlus,
+  Users,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
@@ -15,6 +23,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { PaginationControls } from "@/components/ui/PaginationControls";
 import {
   Select,
@@ -23,6 +32,11 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import {
   useOrgMembers,
@@ -62,6 +76,7 @@ export function OrgMembersCard({
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [query, setQuery] = useState("");
   const [manageWsMember, setManageWsMember] = useState<{
     id: string;
     userId: string;
@@ -74,6 +89,18 @@ export function OrgMembersCard({
 
   const members = (data?.members ?? []) as OrgMember[];
   const total = data?.pagination?.total ?? members.length;
+
+  const q = query.trim().toLowerCase();
+  const filteredMembers = q
+    ? members.filter((m) => {
+        const fullName = `${m.firstName} ${m.lastName}`.trim().toLowerCase();
+        return (
+          fullName.includes(q) ||
+          m.email.toLowerCase().includes(q) ||
+          m.role.toLowerCase().includes(q)
+        );
+      })
+    : members;
 
   const handleRoleChange = async (memberId: string, newRole: string) => {
     try {
@@ -99,6 +126,48 @@ export function OrgMembersCard({
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" aria-hidden="true" />
                 {t("org.members")}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-muted-foreground"
+                      aria-label={t("org.roleHelp")}
+                    >
+                      <Info className="h-4 w-4" aria-hidden="true" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="space-y-2 max-w-xs">
+                      <p className="font-medium text-sm">
+                        {t("org.roleHelpTitle")}
+                      </p>
+                      <div className="text-xs text-muted-foreground space-y-1">
+                        <p>
+                          <span className="font-medium text-foreground">
+                            {roleLabels["OWNER"] ?? t("org.roleOwner")}
+                          </span>
+                          {" — "}
+                          {t("org.roleDescOwner")}
+                        </p>
+                        <p>
+                          <span className="font-medium text-foreground">
+                            {roleLabels["ADMIN"] ?? t("org.roleAdmin")}
+                          </span>
+                          {" — "}
+                          {t("org.roleDescOrgAdmin")}
+                        </p>
+                        <p>
+                          <span className="font-medium text-foreground">
+                            {roleLabels["MEMBER"] ?? t("org.roleMember")}
+                          </span>
+                          {" — "}
+                          {t("org.roleDescOrgMember")}
+                        </p>
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
               </CardTitle>
               <CardDescription>
                 {t("org.membersCount", { count: total })}
@@ -120,8 +189,25 @@ export function OrgMembersCard({
             </div>
           ) : (
             <>
+              <div className="flex flex-col gap-3 mb-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="text-xs text-muted-foreground">
+                  {query.trim()
+                    ? t("org.searchResults", {
+                        shown: filteredMembers.length,
+                        total: members.length,
+                      })
+                    : null}
+                </div>
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={t("org.searchPlaceholder")}
+                  className="w-full sm:w-72"
+                />
+              </div>
+
               <div className="space-y-2">
-                {members.map((member) => (
+                {filteredMembers.map((member) => (
                   <MemberRow
                     key={member.id}
                     member={member}
@@ -143,17 +229,19 @@ export function OrgMembersCard({
                   />
                 ))}
               </div>
-              <PaginationControls
-                total={total}
-                page={page}
-                pageSize={pageSize}
-                onPageChange={setPage}
-                onPageSizeChange={(size) => {
-                  setPageSize(size);
-                  setPage(1);
-                }}
-                itemLabel="members"
-              />
+              {total > pageSize && (
+                <PaginationControls
+                  total={total}
+                  page={page}
+                  pageSize={pageSize}
+                  onPageChange={setPage}
+                  onPageSizeChange={(size) => {
+                    setPageSize(size);
+                    setPage(1);
+                  }}
+                  itemLabel="members"
+                />
+              )}
             </>
           )}
         </CardContent>
@@ -264,7 +352,16 @@ function MemberRow({
             </SelectContent>
           </Select>
         ) : (
-          <Badge variant="soft-muted">{roleLabels[member.role]}</Badge>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge variant="soft-muted">{roleLabels[member.role]}</Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              {member.role === "OWNER"
+                ? t("org.roleDescOwner")
+                : t("org.roleDescOrgMember")}
+            </TooltipContent>
+          </Tooltip>
         )}
 
         {canMutate && (
