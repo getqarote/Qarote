@@ -8,5 +8,23 @@
   "loadingTopology": "Cargando topología...",
   "failedToLoad": "Error al cargar la topología",
   "noTopologyData": "Sin datos de topología",
-  "noTopologyDataDesc": "No se encontraron intercambios ni colas para el servidor y host virtual seleccionados."
+  "noTopologyDataDesc": "No se encontraron intercambios ni colas para el servidor y host virtual seleccionados.",
+  "stats": {
+    "exchanges_one": "intercambio",
+    "exchanges_other": "intercambios",
+    "queues_one": "cola",
+    "queues_other": "colas",
+    "bindings_one": "enlace",
+    "bindings_other": "enlaces"
+  },
+  "filters": {
+    "defaultExchange": "Intercambio predeterminado",
+    "filterPanel": "Filtrar"
+  },
+  "filter": {
+    "search": "Buscar...",
+    "exchanges": "Intercambios",
+    "queues": "Colas",
+    "noMatch": "Sin resultados"
+  }
 }

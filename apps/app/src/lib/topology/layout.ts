@@ -62,18 +62,55 @@ interface TopologyConsumer {
   queue: { name: string; vhost: string };
 }
 
-const NODE_WIDTH = 220;
-const NODE_HEIGHT = 100;
+interface BuildOptions {
+  showOrphanQueues?: boolean;
+  hiddenExchanges?: Set<string>;
+  hiddenQueues?: Set<string>;
+}
+
+const NODE_WIDTH = 200;
+const NODE_HEIGHT = 80;
+
+/** Shared edge appearance — uses neutral slate that works in both themes. */
+function makeEdgeStyle(dashed = false) {
+  return {
+    type: "smoothstep" as const,
+    animated: false,
+    style: {
+      stroke: "hsl(var(--muted-foreground) / 0.35)",
+      strokeWidth: 1.5,
+      ...(dashed ? { strokeDasharray: "6,4" } : {}),
+    },
+    labelStyle: {
+      fontSize: 10,
+      fill: "hsl(var(--muted-foreground))",
+      fontFamily: "var(--font-mono)",
+    },
+    labelBgStyle: {
+      fill: "hsl(var(--card))",
+      fillOpacity: 0.9,
+    },
+    labelBgPadding: [4, 2] as [number, number],
+    labelBgBorderRadius: 3,
+  };
+}
 
 export function buildTopologyGraph(
   exchanges: TopologyExchange[],
   queues: TopologyQueue[],
   bindings: TopologyBinding[],
-  consumers: TopologyConsumer[]
+  consumers: TopologyConsumer[],
+  options: BuildOptions = {}
 ): { nodes: Node[]; edges: Edge[] } {
+  const {
+    showOrphanQueues = true,
+    hiddenExchanges = new Set<string>(),
+    hiddenQueues = new Set<string>(),
+  } = options;
+
   const g = new dagre.graphlib.Graph();
   g.setDefaultEdgeLabel(() => ({}));
-  g.setGraph({ rankdir: "LR", nodesep: 60, ranksep: 120, edgesep: 30 });
+  g.setGraph({ rankdir: "LR", nodesep: 50, ranksep: 140, edgesep: 25 });
 
   // Build consumer count per queue
   const consumerCountByQueue = new Map<string, number>();
@@ -85,9 +122,12 @@ export function buildTopologyGraph(
   const nodes: Node[] = [];
   const edges: Edge[] = [];
 
-  // Filter out default exchange and internal amq.* exchanges
+  // Filter out default exchange, internal amq.* exchanges, and user-hidden ones
   const visibleExchanges = exchanges.filter(
-    (e) => e.name !== "" && !e.name.startsWith("amq.")
+    (e) =>
+      e.name !== "" &&
+      !e.name.startsWith("amq.") &&
+      !hiddenExchanges.has(e.name)
   );
 
   for (const exchange of visibleExchanges) {
@@ -110,7 +150,9 @@ export function buildTopologyGraph(
     });
   }
 
-  for (const queue of queues) {
+  const visibleQueues = queues.filter((q) => !hiddenQueues.has(q.name));
+
+  for (const queue of visibleQueues) {
     const id = `queue:${encodeURIComponent(queue.name)}@${encodeURIComponent(queue.vhost)}`;
     const consumerKey = `${encodeURIComponent(queue.name)}@${encodeURIComponent(queue.vhost)}`;
     g.setNode(id, { width: NODE_WIDTH, height: NODE_HEIGHT });
@@ -136,6 +178,7 @@ export function buildTopologyGraph(
   // Build edges from bindings
   const nodeIds = new Set(nodes.map((n) => n.id));
   const edgeSet = new Set<string>();
+  const edgeDefaults = makeEdgeStyle();
 
   for (const binding of bindings) {
     if (!binding.source) continue;
@@ -158,60 +201,50 @@ export function buildTopologyGraph(
       source: sourceId,
       target: targetId,
       label: binding.routing_key || undefined,
-      type: "smoothstep",
-      animated: true,
-      style: { stroke: "#94a3b8" },
-      labelStyle: { fontSize: 11, fill: "#475569", fontWeight: 500 },
-      labelBgStyle: { fill: "#f8fafc", fillOpacity: 0.9 },
-      labelBgPadding: [4, 2] as [number, number],
-      labelBgBorderRadius: 4,
+      ...edgeDefaults,
     });
   }
 
   // Add synthetic "(default)" exchange for orphan queues
-  // In RabbitMQ, queues are implicitly bound to the default exchange with routing_key = queue name
-  const queuesWithIncoming = new Set<string>();
-  for (const edge of edges) queuesWithIncoming.add(edge.target);
+  if (showOrphanQueues) {
+    const queuesWithIncoming = new Set<string>();
+    for (const edge of edges) queuesWithIncoming.add(edge.target);
 
-  const orphanQueues = nodes.filter(
-    (n) => n.type === "queueNode" && !queuesWithIncoming.has(n.id)
-  );
+    const orphanQueues = nodes.filter(
+      (n) => n.type === "queueNode" && !queuesWithIncoming.has(n.id)
+    );
 
-  if (orphanQueues.length > 0) {
-    const vhost = (orphanQueues[0].data as QueueNodeData).vhost;
-    const defaultExchangeId = `exchange:__default__@${encodeURIComponent(vhost)}`;
-    g.setNode(defaultExchangeId, { width: NODE_WIDTH, height: NODE_HEIGHT });
+    if (orphanQueues.length > 0) {
+      const vhost = (orphanQueues[0].data as QueueNodeData).vhost;
+      const defaultExchangeId = `exchange:__default__@${encodeURIComponent(vhost)}`;
+      g.setNode(defaultExchangeId, { width: NODE_WIDTH, height: NODE_HEIGHT });
 
-    nodes.push({
-      id: defaultExchangeId,
-      type: "exchangeNode",
-      position: { x: 0, y: 0 },
-      data: {
-        label: "(default)",
-        exchangeType: "direct",
-        internal: false,
-        bindingCount: orphanQueues.length,
-        vhost,
-      } satisfies ExchangeNodeData,
-    });
-
-    for (const queue of orphanQueues) {
-      const queueData = queue.data as QueueNodeData;
-      const edgeId = `${defaultExchangeId}->${queue.id}:${queueData.label}`;
-      g.setEdge(defaultExchangeId, queue.id);
-      edges.push({
-        id: edgeId,
-        source: defaultExchangeId,
-        target: queue.id,
-        label: queueData.label,
-        type: "smoothstep",
-        animated: true,
-        style: { stroke: "#94a3b8", strokeDasharray: "5,5" },
-        labelStyle: { fontSize: 11, fill: "#475569", fontWeight: 500 },
-        labelBgStyle: { fill: "#f8fafc", fillOpacity: 0.9 },
-        labelBgPadding: [4, 2] as [number, number],
-        labelBgBorderRadius: 4,
+      nodes.push({
+        id: defaultExchangeId,
+        type: "exchangeNode",
+        position: { x: 0, y: 0 },
+        data: {
+          label: "(default)",
+          exchangeType: "direct",
+          internal: false,
+          bindingCount: orphanQueues.length,
+          vhost,
+        } satisfies ExchangeNodeData,
       });
+
+      const dashedEdge = makeEdgeStyle(true);
+      for (const queue of orphanQueues) {
+        const queueData = queue.data as QueueNodeData;
+        const edgeId = `${defaultExchangeId}->${queue.id}:${queueData.label}`;
+        g.setEdge(defaultExchangeId, queue.id);
+        edges.push({
+          id: edgeId,
+          source: defaultExchangeId,
+          target: queue.id,
+          label: queueData.label,
+          ...dashedEdge,
+        });
+      }
     }
   }
 

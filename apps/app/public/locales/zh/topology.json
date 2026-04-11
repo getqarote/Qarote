@@ -8,5 +8,23 @@
   "loadingTopology": "正在加载拓扑...",
   "failedToLoad": "加载拓扑失败",
   "noTopologyData": "无拓扑数据",
-  "noTopologyDataDesc": "未找到所选服务器和虚拟主机的交换机或队列。"
+  "noTopologyDataDesc": "未找到所选服务器和虚拟主机的交换机或队列。",
+  "stats": {
+    "exchanges_one": "交换机",
+    "exchanges_other": "交换机",
+    "queues_one": "队列",
+    "queues_other": "队列",
+    "bindings_one": "绑定",
+    "bindings_other": "绑定"
+  },
+  "filters": {
+    "defaultExchange": "默认交换机",
+    "filterPanel": "筛选"
+  },
+  "filter": {
+    "search": "搜索...",
+    "exchanges": "交换机",
+    "queues": "队列",
+    "noMatch": "无结果"
+  }
 }
