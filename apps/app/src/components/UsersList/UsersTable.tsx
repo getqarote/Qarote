@@ -1,39 +1,21 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ChevronDown, ChevronUp, SearchX, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, SearchX, Trash2, X } from "lucide-react";
 
 import type { RabbitMQUser } from "@/lib/api/userTypes";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { UsersTableRow } from "@/components/UsersList/UsersTableRow";
 
-type SortDirection = "asc" | "desc";
+type SortDir = "asc" | "desc";
 
 interface UsersTableProps {
   users: RabbitMQUser[];
-  /**
-   * Builds the detail-page path for a given user. Passed as a route
-   * (not a navigate callback) so the row can render a real `<Link>` —
-   * see `UsersTableRow` for the keyboard/screen-reader rationale.
-   */
   buildHref: (user: RabbitMQUser) => string;
   onDelete: (user: RabbitMQUser) => void;
   onBulkDelete: (users: RabbitMQUser[]) => void;
-  /**
-   * When the filter is active and there are no matches, `UsersTable`
-   * shows an empty state with a "Clear filter" button. The parent
-   * still owns the filter state so it can reset it from the button
-   * and from the `/` keyboard shortcut.
-   */
   filterQuery: string;
   onClearFilter: () => void;
 }
@@ -43,17 +25,8 @@ function isProtectedUser(user: RabbitMQUser): boolean {
 }
 
 /**
- * The users list.
- *
- * - No outer Card wrapper: the page-level `<TitleWithCount>` is the
- *   only heading this surface needs; nesting a second "Users" title
- *   inside a Card was chrome drift.
- * - Client-side sort on the Name column: clickable `<button>` header,
- *   `aria-sort`, two-state chevron, default ascending.
- * - Row selection with a sticky action bar for bulk delete. Protected
- *   users are excluded from selection (checkbox hidden at row level).
- * - Empty filter state ("no matches for X" + clear-filter) inside the
- *   table body so the table chrome stays stable.
+ * Sortable users list — div-based layout matching QueueTable pattern.
+ * Single-column sort on Name. Row selection with bulk delete action bar.
  */
 export function UsersTable({
   users,
@@ -64,22 +37,19 @@ export function UsersTable({
   onClearFilter,
 }: UsersTableProps) {
   const { t } = useTranslation("users");
-  const [sortDir, setSortDir] = useState<SortDirection>("asc");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [selectedNames, setSelectedNames] = useState<Set<string>>(new Set());
 
   const sortedUsers = useMemo(() => {
     const copy = [...users];
-    copy.sort((a, b) => {
-      const cmp = a.name.localeCompare(b.name, undefined, {
-        sensitivity: "base",
-      });
-      return sortDir === "asc" ? cmp : -cmp;
-    });
+    const dir = sortDir === "asc" ? 1 : -1;
+    copy.sort(
+      (a, b) =>
+        dir * a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
+    );
     return copy;
   }, [users, sortDir]);
 
-  // Keep selection in sync with visible rows — drop anything that
-  // filtered out or got deleted upstream.
   const visibleNames = useMemo(
     () => new Set(sortedUsers.map((u) => u.name)),
     [sortedUsers]
@@ -100,9 +70,7 @@ export function UsersTable({
     effectiveSelection.size > 0 && !allSelectableSelected;
   const selectedCount = effectiveSelection.size;
 
-  const toggleSort = () => {
-    setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-  };
+  const toggleSort = () => setSortDir((d) => (d === "asc" ? "desc" : "asc"));
 
   const toggleRow = (name: string) => {
     setSelectedNames((prev) => {
@@ -125,18 +93,15 @@ export function UsersTable({
 
   const handleBulkDelete = () => {
     const toDelete = sortedUsers.filter((u) => effectiveSelection.has(u.name));
-    if (toDelete.length > 0) {
-      onBulkDelete(toDelete);
-    }
+    if (toDelete.length > 0) onBulkDelete(toDelete);
   };
 
-  const ariaSort = sortDir === "asc" ? "ascending" : "descending";
   const isEmpty = sortedUsers.length === 0;
   const hasFilter = filterQuery.trim().length > 0;
 
   return (
     <div className="space-y-3">
-      {/* Selection action bar — appears only when something is selected. */}
+      {/* Selection action bar */}
       {selectedCount > 0 && (
         <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/50 px-4 py-2">
           <div className="flex items-center gap-3 text-sm">
@@ -167,95 +132,85 @@ export function UsersTable({
       )}
 
       <div className="rounded-lg border border-border overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[44px] pr-0">
-                {selectableUsers.length > 0 && (
-                  <Checkbox
-                    checked={
-                      allSelectableSelected
-                        ? true
-                        : someSelectableSelected
-                          ? "indeterminate"
-                          : false
-                    }
-                    onCheckedChange={toggleAll}
-                    aria-label={t("selectAll")}
-                  />
-                )}
-              </TableHead>
-              <TableHead className="w-[260px]" aria-sort={ariaSort}>
-                <button
-                  type="button"
-                  onClick={toggleSort}
-                  className="inline-flex items-center gap-1 rounded-sm font-medium text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  aria-label={
-                    sortDir === "asc" ? t("sortAscending") : t("sortDescending")
-                  }
-                >
-                  {t("nameCo")}
-                  {sortDir === "asc" ? (
-                    <ChevronUp className="h-3.5 w-3.5" aria-hidden="true" />
-                  ) : (
-                    <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
-                  )}
-                </button>
-              </TableHead>
-              <TableHead>{t("tags")}</TableHead>
-              <TableHead>{t("canAccessVhosts")}</TableHead>
-              <TableHead className="w-[160px]">{t("hasPassword")}</TableHead>
-              <TableHead className="w-[56px]">
-                <span className="sr-only">{t("common:actions")}</span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isEmpty ? (
-              <TableRow>
-                <td colSpan={6} className="px-6 py-12">
-                  <div className="flex flex-col items-center gap-3 text-center">
-                    <SearchX
-                      className="h-8 w-8 text-muted-foreground"
-                      aria-hidden="true"
-                    />
-                    <p className="text-sm text-muted-foreground">
-                      {hasFilter
-                        ? t("emptyFilterState")
-                        : t("common:noResults")}
-                    </p>
-                    {hasFilter && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={onClearFilter}
-                      >
-                        {t("emptyFilterStateAction")}
-                      </Button>
-                    )}
-                  </div>
-                </td>
-              </TableRow>
-            ) : (
-              sortedUsers.map((user) => {
-                const isProtected = isProtectedUser(user);
-                return (
-                  <UsersTableRow
-                    key={user.name}
-                    user={user}
-                    href={buildHref(user)}
-                    selected={effectiveSelection.has(user.name)}
-                    onToggleSelect={
-                      isProtected ? undefined : () => toggleRow(user.name)
-                    }
-                    onDelete={() => onDelete(user)}
-                  />
-                );
-              })
+        {/* Column headers */}
+        <div className="grid grid-cols-[2.5rem_1fr_auto_auto_8rem_2.5rem] items-center gap-x-4 px-4 py-2 border-b border-border bg-muted/30 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <div>
+            {selectableUsers.length > 0 && (
+              <Checkbox
+                checked={
+                  allSelectableSelected
+                    ? true
+                    : someSelectableSelected
+                      ? "indeterminate"
+                      : false
+                }
+                onCheckedChange={toggleAll}
+                aria-label={t("selectAll")}
+              />
             )}
-          </TableBody>
-        </Table>
+          </div>
+          <button
+            type="button"
+            onClick={toggleSort}
+            className="inline-flex items-center gap-1 hover:text-foreground transition-colors text-foreground"
+          >
+            {t("nameCo")}
+            {sortDir === "asc" ? (
+              <ArrowUp className="h-3 w-3" />
+            ) : (
+              <ArrowDown className="h-3 w-3" />
+            )}
+          </button>
+          <div>{t("tags")}</div>
+          <div>{t("canAccessVhosts")}</div>
+          <div>{t("hasPassword")}</div>
+          <div>
+            <span className="sr-only">{t("common:actions")}</span>
+          </div>
+        </div>
+
+        {/* Rows or empty state */}
+        {isEmpty ? (
+          <div className="py-12 text-center">
+            <div className="flex flex-col items-center gap-3">
+              <SearchX
+                className="h-8 w-8 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <p className="text-sm text-muted-foreground">
+                {hasFilter ? t("emptyFilterState") : t("common:noResults")}
+              </p>
+              {hasFilter && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onClearFilter}
+                >
+                  {t("emptyFilterStateAction")}
+                </Button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="divide-y divide-border">
+            {sortedUsers.map((user) => {
+              const isProtected = isProtectedUser(user);
+              return (
+                <UsersTableRow
+                  key={user.name}
+                  user={user}
+                  href={buildHref(user)}
+                  selected={effectiveSelection.has(user.name)}
+                  onToggleSelect={
+                    isProtected ? undefined : () => toggleRow(user.name)
+                  }
+                  onDelete={() => onDelete(user)}
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

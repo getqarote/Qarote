@@ -49,7 +49,7 @@ export const AlertsSummary = ({ summary }: AlertsSummaryProps) => {
   ];
 
   return (
-    <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-6 text-sm">
+    <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
       <span className="font-semibold text-foreground">
         <span className="font-mono tabular-nums">{summary.total}</span>{" "}
         {summary.total === 1 ? "alert" : "alerts"}

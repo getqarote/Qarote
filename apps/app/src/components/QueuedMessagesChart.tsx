@@ -182,7 +182,7 @@ export const QueuedMessagesChart = ({
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="h-96 w-full flex items-center justify-center">
+          <div className="h-64 w-full flex items-center justify-center">
             <div className="flex flex-col items-center gap-2">
               <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
@@ -193,7 +193,7 @@ export const QueuedMessagesChart = ({
         ) : (
           <div>
             {/* Chart */}
-            <div className="h-96 w-full">
+            <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={chartData}

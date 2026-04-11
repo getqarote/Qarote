@@ -53,8 +53,8 @@ export const AlertItem = ({ alert, isResolved = false }: AlertItemProps) => {
 
   return (
     <div
-      className={`flex items-start gap-4 p-4 border rounded-lg ${
-        isResolved ? "bg-muted/30" : ""
+      className={`flex items-start gap-4 px-4 py-3 ${
+        isResolved ? "bg-muted/20" : ""
       }`}
     >
       <div className="shrink-0 mt-1">

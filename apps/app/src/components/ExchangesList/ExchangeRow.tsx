@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Activity, ArrowUpDown, Filter, Trash2 } from "lucide-react";
+import { Activity, ChevronRight, Filter, Lock, Trash2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,37 +11,21 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
-import { getExchangeIcon, getExchangeTypeBadgeClass } from "./exchangeTypeUi";
+import { getExchangeTypeBadgeClass } from "./exchangeTypeUi";
 import type { ExchangeBinding, ExchangeListItem } from "./types";
 
 interface ExchangeRowProps {
   exchange: ExchangeListItem;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  /**
-   * Admins can delete exchanges. When undefined, the delete button is
-   * hidden entirely rather than shown disabled — a ghosted trash can in
-   * the expanded pane would be noise for non-admin operators who still
-   * use the expanded details for read-only inspection.
-   */
   onDelete?: () => void;
   isDeleting?: boolean;
 }
 
 /**
- * A single exchange in the list, rendered as a `Collapsible` Radix
- * primitive so the whole header row is keyboard-operable via Enter
- * and Space without any hand-rolled key handlers.
- *
- * The expanded pane shows:
- *   - A two-column details grid (configuration on the left, message
- *     stats on the right)
- *   - The delete button (admin only)
- *   - The bindings list when the exchange has any
- *
- * All numeric values use Fragment Mono + tabular-nums. All string IDs
- * (user_who_performed_action, binding routing keys, argument payloads)
- * also use mono since they're identifiers, not prose.
+ * A single exchange row matching the QueueTable pattern: fixed-width
+ * right-aligned metric columns aligned to sortable headers, mono font
+ * for identifiers, hover:bg-accent for row hover.
  */
 export function ExchangeRow({
   exchange,
@@ -59,54 +43,61 @@ export function ExchangeRow({
       <CollapsibleTrigger asChild>
         <button
           type="button"
-          className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors text-left"
+          className="w-full flex items-center px-4 py-3 hover:bg-accent transition-colors text-left"
         >
-          <div className="flex items-center gap-4 min-w-0">
-            <div className="flex items-center gap-2 min-w-0 max-w-[300px]">
-              {getExchangeIcon(exchange.type)}
-              <span className="font-medium truncate" title={displayName}>
+          {/* Left: identity */}
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
+              <span
+                className="font-medium truncate font-mono text-sm"
+                title={displayName}
+              >
                 {displayName}
               </span>
-            </div>
-            <Badge className={getExchangeTypeBadgeClass(exchange.type)}>
-              {exchange.type}
-            </Badge>
-            <div className="flex items-center gap-2 text-sm">
-              {exchange.durable && (
-                <Badge variant="outline" className="text-xs">
-                  {t("durable")}
-                </Badge>
-              )}
-              {exchange.auto_delete && (
-                <Badge variant="outline" className="text-xs">
-                  {t("autoDelete")}
-                </Badge>
-              )}
               {exchange.internal && (
-                <Badge variant="outline" className="text-xs">
+                <Badge
+                  variant="secondary"
+                  className="text-xs flex items-center gap-1 shrink-0"
+                >
+                  <Lock className="w-3 h-3" />
                   {t("internal")}
                 </Badge>
               )}
             </div>
+            <Badge
+              className={`shrink-0 ${getExchangeTypeBadgeClass(exchange.type)}`}
+            >
+              {exchange.type}
+            </Badge>
+            {exchange.durable && (
+              <span className="hidden xl:inline text-xs text-muted-foreground">
+                {t("durable")}
+              </span>
+            )}
           </div>
-          <div className="flex items-center gap-6 text-sm">
-            <HeaderMetric label={t("bindings")} value={exchange.bindingCount} />
-            {exchange.message_stats?.publish_in !== undefined && (
-              <HeaderMetric
-                label={t("messagesIn")}
-                value={exchange.message_stats.publish_in}
+
+          {/* Right: metrics aligned to sort headers */}
+          <div className="flex items-center gap-0">
+            <span className="w-24 text-right font-mono tabular-nums text-sm text-foreground hidden xl:block">
+              {exchange.type}
+            </span>
+            <span className="w-28 text-right font-mono tabular-nums text-sm text-foreground">
+              {exchange.bindingCount.toLocaleString()}
+            </span>
+            <span className="w-28 text-right font-mono tabular-nums text-sm text-foreground">
+              {(exchange.message_stats?.publish_in ?? 0).toLocaleString()}
+            </span>
+            <span className="w-28 text-right font-mono tabular-nums text-sm text-foreground">
+              {(exchange.message_stats?.publish_out ?? 0).toLocaleString()}
+            </span>
+            <div className="w-8 flex justify-center">
+              <ChevronRight
+                className={`h-4 w-4 text-muted-foreground transition-transform duration-150 ${
+                  isOpen ? "rotate-90" : ""
+                }`}
+                aria-hidden="true"
               />
-            )}
-            {exchange.message_stats?.publish_out !== undefined && (
-              <HeaderMetric
-                label={t("messagesOut")}
-                value={exchange.message_stats.publish_out}
-              />
-            )}
-            <ArrowUpDown
-              className="h-4 w-4 text-muted-foreground shrink-0"
-              aria-hidden="true"
-            />
+            </div>
           </div>
         </button>
       </CollapsibleTrigger>
@@ -122,35 +113,9 @@ export function ExchangeRow({
   );
 }
 
-function HeaderMetric({ label, value }: { label: ReactNode; value: number }) {
-  return (
-    <div className="text-center">
-      <div className="font-mono tabular-nums font-medium text-foreground">
-        {value.toLocaleString()}
-      </div>
-      <div className="text-xs text-muted-foreground">{label}</div>
-    </div>
-  );
-}
-
 /**
- * Expanded details pane for an exchange row.
- *
- * /distill: removed redundant section headings ("Exchanges" was the page
- * title; "Messages Published In" was both a heading and a row label).
- * Delete demoted from dominant filled-red to a ghost outline — it's
- * still there, still obviously destructive, but it doesn't compete with
- * the configuration data.
- *
- * /clarify: `publish_in` / `publish_out` show "—" when unavailable;
- * `bindingCount` always has a value so it shows 0 correctly. Stats now
- * use the same HeaderMetric visual as the row header so the numbers feel
- * continuous rather than switching register mid-page.
- *
- * /polish: properties use a strict `grid-cols-[max-content_1fr]` so
- * labels and values align on a shared axis. Fragment Mono on all
- * identifier values. Bindings list uses divide-y instead of individual
- * muted cards.
+ * Expanded details pane matching the QueueTable DetailItem pattern:
+ * inline flex-wrap metrics strip instead of a two-column grid.
  */
 function ExchangeDetailsPanel({
   exchange,
@@ -168,71 +133,56 @@ function ExchangeDetailsPanel({
   const hasBindings = exchange.bindings && exchange.bindings.length > 0;
 
   return (
-    <div className="border-t bg-muted/40">
-      {/* Properties + traffic stats */}
-      <div className="px-4 py-4 flex flex-wrap gap-x-12 gap-y-4">
-        <dl className="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-1.5 text-sm self-start flex-1 min-w-[180px]">
-          <dt className="text-muted-foreground">{t("type")}</dt>
-          <dd className="font-mono text-xs text-foreground">{exchange.type}</dd>
-
-          <dt className="text-muted-foreground">{t("vhost")}</dt>
-          <dd className="font-mono text-xs text-foreground">
-            {exchange.vhost}
-          </dd>
-
-          <dt className="text-muted-foreground">{t("durable")}</dt>
-          <dd className="text-foreground">
-            {exchange.durable ? t("common:yes") : t("common:no")}
-          </dd>
-
-          <dt className="text-muted-foreground">{t("autoDelete")}</dt>
-          <dd className="text-foreground">
-            {exchange.auto_delete ? t("common:yes") : t("common:no")}
-          </dd>
-
-          <dt className="text-muted-foreground">{t("internal")}</dt>
-          <dd className="text-foreground">
-            {exchange.internal ? t("common:yes") : t("common:no")}
-          </dd>
-
-          {exchange.policy && (
-            <>
-              <dt className="text-muted-foreground">{t("policy")}</dt>
-              <dd>
-                <Badge variant="outline" className="text-xs">
-                  {exchange.policy}
-                </Badge>
-              </dd>
-            </>
-          )}
-
-          {exchange.user_who_performed_action && (
-            <>
-              <dt className="text-muted-foreground">{t("lastActionBy")}</dt>
-              <dd className="font-mono text-xs text-foreground">
-                {exchange.user_who_performed_action}
-              </dd>
-            </>
-          )}
-        </dl>
-
-        {/* Traffic stats — same HeaderMetric visual as the row header */}
-        <div className="flex items-start gap-8 shrink-0 pt-0.5">
-          <TrafficStat
-            label={t("messagesIn")}
-            value={exchange.message_stats?.publish_in}
+    <div className="border-t border-border bg-muted/20 px-4 py-3 space-y-3">
+      {/* Inline metrics strip */}
+      <div className="flex flex-wrap gap-x-6 gap-y-2">
+        <DetailItem label={t("vhost")} value={exchange.vhost} mono />
+        <DetailItem label={t("type")} value={exchange.type} mono />
+        <DetailItem
+          label={t("durable")}
+          value={exchange.durable ? t("common:yes") : t("common:no")}
+        />
+        <DetailItem
+          label={t("autoDelete")}
+          value={exchange.auto_delete ? t("common:yes") : t("common:no")}
+        />
+        <DetailItem
+          label={t("internal")}
+          value={exchange.internal ? t("common:yes") : t("common:no")}
+        />
+        <DetailItem
+          label={t("messagesIn")}
+          value={
+            exchange.message_stats?.publish_in !== undefined
+              ? exchange.message_stats.publish_in.toLocaleString()
+              : "—"
+          }
+          mono
+        />
+        <DetailItem
+          label={t("messagesOut")}
+          value={
+            exchange.message_stats?.publish_out !== undefined
+              ? exchange.message_stats.publish_out.toLocaleString()
+              : "—"
+          }
+          mono
+        />
+        {exchange.policy && (
+          <DetailItem label={t("policy")} value={exchange.policy} mono />
+        )}
+        {exchange.user_who_performed_action && (
+          <DetailItem
+            label={t("lastActionBy")}
+            value={exchange.user_who_performed_action}
+            mono
           />
-          <TrafficStat
-            label={t("messagesOut")}
-            value={exchange.message_stats?.publish_out}
-          />
-          <TrafficStat label={t("bindings")} value={exchange.bindingCount} />
-        </div>
+        )}
       </div>
 
-      {/* Arguments block — full width, only when present */}
+      {/* Arguments block — only when present */}
       {hasArguments && (
-        <div className="px-4 pb-4">
+        <div>
           <p className="text-xs font-medium text-muted-foreground mb-1.5">
             {t("arguments")}
           </p>
@@ -242,55 +192,43 @@ function ExchangeDetailsPanel({
         </div>
       )}
 
-      {/* Footer: bindings list + delete — only when there's something to show */}
-      {(hasBindings || onDelete) && (
-        <div className="border-t px-4 py-3 space-y-3">
-          {hasBindings && (
-            <ExchangeBindingsList bindings={exchange.bindings!} />
-          )}
-          {onDelete && (
-            <div className="flex justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onDelete}
-                disabled={isDeleting}
-                className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50"
-              >
-                <Trash2 className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
-                {isDeleting ? t("deleting") : t("deleteExchange")}
-              </Button>
-            </div>
-          )}
+      {/* Bindings + delete */}
+      {hasBindings && <ExchangeBindingsList bindings={exchange.bindings!} />}
+      {onDelete && (
+        <div className="flex items-center gap-2 pt-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onDelete}
+            disabled={isDeleting}
+            className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50"
+          >
+            <Trash2 className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
+            {isDeleting ? t("deleting") : t("deleteExchange")}
+          </Button>
         </div>
       )}
     </div>
   );
 }
 
-/**
- * A single traffic metric — number above, label below. Mirrors the
- * HeaderMetric in the collapsible trigger so the visual register is
- * continuous when a row expands. Shows "—" for unavailable data rather
- * than "0" so the distinction between "no traffic" and "no data" is
- * legible.
- */
-function TrafficStat({
+function DetailItem({
   label,
   value,
+  mono = false,
 }: {
   label: string;
-  value: number | undefined;
+  value: ReactNode;
+  mono?: boolean;
 }) {
-  const available = value !== undefined && value !== null;
   return (
-    <div className="text-right">
-      <div
-        className={`font-mono tabular-nums font-semibold text-xl leading-none ${available ? "text-foreground" : "text-muted-foreground"}`}
+    <div className="flex items-baseline gap-1.5">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span
+        className={`text-xs font-medium text-foreground ${mono ? "font-mono tabular-nums" : ""}`}
       >
-        {available ? value!.toLocaleString() : "—"}
-      </div>
-      <div className="text-xs text-muted-foreground mt-1">{label}</div>
+        {value}
+      </span>
     </div>
   );
 }

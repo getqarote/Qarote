@@ -94,10 +94,12 @@ export const ActiveAlertsList = ({
   }
 
   return (
-    <div className="space-y-4">
-      {alerts.map((alert) => (
-        <AlertItem key={alert.id} alert={alert} />
-      ))}
+    <div>
+      <div className="divide-y divide-border">
+        {alerts.map((alert) => (
+          <AlertItem key={alert.id} alert={alert} />
+        ))}
+      </div>
 
       <PaginationControls
         total={total}

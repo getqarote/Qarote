@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -7,6 +9,7 @@ import { useOverview } from "@/hooks/queries/useRabbitMQ";
 import { useServer } from "@/hooks/queries/useServer";
 
 export const ConnectionStatus = () => {
+  const { t } = useTranslation("dashboard");
   const { selectedServerId } = useServerContext();
   const { data: serverData, isLoading: serverLoading } =
     useServer(selectedServerId);
@@ -18,7 +21,7 @@ export const ConnectionStatus = () => {
       <div className="flex items-center gap-2 mt-1">
         <div className="w-2 h-2 bg-muted-foreground/40 rounded-full"></div>
         <Badge variant="secondary" className="bg-muted text-muted-foreground">
-          No server selected
+          {t("noServerSelectedStatus")}
         </Badge>
       </div>
     );
@@ -44,7 +47,7 @@ export const ConnectionStatus = () => {
           variant="secondary"
           className="bg-destructive/10 text-destructive"
         >
-          Connection failed
+          {t("connectionFailedStatus")}
         </Badge>
       </div>
     );
@@ -52,12 +55,12 @@ export const ConnectionStatus = () => {
 
   return (
     <div className="flex items-center gap-2 mt-1 flex-wrap">
-      <div className="w-2 h-2 bg-success-muted0 rounded-full animate-pulse"></div>
+      <div className="w-2 h-2 bg-success-muted rounded-full animate-pulse"></div>
       <Badge
         variant="secondary"
         className="bg-success-muted text-success max-w-xs truncate"
       >
-        Connected to {server.name || overview.cluster_name}
+        {t("connectedToServer", { name: server.name || overview.cluster_name })}
       </Badge>
       <Badge variant="outline" className="text-xs">
         RabbitMQ v{overview.rabbitmq_version}

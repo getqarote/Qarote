@@ -2,15 +2,18 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
+import { Search, X } from "lucide-react";
+
 import { UserRole } from "@/lib/api";
 
-import { AppSidebar } from "@/components/AppSidebar";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { PageError } from "@/components/PageError";
+import { NoServerSelectedCard, PageShell } from "@/components/PageShell";
 import { QueueHeader } from "@/components/Queues/QueueHeader";
+import { QueuesOverviewCards } from "@/components/Queues/QueuesOverviewCards";
 import { QueueTable } from "@/components/Queues/QueueTable";
 import { Input } from "@/components/ui/input";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
@@ -64,126 +67,106 @@ const Queues = () => {
 
   if (!hasServers) {
     return (
-      <SidebarProvider>
-        <div className="page-layout">
-          <AppSidebar />
-          <main className="main-content-scrollable">
-            <div className="flex items-center gap-4">
-              <SidebarTrigger />
-            </div>
-            <NoServerConfigured
-              title={t("noServerTitle")}
-              subtitle={t("pageSubtitle")}
-              description={t("noServerDescription")}
-            />
-          </main>
-        </div>
-      </SidebarProvider>
+      <PageShell bare>
+        <NoServerConfigured
+          title={t("noServerTitle")}
+          subtitle={t("pageSubtitle")}
+          description={t("noServerDescription")}
+        />
+      </PageShell>
     );
   }
 
   if (!selectedServerId) {
     return (
-      <SidebarProvider>
-        <div className="page-layout">
-          <AppSidebar />
-          <main className="main-content-scrollable">
-            <div className="content-container-large">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <SidebarTrigger />
-                  <div>
-                    <h1 className="title-page">{t("pageTitle")}</h1>
-                    <p className="text-muted-foreground">
-                      {t("selectServerPrompt")}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </main>
-        </div>
-      </SidebarProvider>
+      <PageShell>
+        <NoServerSelectedCard
+          title={t("pageTitle")}
+          subtitle={t("pageSubtitle")}
+          heading={t("noServerSelected")}
+          description={t("selectServerPrompt")}
+        />
+      </PageShell>
     );
   }
 
   if (isError) {
     return (
-      <SidebarProvider>
-        <div className="page-layout">
-          <AppSidebar />
-          <main className="main-content-scrollable">
-            <div className="content-container-large">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <h1 className="title-page">{t("pageTitle")}</h1>
-              </div>
-              <PageError message={t("common:serverConnectionError")} />
-            </div>
-          </main>
+      <PageShell>
+        <div className="flex items-center gap-4">
+          <SidebarTrigger />
+          <div>
+            <h1 className="title-page">{t("pageTitle")}</h1>
+          </div>
         </div>
-      </SidebarProvider>
+        <PageError message={t("common:serverConnectionError")} />
+      </PageShell>
     );
   }
 
   return (
-    <SidebarProvider>
-      <div className="page-layout">
-        <AppSidebar />
-        <main className="main-content-scrollable">
-          <div className="content-container-large">
-            {/* Header */}
-            <div className="flex items-center gap-4">
-              <SidebarTrigger />
-              <div className="flex-1">
-                <QueueHeader
-                  selectedServerId={selectedServerId}
-                  queueCount={queueCount}
-                  workspaceLoading={workspaceLoading}
-                  canAddQueue={true}
-                  canSendMessages={true}
-                  isAdmin={isAdmin}
-                  onRefetch={handleRefetch}
-                />
-              </div>
-            </div>
-
-            {/* Filter */}
-            <div className="flex items-center gap-4">
-              <Input
-                placeholder={t("filterRegex")}
-                value={filterRegex}
-                onChange={(e) => {
-                  setFilterRegex(e.target.value);
-                  setPage(1);
-                }}
-                className="max-w-xs"
-              />
-            </div>
-
-            {/* Queues Table */}
-            <QueueTable
-              queues={paginatedQueues}
-              isLoading={isLoading}
-              searchTerm={filterRegex}
-              isAdmin={isAdmin}
-              onNavigateToQueue={(queueName) =>
-                navigate(`/queues/${queueName}`)
-              }
-              onRefetch={handleRefetch}
-              total={filteredQueues.length}
-              page={page}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={(size) => {
-                setPageSize(size);
-                setPage(1);
-              }}
-            />
-          </div>
-        </main>
+    <PageShell>
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <SidebarTrigger />
+        <div className="flex-1">
+          <QueueHeader
+            selectedServerId={selectedServerId}
+            queueCount={queueCount}
+            workspaceLoading={workspaceLoading}
+            canAddQueue={true}
+            canSendMessages={true}
+            isAdmin={isAdmin}
+            onRefetch={handleRefetch}
+          />
+        </div>
       </div>
-    </SidebarProvider>
+
+      <QueuesOverviewCards queues={queues} isLoading={isLoading} />
+
+      {/* Search / filter */}
+      {queues.length > 0 && (
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            placeholder={t("searchPlaceholder")}
+            value={filterRegex}
+            onChange={(e) => {
+              setFilterRegex(e.target.value);
+              setPage(1);
+            }}
+            className="pl-9 pr-8 h-9"
+          />
+          {filterRegex && (
+            <button
+              type="button"
+              onClick={() => setFilterRegex("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Queues Table */}
+      <QueueTable
+        queues={paginatedQueues}
+        isLoading={isLoading}
+        searchTerm={filterRegex}
+        isAdmin={isAdmin}
+        onNavigateToQueue={(queueName) => navigate(`/queues/${queueName}`)}
+        onRefetch={handleRefetch}
+        total={filteredQueues.length}
+        page={page}
+        pageSize={pageSize}
+        onPageChange={setPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setPage(1);
+        }}
+      />
+    </PageShell>
   );
 };
 

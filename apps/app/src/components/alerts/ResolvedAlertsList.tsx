@@ -86,10 +86,12 @@ export const ResolvedAlertsList = ({
   }
 
   return (
-    <div className="space-y-4">
-      {alerts.map((alert) => (
-        <AlertItem key={alert.id} alert={alert} isResolved={true} />
-      ))}
+    <div>
+      <div className="divide-y divide-border">
+        {alerts.map((alert) => (
+          <AlertItem key={alert.id} alert={alert} isResolved={true} />
+        ))}
+      </div>
 
       {total > pageSize && (
         <PaginationControls

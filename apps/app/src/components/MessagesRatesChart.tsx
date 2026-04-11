@@ -248,52 +248,58 @@ export const MessagesRatesChart = ({
                     <p className="font-medium">{t("messageRateDefinitions")}</p>
                     <div className="space-y-1 text-xs">
                       <p>
-                        <strong>Publish:</strong> {t("defPublish")}
+                        <strong>{t("legendPublish")}:</strong> {t("defPublish")}
                       </p>
                       <p>
-                        <strong>Deliver:</strong> {t("defDeliver")}
+                        <strong>{t("legendDeliver")}:</strong> {t("defDeliver")}
                       </p>
                       <p>
-                        <strong>Ack:</strong> {t("defAck")}
+                        <strong>{t("legendAck")}:</strong> {t("defAck")}
                       </p>
                       <p>
-                        <strong>Deliver / Get:</strong> {t("defDeliverGet")}
+                        <strong>{t("legendDeliverGet")}:</strong>{" "}
+                        {t("defDeliverGet")}
                       </p>
                       <p>
-                        <strong>Deliver (auto ack):</strong>{" "}
+                        <strong>{t("legendDeliverNoAck")}:</strong>{" "}
                         {t("defDeliverNoAck")}
                       </p>
                       <p>
-                        <strong>Confirm:</strong> {t("defConfirm")}
+                        <strong>{t("legendConfirm")}:</strong> {t("defConfirm")}
                       </p>
                       <p>
-                        <strong>Get:</strong> {t("defGet")}
+                        <strong>{t("legendGet")}:</strong> {t("defGet")}
                       </p>
                       <p>
-                        <strong>Get No Ack:</strong> {t("defGetNoAck")}
+                        <strong>{t("legendGetNoAck")}:</strong>{" "}
+                        {t("defGetNoAck")}
                       </p>
                       <p>
-                        <strong>Get (empty):</strong> {t("defGetEmpty")}
+                        <strong>{t("legendGetEmpty")}:</strong>{" "}
+                        {t("defGetEmpty")}
                       </p>
                       <p>
-                        <strong>Redeliver:</strong> {t("defRedeliver")}
+                        <strong>{t("legendRedeliver")}:</strong>{" "}
+                        {t("defRedeliver")}
                       </p>
                       <p>
-                        <strong>Reject:</strong> {t("defReject")}
+                        <strong>{t("legendReject")}:</strong> {t("defReject")}
                       </p>
                       <p>
-                        <strong>Return Unroutable:</strong>{" "}
+                        <strong>{t("legendReturnUnroutable")}:</strong>{" "}
                         {t("defReturnUnroutable")}
                       </p>
                       <p>
-                        <strong>Drop Unroutable:</strong>{" "}
+                        <strong>{t("legendDropUnroutable")}:</strong>{" "}
                         {t("defDropUnroutable")}
                       </p>
                       <p>
-                        <strong>Disk Reads:</strong> {t("defDiskReads")}
+                        <strong>{t("legendDiskReads")}:</strong>{" "}
+                        {t("defDiskReads")}
                       </p>
                       <p>
-                        <strong>Disk Writes:</strong> {t("defDiskWrites")}
+                        <strong>{t("legendDiskWrites")}:</strong>{" "}
+                        {t("defDiskWrites")}
                       </p>
                     </div>
                   </div>
@@ -335,7 +341,7 @@ export const MessagesRatesChart = ({
           </Alert>
         )}
         {isLoading ? (
-          <div className="h-96 w-full flex items-center justify-center">
+          <div className="h-64 w-full flex items-center justify-center">
             <div className="flex flex-col items-center gap-2">
               <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
@@ -346,7 +352,7 @@ export const MessagesRatesChart = ({
         ) : (
           <div>
             {/* Chart */}
-            <div className="h-96 w-full">
+            <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={chartData}
@@ -393,7 +399,7 @@ export const MessagesRatesChart = ({
                       stroke={CHART_PUBLISH}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
-                      name="Publish"
+                      name={t("legendPublish")}
                     />
                   )}
                   {visibleLines.deliver && (
@@ -403,7 +409,7 @@ export const MessagesRatesChart = ({
                       stroke={CHART_DELIVER}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
-                      name="Deliver"
+                      name={t("legendDeliver")}
                     />
                   )}
                   {visibleLines.ack && (
@@ -413,7 +419,7 @@ export const MessagesRatesChart = ({
                       stroke={CHART_ACK}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
-                      name="Ack"
+                      name={t("legendAck")}
                     />
                   )}
                   {visibleLines.deliver_get && (
@@ -423,7 +429,7 @@ export const MessagesRatesChart = ({
                       stroke={CHART_DELIVER_GET}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
-                      name="Deliver / Get"
+                      name={t("legendDeliverGet")}
                     />
                   )}
                   {visibleLines.deliver_no_ack && (
@@ -433,7 +439,7 @@ export const MessagesRatesChart = ({
                       stroke={CHART_DELIVER_NO_ACK}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
-                      name="Deliver (auto ack)"
+                      name={t("legendDeliverNoAck")}
                     />
                   )}
                   {visibleLines.confirm && (
@@ -443,7 +449,7 @@ export const MessagesRatesChart = ({
                       stroke={CHART_CONFIRM}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
-                      name="Confirm"
+                      name={t("legendConfirm")}
                     />
                   )}
                   {visibleLines.get && (
@@ -453,7 +459,7 @@ export const MessagesRatesChart = ({
                       stroke={CHART_GET}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
-                      name="Get"
+                      name={t("legendGet")}
                     />
                   )}
                   {visibleLines.get_no_ack && (
@@ -463,7 +469,7 @@ export const MessagesRatesChart = ({
                       stroke={CHART_GET_NO_ACK}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
-                      name="Get No Ack"
+                      name={t("legendGetNoAck")}
                     />
                   )}
                   {visibleLines.redeliver && (
@@ -473,7 +479,7 @@ export const MessagesRatesChart = ({
                       stroke={CHART_REDELIVER}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
-                      name="Redeliver"
+                      name={t("legendRedeliver")}
                     />
                   )}
                   {visibleLines.reject && (
@@ -483,7 +489,7 @@ export const MessagesRatesChart = ({
                       stroke={CHART_REJECT}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
-                      name="Reject"
+                      name={t("legendReject")}
                     />
                   )}
                   {visibleLines.get_empty && (
@@ -493,7 +499,7 @@ export const MessagesRatesChart = ({
                       stroke={CHART_GET_EMPTY}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
-                      name="Get (empty)"
+                      name={t("legendGetEmpty")}
                     />
                   )}
                   {visibleLines.return_unroutable && (
@@ -503,7 +509,7 @@ export const MessagesRatesChart = ({
                       stroke={CHART_RETURN_UNROUTABLE}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
-                      name="Return Unroutable"
+                      name={t("legendReturnUnroutable")}
                     />
                   )}
                   {visibleLines.drop_unroutable && (
@@ -513,7 +519,7 @@ export const MessagesRatesChart = ({
                       stroke={CHART_DROP_UNROUTABLE}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
-                      name="Drop Unroutable"
+                      name={t("legendDropUnroutable")}
                     />
                   )}
                   {visibleLines.disk_writes && (
@@ -523,7 +529,7 @@ export const MessagesRatesChart = ({
                       stroke={CHART_DISK_WRITES}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
-                      name="Disk Writes"
+                      name={t("legendDiskWrites")}
                     />
                   )}
                   {visibleLines.disk_reads && (
@@ -533,7 +539,7 @@ export const MessagesRatesChart = ({
                       stroke={CHART_DISK_READS}
                       strokeWidth={2}
                       dot={ratesMode === "basic"}
-                      name="Disk Reads"
+                      name={t("legendDiskReads")}
                     />
                   )}
                 </LineChart>
@@ -552,65 +558,69 @@ export const MessagesRatesChart = ({
                 color: string;
               };
               const commonMetrics: Metric[] = [
-                { key: "publish", name: "Publish", color: CHART_PUBLISH },
+                {
+                  key: "publish",
+                  name: t("legendPublish"),
+                  color: CHART_PUBLISH,
+                },
                 {
                   key: "confirm",
-                  name: "Publisher confirm",
+                  name: t("legendConfirm"),
                   color: CHART_CONFIRM,
                 },
                 {
                   key: "deliver",
-                  name: "Deliver (manual ack)",
+                  name: t("legendDeliver"),
                   color: CHART_DELIVER,
                 },
                 {
                   key: "deliver_get",
-                  name: "Deliver / Get",
+                  name: t("legendDeliverGet"),
                   color: CHART_DELIVER_GET,
                 },
                 {
                   key: "deliver_no_ack",
-                  name: "Deliver (auto ack)",
+                  name: t("legendDeliverNoAck"),
                   color: CHART_DELIVER_NO_ACK,
                 },
-                { key: "ack", name: "Consumer ack", color: CHART_ACK },
+                { key: "ack", name: t("legendAck"), color: CHART_ACK },
                 {
                   key: "redeliver",
-                  name: "Redelivered",
+                  name: t("legendRedeliver"),
                   color: CHART_REDELIVER,
                 },
-                { key: "get", name: "Get (manual ack)", color: CHART_GET },
+                { key: "get", name: t("legendGet"), color: CHART_GET },
                 {
                   key: "get_no_ack",
-                  name: "Get (auto ack)",
+                  name: t("legendGetNoAck"),
                   color: CHART_GET_NO_ACK,
                 },
-                { key: "reject", name: "Reject", color: CHART_REJECT },
+                { key: "reject", name: t("legendReject"), color: CHART_REJECT },
               ];
               const advancedMetrics: Metric[] = [
                 {
                   key: "get_empty",
-                  name: "Get (empty)",
+                  name: t("legendGetEmpty"),
                   color: CHART_GET_EMPTY,
                 },
                 {
                   key: "return_unroutable",
-                  name: "Unroutable (return)",
+                  name: t("legendReturnUnroutable"),
                   color: CHART_RETURN_UNROUTABLE,
                 },
                 {
                   key: "drop_unroutable",
-                  name: "Unroutable (drop)",
+                  name: t("legendDropUnroutable"),
                   color: CHART_DROP_UNROUTABLE,
                 },
                 {
                   key: "disk_writes",
-                  name: "Disk write",
+                  name: t("legendDiskWrites"),
                   color: CHART_DISK_WRITES,
                 },
                 {
                   key: "disk_reads",
-                  name: "Disk read",
+                  name: t("legendDiskReads"),
                   color: CHART_DISK_READS,
                 },
               ];
@@ -650,7 +660,7 @@ export const MessagesRatesChart = ({
                       ) : (
                         <ChevronRight className="h-3 w-3" />
                       )}
-                      {advancedExpanded ? "Hide advanced" : "Show advanced"}
+                      {advancedExpanded ? t("hideAdvanced") : t("showAdvanced")}
                       <span className="text-muted-foreground/60">
                         ({advancedMetrics.length})
                       </span>

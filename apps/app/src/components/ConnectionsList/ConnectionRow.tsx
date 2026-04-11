@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ArrowUpDown, Server, Users, Zap } from "lucide-react";
+import { ChevronRight, Server, Users, Zap } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -25,15 +25,13 @@ interface ConnectionRowProps {
 }
 
 /**
- * A single connection in the list, rendered as a `Collapsible` Radix
- * primitive so the whole header row is keyboard-operable via Enter
- * and Space. The trigger is a native `<button>` (via `asChild`) —
- * not a `<div>` with `cursor-pointer` — so screen readers announce
- * it as interactive and the focus ring works out of the box.
+ * A single connection row. The collapsed view shows the connection
+ * identity (icon, name, state badge, user, node) on the left and
+ * channels + bytes sent on the right — aligned to the sort headers.
  *
- * The expanded pane shows:
- *   - A two-column details grid (connection metadata + traffic stats)
- *   - The list of active channels for this connection, if any
+ * The expand chevron rotates 90° when open. The expanded panel shows
+ * only data NOT already visible in the collapsed header: protocol,
+ * vhost, packets, bytes received, and channel details.
  */
 export function ConnectionRow({
   connection,
@@ -42,80 +40,87 @@ export function ConnectionRow({
 }: ConnectionRowProps) {
   const { t } = useTranslation("connections");
 
+  const stateTooltip = (() => {
+    const s = connection.state?.toLowerCase();
+    if (s === "blocked") return t("stateBlockedTooltip");
+    if (s === "flow") return t("stateFlowTooltip");
+    if (s === "closing") return t("stateClosingTooltip");
+    return undefined;
+  })();
+
   return (
     <Collapsible open={isOpen} onOpenChange={onOpenChange}>
-      <div className="border rounded-lg">
-        <CollapsibleTrigger asChild>
-          <button
-            type="button"
-            className="w-full flex items-center justify-between p-4 hover:bg-accent transition-colors text-left"
-          >
-            <div className="flex items-center gap-4 min-w-0">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className={getStateIconColorClass(connection.state)}>
-                  {getConnectionIcon(connection.state, connection.protocol)}
-                </span>
-                <span
-                  className="font-medium truncate max-w-[300px] font-mono text-sm"
-                  title={connection.name}
-                >
-                  {connection.name}
-                </span>
-              </div>
-              {connection.state && (
-                <Badge className={getStateBadgeClass(connection.state)}>
-                  {connection.state}
-                </Badge>
-              )}
-              <div className="flex items-center gap-1 text-sm text-muted-foreground min-w-0">
-                <Users className="h-3 w-3 shrink-0" aria-hidden="true" />
-                <span className="truncate">{connection.user}</span>
-              </div>
-              <div className="flex items-center gap-1 text-sm text-muted-foreground min-w-0">
-                <Server className="h-3 w-3 shrink-0" aria-hidden="true" />
-                <span className="truncate">{connection.node}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-6 text-sm">
-              <HeaderMetric
-                label={t("totalChannels")}
-                value={connection.channelCount.toLocaleString()}
-              />
-              <HeaderMetric
-                label={t("bytesReceived")}
-                value={formatBytes(connection.recv_oct ?? 0)}
-              />
-              <HeaderMetric
-                label={t("bytesSent")}
-                value={formatBytes(connection.send_oct ?? 0)}
-              />
-              <ArrowUpDown
-                className="h-4 w-4 text-muted-foreground shrink-0"
+      <CollapsibleTrigger asChild>
+        <button
+          type="button"
+          className="w-full flex items-center px-4 py-3 hover:bg-accent transition-colors text-left"
+        >
+          {/* Left: identity */}
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <span className={getStateIconColorClass(connection.state)}>
+              {getConnectionIcon(connection.state, connection.protocol)}
+            </span>
+            <span
+              className="font-medium truncate font-mono text-sm"
+              title={connection.name}
+            >
+              {connection.name}
+            </span>
+            {connection.state && (
+              <Badge
+                className={getStateBadgeClass(connection.state)}
+                title={stateTooltip}
+              >
+                {connection.state}
+              </Badge>
+            )}
+            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+              <Users className="h-3 w-3 shrink-0" aria-hidden="true" />
+              <span className="truncate">{connection.user}</span>
+            </span>
+            <span className="hidden xl:inline-flex items-center gap-1 text-xs text-muted-foreground">
+              <Server className="h-3 w-3 shrink-0" aria-hidden="true" />
+              <span className="truncate">{connection.node}</span>
+            </span>
+          </div>
+
+          {/* Right: key metrics aligned to sort headers */}
+          <div className="flex items-center gap-0">
+            <span className="w-28 text-right font-mono tabular-nums text-sm text-foreground">
+              {connection.channelCount.toLocaleString()}
+            </span>
+            <span className="w-28 text-right font-mono tabular-nums text-sm text-foreground">
+              {formatBytes(connection.send_oct ?? 0)}
+            </span>
+            <div className="w-8 flex justify-center">
+              <ChevronRight
+                className={`h-4 w-4 text-muted-foreground transition-transform duration-150 ${
+                  isOpen ? "rotate-90" : ""
+                }`}
                 aria-hidden="true"
               />
             </div>
-          </button>
-        </CollapsibleTrigger>
+          </div>
+        </button>
+      </CollapsibleTrigger>
 
-        <CollapsibleContent>
-          <ConnectionDetailsPanel connection={connection} />
-        </CollapsibleContent>
-      </div>
+      <CollapsibleContent>
+        <ConnectionDetailsPanel connection={connection} />
+      </CollapsibleContent>
     </Collapsible>
   );
 }
 
-function HeaderMetric({ label, value }: { label: ReactNode; value: string }) {
-  return (
-    <div className="text-center">
-      <div className="font-mono tabular-nums font-medium text-foreground">
-        {value}
-      </div>
-      <div className="text-xs text-muted-foreground">{label}</div>
-    </div>
-  );
-}
-
+/**
+ * Expanded detail panel — flat section strip (no nested cards).
+ *
+ * Only shows data NOT already in the collapsed header:
+ *   - Protocol, vhost (metadata the header omits for density)
+ *   - Bytes received, packets in/out (traffic the header omits)
+ *   - Channel list (expandable sub-detail)
+ *
+ * Bytes sent and channel count are NOT repeated here.
+ */
 function ConnectionDetailsPanel({
   connection,
 }: {
@@ -124,54 +129,31 @@ function ConnectionDetailsPanel({
   const { t } = useTranslation("connections");
 
   return (
-    <div className="border-t p-4 space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Connection metadata */}
-        <div>
-          <h4 className="text-sm font-semibold text-foreground mb-2">
-            {t("connectionDetails")}
-          </h4>
-          <dl className="space-y-1 text-sm">
-            <DetailRow label={t("protocol")} value={connection.protocol} />
-            <DetailRow label={t("virtualHost")} value={connection.vhost} mono />
-            <DetailRow
-              label={t("packetsReceived")}
-              value={(connection.recv_cnt ?? 0).toLocaleString()}
-              mono
-            />
-            <DetailRow
-              label={t("packetsSent")}
-              value={(connection.send_cnt ?? 0).toLocaleString()}
-              mono
-            />
-          </dl>
-        </div>
-
-        {/* Traffic stats */}
-        <div>
-          <h4 className="text-sm font-semibold text-foreground mb-2">
-            {t("trafficStatistics")}
-          </h4>
-          <dl className="space-y-1 text-sm">
-            <DetailRow
-              label={t("bytesReceived")}
-              value={formatBytes(connection.recv_oct ?? 0)}
-              mono
-            />
-            <DetailRow
-              label={t("bytesSent")}
-              value={formatBytes(connection.send_oct ?? 0)}
-              mono
-            />
-            <DetailRow
-              label={t("activeChannels")}
-              value={connection.channelCount.toLocaleString()}
-              mono
-            />
-          </dl>
-        </div>
+    <div className="border-t border-border bg-muted/20 px-4 py-3 space-y-3">
+      {/* Inline metrics strip */}
+      <div className="flex flex-wrap gap-x-6 gap-y-2">
+        <DetailItem label={t("protocol")} value={connection.protocol} />
+        <DetailItem label={t("virtualHost")} value={connection.vhost} mono />
+        <DetailItem label={t("user")} value={connection.user} />
+        <DetailItem label={t("node")} value={connection.node} mono />
+        <DetailItem
+          label={t("bytesReceived")}
+          value={formatBytes(connection.recv_oct ?? 0)}
+          mono
+        />
+        <DetailItem
+          label={t("packetsReceived")}
+          value={(connection.recv_cnt ?? 0).toLocaleString()}
+          mono
+        />
+        <DetailItem
+          label={t("packetsSent")}
+          value={(connection.send_cnt ?? 0).toLocaleString()}
+          mono
+        />
       </div>
 
+      {/* Channel list */}
       {connection.channelDetails && connection.channelDetails.length > 0 && (
         <ChannelsList channels={connection.channelDetails} />
       )}
@@ -179,23 +161,23 @@ function ConnectionDetailsPanel({
   );
 }
 
-function DetailRow({
+function DetailItem({
   label,
   value,
   mono = false,
 }: {
-  label: ReactNode;
+  label: string;
   value: ReactNode;
   mono?: boolean;
 }) {
   return (
-    <div className="flex items-baseline gap-2">
-      <dt className="text-muted-foreground shrink-0">{label}:</dt>
-      <dd
-        className={`min-w-0 truncate text-foreground ${mono ? "font-mono tabular-nums text-xs" : ""}`}
+    <div className="flex items-baseline gap-1.5">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span
+        className={`text-xs font-medium text-foreground ${mono ? "font-mono tabular-nums" : ""}`}
       >
         {value}
-      </dd>
+      </span>
     </div>
   );
 }
@@ -205,78 +187,37 @@ function ChannelsList({ channels }: { channels: ChannelDetail[] }) {
 
   return (
     <div>
-      <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-        <Zap className="h-4 w-4" aria-hidden="true" />
+      <h4 className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-1.5">
+        <Zap className="h-3 w-3" aria-hidden="true" />
         {t("activeChannels")} ({channels.length})
       </h4>
-      <div className="grid gap-3">
+      <div className="divide-y divide-border rounded-md border border-border overflow-hidden">
         {channels.map((channel) => (
-          <ChannelCard key={channel.name} channel={channel} />
+          <ChannelRow key={channel.name} channel={channel} />
         ))}
       </div>
     </div>
   );
 }
 
-function ChannelCard({ channel }: { channel: ChannelDetail }) {
-  const { t } = useTranslation("connections");
-  const peerHost = channel.connection_details?.peer_host;
-  const peerPort = channel.connection_details?.peer_port;
-  const peer = peerHost && peerPort ? `${peerHost}:${peerPort}` : undefined;
-
+function ChannelRow({ channel }: { channel: ChannelDetail }) {
   return (
-    <div className="border rounded-lg p-3 bg-muted/40">
-      <div className="flex items-center justify-between gap-3 mb-2">
-        <div className="flex items-center gap-3 min-w-0">
-          <Badge variant="outline" className="font-mono text-xs shrink-0">
-            #{channel.number}
-          </Badge>
-          <span
-            className="font-medium text-sm font-mono truncate"
-            title={channel.name}
-          >
-            {channel.name}
-          </span>
-          {channel.state && (
-            <Badge className={getStateBadgeClass(channel.state)}>
-              {channel.state}
-            </Badge>
-          )}
-        </div>
-        {peer && (
-          <div className="text-xs text-muted-foreground font-mono shrink-0">
-            {peer}
-          </div>
-        )}
-      </div>
-
-      <div className="grid grid-cols-3 gap-4 text-xs">
-        <ChannelField label={t("user")} value={channel.user} />
-        <ChannelField label={t("vhost")} value={channel.vhost} mono />
-        <ChannelField label={t("node")} value={channel.node} mono />
-      </div>
-    </div>
-  );
-}
-
-function ChannelField({
-  label,
-  value,
-  mono = false,
-}: {
-  label: ReactNode;
-  value: string;
-  mono?: boolean;
-}) {
-  return (
-    <div className="min-w-0">
-      <span className="text-muted-foreground">{label}:</span>
-      <div
-        className={`font-medium truncate ${mono ? "font-mono" : ""}`}
-        title={value}
+    <div className="flex items-center gap-3 px-3 py-2 text-xs">
+      <Badge variant="outline" className="font-mono text-xs shrink-0">
+        #{channel.number}
+      </Badge>
+      <span
+        className="font-mono text-xs truncate flex-1 min-w-0"
+        title={channel.name}
       >
-        {value}
-      </div>
+        {channel.name}
+      </span>
+      {channel.state && (
+        <Badge className={getStateBadgeClass(channel.state)}>
+          {channel.state}
+        </Badge>
+      )}
+      <span className="text-muted-foreground shrink-0">{channel.vhost}</span>
     </div>
   );
 }

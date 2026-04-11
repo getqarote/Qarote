@@ -3,5 +3,13 @@
   "pageSubtitle": "Vue détaillée des nœuds du cluster et de leurs métriques",
   "noServerTitle": "Nœuds",
   "noServerDescription": "Ajoutez une connexion à un serveur RabbitMQ pour afficher les nœuds du cluster et leurs métriques.",
-  "selectServerPrompt": "Veuillez sélectionner un serveur RabbitMQ pour afficher ses nœuds"
+  "selectServerPrompt": "Veuillez sélectionner un serveur RabbitMQ pour afficher ses nœuds",
+  "nodeName": "Nœud",
+  "status": "Statut",
+  "memory": "Mémoire",
+  "diskFree": "Disque libre",
+  "uptime": "Disponibilité",
+  "connections": "Connexions",
+  "noNodesFound": "Aucun nœud trouvé",
+  "permissionErrorTitle": "Informations sur les nœuds indisponibles"
 }
