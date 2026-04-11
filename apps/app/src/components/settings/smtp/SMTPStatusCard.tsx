@@ -1,13 +1,6 @@
 import { useTranslation } from "react-i18next";
 
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
@@ -31,17 +24,19 @@ export function SMTPStatusCard({
   const { t } = useTranslation("smtp");
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>{t("status")}</CardTitle>
-          <Badge variant="secondary">
-            {source === "database" ? t("sourceDatabase") : t("sourceEnv")}
-          </Badge>
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
+        <div>
+          <h2 className="title-section">{t("status")}</h2>
+          <p className="text-sm text-muted-foreground">
+            {t("statusDescription")}
+          </p>
         </div>
-        <CardDescription>{t("statusDescription")}</CardDescription>
-      </CardHeader>
-      <CardContent>
+        <Badge variant="secondary">
+          {source === "database" ? t("sourceDatabase") : t("sourceEnv")}
+        </Badge>
+      </div>
+      <div className="p-4">
         <div className="flex items-center space-x-4">
           <Switch
             id="smtp-enabled"
@@ -52,7 +47,7 @@ export function SMTPStatusCard({
             {enabled ? t("enabled") : t("disabled")}
           </Label>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

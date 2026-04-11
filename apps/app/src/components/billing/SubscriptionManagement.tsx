@@ -5,7 +5,6 @@ import { Clock, RefreshCw, Settings, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 
 import { UserPlan } from "@/types/plans";
 
@@ -66,8 +65,8 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
 
   return (
     <>
-      <Card>
-        <CardContent className="p-6">
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
               <div
@@ -171,8 +170,8 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                 </div>
               </div>
             )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <CancelSubscriptionModal
         isOpen={showCancelModal}

@@ -1,11 +1,8 @@
 import { useTranslation } from "react-i18next";
 
-import { Activity, HardDrive, MessageSquare, Users } from "lucide-react";
-
 import { Queue } from "@/lib/api";
 
 import { QueueStatusBadge } from "@/components/Queues/queue-status-badge";
-import { Card, CardContent } from "@/components/ui/card";
 
 interface QueueStatsProps {
   queue: Queue;
@@ -23,64 +20,35 @@ export function QueueStats({ queue }: QueueStatsProps) {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">{t("status")}</p>
-              <QueueStatusBadge state={queue.state} />
-            </div>
-            <Activity className="w-8 h-8 text-muted-foreground" />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">
-                {t("totalMessages")}
-              </p>
-              <p className="text-2xl font-bold text-foreground">
-                {queue.messages.toLocaleString()}
-              </p>
-            </div>
-            <MessageSquare className="w-8 h-8 text-muted-foreground" />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">{t("consumers")}</p>
-              <p className="text-2xl font-bold text-foreground">
-                {queue.consumers}
-              </p>
-            </div>
-            <Users className="w-8 h-8 text-muted-foreground" />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">
-                {t("memoryUsage")}
-              </p>
-              <p className="text-2xl font-bold text-foreground">
-                {formatBytes(queue.memory)}
-              </p>
-            </div>
-            <HardDrive className="w-8 h-8 text-muted-foreground" />
-          </div>
-        </CardContent>
-      </Card>
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-border">
+        <div className="px-4 py-4">
+          <p className="text-sm text-muted-foreground mb-1">{t("status")}</p>
+          <QueueStatusBadge state={queue.state} />
+        </div>
+        <div className="px-4 py-4">
+          <p className="text-sm text-muted-foreground mb-1">
+            {t("totalMessages")}
+          </p>
+          <p className="text-2xl font-mono tabular-nums text-foreground">
+            {queue.messages.toLocaleString()}
+          </p>
+        </div>
+        <div className="px-4 py-4">
+          <p className="text-sm text-muted-foreground mb-1">{t("consumers")}</p>
+          <p className="text-2xl font-mono tabular-nums text-foreground">
+            {queue.consumers}
+          </p>
+        </div>
+        <div className="px-4 py-4">
+          <p className="text-sm text-muted-foreground mb-1">
+            {t("memoryUsage")}
+          </p>
+          <p className="text-2xl font-mono tabular-nums text-foreground">
+            {formatBytes(queue.memory)}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

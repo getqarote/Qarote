@@ -6,7 +6,6 @@ import { AlertCircle, CheckCircle, Clock, Receipt } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 
 type PaymentStatus =
   | "SUCCEEDED"
@@ -107,8 +106,8 @@ export const RecentPayments: React.FC<RecentPaymentsProps> = ({
   }
 
   return (
-    <Card>
-      <CardContent className="p-6">
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="p-6">
         <div className="flex items-center gap-3 mb-4">
           <div
             className="flex items-center justify-center h-9 w-9 rounded-lg bg-primary/10 shrink-0"
@@ -162,7 +161,7 @@ export const RecentPayments: React.FC<RecentPaymentsProps> = ({
             );
           })}
         </ul>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

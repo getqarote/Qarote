@@ -13,7 +13,6 @@ import {
 } from "@/components/alerts/alertUtils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
@@ -82,60 +81,54 @@ export const RecentAlerts = () => {
 
   if (error) {
     return (
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-warning" />
-              {t("recentAlerts")}
-              <Badge variant="outline">{t("error")}</Badge>
-            </CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
+          <h2 className="title-section flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-warning" />
+            {t("recentAlerts")}
+            <Badge variant="outline">{t("error")}</Badge>
+          </h2>
+        </div>
+        <div className="p-4">
           <div className="text-center py-4">
             <AlertTriangle className="h-8 w-8 mx-auto text-warning mb-2" />
             <p className="text-sm text-muted-foreground">
               {t("failedToLoadAlerts")}
             </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-warning" />
-              {t("recentAlerts")}
-              {isLoading ? (
-                <Badge variant="outline">{t("loadingAlerts")}</Badge>
-              ) : (
-                <Badge
-                  variant={summary.total > 0 ? "destructive" : "secondary"}
-                >
-                  {summary.total}
-                </Badge>
-              )}
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {t("latestNotifications")}
-            </p>
-          </div>
-          <Link
-            to="/alerts"
-            className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
-          >
-            {t("viewAll")}
-            <ArrowRight className="h-4 w-4" />
-          </Link>
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
+        <div>
+          <h2 className="title-section flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-warning" />
+            {t("recentAlerts")}
+            {isLoading ? (
+              <Badge variant="outline">{t("loadingAlerts")}</Badge>
+            ) : (
+              <Badge variant={summary.total > 0 ? "destructive" : "secondary"}>
+                {summary.total}
+              </Badge>
+            )}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {t("latestNotifications")}
+          </p>
         </div>
-      </CardHeader>
-      <CardContent>
+        <Link
+          to="/alerts"
+          className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+        >
+          {t("viewAll")}
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
+      <div className="p-4">
         {isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -251,7 +244,7 @@ export const RecentAlerts = () => {
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

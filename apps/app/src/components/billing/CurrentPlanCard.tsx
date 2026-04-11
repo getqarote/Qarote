@@ -14,7 +14,6 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 
 import { getPlanDisplayName, UserPlan } from "@/types/plans";
 
@@ -143,250 +142,246 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
 
   return (
     <>
-      <Card>
-        <CardContent className="p-0">
-          {/* Plan header row */}
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 p-6">
-            <div className="space-y-2 min-w-0">
-              <div className="flex items-center gap-3 flex-wrap">
-                <h2 className="text-lg font-semibold leading-tight">
-                  {t("currentPlan.planName", {
-                    plan: getPlanDisplayName(plan),
-                  })}
-                </h2>
-                {statusBadge}
-              </div>
-              {interval && (
-                <p className="text-sm text-muted-foreground">
-                  {t("currentPlan.billingInterval", { interval })}
-                </p>
-              )}
+      <div className="rounded-lg border border-border overflow-hidden">
+        {/* Plan header row */}
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 p-6">
+          <div className="space-y-2 min-w-0">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h2 className="text-lg font-semibold leading-tight">
+                {t("currentPlan.planName", {
+                  plan: getPlanDisplayName(plan),
+                })}
+              </h2>
+              {statusBadge}
             </div>
-
-            {stripeSubscription && (
-              <div className="text-left sm:text-right shrink-0">
-                <div className="flex items-baseline gap-1 sm:justify-end">
-                  <span className="text-2xl font-semibold tracking-tight tabular-nums">
-                    {formatCurrency(price)}
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    / {interval}
-                  </span>
-                </div>
-                {isTrialing && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t("trial.daysRemaining", { count: daysRemaining })}
-                  </p>
-                )}
-              </div>
+            {interval && (
+              <p className="text-sm text-muted-foreground">
+                {t("currentPlan.billingInterval", { interval })}
+              </p>
             )}
           </div>
 
-          {/* Trial progress bar */}
-          {isTrialing && trialEndDate && (
-            <div className="px-6 pb-6">
-              <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-                <span>{t("trial.started")}</span>
-                <span>
-                  {t("trial.endsDate", { date: formatTrialDate(trialEndDate) })}
+          {stripeSubscription && (
+            <div className="text-left sm:text-right shrink-0">
+              <div className="flex items-baseline gap-1 sm:justify-end">
+                <span className="text-2xl font-semibold tracking-tight tabular-nums">
+                  {formatCurrency(price)}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  / {interval}
                 </span>
               </div>
-              <div
-                className="h-1.5 w-full rounded-full bg-muted overflow-hidden"
-                role="progressbar"
-                aria-valuenow={trialProgress}
-                aria-valuemin={0}
-                aria-valuemax={100}
-              >
-                <div
-                  className="h-full rounded-full bg-primary transition-all duration-500"
-                  style={{ width: `${trialProgress}%` }}
-                />
-              </div>
+              {isTrialing && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t("trial.daysRemaining", { count: daysRemaining })}
+                </p>
+              )}
             </div>
           )}
+        </div>
 
-          {/* Billing details row */}
-          {stripeSubscription && (
-            <dl className="grid grid-cols-1 sm:grid-cols-3 border-t border-border">
-              {/* Current period */}
-              <div className="p-6 sm:border-r border-border">
-                <dt className="flex items-center gap-2 text-muted-foreground mb-2">
-                  <Calendar className="h-4 w-4" aria-hidden="true" />
-                  <span className="text-xs font-medium uppercase tracking-wider">
-                    {t("currentPlan.currentPeriod")}
-                  </span>
-                </dt>
-                <dd className="text-sm font-medium">
-                  {formatDate(
-                    new Date(stripeSubscription.current_period_start * 1000)
-                  )}
-                </dd>
-                <dd className="text-xs text-muted-foreground mt-0.5">
-                  {t("currentPlan.toDate", {
-                    date: formatDate(
-                      new Date(stripeSubscription.current_period_end * 1000)
-                    ),
-                  })}
-                </dd>
-              </div>
+        {/* Trial progress bar */}
+        {isTrialing && trialEndDate && (
+          <div className="px-6 pb-6">
+            <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+              <span>{t("trial.started")}</span>
+              <span>
+                {t("trial.endsDate", { date: formatTrialDate(trialEndDate) })}
+              </span>
+            </div>
+            <div
+              className="h-1.5 w-full rounded-full bg-muted overflow-hidden"
+              role="progressbar"
+              aria-valuenow={trialProgress}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            >
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-500"
+                style={{ width: `${trialProgress}%` }}
+              />
+            </div>
+          </div>
+        )}
 
-              {/* Trial end / Next billing */}
-              <div className="p-6 border-t sm:border-t-0 sm:border-r border-border">
-                <dt className="flex items-center gap-2 text-muted-foreground mb-2">
-                  <Clock className="h-4 w-4" aria-hidden="true" />
-                  <span className="text-xs font-medium uppercase tracking-wider">
-                    {isTrialing && trialEndDate
-                      ? t("trial.endsOn")
-                      : t("currentPlan.nextBilling")}
-                  </span>
-                </dt>
-                <dd className="text-sm font-medium">
+        {/* Billing details row */}
+        {stripeSubscription && (
+          <dl className="grid grid-cols-1 sm:grid-cols-3 border-t border-border">
+            {/* Current period */}
+            <div className="p-6 sm:border-r border-border">
+              <dt className="flex items-center gap-2 text-muted-foreground mb-2">
+                <Calendar className="h-4 w-4" aria-hidden="true" />
+                <span className="text-xs font-medium uppercase tracking-wider">
+                  {t("currentPlan.currentPeriod")}
+                </span>
+              </dt>
+              <dd className="text-sm font-medium">
+                {formatDate(
+                  new Date(stripeSubscription.current_period_start * 1000)
+                )}
+              </dd>
+              <dd className="text-xs text-muted-foreground mt-0.5">
+                {t("currentPlan.toDate", {
+                  date: formatDate(
+                    new Date(stripeSubscription.current_period_end * 1000)
+                  ),
+                })}
+              </dd>
+            </div>
+
+            {/* Trial end / Next billing */}
+            <div className="p-6 border-t sm:border-t-0 sm:border-r border-border">
+              <dt className="flex items-center gap-2 text-muted-foreground mb-2">
+                <Clock className="h-4 w-4" aria-hidden="true" />
+                <span className="text-xs font-medium uppercase tracking-wider">
                   {isTrialing && trialEndDate
-                    ? formatDate(trialEndDate)
-                    : formatDate(
-                        new Date(stripeSubscription.current_period_end * 1000)
-                      )}
+                    ? t("trial.endsOn")
+                    : t("currentPlan.nextBilling")}
+                </span>
+              </dt>
+              <dd className="text-sm font-medium">
+                {isTrialing && trialEndDate
+                  ? formatDate(trialEndDate)
+                  : formatDate(
+                      new Date(stripeSubscription.current_period_end * 1000)
+                    )}
+              </dd>
+              {isTrialing && daysRemaining > 0 && (
+                <dd className="text-xs text-warning mt-0.5 font-medium">
+                  {t("trial.daysLeft", { count: daysRemaining })}
                 </dd>
-                {isTrialing && daysRemaining > 0 && (
-                  <dd className="text-xs text-warning mt-0.5 font-medium">
-                    {t("trial.daysLeft", { count: daysRemaining })}
-                  </dd>
+              )}
+            </div>
+
+            {/* Payment method */}
+            <div
+              className="p-6 border-t sm:border-t-0 border-border"
+              data-testid="current-plan-payment-section"
+            >
+              <dt className="flex items-center gap-2 text-muted-foreground mb-2">
+                <CreditCard className="h-4 w-4" aria-hidden="true" />
+                <span className="text-xs font-medium uppercase tracking-wider">
+                  {t("currentPlan.paymentMethod")}
+                </span>
+              </dt>
+              <dd>
+                {paymentMethod ? (
+                  <button
+                    type="button"
+                    onClick={onManagePaymentMethod}
+                    className="group inline-flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"
+                    aria-label={t("currentPlan.changePaymentMethod")}
+                  >
+                    <span className="tabular-nums">
+                      •••• {paymentMethod.card?.last4}
+                    </span>
+                    <ExternalLink
+                      className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                      aria-hidden="true"
+                    />
+                  </button>
+                ) : onManagePaymentMethod ? (
+                  <button
+                    type="button"
+                    onClick={onManagePaymentMethod}
+                    className="group inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <span>{t("trial.noPaymentMethod")}</span>
+                    <ExternalLink
+                      className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                      aria-hidden="true"
+                    />
+                  </button>
+                ) : (
+                  <span className="text-sm text-muted-foreground">
+                    {t("trial.noPaymentMethod")}
+                  </span>
+                )}
+              </dd>
+            </div>
+          </dl>
+        )}
+
+        {/* Trial status footer */}
+        {isTrialing && stripeSubscription && (
+          <div
+            className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 border-t ${
+              cancelAtPeriodEnd
+                ? "border-destructive/30 bg-destructive/5"
+                : "border-border bg-muted/30"
+            }`}
+          >
+            <div className="flex items-start gap-3 min-w-0">
+              <div
+                className={`mt-0.5 shrink-0 rounded-full p-1.5 ${
+                  cancelAtPeriodEnd ? "bg-destructive/10" : "bg-background"
+                }`}
+                aria-hidden="true"
+              >
+                {cancelAtPeriodEnd ? (
+                  <X className="h-4 w-4 text-destructive" />
+                ) : (
+                  <Sparkles className="h-4 w-4 text-muted-foreground" />
                 )}
               </div>
-
-              {/* Payment method */}
-              <div
-                className="p-6 border-t sm:border-t-0 border-border"
-                data-testid="current-plan-payment-section"
-              >
-                <dt className="flex items-center gap-2 text-muted-foreground mb-2">
-                  <CreditCard className="h-4 w-4" aria-hidden="true" />
-                  <span className="text-xs font-medium uppercase tracking-wider">
-                    {t("currentPlan.paymentMethod")}
-                  </span>
-                </dt>
-                <dd>
-                  {paymentMethod ? (
-                    <button
-                      type="button"
-                      onClick={onManagePaymentMethod}
-                      className="group inline-flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors"
-                      aria-label={t("currentPlan.changePaymentMethod")}
-                    >
-                      <span className="tabular-nums">
-                        •••• {paymentMethod.card?.last4}
-                      </span>
-                      <ExternalLink
-                        className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity"
-                        aria-hidden="true"
-                      />
-                    </button>
-                  ) : onManagePaymentMethod ? (
-                    <button
-                      type="button"
-                      onClick={onManagePaymentMethod}
-                      className="group inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
-                    >
-                      <span>{t("trial.noPaymentMethod")}</span>
-                      <ExternalLink
-                        className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity"
-                        aria-hidden="true"
-                      />
-                    </button>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">
-                      {t("trial.noPaymentMethod")}
-                    </span>
-                  )}
-                </dd>
-              </div>
-            </dl>
-          )}
-
-          {/* Trial status footer */}
-          {isTrialing && stripeSubscription && (
-            <div
-              className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 border-t ${
-                cancelAtPeriodEnd
-                  ? "border-destructive/30 bg-destructive/5"
-                  : "border-border bg-muted/30"
-              }`}
-            >
-              <div className="flex items-start gap-3 min-w-0">
-                <div
-                  className={`mt-0.5 shrink-0 rounded-full p-1.5 ${
-                    cancelAtPeriodEnd ? "bg-destructive/10" : "bg-background"
+              <div className="min-w-0">
+                <h3
+                  className={`font-semibold text-sm ${
+                    cancelAtPeriodEnd ? "text-destructive" : "text-foreground"
                   }`}
-                  aria-hidden="true"
                 >
-                  {cancelAtPeriodEnd ? (
-                    <X className="h-4 w-4 text-destructive" />
-                  ) : (
-                    <Sparkles className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <h3
-                    className={`font-semibold text-sm ${
-                      cancelAtPeriodEnd ? "text-destructive" : "text-foreground"
-                    }`}
-                  >
-                    {cancelAtPeriodEnd
-                      ? t("trial.trialCanceled")
-                      : t("trial.trialActive")}
-                  </h3>
-                  <p
-                    className={`text-sm mt-0.5 ${
-                      cancelAtPeriodEnd
-                        ? "text-destructive/80"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    {cancelAtPeriodEnd
-                      ? t("trial.trialEndsOnDate", {
+                  {cancelAtPeriodEnd
+                    ? t("trial.trialCanceled")
+                    : t("trial.trialActive")}
+                </h3>
+                <p
+                  className={`text-sm mt-0.5 ${
+                    cancelAtPeriodEnd
+                      ? "text-destructive/80"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {cancelAtPeriodEnd
+                    ? t("trial.trialEndsOnDate", {
+                        date: trialEndDate ? formatTrialDate(trialEndDate) : "",
+                      })
+                    : paymentMethod
+                      ? t("trial.trialActiveWithPayment", {
                           date: trialEndDate
                             ? formatTrialDate(trialEndDate)
                             : "",
                         })
-                      : paymentMethod
-                        ? t("trial.trialActiveWithPayment", {
-                            date: trialEndDate
-                              ? formatTrialDate(trialEndDate)
-                              : "",
-                          })
-                        : t("trial.addPaymentToKeep", {
-                            date: trialEndDate
-                              ? formatTrialDate(trialEndDate)
-                              : "",
-                          })}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 sm:shrink-0">
-                {!paymentMethod && onManagePaymentMethod && (
-                  <Button onClick={onManagePaymentMethod} size="sm">
-                    <CreditCard className="h-4 w-4 mr-2" aria-hidden="true" />
-                    {t("trial.addPaymentMethod")}
-                  </Button>
-                )}
-                {isTrialing && onCancelSubscription && !cancelAtPeriodEnd && (
-                  <Button
-                    onClick={() => setShowCancelModal(true)}
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground hover:text-destructive"
-                    disabled={isLoading}
-                  >
-                    {t("trial.cancelTrial")}
-                  </Button>
-                )}
+                      : t("trial.addPaymentToKeep", {
+                          date: trialEndDate
+                            ? formatTrialDate(trialEndDate)
+                            : "",
+                        })}
+                </p>
               </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+
+            <div className="flex items-center gap-2 sm:shrink-0">
+              {!paymentMethod && onManagePaymentMethod && (
+                <Button onClick={onManagePaymentMethod} size="sm">
+                  <CreditCard className="h-4 w-4 mr-2" aria-hidden="true" />
+                  {t("trial.addPaymentMethod")}
+                </Button>
+              )}
+              {isTrialing && onCancelSubscription && !cancelAtPeriodEnd && (
+                <Button
+                  onClick={() => setShowCancelModal(true)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-destructive"
+                  disabled={isLoading}
+                >
+                  {t("trial.cancelTrial")}
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
 
       {onCancelSubscription && (
         <CancelSubscriptionModal

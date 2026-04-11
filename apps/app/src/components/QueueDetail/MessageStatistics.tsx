@@ -1,8 +1,7 @@
-import { Database, HelpCircle } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 
 import { Queue } from "@/lib/api";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Tooltip,
   TooltipContent,
@@ -15,14 +14,11 @@ interface MessageStatisticsProps {
 
 export function MessageStatistics({ queue }: MessageStatisticsProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Database className="w-5 h-5" />
-          Message Statistics
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="px-4 py-3 bg-muted/30 border-b border-border">
+        <h2 className="title-section">Message Statistics</h2>
+      </div>
+      <div className="p-4 space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-sm text-muted-foreground">Ready</p>
@@ -32,10 +28,6 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Unacknowledged</p>
-            {/* Only color when there ARE unacked messages — same conditional
-                pattern as the Unacked column in the queues table. Avoids the
-                "warning amber on a value of 0" false-alarm bug from the
-                original /critique. */}
             <p
               className={`text-xl font-semibold font-mono tabular-nums ${
                 queue.messages_unacknowledged > 0
@@ -59,19 +51,19 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
             </p>
           </div>
         </div>
-        <div className="pt-4 border-t">
+        <div className="pt-4 border-t border-border">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-sm text-muted-foreground">Incoming</span>
                 <Tooltip>
                   <TooltipTrigger aria-label="Incoming rate info">
-                    <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
+                    <HelpCircle className="w-3 h-3 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <div className="text-xs">
+                    <p className="text-xs">
                       Rate of messages published to the queue.
-                    </div>
+                    </p>
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -88,12 +80,12 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
                 </span>
                 <Tooltip>
                   <TooltipTrigger aria-label="Deliver / Get rate info">
-                    <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
+                    <HelpCircle className="w-3 h-3 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <div className="text-xs">
+                    <p className="text-xs">
                       Combined rate of deliver + get operations.
-                    </div>
+                    </p>
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -110,12 +102,12 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
                 </span>
                 <Tooltip>
                   <TooltipTrigger aria-label="Redelivered rate info">
-                    <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
+                    <HelpCircle className="w-3 h-3 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <div className="text-xs">
+                    <p className="text-xs">
                       Rate of messages redelivered after nack/reject.
-                    </div>
+                    </p>
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -130,12 +122,12 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
                 <span className="text-sm text-muted-foreground">Ack</span>
                 <Tooltip>
                   <TooltipTrigger aria-label="Ack rate info">
-                    <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
+                    <HelpCircle className="w-3 h-3 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <div className="text-xs">
+                    <p className="text-xs">
                       Rate of messages acknowledged by consumers.
-                    </div>
+                    </p>
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -146,7 +138,7 @@ export function MessageStatistics({ queue }: MessageStatisticsProps) {
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

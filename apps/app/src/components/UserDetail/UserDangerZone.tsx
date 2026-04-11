@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface UserDangerZoneProps {
   username: string;
@@ -30,13 +29,11 @@ export function UserDangerZone({
         : undefined;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="title-section text-destructive">
-          {t("dangerZone")}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div className="rounded-lg border border-destructive/30 overflow-hidden">
+      <div className="px-4 py-3 bg-destructive/5 border-b border-destructive/30">
+        <h2 className="title-section text-destructive">{t("dangerZone")}</h2>
+      </div>
+      <div className="p-4">
         <Button
           variant="destructive"
           onClick={onDeleteClick}
@@ -48,7 +45,7 @@ export function UserDangerZone({
         {disabledReason && (
           <p className="text-sm text-muted-foreground mt-2">{disabledReason}</p>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

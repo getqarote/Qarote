@@ -1,28 +1,13 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import {
-  Info,
-  Mail,
-  Settings,
-  Trash2,
-  User,
-  UserPlus,
-  Users,
-} from "lucide-react";
+import { Info, Mail, Settings, Trash2, User, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PaginationControls } from "@/components/ui/PaginationControls";
 import {
@@ -119,69 +104,66 @@ export function OrgMembersCard({
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" aria-hidden="true" />
-                {t("org.members")}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-muted-foreground"
-                      aria-label={t("org.roleHelp")}
-                    >
-                      <Info className="h-4 w-4" aria-hidden="true" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div className="space-y-2 max-w-xs">
-                      <p className="font-medium text-sm">
-                        {t("org.roleHelpTitle")}
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
+          <div>
+            <h2 className="title-section flex items-center gap-2">
+              {t("org.members")}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground"
+                    aria-label={t("org.roleHelp")}
+                  >
+                    <Info className="h-4 w-4" aria-hidden="true" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="space-y-2 max-w-xs">
+                    <p className="font-medium text-sm">
+                      {t("org.roleHelpTitle")}
+                    </p>
+                    <div className="text-xs text-muted-foreground space-y-1">
+                      <p>
+                        <span className="font-medium text-foreground">
+                          {roleLabels["OWNER"] ?? t("org.roleOwner")}
+                        </span>
+                        {" — "}
+                        {t("org.roleDescOwner")}
                       </p>
-                      <div className="text-xs text-muted-foreground space-y-1">
-                        <p>
-                          <span className="font-medium text-foreground">
-                            {roleLabels["OWNER"] ?? t("org.roleOwner")}
-                          </span>
-                          {" — "}
-                          {t("org.roleDescOwner")}
-                        </p>
-                        <p>
-                          <span className="font-medium text-foreground">
-                            {roleLabels["ADMIN"] ?? t("org.roleAdmin")}
-                          </span>
-                          {" — "}
-                          {t("org.roleDescOrgAdmin")}
-                        </p>
-                        <p>
-                          <span className="font-medium text-foreground">
-                            {roleLabels["MEMBER"] ?? t("org.roleMember")}
-                          </span>
-                          {" — "}
-                          {t("org.roleDescOrgMember")}
-                        </p>
-                      </div>
+                      <p>
+                        <span className="font-medium text-foreground">
+                          {roleLabels["ADMIN"] ?? t("org.roleAdmin")}
+                        </span>
+                        {" — "}
+                        {t("org.roleDescOrgAdmin")}
+                      </p>
+                      <p>
+                        <span className="font-medium text-foreground">
+                          {roleLabels["MEMBER"] ?? t("org.roleMember")}
+                        </span>
+                        {" — "}
+                        {t("org.roleDescOrgMember")}
+                      </p>
                     </div>
-                  </TooltipContent>
-                </Tooltip>
-              </CardTitle>
-              <CardDescription>
-                {t("org.membersCount", { count: total })}
-              </CardDescription>
-            </div>
-            {isOrgAdmin && (
-              <Button size="sm" onClick={onInviteClick}>
-                <UserPlus className="h-4 w-4 mr-2" aria-hidden="true" />
-                {t("org.invite")}
-              </Button>
-            )}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {t("org.membersCount", { count: total })}
+            </p>
           </div>
-        </CardHeader>
-        <CardContent>
+          {isOrgAdmin && (
+            <Button size="sm" onClick={onInviteClick}>
+              <UserPlus className="h-4 w-4 mr-2" aria-hidden="true" />
+              {t("org.invite")}
+            </Button>
+          )}
+        </div>
+        <div className="p-4">
           {isLoading ? (
             <div className="space-y-3">
               <Skeleton className="h-12 w-full" />
@@ -244,8 +226,8 @@ export function OrgMembersCard({
               )}
             </>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <MemberWorkspacesDialog
         open={manageWsMember !== null}

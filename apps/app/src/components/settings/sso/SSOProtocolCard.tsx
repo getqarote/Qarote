@@ -15,13 +15,6 @@ import { cn } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -74,12 +67,14 @@ export function SSOProtocolCard({
   const fieldId = useId();
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="title-section">{t("protocol")}</CardTitle>
-        <CardDescription>{t("protocolDescription")}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="px-4 py-3 bg-muted/30 border-b border-border">
+        <h2 className="title-section">{t("protocol")}</h2>
+        <p className="text-sm text-muted-foreground">
+          {t("protocolDescription")}
+        </p>
+      </div>
+      <div className="p-4 space-y-6">
         {/* Protocol picker — segmented control, not a dropdown */}
         <ProtocolSegmentedControl
           value={values.type}
@@ -114,8 +109,8 @@ export function SSOProtocolCard({
             onChange={(domain) => onChange({ domain })}
           />
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 

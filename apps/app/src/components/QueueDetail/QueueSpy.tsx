@@ -5,7 +5,6 @@ import { AlertTriangle, ArrowDown, Loader2, Radio, Trash2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scrollArea";
 
 import { useSpyOnQueue } from "@/hooks/queries/useRabbitMQ";
@@ -123,68 +122,66 @@ export function QueueSpy({ serverId, queueName, vhost }: QueueSpyProps) {
   // Error state
   if (error) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="px-4 py-3 bg-muted/30 border-b border-border">
+          <h2 className="title-section flex items-center gap-2">
             <Radio className="w-4 h-4" />
             {t("spyTitle")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+          </h2>
+        </div>
+        <div className="p-4">
           <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-md">
             <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
             <div className="text-sm text-muted-foreground">{error}</div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-success" />
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
+        <h2 className="title-section flex items-center gap-2">
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-success" />
+          </span>
+          {t("spyTitle")}
+
+          {messages.length > 0 && (
+            <Badge variant="secondary" className="text-xs">
+              {messages.length}
+            </Badge>
+          )}
+
+          {dropped > 0 && (
+            <Badge variant="outline" className="text-xs text-warning">
+              {t("spyDropped", { count: dropped })}
+            </Badge>
+          )}
+        </h2>
+
+        <div className="flex items-center gap-2">
+          {spyInfo && (
+            <span className="text-xs text-muted-foreground">
+              {t("spyStarted", { count: spyInfo.bindingCount })}
             </span>
-            {t("spyTitle")}
-
-            {messages.length > 0 && (
-              <Badge variant="secondary" className="text-xs">
-                {messages.length}
-              </Badge>
-            )}
-
-            {dropped > 0 && (
-              <Badge variant="outline" className="text-xs text-warning">
-                {t("spyDropped", { count: dropped })}
-              </Badge>
-            )}
-          </CardTitle>
-
-          <div className="flex items-center gap-2">
-            {spyInfo && (
-              <span className="text-xs text-muted-foreground">
-                {t("spyStarted", { count: spyInfo.bindingCount })}
-              </span>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs"
-              onClick={clearMessages}
-              disabled={messages.length === 0}
-            >
-              <Trash2 className="w-3 h-3 mr-1" />
-              {t("spyClear")}
-            </Button>
-          </div>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs"
+            onClick={clearMessages}
+            disabled={messages.length === 0}
+          >
+            <Trash2 className="w-3 h-3 mr-1" />
+            {t("spyClear")}
+          </Button>
         </div>
-      </CardHeader>
+      </div>
 
-      <CardContent className="p-0">
+      <div>
         {/* Screen reader announcement */}
         <div className="sr-only" aria-live="polite" aria-atomic="true">
           {ariaMessage}
@@ -232,7 +229,7 @@ export function QueueSpy({ serverId, queueName, vhost }: QueueSpyProps) {
             </button>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -6,14 +6,6 @@ import { AlertCircle, Lock } from "lucide-react";
 import { isCloudMode } from "@/lib/featureFlags";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 /**
  * Gate shown when the caller's plan doesn't include SSO (community /
@@ -35,20 +27,20 @@ export function SSOUpgradePrompt() {
 
   return (
     <div className="flex items-center justify-center py-12">
-      <Card className="w-full max-w-md border-2">
-        <CardHeader>
-          <div className="flex items-center gap-2">
+      <div className="w-full max-w-md rounded-lg border-2 border-border overflow-hidden">
+        <div className="px-4 py-3 bg-muted/30 border-b border-border">
+          <h2 className="title-section flex items-center gap-2">
             <Lock
               className="h-5 w-5 text-muted-foreground"
               aria-hidden="true"
             />
-            <CardTitle>{t("settings:sso.upgradeTitle")}</CardTitle>
-          </div>
-          <CardDescription>
+            {t("settings:sso.upgradeTitle")}
+          </h2>
+          <p className="text-sm text-muted-foreground">
             {t("settings:sso.upgradeDescription")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className="p-4 space-y-4">
           <div className="flex items-start gap-3 rounded-lg border bg-muted/50 p-4">
             <AlertCircle
               className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0"
@@ -65,36 +57,36 @@ export function SSOUpgradePrompt() {
               </p>
             </div>
           </div>
-        </CardContent>
-        <CardFooter className="flex gap-2">
-          {cloud ? (
-            <Button className="flex-1" onClick={() => navigate("/plans")}>
-              {t("settings:sso.viewPlans")}
-            </Button>
-          ) : (
-            <>
-              <Button
-                className="flex-1"
-                onClick={() => navigate("/settings/license")}
-              >
-                {t("settings:sso.activateLicense")}
+          <div className="flex gap-2">
+            {cloud ? (
+              <Button className="flex-1" onClick={() => navigate("/plans")}>
+                {t("settings:sso.viewPlans")}
               </Button>
-              <Button
-                variant="outline"
-                onClick={() =>
-                  window.open(
-                    `${import.meta.env.VITE_PORTAL_URL}/purchase`,
-                    "_blank",
-                    "noopener,noreferrer"
-                  )
-                }
-              >
-                {t("settings:sso.purchaseLicense")}
-              </Button>
-            </>
-          )}
-        </CardFooter>
-      </Card>
+            ) : (
+              <>
+                <Button
+                  className="flex-1"
+                  onClick={() => navigate("/settings/license")}
+                >
+                  {t("settings:sso.activateLicense")}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    window.open(
+                      `${import.meta.env.VITE_PORTAL_URL}/purchase`,
+                      "_blank",
+                      "noopener,noreferrer"
+                    )
+                  }
+                >
+                  {t("settings:sso.purchaseLicense")}
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

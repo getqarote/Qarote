@@ -30,7 +30,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alertDialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 
@@ -80,67 +79,61 @@ export const WorkspaceInfoTab = ({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex items-start gap-3 min-w-0">
-            <div
-              className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10 shrink-0"
-              aria-hidden="true"
-            >
-              <Building2 className="h-5 w-5 text-primary" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-semibold leading-tight">
-                  {t("workspace.information")}
-                </span>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {editingWorkspace
-                  ? t("workspace.subtitleEditing")
-                  : t("workspace.subtitleViewing")}
-              </p>
-            </div>
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between px-4 py-3 bg-muted/30 border-b border-border">
+        <div className="flex items-start gap-3 min-w-0">
+          <div
+            className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10 shrink-0"
+            aria-hidden="true"
+          >
+            <Building2 className="h-5 w-5 text-primary" />
           </div>
+          <div className="min-w-0">
+            <h2 className="title-section">{t("workspace.information")}</h2>
+            <p className="text-sm text-muted-foreground">
+              {editingWorkspace
+                ? t("workspace.subtitleEditing")
+                : t("workspace.subtitleViewing")}
+            </p>
+          </div>
+        </div>
 
-          {isAdmin && (
-            <div className="flex items-center gap-2 shrink-0">
-              {editingWorkspace ? (
-                <>
-                  <Button
-                    variant="outline"
-                    onClick={onCancelEdit}
-                    disabled={isUpdating}
-                    className="h-9"
-                  >
-                    <X className="h-4 w-4" aria-hidden="true" />
-                    <span className="hidden sm:inline">
-                      {t("workspace.cancel")}
-                    </span>
-                  </Button>
-                  <Button
-                    onClick={onUpdateWorkspace}
-                    disabled={isUpdating}
-                    className="btn-primary h-9"
-                  >
-                    <Save className="h-4 w-4" aria-hidden="true" />
-                    <span className="hidden sm:inline">
-                      {t("workspace.saveChanges")}
-                    </span>
-                  </Button>
-                </>
-              ) : (
-                <Button onClick={onStartEdit} className="btn-primary h-9">
-                  <Edit className="h-4 w-4" aria-hidden="true" />
-                  {t("workspace.editWorkspace")}
+        {isAdmin && (
+          <div className="flex items-center gap-2 shrink-0">
+            {editingWorkspace ? (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={onCancelEdit}
+                  disabled={isUpdating}
+                  className="h-9"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                  <span className="hidden sm:inline">
+                    {t("workspace.cancel")}
+                  </span>
                 </Button>
-              )}
-            </div>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
+                <Button
+                  onClick={onUpdateWorkspace}
+                  disabled={isUpdating}
+                  className="btn-primary h-9"
+                >
+                  <Save className="h-4 w-4" aria-hidden="true" />
+                  <span className="hidden sm:inline">
+                    {t("workspace.saveChanges")}
+                  </span>
+                </Button>
+              </>
+            ) : (
+              <Button onClick={onStartEdit} className="btn-primary h-9">
+                <Edit className="h-4 w-4" aria-hidden="true" />
+                {t("workspace.editWorkspace")}
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+      <div className="p-4 space-y-6">
         <WorkspaceFormFields
           workspace={workspace}
           isAdmin={isAdmin}
@@ -293,7 +286,7 @@ export const WorkspaceInfoTab = ({
             </AlertDialog>
           </>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

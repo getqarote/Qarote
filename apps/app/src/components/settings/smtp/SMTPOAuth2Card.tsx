@@ -1,12 +1,5 @@
 import { useTranslation } from "react-i18next";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -31,10 +24,10 @@ export function SMTPOAuth2Card({ values, onChange }: SMTPOAuth2CardProps) {
   const { t } = useTranslation("smtp");
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("oauth2")}</CardTitle>
-        <CardDescription>
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="px-4 py-3 bg-muted/30 border-b border-border">
+        <h2 className="title-section">{t("oauth2")}</h2>
+        <p className="text-sm text-muted-foreground">
           {t("oauth2DescriptionPrefix")}{" "}
           <a
             href="https://nodemailer.com/smtp/oauth2/"
@@ -45,9 +38,9 @@ export function SMTPOAuth2Card({ values, onChange }: SMTPOAuth2CardProps) {
             {t("oauth2DescriptionLink")}
           </a>
           {t("oauth2DescriptionSuffix")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </p>
+      </div>
+      <div className="p-4 space-y-4">
         <div className="space-y-2">
           <Label htmlFor="smtp-service">{t("service")}</Label>
           <Input
@@ -90,7 +83,7 @@ export function SMTPOAuth2Card({ values, onChange }: SMTPOAuth2CardProps) {
             autoComplete="new-password"
           />
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

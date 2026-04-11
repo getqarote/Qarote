@@ -8,7 +8,6 @@ import { RabbitMQNode } from "@/lib/api";
 
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Collapsible,
   CollapsibleContent,
@@ -84,118 +83,110 @@ export const ConnectedNodes = ({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <Server className="h-5 w-5" />
-            {t("connectedNodesTitle")} ({nodes.length})
-          </CardTitle>
-          <Link
-            to="/nodes"
-            className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
-          >
-            {t("seeMore")}
-            <ArrowRight className="h-4 w-4" />
-          </Link>
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
+        <h2 className="title-section flex items-center gap-2">
+          {t("connectedNodesTitle")}
+          <Badge variant="secondary">{nodes.length}</Badge>
+        </h2>
+        <Link
+          to="/nodes"
+          className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+        >
+          {t("seeMore")}
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
+      {nodesError && isRabbitMQAuthError(nodesError) ? (
+        <div className="p-4">
+          <RabbitMQPermissionError
+            requiredPermission={nodesError.requiredPermission}
+            message={nodesError.message}
+            title={t("nodeInfoUnavailable")}
+          />
         </div>
-      </CardHeader>
-      <CardContent className="!pt-0 !px-0 !pb-0">
-        {nodesError && isRabbitMQAuthError(nodesError) ? (
-          <div className="px-6 pb-6">
-            <RabbitMQPermissionError
-              requiredPermission={nodesError.requiredPermission}
-              message={nodesError.message}
-              title={t("nodeInfoUnavailable")}
-            />
-          </div>
-        ) : isLoading ? (
-          <div className="px-6 pb-6 space-y-3">
-            {Array.from({ length: 2 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full rounded-lg" />
-            ))}
-          </div>
-        ) : nodes.length > 0 ? (
-          <div className="divide-y divide-border">
-            {nodes.map((node) => (
-              <Collapsible
-                key={node.name}
-                open={expandedNames.has(node.name)}
-                onOpenChange={(open) => toggleExpanded(node.name, open)}
-              >
-                <CollapsibleTrigger asChild>
-                  <button
-                    type="button"
-                    className="w-full flex items-center px-6 py-3 hover:bg-accent transition-colors text-left"
-                  >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <Wifi className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <span className="font-medium font-mono text-sm truncate">
-                        {node.name}
-                      </span>
-                      {getStatusBadge(node)}
-                      <span className="hidden sm:inline text-xs text-muted-foreground">
-                        {node.type}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span className="hidden md:inline font-mono tabular-nums">
-                        {formatUptime(node.uptime)}
-                      </span>
-                      <ChevronRight
-                        className={`h-4 w-4 transition-transform duration-150 ${
-                          expandedNames.has(node.name) ? "rotate-90" : ""
-                        }`}
-                      />
-                    </div>
-                  </button>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="border-t border-border bg-muted/20 px-6 py-3">
-                    <div className="flex flex-wrap gap-x-6 gap-y-2">
-                      <DetailItem
-                        label={t("nodeType")}
-                        value={node.type}
-                        t={t}
-                      />
-                      <DetailItem
-                        label={t("uptime")}
-                        value={formatUptime(node.uptime)}
-                        mono
-                        t={t}
-                      />
-                      <DetailItem
-                        label={t("memory")}
-                        value={formatBytes(node.mem_used)}
-                        mono
-                        t={t}
-                      />
-                      <DetailItem
-                        label={t("cpus")}
-                        value={String(node.processors)}
-                        mono
-                        t={t}
-                      />
-                      <DetailItem
-                        label={t("diskFree")}
-                        value={formatBytes(node.disk_free)}
-                        mono
-                        t={t}
-                      />
-                    </div>
+      ) : isLoading ? (
+        <div className="p-4 space-y-3">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <Skeleton key={i} className="h-12 w-full rounded-lg" />
+          ))}
+        </div>
+      ) : nodes.length > 0 ? (
+        <div className="divide-y divide-border">
+          {nodes.map((node) => (
+            <Collapsible
+              key={node.name}
+              open={expandedNames.has(node.name)}
+              onOpenChange={(open) => toggleExpanded(node.name, open)}
+            >
+              <CollapsibleTrigger asChild>
+                <button
+                  type="button"
+                  className="w-full flex items-center px-4 py-3 hover:bg-accent transition-colors text-left"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <Wifi className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <span className="font-medium font-mono text-sm truncate">
+                      {node.name}
+                    </span>
+                    {getStatusBadge(node)}
+                    <span className="hidden sm:inline text-xs text-muted-foreground">
+                      {node.type}
+                    </span>
                   </div>
-                </CollapsibleContent>
-              </Collapsible>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8 px-6">
-            <Server className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">{t("noNodesFound")}</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    <span className="hidden md:inline font-mono tabular-nums">
+                      {formatUptime(node.uptime)}
+                    </span>
+                    <ChevronRight
+                      className={`h-4 w-4 transition-transform duration-150 ${
+                        expandedNames.has(node.name) ? "rotate-90" : ""
+                      }`}
+                    />
+                  </div>
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="border-t border-border bg-muted/20 px-4 py-3">
+                  <div className="flex flex-wrap gap-x-6 gap-y-2">
+                    <DetailItem label={t("nodeType")} value={node.type} t={t} />
+                    <DetailItem
+                      label={t("uptime")}
+                      value={formatUptime(node.uptime)}
+                      mono
+                      t={t}
+                    />
+                    <DetailItem
+                      label={t("memory")}
+                      value={formatBytes(node.mem_used)}
+                      mono
+                      t={t}
+                    />
+                    <DetailItem
+                      label={t("cpus")}
+                      value={String(node.processors)}
+                      mono
+                      t={t}
+                    />
+                    <DetailItem
+                      label={t("diskFree")}
+                      value={formatBytes(node.disk_free)}
+                      mono
+                      t={t}
+                    />
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-8 px-4">
+          <Server className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground">{t("noNodesFound")}</p>
+        </div>
+      )}
+    </div>
   );
 };
 

@@ -20,7 +20,6 @@ import {
   smtpSettingsToFormValues,
 } from "@/components/settings/smtp/types";
 import { Button } from "@/components/ui/button";
-import { Card, CardFooter } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
@@ -139,8 +138,8 @@ function SMTPForm({
         </>
       )}
 
-      <Card>
-        <CardFooter className="pt-6">
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="px-4 py-3">
           <Button onClick={handleSave} disabled={updateMutation.isPending}>
             {updateMutation.isPending ? (
               <>
@@ -154,8 +153,8 @@ function SMTPForm({
               t("save")
             )}
           </Button>
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

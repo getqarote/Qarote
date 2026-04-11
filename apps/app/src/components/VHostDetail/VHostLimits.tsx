@@ -2,19 +2,10 @@ import { useTranslation } from "react-i18next";
 
 import type { VHost } from "@/lib/api/vhostTypes";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 interface VHostLimitsProps {
   vhost: VHost;
 }
 
-/**
- * RabbitMQ's `/vhost-limits/{vhost}` endpoint returns an array of
- * `{vhost, value: {max-connections, max-queues, ...}}` entries (one per
- * vhost), not a flat object. We intentionally preserve that runtime shape
- * here rather than fighting the typed wrapper; the cast is local and
- * clearly labelled.
- */
 type VHostLimitsRuntime = Array<{
   vhost: string;
   value: {
@@ -23,12 +14,6 @@ type VHostLimitsRuntime = Array<{
   };
 }>;
 
-/**
- * Renders the vhost's connection and queue limits only when at least one
- * is set. Matches `UserLimits` — a card full of em-dashes is chrome
- * without information, and the "Set limits" form right below already
- * communicates "none set" through its empty fields.
- */
 export function VHostLimits({ vhost }: VHostLimitsProps) {
   const { t } = useTranslation("vhosts");
 
@@ -43,11 +28,11 @@ export function VHostLimits({ vhost }: VHostLimitsProps) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="title-section">{t("limits")}</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="px-4 py-3 bg-muted/30 border-b border-border">
+        <h2 className="title-section">{t("limits")}</h2>
+      </div>
+      <div className="p-4">
         <div className="grid grid-cols-2 gap-8">
           <div>
             <div className="text-sm text-muted-foreground mb-1">
@@ -66,7 +51,7 @@ export function VHostLimits({ vhost }: VHostLimitsProps) {
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

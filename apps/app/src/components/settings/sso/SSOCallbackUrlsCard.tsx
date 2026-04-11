@@ -3,13 +3,6 @@ import { useTranslation } from "react-i18next";
 import { Copy } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 import { copyToClipboard } from "./ssoHelpers";
 import type { SSOProviderType } from "./types";
@@ -56,15 +49,15 @@ export function SSOCallbackUrlsCard({
   if (!activeUrl) return null;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="title-section">{t("urls")}</CardTitle>
-        <CardDescription>{t("urlsDescription")}</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="px-4 py-3 bg-muted/30 border-b border-border">
+        <h2 className="title-section">{t("urls")}</h2>
+        <p className="text-sm text-muted-foreground">{t("urlsDescription")}</p>
+      </div>
+      <div className="p-4">
         <UrlRow label={activeLabel} url={activeUrl} />
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 

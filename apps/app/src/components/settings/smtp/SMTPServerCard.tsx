@@ -1,12 +1,5 @@
 import { useTranslation } from "react-i18next";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -28,12 +21,14 @@ export function SMTPServerCard({ values, onChange }: SMTPServerCardProps) {
   const { t } = useTranslation("smtp");
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("server")}</CardTitle>
-        <CardDescription>{t("serverDescription")}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="px-4 py-3 bg-muted/30 border-b border-border">
+        <h2 className="title-section">{t("server")}</h2>
+        <p className="text-sm text-muted-foreground">
+          {t("serverDescription")}
+        </p>
+      </div>
+      <div className="p-4 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="smtp-host">{t("host")}</Label>
@@ -67,7 +62,7 @@ export function SMTPServerCard({ values, onChange }: SMTPServerCardProps) {
             autoComplete="off"
           />
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

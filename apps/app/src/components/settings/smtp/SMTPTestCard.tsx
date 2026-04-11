@@ -5,13 +5,6 @@ import { AlertCircle, CheckCircle, Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -54,12 +47,12 @@ export function SMTPTestCard() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("test")}</CardTitle>
-        <CardDescription>{t("testDescription")}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="px-4 py-3 bg-muted/30 border-b border-border">
+        <h2 className="title-section">{t("test")}</h2>
+        <p className="text-sm text-muted-foreground">{t("testDescription")}</p>
+      </div>
+      <div className="p-4 space-y-4">
         <div className="flex gap-2">
           <Label htmlFor="test-recipient-email" className="sr-only">
             {t("recipientEmail")}
@@ -104,7 +97,7 @@ export function SMTPTestCard() {
             )}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

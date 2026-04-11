@@ -3,20 +3,10 @@ import { useTranslation } from "react-i18next";
 
 import type { VHost } from "@/lib/api/vhostTypes";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 interface VHostStatsProps {
   vhost: VHost;
 }
 
-/**
- * VHost-level message stats: how many queues and exchanges live in this
- * vhost, how many messages are in flight, and (when published rates are
- * known) the publish / deliver / ack rates.
- *
- * Numbers use Fragment Mono + tabular-nums because they're the primary
- * reason an operator is on this page.
- */
 export function VHostStats({ vhost }: VHostStatsProps) {
   const { t } = useTranslation("vhosts");
 
@@ -29,11 +19,11 @@ export function VHostStats({ vhost }: VHostStatsProps) {
   );
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="title-section">{t("stats")}</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="px-4 py-3 bg-muted/30 border-b border-border">
+        <h2 className="title-section">{t("stats")}</h2>
+      </div>
+      <div className="p-4">
         <div className="grid grid-cols-3 gap-8">
           <StatBlock
             label={t("vhostQueues")}
@@ -50,10 +40,7 @@ export function VHostStats({ vhost }: VHostStatsProps) {
         </div>
 
         {hasMessageStats && (
-          <div className="mt-6 pt-6 border-t">
-            {/* No sub-heading here — the divider and the different labels
-                (published / delivered / acknowledged vs the resource
-                counts above) carry the transition on their own. */}
+          <div className="mt-6 pt-6 border-t border-border">
             <div className="grid grid-cols-3 gap-8">
               {messageStats?.publish !== undefined && (
                 <StatBlock
@@ -91,8 +78,8 @@ export function VHostStats({ vhost }: VHostStatsProps) {
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 

@@ -5,8 +5,8 @@ import { useNavigate, useParams } from "react-router";
 import { UserRole } from "@/lib/api";
 import { logger } from "@/lib/logger";
 
-import { AppSidebar } from "@/components/AppSidebar";
 import { MessagesRatesChart } from "@/components/MessagesRatesChart";
+import { PageShell } from "@/components/PageShell";
 import { ConsumerDetails } from "@/components/QueueDetail/ConsumerDetails";
 import { LoadingSkeleton } from "@/components/QueueDetail/LoadingSkeleton";
 import { MessageStatistics } from "@/components/QueueDetail/MessageStatistics";
@@ -29,7 +29,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
@@ -122,116 +121,89 @@ const QueueDetail = () => {
 
   if (!selectedServerId || !queueName) {
     return (
-      <SidebarProvider>
-        <div className="page-layout">
-          <AppSidebar />
-          <main className="main-content-scrollable">
-            <div className="content-container-large">
-              <NotFound
-                title={t("queueNotFound")}
-                description={t("queueNotFoundDesc")}
-                onNavigateBack={handleNavigateBack}
-              />
-            </div>
-          </main>
-        </div>
-      </SidebarProvider>
+      <PageShell>
+        <NotFound
+          title={t("queueNotFound")}
+          description={t("queueNotFoundDesc")}
+          onNavigateBack={handleNavigateBack}
+        />
+      </PageShell>
     );
   }
 
   return (
     <TooltipProvider>
-      <SidebarProvider>
-        <div className="page-layout">
-          <AppSidebar />
-          <main className="main-content-scrollable">
-            <div className="content-container-large">
-              {/* Header */}
-              <QueueHeader
-                queueName={queueName}
-                selectedServerId={selectedServerId}
-                messageCount={queue?.messages || 0}
-                consumerCount={queue?.consumers || 0}
-                isAdmin={isAdmin}
-                isSpying={spyEnabled}
-                onSpyToggle={() => setSpyEnabled((prev) => !prev)}
-                onNavigateBack={handleNavigateBack}
-                onRefetch={refetch}
-                onDeleteQueue={isAdmin ? confirmDeleteQueue : undefined}
-              />
+      <PageShell>
+        <QueueHeader
+          queueName={queueName}
+          selectedServerId={selectedServerId}
+          messageCount={queue?.messages || 0}
+          consumerCount={queue?.consumers || 0}
+          isAdmin={isAdmin}
+          isSpying={spyEnabled}
+          onSpyToggle={() => setSpyEnabled((prev) => !prev)}
+          onNavigateBack={handleNavigateBack}
+          onRefetch={refetch}
+          onDeleteQueue={isAdmin ? confirmDeleteQueue : undefined}
+        />
 
-              {/* Spy on Queue — sits directly below the header so it appears
-                  in the viewport the moment the user enables it. The `key`
-                  forces a clean unmount/remount (teardown + state reset)
-                  whenever the spy target changes. */}
-              {spyEnabled && (
-                <QueueSpy
-                  key={`${selectedServerId}|${queueName}|${selectedVHost || "/"}`}
-                  serverId={selectedServerId}
-                  queueName={queueName}
-                  vhost={selectedVHost || "/"}
-                />
-              )}
+        {spyEnabled && (
+          <QueueSpy
+            key={`${selectedServerId}|${queueName}|${selectedVHost || "/"}`}
+            serverId={selectedServerId}
+            queueName={queueName}
+            vhost={selectedVHost || "/"}
+          />
+        )}
 
-              {isLoading ? (
-                <LoadingSkeleton />
-              ) : queue ? (
-                <>
-                  {/* Status and Quick Stats */}
-                  <QueueStats queue={queue} />
+        {isLoading ? (
+          <LoadingSkeleton />
+        ) : queue ? (
+          <>
+            <QueueStats queue={queue} />
 
-                  {/* Detailed Message Statistics */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <MessageStatistics queue={queue} />
-                    <QueueConfiguration queue={queue} />
-                  </div>
-
-                  {/* Additional Details */}
-                  <QueueTiming queue={queue} />
-
-                  {/* Live Rates Chart */}
-                  <MessagesRatesChart
-                    messagesRates={queueLiveRatesData?.rates}
-                    ratesMode={queueLiveRatesData?.ratesMode}
-                    isLoading={liveRatesLoading}
-                    error={null}
-                    timeRange={timeRange}
-                    onTimeRangeChange={setTimeRange}
-                  />
-
-                  {/* Queued Messages Chart */}
-                  <QueuedMessagesChart
-                    queueTotals={queueLiveRatesData?.queueTotals}
-                    isLoading={liveRatesLoading}
-                    error={null}
-                    timeRange={timeRange}
-                    onTimeRangeChange={setTimeRange}
-                  />
-
-                  {/* Consumer Details Section */}
-                  <ConsumerDetails
-                    consumersData={consumersData}
-                    consumersLoading={consumersLoading}
-                  />
-
-                  {/* Queue Bindings Section */}
-                  <QueueBindings
-                    bindingsData={bindingsData}
-                    bindingsLoading={bindingsLoading}
-                  />
-                </>
-              ) : (
-                <NotFound
-                  title={t("queueNotFound")}
-                  description={t("notFoundMessage", { queueName })}
-                  onNavigateBack={handleNavigateBack}
-                />
-              )}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <MessageStatistics queue={queue} />
+              <QueueConfiguration queue={queue} />
             </div>
-          </main>
-        </div>
 
-        {/* Delete Confirmation Dialog */}
+            <QueueTiming queue={queue} />
+
+            <MessagesRatesChart
+              messagesRates={queueLiveRatesData?.rates}
+              ratesMode={queueLiveRatesData?.ratesMode}
+              isLoading={liveRatesLoading}
+              error={null}
+              timeRange={timeRange}
+              onTimeRangeChange={setTimeRange}
+            />
+
+            <QueuedMessagesChart
+              queueTotals={queueLiveRatesData?.queueTotals}
+              isLoading={liveRatesLoading}
+              error={null}
+              timeRange={timeRange}
+              onTimeRangeChange={setTimeRange}
+            />
+
+            <ConsumerDetails
+              consumersData={consumersData}
+              consumersLoading={consumersLoading}
+            />
+
+            <QueueBindings
+              bindingsData={bindingsData}
+              bindingsLoading={bindingsLoading}
+            />
+          </>
+        ) : (
+          <NotFound
+            title={t("queueNotFound")}
+            description={t("notFoundMessage", { queueName })}
+            onNavigateBack={handleNavigateBack}
+          />
+        )}
+
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <DialogContent>
             <DialogHeader>
@@ -260,7 +232,7 @@ const QueueDetail = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </SidebarProvider>
+      </PageShell>
     </TooltipProvider>
   );
 };

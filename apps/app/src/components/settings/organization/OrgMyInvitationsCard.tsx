@@ -7,13 +7,6 @@ import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 import {
   useAcceptOrgInvitation,
@@ -102,21 +95,21 @@ export function OrgMyInvitationsCard({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="px-4 py-3 bg-muted/30 border-b border-border">
+        <h2 className="title-section flex items-center gap-2">
           <Mail className="h-5 w-5" aria-hidden="true" />
           {alreadyInOrg
             ? t("org.yourInvitations")
             : t("org.pendingInvitations")}
-        </CardTitle>
-        <CardDescription>
+        </h2>
+        <p className="text-sm text-muted-foreground">
           {alreadyInOrg
             ? t("org.yourInvitationsDesc")
             : t("org.yourInvitationsNoOrg")}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+        </p>
+      </div>
+      <div className="p-4">
         <div className="space-y-2">
           {invitations.map((inv) => {
             const isAccepting =
@@ -182,7 +175,7 @@ export function OrgMyInvitationsCard({
             );
           })}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

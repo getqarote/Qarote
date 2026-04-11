@@ -1,7 +1,6 @@
 import { Users } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface ConsumerDetailsProps {
@@ -31,16 +30,12 @@ export function ConsumerDetails({
   consumersLoading,
 }: ConsumerDetailsProps) {
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            Active Consumers ({consumersData?.totalConsumers || 0})
-          </CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent>
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3 bg-muted/30 border-b border-border">
+        <h2 className="title-section">Active Consumers</h2>
+        <Badge variant="secondary">{consumersData?.totalConsumers || 0}</Badge>
+      </div>
+      <div className="p-4">
         {consumersLoading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
@@ -123,7 +118,7 @@ export function ConsumerDetails({
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

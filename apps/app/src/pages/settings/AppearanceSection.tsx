@@ -9,13 +9,6 @@ import {
 import { Globe, Monitor, Moon, Sun } from "lucide-react";
 
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -44,17 +37,17 @@ const AppearanceSection = () => {
         <p className="text-muted-foreground">{t("subtitle")}</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("themeTitle")}</CardTitle>
-          <CardDescription>
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="px-4 py-3 bg-muted/30 border-b border-border">
+          <h2 className="title-section">{t("themeTitle")}</h2>
+          <p className="text-sm text-muted-foreground">
             {t("themeDescription")}{" "}
             <span className="text-muted-foreground">
               {t("themeSystemHint")}
             </span>
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className="p-4">
           <ToggleGroup
             type="single"
             value={theme}
@@ -89,15 +82,17 @@ const AppearanceSection = () => {
               );
             })}
           </ToggleGroup>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("languageTitle")}</CardTitle>
-          <CardDescription>{t("languageDescription")}</CardDescription>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="px-4 py-3 bg-muted/30 border-b border-border">
+          <h2 className="title-section">{t("languageTitle")}</h2>
+          <p className="text-sm text-muted-foreground">
+            {t("languageDescription")}
+          </p>
+        </div>
+        <div className="p-4">
           <Select
             value={currentLocale}
             onValueChange={(v) => i18n.changeLanguage(v)}
@@ -123,8 +118,8 @@ const AppearanceSection = () => {
               ))}
             </SelectContent>
           </Select>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };

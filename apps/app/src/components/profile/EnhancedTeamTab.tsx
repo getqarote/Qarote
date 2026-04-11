@@ -10,13 +10,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -151,60 +144,61 @@ export const EnhancedTeamTab = ({
 
   if (!isAdmin) {
     return (
-      <Card>
-        <CardContent className="pt-6">
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="p-4">
           <p className="text-muted-foreground">{t("team.adminOnly")}</p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
     <div className="space-y-6">
       {/* Team */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="px-4 py-3 bg-muted/30 border-b border-border">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              <span>{t("team.workspaceMembersTitle")}</span>
-              <span className="text-sm font-normal text-muted-foreground">
-                {totalUsers}{" "}
-                {totalUsers === 1 ? t("team.user") : t("team.users")}
-                {pendingInvitations > 0 && (
-                  <>
-                    {" "}
-                    <span title={t("team.pendingHelp")}>
-                      · {pendingInvitations} {t("team.pending")}
-                    </span>
-                  </>
-                )}
-                {maxUsers && (
-                  <>
-                    {" "}
-                    <span
-                      className={
-                        totalUsers + pendingInvitations >= maxUsers
-                          ? "text-destructive"
-                          : ""
-                      }
-                    >
-                      ({totalUsers + pendingInvitations}/{maxUsers})
-                    </span>
-                  </>
-                )}
-              </span>
+              <h2 className="title-section">
+                {t("team.workspaceMembersTitle")}
+              </h2>
+              <Badge
+                variant="outline"
+                className="font-mono tabular-nums text-xs"
+              >
+                {totalUsers}
+              </Badge>
+              {pendingInvitations > 0 && (
+                <span
+                  className="text-sm text-muted-foreground"
+                  title={t("team.pendingHelp")}
+                >
+                  · {pendingInvitations} {t("team.pending")}
+                </span>
+              )}
+              {maxUsers && (
+                <span
+                  className={`text-sm ${
+                    totalUsers + pendingInvitations >= maxUsers
+                      ? "text-destructive"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  ({totalUsers + pendingInvitations}/{maxUsers})
+                </span>
+              )}
             </div>
             {/* Workspace-level invitations disabled — use org invitations instead */}
-          </CardTitle>
+          </div>
           {workspace?.name && (
-            <CardDescription className="space-y-1">
+            <div className="space-y-1 text-sm text-muted-foreground mt-1">
               <div>{workspace.name}</div>
               <div>{t("team.scopeHelp")}</div>
-            </CardDescription>
+            </div>
           )}
-        </CardHeader>
-        <CardContent>
+        </div>
+        <div className="p-4">
           {usersLoading ? (
             <div className="space-y-2">
               {[...Array(3)].map((_, i) => (
@@ -398,8 +392,8 @@ export const EnhancedTeamTab = ({
               {t("team.noTeamMembers")}
             </p>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <InviteUserDialog
         open={inviteDialogOpen}

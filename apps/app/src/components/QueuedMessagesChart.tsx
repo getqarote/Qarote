@@ -20,7 +20,6 @@ import {
 
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { TimeRange, TimeRangeSelector } from "@/components/TimeRangeSelector";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Tooltip as UITooltip,
   TooltipContent,
@@ -128,59 +127,53 @@ export const QueuedMessagesChart = ({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-lg font-semibold text-foreground">
-              {t("queuedMessages")}
-            </CardTitle>
-            <TooltipProvider>
-              <UITooltip>
-                <TooltipTrigger asChild>
-                  <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent className="max-w-sm p-3">
-                  <div className="space-y-2 text-sm">
-                    <p className="font-medium">
-                      {t("queuedMessageDefinitions")}
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
+        <div className="flex items-center gap-2">
+          <h2 className="title-section">{t("queuedMessages")}</h2>
+          <TooltipProvider>
+            <UITooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-sm p-3">
+                <div className="space-y-2 text-sm">
+                  <p className="font-medium">{t("queuedMessageDefinitions")}</p>
+                  <div className="space-y-1 text-xs">
+                    <p>
+                      <strong>Total:</strong> {t("defTotal")}
                     </p>
-                    <div className="space-y-1 text-xs">
-                      <p>
-                        <strong>Total:</strong> {t("defTotal")}
-                      </p>
-                      <p>
-                        <strong>Ready:</strong> {t("defReady")}
-                      </p>
-                      <p>
-                        <strong>Unacked:</strong> {t("defUnacked")}
-                      </p>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {t("queuedMetricsNote")}
+                    <p>
+                      <strong>Ready:</strong> {t("defReady")}
+                    </p>
+                    <p>
+                      <strong>Unacked:</strong> {t("defUnacked")}
                     </p>
                   </div>
-                </TooltipContent>
-              </UITooltip>
-            </TooltipProvider>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
-              <span className="text-xs text-muted-foreground">
-                {t("updatesEvery5s")}
-              </span>
-            </div>
-            {onTimeRangeChange && (
-              <TimeRangeSelector
-                value={timeRange}
-                onValueChange={onTimeRangeChange}
-              />
-            )}
-          </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {t("queuedMetricsNote")}
+                  </p>
+                </div>
+              </TooltipContent>
+            </UITooltip>
+          </TooltipProvider>
         </div>
-      </CardHeader>
-      <CardContent>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+            <span className="text-xs text-muted-foreground">
+              {t("updatesEvery5s")}
+            </span>
+          </div>
+          {onTimeRangeChange && (
+            <TimeRangeSelector
+              value={timeRange}
+              onValueChange={onTimeRangeChange}
+            />
+          )}
+        </div>
+      </div>
+      <div className="p-4">
         {isLoading ? (
           <div className="h-64 w-full flex items-center justify-center">
             <div className="flex flex-col items-center gap-2">
@@ -304,7 +297,7 @@ export const QueuedMessagesChart = ({
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

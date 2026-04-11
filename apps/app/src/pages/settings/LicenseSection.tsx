@@ -15,14 +15,6 @@ import { isSelfHostedMode } from "@/lib/featureFlags";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -95,34 +87,34 @@ const LicenseSection = () => {
       </div>
 
       {/* Current License Status */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
+          <div>
+            <h2 className="title-section flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-muted-foreground" />
-              <CardTitle>License Status</CardTitle>
-            </div>
-            {hasLicense ? (
-              <Badge className="bg-success-muted text-success hover:bg-success-muted">
-                <CheckCircle className="h-3 w-3 mr-1" />
-                Active
-              </Badge>
-            ) : (
-              <Badge variant="secondary">
-                <XCircle className="h-3 w-3 mr-1" />
-                No License
-              </Badge>
-            )}
+              License Status
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {hasLicense
+                ? "Your instance has an active license with premium features enabled."
+                : "Activate a license to unlock premium features."}
+            </p>
           </div>
-          <CardDescription>
-            {hasLicense
-              ? "Your instance has an active license with premium features enabled."
-              : "Activate a license to unlock premium features."}
-          </CardDescription>
-        </CardHeader>
+          {hasLicense ? (
+            <Badge className="bg-success-muted text-success hover:bg-success-muted">
+              <CheckCircle className="h-3 w-3 mr-1" />
+              Active
+            </Badge>
+          ) : (
+            <Badge variant="secondary">
+              <XCircle className="h-3 w-3 mr-1" />
+              No License
+            </Badge>
+          )}
+        </div>
 
         {hasLicense && status.license && (
-          <CardContent>
+          <div className="p-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Tier</p>
@@ -152,11 +144,11 @@ const LicenseSection = () => {
                 </div>
               </div>
             </div>
-          </CardContent>
+          </div>
         )}
 
         {hasLicense && (
-          <CardFooter>
+          <div className="px-4 py-3 border-t border-border">
             <Button
               variant="destructive"
               size="sm"
@@ -167,17 +159,17 @@ const LicenseSection = () => {
                 ? "Deactivating..."
                 : "Deactivate License"}
             </Button>
-          </CardFooter>
+          </div>
         )}
-      </Card>
+      </div>
 
       {/* Activate License */}
-      <Card>
-        <CardHeader>
-          <CardTitle>
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="px-4 py-3 bg-muted/30 border-b border-border">
+          <h2 className="title-section">
             {hasLicense ? "Replace License" : "Activate License"}
-          </CardTitle>
-          <CardDescription>
+          </h2>
+          <p className="text-sm text-muted-foreground">
             Paste your license key below. You can get one from the{" "}
             <a
               href={`${import.meta.env.VITE_PORTAL_URL}`}
@@ -189,9 +181,9 @@ const LicenseSection = () => {
               <ExternalLink className="h-3 w-3" />
             </a>
             .
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className="p-4">
           <Textarea
             placeholder="Paste your license key here (eyJ...)"
             value={licenseKey}
@@ -199,10 +191,9 @@ const LicenseSection = () => {
             rows={4}
             className="font-mono text-sm"
           />
-        </CardContent>
-        <CardFooter className="flex justify-between">
+        </div>
+        <div className="flex justify-between px-4 py-3 border-t border-border">
           <Button
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={handleActivate}
             disabled={!licenseKey.trim() || activateMutation.isPending}
           >
@@ -217,8 +208,8 @@ const LicenseSection = () => {
               Clear
             </Button>
           )}
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };

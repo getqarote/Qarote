@@ -1,7 +1,6 @@
 import { Link2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface QueueBindingsProps {
@@ -27,16 +26,12 @@ export function QueueBindings({
   bindingsLoading,
 }: QueueBindingsProps) {
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Link2 className="w-5 h-5" />
-            Queue Bindings ({bindingsData?.totalBindings || 0})
-          </CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent>
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3 bg-muted/30 border-b border-border">
+        <h2 className="title-section">Queue Bindings</h2>
+        <Badge variant="secondary">{bindingsData?.totalBindings || 0}</Badge>
+      </div>
+      <div className="p-4">
         {bindingsLoading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
@@ -134,7 +129,7 @@ export function QueueBindings({
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -7,13 +7,6 @@ import { UserProfile } from "@/lib/api/authTypes";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -71,65 +64,63 @@ export const PersonalInfoTab = ({
   const { t } = useTranslation("profile");
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex items-center gap-3 min-w-0">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={profile.image || ""} />
-                <AvatarFallback>
-                  {profile.firstName?.[0]}
-                  {profile.lastName?.[0]}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0">
-                <h2 className="text-xl font-semibold truncate">
-                  {profile.firstName} {profile.lastName}
-                </h2>
-                <p className="text-sm text-muted-foreground truncate">
-                  {profile.email}
-                </p>
-              </div>
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between px-4 py-3 bg-muted/30 border-b border-border">
+          <div className="flex items-center gap-3 min-w-0">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={profile.image || ""} />
+              <AvatarFallback>
+                {profile.firstName?.[0]}
+                {profile.lastName?.[0]}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <h2 className="title-section truncate">
+                {profile.firstName} {profile.lastName}
+              </h2>
+              <p className="text-sm text-muted-foreground truncate">
+                {profile.email}
+              </p>
             </div>
+          </div>
 
-            <div className="flex items-center gap-2 shrink-0">
-              <Badge variant="soft-muted">
-                {profile.role.charAt(0) + profile.role.slice(1).toLowerCase()}
-              </Badge>
-              {editingProfile ? (
-                <>
-                  <Button
-                    variant="outline"
-                    onClick={onCancelEdit}
-                    disabled={isUpdating}
-                    className="h-9"
-                  >
-                    <X className="h-4 w-4" aria-hidden="true" />
-                    <span className="hidden sm:inline">
-                      {t("personal.cancel")}
-                    </span>
-                  </Button>
-                  <Button
-                    onClick={onUpdateProfile}
-                    disabled={isUpdating}
-                    className="btn-primary h-9"
-                  >
-                    <Save className="h-4 w-4" aria-hidden="true" />
-                    <span className="hidden sm:inline">
-                      {t("personal.saveChanges")}
-                    </span>
-                  </Button>
-                </>
-              ) : (
-                <Button onClick={onStartEdit} className="btn-primary h-9">
-                  <Edit className="h-4 w-4" aria-hidden="true" />
-                  {t("personal.editProfile")}
+          <div className="flex items-center gap-2 shrink-0">
+            <Badge variant="soft-muted">
+              {profile.role.charAt(0) + profile.role.slice(1).toLowerCase()}
+            </Badge>
+            {editingProfile ? (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={onCancelEdit}
+                  disabled={isUpdating}
+                  className="h-9"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                  <span className="hidden sm:inline">
+                    {t("personal.cancel")}
+                  </span>
                 </Button>
-              )}
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
+                <Button
+                  onClick={onUpdateProfile}
+                  disabled={isUpdating}
+                  className="btn-primary h-9"
+                >
+                  <Save className="h-4 w-4" aria-hidden="true" />
+                  <span className="hidden sm:inline">
+                    {t("personal.saveChanges")}
+                  </span>
+                </Button>
+              </>
+            ) : (
+              <Button onClick={onStartEdit} className="btn-primary h-9">
+                <Edit className="h-4 w-4" aria-hidden="true" />
+                {t("personal.editProfile")}
+              </Button>
+            )}
+          </div>
+        </div>
+        <div className="p-4 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">{t("personal.firstName")}</Label>
@@ -195,22 +186,22 @@ export const PersonalInfoTab = ({
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Security Settings Section - Show only for password-based accounts */}
       {profile.authProvider === "password" && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <div className="rounded-lg border border-border overflow-hidden">
+          <div className="px-4 py-3 bg-muted/30 border-b border-border">
+            <h2 className="title-section flex items-center gap-2">
               <Settings className="h-5 w-5" />
               {t("personal.securitySettings")}
-            </CardTitle>
-            <CardDescription>
+            </h2>
+            <p className="text-sm text-muted-foreground">
               {t("personal.securityDescription")}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+            </p>
+          </div>
+          <div className="p-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:divide-x lg:divide-border">
               {/* Password Change Section */}
               <div className="space-y-3 lg:pr-6 flex flex-col">
@@ -250,8 +241,8 @@ export const PersonalInfoTab = ({
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   );

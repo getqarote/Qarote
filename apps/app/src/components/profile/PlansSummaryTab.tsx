@@ -19,7 +19,6 @@ import { formatDate } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 
 import { useAllPlans } from "@/hooks/queries/usePlans";
 import { usePlanUpgrade } from "@/hooks/ui/usePlanUpgrade";
@@ -105,9 +104,9 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Current Plan Card */}
-      <Card>
-        <CardContent className="p-6 space-y-6">
+      {/* Current Plan */}
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="p-6 space-y-6">
           <div className="flex items-start gap-3">
             <div
               className={`flex items-center justify-center h-10 w-10 rounded-lg shrink-0 ${currentPlanStyle.iconBg}`}
@@ -165,13 +164,13 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
               </ul>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Upgrade Suggestion */}
       {selfHosted && currentPlan === UserPlan.FREE ? (
-        <Card>
-          <CardContent className="p-6">
+        <div className="rounded-lg border border-border overflow-hidden">
+          <div className="p-6">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
               <div className="flex items-start gap-3 min-w-0 flex-1">
                 <div
@@ -207,11 +206,11 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ) : !selfHosted && nextPlan && nextPlanStyle ? (
-        <Card>
-          <CardContent className="p-6 space-y-6">
+        <div className="rounded-lg border border-border overflow-hidden">
+          <div className="p-6 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
               <div className="flex items-start gap-3 min-w-0 flex-1">
                 <div
@@ -274,27 +273,47 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                 </ul>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ) : null}
 
       {/* Quick Actions - Only show for admins */}
       {isAdmin && (
-        <Card>
-          <CardContent className="p-0">
-            <ul className="divide-y divide-border">
-              {selfHosted ? (
+        <div className="rounded-lg border border-border overflow-hidden">
+          <ul className="divide-y divide-border">
+            {selfHosted ? (
+              <li>
+                <Link
+                  to="/settings/license"
+                  className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-muted/50 transition-colors rounded-lg"
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm">
+                      {t("plansSummary.license")}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {t("plansSummary.manageLicense")}
+                    </p>
+                  </div>
+                  <ArrowRight
+                    className="h-4 w-4 text-muted-foreground shrink-0"
+                    aria-hidden="true"
+                  />
+                </Link>
+              </li>
+            ) : (
+              <>
                 <li>
                   <Link
-                    to="/settings/license"
-                    className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-muted/50 transition-colors rounded-lg"
+                    to="/settings/subscription/billing"
+                    className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-muted/50 transition-colors"
                   >
                     <div className="min-w-0">
                       <p className="font-medium text-sm">
-                        {t("plansSummary.license")}
+                        {t("plansSummary.billingUsage")}
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {t("plansSummary.manageLicense")}
+                        {t("plansSummary.manageSubscription")}
                       </p>
                     </div>
                     <ArrowRight
@@ -303,86 +322,62 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                     />
                   </Link>
                 </li>
-              ) : (
-                <>
-                  <li>
-                    <Link
-                      to="/settings/subscription/billing"
-                      className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm">
-                          {t("plansSummary.billingUsage")}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {t("plansSummary.manageSubscription")}
-                        </p>
-                      </div>
-                      <ArrowRight
-                        className="h-4 w-4 text-muted-foreground shrink-0"
-                        aria-hidden="true"
-                      />
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      to="/plans"
-                      className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm">
-                          {t("plansSummary.comparePlans")}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {t("plansSummary.seeAllOptions")}
-                        </p>
-                      </div>
-                      <ArrowRight
-                        className="h-4 w-4 text-muted-foreground shrink-0"
-                        aria-hidden="true"
-                      />
-                    </Link>
-                  </li>
-                </>
-              )}
-            </ul>
-          </CardContent>
-        </Card>
+                <li>
+                  <Link
+                    to="/plans"
+                    className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm">
+                        {t("plansSummary.comparePlans")}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {t("plansSummary.seeAllOptions")}
+                      </p>
+                    </div>
+                    <ArrowRight
+                      className="h-4 w-4 text-muted-foreground shrink-0"
+                      aria-hidden="true"
+                    />
+                  </Link>
+                </li>
+              </>
+            )}
+          </ul>
+        </div>
       )}
 
       {/* Self-host callout - Only show in cloud mode */}
       {!selfHosted && (
-        <Card>
-          <CardContent className="p-0">
-            <a
-              href={`${import.meta.env.VITE_PORTAL_URL}/documentation`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-muted/50 transition-colors rounded-lg"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div
-                  className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10 shrink-0"
-                  aria-hidden="true"
-                >
-                  <Server className="h-5 w-5 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <p className="font-medium text-sm">
-                    {t("plansSummary.preferSelfHost")}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {t("plansSummary.preferSelfHostDesc")}
-                  </p>
-                </div>
-              </div>
-              <ExternalLink
-                className="h-4 w-4 text-muted-foreground shrink-0"
+        <div className="rounded-lg border border-border overflow-hidden">
+          <a
+            href={`${import.meta.env.VITE_PORTAL_URL}/documentation`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-muted/50 transition-colors rounded-lg"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10 shrink-0"
                 aria-hidden="true"
-              />
-            </a>
-          </CardContent>
-        </Card>
+              >
+                <Server className="h-5 w-5 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-medium text-sm">
+                  {t("plansSummary.preferSelfHost")}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {t("plansSummary.preferSelfHostDesc")}
+                </p>
+              </div>
+            </div>
+            <ExternalLink
+              className="h-4 w-4 text-muted-foreground shrink-0"
+              aria-hidden="true"
+            />
+          </a>
+        </div>
       )}
     </div>
   );

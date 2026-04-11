@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface VHostDangerZoneProps {
   vhostName: string;
@@ -17,13 +16,11 @@ export function VHostDangerZone({
   const isDefault = vhostName === "/";
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="title-section text-destructive">
-          {t("dangerZone")}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div className="rounded-lg border border-destructive/30 overflow-hidden">
+      <div className="px-4 py-3 bg-destructive/5 border-b border-destructive/30">
+        <h2 className="title-section text-destructive">{t("dangerZone")}</h2>
+      </div>
+      <div className="p-4">
         <Button
           variant="destructive"
           onClick={onDeleteClick}
@@ -37,7 +34,7 @@ export function VHostDangerZone({
             {t("cannotDeleteDefault")}
           </p>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

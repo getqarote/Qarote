@@ -52,102 +52,100 @@ export function QueueHeader({
   const isPaused = pauseStatus?.pauseState?.isPaused ?? false;
 
   return (
-    <div className="border-b bg-background px-6 py-4 sticky top-0 z-10">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <SidebarTrigger />
+    <div className="space-y-4">
+      <div className="flex items-start gap-2">
+        <SidebarTrigger className="mr-2 mt-1" />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onNavigateBack}
+          className="mr-2 flex items-center gap-1 shrink-0"
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </Button>
+        <h1 className="title-page break-all min-w-0">{queueName}</h1>
+      </div>
+
+      <div className="flex items-center gap-2 flex-wrap">
+        {/* Spy on Queue — read-only, available to all users */}
+        {onSpyToggle && (
           <Button
-            variant="ghost"
-            size="sm"
-            onClick={onNavigateBack}
-            className="text-muted-foreground hover:text-foreground"
+            variant="outline"
+            onClick={onSpyToggle}
+            className="flex items-center gap-2"
           >
-            <ArrowLeft className="w-4 h-4" />
+            {isSpying ? (
+              <EyeOff className="w-4 h-4" />
+            ) : (
+              <Eye className="w-4 h-4" />
+            )}
+            {isSpying ? t("stopSpy") : t("spyOnQueue")}
           </Button>
-          <h1 className="text-2xl font-bold text-foreground">{queueName}</h1>
-        </div>
+        )}
 
-        <div className="flex items-center gap-2">
-          {/* Spy on Queue — read-only, available to all users */}
-          {onSpyToggle && (
-            <Button
-              variant="outline"
-              onClick={onSpyToggle}
-              className="flex items-center gap-2"
-            >
-              {isSpying ? (
-                <EyeOff className="w-4 h-4" />
-              ) : (
-                <Eye className="w-4 h-4" />
-              )}
-              {isSpying ? t("stopSpy") : t("spyOnQueue")}
-            </Button>
-          )}
-
-          {/* Admin-only write actions */}
-          {isAdmin && (
-            <>
-              {/* Send Message Button */}
-              <SendMessageDialog
-                queueName={queueName}
-                serverId={selectedServerId}
-                onSuccess={onRefetch}
-                trigger={
-                  <Button variant="outline" className="flex items-center gap-2">
-                    <Send className="w-4 h-4" />
-                    {t("sendMessage")}
-                  </Button>
-                }
-              />
-
-              {/* Purge Queue Button */}
-              <PurgeQueueDialog
-                queueName={queueName}
-                messageCount={messageCount}
-                onSuccess={onRefetch}
-                trigger={
-                  <Button variant="outline" className="flex items-center gap-2">
-                    <Trash2 className="w-4 h-4" />
-                    {t("purgeQueue")}
-                  </Button>
-                }
-              />
-
-              {/* Pause/Resume Queue Button */}
-              <PauseQueueDialog
-                queueName={queueName}
-                consumerCount={consumerCount}
-                isPaused={isPaused}
-                onSuccess={() => {
-                  onRefetch();
-                  refetchPauseStatus();
-                }}
-                trigger={
-                  <Button variant="outline" className="flex items-center gap-2">
-                    {isPaused ? (
-                      <Play className="w-4 h-4" />
-                    ) : (
-                      <Pause className="w-4 h-4" />
-                    )}
-                    {isPaused ? t("resumeQueue") : t("pauseQueue")}
-                  </Button>
-                }
-              />
-
-              {/* Delete Queue Button */}
-              {onDeleteQueue && (
-                <Button
-                  onClick={onDeleteQueue}
-                  variant="outline"
-                  className="flex items-center gap-2 text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  {t("deleteQueue")}
+        {/* Admin-only write actions */}
+        {isAdmin && (
+          <>
+            {/* Send Message Button */}
+            <SendMessageDialog
+              queueName={queueName}
+              serverId={selectedServerId}
+              onSuccess={onRefetch}
+              trigger={
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Send className="w-4 h-4" />
+                  {t("sendMessage")}
                 </Button>
-              )}
-            </>
-          )}
-        </div>
+              }
+            />
+
+            {/* Purge Queue Button */}
+            <PurgeQueueDialog
+              queueName={queueName}
+              messageCount={messageCount}
+              onSuccess={onRefetch}
+              trigger={
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Trash2 className="w-4 h-4" />
+                  {t("purgeQueue")}
+                </Button>
+              }
+            />
+
+            {/* Pause/Resume Queue Button */}
+            <PauseQueueDialog
+              queueName={queueName}
+              consumerCount={consumerCount}
+              isPaused={isPaused}
+              onSuccess={() => {
+                onRefetch();
+                refetchPauseStatus();
+              }}
+              trigger={
+                <Button variant="outline" className="flex items-center gap-2">
+                  {isPaused ? (
+                    <Play className="w-4 h-4" />
+                  ) : (
+                    <Pause className="w-4 h-4" />
+                  )}
+                  {isPaused ? t("resumeQueue") : t("pauseQueue")}
+                </Button>
+              }
+            />
+
+            {/* Delete Queue Button */}
+            {onDeleteQueue && (
+              <Button
+                onClick={onDeleteQueue}
+                variant="outline"
+                className="flex items-center gap-2 text-destructive hover:text-destructive"
+              >
+                <Trash2 className="w-4 h-4" />
+                {t("deleteQueue")}
+              </Button>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

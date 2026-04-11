@@ -1,18 +1,11 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Clock, X } from "lucide-react";
+import { X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { PaginationControls } from "@/components/ui/PaginationControls";
 import {
   Tooltip,
@@ -78,17 +71,17 @@ export function OrgPendingInvitationsCard() {
   });
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Clock className="h-5 w-5" aria-hidden="true" />
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="px-4 py-3 bg-muted/30 border-b border-border">
+        <h2 className="title-section flex items-center gap-2">
           {t("org.pendingInvitations")}
-        </CardTitle>
-        <CardDescription>
+          <Badge variant="secondary">{total}</Badge>
+        </h2>
+        <p className="text-sm text-muted-foreground">
           {t("org.pendingInvitationsCount", { count: total })}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+        </p>
+      </div>
+      <div className="p-4">
         <div className="space-y-2">
           {invitations.map((inv) => (
             <div
@@ -149,7 +142,7 @@ export function OrgPendingInvitationsCard() {
             itemLabel="invitations"
           />
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

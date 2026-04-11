@@ -39,7 +39,6 @@ import {
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { TimeRange, TimeRangeSelector } from "@/components/TimeRangeSelector";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Tooltip as UITooltip,
   TooltipContent,
@@ -231,99 +230,93 @@ export const MessagesRatesChart = ({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-lg font-semibold text-foreground">
-              {t("messagesRates")}
-            </CardTitle>
-            <TooltipProvider>
-              <UITooltip>
-                <TooltipTrigger asChild>
-                  <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent className="max-w-sm p-3">
-                  <div className="space-y-2 text-sm">
-                    <p className="font-medium">{t("messageRateDefinitions")}</p>
-                    <div className="space-y-1 text-xs">
-                      <p>
-                        <strong>{t("legendPublish")}:</strong> {t("defPublish")}
-                      </p>
-                      <p>
-                        <strong>{t("legendDeliver")}:</strong> {t("defDeliver")}
-                      </p>
-                      <p>
-                        <strong>{t("legendAck")}:</strong> {t("defAck")}
-                      </p>
-                      <p>
-                        <strong>{t("legendDeliverGet")}:</strong>{" "}
-                        {t("defDeliverGet")}
-                      </p>
-                      <p>
-                        <strong>{t("legendDeliverNoAck")}:</strong>{" "}
-                        {t("defDeliverNoAck")}
-                      </p>
-                      <p>
-                        <strong>{t("legendConfirm")}:</strong> {t("defConfirm")}
-                      </p>
-                      <p>
-                        <strong>{t("legendGet")}:</strong> {t("defGet")}
-                      </p>
-                      <p>
-                        <strong>{t("legendGetNoAck")}:</strong>{" "}
-                        {t("defGetNoAck")}
-                      </p>
-                      <p>
-                        <strong>{t("legendGetEmpty")}:</strong>{" "}
-                        {t("defGetEmpty")}
-                      </p>
-                      <p>
-                        <strong>{t("legendRedeliver")}:</strong>{" "}
-                        {t("defRedeliver")}
-                      </p>
-                      <p>
-                        <strong>{t("legendReject")}:</strong> {t("defReject")}
-                      </p>
-                      <p>
-                        <strong>{t("legendReturnUnroutable")}:</strong>{" "}
-                        {t("defReturnUnroutable")}
-                      </p>
-                      <p>
-                        <strong>{t("legendDropUnroutable")}:</strong>{" "}
-                        {t("defDropUnroutable")}
-                      </p>
-                      <p>
-                        <strong>{t("legendDiskReads")}:</strong>{" "}
-                        {t("defDiskReads")}
-                      </p>
-                      <p>
-                        <strong>{t("legendDiskWrites")}:</strong>{" "}
-                        {t("defDiskWrites")}
-                      </p>
-                    </div>
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
+        <div className="flex items-center gap-2">
+          <h2 className="title-section">{t("messagesRates")}</h2>
+          <TooltipProvider>
+            <UITooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-sm p-3">
+                <div className="space-y-2 text-sm">
+                  <p className="font-medium">{t("messageRateDefinitions")}</p>
+                  <div className="space-y-1 text-xs">
+                    <p>
+                      <strong>{t("legendPublish")}:</strong> {t("defPublish")}
+                    </p>
+                    <p>
+                      <strong>{t("legendDeliver")}:</strong> {t("defDeliver")}
+                    </p>
+                    <p>
+                      <strong>{t("legendAck")}:</strong> {t("defAck")}
+                    </p>
+                    <p>
+                      <strong>{t("legendDeliverGet")}:</strong>{" "}
+                      {t("defDeliverGet")}
+                    </p>
+                    <p>
+                      <strong>{t("legendDeliverNoAck")}:</strong>{" "}
+                      {t("defDeliverNoAck")}
+                    </p>
+                    <p>
+                      <strong>{t("legendConfirm")}:</strong> {t("defConfirm")}
+                    </p>
+                    <p>
+                      <strong>{t("legendGet")}:</strong> {t("defGet")}
+                    </p>
+                    <p>
+                      <strong>{t("legendGetNoAck")}:</strong> {t("defGetNoAck")}
+                    </p>
+                    <p>
+                      <strong>{t("legendGetEmpty")}:</strong> {t("defGetEmpty")}
+                    </p>
+                    <p>
+                      <strong>{t("legendRedeliver")}:</strong>{" "}
+                      {t("defRedeliver")}
+                    </p>
+                    <p>
+                      <strong>{t("legendReject")}:</strong> {t("defReject")}
+                    </p>
+                    <p>
+                      <strong>{t("legendReturnUnroutable")}:</strong>{" "}
+                      {t("defReturnUnroutable")}
+                    </p>
+                    <p>
+                      <strong>{t("legendDropUnroutable")}:</strong>{" "}
+                      {t("defDropUnroutable")}
+                    </p>
+                    <p>
+                      <strong>{t("legendDiskReads")}:</strong>{" "}
+                      {t("defDiskReads")}
+                    </p>
+                    <p>
+                      <strong>{t("legendDiskWrites")}:</strong>{" "}
+                      {t("defDiskWrites")}
+                    </p>
                   </div>
-                </TooltipContent>
-              </UITooltip>
-            </TooltipProvider>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
-              <span className="text-xs text-muted-foreground">
-                {t("updatesEvery5s")}
-              </span>
-            </div>
-            {onTimeRangeChange && (
-              <TimeRangeSelector
-                value={timeRange}
-                onValueChange={onTimeRangeChange}
-              />
-            )}
-          </div>
+                </div>
+              </TooltipContent>
+            </UITooltip>
+          </TooltipProvider>
         </div>
-      </CardHeader>
-      <CardContent>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+            <span className="text-xs text-muted-foreground">
+              {t("updatesEvery5s")}
+            </span>
+          </div>
+          {onTimeRangeChange && (
+            <TimeRangeSelector
+              value={timeRange}
+              onValueChange={onTimeRangeChange}
+            />
+          )}
+        </div>
+      </div>
+      <div className="p-4">
         {ratesMode === "basic" && (
           <Alert className="mb-4">
             <Info className="h-4 w-4" />
@@ -676,7 +669,7 @@ export const MessagesRatesChart = ({
             })()}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

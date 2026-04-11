@@ -3,7 +3,6 @@ import { Link } from "react-router";
 
 import { ArrowRight } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface QueueData {
@@ -39,38 +38,36 @@ export const QueueDepthsChart = ({
     visible.length > 0 ? Math.max(...visible.map((q) => q.messages), 1) : 1;
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-lg font-semibold text-foreground">
-              {t("queueDepths")}
-              <span className="ml-2 text-sm font-normal text-muted-foreground">
-                ({sorted.length})
-              </span>
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {t("currentMessageBacklog")}
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
-              <span className="text-xs text-muted-foreground">
-                {t("updatesEvery5s")}
-              </span>
-            </div>
-            <Link
-              to="/queues"
-              className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
-            >
-              {t("seeMore")}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
+        <div>
+          <h2 className="title-section flex items-center gap-2">
+            {t("queueDepths")}
+            <span className="text-sm font-normal text-muted-foreground">
+              ({sorted.length})
+            </span>
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {t("currentMessageBacklog")}
+          </p>
         </div>
-      </CardHeader>
-      <CardContent>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+            <span className="text-xs text-muted-foreground">
+              {t("updatesEvery5s")}
+            </span>
+          </div>
+          <Link
+            to="/queues"
+            className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+          >
+            {t("seeMore")}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+      <div className="p-4">
         {isLoading ? (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -92,8 +89,8 @@ export const QueueDepthsChart = ({
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

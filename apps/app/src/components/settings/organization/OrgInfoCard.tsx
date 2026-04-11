@@ -15,13 +15,6 @@ import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -80,12 +73,12 @@ export function OrgInfoCard({ org, isOrgAdmin }: OrgInfoCardProps) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("org.general")}</CardTitle>
-        <CardDescription>{t("org.generalDesc")}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="px-4 py-3 bg-muted/30 border-b border-border">
+        <h2 className="title-section">{t("org.general")}</h2>
+        <p className="text-sm text-muted-foreground">{t("org.generalDesc")}</p>
+      </div>
+      <div className="p-4 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="org-name">{t("org.name")}</Label>
@@ -205,7 +198,7 @@ export function OrgInfoCard({ org, isOrgAdmin }: OrgInfoCardProps) {
             )}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

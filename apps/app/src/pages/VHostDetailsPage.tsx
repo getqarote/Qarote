@@ -9,7 +9,6 @@ import { UserRole } from "@/lib/api";
 import { PageError } from "@/components/PageError";
 import { FullPageAlert, PageShell } from "@/components/PageShell";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LoadingSkeleton } from "@/components/VHostDetail/LoadingSkeleton";
@@ -316,54 +315,52 @@ export default function VHostDetailsPage() {
 
       <VHostLimits vhost={vhost} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t("monitoring")}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="vhostThreshold">{t("unackedThresholdLabel")}</Label>
-            <div className="flex items-center gap-2">
-              <Input
-                id="vhostThreshold"
-                type="number"
-                min={0}
-                max={100000}
-                className="w-36"
-                placeholder={String(workspaceDefault)}
-                value={thresholdInput}
-                onChange={(e) => setThresholdInput(e.target.value)}
-              />
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="px-4 py-3 bg-muted/30 border-b border-border">
+          <h2 className="title-section">{t("monitoring")}</h2>
+        </div>
+        <div className="p-4 space-y-2">
+          <Label htmlFor="vhostThreshold">{t("unackedThresholdLabel")}</Label>
+          <div className="flex items-center gap-2">
+            <Input
+              id="vhostThreshold"
+              type="number"
+              min={0}
+              max={100000}
+              className="w-36"
+              placeholder={String(workspaceDefault)}
+              value={thresholdInput}
+              onChange={(e) => setThresholdInput(e.target.value)}
+            />
+            <Button
+              size="sm"
+              onClick={handleSaveThreshold}
+              disabled={
+                updateWorkspaceMutation.isPending ||
+                thresholdInput === "" ||
+                isNaN(parseInt(thresholdInput, 10))
+              }
+            >
+              {t("common:save")}
+            </Button>
+            {storedOverride !== undefined && (
               <Button
                 size="sm"
-                onClick={handleSaveThreshold}
-                disabled={
-                  updateWorkspaceMutation.isPending ||
-                  thresholdInput === "" ||
-                  isNaN(parseInt(thresholdInput, 10))
-                }
+                variant="outline"
+                onClick={handleClearThreshold}
+                disabled={updateWorkspaceMutation.isPending}
               >
-                {t("common:save")}
+                {t("thresholdResetToDefault", { default: workspaceDefault })}
               </Button>
-              {storedOverride !== undefined && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleClearThreshold}
-                  disabled={updateWorkspaceMutation.isPending}
-                >
-                  {t("thresholdResetToDefault", { default: workspaceDefault })}
-                </Button>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {storedOverride !== undefined
-                ? t("thresholdOverrideActive", { value: storedOverride })
-                : t("thresholdUsingDefault", { default: workspaceDefault })}
-            </p>
+            )}
           </div>
-        </CardContent>
-      </Card>
+          <p className="text-xs text-muted-foreground">
+            {storedOverride !== undefined
+              ? t("thresholdOverrideActive", { value: storedOverride })
+              : t("thresholdUsingDefault", { default: workspaceDefault })}
+          </p>
+        </div>
+      </div>
 
       <VHostPermissionsTable
         permissions={vhost.permissions ?? []}
