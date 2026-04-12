@@ -5,6 +5,7 @@ import type { SupportedLocale } from "@qarote/i18n";
 import { IslandProvider } from "@/components/IslandProvider";
 import FooterSection from "@/components/landing/FooterSection";
 import StickyNav from "@/components/StickyNav";
+import { TawkTo } from "@/components/TawkTo";
 
 import changelogRaw from "../../../../CHANGELOG.md?raw";
 
@@ -80,6 +81,7 @@ export default function ChangelogIsland({
   return (
     <IslandProvider locale={locale} resources={resources}>
       <ChangelogContent entries={entries} locale={locale} />
+      <TawkTo />
     </IslandProvider>
   );
 }
@@ -94,67 +96,69 @@ function ChangelogContent({
   const { t } = useTranslation("common");
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background font-sans">
       <StickyNav />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold text-foreground mb-2">
-            {t("changelog.title")}
-          </h1>
-          <p className="text-muted-foreground text-lg">
-            {t("changelog.subtitle")}
-          </p>
+        {/* Page header */}
+        <div className="border border-border overflow-hidden mb-12">
+          <div className="px-6 py-3 bg-muted/30 border-b border-border">
+            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Changelog
+            </span>
+          </div>
+          <div className="p-8">
+            <h1 className="text-4xl font-normal text-foreground mb-2">
+              {t("changelog.title")}
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              {t("changelog.subtitle")}
+            </p>
+          </div>
         </div>
 
-        <div className="relative">
-          <div className="absolute left-0 top-0 bottom-0 w-px bg-border hidden sm:block" />
-
-          <div className="space-y-12">
-            {entries.map((entry) => (
-              <article key={entry.version} className="relative sm:pl-10">
-                <div className="absolute left-0 top-1 w-2 h-2 rounded-full bg-primary -translate-x-[3.5px] hidden sm:block" />
-
-                <div className="mb-4">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <h2 className="text-2xl font-semibold text-foreground">
-                      {entry.version === "Unreleased"
-                        ? "Upcoming"
-                        : `v${entry.version}`}
-                    </h2>
-                    <span className="text-sm text-muted-foreground">
-                      {entry.date}
+        <div className="space-y-8">
+          {entries.map((entry) => (
+            <article
+              key={entry.version}
+              className="border border-border overflow-hidden"
+            >
+              <div className="px-6 py-3 bg-muted/30 border-b border-border flex items-center justify-between">
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                  {entry.version === "Unreleased"
+                    ? "Upcoming"
+                    : `v${entry.version}`}
+                </h2>
+                <span className="text-xs text-muted-foreground font-mono">
+                  {entry.date}
+                </span>
+              </div>
+              <div className="p-6 space-y-6">
+                {entry.categories.map((category) => (
+                  <div key={category.name}>
+                    <span
+                      className={`inline-block px-2.5 py-0.5 text-xs font-medium mb-3 ${
+                        categoryColors[category.name] ??
+                        "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {category.name}
                     </span>
+                    <ul className="space-y-2">
+                      {category.items.map((item, i) => (
+                        <li
+                          key={i}
+                          className="text-muted-foreground flex items-start gap-2"
+                        >
+                          <span className="mt-2 shrink-0 block w-1.5 h-1.5 bg-primary/60" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                </div>
-
-                <div className="space-y-6">
-                  {entry.categories.map((category) => (
-                    <div key={category.name}>
-                      <span
-                        className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium mb-3 ${
-                          categoryColors[category.name] ??
-                          "bg-gray-100 text-gray-800"
-                        }`}
-                      >
-                        {category.name}
-                      </span>
-                      <ul className="space-y-2">
-                        {category.items.map((item, i) => (
-                          <li
-                            key={i}
-                            className="text-muted-foreground flex items-start gap-2"
-                          >
-                            <span className="text-primary mt-2 shrink-0 block w-1.5 h-1.5 rounded-full bg-current" />
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              </article>
-            ))}
-          </div>
+                ))}
+              </div>
+            </article>
+          ))}
         </div>
       </div>
       <FooterSection currentLocale={locale} />

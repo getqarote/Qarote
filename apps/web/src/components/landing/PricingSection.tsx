@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { trackSignUpClick } from "@/lib/gtm";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 
 const FeatureItem = ({ children }: { children: React.ReactNode }) => (
@@ -166,7 +165,7 @@ const PricingSection = () => {
   ];
 
   return (
-    <section id="pricing" className="pt-12 pb-20 bg-white">
+    <section id="pricing" className="pt-12 pb-20 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 max-w-4xl mx-auto leading-[1.2] font-normal">
@@ -227,7 +226,7 @@ const PricingSection = () => {
               }
               disabled={hostingMode === "selfhost"}
               aria-label={tPricing("billedYearly")}
-              className="data-[state=checked]:bg-gradient-button"
+              className="data-[state=checked]:bg-primary"
             />
             <span
               className={`text-sm font-medium ${billingPeriod === "yearly" ? "text-foreground" : "text-muted-foreground"}`}
@@ -261,32 +260,32 @@ const PricingSection = () => {
                   : null;
               const selfHost = selfHostPricing[plan.id] ?? null;
               return (
-                <Card
+                <div
                   key={plan.id}
-                  className="relative flex h-full flex-col bg-transparent"
+                  className="relative flex h-full flex-col border border-border overflow-hidden"
                 >
-                  <CardContent className="p-6 flex flex-col h-full">
+                  {/* Plan header strip */}
+                  <div className="px-6 py-3 bg-muted/30 border-b border-border flex items-center justify-between">
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                      {plan.name}
+                    </h3>
                     {hostingMode === "cloud" && plan.id === "DEVELOPER" && (
-                      <span className="absolute top-4 right-4 text-xs font-medium px-2 py-0.5 border border-primary text-primary">
+                      <span className="text-xs font-medium px-2 py-0.5 border border-primary text-primary">
                         {tPricing("mostPopular")}
                       </span>
                     )}
                     {hostingMode === "cloud" && plan.id === "ENTERPRISE" && (
-                      <span className="absolute top-4 right-4 text-xs font-medium px-2 py-0.5 border border-primary text-primary">
+                      <span className="text-xs font-medium px-2 py-0.5 border border-primary text-primary">
                         {tPricing("freeTrial")}
                       </span>
                     )}
+                  </div>
+                  <div className="p-6 flex flex-col h-full">
                     <div className="text-left">
-                      <div className="flex items-center gap-2 mb-4">
-                        <h3 className={`text-2xl font-normal ${plan.color}`}>
-                          {plan.name}
-                        </h3>
-                      </div>
-
                       <div className="mb-2 flex flex-col justify-start min-h-[90px]">
                         {hostingMode === "selfhost" && selfHost ? (
                           <div className="flex items-center justify-start gap-4">
-                            <span className="text-5xl font-medium text-foreground">
+                            <span className="text-5xl font-medium text-foreground font-mono">
                               {selfHost.price}
                             </span>
                             {selfHost.period && (
@@ -298,7 +297,7 @@ const PricingSection = () => {
                         ) : currentPricing ? (
                           <>
                             <div className="flex items-center justify-start gap-4">
-                              <span className="text-5xl font-medium text-foreground">
+                              <span className="text-5xl font-medium text-foreground font-mono">
                                 {currentPricing.price}
                               </span>
                               {currentPricing.price !== "$0" && (
@@ -483,7 +482,7 @@ const PricingSection = () => {
                       </div>
                     </div>
                     <Button
-                      className={`w-full mt-6 px-4 py-3 sm:px-7 sm:py-3 transition-colors duration-200 text-base sm:text-lg h-auto rounded-full ${plan.id === "FREE" ? "bg-transparent border border-border text-foreground hover:bg-muted" : "bg-gradient-button hover:bg-gradient-button-hover text-white"}`}
+                      className={`w-full mt-6 px-4 py-3 sm:px-7 sm:py-3 transition-colors duration-200 text-base sm:text-lg h-auto ${plan.id === "FREE" ? "bg-transparent border border-border text-foreground hover:bg-muted" : "bg-primary hover:bg-primary/90 text-primary-foreground"}`}
                       onClick={() => {
                         if (hostingMode === "selfhost" && selfHost?.url) {
                           window.open(selfHost.url, "_blank");
@@ -516,8 +515,8 @@ const PricingSection = () => {
                             ? tPricing("tryNowForFree")
                             : tPricing("startFree")}
                     </Button>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               );
             })}
           </div>

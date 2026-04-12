@@ -22,9 +22,9 @@ const buttonVariants = cva(
         link: "rounded-md text-primary underline-offset-4 hover:underline",
         // Landing-page pill variants — used for primary CTAs + demoted secondaries
         gradient:
-          "rounded-full bg-gradient-button hover:bg-gradient-button-hover text-white",
+          "rounded-md bg-primary hover:bg-primary/90 text-primary-foreground",
         pillGhost:
-          "rounded-full border border-primary/30 bg-transparent text-primary hover:bg-primary/5 hover:border-primary/50",
+          "rounded-md border border-primary/30 bg-transparent text-primary hover:bg-primary/5 hover:border-primary/50",
       },
       size: {
         default: "h-10 px-4 py-2",

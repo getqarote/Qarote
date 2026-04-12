@@ -20,10 +20,29 @@
   }
 }
 
+@font-face {
+  font-family: "Bricolage Grotesque";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url("https://fonts.gstatic.com/s/bricolagegrotesque/v7/3y9U6as8bTXq_nANBjzKo3IeZx8z6up5BeSl5jBNz_19PcbfFA.woff2")
+    format("woff2");
+}
+
+@font-face {
+  font-family: "Fragment Mono";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("https://fonts.gstatic.com/s/fragmentmono/v4/4iCr6K5wfMRRjxp0DA6-2CLnN4RNh4UI_1GsQg.woff2")
+    format("woff2");
+}
+
 @theme {
   --font-sans:
-    "Arial", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji";
   --font-mono:
     "Fragment Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", "Courier New", monospace;
@@ -253,8 +272,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 20 14.3% 4.1%;
 
-    /* Orange primary theme */
-    --primary: 25 95% 53%;
+    /* Orange primary theme — synced with app */
+    --primary: 24 82% 52%;
     --primary-foreground: 0 0% 98%;
 
     --secondary: 30 25% 94%;
@@ -295,8 +314,8 @@
     --popover: 20 14.3% 4.1%;
     --popover-foreground: 0 0% 95%;
 
-    /* Orange primary theme for dark mode */
-    --primary: 25 95% 53%;
+    /* Orange primary theme for dark mode — synced with app */
+    --primary: 24 82% 56%;
     --primary-foreground: 20 14.3% 4.1%;
 
     --secondary: 25 14% 12%;

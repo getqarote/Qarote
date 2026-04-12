@@ -23,7 +23,7 @@ export default function LandingIsland({
 }: LandingIslandProps) {
   return (
     <IslandProvider locale={locale} resources={resources}>
-      <div className="min-h-screen font-sans bg-white">
+      <div className="min-h-screen font-sans bg-background">
         <StickyNav />
         <HeroSection />
         <ComparisonSection />
