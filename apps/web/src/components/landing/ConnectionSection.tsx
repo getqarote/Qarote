@@ -4,7 +4,7 @@ const ConnectionSection = () => {
   const { t } = useTranslation("landing");
 
   return (
-    <section className="pt-12 pb-20 bg-background">
+    <section className="pt-12 pb-20 bg-muted/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 items-start">
           {/* Left side - Title and description */}
@@ -22,7 +22,7 @@ const ConnectionSection = () => {
             {/* Step 1: Sign up */}
             <div className="border border-border overflow-hidden">
               <div className="px-6 py-3 bg-muted/30 border-b border-border flex items-center gap-4">
-                <span className="w-8 h-8 flex items-center justify-center bg-orange-100 text-sm font-mono text-primary">
+                <span className="w-8 h-8 flex items-center justify-center bg-feature-icon-bg text-sm font-mono text-primary">
                   1
                 </span>
                 <h3 className="text-lg text-foreground font-normal">
@@ -102,7 +102,7 @@ const ConnectionSection = () => {
             {/* Step 2: Add your servers */}
             <div className="border border-border overflow-hidden">
               <div className="px-6 py-3 bg-muted/30 border-b border-border flex items-center gap-4">
-                <span className="w-8 h-8 flex items-center justify-center bg-orange-100 text-sm font-mono text-primary">
+                <span className="w-8 h-8 flex items-center justify-center bg-feature-icon-bg text-sm font-mono text-primary">
                   2
                 </span>
                 <h3 className="text-lg text-foreground font-normal">
@@ -201,7 +201,7 @@ const ConnectionSection = () => {
             {/* Step 3: Monitor and collaborate */}
             <div className="border border-border overflow-hidden">
               <div className="px-6 py-3 bg-muted/30 border-b border-border flex items-center gap-4">
-                <span className="w-8 h-8 flex items-center justify-center bg-orange-100 text-sm font-mono text-primary">
+                <span className="w-8 h-8 flex items-center justify-center bg-feature-icon-bg text-sm font-mono text-primary">
                   3
                 </span>
                 <h3 className="text-lg text-foreground font-normal">

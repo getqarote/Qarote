@@ -81,7 +81,7 @@ const FeaturesSection = () => {
         <div className="border border-border p-8 lg:p-12 mb-6">
           <div className="grid lg:grid-cols-[1fr_1.2fr] gap-8 lg:gap-16 items-center">
             <div>
-              <div className="inline-flex p-3 bg-orange-100 mb-6">
+              <div className="inline-flex p-3 bg-feature-icon-bg mb-6">
                 <img
                   src={iconImageMap[hero.iconKey].src}
                   alt=""
@@ -173,7 +173,7 @@ const FeaturesSection = () => {
                 key={feature.iconKey}
                 className="border border-border p-8 flex flex-col"
               >
-                <div className="inline-flex p-3 bg-orange-100 mb-5 self-start">
+                <div className="inline-flex p-3 bg-feature-icon-bg mb-5 self-start">
                   {imageSrc ? (
                     <img
                       src={imageSrc.src}
@@ -207,7 +207,7 @@ const FeaturesSection = () => {
                 key={feature.iconKey}
                 className="border border-border p-6 flex gap-4 items-start"
               >
-                <div className="inline-flex p-2.5 bg-orange-100 shrink-0">
+                <div className="inline-flex p-2.5 bg-feature-icon-bg shrink-0">
                   {imageSrc ? (
                     <img
                       src={imageSrc.src}

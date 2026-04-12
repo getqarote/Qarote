@@ -4,6 +4,7 @@ import type { SupportedLocale } from "@qarote/i18n";
 
 import { IslandProvider } from "@/components/IslandProvider";
 import FooterSection from "@/components/landing/FooterSection";
+import { LegalSection } from "@/components/LegalSection";
 import StickyNav from "@/components/StickyNav";
 import { TawkTo } from "@/components/TawkTo";
 
@@ -28,27 +29,22 @@ export default function PrivacyPolicyIsland({
   );
 }
 
-function LegalSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="border border-border overflow-hidden">
-      <div className="px-6 py-3 bg-muted/30 border-b border-border">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          {title}
-        </h2>
-      </div>
-      <div className="p-6 space-y-4 text-muted-foreground">{children}</div>
-    </section>
-  );
-}
-
 function PrivacyPolicyContent() {
   const { t } = useTranslation("legal");
+
+  const sections = [
+    { id: "information-we-collect", key: "informationWeCollect" },
+    { id: "how-we-use", key: "howWeUse" },
+    { id: "information-sharing", key: "informationSharing" },
+    { id: "data-security", key: "dataSecurity" },
+    { id: "data-retention", key: "dataRetention" },
+    { id: "your-rights", key: "yourRights" },
+    { id: "cookies", key: "cookies" },
+    { id: "international-transfers", key: "internationalTransfers" },
+    { id: "childrens-privacy", key: "childrensPrivacy" },
+    { id: "changes", key: "changes" },
+    { id: "contact-us", key: "contactUs" },
+  ];
 
   return (
     <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -69,9 +65,37 @@ function PrivacyPolicyContent() {
         </div>
       </div>
 
+      {/* Table of contents */}
+      <nav className="border border-border overflow-hidden mb-8">
+        <div className="px-6 py-3 bg-muted/30 border-b border-border">
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Contents
+          </span>
+        </div>
+        <div className="p-6">
+          <ol className="grid sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
+            {sections.map((s, i) => (
+              <li key={s.id}>
+                <a
+                  href={`#${s.id}`}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <span className="font-mono text-xs text-primary mr-2">
+                    {i + 1}.
+                  </span>
+                  {t(`privacyPolicy.sections.${s.key}.title`)}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </nav>
+
       <div className="space-y-6">
         {/* Section 1 */}
         <LegalSection
+          id="information-we-collect"
+          index={1}
           title={t("privacyPolicy.sections.informationWeCollect.title")}
         >
           <h3 className="text-base font-medium text-foreground">
@@ -134,7 +158,11 @@ function PrivacyPolicyContent() {
         </LegalSection>
 
         {/* Section 2 */}
-        <LegalSection title={t("privacyPolicy.sections.howWeUse.title")}>
+        <LegalSection
+          id="how-we-use"
+          index={2}
+          title={t("privacyPolicy.sections.howWeUse.title")}
+        >
           <p>{t("privacyPolicy.sections.howWeUse.description")}</p>
           <ul className="list-disc pl-6 space-y-2">
             {(
@@ -149,6 +177,8 @@ function PrivacyPolicyContent() {
 
         {/* Section 3 */}
         <LegalSection
+          id="information-sharing"
+          index={3}
           title={t("privacyPolicy.sections.informationSharing.title")}
         >
           <p>{t("privacyPolicy.sections.informationSharing.description")}</p>
@@ -195,7 +225,11 @@ function PrivacyPolicyContent() {
         </LegalSection>
 
         {/* Section 4 */}
-        <LegalSection title={t("privacyPolicy.sections.dataSecurity.title")}>
+        <LegalSection
+          id="data-security"
+          index={4}
+          title={t("privacyPolicy.sections.dataSecurity.title")}
+        >
           <p>{t("privacyPolicy.sections.dataSecurity.description")}</p>
           <ul className="list-disc pl-6 space-y-2">
             {(
@@ -210,7 +244,11 @@ function PrivacyPolicyContent() {
         </LegalSection>
 
         {/* Section 5 */}
-        <LegalSection title={t("privacyPolicy.sections.dataRetention.title")}>
+        <LegalSection
+          id="data-retention"
+          index={5}
+          title={t("privacyPolicy.sections.dataRetention.title")}
+        >
           <p>{t("privacyPolicy.sections.dataRetention.description")}</p>
           <ul className="list-disc pl-6 space-y-2">
             {(
@@ -224,7 +262,11 @@ function PrivacyPolicyContent() {
         </LegalSection>
 
         {/* Section 6 */}
-        <LegalSection title={t("privacyPolicy.sections.yourRights.title")}>
+        <LegalSection
+          id="your-rights"
+          index={6}
+          title={t("privacyPolicy.sections.yourRights.title")}
+        >
           <p>{t("privacyPolicy.sections.yourRights.description")}</p>
           <ul className="list-disc pl-6 space-y-2">
             {(
@@ -249,7 +291,11 @@ function PrivacyPolicyContent() {
         </LegalSection>
 
         {/* Section 7 */}
-        <LegalSection title={t("privacyPolicy.sections.cookies.title")}>
+        <LegalSection
+          id="cookies"
+          index={7}
+          title={t("privacyPolicy.sections.cookies.title")}
+        >
           <p>{t("privacyPolicy.sections.cookies.description")}</p>
           <ul className="list-disc pl-6 space-y-2">
             {(
@@ -268,6 +314,8 @@ function PrivacyPolicyContent() {
 
         {/* Section 8 */}
         <LegalSection
+          id="international-transfers"
+          index={8}
           title={t("privacyPolicy.sections.internationalTransfers.title")}
         >
           <p>
@@ -286,13 +334,19 @@ function PrivacyPolicyContent() {
 
         {/* Section 9 */}
         <LegalSection
+          id="childrens-privacy"
+          index={9}
           title={t("privacyPolicy.sections.childrensPrivacy.title")}
         >
           <p>{t("privacyPolicy.sections.childrensPrivacy.description")}</p>
         </LegalSection>
 
         {/* Section 10 */}
-        <LegalSection title={t("privacyPolicy.sections.changes.title")}>
+        <LegalSection
+          id="changes"
+          index={10}
+          title={t("privacyPolicy.sections.changes.title")}
+        >
           <p>{t("privacyPolicy.sections.changes.description")}</p>
           <ul className="list-disc pl-6 space-y-2">
             {(
@@ -307,7 +361,11 @@ function PrivacyPolicyContent() {
         </LegalSection>
 
         {/* Section 11 */}
-        <LegalSection title={t("privacyPolicy.sections.contactUs.title")}>
+        <LegalSection
+          id="contact-us"
+          index={11}
+          title={t("privacyPolicy.sections.contactUs.title")}
+        >
           <p>{t("privacyPolicy.sections.contactUs.description")}</p>
           <ul className="list-disc pl-6 space-y-2">
             <li>

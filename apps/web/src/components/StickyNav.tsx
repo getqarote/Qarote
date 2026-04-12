@@ -101,7 +101,7 @@ const StickyNav = () => {
             </a>
             <Button
               type="button"
-              variant="gradient"
+              variant="cta"
               size="pillSm"
               onClick={() => {
                 trackSignUpClick({
@@ -187,7 +187,7 @@ const StickyNav = () => {
             </a>
             <Button
               type="button"
-              variant="gradient"
+              variant="cta"
               size="pillMd"
               onClick={() => {
                 trackSignUpClick({

@@ -24,7 +24,7 @@ const HeroSection = () => {
     >
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 md:pt-28 pb-3.5">
         <div className="w-full text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-foreground mb-6 leading-tight max-w-4xl mx-auto px-2 font-normal">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-6 leading-tight max-w-4xl mx-auto px-2 font-normal">
             {t("hero.titleBefore")}
             <span className="text-primary">{t("hero.titleHighlight")}</span>
             {t("hero.titleAfter")}

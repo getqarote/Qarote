@@ -4,6 +4,7 @@ import type { SupportedLocale } from "@qarote/i18n";
 
 import { IslandProvider } from "@/components/IslandProvider";
 import FooterSection from "@/components/landing/FooterSection";
+import { LegalSection } from "@/components/LegalSection";
 import StickyNav from "@/components/StickyNav";
 import { TawkTo } from "@/components/TawkTo";
 
@@ -28,27 +29,19 @@ export default function TermsOfServiceIsland({
   );
 }
 
-function LegalSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="border border-border overflow-hidden">
-      <div className="px-6 py-3 bg-muted/30 border-b border-border">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          {title}
-        </h2>
-      </div>
-      <div className="p-6 space-y-4 text-muted-foreground">{children}</div>
-    </section>
-  );
-}
-
 function TermsOfServiceContent() {
   const { t } = useTranslation("legal");
+
+  const sections = [
+    { id: "acceptance", key: "acceptance" },
+    { id: "description", key: "description" },
+    { id: "accounts", key: "accounts" },
+    { id: "billing", key: "billing" },
+    { id: "acceptable-use", key: "acceptableUse" },
+    { id: "data-privacy", key: "dataPrivacy" },
+    { id: "liability", key: "liability" },
+    { id: "contact-us", key: "contactUs" },
+  ];
 
   return (
     <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -69,15 +62,49 @@ function TermsOfServiceContent() {
         </div>
       </div>
 
+      {/* Table of contents */}
+      <nav className="border border-border overflow-hidden mb-8">
+        <div className="px-6 py-3 bg-muted/30 border-b border-border">
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Contents
+          </span>
+        </div>
+        <div className="p-6">
+          <ol className="grid sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
+            {sections.map((s, i) => (
+              <li key={s.id}>
+                <a
+                  href={`#${s.id}`}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <span className="font-mono text-xs text-primary mr-2">
+                    {i + 1}.
+                  </span>
+                  {t(`termsOfService.sections.${s.key}.title`)}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </nav>
+
       <div className="space-y-6">
         {/* Section 1 */}
-        <LegalSection title={t("termsOfService.sections.acceptance.title")}>
+        <LegalSection
+          id="acceptance"
+          index={1}
+          title={t("termsOfService.sections.acceptance.title")}
+        >
           <p>{t("termsOfService.sections.acceptance.p1")}</p>
           <p>{t("termsOfService.sections.acceptance.p2")}</p>
         </LegalSection>
 
         {/* Section 2 */}
-        <LegalSection title={t("termsOfService.sections.description.title")}>
+        <LegalSection
+          id="description"
+          index={2}
+          title={t("termsOfService.sections.description.title")}
+        >
           <p>{t("termsOfService.sections.description.description")}</p>
           <ul className="list-disc pl-6 space-y-2">
             {(
@@ -91,7 +118,11 @@ function TermsOfServiceContent() {
         </LegalSection>
 
         {/* Section 3 */}
-        <LegalSection title={t("termsOfService.sections.accounts.title")}>
+        <LegalSection
+          id="accounts"
+          index={3}
+          title={t("termsOfService.sections.accounts.title")}
+        >
           <h3 className="text-base font-medium text-foreground">
             {t("termsOfService.sections.accounts.creation.title")}
           </h3>
@@ -121,27 +152,47 @@ function TermsOfServiceContent() {
         </LegalSection>
 
         {/* Section 4 */}
-        <LegalSection title={t("termsOfService.sections.billing.title")}>
+        <LegalSection
+          id="billing"
+          index={4}
+          title={t("termsOfService.sections.billing.title")}
+        >
           <p>{t("termsOfService.sections.billing.description")}</p>
         </LegalSection>
 
         {/* Section 5 */}
-        <LegalSection title={t("termsOfService.sections.acceptableUse.title")}>
+        <LegalSection
+          id="acceptable-use"
+          index={5}
+          title={t("termsOfService.sections.acceptableUse.title")}
+        >
           <p>{t("termsOfService.sections.acceptableUse.description")}</p>
         </LegalSection>
 
         {/* Section 6 */}
-        <LegalSection title={t("termsOfService.sections.dataPrivacy.title")}>
+        <LegalSection
+          id="data-privacy"
+          index={6}
+          title={t("termsOfService.sections.dataPrivacy.title")}
+        >
           <p>{t("termsOfService.sections.dataPrivacy.description")}</p>
         </LegalSection>
 
         {/* Section 7 */}
-        <LegalSection title={t("termsOfService.sections.liability.title")}>
+        <LegalSection
+          id="liability"
+          index={7}
+          title={t("termsOfService.sections.liability.title")}
+        >
           <p>{t("termsOfService.sections.liability.description")}</p>
         </LegalSection>
 
         {/* Section 8 */}
-        <LegalSection title={t("termsOfService.sections.contactUs.title")}>
+        <LegalSection
+          id="contact-us"
+          index={8}
+          title={t("termsOfService.sections.contactUs.title")}
+        >
           <p>{t("termsOfService.sections.contactUs.description")}</p>
           <ul className="list-disc pl-6 space-y-2">
             <li>

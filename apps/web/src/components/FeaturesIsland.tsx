@@ -120,7 +120,7 @@ function HeroSection() {
   return (
     <section className="relative overflow-hidden bg-background">
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 md:pt-28 pb-16 text-center">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-foreground font-normal leading-tight">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl text-foreground font-normal leading-tight">
           {t("hero.title")}
         </h1>
         <p className="text-base sm:text-lg md:text-xl text-muted-foreground mt-6 max-w-3xl mx-auto leading-relaxed">
@@ -162,7 +162,7 @@ function LiveMonitoringSection() {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           {/* Left: Content */}
           <div className="lg:sticky lg:top-24">
-            <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-medium bg-orange-100 text-primary mb-6">
+            <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-medium bg-feature-icon-bg text-primary mb-6">
               <img
                 src="/images/real-time.svg"
                 alt=""
@@ -273,7 +273,7 @@ function InsightsSection() {
   const { t } = useTranslation("features");
 
   return (
-    <section className="py-20 bg-orange-100">
+    <section className="py-20 bg-feature-icon-bg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl text-foreground font-normal leading-[1.2]">
@@ -483,7 +483,7 @@ function QueueManagementSection() {
                     orders.process
                   </span>
                   <div className="flex gap-2">
-                    <span className="text-xs px-2 py-0.5 bg-orange-100 text-primary">
+                    <span className="text-xs px-2 py-0.5 bg-feature-icon-bg text-primary">
                       Purge
                     </span>
                     <span className="text-xs px-2 py-0.5 bg-red-100 text-red-600">
@@ -533,7 +533,7 @@ function QueueManagementSection() {
 
           {/* Right: Content (order-1 mobile, order-2 desktop) */}
           <div className="order-1 lg:order-2 lg:sticky lg:top-24">
-            <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-medium bg-orange-100 text-primary mb-6">
+            <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-medium bg-feature-icon-bg text-primary mb-6">
               <img
                 src="/images/message.svg"
                 alt=""
@@ -869,7 +869,7 @@ function CtaSection() {
     <section className="pt-12 pb-20 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="border border-border overflow-hidden">
-          <div className="px-6 py-3 bg-orange-100 border-b border-border">
+          <div className="px-6 py-3 bg-feature-icon-bg border-b border-border">
             <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Get started for free
             </span>

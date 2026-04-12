@@ -38,7 +38,7 @@ const AuthButtons = ({ align = "center", describedById }: AuthButtonsProps) => {
     >
       <Button
         type="button"
-        variant="gradient"
+        variant="cta"
         size="pill"
         onClick={handleSignUp}
         aria-describedby={describedById}

@@ -90,7 +90,7 @@ const FooterLinks = ({ locale = "en" }: { locale?: string }) => {
           aria-label="LinkedIn"
         >
           <svg
-            className="w-4 h-4"
+            className="w-5 h-5"
             fill="currentColor"
             viewBox="0 0 24 24"
             aria-hidden="true"
