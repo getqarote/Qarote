@@ -19,7 +19,9 @@ export function LegalSection({
           {index}. {title}
         </h2>
       </div>
-      <div className="p-6 space-y-4 text-muted-foreground">{children}</div>
+      <div className="p-6 space-y-4 text-muted-foreground max-w-prose">
+        {children}
+      </div>
     </section>
   );
 }

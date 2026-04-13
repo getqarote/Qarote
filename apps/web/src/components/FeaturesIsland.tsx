@@ -20,7 +20,7 @@ export default function FeaturesIsland({
   return (
     <IslandProvider locale={locale} resources={resources}>
       <div className="min-h-screen font-sans bg-background">
-        <StickyNav />
+        <StickyNav currentPage="features" />
         <HeroSection />
         <LiveMonitoringSection />
         <InsightsSection />
@@ -241,7 +241,7 @@ function LiveMonitoringSection() {
               ].map((q) => (
                 <div
                   key={q.name}
-                  className="flex items-center justify-between p-3 border border-border"
+                  className="flex items-center justify-between p-3 bg-muted/20"
                 >
                   <div className="flex items-center gap-3">
                     <span className={`w-2 h-2 rounded-full ${q.dot}`} />
@@ -308,7 +308,7 @@ function InsightsSection() {
               </p>
 
               {/* Alert mockup */}
-              <div className="border border-border overflow-hidden">
+              <div className="bg-muted/20 overflow-hidden">
                 <div className="px-4 py-2.5 bg-muted/30 border-b border-border">
                   <span className="text-[0.65rem] uppercase tracking-wide text-muted-foreground">
                     Active alerts
@@ -333,7 +333,7 @@ function InsightsSection() {
                   ].map((alert) => (
                     <div
                       key={alert.title}
-                      className="flex items-center gap-3 p-3 border border-border"
+                      className="flex items-center gap-3 p-3 bg-muted/10"
                     >
                       <div className={`w-2 h-2 rounded-full ${alert.dot}`} />
                       <div className="flex-1 min-w-0">
@@ -390,7 +390,7 @@ function InsightsSection() {
               </p>
 
               {/* Chart mockup */}
-              <div className="border border-border overflow-hidden">
+              <div className="bg-muted/20 overflow-hidden">
                 <div className="px-4 py-2.5 bg-muted/30 border-b border-border flex items-center justify-between">
                   <span className="text-[0.65rem] uppercase tracking-wide text-muted-foreground">
                     Message throughput
@@ -477,7 +477,7 @@ function QueueManagementSection() {
                 </span>
               </div>
               {/* Queue detail */}
-              <div className="border border-border overflow-hidden">
+              <div className="bg-muted/20 overflow-hidden">
                 <div className="px-3 py-2 bg-muted/30 border-b border-border flex items-center justify-between">
                   <span className="text-xs font-medium text-foreground font-mono">
                     orders.process
@@ -493,7 +493,7 @@ function QueueManagementSection() {
                 </div>
                 <div className="p-3">
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="p-2 border border-border">
+                    <div className="p-2 bg-muted/10">
                       <div className="text-[0.65rem] uppercase tracking-wide text-muted-foreground">
                         Messages
                       </div>
@@ -501,7 +501,7 @@ function QueueManagementSection() {
                         12,847
                       </div>
                     </div>
-                    <div className="p-2 border border-border">
+                    <div className="p-2 bg-muted/10">
                       <div className="text-[0.65rem] uppercase tracking-wide text-muted-foreground">
                         Consumers
                       </div>
@@ -511,7 +511,7 @@ function QueueManagementSection() {
                 </div>
               </div>
               {/* Bindings */}
-              <div className="border border-border overflow-hidden">
+              <div className="bg-muted/20 overflow-hidden">
                 <div className="px-3 py-2 bg-muted/30 border-b border-border">
                   <span className="text-[0.65rem] uppercase tracking-wide text-muted-foreground">
                     Bindings
@@ -617,7 +617,7 @@ function SupportingFeaturesSection() {
                 ].map((server) => (
                   <div
                     key={server.name}
-                    className="border border-border p-4 flex items-center gap-4"
+                    className="bg-muted/20 p-4 flex items-center gap-4"
                   >
                     <img
                       src="/images/server.svg"
@@ -665,7 +665,7 @@ function SupportingFeaturesSection() {
               {/* Setup comparison mockup */}
               <div className="space-y-4">
                 {/* Qarote setup */}
-                <div className="border border-border overflow-hidden">
+                <div className="bg-muted/20 overflow-hidden">
                   <div className="px-4 py-2.5 bg-muted/30 border-b border-border flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <img
@@ -691,7 +691,7 @@ function SupportingFeaturesSection() {
                   </div>
                 </div>
                 {/* Traditional setup (faded) */}
-                <div className="border border-border overflow-hidden opacity-50">
+                <div className="bg-muted/20 overflow-hidden opacity-50">
                   <div className="px-4 py-2.5 bg-muted/30 border-b border-border flex items-center justify-between">
                     <span className="text-xs font-medium text-foreground">
                       Prometheus + Grafana
@@ -759,7 +759,7 @@ function ComparisonSection() {
                     text={t("comparison.traditional.point4")}
                   />
                 </div>
-                <div className="border border-border p-4 mt-auto flex flex-col h-[180px]">
+                <div className="bg-muted/20 p-4 mt-auto flex flex-col h-[180px]">
                   <div className="px-3 py-2 bg-muted/30 border-b border-border mb-3 -mx-4 -mt-4">
                     <span className="text-[0.65rem] uppercase tracking-wide text-muted-foreground">
                       management.local:15672
@@ -805,7 +805,7 @@ function ComparisonSection() {
                     text={t("comparison.qarote.point4")}
                   />
                 </div>
-                <div className="border border-border overflow-hidden mt-auto h-[180px] flex flex-col">
+                <div className="bg-muted/20 overflow-hidden mt-auto h-[180px] flex flex-col">
                   <div className="px-3 py-2 bg-muted/30 border-b border-border flex items-center gap-2">
                     <img
                       src="/images/new_icon.svg"
@@ -821,7 +821,7 @@ function ComparisonSection() {
                   </div>
                   <div className="p-3 space-y-2 flex-1 flex flex-col justify-between overflow-hidden min-h-0">
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="border border-border p-1.5">
+                      <div className="bg-muted/10 p-1.5">
                         <div className="text-[0.65rem] uppercase tracking-wide text-muted-foreground">
                           {t("comparison.messagesPerSec")}
                         </div>
@@ -829,7 +829,7 @@ function ComparisonSection() {
                           4.2k
                         </div>
                       </div>
-                      <div className="border border-border p-1.5">
+                      <div className="bg-muted/10 p-1.5">
                         <div className="text-[0.65rem] uppercase tracking-wide text-muted-foreground">
                           {t("comparison.activeQueues")}
                         </div>

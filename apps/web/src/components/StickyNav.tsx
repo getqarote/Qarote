@@ -14,7 +14,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 
-const StickyNav = () => {
+const StickyNav = ({ currentPage }: { currentPage?: string }) => {
   const { t, i18n } = useTranslation("nav");
   const [open, setOpen] = useState(false);
   const locale = i18n.language || "en";
@@ -77,13 +77,19 @@ const StickyNav = () => {
             ))}
             <a
               href={`${localePrefix}/features/`}
-              className="px-4 py-2 text-base font-medium text-foreground hover:text-primary transition-colors"
+              className={`px-4 py-2 text-base font-medium transition-colors ${currentPage === "features" ? "text-primary" : "text-foreground hover:text-primary"}`}
+              {...(currentPage === "features"
+                ? { "aria-current": "page" as const }
+                : {})}
             >
               {t("features")}
             </a>
             <a
               href={`${localePrefix}/changelog/`}
-              className="px-4 py-2 text-base font-medium text-foreground hover:text-primary transition-colors"
+              className={`px-4 py-2 text-base font-medium transition-colors ${currentPage === "changelog" ? "text-primary" : "text-foreground hover:text-primary"}`}
+              {...(currentPage === "changelog"
+                ? { "aria-current": "page" as const }
+                : {})}
             >
               {t("whatsNew", "What's New")}
             </a>
@@ -168,13 +174,19 @@ const StickyNav = () => {
             ))}
             <a
               href={`${localePrefix}/features/`}
-              className="px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-muted rounded-md transition-colors"
+              className={`px-4 py-3 text-base font-medium hover:bg-muted rounded-md transition-colors ${currentPage === "features" ? "text-primary" : "text-foreground hover:text-primary"}`}
+              {...(currentPage === "features"
+                ? { "aria-current": "page" as const }
+                : {})}
             >
               {t("features")}
             </a>
             <a
               href={`${localePrefix}/changelog/`}
-              className="px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-muted rounded-md transition-colors"
+              className={`px-4 py-3 text-base font-medium hover:bg-muted rounded-md transition-colors ${currentPage === "changelog" ? "text-primary" : "text-foreground hover:text-primary"}`}
+              {...(currentPage === "changelog"
+                ? { "aria-current": "page" as const }
+                : {})}
             >
               {t("whatsNew", "What's New")}
             </a>

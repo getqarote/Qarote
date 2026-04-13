@@ -11,6 +11,8 @@ import {
 
 import { trackSignUpClick } from "@/lib/gtm";
 
+import { Button } from "@/components/ui/button";
+
 const iconImageMap: Record<string, { src: string; alt: string }> = {
   Activity: { src: "/images/real-time.svg", alt: "Real-time" },
   Shield: { src: "/images/flag.svg", alt: "Flag" },
@@ -235,8 +237,10 @@ const FeaturesSection = () => {
         </div>
 
         <div className="text-center mt-16">
-          <button
+          <Button
             type="button"
+            variant="cta"
+            size="pill"
             onClick={() => {
               trackSignUpClick({
                 source: "features_cta",
@@ -245,7 +249,6 @@ const FeaturesSection = () => {
               const appBaseUrl = import.meta.env.VITE_APP_BASE_URL;
               window.location.href = `${appBaseUrl}/auth/sign-up`;
             }}
-            className="rounded-md bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-3 sm:px-7 sm:py-3 transition-colors duration-200 inline-flex items-center justify-center gap-3 text-base sm:text-lg"
           >
             <span>{t("cta.startMonitoringForFree")}</span>
             <img
@@ -256,7 +259,7 @@ const FeaturesSection = () => {
               width={14}
               height={14}
             />
-          </button>
+          </Button>
         </div>
       </div>
     </section>

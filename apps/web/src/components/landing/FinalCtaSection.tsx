@@ -52,7 +52,7 @@ const FinalCtaSection = () => {
                       width={12}
                       height={12}
                     />
-                    {t("finalCta.freeForever", "Free forever")}
+                    {t("finalCta.freeForever", "Free forever (self-hosted)")}
                   </span>
                 </div>
               </div>

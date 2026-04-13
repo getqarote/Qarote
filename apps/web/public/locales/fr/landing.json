@@ -4,7 +4,7 @@
     "titleHighlight": "RabbitMQ",
     "titleAfter": "",
     "subtitle": "Qarote fournit une interface claire et intuitive pour surveiller, analyser et gérer vos serveurs RabbitMQ sans effort.",
-    "noCreditCard": "Essai gratuit de 14 jours • Aucune carte de crédit requise"
+    "noCreditCard": "Gratuit et open source • Essayez les fonctions Pro pendant 14 jours"
   },
   "cta": {
     "getStartedForFree": "Commencer gratuitement",
@@ -104,7 +104,7 @@
     }
   },
   "finalCta": {
-    "title": "Prêt à améliorer votre expérience RabbitMQ ?",
+    "title": "Prêt à monitorer vos serveurs RabbitMQ ?",
     "subtitle": "Commencez à surveiller vos serveurs RabbitMQ gratuitement dès aujourd'hui.",
     "noCreditCard": "Aucune carte de crédit requise"
   },

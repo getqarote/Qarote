@@ -4,7 +4,7 @@
     "titleHighlight": "RabbitMQ",
     "titleAfter": " servers",
     "subtitle": "Qarote provides a clean and intuitive interface to monitor, analyze, and manage your RabbitMQ servers effortlessly.",
-    "noCreditCard": "14-day free trial • No credit card required"
+    "noCreditCard": "Free & open source • Try Pro features for 14 days"
   },
   "cta": {
     "getStartedForFree": "Get started for free",
@@ -104,7 +104,7 @@
     }
   },
   "finalCta": {
-    "title": "Ready to upgrade your RabbitMQ experience?",
+    "title": "Ready to monitor your RabbitMQ servers?",
     "subtitle": "Start monitoring your RabbitMQ servers for free today.",
     "noCreditCard": "No credit card required"
   },
