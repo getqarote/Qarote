@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { AlertTriangle, Trash2 } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 import {
   AlertDialog,
@@ -108,10 +108,9 @@ export const PurgeQueueDialog = ({
         {trigger || (
           <Button
             size="sm"
-            variant="outline"
-            className="text-destructive hover:text-destructive"
+            variant="destructive-outline"
+            className="rounded-none"
           >
-            <Trash2 className="w-4 h-4 mr-1" />
             {t("purge.trigger")}
           </Button>
         )}
@@ -164,23 +163,17 @@ export const PurgeQueueDialog = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+          <AlertDialogCancel className="rounded-none">
+            {t("cancel")}
+          </AlertDialogCancel>
           <AlertDialogAction
             onClick={handlePurge}
             disabled={purgeQueueMutation.isPending}
-            className="bg-destructive hover:bg-destructive/90 focus:ring-destructive"
+            className="border border-destructive/30 bg-background text-destructive hover:bg-destructive/10 hover:border-destructive/50 rounded-none"
           >
-            {purgeQueueMutation.isPending ? (
-              <>
-                <div className="w-4 h-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
-                {t("purge.purging")}
-              </>
-            ) : (
-              <>
-                <Trash2 className="w-4 h-4 mr-2" />
-                {t("purge.confirm")}
-              </>
-            )}
+            {purgeQueueMutation.isPending
+              ? t("purge.purging")
+              : t("purge.confirm")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
