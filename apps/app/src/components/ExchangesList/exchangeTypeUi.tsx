@@ -1,7 +1,3 @@
-import { ReactNode } from "react";
-
-import { Activity, GitBranch, Hash, Radio, Share2 } from "lucide-react";
-
 /**
  * Visual metadata for an exchange type. Centralised here so the icon +
  * badge color choices don't drift between the overview cards, the filter
@@ -29,22 +25,6 @@ function normalizeExchangeType(type: string): ExchangeTypeKey {
     return lower;
   }
   return "other";
-}
-
-export function getExchangeIcon(type: string, className?: string): ReactNode {
-  const cls = className ?? "h-4 w-4";
-  switch (normalizeExchangeType(type)) {
-    case "direct":
-      return <GitBranch className={cls} />;
-    case "fanout":
-      return <Radio className={cls} />;
-    case "topic":
-      return <Share2 className={cls} />;
-    case "headers":
-      return <Hash className={cls} />;
-    default:
-      return <Activity className={cls} />;
-  }
 }
 
 export function getExchangeTypeBadgeClass(type: string): string {

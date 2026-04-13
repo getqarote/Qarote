@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-export interface KeyboardShortcut {
+interface KeyboardShortcut {
   /**
    * The key chord to display, e.g. "/", "?", "Esc", "Enter".
    * Rendered as a `<kbd>` chip with the same treatment as the
@@ -23,7 +23,7 @@ export interface KeyboardShortcut {
   label: string;
 }
 
-export interface KeyboardShortcutSection {
+interface KeyboardShortcutSection {
   /**
    * Section heading (already translated).
    */
