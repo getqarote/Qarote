@@ -70,7 +70,7 @@ function TermsOfServiceContent() {
           </span>
         </div>
         <div className="p-6">
-          <ol className="grid sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
+          <ol className="grid sm:grid-cols-2 gap-x-8 gap-y-2 text-sm list-none pl-0">
             {sections.map((s, i) => (
               <li key={s.id}>
                 <a

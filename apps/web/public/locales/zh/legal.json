@@ -8,7 +8,7 @@
     "description": "Qarote 隐私政策 - 了解我们如何收集、使用和保护您的数据。",
     "sections": {
       "informationWeCollect": {
-        "title": "1. 我们收集的信息",
+        "title": "我们收集的信息",
         "accountInfo": {
           "title": "1.1 账户信息",
           "description": "当您在 Qarote 创建账户时，我们会收集：",
@@ -43,7 +43,7 @@
         }
       },
       "howWeUse": {
-        "title": "2. 我们如何使用您的信息",
+        "title": "我们如何使用您的信息",
         "description": "我们使用收集的信息来：",
         "items": [
           "提供和维护我们的 RabbitMQ 监控服务",
@@ -56,7 +56,7 @@
         ]
       },
       "informationSharing": {
-        "title": "3. 信息共享和披露",
+        "title": "信息共享和披露",
         "description": "我们不会向第三方出售、交易或出租您的个人信息。我们仅在以下情况下共享您的信息：",
         "serviceProviders": {
           "title": "3.1 服务提供商",
@@ -80,7 +80,7 @@
         }
       },
       "dataSecurity": {
-        "title": "4. 数据安全",
+        "title": "数据安全",
         "description": "我们实施适当的安全措施来保护您的个人信息：",
         "items": [
           "传输中和静态数据的加密",
@@ -92,7 +92,7 @@
         "disclaimer": "但是，通过互联网传输或电子存储的方法都不是 100% 安全的。虽然我们努力保护您的信息，但我们无法保证绝对的安全性。"
       },
       "dataRetention": {
-        "title": "5. 数据保留",
+        "title": "数据保留",
         "description": "我们会在提供服务和实现本隐私政策所述目的所需的时间内保留您的个人信息。具体而言：",
         "items": [
           "账户信息：直到您删除账户",
@@ -102,7 +102,7 @@
         ]
       },
       "yourRights": {
-        "title": "6. 您的权利",
+        "title": "您的权利",
         "description": "根据您所在的位置，您可能对您的个人信息享有以下权利：",
         "items": {
           "access": {
@@ -133,7 +133,7 @@
         "contact": "要行使这些权利，请通过 privacy@qarote.io 联系我们"
       },
       "cookies": {
-        "title": "7. Cookie 和跟踪",
+        "title": "Cookie 和跟踪",
         "description": "我们使用 Cookie 和类似技术来增强您的体验：",
         "items": {
           "essential": {
@@ -156,7 +156,7 @@
         "control": "您可以通过浏览器偏好设置来控制 Cookie 设置。"
       },
       "internationalTransfers": {
-        "title": "8. 国际数据传输",
+        "title": "国际数据传输",
         "description": "您的信息可能会被传输到您所在国家以外的国家并在那里处理。我们确保为此类传输提供适当的保障措施，包括：",
         "items": [
           "标准合同条款",
@@ -166,11 +166,11 @@
         ]
       },
       "childrensPrivacy": {
-        "title": "9. 儿童隐私",
+        "title": "儿童隐私",
         "description": "我们的服务不面向 13 岁以下的儿童。我们不会故意收集 13 岁以下儿童的个人信息。如果您发现有儿童向我们提供了个人信息，请立即联系我们。"
       },
       "changes": {
-        "title": "10. 本隐私政策的变更",
+        "title": "本隐私政策的变更",
         "description": "我们可能会不时更新本隐私政策。我们将通过以下方式通知您任何重大变更：",
         "items": [
           "在我们的网站上发布更新后的政策",
@@ -180,7 +180,7 @@
         "continued": "在任何变更后继续使用我们的服务即表示接受更新后的政策。"
       },
       "contactUs": {
-        "title": "11. 联系我们",
+        "title": "联系我们",
         "description": "如果您对本隐私政策或我们的数据实践有任何疑问，请联系我们：",
         "email": "support@qarote.io",
         "address": "229 rue Saint-Honoré, 75001, Paris, France"
@@ -193,12 +193,12 @@
     "description": "Qarote 服务条款 - 了解您在使用我们服务时的权利和责任。",
     "sections": {
       "acceptance": {
-        "title": "1. 接受条款",
+        "title": "接受条款",
         "p1": "通过访问和使用 Qarote（「本服务」），您接受并同意受本协议的条款和条件的约束。如果您不同意遵守上述条款，请不要使用本服务。",
         "p2": "本服务条款（「条款」）管辖您对由 Qarote（「我们」）运营的 RabbitMQ 监控和管理平台的使用。"
       },
       "description": {
-        "title": "2. 服务描述",
+        "title": "服务描述",
         "description": "Qarote 提供现代化的基于 Web 的界面，用于监控和管理 RabbitMQ 消息代理。我们的服务包括：",
         "items": [
           "实时队列监控和分析",
@@ -210,9 +210,9 @@
         ]
       },
       "accounts": {
-        "title": "3. 用户账户和注册",
+        "title": "用户账户和注册",
         "creation": {
-          "title": "3.1 创建账户",
+          "title": "创建账户",
           "description": "要使用我们的服务，您必须通过提供准确和完整的信息来创建账户。您有责任：",
           "items": [
             "维护账户凭据的保密性",
@@ -222,7 +222,7 @@
           ]
         },
         "eligibility": {
-          "title": "3.2 账户资格",
+          "title": "账户资格",
           "description": "您必须年满 18 岁才能创建账户。通过创建账户，您声明并保证：",
           "items": [
             "您已达到签订具有约束力合同的法定年龄",
@@ -232,23 +232,23 @@
         }
       },
       "billing": {
-        "title": "4. 订阅计划和计费",
+        "title": "订阅计划和计费",
         "description": "我们提供多种订阅计划。订阅费按月或按年预先计费。您可以随时取消订阅。"
       },
       "acceptableUse": {
-        "title": "5. 可接受使用政策",
+        "title": "可接受使用政策",
         "description": "您同意仅出于合法目的并按照本条款使用我们的服务。"
       },
       "dataPrivacy": {
-        "title": "6. 数据和隐私",
+        "title": "数据和隐私",
         "description": "您的隐私对我们很重要。我们对个人信息的收集和使用受我们的隐私政策管辖。"
       },
       "liability": {
-        "title": "7. 责任限制",
+        "title": "责任限制",
         "description": "在法律允许的最大范围内，Qarote 不对任何间接、附带、特殊、后果性或惩罚性损害承担责任。"
       },
       "contactUs": {
-        "title": "8. 联系信息",
+        "title": "联系信息",
         "description": "如果您对本条款有任何疑问，请联系我们：",
         "email": "support@qarote.io",
         "address": "229 rue Saint-Honoré, 75001, Paris, France"

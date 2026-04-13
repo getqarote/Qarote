@@ -2,8 +2,8 @@ import { useTranslation } from "react-i18next";
 
 import type { SupportedLocale } from "@qarote/i18n";
 
-import AuthButtons from "@/components/AuthButtons";
 import { IslandProvider } from "@/components/IslandProvider";
+import FinalCtaSection from "@/components/landing/FinalCtaSection";
 import FooterSection from "@/components/landing/FooterSection";
 import StickyNav from "@/components/StickyNav";
 import { TawkTo } from "@/components/TawkTo";
@@ -27,7 +27,7 @@ export default function FeaturesIsland({
         <QueueManagementSection />
         <SupportingFeaturesSection />
         <ComparisonSection />
-        <CtaSection />
+        <FinalCtaSection />
         <FooterSection currentLocale={locale} />
       </div>
       <TawkTo />
@@ -850,43 +850,6 @@ function ComparisonSection() {
                       {t("comparison.allSystemsOperational")}
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ─── Section 7: CTA ─── */
-
-function CtaSection() {
-  const { t } = useTranslation("features");
-
-  return (
-    <section className="pt-12 pb-20 bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="border border-border overflow-hidden">
-          <div className="px-6 py-3 bg-feature-icon-bg border-b border-border">
-            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Get started for free
-            </span>
-          </div>
-          <div className="py-16 px-12 lg:px-16">
-            <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
-              <div>
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl mb-4 text-center md:text-left leading-[1.2] font-normal text-foreground">
-                  {t("cta.title")}
-                </h2>
-              </div>
-              <div className="text-center md:text-left">
-                <p className="text-xl mb-8 text-muted-foreground">
-                  {t("cta.subtitle")}
-                </p>
-                <div className="flex flex-col items-center md:items-start">
-                  <AuthButtons align="left" />
                 </div>
               </div>
             </div>
