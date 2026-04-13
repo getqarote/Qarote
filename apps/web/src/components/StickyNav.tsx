@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Menu } from "lucide-react";
@@ -17,6 +17,7 @@ import {
 const StickyNav = ({ currentPage }: { currentPage?: string }) => {
   const { t, i18n } = useTranslation("nav");
   const [open, setOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
   const locale = i18n.language || "en";
   const localePrefix = locale === "en" ? "" : `/${locale}`;
 
@@ -24,6 +25,31 @@ const StickyNav = ({ currentPage }: { currentPage?: string }) => {
     { id: "video", label: t("howItWorks") },
     { id: "pricing", label: t("pricing") },
   ];
+
+  useEffect(() => {
+    const sectionIds = sections.map((s) => s.id);
+    const elements = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter(Boolean) as HTMLElement[];
+
+    if (elements.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        }
+      },
+      { rootMargin: "-80px 0px -60% 0px", threshold: 0 }
+    );
+
+    for (const el of elements) {
+      observer.observe(el);
+    }
+    return () => observer.disconnect();
+  }, []);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -61,7 +87,9 @@ const StickyNav = ({ currentPage }: { currentPage?: string }) => {
               width={32}
               height={32}
             />
-            <span className="font-normal text-[1.2rem]">Qarote</span>
+            <span className="font-normal text-[1.2rem] font-display">
+              Qarote
+            </span>
           </a>
 
           <div className="hidden lg:flex items-center justify-center gap-1 min-w-0">
@@ -70,7 +98,7 @@ const StickyNav = ({ currentPage }: { currentPage?: string }) => {
                 type="button"
                 key={section.id}
                 onClick={() => scrollToSection(section.id)}
-                className="px-4 py-2 text-base font-medium text-foreground hover:text-primary transition-colors"
+                className={`px-4 py-2 text-base font-medium transition-colors ${activeSection === section.id ? "text-primary" : "text-foreground hover:text-primary"}`}
               >
                 {section.label}
               </button>
@@ -146,7 +174,7 @@ const StickyNav = ({ currentPage }: { currentPage?: string }) => {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="right" className="w-72" id="mobile-nav">
           <SheetHeader>
-            <SheetTitle className="flex items-center gap-1">
+            <SheetTitle className="flex items-center gap-1 font-display">
               <img
                 src="/images/new_icon.svg"
                 alt=""

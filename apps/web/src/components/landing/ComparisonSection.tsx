@@ -129,28 +129,34 @@ const ComparisonSection = () => {
                       Dashboard
                     </span>
                   </div>
-                  <div className="bg-background p-4 space-y-3">
-                    {/* Metric strip — mirrors the app dashboard */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="border border-border p-2.5">
-                        <div className="text-[0.65rem] uppercase tracking-wide text-muted-foreground mb-1">
-                          {t("comparison.messagesPerSec")}
-                        </div>
-                        <div className="text-base font-mono text-foreground">
-                          4.2k
-                        </div>
-                      </div>
-                      <div className="border border-border p-2.5">
-                        <div className="text-[0.65rem] uppercase tracking-wide text-muted-foreground mb-1">
-                          {t("comparison.activeQueues")}
-                        </div>
-                        <div className="text-base font-mono text-foreground">
-                          127
-                        </div>
-                      </div>
+                  <div className="bg-background divide-y divide-border">
+                    {/* Queue list — distinct from metrics panels elsewhere */}
+                    <div className="px-4 py-2.5 flex items-center justify-between">
+                      <span className="text-xs text-foreground">
+                        orders.process
+                      </span>
+                      <span className="text-xs font-mono text-status-success-text">
+                        0 ready
+                      </span>
+                    </div>
+                    <div className="px-4 py-2.5 flex items-center justify-between">
+                      <span className="text-xs text-foreground">
+                        email.notifications
+                      </span>
+                      <span className="text-xs font-mono text-status-success-text">
+                        3 ready
+                      </span>
+                    </div>
+                    <div className="px-4 py-2.5 flex items-center justify-between">
+                      <span className="text-xs text-foreground">
+                        analytics.events
+                      </span>
+                      <span className="text-xs font-mono text-status-success-text">
+                        12 ready
+                      </span>
                     </div>
                     {/* Status bar */}
-                    <div className="border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700 flex items-center gap-2">
+                    <div className="bg-status-success-bg px-3 py-2 text-xs text-status-success-text flex items-center gap-2">
                       <img
                         src="/images/check.svg"
                         alt=""

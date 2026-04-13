@@ -212,7 +212,7 @@ const ConnectionSection = () => {
                 <p className="text-muted-foreground mb-6">
                   {t("connection.step3.description")}
                 </p>
-                {/* Dashboard mock — mirrors actual app dashboard metrics */}
+                {/* Activity feed mock — shows team collaboration */}
                 <div className="border border-border overflow-hidden max-w-sm mx-auto">
                   <div className="px-4 py-2.5 bg-muted/30 border-b border-border flex items-center gap-2">
                     <img
@@ -224,62 +224,55 @@ const ConnectionSection = () => {
                       height={16}
                     />
                     <span className="text-xs font-medium text-foreground">
-                      Dashboard
+                      Activity
                     </span>
                   </div>
-                  <div className="p-4 space-y-3">
-                    {/* Metric cards — same pattern as app dashboard */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="border border-border p-3">
-                        <div className="text-[0.65rem] uppercase tracking-wide text-muted-foreground mb-1">
-                          {t("connection.step3.messagesPerSec")}
+                  <div className="divide-y divide-border">
+                    <div className="px-4 py-3 flex items-start gap-3">
+                      <span className="mt-0.5 w-2 h-2 rounded-full bg-status-warning-text shrink-0" />
+                      <div className="min-w-0">
+                        <div className="text-sm text-foreground">
+                          Queue backlog detected
                         </div>
-                        <div className="text-lg text-foreground font-mono">
-                          12.8k
-                        </div>
-                      </div>
-                      <div className="border border-border p-3">
-                        <div className="text-[0.65rem] uppercase tracking-wide text-muted-foreground mb-1">
-                          {t("connection.step3.queues")}
-                        </div>
-                        <div className="text-lg text-foreground font-mono">
-                          84
+                        <div className="text-xs text-muted-foreground">
+                          orders.process — 12k messages · 2m ago
                         </div>
                       </div>
                     </div>
-
-                    {/* Chart section with header strip */}
-                    <div className="border border-border overflow-hidden">
-                      <div className="px-3 py-2 bg-muted/30 border-b border-border flex items-center justify-between">
-                        <span className="text-xs font-medium text-foreground">
-                          {t("connection.step3.queueDepths")}
-                        </span>
-                      </div>
-                      <div className="p-3">
-                        <div className="h-16 flex items-end justify-between gap-1">
-                          <div className="flex-1 bg-primary/60 h-[40%]" />
-                          <div className="flex-1 bg-primary/70 h-[60%]" />
-                          <div className="flex-1 bg-primary/60 h-[45%]" />
-                          <div className="flex-1 bg-primary h-[75%]" />
-                          <div className="flex-1 bg-primary/70 h-[55%]" />
-                          <div className="flex-1 bg-primary h-[80%]" />
-                          <div className="flex-1 bg-primary/80 h-[65%]" />
+                    <div className="px-4 py-3 flex items-start gap-3">
+                      <span className="mt-0.5 w-2 h-2 rounded-full bg-status-success-text shrink-0" />
+                      <div className="min-w-0">
+                        <div className="text-sm text-foreground">
+                          Backlog resolved
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          orders.process — 0 messages · 45s ago
                         </div>
                       </div>
                     </div>
-
-                    {/* Status bar */}
-                    <div className="border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700 flex items-center gap-2">
-                      <img
-                        src="/images/check.svg"
-                        alt=""
-                        aria-hidden="true"
-                        width="11"
-                        height="11"
-                        className="image-crisp w-auto h-[0.7rem]"
-                      />
-                      <span>{t("connection.step3.allSystemsOperational")}</span>
+                    <div className="px-4 py-3 flex items-start gap-3">
+                      <span className="mt-0.5 w-2 h-2 rounded-full bg-primary shrink-0" />
+                      <div className="min-w-0">
+                        <div className="text-sm text-foreground">
+                          New server added
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          staging-eu-west · 3 nodes · just now
+                        </div>
+                      </div>
                     </div>
+                  </div>
+                  {/* Status bar */}
+                  <div className="border-t border-status-success-border bg-status-success-bg px-3 py-2 text-xs text-status-success-text flex items-center gap-2">
+                    <img
+                      src="/images/check.svg"
+                      alt=""
+                      aria-hidden="true"
+                      width="11"
+                      height="11"
+                      className="image-crisp w-auto h-[0.7rem]"
+                    />
+                    <span>{t("connection.step3.allSystemsOperational")}</span>
                   </div>
                 </div>
               </div>

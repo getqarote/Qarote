@@ -1,30 +1,30 @@
 {
   "q1": {
     "question": "什么是 Qarote？",
-    "answer": "Qarote 是一个现代化的 RabbitMQ 监控和管理仪表盘，专为需要更好地了解消息代理基础设施的开发者和 DevOps 团队设计。它取代了默认的 RabbitMQ 管理插件，提供更快速、更直观的界面，让你能够实时监控队列深度、消息速率、消费者数量、内存使用和磁盘空间。Qarote 支持 RabbitMQ 3.x 和 4.x 版本，通过加密的 TLS 连接安全地连接管理 HTTP API，与 CloudAMQP 和 Amazon MQ 等云托管服务以及自托管的 RabbitMQ 实例无缝兼容。免费的 Community 层包含一台服务器的完整队列和交换器管理，无时间限制；而从 $29/月起的付费计划增加了多服务器支持、通过 email 和 Slack 发送的可自定义告警、历史分析以及共享工作区团队协作功能。"
+    "answer": "Qarote 是一个 RabbitMQ 监控仪表盘，用更直观的实时队列、交换器和节点监控替代默认的管理插件。它通过 TLS 加密的管理 HTTP API 安全连接，兼容云服务（CloudAMQP、Amazon MQ）和自托管实例。基础监控功能永久免费，无需信用卡——付费计划增加多服务器支持、告警和团队协作功能。"
   },
   "q2": {
     "question": "Qarote 适合谁使用？",
-    "answer": "Qarote 专为依赖 RabbitMQ 进行消息队列管理的开发者、DevOps 工程师、SRE 和平台团队打造，帮助他们无需配置 Prometheus 和 Grafana 的复杂性即可获得更好的代理基础设施可视化。无论你为小型应用管理单个 RabbitMQ 实例，还是在生产、预发布和开发环境中运维数十个集群，Qarote 都能帮助你在队列积压导致故障之前发现问题，更快地排查消息路由故障，并通过共享仪表盘和可自定义的告警（支持 email、Slack、浏览器通知和 webhooks）让整个团队保持同步。它同样适合需要快速了解消息基础设施运行状况的 CTO 和工程经理，无需深入命令行工具或从零开始构建自定义监控仪表盘。"
+    "answer": "Qarote 专为使用 RabbitMQ 的开发者、DevOps 工程师和 SRE 打造，帮助他们无需配置 Prometheus 和 Grafana 即可获得更好的可视化。无论你管理单个实例还是跨环境的数十个集群，Qarote 都能帮你在队列积压导致故障之前发现问题，更快排查路由故障。上手只需不到两分钟。"
   },
   "q3": {
     "question": "Qarote 安全吗？",
-    "answer": "是的。安全性是核心设计原则。Qarote 与你的 RabbitMQ 服务器之间的所有连接都通过 TLS 加密。Qarote 仅读取 RabbitMQ 管理 HTTP API 暴露的指标和管理数据——它的设计不会在服务器上存储任何消息内容、凭据或敏感应用数据。只有你的配置偏好和告警规则会被持久化保存。对于有严格合规要求的团队，Enterprise 计划包含 SOC 2 合规性，且 Qarote 可以使用 Docker、Docker Compose、Dokku 或独立二进制文件完全自托管在你自己的基础设施上，确保你的监控数据永远不会离开你的网络。自托管部署使用内置公钥的离线 JWT 许可证密钥验证，激活后无需任何外部通信或互联网连接，为气隙隔离环境提供完整的网络隔离。"
+    "answer": "是的。所有到 RabbitMQ 服务器的连接都使用 TLS 加密。Qarote 仅读取管理 HTTP API 暴露的指标——不会存储消息内容或凭据。对于有严格合规要求的团队，Qarote 可以完全自托管在你自己的基础设施上，确保监控数据不会离开你的网络。自托管部署使用离线许可证验证，激活后无需互联网连接。"
   },
   "q4": {
-    "question": "Qarote 是否比 Prometheus 和 Grafana 更好的监控工具？",
-    "answer": "Qarote 和 Prometheus/Grafana 服务于不同目的，可以很好地互补。Prometheus 和 Grafana 是功能强大的通用监控工具，但专门为 RabbitMQ 配置它们需要安装 Prometheus 导出器插件、配置抓取目标和保留策略、从零开始构建自定义 Grafana 仪表盘、为每个你想跟踪的指标编写 PromQL 查询，以及随着 RabbitMQ 版本的演进持续维护整个技术栈。Qarote 提供专为 RabbitMQ 打造的零配置监控——连接你的服务器即可立即开始监控。你将获得针对 RabbitMQ 工作流优化的预构建仪表盘、暂停和清除等队列管理控制，以及无需编写任何 PromQL 查询的告警功能。对于已经使用 Prometheus 和 Grafana 进行更广泛基础设施监控的团队，Qarote 可以通过提供更深入的 RabbitMQ 专项洞察和 Grafana 仪表盘无法单独提供的运维控制来补充现有技术栈。"
+    "question": "Qarote 与 Prometheus 和 Grafana 相比如何？",
+    "answer": "它们服务于不同目的，可以很好地互补。为 RabbitMQ 配置 Prometheus 和 Grafana 需要安装导出器、配置抓取目标、从零构建仪表盘和编写 PromQL 查询——然后随版本演进持续维护。Qarote 提供零配置的 RabbitMQ 专用监控：连接服务器即可立即开始，预构建仪表盘、队列管理控制和告警开箱即用。对于已使用 Prometheus 的团队，Qarote 在现有技术栈旁提供更深入的 RabbitMQ 专项洞察。"
   },
   "q5": {
     "question": "我可以自托管 Qarote 吗？",
-    "answer": "可以。Qarote 为需要将监控基础设施保留在自有网络内的团队提供完整的自托管部署选项。你可以使用 Docker、Docker Compose、Dokku 或独立二进制文件进行部署。Community 版本在 GitHub 上以 MIT 许可证免费开源。自托管的 Developer 和 Enterprise 许可证以年度订阅方式提供（分别为 348 美元/年和 1,188 美元/年），采用离线 JWT 许可证密钥验证——激活后无需联网。"
+    "answer": "可以。你可以使用 Docker、Docker Compose、Dokku 或独立二进制文件在自己的基础设施上部署 Qarote——整个安装不到五分钟。Community 版本在 GitHub 上以 MIT 许可证免费开源。自托管付费计划解锁多服务器支持、告警和团队功能。许可证验证完全离线，激活后无需联网，适用于气隙隔离环境。"
   },
   "q6": {
     "question": "Qarote 支持哪些 RabbitMQ 版本？",
-    "answer": "Qarote 支持 RabbitMQ 3.x 和 4.x 版本，包括最新版本。它通过 RabbitMQ 管理 HTTP API 连接，该 API 在所有启用管理插件的现代 RabbitMQ 安装中都可用。Community（免费）层支持 RabbitMQ LTS 版本，付费计划（Developer 和 Enterprise）支持所有版本。Qarote 已在 Linux、macOS 和 Windows 上的单节点和集群部署中进行了测试，同时兼容 CloudAMQP 和 Amazon MQ 等托管服务。"
+    "answer": "Qarote 支持 RabbitMQ 3.x 和 4.x，包括所有 LTS 和最新版本。通过标准管理 HTTP API 连接——无需在服务器上安装额外的插件、导出器或代理。Qarote 已在单节点和集群部署以及 CloudAMQP 和 Amazon MQ 等托管服务上经过测试。"
   },
   "q7": {
     "question": "Qarote 支持 RabbitMQ 集群吗？",
-    "answer": "支持。Qarote 完全支持 RabbitMQ 集群，并原生提供集群感知监控。当你连接集群部署的 RabbitMQ 时，Qarote 会自动发现集群中的所有节点，并显示节点级别的指标和集群级别的汇总数据。你可以监控各个节点的健康状况（内存、磁盘、文件描述符、Erlang 进程），跟踪队列在节点间的分布，并在特定节点不可用或超过资源阈值时接收告警。"
+    "answer": "支持。Qarote 完全支持集群并自动发现节点——无需额外配置。它在统一视图中显示各节点指标和集群汇总数据。你可以跟踪各节点健康状况、监控队列在节点间的分布，并在节点不可用或超过资源阈值时接收告警。"
   }
 }
