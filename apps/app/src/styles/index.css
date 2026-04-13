@@ -392,7 +392,7 @@
     --accent: 30 25% 94%;
     --accent-foreground: 25 45% 17%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 72% 47%;
     --destructive-foreground: 210 40% 98%;
 
     /* Status — light mode. Hue spread is intentional: success=green, warning=amber

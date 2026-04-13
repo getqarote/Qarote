@@ -110,5 +110,15 @@
   "noVhostsAvailable": "No hay hosts virtuales disponibles",
   "configureRegexpTooltip": "Expresión regular que controla qué recursos puede configurar el usuario (crear/eliminar colas, exchanges, enlaces). Use \".*\" para acceso completo o patrones específicos como \"^myqueue.*\".",
   "writeRegexpTooltip": "Expresión regular que controla en qué exchanges y claves de enrutamiento puede publicar mensajes el usuario. Use \".*\" para acceso completo o patrones como \"^logs.*\".",
-  "readRegexpTooltip": "Expresión regular que controla de qué colas puede consumir mensajes el usuario. Use \".*\" para acceso completo o patrones como \"^user_.*\"."
+  "readRegexpTooltip": "Expresión regular que controla de qué colas puede consumir mensajes el usuario. Use \".*\" para acceso completo o patrones como \"^user_.*\".",
+  "invalidRegex": "Expresión regular inválida",
+  "clearPermissionsError": "Error al eliminar los permisos",
+  "clearPermissionsTitle": "Eliminar permisos",
+  "clearPermissionsDescription": "Esto eliminará todos los permisos de este usuario en el host virtual {{vhost}}. El usuario ya no podrá acceder a los recursos de este vhost.",
+  "clearPermissions": "Eliminar permisos",
+  "defaultVhost": "Predeterminado (/)",
+  "dangerZoneHint": "Acciones destructivas",
+  "deleteUserDescription": "Eliminar permanentemente este usuario y revocar todos sus permisos. Esta acción no se puede deshacer.",
+  "deleteUserDialogDescription": "Esto eliminará permanentemente al usuario <strong>{{name}}</strong> y revocará todos sus permisos. Esta acción no se puede deshacer.",
+  "deleteUserConfirmLabel": "Escriba el nombre de usuario para confirmar"
 }

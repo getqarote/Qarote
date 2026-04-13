@@ -61,7 +61,7 @@ export function UserDetailHeader({
             </Badge>
           </div>
           {disabledReason && (
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-muted-foreground mt-1 max-w-prose">
               {disabledReason}
             </p>
           )}

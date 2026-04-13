@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { HelpCircle } from "lucide-react";
@@ -17,6 +17,19 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
+/**
+ * Validates whether a string is a valid regular expression.
+ * Returns `null` if valid, or a human-readable error string.
+ */
+function validateRegex(pattern: string): string | null {
+  try {
+    new RegExp(pattern);
+    return null;
+  } catch {
+    return "invalid";
+  }
+}
 
 interface SetUserPermissionsFormProps {
   vhosts: Array<{ name: string }>;
@@ -48,6 +61,20 @@ export function SetUserPermissionsForm({
   isPending,
 }: SetUserPermissionsFormProps) {
   const { t } = useTranslation("users");
+
+  const configureError = useMemo(
+    () => validateRegex(configureRegexp),
+    [configureRegexp]
+  );
+  const writeError = useMemo(() => validateRegex(writeRegexp), [writeRegexp]);
+  const readError = useMemo(() => validateRegex(readRegexp), [readRegexp]);
+
+  const hasValidationErrors = configureError || writeError || readError;
+
+  const handleSubmit = useCallback(() => {
+    if (hasValidationErrors) return;
+    onSubmit();
+  }, [hasValidationErrors, onSubmit]);
 
   return (
     <div className="rounded-lg border border-border overflow-hidden">
@@ -82,24 +109,27 @@ export function SetUserPermissionsForm({
             tooltip={t("configureRegexpTooltip")}
             value={configureRegexp}
             onChange={onConfigureRegexpChange}
+            error={configureError ? t("invalidRegex") : undefined}
           />
           <RegexField
             label={t("writeRegexp")}
             tooltip={t("writeRegexpTooltip")}
             value={writeRegexp}
             onChange={onWriteRegexpChange}
+            error={writeError ? t("invalidRegex") : undefined}
           />
           <RegexField
             label={t("readRegexp")}
             tooltip={t("readRegexpTooltip")}
             value={readRegexp}
             onChange={onReadRegexpChange}
+            error={readError ? t("invalidRegex") : undefined}
           />
           <div>
             <Button
               className="btn-primary"
-              onClick={onSubmit}
-              disabled={isPending}
+              onClick={handleSubmit}
+              disabled={isPending || !!hasValidationErrors}
             >
               {isPending ? t("setting") : t("setPermission")}
             </Button>
@@ -115,11 +145,13 @@ function RegexField({
   tooltip,
   value,
   onChange,
+  error,
 }: {
   label: ReactNode;
   tooltip: ReactNode;
   value: string;
   onChange: (value: string) => void;
+  error?: string;
 }) {
   return (
     <div>
@@ -138,7 +170,10 @@ function RegexField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder=".*"
+        className={error ? "border-destructive" : undefined}
+        aria-invalid={!!error}
       />
+      {error && <p className="text-sm text-destructive mt-1">{error}</p>}
     </div>
   );
 }

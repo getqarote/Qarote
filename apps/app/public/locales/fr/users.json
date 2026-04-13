@@ -110,5 +110,15 @@
   "noVhostsAvailable": "Aucun hôte virtuel disponible",
   "configureRegexpTooltip": "Expression régulière contrôlant quelles ressources l'utilisateur peut configurer (créer/supprimer des files, échanges, liaisons). Utilisez \".*\" pour un accès complet ou des motifs spécifiques comme \"^myqueue.*\".",
   "writeRegexpTooltip": "Expression régulière contrôlant sur quels échanges et clés de routage l'utilisateur peut publier des messages. Utilisez \".*\" pour un accès complet ou des motifs comme \"^logs.*\".",
-  "readRegexpTooltip": "Expression régulière contrôlant depuis quelles files l'utilisateur peut consommer des messages. Utilisez \".*\" pour un accès complet ou des motifs comme \"^user_.*\"."
+  "readRegexpTooltip": "Expression régulière contrôlant depuis quelles files l'utilisateur peut consommer des messages. Utilisez \".*\" pour un accès complet ou des motifs comme \"^user_.*\".",
+  "invalidRegex": "Expression régulière invalide",
+  "clearPermissionsError": "Échec de la suppression des permissions",
+  "clearPermissionsTitle": "Supprimer les permissions",
+  "clearPermissionsDescription": "Cela supprimera toutes les permissions de cet utilisateur sur l'hôte virtuel {{vhost}}. L'utilisateur ne pourra plus accéder aux ressources de ce vhost.",
+  "clearPermissions": "Supprimer les permissions",
+  "defaultVhost": "Par défaut (/)",
+  "dangerZoneHint": "Actions destructives",
+  "deleteUserDescription": "Supprimer définitivement cet utilisateur et révoquer toutes ses permissions. Cette action est irréversible.",
+  "deleteUserDialogDescription": "Cela supprimera définitivement l'utilisateur <strong>{{name}}</strong> et révoquera toutes ses permissions. Cette action est irréversible.",
+  "deleteUserConfirmLabel": "Saisissez le nom d'utilisateur pour confirmer"
 }

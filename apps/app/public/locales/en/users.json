@@ -110,5 +110,15 @@
   "noVhostsAvailable": "No virtual hosts available",
   "configureRegexpTooltip": "Regular expression pattern controlling which resources the user can configure (create/delete queues, exchanges, bindings). Use \".*\" for full access or specific patterns like \"^myqueue.*\" for resources starting with \"myqueue\".",
   "writeRegexpTooltip": "Regular expression pattern controlling which exchanges and routing keys the user can publish messages to. Use \".*\" for full publish access or patterns like \"^logs.*\" for specific routing keys.",
-  "readRegexpTooltip": "Regular expression pattern controlling which queues the user can consume messages from (read/get operations). Use \".*\" for full read access or patterns like \"^user_.*\" for queues starting with \"user_\"."
+  "readRegexpTooltip": "Regular expression pattern controlling which queues the user can consume messages from (read/get operations). Use \".*\" for full read access or patterns like \"^user_.*\" for queues starting with \"user_\".",
+  "invalidRegex": "Invalid regular expression",
+  "clearPermissionsError": "Failed to clear permissions",
+  "clearPermissionsTitle": "Clear permissions",
+  "clearPermissionsDescription": "This will remove all permissions for this user on virtual host {{vhost}}. The user will no longer be able to access resources on this vhost.",
+  "clearPermissions": "Clear permissions",
+  "defaultVhost": "Default (/)",
+  "dangerZoneHint": "Destructive actions",
+  "deleteUserDescription": "Permanently delete this user and revoke all their permissions. This action cannot be undone.",
+  "deleteUserDialogDescription": "This will permanently delete the user <strong>{{name}}</strong> and revoke all their permissions. This action cannot be undone.",
+  "deleteUserConfirmLabel": "Type the username to confirm"
 }

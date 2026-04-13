@@ -126,7 +126,7 @@ export default function UserDetailsPage() {
       setReadRegexp(".*");
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Failed to set permissions"
+        err instanceof Error ? err.message : t("setPermissionsError")
       );
     }
   };
@@ -147,7 +147,7 @@ export default function UserDetailsPage() {
       toast.success(t("permissionsCleared"));
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Failed to clear permissions"
+        err instanceof Error ? err.message : t("clearPermissionsError")
       );
     } finally {
       setPendingClearVhost(null);
