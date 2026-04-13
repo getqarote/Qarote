@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-import { ArrowLeft, Lock, Pencil, Radio } from "lucide-react";
+import { ArrowLeft, Lock, Radio } from "lucide-react";
 
 import type { VHost } from "@/lib/api/vhostTypes";
 
@@ -70,11 +70,7 @@ export function VHostDetailHeader({
           )}
         </div>
       </div>
-      <Button
-        onClick={onEdit}
-        className="btn-primary flex items-center gap-2 shrink-0"
-      >
-        <Pencil className="h-4 w-4" />
+      <Button onClick={onEdit} className="btn-primary rounded-none shrink-0">
         {t("common:edit")}
       </Button>
     </div>

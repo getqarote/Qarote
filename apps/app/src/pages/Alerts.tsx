@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useSearchParams } from "react-router";
 
-import { AlertTriangle, Loader2, Mail, Settings } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 
 import { UserRole } from "@/lib/api";
 
@@ -167,17 +167,15 @@ const Alerts = () => {
                 <Button
                   onClick={() => setShowAlertRulesModal(true)}
                   variant="outline"
-                  className="flex items-center gap-2"
+                  className="rounded-none"
                 >
-                  <Settings className="h-4 w-4" />
                   {t("alertRules")}
                 </Button>
                 <Button
                   onClick={() => setShowNotificationSettingsModal(true)}
                   variant="outline"
-                  className="flex items-center gap-2"
+                  className="rounded-none"
                 >
-                  <Mail className="h-4 w-4" />
                   {t("notificationSettings")}
                 </Button>
               </>

@@ -7,9 +7,7 @@ import { getUpgradePath } from "@/lib/featureFlags";
 
 import {
   formatRelativeTime,
-  getCategoryIcon,
-  getSeverityBadgeVariant,
-  getSeverityIcon,
+  getSeverityColor,
 } from "@/components/alerts/alertUtils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -159,89 +157,42 @@ export const RecentAlerts = () => {
             </Button>
           </div>
         ) : (
-          <div className="space-y-3">
-            {/* Recent Alerts List - Limited to 3 */}
-            {recentAlerts.map((alert) => (
-              <div
-                key={alert.id}
-                className="flex items-start gap-3 p-3 border rounded-lg"
-              >
-                <div className="shrink-0 mt-0.5">
-                  {getSeverityIcon(alert.severity, {
-                    showColors: true,
-                  })}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="font-medium text-sm truncate">
+          <div className="space-y-1">
+            {recentAlerts.map((alert) => {
+              const { dot, badge: badgeClass } = getSeverityColor(
+                alert.severity
+              );
+              const sourceName =
+                alert.source?.name ||
+                ("vhost" in alert && alert.vhost
+                  ? alert.vhost === "/"
+                    ? t("defaultVhost")
+                    : alert.vhost
+                  : null);
+              return (
+                <div
+                  key={alert.id}
+                  className="flex items-center gap-3 p-3 bg-muted/10 rounded-md"
+                >
+                  <div className={`w-2 h-2 rounded-full shrink-0 ${dot}`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-foreground truncate">
                       {alert.title}
-                    </p>
-                    <Badge
-                      variant={getSeverityBadgeVariant(alert.severity)}
-                      className="text-xs"
-                    >
-                      {alert.severity}
-                    </Badge>
-                    {alert.category && (
-                      <Badge
-                        variant="outline"
-                        className="text-xs flex items-center gap-1"
-                      >
-                        {getCategoryIcon(alert.category, "h-3 w-3")}
-                        {alert.category}
-                      </Badge>
-                    )}
-                    {/* Scope tag: vhost for queue alerts, cluster for node alerts */}
-                    {(() => {
-                      if ("vhost" in alert && alert.vhost) {
-                        return (
-                          <Badge
-                            variant="secondary"
-                            className="text-xs flex items-center gap-1"
-                          >
-                            {t("vhostLabel")}{" "}
-                            {alert.vhost === "/"
-                              ? t("defaultVhost")
-                              : alert.vhost}
-                          </Badge>
-                        );
-                      } else if (
-                        alert.source?.type === "node" ||
-                        alert.source?.type === "cluster"
-                      ) {
-                        return (
-                          <Badge
-                            variant="secondary"
-                            className="text-xs flex items-center gap-1"
-                          >
-                            {t("cluster")}
-                          </Badge>
-                        );
-                      }
-                      return null;
-                    })()}
-                  </div>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {alert.description}
-                  </p>
-                  {alert.details && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {t("currentValue", { value: alert.details.current })}
-                    </p>
-                  )}
-                </div>
-                <div className="shrink-0 text-right">
-                  <div className="text-xs text-muted-foreground">
-                    {formatRelativeTime(alert.timestamp)}
-                  </div>
-                  {alert.source && (
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {alert.source.name}
                     </div>
-                  )}
+                    <div className="text-xs text-muted-foreground">
+                      {[sourceName, formatRelativeTime(alert.timestamp)]
+                        .filter(Boolean)
+                        .join(" — ")}
+                    </div>
+                  </div>
+                  <span
+                    className={`text-xs px-2 py-0.5 shrink-0 ${badgeClass}`}
+                  >
+                    {alert.severity}
+                  </span>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

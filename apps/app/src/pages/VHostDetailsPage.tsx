@@ -19,7 +19,6 @@ import { VHostDetailHeader } from "@/components/VHostDetail/VHostDetailHeader";
 import { VHostLimits } from "@/components/VHostDetail/VHostLimits";
 import { VHostPermissionsTable } from "@/components/VHostDetail/VHostPermissionsTable";
 import { VHostStats } from "@/components/VHostDetail/VHostStats";
-import { DeleteVHostModal } from "@/components/vhosts/DeleteVHostModal";
 import { EditVHostModal } from "@/components/vhosts/EditVHostModal";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
@@ -47,7 +46,6 @@ export default function VHostDetailsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
   // The user whose "Clear" button is currently in flight. Lets us show
@@ -395,7 +393,8 @@ export default function VHostDetailsPage() {
 
       <VHostDangerZone
         vhostName={decodedVHostName}
-        onDeleteClick={() => setShowDeleteModal(true)}
+        onDeleteClick={handleDeleteVHost}
+        isDeleting={deleteVHostMutation.isPending}
       />
 
       {showEditModal && (
@@ -404,16 +403,6 @@ export default function VHostDetailsPage() {
           onClose={() => setShowEditModal(false)}
           serverId={currentServerId}
           vhost={vhost}
-        />
-      )}
-
-      {showDeleteModal && (
-        <DeleteVHostModal
-          isOpen={showDeleteModal}
-          onClose={() => setShowDeleteModal(false)}
-          vhost={vhost}
-          onConfirm={handleDeleteVHost}
-          isLoading={deleteVHostMutation.isPending}
         />
       )}
     </PageShell>

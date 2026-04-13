@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-import { ArrowLeft, Pencil } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import type { RabbitMQUser } from "@/lib/api/userTypes";
 
@@ -70,10 +70,9 @@ export function UserDetailHeader({
       <Button
         onClick={onEdit}
         disabled={editDisabled}
-        className="btn-primary flex items-center gap-2 shrink-0"
+        className="btn-primary rounded-none shrink-0"
         title={disabledReason}
       >
-        <Pencil className="h-4 w-4" />
         {t("common:edit")}
       </Button>
     </div>

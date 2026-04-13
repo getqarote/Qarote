@@ -15,7 +15,6 @@ import { UserDangerZone } from "@/components/UserDetail/UserDangerZone";
 import { UserDetailHeader } from "@/components/UserDetail/UserDetailHeader";
 import { UserLimits } from "@/components/UserDetail/UserLimits";
 import { UserPermissionsTable } from "@/components/UserDetail/UserPermissionsTable";
-import { DeleteUserModal } from "@/components/users/DeleteUserModal";
 import { EditUserModal } from "@/components/users/EditUserModal";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
@@ -41,7 +40,6 @@ export default function UserDetailsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
   // The vhost whose "Clear" button is currently in flight. Lets us show
@@ -257,18 +255,9 @@ export default function UserDetailsPage() {
           username={decodedUsername}
           isConnectionUser={isConnectionUser}
           isProtectedUser={isProtectedUser}
-          onDeleteClick={() => setShowDeleteModal(true)}
+          onDeleteClick={handleDeleteUser}
+          isDeleting={deleteUserMutation.isPending}
         />
-
-        {showDeleteModal && (
-          <DeleteUserModal
-            isOpen={showDeleteModal}
-            onClose={() => setShowDeleteModal(false)}
-            user={userDetails}
-            onConfirm={handleDeleteUser}
-            isLoading={deleteUserMutation.isPending}
-          />
-        )}
 
         {showEditModal && (
           <EditUserModal

@@ -221,7 +221,7 @@ const QueueDetail = () => {
                 {t("common:cancel")}
               </Button>
               <Button
-                variant="destructive"
+                variant="destructive-outline"
                 onClick={handleDeleteQueue}
                 disabled={deleteQueueMutation.isPending}
               >

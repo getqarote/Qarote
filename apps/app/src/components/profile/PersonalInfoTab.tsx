@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-import { Calendar, Edit, Lock, Mail, Save, Settings, X } from "lucide-react";
+import { Calendar, Lock, Mail, Save, Settings, X } from "lucide-react";
 
 import { UserProfile } from "@/lib/api/authTypes";
 
@@ -85,7 +85,7 @@ export const PersonalInfoTab = ({
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            <Badge variant="soft-muted">
+            <Badge variant="soft-primary">
               {profile.role.charAt(0) + profile.role.slice(1).toLowerCase()}
             </Badge>
             {editingProfile ? (
@@ -113,8 +113,10 @@ export const PersonalInfoTab = ({
                 </Button>
               </>
             ) : (
-              <Button onClick={onStartEdit} className="btn-primary h-9">
-                <Edit className="h-4 w-4" aria-hidden="true" />
+              <Button
+                onClick={onStartEdit}
+                className="btn-primary h-9 rounded-none"
+              >
                 {t("personal.editProfile")}
               </Button>
             )}

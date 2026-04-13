@@ -1,15 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import {
-  Calendar,
-  Loader2,
-  Pencil,
-  Save,
-  Settings,
-  Users,
-  X,
-} from "lucide-react";
+import { Calendar, Loader2, Save, Settings, Users, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
@@ -191,8 +183,7 @@ export function OrgInfoCard({ org, isOrgAdmin }: OrgInfoCardProps) {
                 </Button>
               </>
             ) : (
-              <Button onClick={() => setEditing(true)}>
-                <Pencil className="h-4 w-4 mr-2" aria-hidden="true" />
+              <Button onClick={() => setEditing(true)} className="rounded-none">
                 {t("org.editOrganization")}
               </Button>
             )}

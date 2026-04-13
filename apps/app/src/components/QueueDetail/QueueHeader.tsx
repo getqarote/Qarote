@@ -1,14 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-import {
-  ArrowLeft,
-  Eye,
-  EyeOff,
-  Pause,
-  Play,
-  Send,
-  Trash2,
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import { PauseQueueDialog } from "@/components/PauseQueueDialog";
 import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
@@ -72,13 +64,8 @@ export function QueueHeader({
           <Button
             variant="outline"
             onClick={onSpyToggle}
-            className="flex items-center gap-2"
+            className="rounded-none"
           >
-            {isSpying ? (
-              <EyeOff className="w-4 h-4" />
-            ) : (
-              <Eye className="w-4 h-4" />
-            )}
             {isSpying ? t("stopSpy") : t("spyOnQueue")}
           </Button>
         )}
@@ -86,33 +73,28 @@ export function QueueHeader({
         {/* Admin-only write actions */}
         {isAdmin && (
           <>
-            {/* Send Message Button */}
             <SendMessageDialog
               queueName={queueName}
               serverId={selectedServerId}
               onSuccess={onRefetch}
               trigger={
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Send className="w-4 h-4" />
+                <Button variant="outline" className="rounded-none">
                   {t("sendMessage")}
                 </Button>
               }
             />
 
-            {/* Purge Queue Button */}
             <PurgeQueueDialog
               queueName={queueName}
               messageCount={messageCount}
               onSuccess={onRefetch}
               trigger={
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Trash2 className="w-4 h-4" />
+                <Button variant="outline" className="rounded-none">
                   {t("purgeQueue")}
                 </Button>
               }
             />
 
-            {/* Pause/Resume Queue Button */}
             <PauseQueueDialog
               queueName={queueName}
               consumerCount={consumerCount}
@@ -122,25 +104,18 @@ export function QueueHeader({
                 refetchPauseStatus();
               }}
               trigger={
-                <Button variant="outline" className="flex items-center gap-2">
-                  {isPaused ? (
-                    <Play className="w-4 h-4" />
-                  ) : (
-                    <Pause className="w-4 h-4" />
-                  )}
+                <Button variant="outline" className="rounded-none">
                   {isPaused ? t("resumeQueue") : t("pauseQueue")}
                 </Button>
               }
             />
 
-            {/* Delete Queue Button */}
             {onDeleteQueue && (
               <Button
                 onClick={onDeleteQueue}
-                variant="outline"
-                className="flex items-center gap-2 text-destructive hover:text-destructive"
+                variant="destructive-outline"
+                className="rounded-none"
               >
-                <Trash2 className="w-4 h-4" />
                 {t("deleteQueue")}
               </Button>
             )}

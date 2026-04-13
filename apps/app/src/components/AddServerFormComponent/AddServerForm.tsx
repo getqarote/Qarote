@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Edit, Loader2, Plus, Server } from "lucide-react";
+import { Edit, Loader2, Server } from "lucide-react";
 
 import { logger } from "@/lib/logger";
 
@@ -239,8 +239,7 @@ export const AddServerForm = ({
       {controlledIsOpen === undefined && (
         <DialogTrigger asChild>
           {trigger || (
-            <Button className="btn-primary">
-              <Plus className="h-4 w-4 mr-2" />
+            <Button className="btn-primary rounded-none">
               {t("addServer")}
             </Button>
           )}
@@ -301,15 +300,9 @@ export const AddServerForm = ({
             type="submit"
             onClick={form.handleSubmit(onSubmit)}
             disabled={isLoading || isTestingConnection}
-            className="btn-primary"
+            className="btn-primary rounded-none"
           >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : mode === "edit" ? (
-              <Edit className="h-4 w-4 mr-2" />
-            ) : (
-              <Plus className="h-4 w-4 mr-2" />
-            )}
+            {isLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
             {mode === "edit" ? t("updateServer") : t("addServer")}
           </Button>
         </DialogFooter>

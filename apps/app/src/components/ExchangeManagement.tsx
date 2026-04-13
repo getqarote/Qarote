@@ -477,7 +477,7 @@ const CreateExchangeDialog = ({
                 !exchangeName ||
                 !exchangeType
               }
-              className="w-full h-12 text-base btn-primary"
+              className="w-full h-12 text-base btn-primary rounded-none"
             >
               {createExchangeMutation.isPending ? (
                 <>
@@ -485,10 +485,7 @@ const CreateExchangeDialog = ({
                   Creating...
                 </>
               ) : (
-                <>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Exchange
-                </>
+                "Create Exchange"
               )}
             </Button>
           </div>

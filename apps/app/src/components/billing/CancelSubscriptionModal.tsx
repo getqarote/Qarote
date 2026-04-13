@@ -235,7 +235,7 @@ export const CancelSubscriptionModal: React.FC<
             Keep Subscription
           </Button>
           <Button
-            variant="destructive"
+            variant="destructive-outline"
             onClick={handleSubmit}
             disabled={!reason || !understanding || isSubmitting || isLoading}
           >

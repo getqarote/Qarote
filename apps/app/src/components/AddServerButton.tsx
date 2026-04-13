@@ -82,7 +82,7 @@ export const AddServerButton = () => {
     <Button
       onClick={handleAddServerClick}
       variant="outline"
-      className="flex items-center gap-2 opacity-60 cursor-pointer hover:bg-muted"
+      className="flex items-center gap-2 rounded-none opacity-60 cursor-pointer hover:bg-muted"
       title={buttonConfig.title}
     >
       <Lock className="w-4 h-4" />

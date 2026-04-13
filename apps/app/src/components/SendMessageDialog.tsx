@@ -1310,18 +1310,15 @@ export function SendMessageDialog({
                     !form.watch("exchange") ||
                     !form.watch("payload")
                   }
-                  className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-none"
                 >
                   {publishMutation.isPending ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                       {t("sendMessage.sending")}
                     </>
                   ) : (
-                    <>
-                      <Send className="h-4 w-4" />
-                      {t("sendMessage.sendMessage")}
-                    </>
+                    t("sendMessage.sendMessage")
                   )}
                 </Button>
               </div>

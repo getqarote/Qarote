@@ -1,40 +1,140 @@
+import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { ChevronRight, Trash2 } from "lucide-react";
+
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alertDialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface VHostDangerZoneProps {
   vhostName: string;
   onDeleteClick: () => void;
+  isDeleting?: boolean;
 }
 
 export function VHostDangerZone({
   vhostName,
   onDeleteClick,
+  isDeleting,
 }: VHostDangerZoneProps) {
   const { t } = useTranslation("vhosts");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [confirmName, setConfirmName] = useState("");
+  const confirmInputId = useId();
 
   const isDefault = vhostName === "/";
+  const displayName = isDefault ? "/" : vhostName;
 
   return (
-    <div className="rounded-lg border border-destructive/30 overflow-hidden">
-      <div className="px-4 py-3 bg-destructive/5 border-b border-destructive/30">
-        <h2 className="title-section text-destructive">{t("dangerZone")}</h2>
-      </div>
-      <div className="p-4">
-        <Button
-          variant="destructive"
-          onClick={onDeleteClick}
-          disabled={isDefault}
-          title={isDefault ? t("cannotDeleteDefault") : undefined}
-        >
-          {t("deleteVhost")}
-        </Button>
-        {isDefault && (
-          <p className="text-sm text-muted-foreground mt-2">
-            {t("cannotDeleteDefault")}
-          </p>
-        )}
-      </div>
-    </div>
+    <>
+      <Accordion type="single" collapsible>
+        <AccordionItem value="danger" className="border rounded-lg px-4">
+          <AccordionTrigger className="py-3 hover:no-underline">
+            <div className="flex items-center gap-2 text-sm font-semibold text-destructive">
+              {t("dangerZone")}
+              <ChevronRight
+                className="h-4 w-4 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <span className="text-sm font-normal text-muted-foreground">
+                {t("dangerZoneHint", {
+                  defaultValue: "Destructive actions",
+                })}
+              </span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="pt-1">
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                {t("deleteVhostDescription", {
+                  defaultValue:
+                    "Permanently delete this virtual host and all its queues, exchanges, and data. This action cannot be undone.",
+                })}
+              </p>
+              <Button
+                variant="destructive-outline"
+                onClick={() => setDeleteDialogOpen(true)}
+                disabled={isDefault}
+                title={isDefault ? t("cannotDeleteDefault") : undefined}
+              >
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
+                {t("deleteVhost")}
+              </Button>
+              {isDefault && (
+                <p className="text-sm text-muted-foreground">
+                  {t("cannotDeleteDefault")}
+                </p>
+              )}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+
+      <AlertDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open) setConfirmName("");
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("deleteVhostDialogTitle", {
+                defaultValue: "Delete Virtual Host",
+              })}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("deleteVhostDialogDescription", {
+                defaultValue:
+                  "This will permanently delete the virtual host <strong>{{name}}</strong> and all its queues, exchanges, and data. This action cannot be undone.",
+                name: displayName,
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2 py-2">
+            <label htmlFor={confirmInputId} className="text-sm font-medium">
+              {t("deleteVhostConfirmLabel", {
+                defaultValue: "Type the virtual host name to confirm",
+              })}
+            </label>
+            <Input
+              id={confirmInputId}
+              value={confirmName}
+              onChange={(e) => setConfirmName(e.target.value)}
+              placeholder={displayName}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common:cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={confirmName !== displayName || isDeleting}
+              onClick={onDeleteClick}
+              className="border border-destructive/30 bg-background text-destructive hover:bg-destructive/10 hover:border-destructive/50"
+            >
+              {isDeleting
+                ? t("deleting", { defaultValue: "Deleting..." })
+                : t("deleteVhost")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

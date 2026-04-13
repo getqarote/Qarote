@@ -197,11 +197,10 @@ function ExchangeDetailsPanel({
       {onDelete && (
         <div className="flex items-center gap-2 pt-1">
           <Button
-            variant="outline"
+            variant="destructive-outline"
             size="sm"
             onClick={onDelete}
             disabled={isDeleting}
-            className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50"
           >
             <Trash2 className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
             {isDeleting ? t("deleting") : t("deleteExchange")}

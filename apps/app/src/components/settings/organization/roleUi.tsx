@@ -45,6 +45,14 @@ export function getRoleIcon(role: string): ReactNode {
 }
 
 /**
+ * Maps a role to the badge variant that visually distinguishes it.
+ * All roles use the orange rectangular style matching the landing page.
+ */
+export function getRoleBadgeVariant(): "soft-primary" {
+  return "soft-primary";
+}
+
+/**
  * Translates role keys to display labels using the `profile` i18n
  * namespace. Returned as a record so consumers can do `labels[role]`
  * without repeated `t()` calls inside render.

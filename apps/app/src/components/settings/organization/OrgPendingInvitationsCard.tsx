@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -112,15 +111,12 @@ export function OrgPendingInvitationsCard() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-8 text-xs gap-1"
+                      className="h-8 text-xs rounded-none"
                       disabled={cancelMutation.isPending}
                       onClick={() => handleCancel(inv.id, inv.email)}
                       aria-label={t("org.cancelInvite") + ": " + inv.email}
                     >
-                      <X className="h-3.5 w-3.5" aria-hidden="true" />
-                      <span className="hidden sm:inline">
-                        {t("org.cancelInvite")}
-                      </span>
+                      {t("org.cancelInvite")}
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>{t("org.cancelInvite")}</TooltipContent>

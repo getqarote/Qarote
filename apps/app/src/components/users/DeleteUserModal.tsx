@@ -59,7 +59,7 @@ export function DeleteUserModal({
           </Button>
           <Button
             type="button"
-            variant="destructive"
+            variant="destructive-outline"
             onClick={onConfirm}
             disabled={isLoading}
           >

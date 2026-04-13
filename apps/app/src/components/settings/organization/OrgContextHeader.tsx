@@ -18,7 +18,7 @@ import {
 } from "@/hooks/queries/useWorkspaceApi";
 import { SESSION_TOAST_KEY } from "@/hooks/ui/useSessionToast";
 
-import { useRoleLabels } from "./roleUi";
+import { getRoleBadgeVariant, useRoleLabels } from "./roleUi";
 
 interface OrgContextHeaderProps {
   org: { id: string; name: string };
@@ -128,7 +128,7 @@ export function OrgContextHeader({
           </Select>
         )}
         <Badge
-          variant="soft-muted"
+          variant={getRoleBadgeVariant()}
           role="status"
           aria-label={t("org.yourRole", { role: roleLabel })}
         >

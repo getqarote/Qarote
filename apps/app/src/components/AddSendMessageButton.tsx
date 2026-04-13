@@ -1,7 +1,5 @@
 import { useTranslation } from "react-i18next";
 
-import { MessageSquare } from "lucide-react";
-
 import { SendMessageDialog } from "@/components/SendMessageDialog";
 import { Button } from "@/components/ui/button";
 
@@ -22,8 +20,7 @@ export const AddSendMessageButton = ({
       mode="exchange"
       onSuccess={onSuccess}
       trigger={
-        <Button variant="outline" className="flex items-center gap-2">
-          <MessageSquare className="w-4 h-4" />
+        <Button variant="outline" className="rounded-none">
           {t("sendMessage")}
         </Button>
       }

@@ -5,7 +5,6 @@ import {
   Building2,
   Calendar,
   ChevronRight,
-  Edit,
   Save,
   Settings,
   Trash2,
@@ -125,8 +124,10 @@ export const WorkspaceInfoTab = ({
                 </Button>
               </>
             ) : (
-              <Button onClick={onStartEdit} className="btn-primary h-9">
-                <Edit className="h-4 w-4" aria-hidden="true" />
+              <Button
+                onClick={onStartEdit}
+                className="btn-primary h-9 rounded-none"
+              >
                 {t("workspace.editWorkspace")}
               </Button>
             )}
@@ -222,7 +223,7 @@ export const WorkspaceInfoTab = ({
                       {t("workspace.deleteDescription")}
                     </p>
                     <Button
-                      variant="destructive"
+                      variant="destructive-outline"
                       onClick={() => setDeleteDialogOpen(true)}
                     >
                       <Trash2 className="h-4 w-4" aria-hidden="true" />
@@ -275,7 +276,7 @@ export const WorkspaceInfoTab = ({
                   <AlertDialogAction
                     disabled={confirmName !== workspace.name || isDeleting}
                     onClick={onDeleteWorkspace}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    className="border border-destructive/30 bg-background text-destructive hover:bg-destructive/10 hover:border-destructive/50"
                   >
                     {isDeleting
                       ? t("workspace.deleting")

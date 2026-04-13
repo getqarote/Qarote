@@ -311,7 +311,7 @@ export const EnhancedTeamTab = ({
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="soft-muted">
+                          <Badge variant="soft-primary">
                             {workspaceUser.role.charAt(0) +
                               workspaceUser.role.slice(1).toLowerCase()}
                           </Badge>

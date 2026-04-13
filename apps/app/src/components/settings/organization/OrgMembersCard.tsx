@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Info, Mail, Settings, Trash2, User, UserPlus } from "lucide-react";
+import { Info, Mail, Settings, Trash2, User } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
@@ -29,7 +29,7 @@ import {
 } from "@/hooks/queries/useOrganization";
 
 import { MemberWorkspacesDialog } from "./MemberWorkspacesDialog";
-import { getRoleIcon, useRoleLabels } from "./roleUi";
+import { getRoleBadgeVariant, getRoleIcon, useRoleLabels } from "./roleUi";
 import type { OrgMember } from "./types";
 
 interface OrgMembersCardProps {
@@ -157,8 +157,7 @@ export function OrgMembersCard({
             </p>
           </div>
           {isOrgAdmin && (
-            <Button size="sm" onClick={onInviteClick}>
-              <UserPlus className="h-4 w-4 mr-2" aria-hidden="true" />
+            <Button size="sm" onClick={onInviteClick} className="rounded-none">
               {t("org.invite")}
             </Button>
           )}
@@ -336,7 +335,9 @@ function MemberRow({
         ) : (
           <Tooltip>
             <TooltipTrigger asChild>
-              <Badge variant="soft-muted">{roleLabels[member.role]}</Badge>
+              <Badge variant={getRoleBadgeVariant()}>
+                {roleLabels[member.role]}
+              </Badge>
             </TooltipTrigger>
             <TooltipContent>
               {member.role === "OWNER"

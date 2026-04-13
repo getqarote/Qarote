@@ -72,7 +72,7 @@ export function DeleteSSOProviderDialog({
             {t("common:cancel")}
           </AlertDialogCancel>
           <AlertDialogAction
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            className="border border-destructive/30 bg-background text-destructive hover:bg-destructive/10 hover:border-destructive/50"
             disabled={deleteMutation.isPending}
             onClick={(e) => {
               e.preventDefault();

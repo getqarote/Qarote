@@ -20,6 +20,8 @@ const badgeVariants = cva(
           "border-warning/30 bg-warning-muted px-3 py-1 text-xs font-medium text-warning",
         "soft-success":
           "border-success/30 bg-success-muted px-3 py-1 text-xs font-medium text-success",
+        "soft-primary":
+          "rounded-none! border-primary bg-transparent px-2 py-0.5 text-xs font-medium text-primary",
         "soft-muted":
           "border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground",
       },
