@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Users } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -29,10 +31,12 @@ export function ConsumerDetails({
   consumersData,
   consumersLoading,
 }: ConsumerDetailsProps) {
+  const { t } = useTranslation("queues");
+
   return (
     <div className="rounded-lg border border-border overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-3 bg-muted/30 border-b border-border">
-        <h2 className="title-section">Active Consumers</h2>
+        <h3 className="title-section">{t("activeConsumers")}</h3>
         <Badge variant="secondary">{consumersData?.totalConsumers || 0}</Badge>
       </div>
       <div className="p-4">
@@ -45,11 +49,11 @@ export function ConsumerDetails({
         ) : consumersData?.consumers?.length === 0 ? (
           <div className="text-center py-8">
             <Users className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              No Active Consumers
-            </h3>
+            <h4 className="text-lg font-semibold text-foreground mb-2">
+              {t("noActiveConsumers")}
+            </h4>
             <p className="text-muted-foreground">
-              This queue currently has no active consumers.
+              {t("noActiveConsumersDesc")}
             </p>
           </div>
         ) : (
@@ -72,19 +76,23 @@ export function ConsumerDetails({
                       )}
                       {consumer.exclusive && (
                         <Badge variant="secondary" className="text-xs">
-                          Exclusive
+                          {t("exclusive")}
                         </Badge>
                       )}
                     </div>
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Channel #{consumer.channel_details.number}
+                    {t("channelNumber", {
+                      number: consumer.channel_details.number,
+                    })}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
                   <div>
-                    <span className="text-muted-foreground">Connection:</span>
+                    <span className="text-muted-foreground">
+                      {t("connection")}:
+                    </span>
                     <div
                       className="font-medium truncate"
                       title={consumer.channel_details.connection_name}
@@ -93,24 +101,32 @@ export function ConsumerDetails({
                     </div>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Client:</span>
+                    <span className="text-muted-foreground">
+                      {t("client")}:
+                    </span>
                     <div className="font-medium">
                       {consumer.channel_details.peer_host}:
                       {consumer.channel_details.peer_port}
                     </div>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Prefetch:</span>
+                    <span className="text-muted-foreground">
+                      {t("prefetch")}:
+                    </span>
                     <div className="font-medium">
-                      {consumer.prefetch_count || "Unlimited"}
+                      {consumer.prefetch_count || t("unlimited")}
                     </div>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Arguments:</span>
+                    <span className="text-muted-foreground">
+                      {t("arguments")}:
+                    </span>
                     <div className="font-medium">
                       {Object.keys(consumer.arguments).length > 0
-                        ? `${Object.keys(consumer.arguments).length} args`
-                        : "None"}
+                        ? t("argsCount", {
+                            count: Object.keys(consumer.arguments).length,
+                          })
+                        : t("none")}
                     </div>
                   </div>
                 </div>

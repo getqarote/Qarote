@@ -152,5 +152,12 @@
   "noServerSelected": "Aucun serveur sélectionné",
   "bytesReceived": "Octets reçus",
   "node": "Nœud",
-  "type": "Type"
+  "type": "Type",
+  "tabHealth": "Santé",
+  "tabConfiguration": "Configuration",
+  "tabBindings": "Liaisons",
+  "deleteWarningMessages": "Cette file contient {{count}} messages qui seront perdus.",
+  "deleteWarningConsumers": "Cette file a {{count}} consommateurs actifs qui seront déconnectés.",
+  "deleteConstraints": "La suppression échouera si la file n'est pas vide ou a encore des consommateurs.",
+  "deleteTypeConfirm": "Tapez \"{{queueName}}\" pour confirmer la suppression :"
 }

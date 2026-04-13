@@ -7,10 +7,14 @@ interface QueueConfigurationProps {
 }
 
 export function QueueConfiguration({ queue }: QueueConfigurationProps) {
+  const args = Object.entries(queue.arguments).filter(
+    ([, value]) => value !== undefined && value !== null
+  );
+
   return (
     <div className="rounded-lg border border-border overflow-hidden">
       <div className="px-4 py-3 bg-muted/30 border-b border-border">
-        <h2 className="title-section">Queue Configuration</h2>
+        <h3 className="title-section">Queue Configuration</h3>
       </div>
       <div className="p-4 space-y-4">
         <div className="grid grid-cols-2 gap-4">
@@ -29,12 +33,6 @@ export function QueueConfiguration({ queue }: QueueConfigurationProps) {
           <div>
             <p className="text-sm text-muted-foreground">Type</p>
             <Badge variant="outline">{queue.type}</Badge>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">State</p>
-            <Badge className="bg-success-muted text-success">
-              {queue.state}
-            </Badge>
           </div>
         </div>
         <div className="pt-4 border-t border-border">
@@ -99,16 +97,14 @@ export function QueueConfiguration({ queue }: QueueConfigurationProps) {
           </div>
         </div>
 
-        {/* Queue Arguments Section */}
-        {/* {queue.arguments && Object.keys(queue.arguments).length > 0 && ( */}
-        <div className="pt-4 border-t border-border">
-          <h4 className="text-sm font-medium text-foreground mb-3">
-            Arguments
-          </h4>
-          <div className="space-y-2">
-            {Object.entries(queue.arguments)
-              .filter(([, value]) => value !== undefined && value !== null)
-              .map(([key, value]) => (
+        {/* Queue Arguments — only render when there are arguments */}
+        {args.length > 0 && (
+          <div className="pt-4 border-t border-border">
+            <h4 className="text-sm font-medium text-foreground mb-3">
+              Arguments
+            </h4>
+            <div className="space-y-2">
+              {args.map(([key, value]) => (
                 <div key={key} className="flex items-center justify-between">
                   <span className="text-sm font-mono text-muted-foreground">
                     {key}:
@@ -127,9 +123,9 @@ export function QueueConfiguration({ queue }: QueueConfigurationProps) {
                   </Badge>
                 </div>
               ))}
+            </div>
           </div>
-        </div>
-        {/* )} */}
+        )}
       </div>
     </div>
   );

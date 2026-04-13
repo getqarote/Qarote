@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { Queue } from "@/lib/api";
+import { formatBytes } from "@/lib/utils";
 
 interface QueueTimingProps {
   queue: Queue;
@@ -28,19 +29,11 @@ export function QueueTiming({ queue }: QueueTimingProps) {
     return () => clearInterval(id);
   }, []);
 
-  const formatBytes = (bytes: number) => {
-    if (bytes === 0) return "0 B";
-    const k = 1024;
-    const sizes = ["B", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  };
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div className="rounded-lg border border-border overflow-hidden">
         <div className="px-4 py-3 bg-muted/30 border-b border-border">
-          <h2 className="title-section">Timing Information</h2>
+          <h3 className="title-section">Timing Information</h3>
         </div>
         <div className="p-4 space-y-4">
           <div>
@@ -60,7 +53,7 @@ export function QueueTiming({ queue }: QueueTimingProps) {
 
       <div className="rounded-lg border border-border overflow-hidden">
         <div className="px-4 py-3 bg-muted/30 border-b border-border">
-          <h2 className="title-section">Performance Metrics</h2>
+          <h3 className="title-section">Performance Metrics</h3>
         </div>
         <div className="p-4 space-y-4">
           <div className="grid grid-cols-2 gap-4">

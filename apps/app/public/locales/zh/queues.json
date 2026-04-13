@@ -152,5 +152,12 @@
   "noServerSelected": "未选择服务器",
   "bytesReceived": "已接收字节",
   "node": "节点",
-  "type": "类型"
+  "type": "类型",
+  "tabHealth": "健康",
+  "tabConfiguration": "配置",
+  "tabBindings": "绑定",
+  "deleteWarningMessages": "此队列包含 {{count}} 条消息，删除后将丢失。",
+  "deleteWarningConsumers": "此队列有 {{count}} 个活跃消费者，将被断开连接。",
+  "deleteConstraints": "如果队列不为空或仍有消费者，删除将失败。",
+  "deleteTypeConfirm": "输入 \"{{queueName}}\" 以确认删除："
 }

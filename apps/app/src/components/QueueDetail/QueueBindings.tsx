@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Link2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -24,8 +26,9 @@ interface QueueBindingsProps {
 }
 
 function BindingRow({ binding }: { binding: Binding }) {
+  const { t } = useTranslation("queues");
   const hasArgs = Object.keys(binding.arguments).length > 0;
-  const exchangeName = binding.source || "(default)";
+  const exchangeName = binding.source || t("spyDefaultExchange");
   const routingKey = binding.routing_key || "";
 
   return (
@@ -41,7 +44,7 @@ function BindingRow({ binding }: { binding: Binding }) {
         </span>
         {routingKey && (
           <span className="text-muted-foreground truncate">
-            routing: {routingKey}
+            {t("routingKey").toLowerCase()}: {routingKey}
           </span>
         )}
         <span className="text-xs text-muted-foreground ml-auto shrink-0">
@@ -74,10 +77,12 @@ export function QueueBindings({
   bindingsData,
   bindingsLoading,
 }: QueueBindingsProps) {
+  const { t } = useTranslation("queues");
+
   return (
     <div className="rounded-lg border border-border overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-3 bg-muted/30 border-b border-border">
-        <h2 className="title-section">Queue Bindings</h2>
+        <h3 className="title-section">{t("queueBindings")}</h3>
         <Badge variant="secondary">{bindingsData?.totalBindings || 0}</Badge>
       </div>
       {bindingsLoading ? (
@@ -89,12 +94,10 @@ export function QueueBindings({
       ) : bindingsData?.bindings?.length === 0 ? (
         <div className="text-center py-8">
           <Link2 className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-          <h3 className="text-lg font-semibold text-foreground mb-2">
-            No Bindings Found
-          </h3>
-          <p className="text-muted-foreground">
-            This queue is not bound to any exchanges.
-          </p>
+          <h4 className="text-lg font-semibold text-foreground mb-2">
+            {t("noBindings")}
+          </h4>
+          <p className="text-muted-foreground">{t("noBindingsDesc")}</p>
         </div>
       ) : (
         <div className="divide-y divide-border">

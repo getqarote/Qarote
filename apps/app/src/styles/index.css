@@ -398,9 +398,9 @@
     /* Status — light mode. Hue spread is intentional: success=green, warning=amber
        (deliberately distinct from primary orange 25), info=blue. Use ONLY for actual
        health/state. Never decorative. */
-    --success: 142 71% 38%;
+    --success: 142 71% 28%;
     --success-foreground: 0 0% 98%;
-    --success-muted: 142 60% 94%;
+    --success-muted: 142 60% 92%;
 
     --warning: 38 92% 45%;
     --warning-foreground: 0 0% 98%;

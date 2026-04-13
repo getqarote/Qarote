@@ -152,5 +152,12 @@
   "noServerSelected": "Ningún servidor seleccionado",
   "bytesReceived": "Bytes recibidos",
   "node": "Nodo",
-  "type": "Tipo"
+  "type": "Tipo",
+  "tabHealth": "Salud",
+  "tabConfiguration": "Configuración",
+  "tabBindings": "Vínculos",
+  "deleteWarningMessages": "Esta cola contiene {{count}} mensajes que se perderán.",
+  "deleteWarningConsumers": "Esta cola tiene {{count}} consumidores activos que se desconectarán.",
+  "deleteConstraints": "La eliminación fallará si la cola no está vacía o aún tiene consumidores.",
+  "deleteTypeConfirm": "Escriba \"{{queueName}}\" para confirmar la eliminación:"
 }
