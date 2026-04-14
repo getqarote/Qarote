@@ -59,7 +59,7 @@ export function UserPermissionsTable({
   return (
     <>
       <div className="space-y-3">
-        {/* Section header — outside the border */}
+        {/* Section header */}
         <div className="flex items-center gap-2">
           <h2 className="title-section">{t("permissions")}</h2>
           <Badge variant="secondary">{permissions.length}</Badge>
@@ -71,55 +71,68 @@ export function UserPermissionsTable({
           </div>
         ) : (
           <>
-            {/* Table */}
-            <div className="border border-border rounded-lg overflow-hidden">
-              {/* Column headers */}
-              <div className="flex items-center px-4 py-2 bg-muted/20 text-xs font-medium text-muted-foreground">
-                <span className="flex-1 min-w-0">{t("virtualHost")}</span>
-                <span className="w-32 text-right">{t("configureRegexp")}</span>
-                <span className="w-32 text-right">{t("writeRegexp")}</span>
-                <span className="w-32 text-right">{t("readRegexp")}</span>
-                <span className="w-24 text-right">{t("common:actions")}</span>
-              </div>
-
-              {/* Rows */}
-              <div className="divide-y divide-border">
-                {paginatedPermissions.map((permission) => {
-                  const isPending = pendingVhost === permission.vhost;
-                  return (
-                    <div
-                      key={permission.vhost}
-                      className="flex items-center px-4 py-3 hover:bg-accent transition-colors"
-                    >
-                      <span className="flex-1 min-w-0 font-mono text-sm font-medium truncate">
-                        {permission.vhost === "/"
-                          ? t("defaultVhost")
-                          : permission.vhost}
-                      </span>
-                      <span className="w-32 text-right font-mono text-sm tabular-nums text-muted-foreground">
-                        {permission.configure}
-                      </span>
-                      <span className="w-32 text-right font-mono text-sm tabular-nums text-muted-foreground">
-                        {permission.write}
-                      </span>
-                      <span className="w-32 text-right font-mono text-sm tabular-nums text-muted-foreground">
-                        {permission.read}
-                      </span>
-                      <span className="w-24 text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="rounded-none"
-                          onClick={() => setClearConfirmVhost(permission.vhost)}
-                          disabled={isPending}
-                        >
-                          {isPending ? t("clearing") : t("clear")}
-                        </Button>
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+            {/* Responsive scroll wrapper */}
+            <div className="overflow-x-auto border border-border rounded-lg">
+              <table className="w-full min-w-[540px]">
+                <thead>
+                  <tr className="bg-muted/20 text-xs font-medium text-muted-foreground">
+                    <th className="px-4 py-2 text-left font-medium">
+                      {t("virtualHost")}
+                    </th>
+                    <th className="w-32 px-4 py-2 text-right font-medium">
+                      {t("configureRegexp")}
+                    </th>
+                    <th className="w-32 px-4 py-2 text-right font-medium">
+                      {t("writeRegexp")}
+                    </th>
+                    <th className="w-32 px-4 py-2 text-right font-medium">
+                      {t("readRegexp")}
+                    </th>
+                    <th className="w-24 px-4 py-2 text-right font-medium">
+                      {t("common:actions")}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {paginatedPermissions.map((permission) => {
+                    const isPending = pendingVhost === permission.vhost;
+                    return (
+                      <tr
+                        key={permission.vhost}
+                        className="hover:bg-accent transition-colors"
+                      >
+                        <td className="px-4 py-3 font-mono text-sm font-medium truncate">
+                          {permission.vhost === "/"
+                            ? t("defaultVhost")
+                            : permission.vhost}
+                        </td>
+                        <td className="w-32 px-4 py-3 text-right font-mono text-sm tabular-nums text-muted-foreground">
+                          {permission.configure}
+                        </td>
+                        <td className="w-32 px-4 py-3 text-right font-mono text-sm tabular-nums text-muted-foreground">
+                          {permission.write}
+                        </td>
+                        <td className="w-32 px-4 py-3 text-right font-mono text-sm tabular-nums text-muted-foreground">
+                          {permission.read}
+                        </td>
+                        <td className="w-24 px-4 py-3 text-right">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-none"
+                            onClick={() =>
+                              setClearConfirmVhost(permission.vhost)
+                            }
+                            disabled={isPending}
+                          >
+                            {isPending ? t("clearing") : t("clear")}
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
 
             {/* Pagination */}

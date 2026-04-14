@@ -61,19 +61,14 @@ export function UserDangerZone({
             <div className="flex items-center gap-2 text-sm font-semibold text-destructive">
               {t("dangerZone")}
               <span className="text-sm font-normal text-muted-foreground">
-                {t("dangerZoneHint", {
-                  defaultValue: "Destructive actions",
-                })}
+                {t("dangerZoneHint")}
               </span>
             </div>
           </AccordionTrigger>
           <AccordionContent className="pt-1">
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
-                {t("deleteUserDescription", {
-                  defaultValue:
-                    "Permanently delete this user and revoke all their permissions. This action cannot be undone.",
-                })}
+                {t("deleteUserDescription")}
               </p>
               <Button
                 variant="destructive-outline"
@@ -105,18 +100,12 @@ export function UserDangerZone({
           <AlertDialogHeader>
             <AlertDialogTitle>{t("deleteUser")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("deleteUserDialogDescription", {
-                defaultValue:
-                  "This will permanently delete the user <strong>{{name}}</strong> and revoke all their permissions. This action cannot be undone.",
-                name: username,
-              })}
+              {t("deleteUserDialogDescription", { name: username })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-2 py-2">
             <label htmlFor={confirmInputId} className="text-sm font-medium">
-              {t("deleteUserConfirmLabel", {
-                defaultValue: "Type the username to confirm",
-              })}
+              {t("deleteUserConfirmLabel")}
             </label>
             <Input
               id={confirmInputId}

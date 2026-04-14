@@ -28,27 +28,23 @@ export function VHostLimits({ vhost }: VHostLimitsProps) {
   }
 
   return (
-    <div className="rounded-lg border border-border overflow-hidden">
-      <div className="px-4 py-3 bg-muted/30 border-b border-border">
-        <h2 className="title-section">{t("limits")}</h2>
-      </div>
-      <div className="p-4">
-        <div className="grid grid-cols-2 gap-8">
-          <div>
-            <div className="text-sm text-muted-foreground mb-1">
-              {t("maxConnections")}
-            </div>
-            <div className="text-2xl font-mono tabular-nums text-foreground">
-              {maxConnections ?? "—"}
-            </div>
+    <div className="space-y-3">
+      <h2 className="title-section">{t("limits")}</h2>
+      <div className="grid grid-cols-2 gap-8">
+        <div>
+          <div className="text-sm text-muted-foreground mb-1">
+            {t("maxConnections")}
           </div>
-          <div>
-            <div className="text-sm text-muted-foreground mb-1">
-              {t("maxQueues")}
-            </div>
-            <div className="text-2xl font-mono tabular-nums text-foreground">
-              {maxQueues ?? "—"}
-            </div>
+          <div className="text-2xl font-mono tabular-nums text-foreground">
+            {maxConnections ?? "\u2014"}
+          </div>
+        </div>
+        <div>
+          <div className="text-sm text-muted-foreground mb-1">
+            {t("maxQueues")}
+          </div>
+          <div className="text-2xl font-mono tabular-nums text-foreground">
+            {maxQueues ?? "\u2014"}
           </div>
         </div>
       </div>

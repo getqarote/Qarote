@@ -1,7 +1,11 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+
+import { ChevronDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface SetVHostLimitsFormProps {
   maxConnections: string;
@@ -21,19 +25,38 @@ export function SetVHostLimitsForm({
   isPending,
 }: SetVHostLimitsFormProps) {
   const { t } = useTranslation("vhosts");
+  const [expanded, setExpanded] = useState(false);
+
+  if (!expanded) {
+    return (
+      <Button
+        variant="outline"
+        className="rounded-none w-full justify-center"
+        onClick={() => setExpanded(true)}
+      >
+        {t("setLimits")}
+      </Button>
+    );
+  }
 
   return (
     <div className="rounded-lg border border-border overflow-hidden">
-      <div className="px-4 py-3 bg-muted/30 border-b border-border">
+      <button
+        type="button"
+        onClick={() => setExpanded(false)}
+        className="flex items-center justify-between w-full px-4 py-3 bg-muted/30 border-b border-border hover:bg-muted/50 transition-colors"
+      >
         <h2 className="title-section">{t("setLimits")}</h2>
-      </div>
+        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+      </button>
       <div className="p-4">
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-4 max-w-lg">
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <Label htmlFor="maxConnections" className="mb-2">
               {t("maxConnections")}
-            </label>
+            </Label>
             <Input
+              id="maxConnections"
               type="number"
               min="0"
               value={maxConnections}
@@ -42,10 +65,11 @@ export function SetVHostLimitsForm({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <Label htmlFor="maxQueues" className="mb-2">
               {t("maxQueues")}
-            </label>
+            </Label>
             <Input
+              id="maxQueues"
               type="number"
               min="0"
               value={maxQueues}

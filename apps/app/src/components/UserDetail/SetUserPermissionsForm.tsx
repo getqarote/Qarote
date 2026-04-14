@@ -1,7 +1,7 @@
 import { ReactNode, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ChevronDown, HelpCircle, Plus } from "lucide-react";
+import { ChevronDown, HelpCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,10 +81,9 @@ export function SetUserPermissionsForm({
     return (
       <Button
         variant="outline"
-        className="rounded-none w-full justify-center gap-2"
+        className="rounded-none w-full justify-center"
         onClick={() => setExpanded(true)}
       >
-        <Plus className="h-4 w-4" />
         {t("addPermission")}
       </Button>
     );

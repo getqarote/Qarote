@@ -1,7 +1,7 @@
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ChevronRight, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 import {
   Accordion,
@@ -48,24 +48,15 @@ export function VHostDangerZone({
           <AccordionTrigger className="py-3 hover:no-underline">
             <div className="flex items-center gap-2 text-sm font-semibold text-destructive">
               {t("dangerZone")}
-              <ChevronRight
-                className="h-4 w-4 text-muted-foreground"
-                aria-hidden="true"
-              />
               <span className="text-sm font-normal text-muted-foreground">
-                {t("dangerZoneHint", {
-                  defaultValue: "Destructive actions",
-                })}
+                {t("dangerZoneHint")}
               </span>
             </div>
           </AccordionTrigger>
           <AccordionContent className="pt-1">
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
-                {t("deleteVhostDescription", {
-                  defaultValue:
-                    "Permanently delete this virtual host and all its queues, exchanges, and data. This action cannot be undone.",
-                })}
+                {t("deleteVhostDescription")}
               </p>
               <Button
                 variant="destructive-outline"
@@ -95,24 +86,16 @@ export function VHostDangerZone({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {t("deleteVhostDialogTitle", {
-                defaultValue: "Delete Virtual Host",
-              })}
-            </AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteVhostDialogTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
               {t("deleteVhostDialogDescription", {
-                defaultValue:
-                  "This will permanently delete the virtual host <strong>{{name}}</strong> and all its queues, exchanges, and data. This action cannot be undone.",
                 name: displayName,
               })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-2 py-2">
             <label htmlFor={confirmInputId} className="text-sm font-medium">
-              {t("deleteVhostConfirmLabel", {
-                defaultValue: "Type the virtual host name to confirm",
-              })}
+              {t("deleteVhostConfirmLabel")}
             </label>
             <Input
               id={confirmInputId}
@@ -128,9 +111,7 @@ export function VHostDangerZone({
               onClick={onDeleteClick}
               className="border border-destructive/30 bg-background text-destructive hover:bg-destructive/10 hover:border-destructive/50"
             >
-              {isDeleting
-                ? t("deleting", { defaultValue: "Deleting..." })
-                : t("deleteVhost")}
+              {isDeleting ? t("deleting") : t("deleteVhost")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

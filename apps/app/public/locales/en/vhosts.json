@@ -104,5 +104,22 @@
   "thresholdSaveError": "Failed to save threshold",
   "thresholdResetToDefault": "Reset to default ({{default}})",
   "thresholdOverrideActive": "Override active — warning when unacked > {{value}}",
-  "thresholdUsingDefault": "Using workspace default — warning when unacked > {{default}}"
+  "thresholdUsingDefault": "Using workspace default — warning when unacked > {{default}}",
+  "updatedAgo": "Updated {{time}}",
+  "clearPermissionsTitle": "Clear permissions",
+  "clearPermissionsDescription": "This will remove all permissions for {{user}} on this virtual host. This action cannot be undone.",
+  "clearPermissions": "Clear permissions",
+  "clearPermissionsError": "Failed to clear permissions",
+  "setPermissionsError": "Failed to set permissions",
+  "invalidRegex": "Invalid regular expression",
+  "regexHint": ".* = full access · ^$ = deny all · ^amq\\. = default exchanges",
+  "configureRegexpTooltip": "Queues and exchanges this user can create, delete, or reconfigure",
+  "writeRegexpTooltip": "Exchanges this user can publish messages to",
+  "readRegexpTooltip": "Queues this user can consume messages from",
+  "dangerZoneHint": "Destructive actions",
+  "deleteVhostDescription": "Permanently delete this virtual host and all its queues, exchanges, and data. This action cannot be undone.",
+  "deleteVhostDialogTitle": "Delete virtual host",
+  "deleteVhostDialogDescription": "This will permanently delete the virtual host {{name}} and all its queues, exchanges, and data. This action cannot be undone.",
+  "deleteVhostConfirmLabel": "Type the virtual host name to confirm",
+  "deleting": "Deleting..."
 }

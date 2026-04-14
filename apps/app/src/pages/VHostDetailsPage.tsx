@@ -76,6 +76,7 @@ export default function VHostDetailsPage() {
     data: vhostData,
     isLoading,
     error,
+    dataUpdatedAt,
   } = useVHost(currentServerId, decodedVHostName, serverExists);
 
   const { data: usersData } = useUsers(currentServerId, serverExists);
@@ -133,7 +134,7 @@ export default function VHostDetailsPage() {
       toast.success(t("permissionsSet"));
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Failed to set permissions"
+        err instanceof Error ? err.message : t("setPermissionsError")
       );
     }
   };
@@ -176,7 +177,7 @@ export default function VHostDetailsPage() {
       setMaxConnections("");
       setMaxQueues("");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to set limits");
+      toast.error(err instanceof Error ? err.message : t("setLimitsError"));
     }
   };
 
@@ -196,7 +197,7 @@ export default function VHostDetailsPage() {
       toast.success(t("permissionsCleared"));
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Failed to clear permissions"
+        err instanceof Error ? err.message : t("clearPermissionsError")
       );
     } finally {
       setPendingClearUser(null);
@@ -217,9 +218,7 @@ export default function VHostDetailsPage() {
       toast.success(t("deleteSuccess"));
       navigate("/vhosts");
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to delete virtual host"
-      );
+      toast.error(err instanceof Error ? err.message : t("deleteError"));
     }
   };
 
@@ -309,10 +308,11 @@ export default function VHostDetailsPage() {
         onEdit={() => setShowEditModal(true)}
       />
 
-      <VHostStats vhost={vhost} />
+      <VHostStats vhost={vhost} dataUpdatedAt={dataUpdatedAt} />
 
       <VHostLimits vhost={vhost} />
 
+      {/* Monitoring threshold */}
       <div className="rounded-lg border border-border overflow-hidden">
         <div className="px-4 py-3 bg-muted/30 border-b border-border">
           <h2 className="title-section">{t("monitoring")}</h2>
@@ -366,30 +366,28 @@ export default function VHostDetailsPage() {
         onClear={handleClearPermissions}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <SetVHostPermissionsForm
-          users={usersData?.users ?? []}
-          selectedUser={selectedUser}
-          onSelectedUserChange={setSelectedUserOverride}
-          configureRegexp={configureRegexp}
-          onConfigureRegexpChange={setConfigureRegexp}
-          writeRegexp={writeRegexp}
-          onWriteRegexpChange={setWriteRegexp}
-          readRegexp={readRegexp}
-          onReadRegexpChange={setReadRegexp}
-          onSubmit={handleSetPermissions}
-          isPending={setPermissionsMutation.isPending}
-        />
+      <SetVHostPermissionsForm
+        users={usersData?.users ?? []}
+        selectedUser={selectedUser}
+        onSelectedUserChange={setSelectedUserOverride}
+        configureRegexp={configureRegexp}
+        onConfigureRegexpChange={setConfigureRegexp}
+        writeRegexp={writeRegexp}
+        onWriteRegexpChange={setWriteRegexp}
+        readRegexp={readRegexp}
+        onReadRegexpChange={setReadRegexp}
+        onSubmit={handleSetPermissions}
+        isPending={setPermissionsMutation.isPending}
+      />
 
-        <SetVHostLimitsForm
-          maxConnections={maxConnections}
-          onMaxConnectionsChange={setMaxConnections}
-          maxQueues={maxQueues}
-          onMaxQueuesChange={setMaxQueues}
-          onSubmit={handleSetLimits}
-          isPending={setLimitsMutation.isPending}
-        />
-      </div>
+      <SetVHostLimitsForm
+        maxConnections={maxConnections}
+        onMaxConnectionsChange={setMaxConnections}
+        maxQueues={maxQueues}
+        onMaxQueuesChange={setMaxQueues}
+        onSubmit={handleSetLimits}
+        isPending={setLimitsMutation.isPending}
+      />
 
       <VHostDangerZone
         vhostName={decodedVHostName}

@@ -104,5 +104,22 @@
   "thresholdSaveError": "Error al guardar el umbral",
   "thresholdResetToDefault": "Restablecer al predeterminado ({{default}})",
   "thresholdOverrideActive": "Anulación activa — advertencia cuando sin confirmar > {{value}}",
-  "thresholdUsingDefault": "Usando el predeterminado del espacio de trabajo — advertencia cuando sin confirmar > {{default}}"
+  "thresholdUsingDefault": "Usando el predeterminado del espacio de trabajo — advertencia cuando sin confirmar > {{default}}",
+  "updatedAgo": "Actualizado {{time}}",
+  "clearPermissionsTitle": "Limpiar permisos",
+  "clearPermissionsDescription": "Esto eliminará todos los permisos de {{user}} en este host virtual. Esta acción no se puede deshacer.",
+  "clearPermissions": "Limpiar permisos",
+  "clearPermissionsError": "Error al limpiar los permisos",
+  "setPermissionsError": "Error al establecer los permisos",
+  "invalidRegex": "Expresión regular inválida",
+  "regexHint": ".* = acceso completo · ^$ = denegar todo · ^amq\\. = intercambios predeterminados",
+  "configureRegexpTooltip": "Colas e intercambios que este usuario puede crear, eliminar o reconfigurar",
+  "writeRegexpTooltip": "Intercambios a los que este usuario puede publicar mensajes",
+  "readRegexpTooltip": "Colas de las que este usuario puede consumir mensajes",
+  "dangerZoneHint": "Acciones destructivas",
+  "deleteVhostDescription": "Eliminar permanentemente este host virtual y todas sus colas, intercambios y datos. Esta acción no se puede deshacer.",
+  "deleteVhostDialogTitle": "Eliminar host virtual",
+  "deleteVhostDialogDescription": "Esto eliminará permanentemente el host virtual {{name}} y todas sus colas, intercambios y datos. Esta acción no se puede deshacer.",
+  "deleteVhostConfirmLabel": "Escribe el nombre del host virtual para confirmar",
+  "deleting": "Eliminando..."
 }

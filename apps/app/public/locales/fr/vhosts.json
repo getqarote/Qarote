@@ -104,5 +104,22 @@
   "thresholdSaveError": "Échec de l'enregistrement du seuil",
   "thresholdResetToDefault": "Réinitialiser au défaut ({{default}})",
   "thresholdOverrideActive": "Remplacement actif — alerte si non acquittés > {{value}}",
-  "thresholdUsingDefault": "Défaut de l'espace de travail — alerte si non acquittés > {{default}}"
+  "thresholdUsingDefault": "Défaut de l'espace de travail — alerte si non acquittés > {{default}}",
+  "updatedAgo": "Mis à jour {{time}}",
+  "clearPermissionsTitle": "Effacer les permissions",
+  "clearPermissionsDescription": "Cela supprimera toutes les permissions de {{user}} sur cet hôte virtuel. Cette action est irréversible.",
+  "clearPermissions": "Effacer les permissions",
+  "clearPermissionsError": "Échec de l'effacement des permissions",
+  "setPermissionsError": "Échec de la définition des permissions",
+  "invalidRegex": "Expression régulière invalide",
+  "regexHint": ".* = accès complet · ^$ = tout refuser · ^amq\\. = échanges par défaut",
+  "configureRegexpTooltip": "Files et échanges que cet utilisateur peut créer, supprimer ou reconfigurer",
+  "writeRegexpTooltip": "Échanges vers lesquels cet utilisateur peut publier des messages",
+  "readRegexpTooltip": "Files depuis lesquelles cet utilisateur peut consommer des messages",
+  "dangerZoneHint": "Actions destructives",
+  "deleteVhostDescription": "Supprimer définitivement cet hôte virtuel ainsi que toutes ses files, échanges et données. Cette action est irréversible.",
+  "deleteVhostDialogTitle": "Supprimer l'hôte virtuel",
+  "deleteVhostDialogDescription": "Cela supprimera définitivement l'hôte virtuel {{name}} ainsi que toutes ses files, échanges et données. Cette action est irréversible.",
+  "deleteVhostConfirmLabel": "Saisissez le nom de l'hôte virtuel pour confirmer",
+  "deleting": "Suppression..."
 }

@@ -104,5 +104,22 @@
   "thresholdSaveError": "保存阈值失败",
   "thresholdResetToDefault": "重置为默认值 ({{default}})",
   "thresholdOverrideActive": "已启用覆盖 — 未确认消息超过 {{value}} 时警告",
-  "thresholdUsingDefault": "使用工作区默认值 — 未确认消息超过 {{default}} 时警告"
+  "thresholdUsingDefault": "使用工作区默认值 — 未确认消息超过 {{default}} 时警告",
+  "updatedAgo": "更新于 {{time}}",
+  "clearPermissionsTitle": "清除权限",
+  "clearPermissionsDescription": "这将删除 {{user}} 在此虚拟主机上的所有权限。此操作无法撤销。",
+  "clearPermissions": "清除权限",
+  "clearPermissionsError": "清除权限失败",
+  "setPermissionsError": "设置权限失败",
+  "invalidRegex": "无效的正则表达式",
+  "regexHint": ".* = 完全访问 · ^$ = 拒绝所有 · ^amq\\. = 默认交换机",
+  "configureRegexpTooltip": "此用户可以创建、删除或重新配置的队列和交换机",
+  "writeRegexpTooltip": "此用户可以发布消息的交换机",
+  "readRegexpTooltip": "此用户可以消费消息的队列",
+  "dangerZoneHint": "危险操作",
+  "deleteVhostDescription": "永久删除此虚拟主机及其所有队列、交换机和数据。此操作无法撤销。",
+  "deleteVhostDialogTitle": "删除虚拟主机",
+  "deleteVhostDialogDescription": "这将永久删除虚拟主机 {{name}} 及其所有队列、交换机和数据。此操作无法撤销。",
+  "deleteVhostConfirmLabel": "输入虚拟主机名称以确认",
+  "deleting": "删除中..."
 }
