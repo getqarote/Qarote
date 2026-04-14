@@ -53,9 +53,9 @@ export default function UserDetailsPage() {
   const [selectedVHostOverride, setSelectedVHostOverride] = useState<
     string | null
   >(null);
-  const [configureRegexp, setConfigureRegexp] = useState(".*");
-  const [writeRegexp, setWriteRegexp] = useState(".*");
-  const [readRegexp, setReadRegexp] = useState(".*");
+  const [configureRegexp, setConfigureRegexp] = useState("^$");
+  const [writeRegexp, setWriteRegexp] = useState("^$");
+  const [readRegexp, setReadRegexp] = useState("^$");
 
   const { data: serversData } = useServers();
   const servers = serversData?.servers || [];
@@ -121,9 +121,9 @@ export default function UserDetailsPage() {
       });
       toast.success(t("permissionsSet"));
       setSelectedVHostOverride(null);
-      setConfigureRegexp(".*");
-      setWriteRegexp(".*");
-      setReadRegexp(".*");
+      setConfigureRegexp("^$");
+      setWriteRegexp("^$");
+      setReadRegexp("^$");
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : t("setPermissionsError")

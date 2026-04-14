@@ -120,5 +120,8 @@
   "dangerZoneHint": "Acciones destructivas",
   "deleteUserDescription": "Eliminar permanentemente este usuario y revocar todos sus permisos. Esta acción no se puede deshacer.",
   "deleteUserDialogDescription": "Esto eliminará permanentemente al usuario <strong>{{name}}</strong> y revocará todos sus permisos. Esta acción no se puede deshacer.",
-  "deleteUserConfirmLabel": "Escriba el nombre de usuario para confirmar"
+  "deleteUserConfirmLabel": "Escriba el nombre de usuario para confirmar",
+  "addPermission": "Agregar permiso",
+  "regexHint": ".* = acceso completo · ^$ = denegar todo · ^amq\\. = exchanges predeterminados",
+  "permissionsPagination": "{{from}}–{{to}} de {{total}}"
 }

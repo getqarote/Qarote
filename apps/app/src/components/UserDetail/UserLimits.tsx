@@ -16,33 +16,29 @@ export function UserLimits({ limits }: UserLimitsProps) {
   if (!hasConnections && !hasChannels) return null;
 
   return (
-    <div className="rounded-lg border border-border overflow-hidden">
-      <div className="px-4 py-3 bg-muted/30 border-b border-border">
-        <h2 className="title-section">{t("limitsLabel")}</h2>
-      </div>
-      <div className="p-4">
-        <div className="grid grid-cols-2 gap-8">
-          {hasConnections && (
-            <div>
-              <div className="text-sm text-muted-foreground mb-1">
-                {t("maxConnections")}
-              </div>
-              <div className="text-2xl font-mono tabular-nums text-foreground">
-                {limits.max_connections}
-              </div>
+    <div className="space-y-3">
+      <h2 className="title-section">{t("limitsLabel")}</h2>
+      <div className="grid grid-cols-2 gap-8">
+        {hasConnections && (
+          <div>
+            <div className="text-sm text-muted-foreground mb-1">
+              {t("maxConnections")}
             </div>
-          )}
-          {hasChannels && (
-            <div>
-              <div className="text-sm text-muted-foreground mb-1">
-                {t("maxChannels")}
-              </div>
-              <div className="text-2xl font-mono tabular-nums text-foreground">
-                {limits.max_channels}
-              </div>
+            <div className="text-2xl font-mono tabular-nums text-foreground">
+              {limits.max_connections}
             </div>
-          )}
-        </div>
+          </div>
+        )}
+        {hasChannels && (
+          <div>
+            <div className="text-sm text-muted-foreground mb-1">
+              {t("maxChannels")}
+            </div>
+            <div className="text-2xl font-mono tabular-nums text-foreground">
+              {limits.max_channels}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

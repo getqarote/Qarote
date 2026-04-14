@@ -18,9 +18,7 @@ export const AddQueueButton = ({
     <AddQueueForm
       serverId={serverId}
       onSuccess={onSuccess}
-      trigger={
-        <Button className="btn-primary rounded-none">{t("addQueue")}</Button>
-      }
+      trigger={<Button className="btn-primary">{t("addQueue")}</Button>}
     />
   );
 };

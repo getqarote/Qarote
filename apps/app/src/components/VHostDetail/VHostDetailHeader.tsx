@@ -70,7 +70,7 @@ export function VHostDetailHeader({
           )}
         </div>
       </div>
-      <Button onClick={onEdit} className="btn-primary rounded-none shrink-0">
+      <Button onClick={onEdit} className="btn-primary shrink-0">
         {t("common:edit")}
       </Button>
     </div>

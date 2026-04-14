@@ -477,7 +477,7 @@ const CreateExchangeDialog = ({
                 !exchangeName ||
                 !exchangeType
               }
-              className="w-full h-12 text-base btn-primary rounded-none"
+              className="w-full h-12 text-base btn-primary"
             >
               {createExchangeMutation.isPending ? (
                 <>

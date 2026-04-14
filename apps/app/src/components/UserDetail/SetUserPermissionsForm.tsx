@@ -1,7 +1,7 @@
-import { ReactNode, useCallback, useMemo } from "react";
+import { ReactNode, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { HelpCircle } from "lucide-react";
+import { ChevronDown, HelpCircle, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,6 +61,7 @@ export function SetUserPermissionsForm({
   isPending,
 }: SetUserPermissionsFormProps) {
   const { t } = useTranslation("users");
+  const [expanded, setExpanded] = useState(false);
 
   const configureError = useMemo(
     () => validateRegex(configureRegexp),
@@ -76,11 +77,29 @@ export function SetUserPermissionsForm({
     onSubmit();
   }, [hasValidationErrors, onSubmit]);
 
+  if (!expanded) {
+    return (
+      <Button
+        variant="outline"
+        className="rounded-none w-full justify-center gap-2"
+        onClick={() => setExpanded(true)}
+      >
+        <Plus className="h-4 w-4" />
+        {t("addPermission")}
+      </Button>
+    );
+  }
+
   return (
     <div className="rounded-lg border border-border overflow-hidden">
-      <div className="px-4 py-3 bg-muted/30 border-b border-border">
+      <button
+        type="button"
+        onClick={() => setExpanded(false)}
+        className="flex items-center justify-between w-full px-4 py-3 bg-muted/30 border-b border-border hover:bg-muted/50 transition-colors"
+      >
         <h2 className="title-section">{t("setPermission")}</h2>
-      </div>
+        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+      </button>
       <div className="p-4">
         <div className="grid grid-cols-1 gap-4 max-w-lg">
           <div>
@@ -110,6 +129,7 @@ export function SetUserPermissionsForm({
             value={configureRegexp}
             onChange={onConfigureRegexpChange}
             error={configureError ? t("invalidRegex") : undefined}
+            hint={t("regexHint")}
           />
           <RegexField
             label={t("writeRegexp")}
@@ -117,6 +137,7 @@ export function SetUserPermissionsForm({
             value={writeRegexp}
             onChange={onWriteRegexpChange}
             error={writeError ? t("invalidRegex") : undefined}
+            hint={t("regexHint")}
           />
           <RegexField
             label={t("readRegexp")}
@@ -124,6 +145,7 @@ export function SetUserPermissionsForm({
             value={readRegexp}
             onChange={onReadRegexpChange}
             error={readError ? t("invalidRegex") : undefined}
+            hint={t("regexHint")}
           />
           <div>
             <Button
@@ -146,12 +168,14 @@ function RegexField({
   value,
   onChange,
   error,
+  hint,
 }: {
   label: ReactNode;
   tooltip: ReactNode;
   value: string;
   onChange: (value: string) => void;
   error?: string;
+  hint?: string;
 }) {
   return (
     <div>
@@ -169,11 +193,15 @@ function RegexField({
       <Input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder=".*"
+        placeholder="^$"
         className={error ? "border-destructive" : undefined}
         aria-invalid={!!error}
       />
-      {error && <p className="text-sm text-destructive mt-1">{error}</p>}
+      {error ? (
+        <p className="text-sm text-destructive mt-1">{error}</p>
+      ) : hint ? (
+        <p className="text-xs text-muted-foreground mt-1">{hint}</p>
+      ) : null}
     </div>
   );
 }

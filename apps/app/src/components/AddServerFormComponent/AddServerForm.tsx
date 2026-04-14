@@ -238,11 +238,7 @@ export const AddServerForm = ({
       {/* Only render trigger if not in controlled mode */}
       {controlledIsOpen === undefined && (
         <DialogTrigger asChild>
-          {trigger || (
-            <Button className="btn-primary rounded-none">
-              {t("addServer")}
-            </Button>
-          )}
+          {trigger || <Button className="btn-primary">{t("addServer")}</Button>}
         </DialogTrigger>
       )}
       <DialogContent className="sm:max-w-[700px] lg:max-w-[800px] max-h-[90vh] flex flex-col bg-card">
@@ -300,7 +296,7 @@ export const AddServerForm = ({
             type="submit"
             onClick={form.handleSubmit(onSubmit)}
             disabled={isLoading || isTestingConnection}
-            className="btn-primary rounded-none"
+            className="btn-primary"
           >
             {isLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
             {mode === "edit" ? t("updateServer") : t("addServer")}

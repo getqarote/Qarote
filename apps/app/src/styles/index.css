@@ -304,7 +304,7 @@
 @utility btn-primary {
   /* Button Components — solid primary, no gradient. Weight and hover shift
      carry the "pressability" that the gradient used to carry. */
-  @apply bg-primary text-primary-foreground font-medium px-4 py-2 rounded-md transition-colors duration-150;
+  @apply bg-primary text-primary-foreground font-medium px-4 py-2 rounded-none transition-colors duration-150;
 
   &:hover {
     background-color: hsl(var(--primary) / 0.92);
@@ -469,7 +469,7 @@
     --accent: 25 14% 12%;
     --accent-foreground: 0 0% 95%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 72% 56%;
     --destructive-foreground: 210 40% 98%;
 
     /* Status — dark mode. Slightly lifted lightness so they read on dark surfaces.

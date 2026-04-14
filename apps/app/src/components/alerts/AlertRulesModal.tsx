@@ -431,10 +431,7 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
                 <DialogTitle>{t("rules.title")}</DialogTitle>
                 <DialogDescription>{t("rules.description")}</DialogDescription>
               </div>
-              <Button
-                onClick={handleCreate}
-                className="btn-primary rounded-none"
-              >
+              <Button onClick={handleCreate} className="btn-primary">
                 {t("rules.createRule")}
               </Button>
             </div>

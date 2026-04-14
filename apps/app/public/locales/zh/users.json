@@ -120,5 +120,8 @@
   "dangerZoneHint": "危险操作",
   "deleteUserDescription": "永久删除此用户并撤销其所有权限。此操作无法撤消。",
   "deleteUserDialogDescription": "这将永久删除用户 <strong>{{name}}</strong> 并撤销其所有权限。此操作无法撤消。",
-  "deleteUserConfirmLabel": "输入用户名以确认"
+  "deleteUserConfirmLabel": "输入用户名以确认",
+  "addPermission": "添加权限",
+  "regexHint": ".* = 完全访问 · ^$ = 拒绝所有 · ^amq\\. = 默认交换器",
+  "permissionsPagination": "{{from}}–{{to}} / {{total}}"
 }

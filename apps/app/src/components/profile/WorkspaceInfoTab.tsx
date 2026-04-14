@@ -124,10 +124,7 @@ export const WorkspaceInfoTab = ({
                 </Button>
               </>
             ) : (
-              <Button
-                onClick={onStartEdit}
-                className="btn-primary h-9 rounded-none"
-              >
+              <Button onClick={onStartEdit} className="btn-primary h-9">
                 {t("workspace.editWorkspace")}
               </Button>
             )}

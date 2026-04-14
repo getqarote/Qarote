@@ -70,7 +70,7 @@ export function UserDetailHeader({
       <Button
         onClick={onEdit}
         disabled={editDisabled}
-        className="btn-primary rounded-none shrink-0"
+        className="btn-primary shrink-0"
         title={disabledReason}
       >
         {t("common:edit")}

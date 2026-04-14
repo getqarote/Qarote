@@ -120,5 +120,8 @@
   "dangerZoneHint": "Destructive actions",
   "deleteUserDescription": "Permanently delete this user and revoke all their permissions. This action cannot be undone.",
   "deleteUserDialogDescription": "This will permanently delete the user <strong>{{name}}</strong> and revoke all their permissions. This action cannot be undone.",
-  "deleteUserConfirmLabel": "Type the username to confirm"
+  "deleteUserConfirmLabel": "Type the username to confirm",
+  "addPermission": "Add permission",
+  "regexHint": ".* = full access · ^$ = deny all · ^amq\\. = default exchanges",
+  "permissionsPagination": "{{from}}–{{to}} of {{total}}"
 }

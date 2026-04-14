@@ -9,7 +9,7 @@ interface AddExchangeButtonProps {
 export const AddExchangeButton = ({ onAddClick }: AddExchangeButtonProps) => {
   const { t } = useTranslation("exchanges");
   return (
-    <Button onClick={onAddClick} className="btn-primary rounded-none">
+    <Button onClick={onAddClick} className="btn-primary">
       {t("addExchange")}
     </Button>
   );

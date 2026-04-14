@@ -120,5 +120,8 @@
   "dangerZoneHint": "Actions destructives",
   "deleteUserDescription": "Supprimer définitivement cet utilisateur et révoquer toutes ses permissions. Cette action est irréversible.",
   "deleteUserDialogDescription": "Cela supprimera définitivement l'utilisateur <strong>{{name}}</strong> et révoquera toutes ses permissions. Cette action est irréversible.",
-  "deleteUserConfirmLabel": "Saisissez le nom d'utilisateur pour confirmer"
+  "deleteUserConfirmLabel": "Saisissez le nom d'utilisateur pour confirmer",
+  "addPermission": "Ajouter une permission",
+  "regexHint": ".* = accès complet · ^$ = tout refuser · ^amq\\. = échanges par défaut",
+  "permissionsPagination": "{{from}}–{{to}} sur {{total}}"
 }
