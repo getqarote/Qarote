@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Search, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -33,8 +35,8 @@ export function GeneralTab({
   notificationSeverities,
   setNotificationSeverities,
   isPending,
-  t,
 }: GeneralTabProps) {
+  const { t } = useTranslation("alerts");
   return (
     <div className="space-y-6">
       {/* Server Selection */}
@@ -187,7 +189,6 @@ export function GeneralTab({
           onChange={setNotificationSeverities}
           disabled={isPending}
           idPrefix="severity"
-          t={t}
         />
         {notificationSeverities.length === 0 && (
           <p className="text-xs text-destructive mt-2">

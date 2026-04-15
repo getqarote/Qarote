@@ -166,15 +166,13 @@ const Alerts = () => {
               <>
                 <Button
                   onClick={() => setShowAlertRulesModal(true)}
-                  variant="outline"
-                  className="rounded-none"
+                  className="btn-primary"
                 >
                   {t("alertRules")}
                 </Button>
                 <Button
                   onClick={() => setShowNotificationSettingsModal(true)}
-                  variant="outline"
-                  className="rounded-none"
+                  className="btn-primary"
                 >
                   {t("notificationSettings")}
                 </Button>

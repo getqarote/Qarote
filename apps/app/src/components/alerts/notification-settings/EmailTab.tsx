@@ -1,6 +1,5 @@
-import { BellOff, Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,8 +14,9 @@ export function EmailTab({
   setContactEmail,
   onSaveEmail,
   isPending,
-  t,
 }: EmailTabProps) {
+  const { t } = useTranslation("alerts");
+
   return (
     <div className="space-y-4">
       {/* Toggle */}
@@ -34,7 +34,6 @@ export function EmailTab({
           checked={emailNotificationsEnabled}
           onCheckedChange={setEmailNotificationsEnabled}
           disabled={isPending}
-          className="data-[state=checked]:bg-primary"
         />
       </div>
 
@@ -48,13 +47,11 @@ export function EmailTab({
             </Label>
             <Button
               type="button"
-              variant="outline"
               size="sm"
               onClick={onSaveEmail}
               disabled={isPending || !contactEmail.trim()}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              className="btn-primary"
             >
-              <Plus className="h-4 w-4 mr-2" />
               {t("modal.update")}
             </Button>
           </div>
@@ -85,12 +82,9 @@ export function EmailTab({
 
       {/* Disabled Info */}
       {!emailNotificationsEnabled && (
-        <Alert>
-          <BellOff className="h-4 w-4" />
-          <AlertDescription>
-            {t("modal.emailNotificationsDisabled")}
-          </AlertDescription>
-        </Alert>
+        <p className="text-sm text-muted-foreground">
+          {t("modal.emailNotificationsDisabled")}
+        </p>
       )}
     </div>
   );

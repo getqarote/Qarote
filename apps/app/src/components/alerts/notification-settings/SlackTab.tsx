@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Loader2, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -17,8 +19,8 @@ export function SlackTab({
   hasExistingSlack,
   isSaving,
   isDeleting,
-  t,
 }: SlackTabProps) {
+  const { t } = useTranslation("alerts");
   return (
     <div className="space-y-4">
       <div>
@@ -63,7 +65,6 @@ export function SlackTab({
               checked={slackEnabled}
               onCheckedChange={onToggleSlack}
               disabled={isSaving}
-              className="data-[state=checked]:bg-primary"
             />
             <Label htmlFor="slack-enabled">{t("modal.enabled")}</Label>
           </div>
@@ -82,9 +83,10 @@ export function SlackTab({
             )}
             <Button
               type="button"
+              size="sm"
               onClick={onSaveSlack}
               disabled={isSaving || !slackWebhookUrl.trim()}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              className="btn-primary"
             >
               {isSaving ? (
                 <>

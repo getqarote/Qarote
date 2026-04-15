@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,14 +21,13 @@ import {
 interface WebhookExampleModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  t: (key: string) => string;
 }
 
 export function WebhookExampleModal({
   open,
   onOpenChange,
-  t,
 }: WebhookExampleModalProps) {
+  const { t } = useTranslation("alerts");
   const [version, setVersion] = useState("v1");
 
   return (

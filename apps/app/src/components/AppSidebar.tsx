@@ -214,7 +214,6 @@ export function AppSidebar() {
                         className="cursor-pointer py-3"
                       >
                         <div className="flex items-center gap-2">
-                          <Plus className="h-4 w-4 text-muted-foreground" />
                           <span className="font-medium">{t("addServer")}</span>
                         </div>
                       </SelectItem>

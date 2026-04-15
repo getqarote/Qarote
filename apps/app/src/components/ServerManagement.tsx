@@ -4,7 +4,6 @@ import { useNavigate, useParams } from "react-router";
 import {
   Edit,
   Loader2,
-  Plus,
   Server as ServerIcon,
   Settings,
   Trash2,
@@ -66,20 +65,14 @@ export function ServerManagement({ trigger }: ServerManagementProps) {
       <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Server Management
-          </DialogTitle>
+          <DialogTitle>Server Management</DialogTitle>
           <DialogDescription>
             Add, edit, or remove RabbitMQ server connections.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Add Server Button */}
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium">Your Servers</h3>
-          </div>
+          <h3 className="text-lg font-medium">Your Servers</h3>
 
           {/* Server List */}
           {servers.length === 0 ? (
@@ -106,7 +99,6 @@ export function ServerManagement({ trigger }: ServerManagementProps) {
           <AddServerForm
             trigger={
               <button className="flex items-center gap-2 w-full p-4 border-2 border-dashed rounded-lg text-muted-foreground hover:text-foreground hover:border-primary/50 hover:bg-accent cursor-pointer transition-colors">
-                <Plus className="h-4 w-4" />
                 <span className="font-medium">Add Server</span>
               </button>
             }
@@ -170,9 +162,6 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
   return (
     <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent">
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-muted rounded-lg">
-          <ServerIcon className="h-4 w-4 text-muted-foreground" />
-        </div>
         <div>
           <div className="flex items-center gap-2">
             <h4 className="font-medium">{server.name}</h4>
@@ -188,7 +177,7 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
           variant="ghost"
           size="sm"
           onClick={() => setIsEditDialogOpen(true)}
-          className="text-muted-foreground hover:text-foreground hover:bg-accent"
+          className="text-muted-foreground hover:text-foreground hover:bg-muted"
           title="Edit Server"
         >
           <Edit className="h-4 w-4" />
@@ -248,7 +237,7 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
             <AlertDialogAction
               onClick={handleDeleteServer}
               disabled={deleteServerMutation.isPending}
-              className="bg-destructive/100 hover:bg-destructive focus:ring-red-500"
+              className="bg-destructive hover:bg-destructive/90"
             >
               {deleteServerMutation.isPending ? (
                 <>

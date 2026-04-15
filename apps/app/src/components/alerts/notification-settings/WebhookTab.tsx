@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Eye, EyeOff, Loader2, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -22,8 +24,8 @@ export function WebhookTab({
   hasExistingWebhook,
   isSaving,
   isDeleting,
-  t,
 }: WebhookTabProps) {
+  const { t } = useTranslation("alerts");
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -98,7 +100,6 @@ export function WebhookTab({
               checked={webhookEnabled}
               onCheckedChange={onToggleWebhook}
               disabled={isSaving}
-              className="data-[state=checked]:bg-primary"
             />
             <Label htmlFor="webhook-enabled">{t("modal.enabled")}</Label>
           </div>
@@ -119,7 +120,7 @@ export function WebhookTab({
               size="sm"
               onClick={onSaveWebhook}
               disabled={isSaving || !webhookUrl.trim()}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              className="btn-primary"
             >
               {isSaving ? (
                 <>

@@ -60,7 +60,14 @@ const EMPTY_SERVERS: Array<{
   port: number;
 }> = [];
 
-function StatusDot({ enabled }: { enabled: boolean }) {
+function StatusDot({
+  enabled,
+  configured = true,
+}: {
+  enabled: boolean;
+  configured?: boolean;
+}) {
+  if (!configured) return null;
   return (
     <span
       aria-hidden="true"
@@ -616,7 +623,7 @@ export function AlertNotificationSettingsModal({
         <div className="p-6 pb-0">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5" />
+              <Bell className="h-5 w-5" />
               {t("modal.title")}
             </DialogTitle>
             <DialogDescription>{t("modal.description")}</DialogDescription>
@@ -658,7 +665,10 @@ export function AlertNotificationSettingsModal({
             >
               <Webhook className="h-4 w-4" />
               {t("modal.tabs.webhook")}
-              <StatusDot enabled={!!firstWebhook?.enabled} />
+              <StatusDot
+                enabled={!!firstWebhook?.enabled}
+                configured={!!firstWebhook}
+              />
             </TabsTrigger>
             <TabsTrigger
               value="slack"
@@ -666,7 +676,10 @@ export function AlertNotificationSettingsModal({
             >
               <MessageSquare className="h-4 w-4" />
               {t("modal.tabs.slack")}
-              <StatusDot enabled={!!firstSlack?.enabled} />
+              <StatusDot
+                enabled={!!firstSlack?.enabled}
+                configured={!!firstSlack}
+              />
             </TabsTrigger>
           </TabsList>
 
@@ -686,7 +699,6 @@ export function AlertNotificationSettingsModal({
                 notificationSeverities={notificationSeverities}
                 setNotificationSeverities={setNotificationSeverities}
                 isPending={updateSettingsMutation.isPending}
-                t={t}
               />
             </TabsContent>
 
@@ -698,7 +710,6 @@ export function AlertNotificationSettingsModal({
                 setContactEmail={setContactEmail}
                 onSaveEmail={handleSaveEmail}
                 isPending={updateSettingsMutation.isPending}
-                t={t}
               />
             </TabsContent>
 
@@ -713,7 +724,6 @@ export function AlertNotificationSettingsModal({
                 notificationPermission={notificationPermission}
                 setNotificationPermission={setNotificationPermission}
                 isPending={updateSettingsMutation.isPending}
-                t={t}
               />
             </TabsContent>
 
@@ -736,7 +746,6 @@ export function AlertNotificationSettingsModal({
                   updateWebhookMutation.isPending
                 }
                 isDeleting={deleteWebhookMutation.isPending}
-                t={t}
               />
             </TabsContent>
 
@@ -754,7 +763,6 @@ export function AlertNotificationSettingsModal({
                   updateSlackConfigMutation.isPending
                 }
                 isDeleting={deleteSlackConfigMutation.isPending}
-                t={t}
               />
             </TabsContent>
           </div>
@@ -777,7 +785,6 @@ export function AlertNotificationSettingsModal({
       <WebhookExampleModal
         open={showWebhookExample}
         onOpenChange={setShowWebhookExample}
-        t={t}
       />
     </Dialog>
   );

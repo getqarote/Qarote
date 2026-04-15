@@ -3,15 +3,11 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import {
-  Building2,
   Carrot,
   Check,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  FolderOpen,
-  Lock,
-  Plus,
   User,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -186,37 +182,37 @@ export function WorkspaceSelector() {
 
   // ---- Helpers ----
 
-  const getCreateWorkspaceButtonConfig = () => {
+  const getCreateWorkspaceButtonConfig = (): {
+    badge: string;
+    badgeColor: string;
+    badgeTextColor: string;
+  } | null => {
     if (canCreateWorkspace) return null;
 
     switch (userPlan) {
       case UserPlan.FREE:
         return {
-          text: t("createNewWorkspace"),
           badge: t("upgrade"),
           badgeColor: "bg-warning-muted",
-          title: t("upgradeToCreate"),
+          badgeTextColor: "text-warning-foreground",
         };
       case UserPlan.DEVELOPER:
         return {
-          text: t("createNewWorkspace"),
           badge: t("upgrade"),
-          badgeColor: "bg-info-muted0",
-          title: t("multipleWorkspacesDeveloper"),
+          badgeColor: "bg-info-muted",
+          badgeTextColor: "text-info-foreground",
         };
       case UserPlan.ENTERPRISE:
         return {
-          text: t("createNewWorkspace"),
           badge: t("upgrade"),
           badgeColor: "bg-muted",
-          title: t("multipleWorkspacesEnterprise"),
+          badgeTextColor: "text-muted-foreground",
         };
       default:
         return {
-          text: t("createNewWorkspace"),
           badge: t("upgrade"),
           badgeColor: "bg-warning-muted",
-          title: t("upgradeToCreate"),
+          badgeTextColor: "text-warning-foreground",
         };
     }
   };
@@ -246,6 +242,12 @@ export function WorkspaceSelector() {
 
   const isLoading = isLoadingWorkspaces || isLoadingOrgs;
 
+  // Derived values — computed once, not inline in JSX
+  const currentOrgRole = getOrgRoleLabel(
+    organizations.find((o) => o.id === currentOrg?.id)?.role ?? "MEMBER"
+  );
+  const createConfig = isAdmin ? getCreateWorkspaceButtonConfig() : null;
+
   return (
     <>
       <Popover open={isOpen} onOpenChange={handleOpenChange}>
@@ -256,7 +258,6 @@ export function WorkspaceSelector() {
             disabled={switchWorkspaceMutation.isPending}
           >
             <div className="flex items-center gap-1.5 min-w-0">
-              <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
               {currentOrg && (
                 <>
                   <span className="max-w-[180px] truncate text-muted-foreground text-sm">
@@ -301,17 +302,12 @@ export function WorkspaceSelector() {
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
                             <div className="min-w-0">
                               <div className="font-medium text-foreground text-sm truncate">
                                 {currentOrg.name}
                               </div>
                               <div className="text-xs text-muted-foreground">
-                                {getOrgRoleLabel(
-                                  organizations.find(
-                                    (o) => o.id === currentOrg.id
-                                  )?.role ?? "MEMBER"
-                                )}
+                                {currentOrgRole}
                               </div>
                             </div>
                           </div>
@@ -332,15 +328,14 @@ export function WorkspaceSelector() {
                         key={ws.id}
                         type="button"
                         onClick={() => handleWorkspaceSwitch(ws.id)}
-                        className={`w-full text-left p-3 hover:bg-accent rounded-md cursor-pointer transition-colors ${
+                        className={`w-full text-left p-3 rounded-md cursor-pointer transition-colors ${
                           ws.id === workspace?.id
-                            ? "bg-primary/10 border-l-2 border-l-primary"
-                            : ""
+                            ? "bg-primary/10 border-l-2 border-l-primary hover:bg-primary/15"
+                            : "hover:bg-accent"
                         }`}
                       >
                         <div className="flex items-center justify-between w-full">
                           <div className="flex items-center gap-3 min-w-0">
-                            <FolderOpen className="w-4 h-4 text-muted-foreground shrink-0" />
                             <div className="min-w-0">
                               <div className="font-medium text-foreground truncate">
                                 {ws.name}
@@ -380,11 +375,6 @@ export function WorkspaceSelector() {
                       >
                         <div className="flex items-center justify-between w-full">
                           <div className="flex items-center gap-3">
-                            {canCreateWorkspace ? (
-                              <Plus className="w-4 h-4 text-muted-foreground" />
-                            ) : (
-                              <Lock className="w-4 h-4 text-muted-foreground/60" />
-                            )}
                             <span
                               className={`font-medium ${
                                 canCreateWorkspace
@@ -395,18 +385,13 @@ export function WorkspaceSelector() {
                               {t("createNewWorkspace")}
                             </span>
                           </div>
-                          {!canCreateWorkspace &&
-                            (() => {
-                              const buttonConfig =
-                                getCreateWorkspaceButtonConfig();
-                              return buttonConfig ? (
-                                <span
-                                  className={`px-1.5 py-0.5 ${buttonConfig.badgeColor} text-white text-[10px] rounded-full font-semibold`}
-                                >
-                                  {buttonConfig.badge}
-                                </span>
-                              ) : null;
-                            })()}
+                          {createConfig && (
+                            <span
+                              className={`px-1.5 py-0.5 ${createConfig.badgeColor} ${createConfig.badgeTextColor} text-[10px] rounded-full font-semibold`}
+                            >
+                              {createConfig.badge}
+                            </span>
+                          )}
                         </div>
                       </button>
                     )}
@@ -441,15 +426,14 @@ export function WorkspaceSelector() {
                         key={org.id}
                         type="button"
                         onClick={() => handleOrgSwitch(org.id)}
-                        className={`w-full text-left p-3 hover:bg-accent rounded-md cursor-pointer transition-colors ${
+                        className={`w-full text-left p-3 rounded-md cursor-pointer transition-colors ${
                           org.id === currentOrg?.id
-                            ? "bg-primary/10 border-l-2 border-l-primary"
-                            : ""
+                            ? "bg-primary/10 border-l-2 border-l-primary hover:bg-primary/15"
+                            : "hover:bg-accent"
                         }`}
                       >
                         <div className="flex items-center justify-between w-full">
                           <div className="flex items-center gap-3 min-w-0">
-                            <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
                             <div className="min-w-0">
                               <div className="font-medium text-foreground truncate">
                                 {org.name}
