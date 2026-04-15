@@ -19,11 +19,7 @@ export const AddSendMessageButton = ({
       serverId={serverId}
       mode="exchange"
       onSuccess={onSuccess}
-      trigger={
-        <Button variant="outline" className="rounded-none">
-          {t("sendMessage")}
-        </Button>
-      }
+      trigger={<Button className="btn-primary">{t("sendMessage")}</Button>}
     />
   );
 };

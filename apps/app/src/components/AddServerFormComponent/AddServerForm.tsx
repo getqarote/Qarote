@@ -3,21 +3,29 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Edit, Loader2, Server } from "lucide-react";
+import { ArrowLeft, Edit, Loader2, Server } from "lucide-react";
 
 import { logger } from "@/lib/logger";
 
 import { Button } from "@/components/ui/button";
-import { DialogFooter } from "@/components/ui/dialog";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Form } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 
 import { useServerContext } from "@/contexts/ServerContext";
 
@@ -31,13 +39,16 @@ import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { type AddServerFormData, addServerSchema } from "@/schemas";
 
+import { ConfirmConnectionCard } from "./ConfirmConnectionCard";
 import { ConnectionStatusDisplay } from "./ConnectionStatusDisplay";
-import { Credentials } from "./Credentials";
-import { RabbitMqVersionInfo } from "./RabbitMqVersionInfo";
+import { PlanVersionSupport } from "./PlanVersionSupport";
 import { ServerDetails } from "./ServerDetails";
+import { ServerUrlInput } from "./ServerUrlInput";
 import { TestConnectionButton } from "./TestConnectionButton";
 import { TunnelHelper } from "./TunnelHelper";
 import type { AddServerFormProps, ConnectionStatus } from "./types";
+
+type Step = 1 | 2;
 
 export const AddServerForm = ({
   onServerAdded,
@@ -61,13 +72,12 @@ export const AddServerForm = ({
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>({
     status: "idle",
   });
+  const [step, setStep] = useState<Step>(1);
 
-  // Use controlled or internal state for dialog open state
   const isOpen =
     controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
   const setIsOpen = controlledOnOpenChange || setInternalIsOpen;
 
-  // Initialize form with react-hook-form
   const form = useForm<AddServerFormData>({
     resolver: zodResolver(addServerSchema),
     defaultValues: {
@@ -76,13 +86,12 @@ export const AddServerForm = ({
       port: server?.port || 15672,
       amqpPort: server?.amqpPort || 5672,
       username: server?.username || "guest",
-      password: "", // Don't prefill password for security
+      password: "",
       vhost: server?.vhost || "/",
       useHttps: server?.useHttps || false,
     },
   });
 
-  // Reset form when server changes (for edit mode)
   useEffect(() => {
     if (mode === "edit" && server) {
       form.reset({
@@ -96,11 +105,26 @@ export const AddServerForm = ({
         useHttps: server.useHttps || false,
       });
       setConnectionStatus({ status: "idle" });
+      setStep(1);
     }
   }, [server, mode, form]);
 
   const testConnection = async () => {
-    const isValid = await form.trigger();
+    // In step 1 add mode, name isn't filled yet — skip its validation.
+    const fieldsToValidate: (keyof AddServerFormData)[] =
+      mode === "add" && step === 1
+        ? ["host", "port", "amqpPort", "username", "password", "useHttps"]
+        : [
+            "name",
+            "host",
+            "port",
+            "amqpPort",
+            "username",
+            "password",
+            "useHttps",
+          ];
+
+    const isValid = await form.trigger(fieldsToValidate);
     if (!isValid) return;
 
     const formData = form.getValues();
@@ -131,6 +155,15 @@ export const AddServerForm = ({
             cluster_name: result.cluster_name,
           },
         });
+
+        if (mode === "add") {
+          // Advance to step 2. Prefill server name from cluster name / host.
+          const currentName = form.getValues("name");
+          if (!currentName) {
+            form.setValue("name", result.cluster_name || formData.host);
+          }
+          setStep(2);
+        }
       } else {
         setConnectionStatus({
           status: "error",
@@ -156,7 +189,6 @@ export const AddServerForm = ({
         throw new Error(t("workspaceIdRequired"));
       }
       if (mode === "edit" && server) {
-        // Update existing server
         await updateServerMutation.mutateAsync({
           workspaceId: workspace.id,
           id: server.id,
@@ -170,13 +202,9 @@ export const AddServerForm = ({
           useHttps: data.useHttps,
         });
 
-        // Close dialog
         setIsOpen(false);
-
-        // Notify parent component
         onServerUpdated?.();
       } else {
-        // Create new server
         const result = await createServerMutation.mutateAsync({
           workspaceId: workspace.id,
           name: data.name,
@@ -189,22 +217,15 @@ export const AddServerForm = ({
           useHttps: data.useHttps,
         });
 
-        // Set this as the selected server (only for new servers)
         setSelectedServerId(result.server.id);
-
-        // Refresh user plan data to update server limits
         await refetchPlan();
-
-        // Close dialog
         setIsOpen(false);
-
-        // Notify parent component
         onServerAdded?.();
       }
 
-      // Reset form and status
       form.reset();
       setConnectionStatus({ status: "idle" });
+      setStep(1);
     } catch (error) {
       setConnectionStatus({
         status: "error",
@@ -223,7 +244,15 @@ export const AddServerForm = ({
   const resetForm = () => {
     form.reset();
     setConnectionStatus({ status: "idle" });
+    setStep(1);
   };
+
+  const handleUpgrade = () => {
+    logger.info("Upgrade plan requested");
+  };
+
+  const isEdit = mode === "edit";
+  const showStepIndicator = !isEdit;
 
   return (
     <Dialog
@@ -235,16 +264,15 @@ export const AddServerForm = ({
         }
       }}
     >
-      {/* Only render trigger if not in controlled mode */}
       {controlledIsOpen === undefined && (
         <DialogTrigger asChild>
           {trigger || <Button className="btn-primary">{t("addServer")}</Button>}
         </DialogTrigger>
       )}
-      <DialogContent className="sm:max-w-[700px] lg:max-w-[800px] max-h-[90vh] flex flex-col bg-card">
+      <DialogContent className="sm:max-w-xl lg:max-w-2xl max-h-[90vh] flex flex-col bg-card">
         <DialogHeader className="shrink-0">
           <DialogTitle className="flex items-center gap-2">
-            {mode === "edit" ? (
+            {isEdit ? (
               <>
                 <Edit className="h-5 w-5" />
                 {t("editRabbitMQServer")}
@@ -257,50 +285,126 @@ export const AddServerForm = ({
             )}
           </DialogTitle>
           <DialogDescription>
-            {mode === "edit"
-              ? t("editServerFormDescription")
-              : t("addServerFormDescription")}
+            {showStepIndicator
+              ? t("stepIndicator", { current: step, total: 2 })
+              : t("editServerFormDescription")}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto px-6 pb-8">
+        <div className="flex-1 overflow-y-auto px-6 pb-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <RabbitMqVersionInfo />
+              {isEdit && (
+                <>
+                  <ServerDetails form={form} alwaysExpanded />
+                  <ConnectionStatusDisplay
+                    connectionStatus={connectionStatus}
+                    onUpgrade={handleUpgrade}
+                  />
+                </>
+              )}
 
-              <ServerDetails form={form} mode={mode} />
+              {!isEdit && step === 1 && (
+                <>
+                  <ServerUrlInput form={form} />
+                  <TunnelHelper form={form} />
+                  <ServerDetails form={form} hideNameField hideVhostField />
+                  <ConnectionStatusDisplay
+                    connectionStatus={connectionStatus}
+                    onUpgrade={handleUpgrade}
+                  />
+                  <PlanVersionSupport />
+                </>
+              )}
 
-              <TunnelHelper form={form} />
+              {!isEdit && step === 2 && (
+                <div className="space-y-6">
+                  <ConfirmConnectionCard
+                    version={connectionStatus.details?.version}
+                    clusterName={connectionStatus.details?.cluster_name}
+                    host={form.getValues("host")}
+                    onUpgrade={handleUpgrade}
+                  />
 
-              <Credentials form={form} />
-
-              <ConnectionStatusDisplay
-                connectionStatus={connectionStatus}
-                onUpgrade={() => {
-                  // Navigate to upgrade page or show upgrade modal
-                  // For now, we'll just log - this can be enhanced later
-                  logger.info("Upgrade plan requested");
-                }}
-              />
+                  <div className="space-y-4">
+                    <p className="text-sm font-medium text-foreground">
+                      {t("nameYourServer")}
+                    </p>
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("serverName")}</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={t("serverNamePlaceholder")}
+                              {...field}
+                            />
+                          </FormControl>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {t("serverNameHint")}
+                          </p>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="vhost"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("virtualHost")}</FormLabel>
+                          <FormControl>
+                            <Input placeholder="/" {...field} />
+                          </FormControl>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {t("virtualHostHint")}
+                          </p>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+              )}
             </form>
           </Form>
         </div>
 
         <DialogFooter className="flex gap-2 shrink-0 pt-6 border-t border-border">
-          <TestConnectionButton
-            onTestConnection={testConnection}
-            isTestingConnection={isTestingConnection}
-            isLoading={isLoading}
-          />
-          <Button
-            type="submit"
-            onClick={form.handleSubmit(onSubmit)}
-            disabled={isLoading || isTestingConnection}
-            className="btn-primary"
-          >
-            {isLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-            {mode === "edit" ? t("updateServer") : t("addServer")}
-          </Button>
+          {!isEdit && step === 2 && (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setStep(1)}
+              disabled={isLoading}
+              className="mr-auto"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              {t("back")}
+            </Button>
+          )}
+
+          {(isEdit || step === 1) && (
+            <TestConnectionButton
+              onTestConnection={testConnection}
+              isTestingConnection={isTestingConnection}
+              isLoading={isLoading}
+            />
+          )}
+
+          {(isEdit || step === 2) && (
+            <Button
+              type="submit"
+              onClick={form.handleSubmit(onSubmit)}
+              disabled={isLoading || isTestingConnection}
+              className="btn-primary"
+            >
+              {isLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              {isEdit ? t("updateServer") : t("addServer")}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -45,7 +45,7 @@ export const AddServerButton = () => {
         return {
           text: t("addServer"),
           badge: `${serverUsage.current}/${serverUsage.limit || 2}`,
-          badgeColor: "bg-info-muted0",
+          badgeColor: "bg-info-muted",
           title: t("serverLimitReached"),
         };
       case UserPlan.ENTERPRISE:

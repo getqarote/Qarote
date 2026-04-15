@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
+import { Trans, useTranslation } from "react-i18next";
 
 import { AlertCircle, Info } from "lucide-react";
 
@@ -18,97 +19,94 @@ interface TunnelHelperProps {
 }
 
 export const TunnelHelper = ({ form }: TunnelHelperProps) => {
+  const { t } = useTranslation("dashboard");
   const host = form.watch("host");
   const [isOpen, setIsOpen] = useState(false);
 
-  // Detect if user is entering localhost
-  const isLocalhost =
-    host &&
-    (host.toLowerCase().trim() === "localhost" ||
-      host.toLowerCase().trim() === "127.0.0.1" ||
-      host.toLowerCase().trim().startsWith("127.0.0.1:") ||
-      host.toLowerCase().trim().startsWith("localhost:"));
+  const normalized = host?.toLowerCase().trim() ?? "";
 
-  // Detect if user is entering a tunnel URL
+  const isLocalhost =
+    normalized === "localhost" ||
+    normalized === "127.0.0.1" ||
+    normalized.startsWith("127.0.0.1:") ||
+    normalized.startsWith("localhost:");
+
   const isTunnelUrl =
-    host &&
-    (host.includes("ngrok") ||
-      host.includes("localtunnel") ||
-      host.includes("loca.lt"));
+    normalized.includes("ngrok") ||
+    normalized.includes("localtunnel") ||
+    normalized.includes("loca.lt");
 
   if (!isLocalhost && !isTunnelUrl) {
     return null;
   }
 
   if (isTunnelUrl) {
-    // User is using a tunnel - show success message
     return (
       <Alert className="border-success/30 bg-success-muted">
         <Info className="h-4 w-4 text-success" />
-        <AlertTitle className="text-success">Tunnel Detected</AlertTitle>
+        <AlertTitle className="text-success">
+          {t("tunnelDetectedTitle")}
+        </AlertTitle>
         <AlertDescription className="text-success">
-          Your tunnel URL has been detected. HTTPS will be automatically
-          enabled. Make sure your tunnel is running and accessible.
+          {t("tunnelDetectedDescription")}
         </AlertDescription>
       </Alert>
     );
   }
 
-  // User is entering localhost - show instructions
   return (
     <Alert className="border-info/30 bg-info-muted">
       <AlertCircle className="h-4 w-4 text-info" />
-      <AlertTitle className="text-info">
-        Monitoring localhost RabbitMQ?
-      </AlertTitle>
+      <AlertTitle className="text-info">{t("tunnelLocalhostTitle")}</AlertTitle>
       <AlertDescription className="space-y-2 text-info">
-        <p>
-          To monitor a RabbitMQ server running on localhost (development only),
-          you need to expose it using a tunnel service.
-        </p>
+        <p>{t("tunnelLocalhostDescription")}</p>
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <CollapsibleTrigger asChild>
             <Button variant="link" className="h-auto p-0 text-info underline">
-              {isOpen ? "Hide" : "Show"} setup instructions
+              {isOpen
+                ? t("tunnelHideInstructions")
+                : t("tunnelShowInstructions")}
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="mt-2 space-y-3">
-            <div className="rounded-md bg-white p-3">
-              <h4 className="mb-2 font-semibold">Option 1: ngrok</h4>
-              <div className="space-y-2 font-mono text-sm">
-                <div>
-                  <code className="rounded bg-muted px-2 py-1">
-                    ngrok http 15672
-                  </code>
-                </div>
+            <div className="rounded-md bg-card border border-border p-3">
+              <h4 className="mb-2 font-semibold text-foreground">
+                {t("tunnelOption1")}
+              </h4>
+              <div className="space-y-2 text-sm">
+                <code className="inline-block rounded bg-muted px-2 py-1 font-mono">
+                  ngrok http 15672
+                </code>
                 <p className="text-xs text-muted-foreground">
-                  Install ngrok first:{" "}
-                  <a
-                    href="https://ngrok.com/download"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-info underline"
-                  >
-                    ngrok.com/download
-                  </a>
-                  . Use the HTTPS URL in the Host field. The{" "}
-                  <code>--basic-auth</code> flag adds security.
+                  <Trans
+                    i18nKey="tunnelOption1Help"
+                    t={t}
+                    components={[
+                      <a
+                        key="0"
+                        href="https://ngrok.com/download"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-info underline"
+                      >
+                        ngrok.com
+                      </a>,
+                    ]}
+                  />
                 </p>
               </div>
             </div>
 
-            <div className="rounded-md bg-white p-3">
-              <h4 className="mb-2 font-semibold">Option 2: localtunnel</h4>
-              <div className="space-y-2 font-mono text-sm">
-                <div>
-                  <code className="rounded bg-muted px-2 py-1">
-                    npx localtunnel --port 15672
-                  </code>
-                </div>
+            <div className="rounded-md bg-card border border-border p-3">
+              <h4 className="mb-2 font-semibold text-foreground">
+                {t("tunnelOption2")}
+              </h4>
+              <div className="space-y-2 text-sm">
+                <code className="inline-block rounded bg-muted px-2 py-1 font-mono">
+                  npx localtunnel --port 15672
+                </code>
                 <p className="text-xs text-muted-foreground">
-                  Copy the HTTPS URL provided (e.g.,{" "}
-                  <code>https://abc123.loca.lt</code>) and paste it in the Host
-                  field above. Port will default to 443.
+                  {t("tunnelOption2Help")}
                 </p>
               </div>
             </div>
