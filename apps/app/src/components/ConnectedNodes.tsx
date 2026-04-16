@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
-import { ChevronRight, Server, Wifi } from "lucide-react";
+import { Server, Wifi } from "lucide-react";
 
 import { RabbitMQNode } from "@/lib/api";
 
@@ -139,8 +139,8 @@ export const ConnectedNodes = ({
                     <span className="hidden md:inline font-mono tabular-nums">
                       {formatUptime(node.uptime)}
                     </span>
-                    <ChevronRight
-                      className={`h-4 w-4 transition-transform duration-150 ${
+                    <PixelChevronRight
+                      className={`h-3 shrink-0 transition-transform duration-150 ${
                         expandedNames.has(node.name) ? "rotate-90" : ""
                       }`}
                     />

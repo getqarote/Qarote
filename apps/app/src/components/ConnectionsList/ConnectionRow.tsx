@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ChevronRight, Server, Users, Zap } from "lucide-react";
+import { Server, Users, Zap } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -9,6 +9,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
 
 import {
   formatBytes,
@@ -93,8 +94,8 @@ export function ConnectionRow({
               {formatBytes(connection.send_oct ?? 0)}
             </span>
             <div className="w-8 flex justify-center">
-              <ChevronRight
-                className={`h-4 w-4 text-muted-foreground transition-transform duration-150 ${
+              <PixelChevronRight
+                className={`h-3 text-muted-foreground transition-transform duration-150 shrink-0 ${
                   isOpen ? "rotate-90" : ""
                 }`}
                 aria-hidden="true"

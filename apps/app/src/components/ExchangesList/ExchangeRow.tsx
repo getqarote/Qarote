@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Activity, ChevronRight, Filter, Lock, Trash2 } from "lucide-react";
+import { Activity, Filter, Lock, Trash2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
 
 import { getExchangeTypeBadgeClass } from "./exchangeTypeUi";
 import type { ExchangeBinding, ExchangeListItem } from "./types";
@@ -91,8 +92,8 @@ export function ExchangeRow({
               {(exchange.message_stats?.publish_out ?? 0).toLocaleString()}
             </span>
             <div className="w-8 flex justify-center">
-              <ChevronRight
-                className={`h-4 w-4 text-muted-foreground transition-transform duration-150 ${
+              <PixelChevronRight
+                className={`h-3 text-muted-foreground transition-transform duration-150 shrink-0 ${
                   isOpen ? "rotate-90" : ""
                 }`}
                 aria-hidden="true"

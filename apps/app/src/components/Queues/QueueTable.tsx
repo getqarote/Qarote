@@ -5,7 +5,6 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
-  ChevronRight,
   Lock,
   MessageSquare,
   Users,
@@ -22,6 +21,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { PaginationControls } from "@/components/ui/PaginationControls";
+import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type SortField = "name" | "messages" | "messages_unacknowledged" | "consumers";
@@ -286,8 +286,8 @@ function QueueRow({
               {queue.consumers.toLocaleString()}
             </span>
             <div className="w-8 flex justify-center">
-              <ChevronRight
-                className={`h-4 w-4 text-muted-foreground transition-transform duration-150 ${
+              <PixelChevronRight
+                className={`h-3 text-muted-foreground transition-transform duration-150 shrink-0 ${
                   isOpen ? "rotate-90" : ""
                 }`}
                 aria-hidden="true"

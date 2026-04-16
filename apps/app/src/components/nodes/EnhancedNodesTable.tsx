@@ -7,7 +7,6 @@ import {
   ArrowUp,
   ArrowUpDown,
   CheckCircle,
-  ChevronRight,
   Server,
   XCircle,
 } from "lucide-react";
@@ -21,6 +20,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -271,8 +271,8 @@ function NodeRow({
                 : "—"}
             </span>
             <div className="w-8 flex justify-center">
-              <ChevronRight
-                className={`h-4 w-4 text-muted-foreground transition-transform duration-150 ${
+              <PixelChevronRight
+                className={`h-3 text-muted-foreground transition-transform duration-150 shrink-0 ${
                   isOpen ? "rotate-90" : ""
                 }`}
                 aria-hidden="true"

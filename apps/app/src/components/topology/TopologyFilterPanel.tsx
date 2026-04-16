@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 
 import {
   Activity,
-  ChevronRight,
   GitBranch,
   Hash,
   Inbox,
@@ -14,6 +13,7 @@ import {
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
 
 interface Exchange {
   name: string;
@@ -114,8 +114,8 @@ export function TopologyFilterPanel({
               className="flex items-center gap-2 flex-1"
               onClick={() => setExchangesOpen(!exchangesOpen)}
             >
-              <ChevronRight
-                className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${
+              <PixelChevronRight
+                className={`h-2.5 shrink-0 text-muted-foreground transition-transform ${
                   exchangesOpen ? "rotate-90" : ""
                 }`}
               />
@@ -179,8 +179,8 @@ export function TopologyFilterPanel({
               className="flex items-center gap-2 flex-1"
               onClick={() => setQueuesOpen(!queuesOpen)}
             >
-              <ChevronRight
-                className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${
+              <PixelChevronRight
+                className={`h-2.5 shrink-0 text-muted-foreground transition-transform ${
                   queuesOpen ? "rotate-90" : ""
                 }`}
               />

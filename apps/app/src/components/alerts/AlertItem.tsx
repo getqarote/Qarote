@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { CheckCircle, ChevronDown, ChevronRight } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 
 import { RabbitMQAlert, RabbitMQAlertSeverity } from "@/lib/api/alertTypes";
+
+import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
 
 import {
   formatRelativeTime,
@@ -180,12 +182,13 @@ export const AlertItem = ({ alert, isResolved = false }: AlertItemProps) => {
         <span className={`text-xs px-2 py-0.5 ${badgeClass}`}>
           {alert.severity}
         </span>
-        {hasDetails &&
-          (expanded ? (
-            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-          ) : (
-            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-          ))}
+        {hasDetails && (
+          <PixelChevronRight
+            className={`h-2.5 shrink-0 text-muted-foreground transition-transform ${
+              expanded ? "rotate-90" : ""
+            }`}
+          />
+        )}
       </div>
     </div>
   );
