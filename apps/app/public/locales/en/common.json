@@ -86,7 +86,7 @@
   "theme": "Theme",
   "language": "Language",
   "noServerConfigured": "No RabbitMQ server configured",
-  "addServer": "Add Server",
+  "addServer": "Add server",
   "manageServers": "Manage servers",
   "rabbitMQDashboard": "Dashboard",
   "items": "items",

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocation } from "react-router";
+import { Link, useLocation } from "react-router";
 
 import { logger } from "@/lib/logger";
 
@@ -22,9 +22,9 @@ const NotFound = () => {
         <p className="text-xl text-muted-foreground mb-4">
           {t("notFound.message")}
         </p>
-        <a href="/" className="text-info hover:text-info underline">
+        <Link to="/" className="text-info hover:text-info underline">
           {t("notFound.returnHome")}
-        </a>
+        </Link>
       </div>
     </div>
   );

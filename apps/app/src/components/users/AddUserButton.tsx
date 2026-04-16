@@ -16,7 +16,7 @@ export function AddUserButton({ serverId, onSuccess }: AddUserButtonProps) {
 
   return (
     <>
-      <Button onClick={() => setShowCreateModal(true)} className="rounded-none">
+      <Button onClick={() => setShowCreateModal(true)} className="btn-primary">
         {t("addUser")}
       </Button>
       <CreateUserModal

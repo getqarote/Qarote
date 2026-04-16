@@ -36,7 +36,7 @@ export const AddVirtualHostButton = ({
 
   return (
     <>
-      <Button onClick={() => setShowModal(true)} className="rounded-none">
+      <Button onClick={() => setShowModal(true)} className="btn-primary">
         {t("addVhost")}
       </Button>
 

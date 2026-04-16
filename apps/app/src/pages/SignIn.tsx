@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useSearchParams } from "react-router";
@@ -53,7 +53,6 @@ const SignIn = () => {
     rawRedirect?.startsWith("/") && !rawRedirect.startsWith("//")
       ? rawRedirect
       : null;
-  const [showPassword, setShowPassword] = useState(false);
   const loginMutation = useLogin();
   const { showAlternativeAuth } = useShowAlternativeAuth();
   const { data: publicConfig } = usePublicConfig();
@@ -147,13 +146,19 @@ const SignIn = () => {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("password")}</FormLabel>
+                  <div className="flex items-center justify-between">
+                    <FormLabel>{t("password")}</FormLabel>
+                    <Link
+                      to="/forgot-password"
+                      className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      {t("forgotPassword")}
+                    </Link>
+                  </div>
                   <FormControl>
                     <PasswordInput
                       placeholder={t("enterPassword")}
                       disabled={loginMutation.isPending}
-                      showPassword={showPassword}
-                      onToggleVisibility={() => setShowPassword(!showPassword)}
                       autoComplete="current-password"
                       {...field}
                     />
@@ -165,8 +170,8 @@ const SignIn = () => {
 
             <Button
               type="submit"
-              className="w-full"
-              disabled={loginMutation.isPending || !form.formState.isValid}
+              className="w-full btn-primary"
+              disabled={loginMutation.isPending}
             >
               {loginMutation.isPending ? t("signingIn") : t("signIn")}
             </Button>
@@ -182,31 +187,23 @@ const SignIn = () => {
               >
                 <span className="w-full border-t" />
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
+              <div className="relative flex justify-center text-xs">
                 <span className="bg-card px-2 text-muted-foreground">
                   {t("orContinueWith")}
                 </span>
               </div>
             </div>
 
-            <GoogleLoginButton
-              onError={(error) => logger.error("Google login error:", error)}
-            />
-            <div className="mt-2" />
-            <SSOLoginButton
-              onError={(error) => logger.error("SSO login error:", error)}
-            />
+            <div className="space-y-2">
+              <GoogleLoginButton
+                onError={(error) => logger.error("Google login error:", error)}
+              />
+              <SSOLoginButton
+                onError={(error) => logger.error("SSO login error:", error)}
+              />
+            </div>
           </>
         )}
-
-        <div className="pt-2 text-center">
-          <Link
-            to="/forgot-password"
-            className="text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
-            {t("forgotPassword")}
-          </Link>
-        </div>
 
         {publicConfig?.registrationEnabled === true && (
           <div className="pt-2 text-center text-sm text-muted-foreground">

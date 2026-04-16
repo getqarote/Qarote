@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router";
@@ -57,8 +57,6 @@ const SignUp = () => {
   const registerMutation = useRegister();
   const location = useLocation();
   const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { showAlternativeAuth } = useShowAlternativeAuth();
   const { data: publicConfig } = usePublicConfig();
 
@@ -207,10 +205,6 @@ const SignUp = () => {
                       <PasswordInput
                         placeholder={t("createAPassword")}
                         disabled={registerMutation.isPending}
-                        showPassword={showPassword}
-                        onToggleVisibility={() =>
-                          setShowPassword(!showPassword)
-                        }
                         autoComplete="new-password"
                         {...field}
                       />
@@ -234,10 +228,6 @@ const SignUp = () => {
                       <PasswordInput
                         placeholder={t("confirmYourPassword")}
                         disabled={registerMutation.isPending}
-                        showPassword={showConfirmPassword}
-                        onToggleVisibility={() =>
-                          setShowConfirmPassword(!showConfirmPassword)
-                        }
                         autoComplete="new-password"
                         {...field}
                       />
@@ -289,8 +279,8 @@ const SignUp = () => {
 
               <Button
                 type="submit"
-                className="w-full"
-                disabled={registerMutation.isPending || !form.formState.isValid}
+                className="w-full btn-primary"
+                disabled={registerMutation.isPending}
               >
                 {registerMutation.isPending
                   ? t("creatingAccount")
@@ -309,22 +299,23 @@ const SignUp = () => {
               >
                 <span className="w-full border-t" />
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
+              <div className="relative flex justify-center text-xs">
                 <span className="bg-card px-2 text-muted-foreground">
                   {t("orContinueWith")}
                 </span>
               </div>
             </div>
 
-            <GoogleLoginButton
-              mode="signup"
-              onError={(error) => logger.error("Google signup error:", error)}
-            />
-            <div className="mt-2" />
-            <SSOLoginButton
-              mode="signup"
-              onError={(error) => logger.error("SSO signup error:", error)}
-            />
+            <div className="space-y-2">
+              <GoogleLoginButton
+                mode="signup"
+                onError={(error) => logger.error("Google signup error:", error)}
+              />
+              <SSOLoginButton
+                mode="signup"
+                onError={(error) => logger.error("SSO signup error:", error)}
+              />
+            </div>
           </>
         )}
 
