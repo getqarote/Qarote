@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { AlertTriangle, Check, Copy, Link } from "lucide-react";
+import { AlertTriangle, Check, Copy } from "lucide-react";
 import { toast } from "sonner";
 
 import { isLocalhostUrl } from "@/lib/url-utils";
@@ -66,10 +66,7 @@ export function InviteLinksDialog({
     <Dialog open={inviteLinks.length > 0} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Link className="h-5 w-5" />
-            {t("inviteLinks.title")}
-          </DialogTitle>
+          <DialogTitle>{t("inviteLinks.title")}</DialogTitle>
           <DialogDescription>{t("inviteLinks.description")}</DialogDescription>
         </DialogHeader>
 

@@ -1,5 +1,3 @@
-import { AlertTriangle } from "lucide-react";
-
 import { VHost } from "@/lib/api/vhostTypes";
 
 import { Button } from "@/components/ui/button";
@@ -31,8 +29,7 @@ export function DeleteVHostModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-destructive">
-            <AlertTriangle className="h-5 w-5" />
+          <DialogTitle className="text-destructive">
             Delete Virtual Host
           </DialogTitle>
           <DialogDescription className="space-y-2">

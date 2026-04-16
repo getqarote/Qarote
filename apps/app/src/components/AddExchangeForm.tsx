@@ -5,19 +5,12 @@ import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 
-import { AdvancedQueueProperties } from "@/components/AddQueueFormComponent/AdvancedQueueProperties";
-import { ArgumentsBuilder } from "@/components/AddQueueFormComponent/ArgumentsBuilder";
-import {
-  DEFAULT_EXCHANGE,
-  NO_BINDING,
-  normalizeArgValue,
-  QUEUE_PRESETS,
-  type QueuePresetId,
-} from "@/components/AddQueueFormComponent/constants";
-import { ExchangeBindingField } from "@/components/AddQueueFormComponent/ExchangeBindingField";
-import { QueuePreviewCard } from "@/components/AddQueueFormComponent/QueuePreviewCard";
-import { QueueTypePreset } from "@/components/AddQueueFormComponent/QueueTypePreset";
-import type { ArgRow } from "@/components/AddQueueFormComponent/types";
+import { AdvancedExchangeProperties } from "@/components/AddExchangeFormComponent/AdvancedExchangeProperties";
+import { normalizeArgValue } from "@/components/AddExchangeFormComponent/constants";
+import { ExchangeArgumentsBuilder } from "@/components/AddExchangeFormComponent/ExchangeArgumentsBuilder";
+import { ExchangePreviewCard } from "@/components/AddExchangeFormComponent/ExchangePreviewCard";
+import { ExchangeTypePreset } from "@/components/AddExchangeFormComponent/ExchangeTypePreset";
+import type { ArgRow } from "@/components/AddExchangeFormComponent/types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -41,98 +34,82 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
-import { useCreateQueue, useExchanges } from "@/hooks/queries/useRabbitMQ";
+import { useCreateExchange } from "@/hooks/queries/useRabbitMQ";
 import { useToast } from "@/hooks/ui/useToast";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
-import { type AddQueueFormData, addQueueSchema } from "@/schemas";
+import { type AddExchangeFormData, addExchangeSchema } from "@/schemas";
 
-interface AddQueueFormProps {
+interface AddExchangeFormProps {
   trigger?: React.ReactNode;
   serverId: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   onSuccess?: () => void;
 }
 
 type Mode = "quick" | "advanced";
 
-const newRowId = () =>
-  typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID()
-    : `row-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-
-const rowsFromPreset = (id: QueuePresetId): ArgRow[] => {
-  const preset = QUEUE_PRESETS.find((p) => p.id === id);
-  if (!preset) return [];
-  return preset.args.map((a) => ({ id: newRowId(), ...a }));
-};
-
-export function AddQueueForm({
+export function AddExchangeForm({
   trigger,
   serverId,
+  open: openProp,
+  onOpenChange,
   onSuccess,
-}: AddQueueFormProps) {
-  const [open, setOpen] = useState(false);
+}: AddExchangeFormProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
   const [mode, setMode] = useState<Mode>("quick");
-  const [preset, setPreset] = useState<QueuePresetId>("classic");
   const [rows, setRows] = useState<ArgRow[]>([]);
 
-  const createQueueMutation = useCreateQueue();
+  const isControlled = openProp !== undefined;
+  const open = isControlled ? openProp : internalOpen;
+  const setOpen = (next: boolean) => {
+    if (isControlled) {
+      onOpenChange?.(next);
+    } else {
+      setInternalOpen(next);
+    }
+  };
+
+  const createExchangeMutation = useCreateExchange();
   const { toast } = useToast();
   const { workspace } = useWorkspace();
   const { selectedVHost } = useVHostContext();
-  const { t } = useTranslation("queues");
+  const { t } = useTranslation("exchanges");
 
-  const form = useForm<AddQueueFormData>({
-    resolver: zodResolver(addQueueSchema),
+  const form = useForm<AddExchangeFormData>({
+    resolver: zodResolver(addExchangeSchema),
     mode: "onChange",
     defaultValues: {
       name: "",
+      type: "direct",
       durable: true,
       autoDelete: false,
-      exclusive: false,
-      bindToExchange: "",
-      routingKey: "",
+      internal: false,
     },
   });
 
-  const { data: exchangesData } = useExchanges(serverId, selectedVHost);
-  const exchanges = exchangesData?.exchanges || [];
-
   const name = form.watch("name");
+  const type = form.watch("type");
   const durable = form.watch("durable");
   const autoDelete = form.watch("autoDelete");
-  const exclusive = form.watch("exclusive");
-  const bindToExchange = form.watch("bindToExchange");
-  const routingKey = form.watch("routingKey");
+  const internal = form.watch("internal");
 
-  // Memoize for preview to avoid recomputing unnecessarily.
   const previewRows = useMemo(() => rows, [rows]);
-
-  const applyPreset = (id: QueuePresetId) => {
-    setPreset(id);
-    const p = QUEUE_PRESETS.find((q) => q.id === id);
-    if (!p) return;
-    form.setValue("durable", p.durable);
-    form.setValue("autoDelete", p.autoDelete);
-    form.setValue("exclusive", p.exclusive);
-    setRows(rowsFromPreset(id));
-  };
 
   const resetAll = () => {
     form.reset({
       name: "",
+      type: "direct",
       durable: true,
       autoDelete: false,
-      exclusive: false,
-      bindToExchange: "",
-      routingKey: "",
+      internal: false,
     });
     setRows([]);
-    setPreset("classic");
     setMode("quick");
   };
 
-  const onSubmit = (data: AddQueueFormData) => {
+  const onSubmit = (data: AddExchangeFormData) => {
     if (!serverId) {
       toast({
         title: t("toast.error"),
@@ -150,7 +127,6 @@ export function AddQueueForm({
       return;
     }
 
-    // Build final arguments object from the structured builder rows.
     const finalArguments: Record<string, unknown> = {};
     for (const row of rows) {
       if (!row.key) continue;
@@ -159,34 +135,26 @@ export function AddQueueForm({
       finalArguments[row.key] = value;
     }
 
-    const bindValue = data.bindToExchange;
-    const hasBinding = !!bindValue && bindValue !== NO_BINDING;
-
-    createQueueMutation.mutate(
+    createExchangeMutation.mutate(
       {
         serverId,
         workspaceId: workspace.id,
         name: data.name.trim(),
+        type: data.type,
         durable: data.durable,
-        autoDelete: data.autoDelete,
-        exclusive: data.exclusive,
+        auto_delete: data.autoDelete,
+        internal: data.internal,
         arguments: finalArguments,
         vhost: selectedVHost
           ? encodeURIComponent(selectedVHost)
           : encodeURIComponent("/"),
-        // Pass binding info only if present — keeps existing backend contract.
-        ...(hasBinding && {
-          bindToExchange:
-            bindValue === DEFAULT_EXCHANGE ? "" : (bindValue as string),
-          routingKey: data.routingKey || "",
-        }),
-      } as Parameters<typeof createQueueMutation.mutate>[0],
+      } as Parameters<typeof createExchangeMutation.mutate>[0],
       {
         onSuccess: () => {
           setOpen(false);
           toast({
-            title: t("toast.queueCreated"),
-            description: t("toast.queueCreatedDesc", { name: data.name }),
+            title: t("toast.exchangeCreated"),
+            description: t("toast.exchangeCreatedDesc", { name: data.name }),
           });
           resetAll();
           onSuccess?.();
@@ -196,17 +164,12 @@ export function AddQueueForm({
           let description = t("toast.createError");
 
           if (error.message) {
-            if (error.message.includes("already exists")) {
+            if (error.message.toLowerCase().includes("already exists")) {
               title = t("toast.alreadyExists");
               description = t("toast.alreadyExistsDesc", { name: data.name });
-            } else if (
-              error.message.includes("Exchange") &&
-              error.message.includes("does not exist")
-            ) {
-              title = t("toast.exchangeNotFound");
-              description = t("toast.exchangeNotFoundDesc", {
-                exchange: data.bindToExchange,
-              });
+            } else if (error.message.includes("amq.")) {
+              title = t("toast.error");
+              description = t("toast.amqPrefixReserved");
             } else if (error.message.includes("Server not found")) {
               title = t("toast.serverError");
               description = t("toast.serverErrorDesc");
@@ -221,7 +184,6 @@ export function AddQueueForm({
     );
   };
 
-  // Cmd/Ctrl+Enter submit for power users.
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
       e.preventDefault();
@@ -232,7 +194,7 @@ export function AddQueueForm({
   const defaultTrigger = (
     <Button size="sm" className="gap-2">
       <Plus className="h-4 w-4" />
-      {t("addQueue")}
+      {t("addExchange")}
     </Button>
   );
 
@@ -244,11 +206,13 @@ export function AddQueueForm({
         if (!next) resetAll();
       }}
     >
-      <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
+      {trigger !== null && (
+        <DialogTrigger asChild>{trigger ?? defaultTrigger}</DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-xl lg:max-w-2xl max-h-[90vh] flex flex-col bg-card">
         <DialogHeader className="shrink-0">
-          <DialogTitle>{t("createNewQueue")}</DialogTitle>
-          <DialogDescription>{t("createNewQueueDesc")}</DialogDescription>
+          <DialogTitle>{t("createNewExchange")}</DialogTitle>
+          <DialogDescription>{t("createNewExchangeDesc")}</DialogDescription>
         </DialogHeader>
 
         <div
@@ -273,10 +237,10 @@ export function AddQueueForm({
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("queueNameLabel")}</FormLabel>
+                    <FormLabel>{t("exchangeNameLabel")}</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder={t("queueNamePlaceholder")}
+                        placeholder={t("exchangeNamePlaceholder")}
                         autoFocus
                         {...field}
                       />
@@ -286,26 +250,33 @@ export function AddQueueForm({
                 )}
               />
 
-              {mode === "quick" && (
-                <QueueTypePreset value={preset} onChange={applyPreset} />
-              )}
-
-              <ExchangeBindingField form={form} exchanges={exchanges} />
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <ExchangeTypePreset
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               {mode === "advanced" && (
                 <>
-                  <AdvancedQueueProperties form={form} />
-                  <ArgumentsBuilder rows={rows} onChange={setRows} />
+                  <AdvancedExchangeProperties form={form} />
+                  <ExchangeArgumentsBuilder rows={rows} onChange={setRows} />
                 </>
               )}
 
-              <QueuePreviewCard
+              <ExchangePreviewCard
                 name={name}
+                type={type}
                 durable={durable}
                 autoDelete={autoDelete}
-                exclusive={exclusive}
-                bindToExchange={bindToExchange}
-                routingKey={routingKey}
+                internal={internal}
                 rows={previewRows}
               />
             </form>
@@ -317,23 +288,23 @@ export function AddQueueForm({
             type="button"
             variant="outline"
             onClick={() => setOpen(false)}
-            disabled={createQueueMutation.isPending}
+            disabled={createExchangeMutation.isPending}
           >
             {t("cancel")}
           </Button>
           <Button
             type="submit"
             onClick={form.handleSubmit(onSubmit)}
-            disabled={createQueueMutation.isPending}
+            disabled={createExchangeMutation.isPending}
             className="btn-primary"
           >
-            {createQueueMutation.isPending ? (
+            {createExchangeMutation.isPending ? (
               <>
                 <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
                 {t("creating")}
               </>
             ) : (
-              t("createQueue")
+              t("createExchange")
             )}
           </Button>
         </DialogFooter>

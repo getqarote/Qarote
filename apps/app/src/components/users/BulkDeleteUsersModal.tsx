@@ -1,7 +1,5 @@
 import { useTranslation } from "react-i18next";
 
-import { AlertTriangle } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -47,13 +45,7 @@ export function BulkDeleteUsersModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle
-              className="h-5 w-5 text-destructive"
-              aria-hidden="true"
-            />
-            {t("bulkDeleteTitle", { count })}
-          </DialogTitle>
+          <DialogTitle>{t("bulkDeleteTitle", { count })}</DialogTitle>
           <DialogDescription>
             {t("bulkDeleteDescription", { count })}
           </DialogDescription>

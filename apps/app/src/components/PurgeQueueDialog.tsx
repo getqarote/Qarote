@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { AlertTriangle } from "lucide-react";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -117,10 +115,7 @@ export const PurgeQueueDialog = ({
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-destructive" />
-            {t("purge.title", { queueName })}
-          </AlertDialogTitle>
+          <AlertDialogTitle>{t("purge.title", { queueName })}</AlertDialogTitle>
           <AlertDialogDescription className="space-y-3">
             <div>
               <strong>⚠️ {t("purge.cannotBeUndone")}</strong>

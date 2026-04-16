@@ -622,10 +622,7 @@ export function AlertNotificationSettingsModal({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
         <div className="p-6 pb-0">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5" />
-              {t("modal.title")}
-            </DialogTitle>
+            <DialogTitle>{t("modal.title")}</DialogTitle>
             <DialogDescription>{t("modal.description")}</DialogDescription>
           </DialogHeader>
         </div>

@@ -209,10 +209,7 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <Trash2 className="h-5 w-5 text-destructive" />
-              Delete Server
-            </AlertDialogTitle>
+            <AlertDialogTitle>Delete Server</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete the server{" "}
               <strong>"{server.name}"</strong>?

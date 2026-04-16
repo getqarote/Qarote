@@ -1,12 +1,13 @@
-import { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronDown, ShieldCheck, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
+import { UserPermissionsCard } from "@/components/AddUserFormComponent/UserPermissionsCard";
+import { UserTagToggles } from "@/components/AddUserFormComponent/UserTagToggles";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,6 +27,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import {
   Select,
   SelectContent,
@@ -33,7 +35,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggleGroup";
 
 import {
   useCreateUser,
@@ -52,32 +53,6 @@ interface CreateUserModalProps {
   onSuccess?: () => void;
 }
 
-/**
- * RabbitMQ tag enum. These are the only five valid tags the broker
- * recognises, so the form exposes them as an explicit toggle group
- * instead of a free-text field. See `UsersTableRow` for the display
- * treatment applied to the same tags in the users list — admin gets
- * an elevated primary tint, others are secondary chips.
- */
-const TAG_OPTIONS = [
-  "administrator",
-  "policymaker",
-  "monitoring",
-  "management",
-  "impersonator",
-] as const;
-
-type TagOption = (typeof TAG_OPTIONS)[number];
-
-function parseTagsString(value: string | undefined): TagOption[] {
-  if (!value) return [];
-  const known = new Set<string>(TAG_OPTIONS);
-  return value
-    .split(",")
-    .map((t) => t.trim())
-    .filter((t): t is TagOption => known.has(t));
-}
-
 export function CreateUserModal({
   isOpen,
   onClose,
@@ -88,14 +63,15 @@ export function CreateUserModal({
   const { t: tc } = useTranslation("common");
   const queryClient = useQueryClient();
   const { workspace } = useWorkspace();
-  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<CreateUserForm>({
     resolver: zodResolver(createUserSchema),
+    mode: "onChange",
     defaultValues: {
       username: "",
       password: "",
-      tags: "",
+      tags: [],
       vhost: "/",
       configure: ".*",
       write: ".*",
@@ -108,13 +84,37 @@ export function CreateUserModal({
   const deleteUserMutation = useDeleteUser();
   const { data: vhostsData, isLoading: vhostsLoading } = useVHosts(serverId);
 
-  const selectedVhost = form.watch("vhost");
+  const selectedVhost = form.watch("vhost") || "/";
+  const isPending =
+    createUserMutation.isPending || setPermissionsMutation.isPending;
+
+  const resetAll = () => {
+    form.reset({
+      username: "",
+      password: "",
+      tags: [],
+      vhost: "/",
+      configure: ".*",
+      write: ".*",
+      read: ".*",
+    });
+    setShowPassword(false);
+  };
+
+  const handleClose = () => {
+    resetAll();
+    onClose();
+  };
 
   const onSubmit = async (data: CreateUserForm) => {
     if (!workspace?.id) {
-      toast.error(t("requiredWorkspace"));
+      toast.error(t("toast.workspaceRequired"));
       return;
     }
+
+    // Map the array form field to RabbitMQ's comma-separated CSV
+    // contract only at the mutation boundary.
+    const tagsCsv = data.tags.join(",");
 
     try {
       await createUserMutation.mutateAsync({
@@ -122,10 +122,15 @@ export function CreateUserModal({
         workspaceId: workspace.id,
         username: data.username,
         password: data.password?.trim() || undefined,
-        tags: data.tags || "",
+        tags: tagsCsv,
       });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t("createError"));
+      const message = error instanceof Error ? error.message : "";
+      if (message.toLowerCase().includes("already exists")) {
+        toast.error(t("toast.alreadyExistsDesc", { name: data.username }));
+      } else {
+        toast.error(message || t("createError"));
+      }
       return;
     }
 
@@ -140,60 +145,53 @@ export function CreateUserModal({
         read: data.read,
       });
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : t("setPermissionsError")
-      );
-      // Permission setup failed — clean up the orphaned user so the
-      // list doesn't end up with an unusable account.
+      // Permissions failed — clean up the orphaned user so the list
+      // doesn't gain an unusable account. Tell the user we did it.
       try {
         await deleteUserMutation.mutateAsync({
           serverId,
           workspaceId: workspace.id,
           username: data.username,
         });
+        toast.error(
+          error instanceof Error
+            ? `${error.message} — ${t("toast.userRolledBack")}`
+            : t("toast.permissionsFailedRolledBack")
+        );
       } catch {
-        // Cleanup failed — user exists without permissions. Logged
-        // upstream by the mutation hook.
+        toast.error(
+          error instanceof Error
+            ? `${error.message} — ${t("toast.rollbackFailed")}`
+            : t("toast.rollbackFailed")
+        );
       }
       return;
     }
 
     queryClient.invalidateQueries({ queryKey: ["users", serverId] });
-    toast.success(t("createSuccess"));
-    form.reset();
-    setAdvancedOpen(false);
+    toast.success(t("toast.userCreatedDesc", { name: data.username }));
+    resetAll();
     onSuccess?.();
     onClose();
   };
 
-  const handleClose = () => {
-    form.reset();
-    setAdvancedOpen(false);
-    onClose();
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      e.preventDefault();
+      form.handleSubmit(onSubmit)();
+    }
   };
 
-  const isPending =
-    createUserMutation.isPending || setPermissionsMutation.isPending;
-
-  // Parse/serialize selected tags for the ToggleGroup. Form value
-  // stays a comma-separated string for API compatibility; the toggle
-  // group reads and writes an array via these helpers.
-  const tagsString = form.watch("tags");
-  const selectedTags = useMemo(() => parseTagsString(tagsString), [tagsString]);
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] p-0 gap-0 flex flex-col">
+    <Dialog
+      open={isOpen}
+      onOpenChange={(next) => {
+        if (!next) handleClose();
+      }}
+    >
+      <DialogContent className="sm:max-w-xl lg:max-w-2xl max-h-[90vh] p-0 gap-0 flex flex-col bg-card">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
-          <DialogTitle className="flex items-center gap-3">
-            <div
-              className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10 shrink-0"
-              aria-hidden="true"
-            >
-              <UserPlus className="h-5 w-5 text-primary" />
-            </div>
-            <span>{t("addUser")}</span>
-          </DialogTitle>
+          <DialogTitle>{t("addUser")}</DialogTitle>
           <DialogDescription>{t("createUserDescription")}</DialogDescription>
         </DialogHeader>
 
@@ -201,6 +199,7 @@ export function CreateUserModal({
           <form
             onSubmit={form.handleSubmit(onSubmit)}
             className="flex flex-col flex-1 min-h-0"
+            onKeyDown={handleKeyDown}
           >
             <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
               <FormField
@@ -213,6 +212,9 @@ export function CreateUserModal({
                       <Input
                         placeholder={t("usernamePlaceholder")}
                         autoComplete="off"
+                        autoFocus
+                        spellCheck={false}
+                        autoCapitalize="off"
                         {...field}
                       />
                     </FormControl>
@@ -234,10 +236,11 @@ export function CreateUserModal({
                       </span>
                     </FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="••••••••"
+                      <PasswordInput
+                        placeholder={t("passwordPlaceholder")}
                         autoComplete="new-password"
+                        showPassword={showPassword}
+                        onToggleVisibility={() => setShowPassword((s) => !s)}
                         {...field}
                       />
                     </FormControl>
@@ -256,32 +259,10 @@ export function CreateUserModal({
                   <FormItem>
                     <FormLabel>{t("tagLabel")}</FormLabel>
                     <FormControl>
-                      <ToggleGroup
-                        type="multiple"
-                        value={selectedTags}
-                        onValueChange={(values: string[]) =>
-                          field.onChange(values.join(", "))
-                        }
-                        className="flex flex-wrap justify-start gap-1.5"
-                        aria-label={t("tagLabel")}
-                      >
-                        {TAG_OPTIONS.map((tag) => {
-                          const isAdmin = tag === "administrator";
-                          return (
-                            <ToggleGroupItem
-                              key={tag}
-                              value={tag}
-                              className={
-                                isAdmin
-                                  ? "h-7 px-2.5 text-xs data-[state=on]:bg-primary/10 data-[state=on]:border-primary/50 data-[state=on]:text-foreground data-[state=on]:font-semibold border border-border"
-                                  : "h-7 px-2.5 text-xs data-[state=on]:bg-secondary data-[state=on]:text-secondary-foreground border border-border"
-                              }
-                            >
-                              {t(tag)}
-                            </ToggleGroupItem>
-                          );
-                        })}
-                      </ToggleGroup>
+                      <UserTagToggles
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -318,7 +299,9 @@ export function CreateUserModal({
                         ) : vhostsData?.vhosts?.length ? (
                           vhostsData.vhosts.map((vhost) => (
                             <SelectItem key={vhost.name} value={vhost.name}>
-                              {vhost.name}
+                              {vhost.name === "/"
+                                ? t("defaultVhost")
+                                : vhost.name}
                             </SelectItem>
                           ))
                         ) : (
@@ -333,128 +316,7 @@ export function CreateUserModal({
                 )}
               />
 
-              {/* Permissions preview panel.
-                Shows the operator what they're about to grant so the
-                wildcard default isn't buried as docs text. Advanced
-                toggle reveals three regex inputs so power users can
-                create read-only or write-only accounts in a single
-                step instead of a follow-up edit. */}
-              <div className="rounded-lg border border-warning/30 bg-warning-muted/40 p-4 space-y-3">
-                <div className="flex items-start gap-3">
-                  <ShieldCheck
-                    className="h-4 w-4 mt-0.5 text-warning shrink-0"
-                    aria-hidden="true"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <h4 className="text-sm font-semibold text-foreground">
-                      {t("permissionsTitle", { vhost: selectedVhost })}
-                    </h4>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {t("permissionsDescription")}
-                    </p>
-                  </div>
-                </div>
-
-                {!advancedOpen ? (
-                  <>
-                    <dl className="grid grid-cols-3 gap-3 pl-7">
-                      <PermissionSummaryItem
-                        label={t("permissionConfigureLabel")}
-                        value={form.watch("configure")}
-                      />
-                      <PermissionSummaryItem
-                        label={t("permissionWriteLabel")}
-                        value={form.watch("write")}
-                      />
-                      <PermissionSummaryItem
-                        label={t("permissionReadLabel")}
-                        value={form.watch("read")}
-                      />
-                    </dl>
-                    <div className="pl-7">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setAdvancedOpen(true)}
-                        className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-                      >
-                        <ChevronDown
-                          className="h-3.5 w-3.5 mr-1"
-                          aria-hidden="true"
-                        />
-                        {t("permissionsAdvancedToggle")}
-                      </Button>
-                    </div>
-                  </>
-                ) : (
-                  <div className="space-y-3 pl-7">
-                    <FormField
-                      control={form.control}
-                      name="configure"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs">
-                            {t("permissionConfigureLabel")}
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              className="font-mono text-sm h-8"
-                              placeholder=".*"
-                            />
-                          </FormControl>
-                          <FormDescription className="text-xs">
-                            {t("permissionConfigureHint")}
-                          </FormDescription>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="write"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs">
-                            {t("permissionWriteLabel")}
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              className="font-mono text-sm h-8"
-                              placeholder=".*"
-                            />
-                          </FormControl>
-                          <FormDescription className="text-xs">
-                            {t("permissionWriteHint")}
-                          </FormDescription>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="read"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs">
-                            {t("permissionReadLabel")}
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              className="font-mono text-sm h-8"
-                              placeholder=".*"
-                            />
-                          </FormControl>
-                          <FormDescription className="text-xs">
-                            {t("permissionReadHint")}
-                          </FormDescription>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                )}
-              </div>
+              <UserPermissionsCard vhost={selectedVhost} />
             </div>
 
             <DialogFooter className="px-6 py-4 border-t border-border shrink-0">
@@ -466,7 +328,11 @@ export function CreateUserModal({
               >
                 {t("cancel")}
               </Button>
-              <Button type="submit" disabled={isPending}>
+              <Button
+                type="submit"
+                disabled={isPending}
+                className="btn-primary"
+              >
                 {isPending ? t("creating") : t("create")}
               </Button>
             </DialogFooter>
@@ -474,31 +340,5 @@ export function CreateUserModal({
         </Form>
       </DialogContent>
     </Dialog>
-  );
-}
-
-/**
- * Single permission summary cell. Label on top, regex value as a
- * monospace kbd-styled chip so `.*` reads as a value, not regex
- * prose. Used only inside the permissions preview panel.
- */
-function PermissionSummaryItem({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div>
-      <dt className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-        {label}
-      </dt>
-      <dd className="mt-1">
-        <code className="inline-flex h-5 items-center rounded border border-border bg-background px-1.5 font-mono text-xs font-semibold text-foreground/80">
-          {value}
-        </code>
-      </dd>
-    </div>
   );
 }

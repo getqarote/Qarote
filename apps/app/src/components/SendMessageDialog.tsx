@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MessageSquare, Send } from "lucide-react";
+import { Send } from "lucide-react";
 
 import { logger } from "@/lib/logger";
 
@@ -462,8 +462,7 @@ export function SendMessageDialog({
       >
         <TooltipProvider delayDuration={300}>
           <DialogHeader className="shrink-0">
-            <DialogTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
+            <DialogTitle>
               {mode === "queue"
                 ? t("sendMessage.dialogTitleQueue", { queueName })
                 : t("sendMessage.dialogTitle")}

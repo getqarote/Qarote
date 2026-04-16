@@ -310,8 +310,8 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                         {t("plansSummary.manageSubscription")}
                       </p>
                     </div>
-                    <ArrowRight
-                      className="h-4 w-4 text-muted-foreground shrink-0"
+                    <PixelChevronRight
+                      className="h-4 w-auto shrink-0 text-muted-foreground"
                       aria-hidden="true"
                     />
                   </Link>
@@ -329,8 +329,8 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                         {t("plansSummary.seeAllOptions")}
                       </p>
                     </div>
-                    <ArrowRight
-                      className="h-4 w-4 text-muted-foreground shrink-0"
+                    <PixelChevronRight
+                      className="h-4 w-auto shrink-0 text-muted-foreground"
                       aria-hidden="true"
                     />
                   </Link>

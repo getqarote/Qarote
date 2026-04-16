@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Edit, Loader2, Server } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 
 import { logger } from "@/lib/logger";
 
@@ -271,18 +271,8 @@ export const AddServerForm = ({
       )}
       <DialogContent className="sm:max-w-xl lg:max-w-2xl max-h-[90vh] flex flex-col bg-card">
         <DialogHeader className="shrink-0">
-          <DialogTitle className="flex items-center gap-2">
-            {isEdit ? (
-              <>
-                <Edit className="h-5 w-5" />
-                {t("editRabbitMQServer")}
-              </>
-            ) : (
-              <>
-                <Server className="h-5 w-5" />
-                {t("addRabbitMQServer")}
-              </>
-            )}
+          <DialogTitle>
+            {isEdit ? t("editRabbitMQServer") : t("addRabbitMQServer")}
           </DialogTitle>
           <DialogDescription>
             {showStepIndicator
