@@ -41,6 +41,7 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({
   // Update workspace state when query data changes
   useEffect(() => {
     if (data?.workspace) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setWorkspace(data.workspace);
 
       // Set Sentry workspace context

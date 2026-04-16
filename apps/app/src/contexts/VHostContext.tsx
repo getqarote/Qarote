@@ -139,6 +139,7 @@ export const VHostProvider: React.FC<VHostProviderProps> = ({ children }) => {
           (v) => v.name === serverVHost
         );
         if (defaultVHost) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           handleSetSelectedVHost(serverVHost);
         } else if (availableVHosts.length > 0) {
           handleSetSelectedVHost(availableVHosts[0].name);

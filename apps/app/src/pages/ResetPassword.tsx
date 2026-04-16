@@ -45,7 +45,7 @@ const ResetPassword: React.FC = () => {
       toast.error(t("invalidResetLink"));
       navigate("/auth/sign-in");
     }
-  }, [token, navigate]);
+  }, [token, navigate, t]);
 
   const resetPasswordMutation = useResetPassword({
     onSuccess: () => {

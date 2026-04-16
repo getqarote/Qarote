@@ -42,7 +42,7 @@ const usernameSchema = z
   .max(128, "Username must be 128 characters or fewer")
   .refine((v) => v.trim().length > 0, "Username cannot be blank")
   .refine(
-    (v) => /^[a-zA-Z0-9_.\-]+$/.test(v),
+    (v) => /^[a-zA-Z0-9_.-]+$/.test(v),
     "Use letters, numbers, underscores, hyphens, or dots"
   );
 
