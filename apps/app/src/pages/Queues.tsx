@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { Search, X } from "lucide-react";
+import { Search } from "lucide-react";
 
 import { UserRole } from "@/lib/api";
 
@@ -13,6 +13,7 @@ import { QueueHeader } from "@/components/Queues/QueueHeader";
 import { QueuesOverviewCards } from "@/components/Queues/QueuesOverviewCards";
 import { QueueTable } from "@/components/Queues/QueueTable";
 import { Input } from "@/components/ui/input";
+import { PixelX } from "@/components/ui/pixel-x";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
@@ -143,7 +144,7 @@ const Queues = () => {
               onClick={() => setFilterRegex("")}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
-              <X className="h-4 w-4" />
+              <PixelX className="h-4 w-auto shrink-0" />
             </button>
           )}
         </div>

@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-import { Search, X } from "lucide-react";
+import { Search } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Label } from "@/components/ui/label";
+import { PixelX } from "@/components/ui/pixel-x";
 import {
   Popover,
   PopoverContent,
@@ -75,7 +76,7 @@ export function GeneralTab({
                     disabled={isPending}
                     className="ml-1 rounded-full hover:bg-destructive hover:text-destructive-foreground transition-colors"
                   >
-                    <X className="h-3 w-3" />
+                    <PixelX className="h-3 w-auto shrink-0" />
                   </button>
                 </Badge>
               ))}

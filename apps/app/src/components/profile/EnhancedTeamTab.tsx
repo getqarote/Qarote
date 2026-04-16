@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Info, Loader2, Search, Users, X } from "lucide-react";
+import { Info, Loader2, Search } from "lucide-react";
 
 import { UserRole } from "@/lib/api";
 import { User } from "@/lib/api/authTypes";
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { PaginationControls } from "@/components/ui/PaginationControls";
+import { PixelX } from "@/components/ui/pixel-x";
 import {
   Table,
   TableBody,
@@ -159,7 +160,6 @@ export const EnhancedTeamTab = ({
         <div className="px-4 py-3 bg-muted/30 border-b border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
               <h2 className="title-section">
                 {t("team.workspaceMembersTitle")}
               </h2>
@@ -364,7 +364,7 @@ export const EnhancedTeamTab = ({
                                       aria-hidden="true"
                                     />
                                   ) : (
-                                    <X className="h-4 w-4" />
+                                    <PixelX className="h-4 w-auto shrink-0" />
                                   )}
                                   <span className="hidden lg:inline">
                                     {t("team.remove")}

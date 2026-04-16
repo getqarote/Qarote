@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ExternalLink, X } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 
 import { formatCurrency, formatDate } from "@/lib/utils";
 
@@ -11,6 +11,7 @@ import { PixelCalendar } from "@/components/ui/pixel-calendar";
 import { PixelClock } from "@/components/ui/pixel-clock";
 import { PixelCreditCard } from "@/components/ui/pixel-credit-card";
 import { PixelStar } from "@/components/ui/pixel-star";
+import { PixelX } from "@/components/ui/pixel-x";
 
 import { getPlanDisplayName, UserPlan } from "@/types/plans";
 
@@ -325,7 +326,7 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
                 aria-hidden="true"
               >
                 {cancelAtPeriodEnd ? (
-                  <X className="h-4 w-4 text-destructive" />
+                  <PixelX className="h-4 w-auto shrink-0 text-muted-foreground" />
                 ) : (
                   <PixelStar className="h-4 w-auto shrink-0 text-muted-foreground" />
                 )}

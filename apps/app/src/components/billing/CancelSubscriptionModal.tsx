@@ -7,7 +7,6 @@ import {
   Loader2,
   Shield,
   Users,
-  X,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -22,6 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { PixelX } from "@/components/ui/pixel-x";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radioGroup";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -246,7 +246,7 @@ export const CancelSubscriptionModal: React.FC<
               </>
             ) : (
               <>
-                <X className="mr-2 h-4 w-4" />
+                <PixelX className="h-4 w-auto shrink-0 mr-2" />
                 {cancelImmediately ? "Cancel Now" : "Cancel at Period End"}
               </>
             )}

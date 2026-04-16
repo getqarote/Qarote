@@ -1,10 +1,11 @@
 import { KeyboardEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Users, X } from "lucide-react";
+import { Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PixelX } from "@/components/ui/pixel-x";
 import {
   Select,
   SelectContent,
@@ -168,7 +169,7 @@ function InviteeRow({
         className="text-muted-foreground hover:text-destructive transition-colors"
         aria-label={t("inviteRemove", { defaultValue: "Remove invitee" })}
       >
-        <X className="h-4 w-4" aria-hidden="true" />
+        <PixelX className="h-4 w-auto shrink-0" aria-hidden="true" />
       </button>
     </div>
   );

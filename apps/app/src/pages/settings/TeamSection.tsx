@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
-import { FolderOpen, UserPlus } from "lucide-react";
+import { UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 import { UserRole } from "@/lib/api";
@@ -236,10 +236,7 @@ const TeamSection = () => {
               }}
             >
               <SelectTrigger className="h-9 w-[220px] text-sm font-medium">
-                <div className="flex items-center gap-2 truncate">
-                  <FolderOpen className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                  <SelectValue placeholder={selectedWorkspaceName} />
-                </div>
+                <SelectValue placeholder={selectedWorkspaceName} />
               </SelectTrigger>
               <SelectContent>
                 {orgWorkspaces.map((ws) => (

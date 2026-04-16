@@ -1,7 +1,5 @@
 import { useTranslation } from "react-i18next";
 
-import { Save, X } from "lucide-react";
-
 import { UserProfile } from "@/lib/api/authTypes";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -102,7 +100,6 @@ export const PersonalInfoTab = ({
                   disabled={isUpdating}
                   className="h-9"
                 >
-                  <X className="h-4 w-4" aria-hidden="true" />
                   <span className="hidden sm:inline">
                     {t("personal.cancel")}
                   </span>
@@ -112,7 +109,6 @@ export const PersonalInfoTab = ({
                   disabled={isUpdating}
                   className="btn-primary h-9"
                 >
-                  <Save className="h-4 w-4" aria-hidden="true" />
                   <span className="hidden sm:inline">
                     {t("personal.saveChanges")}
                   </span>

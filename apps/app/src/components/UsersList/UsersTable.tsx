@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ArrowDown, ArrowUp, SearchX, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, SearchX, Trash2 } from "lucide-react";
 
 import type { RabbitMQUser } from "@/lib/api/userTypes";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { PixelX } from "@/components/ui/pixel-x";
 import { UsersTableRow } from "@/components/UsersList/UsersTableRow";
 
 type SortDir = "asc" | "desc";
@@ -115,7 +116,10 @@ export function UsersTable({
               onClick={clearSelection}
               className="h-7 text-muted-foreground"
             >
-              <X className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
+              <PixelX
+                className="h-3.5 w-auto shrink-0 mr-1"
+                aria-hidden="true"
+              />
               {t("clearSelection")}
             </Button>
           </div>

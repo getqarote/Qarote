@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { AlertCircle, CheckCircle, Eye, EyeOff, Info, X } from "lucide-react";
+import { AlertCircle, CheckCircle, Eye, EyeOff, Info } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PixelX } from "@/components/ui/pixel-x";
 
 interface CompactEmailChangeFormProps {
   currentEmail: string;
@@ -155,7 +156,7 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
               disabled={isCancelling}
               className="ml-3 shrink-0"
             >
-              <X className="h-3 w-3 mr-1" />
+              <PixelX className="h-3 w-auto shrink-0 mr-1" />
               Cancel
             </Button>
           </AlertDescription>

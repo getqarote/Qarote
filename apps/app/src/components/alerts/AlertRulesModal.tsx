@@ -3,8 +3,8 @@ import { useForm } from "react-hook-form";
 import { Trans, useTranslation } from "react-i18next";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Bell, Info, Loader2, Pencil, Search, Trash2 } from "lucide-react";
-import { AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import { Bell, Info, Loader2, Search, Trash2 } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 import type {
@@ -46,6 +46,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PixelPen } from "@/components/ui/pixel-pen";
 import {
   Select,
   SelectContent,
@@ -116,13 +117,6 @@ const SEVERITY_BADGE: Record<string, string> = {
   HIGH: "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300",
   CRITICAL:
     "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300",
-};
-
-const SEVERITY_BORDER: Record<string, string> = {
-  LOW: "border-l-blue-500",
-  MEDIUM: "border-l-yellow-500",
-  HIGH: "border-l-orange-500",
-  CRITICAL: "border-l-red-500",
 };
 
 function getThresholdHintKey(type: AlertType): string {
@@ -628,85 +622,65 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
                   const typeEntry = ALERT_TYPE_KEYS.find(
                     (at) => at.value === rule.type
                   );
+                  const subtitle = [
+                    typeEntry ? t(typeEntry.key) : rule.type,
+                    formatCondition(rule),
+                    rule.server.name,
+                  ].join(" · ");
                   return (
                     <div
                       key={rule.id}
-                      className={cn(
-                        "flex items-start justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors border-l-4",
-                        SEVERITY_BORDER[rule.severity] ?? "border-l-border"
-                      )}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors gap-4"
                     >
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <h4 className="font-medium">{rule.name}</h4>
-                          {getSeverityBadge(rule.severity)}
-                          {rule.enabled ? (
-                            <Badge variant="outline" className="text-success">
-                              <CheckCircle className="h-3 w-3 mr-1" />
-                              {t("rules.badge.enabled")}
-                            </Badge>
-                          ) : (
-                            <Badge
-                              variant="outline"
-                              className="text-muted-foreground"
-                            >
-                              <XCircle className="h-3 w-3 mr-1" />
-                              {t("rules.badge.disabled")}
-                            </Badge>
+                      {/* Dot + content */}
+                      <div className="flex items-start gap-3 min-w-0 flex-1">
+                        <span
+                          className={cn(
+                            "mt-1.5 h-2.5 w-2.5 rounded-full shrink-0",
+                            SEVERITY_DOT[rule.severity]
                           )}
-                          {rule.isDefault && (
-                            <Badge variant="secondary">
-                              {t("rules.badge.default")}
-                            </Badge>
-                          )}
-                        </div>
-                        {rule.description && (
-                          <p className="text-sm text-muted-foreground mb-2">
-                            {rule.description}
-                          </p>
-                        )}
-                        <div className="text-sm text-muted-foreground space-y-0.5">
-                          <div>
-                            <span className="font-medium">
-                              {t("rules.detail.type")}
-                            </span>{" "}
-                            {typeEntry ? t(typeEntry.key) : rule.type}
+                        />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="font-semibold text-foreground">
+                              {rule.name}
+                            </h4>
+                            {!rule.enabled && (
+                              <span className="text-xs text-muted-foreground border rounded px-1.5 py-0.5 leading-none">
+                                {t("rules.badge.disabled")}
+                              </span>
+                            )}
+                            {rule.isDefault && (
+                              <span className="text-xs text-muted-foreground border rounded px-1.5 py-0.5 leading-none">
+                                {t("rules.badge.default")}
+                              </span>
+                            )}
                           </div>
-                          <div>
-                            <span className="font-medium">
-                              {t("rules.detail.condition")}
-                            </span>{" "}
-                            {formatCondition(rule)}
-                          </div>
-                          <div>
-                            <span className="font-medium">
-                              {t("rules.detail.server")}
-                            </span>{" "}
-                            {rule.server.name}
-                          </div>
-                          {rule._count && rule._count.alerts > 0 && (
-                            <div>
-                              <span className="font-medium">
+                          <p className="text-sm text-muted-foreground mt-0.5 truncate">
+                            {subtitle}
+                            {rule._count && rule._count.alerts > 0 && (
+                              <span className="text-warning font-medium">
+                                {" "}
+                                · {rule._count.alerts}{" "}
                                 {t("rules.detail.activeAlerts")}
-                              </span>{" "}
-                              {rule._count.alerts}
-                            </div>
-                          )}
+                              </span>
+                            )}
+                          </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 ml-4 shrink-0">
+
+                      {/* Severity badge + actions */}
+                      <div className="flex items-center gap-1 shrink-0">
+                        {getSeverityBadge(rule.severity)}
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
-                              variant="outline"
+                              variant="ghost"
                               size="sm"
                               onClick={() => handleEdit(rule)}
                               aria-label={t("rules.actions.edit")}
                             >
-                              <Pencil className="h-4 w-4" aria-hidden="true" />
-                              <span className="hidden sm:inline ml-2">
-                                {t("rules.actions.edit")}
-                              </span>
+                              <PixelPen className="h-4 w-auto shrink-0" />
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
@@ -717,19 +691,13 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
-                                variant="outline"
+                                variant="ghost"
                                 size="sm"
                                 onClick={() => handleDeleteClick(rule)}
                                 disabled={deleteMutation.isPending}
                                 aria-label={t("rules.actions.delete")}
                               >
-                                <Trash2
-                                  className="h-4 w-4 text-destructive"
-                                  aria-hidden="true"
-                                />
-                                <span className="hidden sm:inline ml-2 text-destructive">
-                                  {t("rules.actions.delete")}
-                                </span>
+                                <Trash2 className="h-4 w-4 text-destructive" />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>

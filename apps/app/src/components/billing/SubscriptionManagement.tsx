@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Clock, RefreshCw, Settings, X } from "lucide-react";
+import { Clock, RefreshCw, Settings } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PixelX } from "@/components/ui/pixel-x";
 
 import { UserPlan } from "@/types/plans";
 
@@ -139,7 +140,7 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                       className="text-muted-foreground hover:text-destructive"
                       disabled={isLoading}
                     >
-                      <X className="w-4 h-4 mr-2" />
+                      <PixelX className="h-4 w-auto shrink-0 mr-2" />
                       {t("subscriptionManagement.cancelSubscription")}
                     </Button>
                   )}

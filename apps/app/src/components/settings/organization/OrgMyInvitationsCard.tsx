@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Check, Loader2, Mail, X } from "lucide-react";
+import { Check, Loader2, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
 
 import { Button } from "@/components/ui/button";
+import { PixelX } from "@/components/ui/pixel-x";
 
 import {
   useAcceptOrgInvitation,
@@ -165,7 +166,10 @@ export function OrgMyInvitationsCard({
                       />
                     ) : (
                       <>
-                        <X className="h-4 w-4 mr-1" aria-hidden="true" />
+                        <PixelX
+                          className="h-4 w-auto shrink-0 mr-1"
+                          aria-hidden="true"
+                        />
                         {t("org.decline")}
                       </>
                     )}

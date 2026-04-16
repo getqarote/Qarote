@@ -1,8 +1,9 @@
 import { useTranslation } from "react-i18next";
 
-import { Check, X } from "lucide-react";
+import { Check } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { PixelX } from "@/components/ui/pixel-x";
 import {
   Select,
   SelectContent,
@@ -62,7 +63,10 @@ export function WorkspaceRow({
         {selected ? (
           <Check className="h-4 w-4 mr-1" aria-hidden="true" />
         ) : (
-          <X className="h-4 w-4 mr-1 opacity-40" aria-hidden="true" />
+          <PixelX
+            className="h-4 w-auto shrink-0 mr-1 opacity-40"
+            aria-hidden="true"
+          />
         )}
         {workspace.name}
       </Button>

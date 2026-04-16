@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Loader2, Save, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
@@ -171,7 +171,6 @@ export function OrgInfoCard({ org, isOrgAdmin }: OrgInfoCardProps) {
             {editing ? (
               <>
                 <Button variant="outline" onClick={handleCancel}>
-                  <X className="h-4 w-4 mr-2" aria-hidden="true" />
                   {t("org.cancel")}
                 </Button>
                 <Button
@@ -183,9 +182,7 @@ export function OrgInfoCard({ org, isOrgAdmin }: OrgInfoCardProps) {
                       className="h-4 w-4 mr-2 animate-spin"
                       aria-hidden="true"
                     />
-                  ) : (
-                    <Save className="h-4 w-4 mr-2" aria-hidden="true" />
-                  )}
+                  ) : null}
                   {updateOrgMutation.isPending
                     ? t("org.saving")
                     : t("org.saveChanges")}

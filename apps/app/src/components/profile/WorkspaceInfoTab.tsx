@@ -1,7 +1,7 @@
 import { useId, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
-import { ChevronRight, Save, Trash2, X } from "lucide-react";
+import { ChevronRight, Trash2 } from "lucide-react";
 
 import {
   Accordion,
@@ -102,7 +102,6 @@ export const WorkspaceInfoTab = ({
                   disabled={isUpdating}
                   className="h-9"
                 >
-                  <X className="h-4 w-4" aria-hidden="true" />
                   <span className="hidden sm:inline">
                     {t("workspace.cancel")}
                   </span>
@@ -112,7 +111,6 @@ export const WorkspaceInfoTab = ({
                   disabled={isUpdating}
                   className="btn-primary h-9"
                 >
-                  <Save className="h-4 w-4" aria-hidden="true" />
                   <span className="hidden sm:inline">
                     {t("workspace.saveChanges")}
                   </span>

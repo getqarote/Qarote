@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useSearchParams } from "react-router";
 
-import { Check, Eye, EyeOff, Loader2, Lock, Shield, X } from "lucide-react";
+import { Check, Eye, EyeOff, Loader2, Lock, Shield } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PixelX } from "@/components/ui/pixel-x";
 
 import { useResetPassword } from "@/hooks/queries/useProfile";
 
@@ -224,7 +225,7 @@ const ResetPassword: React.FC = () => {
                       {check.test ? (
                         <Check className="h-3 w-3 text-success" />
                       ) : (
-                        <X className="h-3 w-3 text-destructive" />
+                        <PixelX className="h-3 w-auto shrink-0 text-destructive" />
                       )}
                       <span
                         className={
