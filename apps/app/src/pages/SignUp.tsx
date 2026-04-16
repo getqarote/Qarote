@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UserPlus } from "lucide-react";
 
 import { trackSignUp } from "@/lib/ga";
 import { logger } from "@/lib/logger";
@@ -28,6 +27,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { PasswordRequirements } from "@/components/ui/password-requirements";
+import { PixelUserPlus } from "@/components/ui/pixel-user-plus";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
@@ -108,7 +108,7 @@ const SignUp = () => {
   return (
     <AuthPageWrapper>
       <AuthPageHeader
-        Icon={UserPlus}
+        Icon={PixelUserPlus}
         title={t("getStarted")}
         description={t("createAccountDescription")}
       />

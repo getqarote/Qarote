@@ -39,7 +39,15 @@ export const MetricsStatusStrip = ({
   metricsError,
   nodesError,
 }: MetricsStatusStripProps) => {
-  const { t } = useTranslation("dashboard");
+  const { t, i18n } = useTranslation("dashboard");
+
+  const formatInt = (n: number) =>
+    new Intl.NumberFormat(i18n.language).format(n);
+  const formatDecimal = (n: number) =>
+    new Intl.NumberFormat(i18n.language, {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    }).format(n);
 
   const authError =
     (metricsError && isRabbitMQAuthError(metricsError)) ||
@@ -94,39 +102,39 @@ export const MetricsStatusStrip = ({
   }> = [
     {
       label: t("messagesPerSec"),
-      value: metrics.messagesPerSec.toLocaleString(),
+      value: formatInt(metrics.messagesPerSec),
       tone: "text-foreground",
     },
     {
       label: t("queuesDepth"),
-      value: metrics.queueDepth.toLocaleString(),
+      value: formatInt(metrics.queueDepth),
       tone: queueDepthTone,
     },
     {
       label: t("avgLatency"),
-      value: metrics.avgLatency.toFixed(1),
+      value: formatDecimal(metrics.avgLatency),
       unit: "ms",
       tone: latencyTone,
     },
     {
       label: t("activeQueues"),
-      value: metrics.activeQueues.toLocaleString(),
+      value: formatInt(metrics.activeQueues),
       tone: "text-foreground",
     },
     {
       label: t("connectedNodes"),
-      value: metrics.connectedNodes.toLocaleString(),
+      value: formatInt(metrics.connectedNodes),
       tone: nodesTone,
     },
     {
       label: t("cpuUsage"),
-      value: metrics.cpuUsage.toFixed(1),
+      value: formatDecimal(metrics.cpuUsage),
       unit: "%",
       tone: cpuTone,
     },
     {
       label: t("memoryUsage"),
-      value: metrics.totalMemory.toFixed(1),
+      value: formatDecimal(metrics.totalMemory),
       unit: "GB",
       tone: "text-foreground",
     },

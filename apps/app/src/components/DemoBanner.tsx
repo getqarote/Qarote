@@ -10,7 +10,7 @@ export function DemoBanner() {
         href="https://qarote.io"
         target="_blank"
         rel="noopener noreferrer"
-        className="underline underline-offset-2 hover:text-warning"
+        className="underline underline-offset-2 hover:opacity-80"
       >
         Deploy your own Qarote
       </a>{" "}

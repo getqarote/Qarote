@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useSearchParams } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LogIn } from "lucide-react";
 
 import { logger } from "@/lib/logger";
 
@@ -25,6 +24,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
+import { PixelLogin } from "@/components/ui/pixel-login";
 
 import { usePublicConfig } from "@/hooks/queries/usePublicConfig";
 import { useShowAlternativeAuth } from "@/hooks/queries/useSsoConfig";
@@ -102,7 +102,7 @@ const SignIn = () => {
   return (
     <AuthPageWrapper>
       <AuthPageHeader
-        Icon={LogIn}
+        Icon={PixelLogin}
         title={t("welcomeBack")}
         description={t("enterCredentials")}
       />

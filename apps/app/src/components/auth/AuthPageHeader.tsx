@@ -1,16 +1,14 @@
 import { ComponentType, ReactNode } from "react";
 
-import { LucideProps } from "lucide-react";
-
 import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface AuthPageHeaderProps {
   /**
-   * Lucide icon rendered inside the circular primary-tinted badge
-   * at the top of the card. The component (not an instance) is
-   * passed so this wrapper can apply a consistent size/color.
+   * Icon rendered inside the circular primary-tinted badge at the top
+   * of the card. Accepts any component that takes a `className` prop —
+   * both Lucide icons and pixel-art icon components work here.
    */
-  Icon: ComponentType<LucideProps>;
+  Icon: ComponentType<{ className?: string }>;
   title: ReactNode;
   description?: ReactNode;
   /**

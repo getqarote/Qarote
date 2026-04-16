@@ -26,14 +26,14 @@
      the self-hosted ethos and ships zero bytes. Arial is kept only as a late
      fallback for systems without a better option. */
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", roboto, "Helvetica Neue",
+    arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
     "Noto Color Emoji";
   /* Numeric font: Fragment Mono — loaded via Google Fonts. Used for all
      metric numbers, queue depths, rates, IDs, routing keys, and code. */
   --font-mono:
-    "Fragment Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco,
-    Consolas, "Liberation Mono", "Courier New", monospace;
+    "Fragment Mono", ui-monospace, "SFMono-Regular", "SF Mono", menlo, monaco,
+    consolas, "Liberation Mono", "Courier New", monospace;
 
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
@@ -307,7 +307,7 @@
   @apply bg-primary text-primary-foreground font-medium px-4 py-2 rounded-none transition-colors duration-150;
 
   &:hover {
-    background-color: hsl(var(--primary) / 0.92);
+    background-color: hsl(var(--primary) / 92%);
   }
 }
 
@@ -315,7 +315,7 @@
   @apply bg-primary text-primary-foreground font-medium px-6 py-3 rounded-lg transition-colors duration-150;
 
   &:hover {
-    background-color: hsl(var(--primary) / 0.92);
+    background-color: hsl(var(--primary) / 92%);
   }
 }
 
