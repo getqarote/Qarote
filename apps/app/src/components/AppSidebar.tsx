@@ -11,9 +11,10 @@ import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
 import { ServerManagement } from "@/components/ServerManagement";
 import { Button } from "@/components/ui/button";
 import { PixelActivity } from "@/components/ui/pixel-activity";
-import { PixelAlert } from "@/components/ui/pixel-alert";
+import { PixelChart } from "@/components/ui/pixel-chart";
 import { PixelClock } from "@/components/ui/pixel-clock";
 import { PixelDatabase } from "@/components/ui/pixel-database";
+import { PixelFlag } from "@/components/ui/pixel-flag";
 import { PixelFolder } from "@/components/ui/pixel-folder";
 import { PixelHelp } from "@/components/ui/pixel-help";
 import { PixelMessage } from "@/components/ui/pixel-message";
@@ -63,7 +64,7 @@ function ServerStatusDot({ serverId }: { serverId: string }) {
 }
 
 const menuItems = [
-  { titleKey: "sidebar:dashboard", url: "/", icon: PixelActivity },
+  { titleKey: "sidebar:dashboard", url: "/", icon: PixelChart },
   { titleKey: "sidebar:queues", url: "/queues", icon: PixelMessage },
   { titleKey: "sidebar:connections", url: "/connections", icon: PixelClock },
   { titleKey: "sidebar:nodes", url: "/nodes", icon: PixelServer },
@@ -81,7 +82,7 @@ const menuItems = [
     icon: PixelUser,
     adminOnly: true,
   },
-  { titleKey: "sidebar:alerts", url: "/alerts", icon: PixelAlert },
+  { titleKey: "sidebar:alerts", url: "/alerts", icon: PixelFlag },
 ];
 
 // Helper function to shorten hostnames
