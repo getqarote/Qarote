@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Calendar, Loader2, Save, X } from "lucide-react";
+import { Loader2, Save, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
@@ -9,6 +9,7 @@ import { logger } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PixelCalendar } from "@/components/ui/pixel-calendar";
 import { PixelSettings } from "@/components/ui/pixel-settings";
 import { PixelUser } from "@/components/ui/pixel-user";
 
@@ -148,7 +149,10 @@ export function OrgInfoCard({ org, isOrgAdmin }: OrgInfoCardProps) {
                 </span>
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Calendar className="h-4 w-4" aria-hidden="true" />
+                <PixelCalendar
+                  className="h-4 w-auto shrink-0"
+                  aria-hidden="true"
+                />
                 {t("org.created")}:{" "}
                 <span className="text-foreground">
                   {new Intl.DateTimeFormat(i18n.language, {

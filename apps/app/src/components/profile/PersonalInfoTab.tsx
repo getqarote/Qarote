@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-import { Calendar, Save, X } from "lucide-react";
+import { Save, X } from "lucide-react";
 
 import { UserProfile } from "@/lib/api/authTypes";
 
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PixelCalendar } from "@/components/ui/pixel-calendar";
 import { PixelEmail } from "@/components/ui/pixel-email";
 import { PixelKey } from "@/components/ui/pixel-key";
 import { PixelSettings } from "@/components/ui/pixel-settings";
@@ -78,9 +79,14 @@ export const PersonalInfoTab = ({
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <h2 className="title-section truncate">
-                {profile.firstName} {profile.lastName}
-              </h2>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="title-section truncate">
+                  {profile.firstName} {profile.lastName}
+                </h2>
+                <Badge variant="soft-primary">
+                  {profile.role.charAt(0) + profile.role.slice(1).toLowerCase()}
+                </Badge>
+              </div>
               <p className="text-sm text-muted-foreground truncate">
                 {profile.email}
               </p>
@@ -88,9 +94,6 @@ export const PersonalInfoTab = ({
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            <Badge variant="soft-primary">
-              {profile.role.charAt(0) + profile.role.slice(1).toLowerCase()}
-            </Badge>
             {editingProfile ? (
               <>
                 <Button
@@ -174,7 +177,7 @@ export const PersonalInfoTab = ({
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
+              <PixelCalendar className="h-4 w-auto shrink-0" />
               <span>
                 {t("personal.joined")} {formatDate(profile.createdAt)}
               </span>

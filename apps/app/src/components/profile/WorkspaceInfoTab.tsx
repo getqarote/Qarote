@@ -1,7 +1,7 @@
 import { useId, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
-import { Calendar, ChevronRight, Save, Trash2, X } from "lucide-react";
+import { ChevronRight, Save, Trash2, X } from "lucide-react";
 
 import {
   Accordion,
@@ -22,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PixelBuilding } from "@/components/ui/pixel-building";
+import { PixelCalendar } from "@/components/ui/pixel-calendar";
 import { PixelSettings } from "@/components/ui/pixel-settings";
 import { PixelUser } from "@/components/ui/pixel-user";
 import { Separator } from "@/components/ui/separator";
@@ -169,10 +170,7 @@ export const WorkspaceInfoTab = ({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Calendar
-                className="h-4 w-4 text-muted-foreground"
-                aria-hidden="true"
-              />
+              <PixelCalendar className="h-4 w-auto shrink-0 text-muted-foreground" />
               <div className="min-w-0">
                 <div className="text-xs text-muted-foreground">
                   {t("workspace.created")}
