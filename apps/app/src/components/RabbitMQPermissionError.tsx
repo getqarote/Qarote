@@ -38,7 +38,7 @@ export const RabbitMQPermissionError = ({
           </AlertDescription>
         </Alert>
 
-        <div className="bg-white p-4 rounded-lg border border-warning/30">
+        <div className="bg-background p-4 rounded-lg border border-warning/30">
           <h4 className="font-medium text-foreground mb-2">
             Required Permission:
           </h4>
