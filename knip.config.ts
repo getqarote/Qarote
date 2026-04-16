@@ -43,6 +43,7 @@ const config: KnipConfig = {
     "apps/web/src/hooks/use-mobile.tsx",
     // Ignore docs components/lib used by .astro layouts (Knip doesn't scan .astro files)
     "apps/web/src/components/docs/DocsToC.tsx",
+    "apps/web/src/components/docs/DocsSidebar.tsx",
     "apps/web/src/lib/docs-nav.ts",
     // Workspace invites hook — function temporarily unused after removing invite from creation forms
     "apps/app/src/hooks/ui/useWorkspaceInvites.ts",
