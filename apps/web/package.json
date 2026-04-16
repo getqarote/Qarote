@@ -24,6 +24,7 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
+    "@astrojs/mdx": "^4.3.14",
     "@astrojs/react": "^5.0.2",
     "@astrojs/sitemap": "^3.7.2",
     "@qarote/i18n": "workspace:*",

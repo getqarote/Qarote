@@ -1,0 +1,63 @@
+---
+title: "Security and privacy"
+description: "How Qarote handles your RabbitMQ credentials, what data it stores, how it connects to your broker, and what leaves your network — which is nothing."
+section: "Security & Privacy"
+---
+
+# Security and privacy
+
+Qarote runs entirely within your own infrastructure. It acts as a proxy between your browser and your RabbitMQ broker — your cluster data never passes through Qarote's servers or any third-party service.
+
+## How Qarote connects to your broker
+
+Qarote uses two protocols depending on the operation:
+
+**Management HTTP API** reads queue and exchange metadata, metrics, bindings, and node stats. It invokes mutation endpoints when you perform management actions like purging a queue or publishing a message. This is RabbitMQ's built-in HTTP API — no plugins beyond `rabbitmq_management` are required.
+
+**AMQP** is used for features that require a live, low-level connection to the broker. The primary example is [spying on live queues](/docs/queues/spy-on-live-queues/): Qarote opens a direct AMQP connection to intercept a copy of in-flight messages. The connection is opened on demand and closed as soon as the spy session ends.
+
+Neither protocol routes traffic through Qarote's infrastructure. The connection goes:
+
+```
+Your browser → Qarote server (self-hosted) → Your RabbitMQ broker
+```
+
+There is no hop to any Qarote-operated service in this path.
+
+## What Qarote stores
+
+Qarote stores the following in its own PostgreSQL database:
+
+| Data | Purpose |
+|---|---|
+| RabbitMQ host, port, vhost | To establish connections |
+| RabbitMQ username & password | Stored encrypted at rest |
+| Qarote user accounts | Authentication to the dashboard |
+| Alert rules and notification channels | For the alerting feature |
+| Metrics snapshots | For trend charts (configurable retention) |
+
+Qarote does **not** store message bodies, routing keys, or queue contents. The only time message data appears in Qarote is transiently during a live spy session — it is displayed in your browser and never written to disk.
+
+<Callout type="warning" title="Protect your database">
+  The PostgreSQL database contains your RabbitMQ credentials. Apply standard database hardening: restrict network access, use a dedicated database user, and enable encryption at rest if your provider supports it.
+</Callout>
+
+## License validation
+
+Qarote's license system is designed to work fully offline. When you enter a license key, Qarote validates it locally using a public key baked into the binary — no network request is made to Qarote's servers. Your license key contains your tier and expiry date in a signed JWT; validation is a cryptographic check only.
+
+Qarote does not phone home, collect telemetry, or send usage data unless you explicitly opt in.
+
+## Recommended security practices
+
+**Enable HTTPS.** Always run Qarote behind a reverse proxy (Caddy, Nginx, Traefik) with a valid TLS certificate, especially if the dashboard is internet-accessible. Qarote's Docker and Dokku deployments include Caddy with automatic HTTPS by default.
+
+**Use a least-privilege RabbitMQ user.** Qarote only needs the `monitoring` tag for read-only access. If you use features like publishing messages or managing queues, grant `management` or `administrator` as appropriate — but avoid using your main admin credentials in Qarote.
+
+**Restrict Qarote's network access.** If Qarote doesn't need to be public, put it behind a VPN or firewall. The dashboard only needs to reach your RabbitMQ broker and your PostgreSQL instance.
+
+**Rotate credentials periodically.** RabbitMQ connection credentials can be updated in Qarote's Settings at any time without restarting the service.
+
+<Callout type="info" title="Ports used">
+  By default, Qarote connects to RabbitMQ on port `15672` (HTTP Management API) and `5672` (AMQP). If your broker uses different ports or TLS (e.g. `5671`), you can configure these per connection in the Qarote UI.
+</Callout>
