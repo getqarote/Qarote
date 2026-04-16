@@ -335,8 +335,15 @@
 }
 
 /* ─── Docs prose ──────────────────────────────────────────────────────────── */
+/* Strictly follows the landing/features page design system:
+   - font-normal headings (display font, no heavy weight)
+   - text-muted-foreground body text
+   - square borders (no border-radius)
+   - bg-muted/30 for subtle fills
+   - primary accent for bullets and highlights
+*/
 .docs-prose {
-  color: hsl(var(--foreground));
+  color: hsl(var(--muted-foreground));
   font-size: 0.9375rem;
   line-height: 1.75;
 }
@@ -344,7 +351,7 @@
 .docs-prose h1 {
   font-family: var(--font-display);
   font-size: 2rem;
-  font-weight: 700;
+  font-weight: 400;
   line-height: 1.2;
   margin-bottom: 1.5rem;
   color: hsl(var(--foreground));
@@ -353,7 +360,7 @@
 .docs-prose h2 {
   font-family: var(--font-display);
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 400;
   line-height: 1.3;
   margin-top: 2.5rem;
   margin-bottom: 0.75rem;
@@ -363,8 +370,8 @@
 
 .docs-prose h3 {
   font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 400;
   line-height: 1.4;
   margin-top: 2rem;
   margin-bottom: 0.5rem;
@@ -389,7 +396,7 @@
 }
 
 .docs-prose strong {
-  font-weight: 600;
+  font-weight: 500;
   color: hsl(var(--foreground));
 }
 
@@ -397,10 +404,27 @@
   font-style: italic;
 }
 
+/* Lists — square primary bullet, matches changelog list style */
 .docs-prose ul {
-  list-style-type: disc;
-  padding-left: 1.5rem;
+  list-style: none;
+  padding-left: 1.25rem;
   margin-bottom: 1.25rem;
+}
+
+.docs-prose ul > li {
+  position: relative;
+  margin-bottom: 0.4rem;
+}
+
+.docs-prose ul > li::before {
+  content: "";
+  position: absolute;
+  left: -1.25rem;
+  top: 0.6em;
+  width: 0.375rem;
+  height: 0.375rem;
+  background-color: hsl(var(--primary) / 0.6);
+  flex-shrink: 0;
 }
 
 .docs-prose ol {
@@ -417,22 +441,20 @@
   margin-bottom: 0.5rem;
 }
 
-/* Inline code */
+/* Inline code — matches font-mono pattern used in changelog/metrics */
 .docs-prose :not(pre) > code {
   font-family: var(--font-mono);
   font-size: 0.84em;
-  background-color: hsl(var(--muted));
+  background-color: hsl(var(--muted) / 0.5);
   color: hsl(var(--foreground));
   border: 1px solid hsl(var(--border));
-  border-radius: 4px;
   padding: 0.1em 0.35em;
 }
 
-/* Code blocks (Shiki) */
+/* Code blocks — square border, bg-muted/30 matching feature card style */
 .docs-prose pre {
-  background-color: hsl(var(--muted)) !important;
+  background-color: hsl(var(--muted) / 0.3) !important;
   border: 1px solid hsl(var(--border));
-  border-radius: 8px;
   padding: 1rem 1.25rem;
   overflow-x: auto;
   margin-bottom: 1.5rem;
@@ -448,23 +470,28 @@
   font-size: inherit;
 }
 
-/* Tables */
+/* Tables — square borders, matches feature comparison table style */
 .docs-prose table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
+  border: 1px solid hsl(var(--border));
 }
 
 .docs-prose thead {
-  border-bottom: 2px solid hsl(var(--border));
+  background-color: hsl(var(--muted) / 0.3);
+  border-bottom: 1px solid hsl(var(--border));
 }
 
 .docs-prose th {
   text-align: left;
+  font-size: 0.7rem;
   font-weight: 600;
-  padding: 0.5rem 0.75rem;
-  color: hsl(var(--foreground));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.6rem 0.75rem;
+  color: hsl(var(--muted-foreground));
 }
 
 .docs-prose td {
@@ -480,15 +507,16 @@
 .docs-prose td:first-child {
   font-weight: 500;
   color: hsl(var(--foreground));
+  font-family: var(--font-mono);
+  font-size: 0.84em;
 }
 
 /* Blockquote */
 .docs-prose blockquote {
-  border-left: 3px solid hsl(var(--primary));
+  border-left: 2px solid hsl(var(--primary));
   padding-left: 1rem;
   margin: 1.5rem 0;
   color: hsl(var(--muted-foreground));
-  font-style: italic;
 }
 
 /* HR */

@@ -30,10 +30,10 @@ const SidebarNav = ({ currentSlug, onNavigate }: SidebarNavProps) => (
                   href={`/docs/${page.slug}/`}
                   onClick={onNavigate}
                   aria-current={isActive ? "page" : undefined}
-                  className={`flex items-center px-3 py-1.5 rounded-md text-sm transition-colors ${
+                  className={`flex items-center px-3 py-1.5 text-sm transition-colors ${
                     isActive
                       ? "bg-primary/10 text-primary font-medium"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                   }`}
                 >
                   {page.title}

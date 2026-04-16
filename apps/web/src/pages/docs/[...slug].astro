@@ -1,5 +1,5 @@
 ---
-import { getCollection, render } from "astro:content";
+import { type CollectionEntry, getCollection, render } from "astro:content";
 
 import { Callout } from "../../components/docs/DocsCallout";
 import DocsLayout from "../../layouts/DocsLayout.astro";
@@ -12,7 +12,11 @@ export async function getStaticPaths() {
   }));
 }
 
-const { entry } = Astro.props;
+interface Props {
+  entry: CollectionEntry<"docs">;
+}
+
+const { entry } = Astro.props as Props;
 const { Content, headings } = await render(entry);
 
 const slug = entry.id;
