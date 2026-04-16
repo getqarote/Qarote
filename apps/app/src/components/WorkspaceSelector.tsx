@@ -4,7 +4,6 @@ import { useNavigate } from "react-router";
 
 import {
   Carrot,
-  Check,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -17,6 +16,7 @@ import { getUpgradePath } from "@/lib/featureFlags";
 import { logger } from "@/lib/logger";
 
 import { Button } from "@/components/ui/button";
+import { PixelCheck } from "@/components/ui/pixel-check";
 import {
   Popover,
   PopoverContent,
@@ -330,7 +330,7 @@ export function WorkspaceSelector() {
                         onClick={() => handleWorkspaceSwitch(ws.id)}
                         className={`w-full text-left p-3 rounded-md cursor-pointer transition-colors ${
                           ws.id === workspace?.id
-                            ? "bg-primary/10 border-l-2 border-l-primary hover:bg-primary/15"
+                            ? "bg-accent hover:bg-accent"
                             : "hover:bg-accent"
                         }`}
                       >
@@ -355,7 +355,7 @@ export function WorkspaceSelector() {
 
                           <div className="flex items-center gap-2 shrink-0">
                             {ws.id === workspace?.id && (
-                              <Check className="w-4 h-4 text-primary" />
+                              <PixelCheck className="h-2.5 text-green-500" />
                             )}
                           </div>
                         </div>
@@ -428,7 +428,7 @@ export function WorkspaceSelector() {
                         onClick={() => handleOrgSwitch(org.id)}
                         className={`w-full text-left p-3 rounded-md cursor-pointer transition-colors ${
                           org.id === currentOrg?.id
-                            ? "bg-primary/10 border-l-2 border-l-primary hover:bg-primary/15"
+                            ? "bg-accent hover:bg-accent"
                             : "hover:bg-accent"
                         }`}
                       >
@@ -446,7 +446,7 @@ export function WorkspaceSelector() {
 
                           <div className="flex items-center gap-2 shrink-0">
                             {org.id === currentOrg?.id && (
-                              <Check className="w-4 h-4 text-primary" />
+                              <PixelCheck className="h-2.5 text-green-500" />
                             )}
                           </div>
                         </div>

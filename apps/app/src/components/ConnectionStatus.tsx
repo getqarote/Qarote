@@ -55,7 +55,7 @@ export const ConnectionStatus = () => {
 
   return (
     <div className="flex items-center gap-2 mt-1 flex-wrap">
-      <div className="w-2 h-2 bg-success-muted rounded-full animate-pulse"></div>
+      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
       <Badge
         variant="secondary"
         className="bg-success-muted text-success max-w-xs truncate"
