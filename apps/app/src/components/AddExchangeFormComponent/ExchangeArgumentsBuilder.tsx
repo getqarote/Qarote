@@ -19,38 +19,34 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
-import { ARG_CATALOG, CATALOG_BY_KEY, normalizeArgValue } from "./constants";
+import {
+  ARG_CATALOG,
+  CATALOG_BY_KEY,
+  GROUP_LABEL_KEY,
+  GROUP_ORDER,
+  normalizeArgValue,
+} from "./constants";
 import type { ArgRow } from "./types";
 
-interface ArgumentsBuilderProps {
+interface ExchangeArgumentsBuilderProps {
   rows: ArgRow[];
   onChange: (rows: ArgRow[]) => void;
-  /** When true, render a JSON receipt below the rows. */
   showJsonPreview?: boolean;
 }
 
 const CUSTOM_SENTINEL = "__custom__";
-
-const GROUP_ORDER = ["limits", "lifecycle", "dlq", "behavior"] as const;
-
-const GROUP_LABEL_KEY: Record<string, string> = {
-  limits: "argGroupLimits",
-  lifecycle: "argGroupLifecycle",
-  dlq: "argGroupDlq",
-  behavior: "argGroupBehavior",
-};
 
 const newRowId = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto
     ? crypto.randomUUID()
     : `row-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
-export const ArgumentsBuilder = ({
+export const ExchangeArgumentsBuilder = ({
   rows,
   onChange,
   showJsonPreview = true,
-}: ArgumentsBuilderProps) => {
-  const { t } = useTranslation("queues");
+}: ExchangeArgumentsBuilderProps) => {
+  const { t } = useTranslation("exchanges");
 
   const groupedCatalog = useMemo(() => {
     const usedKeys = new Set(rows.map((r) => r.key).filter(Boolean));
@@ -147,7 +143,7 @@ const ArgumentRow = ({
   onChange,
   onRemove,
 }: ArgumentRowProps) => {
-  const { t } = useTranslation("queues");
+  const { t } = useTranslation("exchanges");
   const def = row.key ? CATALOG_BY_KEY[row.key] : undefined;
   const isCustom = !!row.key && !def;
   const hasAnyKey = !!row.key;
@@ -163,7 +159,6 @@ const ArgumentRow = ({
 
   return (
     <li className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-2 items-start">
-      {/* Key picker */}
       {isCustom ? (
         <Input
           value={row.key}
@@ -185,7 +180,7 @@ const ArgumentRow = ({
             {groupedCatalog.map(({ group, defs }) => (
               <SelectGroup key={group}>
                 <SelectLabel className="text-xs">
-                  {t(GROUP_LABEL_KEY[group])}
+                  {t(GROUP_LABEL_KEY[group as keyof typeof GROUP_LABEL_KEY])}
                 </SelectLabel>
                 {defs.map((d) => (
                   <SelectItem key={d.key} value={d.key} className="font-mono">
@@ -203,14 +198,12 @@ const ArgumentRow = ({
         </Select>
       )}
 
-      {/* Value input — typed per key */}
       <ValueInput
         row={row}
         disabled={!hasAnyKey}
         onChange={(value) => onChange({ value })}
       />
 
-      {/* Actions */}
       <div className="flex items-center gap-1">
         {def && (
           <a
@@ -236,7 +229,6 @@ const ArgumentRow = ({
         </Button>
       </div>
 
-      {/* Helper/tooltip line */}
       {def && (
         <p className="col-span-3 -mt-1 text-xs text-muted-foreground">
           {t(def.tooltipKey)}
@@ -253,7 +245,7 @@ interface ValueInputProps {
 }
 
 const ValueInput = ({ row, disabled, onChange }: ValueInputProps) => {
-  const { t } = useTranslation("queues");
+  const { t } = useTranslation("exchanges");
   const def = row.key ? CATALOG_BY_KEY[row.key] : undefined;
 
   if (!def) {
@@ -292,10 +284,10 @@ const ValueInput = ({ row, disabled, onChange }: ValueInputProps) => {
           checked={row.value === "true"}
           onCheckedChange={(checked) => onChange(checked ? "true" : "false")}
           disabled={disabled}
-          id={`arg-bool-${row.id}`}
+          id={`exchange-arg-bool-${row.id}`}
         />
         <label
-          htmlFor={`arg-bool-${row.id}`}
+          htmlFor={`exchange-arg-bool-${row.id}`}
           className="font-mono text-sm text-foreground cursor-pointer"
         >
           {row.value === "true" ? "true" : "false"}

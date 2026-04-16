@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router";
 
-import { LogOut, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
 import { UserRole } from "@/lib/api";
 
@@ -16,6 +16,7 @@ import { PixelClock } from "@/components/ui/pixel-clock";
 import { PixelFlag } from "@/components/ui/pixel-flag";
 import { PixelHelp } from "@/components/ui/pixel-help";
 import { PixelLayers } from "@/components/ui/pixel-layers";
+import { PixelLogout } from "@/components/ui/pixel-logout";
 import { PixelMessage } from "@/components/ui/pixel-message";
 import { PixelNetwork } from "@/components/ui/pixel-network";
 import { PixelServer } from "@/components/ui/pixel-server";
@@ -466,7 +467,7 @@ export function AppSidebar() {
             disabled={logoutMutation.isPending}
             className="text-sidebar-foreground/70 hover:text-destructive p-1"
           >
-            <LogOut className="w-4 h-4" />
+            <PixelLogout className="h-4 w-auto shrink-0" />
           </Button>
         </div>
       </SidebarFooter>

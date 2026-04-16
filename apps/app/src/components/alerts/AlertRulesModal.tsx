@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { Trans, useTranslation } from "react-i18next";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Bell, Info, Loader2, Search, Trash2 } from "lucide-react";
+import { Bell, Info, Loader2, Search } from "lucide-react";
 import { AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PixelPen } from "@/components/ui/pixel-pen";
+import { PixelTrash } from "@/components/ui/pixel-trash";
 import {
   Select,
   SelectContent,
@@ -697,7 +698,7 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
                                 disabled={deleteMutation.isPending}
                                 aria-label={t("rules.actions.delete")}
                               >
-                                <Trash2 className="h-4 w-4 text-destructive" />
+                                <PixelTrash className="h-4 w-auto shrink-0 text-destructive" />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>

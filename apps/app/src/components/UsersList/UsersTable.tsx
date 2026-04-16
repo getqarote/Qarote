@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ArrowDown, ArrowUp, SearchX, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, SearchX } from "lucide-react";
 
 import type { RabbitMQUser } from "@/lib/api/userTypes";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { PixelTrash } from "@/components/ui/pixel-trash";
 import { PixelX } from "@/components/ui/pixel-x";
 import { UsersTableRow } from "@/components/UsersList/UsersTableRow";
 
@@ -129,7 +130,10 @@ export function UsersTable({
             size="sm"
             onClick={handleBulkDelete}
           >
-            <Trash2 className="h-4 w-4 mr-2" aria-hidden="true" />
+            <PixelTrash
+              className="h-4 w-auto shrink-0 mr-2"
+              aria-hidden="true"
+            />
             {t("deleteSelected")}
           </Button>
         </div>

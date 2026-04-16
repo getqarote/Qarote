@@ -2,12 +2,13 @@ import { MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
-import { Lock, Trash2 } from "lucide-react";
+import { Lock } from "lucide-react";
 
 import type { VHost } from "@/lib/api/vhostTypes";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PixelTrash } from "@/components/ui/pixel-trash";
 import {
   Tooltip,
   TooltipContent,
@@ -131,7 +132,7 @@ export function VHostsTableRow({
               className="h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
               aria-label={t("deleteVhost") + ": " + vhost.name}
             >
-              <Trash2 className="h-4 w-4" aria-hidden="true" />
+              <PixelTrash className="h-4 w-auto shrink-0" aria-hidden="true" />
             </Button>
           )}
         </div>

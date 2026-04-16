@@ -1,7 +1,5 @@
 import { useTranslation } from "react-i18next";
 
-import { ChevronDown } from "lucide-react";
-
 import { PauseQueueDialog } from "@/components/PauseQueueDialog";
 import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
 import { SendMessageDialog } from "@/components/SendMessageDialog";
@@ -13,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdownMenu";
+import { PixelChevronDown } from "@/components/ui/pixel-chevron-down";
 import { PixelChevronLeft } from "@/components/ui/pixel-chevron-left";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
@@ -70,7 +69,7 @@ export function QueueHeader({
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="rounded-none">
                   {t("actions")}
-                  <ChevronDown className="ml-1 h-3.5 w-3.5" />
+                  <PixelChevronDown className="ml-1 h-3.5 w-auto shrink-0" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">

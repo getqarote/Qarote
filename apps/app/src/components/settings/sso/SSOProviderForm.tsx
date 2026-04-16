@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { PixelTrash } from "@/components/ui/pixel-trash";
 
 import {
   useRegisterSsoProvider,
@@ -163,7 +164,10 @@ export function SSOProviderForm(props: SSOProviderFormProps) {
             onClick={() => setIsDeleteOpen(true)}
             className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
           >
-            <Trash2 className="h-4 w-4 mr-2" aria-hidden="true" />
+            <PixelTrash
+              className="h-4 w-auto shrink-0 mr-2"
+              aria-hidden="true"
+            />
             {t("delete")}
           </Button>
         )}

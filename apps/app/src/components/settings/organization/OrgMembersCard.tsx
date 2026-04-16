@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Info, Trash2 } from "lucide-react";
+import { Info } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { PaginationControls } from "@/components/ui/PaginationControls";
 import { PixelEmail } from "@/components/ui/pixel-email";
 import { PixelSettings } from "@/components/ui/pixel-settings";
+import { PixelTrash } from "@/components/ui/pixel-trash";
 import { PixelUser } from "@/components/ui/pixel-user";
 import {
   Select,
@@ -372,7 +373,7 @@ function MemberRow({
               onClick={onRemove}
               aria-label={`${t("org.remove")}: ${fullName}`}
             >
-              <Trash2 className="h-4 w-4" aria-hidden="true" />
+              <PixelTrash className="h-4 w-auto shrink-0" aria-hidden="true" />
             </Button>
           </>
         )}

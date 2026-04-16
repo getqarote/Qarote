@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Activity, Filter, Lock, Trash2 } from "lucide-react";
+import { Activity, Filter, Lock } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
+import { PixelTrash } from "@/components/ui/pixel-trash";
 
 import { getExchangeTypeBadgeClass } from "./exchangeTypeUi";
 import type { ExchangeBinding, ExchangeListItem } from "./types";
@@ -203,7 +204,10 @@ function ExchangeDetailsPanel({
             onClick={onDelete}
             disabled={isDeleting}
           >
-            <Trash2 className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
+            <PixelTrash
+              className="h-3.5 w-auto shrink-0 mr-1.5"
+              aria-hidden="true"
+            />
             {isDeleting ? t("deleting") : t("deleteExchange")}
           </Button>
         </div>

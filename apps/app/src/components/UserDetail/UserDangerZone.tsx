@@ -1,8 +1,6 @@
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Trash2 } from "lucide-react";
-
 import {
   Accordion,
   AccordionContent,
@@ -21,6 +19,7 @@ import {
 } from "@/components/ui/alertDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PixelTrash } from "@/components/ui/pixel-trash";
 
 interface UserDangerZoneProps {
   username: string;
@@ -76,7 +75,10 @@ export function UserDangerZone({
                 disabled={disabled}
                 title={disabledReason}
               >
-                <Trash2 className="h-4 w-4" aria-hidden="true" />
+                <PixelTrash
+                  className="h-4 w-auto shrink-0"
+                  aria-hidden="true"
+                />
                 {t("deleteUser")}
               </Button>
               {disabledReason && (

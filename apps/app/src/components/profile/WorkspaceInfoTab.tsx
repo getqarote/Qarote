@@ -1,8 +1,6 @@
 import { useId, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
-import { ChevronRight, Trash2 } from "lucide-react";
-
 import {
   Accordion,
   AccordionContent,
@@ -23,7 +21,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PixelBuilding } from "@/components/ui/pixel-building";
 import { PixelCalendar } from "@/components/ui/pixel-calendar";
+import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
 import { PixelSettings } from "@/components/ui/pixel-settings";
+import { PixelTrash } from "@/components/ui/pixel-trash";
 import { PixelUser } from "@/components/ui/pixel-user";
 import { Separator } from "@/components/ui/separator";
 
@@ -195,8 +195,8 @@ export const WorkspaceInfoTab = ({
                 <AccordionTrigger className="py-3 hover:no-underline">
                   <div className="flex items-center gap-2 text-sm font-semibold text-destructive">
                     {t("workspace.dangerZone")}
-                    <ChevronRight
-                      className="h-4 w-4 text-muted-foreground"
+                    <PixelChevronRight
+                      className="h-4 w-auto shrink-0 text-muted-foreground"
                       aria-hidden="true"
                     />
                     <span className="text-sm font-normal text-muted-foreground">
@@ -213,7 +213,10 @@ export const WorkspaceInfoTab = ({
                       variant="destructive-outline"
                       onClick={() => setDeleteDialogOpen(true)}
                     >
-                      <Trash2 className="h-4 w-4" aria-hidden="true" />
+                      <PixelTrash
+                        className="h-4 w-auto shrink-0"
+                        aria-hidden="true"
+                      />
                       {t("workspace.deleteWorkspace")}
                     </Button>
                   </div>

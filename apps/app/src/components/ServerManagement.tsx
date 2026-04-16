@@ -1,13 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
-import {
-  Edit,
-  Loader2,
-  Server as ServerIcon,
-  Settings,
-  Trash2,
-} from "lucide-react";
+import { Loader2, Server as ServerIcon, Settings } from "lucide-react";
 import { toast } from "sonner";
 
 import { Server } from "@/lib/api/types";
@@ -33,6 +27,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { PixelEdit } from "@/components/ui/pixel-edit";
+import { PixelTrash } from "@/components/ui/pixel-trash";
 
 import { useServerContext } from "@/contexts/ServerContext";
 
@@ -180,7 +176,7 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
           className="text-muted-foreground hover:text-foreground hover:bg-muted"
           title="Edit Server"
         >
-          <Edit className="h-4 w-4" />
+          <PixelEdit className="h-4 w-auto shrink-0" />
         </Button>
         <Button
           variant="ghost"
@@ -189,7 +185,7 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
           className="text-destructive hover:text-destructive hover:bg-destructive/10"
           title="Delete Server"
         >
-          <Trash2 className="h-4 w-4" />
+          <PixelTrash className="h-4 w-auto shrink-0" />
         </Button>
       </div>
 
@@ -243,7 +239,7 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
                 </>
               ) : (
                 <>
-                  <Trash2 className="mr-2 h-4 w-4" />
+                  <PixelTrash className="h-4 w-auto shrink-0 mr-2" />
                   Delete Server
                 </>
               )}

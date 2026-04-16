@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { AlertTriangle, ArrowDown, Loader2, Radio, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowDown, Loader2, Radio } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PixelTrash } from "@/components/ui/pixel-trash";
 import { ScrollArea } from "@/components/ui/scrollArea";
 
 import { useSpyOnQueue } from "@/hooks/queries/useRabbitMQ";
@@ -175,7 +176,7 @@ export function QueueSpy({ serverId, queueName, vhost }: QueueSpyProps) {
             onClick={clearMessages}
             disabled={messages.length === 0}
           >
-            <Trash2 className="w-3 h-3 mr-1" />
+            <PixelTrash className="h-3 w-auto shrink-0 mr-1" />
             {t("spyClear")}
           </Button>
         </div>

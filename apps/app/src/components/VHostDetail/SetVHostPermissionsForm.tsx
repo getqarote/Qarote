@@ -1,10 +1,11 @@
 import { ReactNode, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ChevronDown, HelpCircle } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PixelChevronDown } from "@/components/ui/pixel-chevron-down";
 import {
   Select,
   SelectContent,
@@ -91,7 +92,7 @@ export function SetVHostPermissionsForm({
         className="flex items-center justify-between w-full px-4 py-3 bg-muted/30 border-b border-border hover:bg-muted/50 transition-colors"
       >
         <h2 className="title-section">{t("setPermission")}</h2>
-        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        <PixelChevronDown className="h-4 w-auto shrink-0 text-muted-foreground" />
       </button>
       <div className="p-4">
         <div className="grid grid-cols-1 gap-4 max-w-lg">

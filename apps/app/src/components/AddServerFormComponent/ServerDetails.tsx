@@ -2,7 +2,7 @@ import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
-import { ChevronDown, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PixelChevronDown } from "@/components/ui/pixel-chevron-down";
 import { Switch } from "@/components/ui/switch";
 
 import type { AddServerFormData } from "@/schemas";
@@ -270,8 +271,8 @@ export const ServerDetails = ({
         className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
         aria-expanded={isOpen}
       >
-        <ChevronDown
-          className={`h-4 w-4 transition-transform ${isOpen ? "rotate-0" : "-rotate-90"}`}
+        <PixelChevronDown
+          className={`h-4 w-auto shrink-0 transition-transform ${isOpen ? "rotate-0" : "-rotate-90"}`}
         />
         {isOpen ? t("manualSetupHide") : t("manualSetupShow")}
       </button>

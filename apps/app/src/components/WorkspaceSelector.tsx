@@ -2,13 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import {
-  Carrot,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  User,
-} from "lucide-react";
+import { Carrot, ChevronLeft, User } from "lucide-react";
 import { toast } from "sonner";
 
 import { UserRole } from "@/lib/api";
@@ -17,6 +11,8 @@ import { logger } from "@/lib/logger";
 
 import { Button } from "@/components/ui/button";
 import { PixelCheck } from "@/components/ui/pixel-check";
+import { PixelChevronDown } from "@/components/ui/pixel-chevron-down";
+import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
 import {
   Popover,
   PopoverContent,
@@ -263,14 +259,14 @@ export function WorkspaceSelector() {
                   <span className="max-w-[180px] truncate text-muted-foreground text-sm">
                     {currentOrg.name}
                   </span>
-                  <ChevronRight className="w-3 h-3 text-muted-foreground/60 shrink-0" />
+                  <PixelChevronRight className="h-3 w-auto shrink-0 text-muted-foreground/60" />
                 </>
               )}
               <span className="flex-1 truncate font-medium text-foreground">
                 {currentWorkspace?.name || workspace?.name}
               </span>
             </div>
-            <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0 ml-2" />
+            <PixelChevronDown className="h-4 w-auto shrink-0 text-muted-foreground ml-2" />
           </Button>
         </PopoverTrigger>
 
@@ -311,7 +307,7 @@ export function WorkspaceSelector() {
                               </div>
                             </div>
                           </div>
-                          <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                          <PixelChevronRight className="h-4 w-auto shrink-0 text-muted-foreground" />
                         </div>
                       </button>
                     )}
