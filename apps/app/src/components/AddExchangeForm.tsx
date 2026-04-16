@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -89,11 +89,11 @@ export function AddExchangeForm({
     },
   });
 
-  const name = form.watch("name");
-  const type = form.watch("type");
-  const durable = form.watch("durable");
-  const autoDelete = form.watch("autoDelete");
-  const internal = form.watch("internal");
+  const name = useWatch({ control: form.control, name: "name" });
+  const type = useWatch({ control: form.control, name: "type" });
+  const durable = useWatch({ control: form.control, name: "durable" });
+  const autoDelete = useWatch({ control: form.control, name: "autoDelete" });
+  const internal = useWatch({ control: form.control, name: "internal" });
 
   const previewRows = useMemo(() => rows, [rows]);
 

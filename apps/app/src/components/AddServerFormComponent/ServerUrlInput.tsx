@@ -25,30 +25,30 @@ export const ServerUrlInput = ({
 }: ServerUrlInputProps) => {
   const { t } = useTranslation("dashboard");
   const [url, setUrl] = useState("");
-  const [parseStatus, setParseStatus] = useState<{
-    status: "idle" | "success" | "error";
-  }>({ status: "idle" });
-  const [isParsing, setIsParsing] = useState(false);
+  const [parseStatus, setParseStatus] = useState<
+    "idle" | "parsing" | "success" | "error"
+  >("idle");
+
+  const isParsing = parseStatus === "parsing";
 
   // Debounce URL parsing
   useEffect(() => {
     if (!url.trim()) {
-      setParseStatus({ status: "idle" });
+      setParseStatus("idle");
       return;
     }
 
-    setIsParsing(true);
     const timeoutId = setTimeout(() => {
+      setParseStatus("parsing");
       const parsed = parseRabbitMQUrl(url);
 
       if (parsed) {
         applyParsedUrlToForm(parsed, form);
-        setParseStatus({ status: "success" });
+        setParseStatus("success");
         onParseSuccess?.();
       } else {
-        setParseStatus({ status: "error" });
+        setParseStatus("error");
       }
-      setIsParsing(false);
     }, 500);
 
     return () => clearTimeout(timeoutId);
@@ -56,12 +56,12 @@ export const ServerUrlInput = ({
 
   const handleUrlChange = (value: string) => {
     setUrl(value);
-    setParseStatus({ status: "idle" });
+    setParseStatus("idle");
   };
 
   const handleClearUrl = () => {
     setUrl("");
-    setParseStatus({ status: "idle" });
+    setParseStatus("idle");
   };
 
   return (
@@ -92,21 +92,21 @@ export const ServerUrlInput = ({
           {isParsing && (
             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           )}
-          {!isParsing && parseStatus.status === "success" && (
+          {parseStatus === "success" && (
             <CheckCircle2 className="h-4 w-4 text-success" />
           )}
-          {!isParsing && parseStatus.status === "error" && (
+          {parseStatus === "error" && (
             <AlertCircle className="h-4 w-4 text-destructive" />
           )}
         </div>
       </div>
-      {parseStatus.status === "idle" && (
+      {parseStatus === "idle" && (
         <p className="text-sm text-muted-foreground">{t("serverUrlHelp")}</p>
       )}
-      {parseStatus.status === "success" && (
+      {parseStatus === "success" && (
         <p className="text-sm text-success">{t("urlParsedSuccess")}</p>
       )}
-      {parseStatus.status === "error" && (
+      {parseStatus === "error" && (
         <p className="text-sm text-destructive">{t("urlParseError")}</p>
       )}
     </div>

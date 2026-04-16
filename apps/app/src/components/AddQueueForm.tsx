@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -98,12 +98,15 @@ export function AddQueueForm({
   const { data: exchangesData } = useExchanges(serverId, selectedVHost);
   const exchanges = exchangesData?.exchanges || [];
 
-  const name = form.watch("name");
-  const durable = form.watch("durable");
-  const autoDelete = form.watch("autoDelete");
-  const exclusive = form.watch("exclusive");
-  const bindToExchange = form.watch("bindToExchange");
-  const routingKey = form.watch("routingKey");
+  const name = useWatch({ control: form.control, name: "name" });
+  const durable = useWatch({ control: form.control, name: "durable" });
+  const autoDelete = useWatch({ control: form.control, name: "autoDelete" });
+  const exclusive = useWatch({ control: form.control, name: "exclusive" });
+  const bindToExchange = useWatch({
+    control: form.control,
+    name: "bindToExchange",
+  });
+  const routingKey = useWatch({ control: form.control, name: "routingKey" });
 
   // Memoize for preview to avoid recomputing unnecessarily.
   const previewRows = useMemo(() => rows, [rows]);
