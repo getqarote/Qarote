@@ -38,28 +38,28 @@ export const AddServerButton = () => {
         return {
           text: t("addServer"),
           badge: t("upgrade"),
-          badgeColor: "bg-orange-500",
+          badgeColor: "bg-warning-muted",
           title: t("upgradeToAddServers"),
         };
       case UserPlan.DEVELOPER:
         return {
           text: t("addServer"),
           badge: `${serverUsage.current}/${serverUsage.limit || 2}`,
-          badgeColor: "bg-blue-500",
+          badgeColor: "bg-info-muted",
           title: t("serverLimitReached"),
         };
       case UserPlan.ENTERPRISE:
         return {
           text: t("addServer"),
           badge: `${serverUsage.current}/${serverUsage.limit || 5}`,
-          badgeColor: "bg-purple-500",
+          badgeColor: "bg-muted",
           title: t("serverLimitReached"),
         };
       default:
         return {
           text: t("addServer"),
           badge: t("upgrade"),
-          badgeColor: "bg-orange-500",
+          badgeColor: "bg-warning-muted",
           title: t("upgradeToAddServers"),
         };
     }
@@ -82,7 +82,7 @@ export const AddServerButton = () => {
     <Button
       onClick={handleAddServerClick}
       variant="outline"
-      className="flex items-center gap-2 opacity-60 cursor-pointer hover:bg-gray-100"
+      className="flex items-center gap-2 rounded-none opacity-60 cursor-pointer hover:bg-muted"
       title={buttonConfig.title}
     >
       <Lock className="w-4 h-4" />

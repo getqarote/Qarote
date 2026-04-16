@@ -20,9 +20,32 @@
   }
 }
 
+@font-face {
+  font-family: "Bricolage Grotesque";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url("https://fonts.gstatic.com/s/bricolagegrotesque/v7/3y9U6as8bTXq_nANBjzKo3IeZx8z6up5BeSl5jBNz_19PcbfFA.woff2")
+    format("woff2");
+}
+
+@font-face {
+  font-family: "Fragment Mono";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("https://fonts.gstatic.com/s/fragmentmono/v4/4iCr6K5wfMRRjxp0DA6-2CLnN4RNh4UI_1GsQg.woff2")
+    format("woff2");
+}
+
 @theme {
+  --font-display:
+    "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji";
   --font-sans:
-    "Arial", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-mono:
     "Fragment Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
@@ -55,6 +78,15 @@
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
 
+  --color-feature-icon-bg: hsl(var(--feature-icon-bg));
+  --color-status-success-bg: hsl(var(--status-success-bg));
+  --color-status-success-border: hsl(var(--status-success-border));
+  --color-status-success-text: hsl(var(--status-success-text));
+  --color-status-warning-bg: hsl(var(--status-warning-bg));
+  --color-status-warning-text: hsl(var(--status-warning-text));
+  --color-status-danger-bg: hsl(var(--status-danger-bg));
+  --color-status-danger-text: hsl(var(--status-danger-text));
+
   --color-sidebar: hsl(var(--sidebar-background));
   --color-sidebar-foreground: hsl(var(--sidebar-foreground));
   --color-sidebar-primary: hsl(var(--sidebar-primary));
@@ -72,41 +104,7 @@
   --animate-accordion-up: accordion-up 0.2s ease-out;
   --animate-slide-in-right: slide-in-right 1s ease-out forwards;
   --animate-slide-in-left: slide-in-left 1s ease-out forwards;
-  --animate-gradient-shift: gradient-shift 3s ease infinite;
-
   --shadow-soft: 0 4px 6px #00000008;
-
-  --background-image-gradient-page: linear-gradient(
-    to bottom right,
-    rgb(254 215 170),
-    rgb(254 202 202)
-  );
-  --background-image-gradient-button: linear-gradient(
-    to right,
-    rgb(234 88 12),
-    rgb(220 38 38)
-  );
-  --background-image-gradient-button-hover: linear-gradient(
-    to right,
-    rgb(194 65 12),
-    rgb(185 28 28)
-  );
-  --background-image-gradient-title: linear-gradient(
-    to right,
-    rgb(234 88 12),
-    rgb(220 38 38)
-  );
-  --background-image-gradient-auth: linear-gradient(
-    135deg,
-    rgb(234 88 12) 0%,
-    rgb(249 115 22) 25%,
-    rgb(220 38 38) 50%,
-    rgb(234 88 12) 75%,
-    rgb(249 115 22) 100%
-  );
-
-  --background-color-card-unified: rgb(252 250 246);
-  --background-color-testimonial-bg: #fff5eb;
 
   @keyframes accordion-down {
     from {
@@ -152,17 +150,6 @@
       opacity: 0;
     }
   }
-  @keyframes gradient-shift {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
-  }
 }
 
 /*
@@ -186,28 +173,6 @@
 @utility page-layout {
   /* Page Layout Components */
   @apply flex h-screen bg-background;
-}
-
-@utility btn-primary {
-  /* Button Components */
-  @apply bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-2 rounded-md font-medium transition-colors;
-
-  &:hover {
-    @apply bg-primary/90;
-  }
-}
-
-@utility btn-primary-large {
-  @apply bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 rounded-lg font-semibold text-lg transition-colors;
-
-  &:hover {
-    @apply bg-primary/90;
-  }
-}
-
-@utility title-gradient {
-  /* Title Components */
-  @apply bg-linear-to-r from-primary to-destructive bg-clip-text text-transparent;
 }
 
 @utility title-page {
@@ -253,8 +218,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 20 14.3% 4.1%;
 
-    /* Orange primary theme */
-    --primary: 25 95% 53%;
+    /* Orange primary theme — synced with app */
+    --primary: 24 82% 52%;
     --primary-foreground: 0 0% 98%;
 
     --secondary: 30 25% 94%;
@@ -272,6 +237,16 @@
     --border: 30 25% 89%;
     --input: 30 25% 89%;
     --ring: 25 95% 53%;
+
+    /* Semantic accent surfaces */
+    --feature-icon-bg: 33 100% 93%; /* orange-100 equivalent */
+    --status-success-bg: 138 76% 97%; /* green-50 equivalent */
+    --status-success-border: 142 69% 82%; /* green-200 equivalent */
+    --status-success-text: 142 71% 29%; /* green-700 equivalent */
+    --status-warning-bg: 48 96% 89%; /* yellow-100 equivalent */
+    --status-warning-text: 32 95% 44%; /* yellow-700 equivalent */
+    --status-danger-bg: 0 93% 94%; /* red-100 equivalent */
+    --status-danger-text: 0 72% 51%; /* red-600 equivalent */
 
     /* Smaller radius */
     --radius: 0.25rem;
@@ -295,8 +270,8 @@
     --popover: 20 14.3% 4.1%;
     --popover-foreground: 0 0% 95%;
 
-    /* Orange primary theme for dark mode */
-    --primary: 25 95% 53%;
+    /* Orange primary theme for dark mode — synced with app */
+    --primary: 24 82% 56%;
     --primary-foreground: 20 14.3% 4.1%;
 
     --secondary: 25 14% 12%;
@@ -334,6 +309,15 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
   }
 
   a:not([aria-disabled="true"]),

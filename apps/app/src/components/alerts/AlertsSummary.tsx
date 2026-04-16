@@ -1,12 +1,4 @@
-import {
-  Activity,
-  AlertTriangle,
-  Info,
-  ShieldAlert,
-  XCircle,
-} from "lucide-react";
-
-import { Card, CardContent } from "@/components/ui/card";
+import { useTranslation } from "react-i18next";
 
 interface AlertsSummaryProps {
   summary: {
@@ -19,86 +11,65 @@ interface AlertsSummaryProps {
   };
 }
 
+/**
+ * Compact inline alert summary — replaces the previous 6-card hero grid
+ * (of which 4 cards perpetually showed "0"). Same information density,
+ * a fraction of the vertical space. The actual alert items are the
+ * dashboard's primary content; the summary is orientation, not headline.
+ *
+ * Severity colors are semantic tokens and only render when the count is
+ * non-zero — a zero count renders neutral, so the eye is drawn only to
+ * the severities that actually have alerts.
+ */
 export const AlertsSummary = ({ summary }: AlertsSummaryProps) => {
+  const { t } = useTranslation("alerts");
+
+  const items: Array<{ label: string; count: number; tone: string }> = [
+    {
+      label: t("summary.severity.critical"),
+      count: summary.critical,
+      tone: summary.critical > 0 ? "text-destructive" : "text-muted-foreground",
+    },
+    {
+      label: t("summary.severity.high"),
+      count: summary.high,
+      tone: summary.high > 0 ? "text-warning" : "text-muted-foreground",
+    },
+    {
+      label: t("summary.severity.medium"),
+      count: summary.medium,
+      tone: summary.medium > 0 ? "text-warning/70" : "text-muted-foreground",
+    },
+    {
+      label: t("summary.severity.low"),
+      count: summary.low,
+      tone: "text-muted-foreground",
+    },
+    {
+      label: t("summary.severity.info"),
+      count: summary.info,
+      tone: "text-muted-foreground",
+    },
+  ];
+
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Total</p>
-              <p className="text-2xl font-bold">{summary.total}</p>
-            </div>
-            <Activity className="h-8 w-8 text-blue-500" />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Critical</p>
-              <p className="text-2xl font-bold text-red-600">
-                {summary.critical}
-              </p>
-            </div>
-            <XCircle className="h-8 w-8 text-red-500" />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">High</p>
-              <p className="text-2xl font-bold text-orange-600">
-                {summary.high}
-              </p>
-            </div>
-            <ShieldAlert className="h-8 w-8 text-orange-500" />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Medium</p>
-              <p className="text-2xl font-bold text-yellow-600">
-                {summary.medium}
-              </p>
-            </div>
-            <AlertTriangle className="h-8 w-8 text-yellow-500" />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Low</p>
-              <p className="text-2xl font-bold text-blue-600">{summary.low}</p>
-            </div>
-            <Info className="h-8 w-8 text-blue-500" />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Info</p>
-              <p className="text-2xl font-bold text-gray-600">{summary.info}</p>
-            </div>
-            <Info className="h-8 w-8 text-gray-400" />
-          </div>
-        </CardContent>
-      </Card>
+    <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+      <span className="font-semibold text-foreground">
+        <span className="font-mono tabular-nums">{summary.total}</span>{" "}
+        {t("summary.count", { count: summary.total })}
+      </span>
+      <span className="text-muted-foreground">·</span>
+      {items.map((item, i) => (
+        <span key={item.label} className="flex items-center gap-1.5">
+          <span className={`font-mono tabular-nums font-semibold ${item.tone}`}>
+            {item.count}
+          </span>
+          <span className="text-muted-foreground">{item.label}</span>
+          {i < items.length - 1 && (
+            <span className="text-muted-foreground ml-3">·</span>
+          )}
+        </span>
+      ))}
     </div>
   );
 };

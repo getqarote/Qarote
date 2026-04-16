@@ -132,7 +132,7 @@ export default function TrialEndingEmail({
             <Section style={buttonStyles.buttonSection}>
               <Button
                 style={buttonStyles.primaryButton}
-                href={`${frontendUrl}/billing`}
+                href={`${frontendUrl}/settings/subscription/billing`}
               >
                 {tEmail(locale, "trialEnding.upgradeCta")}
               </Button>

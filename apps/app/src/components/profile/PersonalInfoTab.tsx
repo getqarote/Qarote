@@ -1,21 +1,16 @@
 import { useTranslation } from "react-i18next";
 
-import { Calendar, Edit, Lock, Mail, Save, Settings, X } from "lucide-react";
-
 import { UserProfile } from "@/lib/api/authTypes";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PixelCalendar } from "@/components/ui/pixel-calendar";
+import { PixelEmail } from "@/components/ui/pixel-email";
+import { PixelKey } from "@/components/ui/pixel-key";
+import { PixelSettings } from "@/components/ui/pixel-settings";
 import { Separator } from "@/components/ui/separator";
 
 import { CompactEmailChangeForm } from "./CompactEmailChangeForm";
@@ -27,7 +22,8 @@ interface PersonalInfoTabProps {
   editingProfile: boolean;
   profileForm: ProfileFormState;
   setProfileForm: (form: ProfileFormState) => void;
-  setEditingProfile: (editing: boolean) => void;
+  onStartEdit: () => void;
+  onCancelEdit: () => void;
   onUpdateProfile: () => void;
   onPasswordChange: (data: {
     currentPassword: string;
@@ -54,7 +50,8 @@ export const PersonalInfoTab = ({
   editingProfile,
   profileForm,
   setProfileForm,
-  setEditingProfile,
+  onStartEdit,
+  onCancelEdit,
   onUpdateProfile,
   onPasswordChange,
   onEmailChangeRequest,
@@ -69,30 +66,62 @@ export const PersonalInfoTab = ({
   const { t } = useTranslation("profile");
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={profile.image || ""} />
-                <AvatarFallback>
-                  {profile.firstName?.[0]}
-                  {profile.lastName?.[0]}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <h2 className="text-xl font-semibold">
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between px-4 py-3 bg-muted/30 border-b border-border">
+          <div className="flex items-center gap-3 min-w-0">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={profile.image || ""} />
+              <AvatarFallback>
+                {profile.firstName?.[0]}
+                {profile.lastName?.[0]}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="title-section truncate">
                   {profile.firstName} {profile.lastName}
                 </h2>
-                <p className="text-sm text-muted-foreground">{profile.email}</p>
+                <Badge variant="soft-primary">
+                  {profile.role.charAt(0) + profile.role.slice(1).toLowerCase()}
+                </Badge>
               </div>
+              <p className="text-sm text-muted-foreground truncate">
+                {profile.email}
+              </p>
             </div>
-            <Badge variant="soft-orange">
-              {profile.role.charAt(0) + profile.role.slice(1).toLowerCase()}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            {editingProfile ? (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={onCancelEdit}
+                  disabled={isUpdating}
+                  className="h-9"
+                >
+                  <span className="hidden sm:inline">
+                    {t("personal.cancel")}
+                  </span>
+                </Button>
+                <Button
+                  onClick={onUpdateProfile}
+                  disabled={isUpdating}
+                  className="btn-primary h-9"
+                >
+                  <span className="hidden sm:inline">
+                    {t("personal.saveChanges")}
+                  </span>
+                </Button>
+              </>
+            ) : (
+              <Button onClick={onStartEdit} className="btn-primary h-9">
+                {t("personal.editProfile")}
+              </Button>
+            )}
+          </div>
+        </div>
+        <div className="p-4 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">{t("personal.firstName")}</Label>
@@ -138,78 +167,47 @@ export const PersonalInfoTab = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
-              <Mail className="h-4 w-4" />
+              <PixelEmail className="h-4" />
               <span>
                 {t("personal.email")} {profile.email}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
+              <PixelCalendar className="h-4 w-auto shrink-0" />
               <span>
                 {t("personal.joined")} {formatDate(profile.createdAt)}
               </span>
             </div>
             {profile.lastLogin && (
               <div className="flex items-center gap-2">
-                <Settings className="h-4 w-4" />
+                <PixelSettings className="h-4" />
                 <span>
                   {t("personal.lastLogin")} {formatDate(profile.lastLogin)}
                 </span>
               </div>
             )}
           </div>
-
-          <div className="flex justify-end gap-2">
-            {editingProfile ? (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => setEditingProfile(false)}
-                  disabled={isUpdating}
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  {t("personal.cancel")}
-                </Button>
-                <Button
-                  onClick={onUpdateProfile}
-                  disabled={isUpdating}
-                  className="btn-primary"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {t("personal.saveChanges")}
-                </Button>
-              </>
-            ) : (
-              <Button
-                onClick={() => setEditingProfile(true)}
-                className="btn-primary"
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                {t("personal.editProfile")}
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Security Settings Section - Show only for password-based accounts */}
       {profile.authProvider === "password" && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
+        <div className="rounded-lg border border-border overflow-hidden">
+          <div className="px-4 py-3 bg-muted/30 border-b border-border">
+            <h2 className="title-section flex items-center gap-2">
+              <PixelSettings className="h-5" />
               {t("personal.securitySettings")}
-            </CardTitle>
-            <CardDescription>
+            </h2>
+            <p className="text-sm text-muted-foreground">
               {t("personal.securityDescription")}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+            </p>
+          </div>
+          <div className="p-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:divide-x lg:divide-border">
               {/* Password Change Section */}
               <div className="space-y-3 lg:pr-6 flex flex-col">
                 <div className="flex items-center gap-2 pb-1">
-                  <Lock className="h-4 w-4 text-muted-foreground" />
+                  <PixelKey className="h-4 text-muted-foreground" />
                   <h3 className="font-medium">
                     {t("personal.changePassword")}
                   </h3>
@@ -225,7 +223,7 @@ export const PersonalInfoTab = ({
               {/* Email Change Section */}
               <div className="space-y-3 lg:pl-6 flex flex-col">
                 <div className="flex items-center gap-2 pb-1">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <PixelEmail className="h-4 text-muted-foreground" />
                   <h3 className="font-medium">{t("personal.emailAddress")}</h3>
                 </div>
                 <div className="flex-1">
@@ -244,8 +242,8 @@ export const PersonalInfoTab = ({
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   );

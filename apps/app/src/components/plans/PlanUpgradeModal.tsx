@@ -2,9 +2,11 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { AlertCircle, Check, Key, Loader2, X, Zap } from "lucide-react";
+import { AlertCircle, Check, Key, Loader2, Zap } from "lucide-react";
 
 import { isSelfHostedMode } from "@/lib/featureFlags";
+
+import { PixelX } from "@/components/ui/pixel-x";
 
 import { useAllPlans } from "@/hooks/queries/usePlans";
 import { usePlanUpgrade } from "@/hooks/ui/usePlanUpgrade";
@@ -57,7 +59,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
               className="text-muted-foreground hover:text-foreground"
               aria-label="Close"
             >
-              <X className="w-6 h-6" />
+              <PixelX className="h-6 w-auto shrink-0" />
             </button>
           </div>
           <div className="p-6 space-y-4">
@@ -125,7 +127,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
               className="text-muted-foreground hover:text-foreground"
               aria-label="Close"
             >
-              <X className="w-5 h-5" />
+              <PixelX className="h-5 w-auto shrink-0" />
             </button>
           </div>
           {error && (
@@ -135,7 +137,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
           )}
           <button
             type="button"
-            className="w-full py-2 px-4 rounded-lg font-medium bg-gradient-button hover:bg-gradient-button-hover text-white"
+            className="w-full py-2 px-4 rounded-lg font-medium bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={() => refetch()}
           >
             {t("paymentCancelled.tryAgain")}
@@ -170,7 +172,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
             onClick={onClose}
             className="text-muted-foreground hover:text-foreground"
           >
-            <X className="w-6 h-6" />
+            <PixelX className="h-6 w-auto shrink-0" />
           </button>
         </div>
 
@@ -192,13 +194,13 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                   key={plan.plan}
                   className={`border rounded-lg p-6 relative ${
                     plan.isPopular
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200"
+                      ? "border-info bg-info-muted"
+                      : "border-border"
                   }`}
                 >
                   {plan.isPopular && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                      <span className="bg-info-muted0 text-white px-3 py-1 rounded-full text-sm font-medium">
                         {t("upgradeModal.mostPopular")}
                       </span>
                     </div>
@@ -220,32 +222,32 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
 
                   <ul className="space-y-3 mb-6">
                     <li className="flex items-center">
-                      <Check className="w-4 h-4 text-green-500 mr-2" />
+                      <Check className="w-4 h-4 text-success mr-2" />
                       <span className="text-sm text-muted-foreground">
                         {t("upgradeModal.unlimitedQueues")}
                       </span>
                     </li>
                     <li className="flex items-center">
-                      <Check className="w-4 h-4 text-green-500 mr-2" />
+                      <Check className="w-4 h-4 text-success mr-2" />
                       <span className="text-sm text-muted-foreground">
                         {serversText}
                       </span>
                     </li>
                     <li className="flex items-center">
-                      <Check className="w-4 h-4 text-green-500 mr-2" />
+                      <Check className="w-4 h-4 text-success mr-2" />
                       <span className="text-sm text-muted-foreground">
                         {teamMembersText}
                       </span>
                     </li>
                     <li className="flex items-center">
-                      <Check className="w-4 h-4 text-green-500 mr-2" />
+                      <Check className="w-4 h-4 text-success mr-2" />
                       <span className="text-sm text-muted-foreground">
                         {t("upgradeModal.messageSending")}
                       </span>
                     </li>
                     {plan.hasPrioritySupport && (
                       <li className="flex items-center">
-                        <Check className="w-4 h-4 text-green-500 mr-2" />
+                        <Check className="w-4 h-4 text-success mr-2" />
                         <span className="text-sm text-muted-foreground">
                           {t("upgradeModal.prioritySupport")}
                         </span>
@@ -253,7 +255,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                     )}
                     {plan.hasAdvancedAnalytics && (
                       <li className="flex items-center">
-                        <Check className="w-4 h-4 text-green-500 mr-2" />
+                        <Check className="w-4 h-4 text-success mr-2" />
                         <span className="text-sm text-muted-foreground">
                           {t("upgradeModal.advancedMetrics")}
                         </span>
@@ -261,7 +263,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                     )}
                     {plan.hasAlerts && (
                       <li className="flex items-center">
-                        <Check className="w-4 h-4 text-green-500 mr-2" />
+                        <Check className="w-4 h-4 text-success mr-2" />
                         <span className="text-sm text-muted-foreground">
                           {t("upgradeModal.advancedAlerts")}
                         </span>
@@ -273,8 +275,8 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                     type="button"
                     className={`w-full py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center ${
                       plan.isPopular
-                        ? "bg-gradient-button hover:bg-gradient-button-hover text-white disabled:opacity-50"
-                        : "bg-gray-100 hover:bg-gray-200 text-gray-900 disabled:bg-gray-50 disabled:text-gray-400"
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                        : "bg-muted hover:bg-border text-foreground disabled:bg-muted disabled:text-muted-foreground"
                     }`}
                     onClick={() => handleUpgrade(plan.plan as UserPlan)}
                     disabled={isUpgrading}

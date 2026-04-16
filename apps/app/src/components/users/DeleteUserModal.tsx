@@ -1,7 +1,5 @@
 import { Trans, useTranslation } from "react-i18next";
 
-import { AlertTriangle } from "lucide-react";
-
 import { RabbitMQUser } from "@/lib/api/userTypes";
 
 import { Button } from "@/components/ui/button";
@@ -35,10 +33,7 @@ export function DeleteUserModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-destructive" />
-            {t("deleteUser")}
-          </DialogTitle>
+          <DialogTitle>{t("deleteUser")}</DialogTitle>
           <DialogDescription>
             <Trans
               i18nKey="users:deleteUserConfirmation"
@@ -59,7 +54,7 @@ export function DeleteUserModal({
           </Button>
           <Button
             type="button"
-            variant="destructive"
+            variant="destructive-outline"
             onClick={onConfirm}
             disabled={isLoading}
           >

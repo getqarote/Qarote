@@ -1,24 +1,13 @@
-import { Fragment, useState } from "react";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
-  Activity,
   AlertTriangle,
+  ArrowDown,
+  ArrowUp,
   ArrowUpDown,
   CheckCircle,
-  ChevronDown,
-  ChevronRight,
-  Clock,
-  Cpu,
-  Database,
-  HardDrive,
-  HelpCircle,
-  Info,
-  MemoryStick,
-  Network,
   Server,
-  Settings,
-  Users,
-  Wifi,
   XCircle,
 } from "lucide-react";
 
@@ -26,26 +15,19 @@ import { RabbitMQNode } from "@/lib/api";
 
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 import { isRabbitMQAuthError } from "@/types/apiErrors";
+
+type SortField = "name" | "memUsed" | "diskFree" | "uptime" | "connections";
+type SortDir = "asc" | "desc";
 
 interface EnhancedNodesTableProps {
   serverId: string;
@@ -54,1186 +36,706 @@ interface EnhancedNodesTableProps {
   nodesError?: Error | null;
 }
 
-type SortField =
-  | "name"
-  | "memUsed"
-  | "diskFree"
-  | "uptime"
-  | "sockets"
-  | "fdUsed"
-  | "ioActivity"
-  | "connections";
-type SortDirection = "asc" | "desc";
-
-const SortButton = ({
-  field,
-  children,
-  onSort,
-}: {
-  field: SortField;
-  children: React.ReactNode;
-  onSort: (field: SortField) => void;
-}) => (
-  <Button
-    variant="ghost"
-    size="sm"
-    className="h-auto p-0 font-medium hover:bg-transparent"
-    onClick={() => onSort(field)}
-  >
-    {children}
-    <ArrowUpDown className="ml-1 h-3 w-3" />
-  </Button>
-);
-
+/**
+ * Sortable node list — bare table, no Card wrapper.
+ *
+ * Mirrors the QueueTable / ExchangesList pattern: sortable column
+ * headers, collapsible rows with progressive disclosure, fixed-width
+ * right-aligned metric columns. Default sort: name ascending.
+ */
 export const EnhancedNodesTable = ({
   nodes,
   isLoading,
   nodesError,
 }: EnhancedNodesTableProps) => {
-  const [sortField, setSortField] = useState<SortField>("name");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const { t } = useTranslation("nodes");
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+  const [sortField, setSortField] = useState<SortField>("name");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
-  const toggleNodeExpansion = (nodeName: string) => {
-    const newExpanded = new Set(expandedNodes);
-    if (newExpanded.has(nodeName)) {
-      newExpanded.delete(nodeName);
-    } else {
-      newExpanded.add(nodeName);
-    }
-    setExpandedNodes(newExpanded);
+  const toggleExpanded = (name: string, isOpen: boolean) => {
+    setExpandedNodes((prev) => {
+      const next = new Set(prev);
+      if (isOpen) {
+        next.add(name);
+      } else {
+        next.delete(name);
+      }
+      return next;
+    });
   };
 
-  const formatBytes = (bytes: number): string => {
-    if (bytes === 0) return "0 B";
-    const k = 1024;
-    const sizes = ["B", "KB", "MB", "GB", "TB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
-  };
-
-  const formatUptime = (uptime: number): string => {
-    const seconds = Math.floor(uptime / 1000);
-    const days = Math.floor(seconds / 86400);
-    const hours = Math.floor((seconds % 86400) / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-
-    if (days > 0) {
-      return `${days}d ${hours}h`;
-    }
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`;
-    }
-    return `${minutes}m`;
-  };
-
-  const formatNumber = (num: number): string => {
-    if (num >= 1e6) return (num / 1e6).toFixed(1) + "M";
-    if (num >= 1e3) return (num / 1e3).toFixed(1) + "K";
-    return num?.toString();
-  };
-
-  const formatRate = (rate: number): string => {
-    return rate > 0 ? `${rate.toFixed(1)}/s` : "0/s";
-  };
-
-  const getNodeStatus = (node: RabbitMQNode) => {
-    if (!node.running) {
-      return {
-        status: "Error",
-        color: "bg-red-100 text-red-700",
-        icon: XCircle,
-      };
-    }
-
-    const memoryUsage =
-      node.mem_used && node.mem_limit
-        ? (node.mem_used / node.mem_limit) * 100
-        : 0;
-    const diskUsage =
-      node.disk_free_limit && node.disk_free
-        ? ((node.disk_free_limit - node.disk_free) / node.disk_free_limit) * 100
-        : 0;
-
-    if (memoryUsage > 80 || diskUsage > 80) {
-      return {
-        status: "Warning",
-        color: "bg-yellow-100 text-yellow-700",
-        icon: AlertTriangle,
-      };
-    }
-
-    return {
-      status: "Healthy",
-      color: "bg-green-100 text-green-700",
-      icon: CheckCircle,
-    };
-  };
-
-  const handleSort = (field: SortField) => {
+  const toggleSort = (field: SortField) => {
     if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     } else {
       setSortField(field);
-      setSortDirection("asc");
+      setSortDir(field === "name" ? "asc" : "desc");
     }
   };
 
-  const sortedNodes = [...nodes].sort((a, b) => {
-    let aValue: number | string;
-    let bValue: number | string;
-
-    switch (sortField) {
-      case "name":
-        aValue = a.name;
-        bValue = b.name;
-        break;
-      case "memUsed":
-        aValue = a.mem_used || 0;
-        bValue = b.mem_used || 0;
-        break;
-      case "diskFree":
-        aValue = a.disk_free || 0;
-        bValue = b.disk_free || 0;
-        break;
-      case "uptime":
-        aValue = a.uptime || 0;
-        bValue = b.uptime || 0;
-        break;
-      case "sockets":
-        aValue = a.sockets_used || 0;
-        bValue = b.sockets_used || 0;
-        break;
-      case "fdUsed":
-        aValue = a.fd_used || 0;
-        bValue = b.fd_used || 0;
-        break;
-      case "ioActivity":
-        aValue = (a.io_read_count || 0) + (a.io_write_count || 0);
-        bValue = (b.io_read_count || 0) + (b.io_write_count || 0);
-        break;
-      case "connections":
-        aValue = a.connection_created || 0;
-        bValue = b.connection_created || 0;
-        break;
-      default:
-        aValue = a.name;
-        bValue = b.name;
-    }
-
-    if (typeof aValue === "string" && typeof bValue === "string") {
-      return sortDirection === "asc"
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
-    }
-
-    return sortDirection === "asc"
-      ? Number(aValue) - Number(bValue)
-      : Number(bValue) - Number(aValue);
-  });
+  const sorted = useMemo(() => {
+    const copy = [...nodes];
+    const dir = sortDir === "asc" ? 1 : -1;
+    copy.sort((a, b) => {
+      switch (sortField) {
+        case "name":
+          return dir * a.name.localeCompare(b.name);
+        case "memUsed":
+          return dir * ((a.mem_used || 0) - (b.mem_used || 0));
+        case "diskFree":
+          return dir * ((a.disk_free || 0) - (b.disk_free || 0));
+        case "uptime":
+          return dir * ((a.uptime || 0) - (b.uptime || 0));
+        case "connections":
+          return dir * ((a.sockets_used || 0) - (b.sockets_used || 0));
+        default:
+          return 0;
+      }
+    });
+    return copy;
+  }, [nodes, sortField, sortDir]);
 
   if (nodesError && isRabbitMQAuthError(nodesError)) {
     return (
-      <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <Server className="h-5 w-5" />
-            Cluster Nodes
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <RabbitMQPermissionError
-            requiredPermission={nodesError.requiredPermission}
-            message={nodesError.message}
-            title="RabbitMQNode Information Unavailable"
+      <RabbitMQPermissionError
+        requiredPermission={nodesError.requiredPermission}
+        message={nodesError.message}
+        title={t("permissionErrorTitle")}
+      />
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-16 w-full rounded-lg" />
+        ))}
+      </div>
+    );
+  }
+
+  if (nodes.length === 0) {
+    return (
+      <div className="border border-border rounded-lg overflow-hidden">
+        <div className="py-12 text-center">
+          <Server
+            className="h-10 w-10 text-muted-foreground mx-auto mb-3"
+            aria-hidden="true"
           />
-        </CardContent>
-      </Card>
+          <h2 className="text-sm font-medium text-foreground mb-1">
+            {t("noNodesFound")}
+          </h2>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
-          <Server className="h-5 w-5 text-blue-600" />
-          <span className="text-blue-600">Cluster Nodes ({nodes.length})</span>
-        </CardTitle>
-        <p className="text-sm text-muted-foreground mt-1">
-          Detailed node metrics and health status. Click on any row to expand
-          for more details.
-        </p>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="space-y-2">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full" />
-            ))}
-          </div>
-        ) : nodes.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-12"></TableHead>
-                <TableHead>
-                  <SortButton onSort={handleSort} field="name">
-                    RabbitMQNode Name
-                  </SortButton>
-                </TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>
-                  <SortButton onSort={handleSort} field="memUsed">
-                    Memory Usage
-                  </SortButton>
-                </TableHead>
-                <TableHead>
-                  <SortButton onSort={handleSort} field="diskFree">
-                    Disk Free
-                  </SortButton>
-                </TableHead>
-                <TableHead>
-                  <SortButton onSort={handleSort} field="uptime">
-                    Uptime
-                  </SortButton>
-                </TableHead>
-                <TableHead>
-                  <SortButton onSort={handleSort} field="ioActivity">
-                    I/O Activity
-                  </SortButton>
-                </TableHead>
-                <TableHead>
-                  <SortButton onSort={handleSort} field="connections">
-                    Connections
-                  </SortButton>
-                </TableHead>
-                <TableHead>
-                  <SortButton onSort={handleSort} field="fdUsed">
-                    File Descriptors
-                  </SortButton>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sortedNodes.map((node) => {
-                const status = getNodeStatus(node);
-                const StatusIcon = status.icon;
-                const memoryUsage =
-                  node.mem_used && node.mem_limit
-                    ? (node.mem_used / node.mem_limit) * 100
-                    : 0;
-                const fdUsage =
-                  node.fd_used && node.fd_total
-                    ? (node.fd_used / node.fd_total) * 100
-                    : 0;
-                const isExpanded = expandedNodes.has(node.name);
+    <div className="border border-border rounded-lg overflow-hidden">
+      {/* Column headers with sort controls */}
+      <div className="flex items-center px-4 py-2 border-b border-border bg-muted/30 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <SortHeader
+          label={t("nodeName")}
+          field="name"
+          currentField={sortField}
+          currentDir={sortDir}
+          onToggle={toggleSort}
+          className="flex-1 min-w-0"
+        />
+        <div className="w-24 text-right">{t("status")}</div>
+        <SortHeader
+          label={t("memory")}
+          field="memUsed"
+          currentField={sortField}
+          currentDir={sortDir}
+          onToggle={toggleSort}
+          className="w-32 text-right"
+        />
+        <SortHeader
+          label={t("diskFree")}
+          field="diskFree"
+          currentField={sortField}
+          currentDir={sortDir}
+          onToggle={toggleSort}
+          className="w-28 text-right"
+        />
+        <SortHeader
+          label={t("uptime")}
+          field="uptime"
+          currentField={sortField}
+          currentDir={sortDir}
+          onToggle={toggleSort}
+          className="w-24 text-right"
+        />
+        <SortHeader
+          label={t("connections")}
+          field="connections"
+          currentField={sortField}
+          currentDir={sortDir}
+          onToggle={toggleSort}
+          className="w-28 text-right"
+        />
+        {/* Spacer for expand chevron */}
+        <div className="w-8" />
+      </div>
 
-                return (
-                  <Fragment key={node.name}>
-                    <TableRow
-                      className="hover:bg-accent/50 cursor-pointer"
-                      onClick={() => toggleNodeExpansion(node.name)}
-                    >
-                      <TableCell>
-                        {isExpanded ? (
-                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </TableCell>
-                      <TableCell className="font-medium max-w-[300px]">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <Server className="h-4 w-4 text-blue-600 shrink-0" />
-                          <span
-                            className="text-foreground truncate"
-                            title={node.name}
-                          >
-                            {node.name}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={status.color}>
-                          <StatusIcon className="w-3 h-3 mr-1" />
-                          {status.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between text-sm">
-                            <span>
-                              {node.mem_used
-                                ? formatBytes(node.mem_used)
-                                : "N/A"}
-                            </span>
-                            <span className="text-gray-500">
-                              /{" "}
-                              {node.mem_limit
-                                ? formatBytes(node.mem_limit)
-                                : "N/A"}
-                            </span>
-                          </div>
-                          {node.mem_used && node.mem_limit ? (
-                            <Progress
-                              value={memoryUsage}
-                              className={`h-2 w-20 ${memoryUsage > 80 ? "[&>div]:bg-red-500" : memoryUsage > 60 ? "[&>div]:bg-yellow-500" : "[&>div]:bg-green-500"}`}
-                            />
-                          ) : (
-                            <div className="h-2 w-20 bg-gray-200 rounded"></div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {node.disk_free ? formatBytes(node.disk_free) : "N/A"}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-purple-500" />
-                          <span className="text-gray-700">
-                            {node.uptime ? formatUptime(node.uptime) : "N/A"}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 text-sm">
-                            <HardDrive className="w-3 h-3 text-blue-500" />
-                            <span className="text-xs font-medium text-blue-700">
-                              R:{" "}
-                              {node.io_read_count
-                                ? formatNumber(node.io_read_count)
-                                : "N/A"}
-                            </span>
-                            <span className="text-xs font-medium text-indigo-700">
-                              W:{" "}
-                              {node.io_write_count
-                                ? formatNumber(node.io_write_count)
-                                : "N/A"}
-                            </span>
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            <span className="text-blue-600">
-                              {node.io_read_count_details?.rate
-                                ? formatRate(node.io_read_count_details.rate)
-                                : "0/s"}
-                            </span>{" "}
-                            /{" "}
-                            <span className="text-indigo-600">
-                              {node.io_write_count_details?.rate
-                                ? formatRate(node.io_write_count_details.rate)
-                                : "0/s"}
-                            </span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 text-sm">
-                            <Users className="w-3 h-3 text-green-500" />
-                            <span className="font-medium text-green-700">
-                              {node.connection_created
-                                ? formatNumber(node.connection_created)
-                                : "N/A"}
-                            </span>
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            Active:{" "}
-                            <span className="text-green-600 font-medium">
-                              {node.sockets_used
-                                ? formatNumber(node.sockets_used)
-                                : "N/A"}
-                            </span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between text-sm">
-                            <span>{node.fd_used ? node.fd_used : "N/A"}</span>
-                            <span className="text-gray-500">
-                              / {node.fd_total ? node.fd_total : "N/A"}
-                            </span>
-                          </div>
-                          {node.fd_used && node.fd_total ? (
-                            <Progress
-                              value={fdUsage}
-                              className={`h-2 w-16 ${fdUsage > 80 ? "[&>div]:bg-red-500" : fdUsage > 60 ? "[&>div]:bg-yellow-500" : "[&>div]:bg-green-500"}`}
-                            />
-                          ) : (
-                            <div className="h-2 w-16 bg-gray-200 rounded"></div>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-
-                    {/* Expanded Details Row */}
-                    {isExpanded && (
-                      <TableRow>
-                        <TableCell colSpan={9} className="bg-muted/50 p-6">
-                          <TooltipProvider>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                              {/* Memory Details */}
-                              <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
-                                <div className="flex items-center gap-2">
-                                  <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                                    <MemoryStick className="h-4 w-4 text-blue-600" />
-                                    <span className="text-blue-900">
-                                      Memory Details
-                                    </span>
-                                  </h4>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Info className="h-4 w-4 text-gray-400 hover:text-blue-600 cursor-help" />
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-sm">
-                                      <div className="space-y-2">
-                                        <p className="font-medium">
-                                          Memory Usage & Limits
-                                        </p>
-                                        <p className="text-sm">
-                                          Shows how much RAM this RabbitMQ node
-                                          is using. Monitor for:
-                                        </p>
-                                        <ul className="text-sm space-y-1 ml-4">
-                                          <li>
-                                            • High usage (&gt;80%) - may cause
-                                            performance issues
-                                          </li>
-                                          <li>
-                                            • Memory alarms - node will throttle
-                                            publishers
-                                          </li>
-                                          <li>
-                                            • Usage trending upward over time
-                                          </li>
-                                        </ul>
-                                      </div>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </div>
-                                <div className="space-y-2 text-sm">
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">Used:</span>
-                                    <span className="font-medium text-blue-700">
-                                      {node.mem_used
-                                        ? formatBytes(node.mem_used)
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                      Limit:
-                                    </span>
-                                    <span className="font-medium">
-                                      {node.mem_limit
-                                        ? formatBytes(node.mem_limit)
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                      Usage:
-                                    </span>
-                                    <span
-                                      className={`font-medium ${memoryUsage > 80 ? "text-red-600" : memoryUsage > 60 ? "text-yellow-600" : "text-green-600"}`}
-                                    >
-                                      {node.mem_used && node.mem_limit
-                                        ? `${memoryUsage.toFixed(1)}%`
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                      Alarm:
-                                    </span>
-                                    <Badge
-                                      variant={
-                                        node.mem_alarm
-                                          ? "destructive"
-                                          : "secondary"
-                                      }
-                                    >
-                                      {node.mem_alarm ? "Active" : "None"}
-                                    </Badge>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* I/O Performance */}
-                              <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
-                                <div className="flex items-center gap-2">
-                                  <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                                    <Activity className="h-4 w-4 text-purple-600" />
-                                    <span className="text-purple-900">
-                                      I/O Performance
-                                    </span>
-                                  </h4>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <HelpCircle className="h-4 w-4 text-gray-400 hover:text-purple-600 cursor-help" />
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-sm">
-                                      <div className="space-y-2">
-                                        <p className="font-medium">
-                                          Disk I/O Operations
-                                        </p>
-                                        <p className="text-sm">
-                                          Tracks disk read/write activity.
-                                          Important for:
-                                        </p>
-                                        <ul className="text-sm space-y-1 ml-4">
-                                          <li>
-                                            • High I/O rates may indicate heavy
-                                            message persistence
-                                          </li>
-                                          <li>
-                                            • Slow avg times suggest disk
-                                            bottlenecks
-                                          </li>
-                                          <li>
-                                            • Monitor during peak message loads
-                                          </li>
-                                        </ul>
-                                      </div>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </div>
-                                <div className="space-y-2 text-sm">
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                      Read Ops:
-                                    </span>
-                                    <span className="font-medium text-blue-700">
-                                      {node.io_read_count
-                                        ? formatNumber(node.io_read_count)
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                      Write Ops:
-                                    </span>
-                                    <span className="font-medium text-indigo-700">
-                                      {node.io_write_count
-                                        ? formatNumber(node.io_write_count)
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                      Read Rate:
-                                    </span>
-                                    <span className="font-medium text-blue-600">
-                                      {node.io_read_count_details?.rate
-                                        ? formatRate(
-                                            node.io_read_count_details.rate
-                                          )
-                                        : "0/s"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                      Write Rate:
-                                    </span>
-                                    <span className="font-medium text-indigo-600">
-                                      {node.io_write_count_details?.rate
-                                        ? formatRate(
-                                            node.io_write_count_details.rate
-                                          )
-                                        : "0/s"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                      Avg Read Time:
-                                    </span>
-                                    <span className="font-medium text-purple-700">
-                                      {node.io_read_avg_time
-                                        ? `${node.io_read_avg_time.toFixed(2)}ms`
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                      Avg Write Time:
-                                    </span>
-                                    <span className="font-medium text-purple-700">
-                                      {node.io_write_avg_time
-                                        ? `${node.io_write_avg_time.toFixed(2)}ms`
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Network & Connections */}
-                              <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
-                                <div className="flex items-center gap-2">
-                                  <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                                    <Network className="h-4 w-4 text-green-600" />
-                                    <span className="text-green-900">
-                                      Network Activity
-                                    </span>
-                                  </h4>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Info className="h-4 w-4 text-gray-400 hover:text-green-600 cursor-help" />
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-sm">
-                                      <div className="space-y-2">
-                                        <p className="font-medium">
-                                          Connection & Channel Management
-                                        </p>
-                                        <p className="text-sm">
-                                          Shows network activity and client
-                                          connections. Watch for:
-                                        </p>
-                                        <ul className="text-sm space-y-1 ml-4">
-                                          <li>
-                                            • High connection churn (creates vs
-                                            closes)
-                                          </li>
-                                          <li>
-                                            • Socket exhaustion (near total
-                                            limit)
-                                          </li>
-                                          <li>
-                                            • Channel leaks (channels not
-                                            properly closed)
-                                          </li>
-                                        </ul>
-                                      </div>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </div>
-                                <div className="space-y-2 text-sm">
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                      Connections Created:
-                                    </span>
-                                    <span className="font-medium text-green-700">
-                                      {node.connection_created
-                                        ? formatNumber(node.connection_created)
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                      Connections Closed:
-                                    </span>
-                                    <span className="font-medium text-orange-700">
-                                      {node.connection_closed
-                                        ? formatNumber(node.connection_closed)
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                      Channels Created:
-                                    </span>
-                                    <span className="font-medium text-green-600">
-                                      {node.channel_created
-                                        ? formatNumber(node.channel_created)
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                      Channels Closed:
-                                    </span>
-                                    <span className="font-medium text-orange-600">
-                                      {node.channel_closed
-                                        ? formatNumber(node.channel_closed)
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                      Active Sockets:
-                                    </span>
-                                    <span className="font-medium text-emerald-700">
-                                      {node.sockets_used !== undefined
-                                        ? `${node.sockets_used} / ${node.sockets_total || 0}`
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                      Net Ticktime:
-                                    </span>
-                                    <span className="font-medium">
-                                      {node.net_ticktime
-                                        ? `${node.net_ticktime}s`
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Database & Queue Activity */}
-                              <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
-                                <div className="flex items-center gap-2">
-                                  <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                                    <Database className="h-4 w-4 text-amber-600" />
-                                    <span className="text-amber-900">
-                                      Database Activity
-                                    </span>
-                                  </h4>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <HelpCircle className="h-4 w-4 text-gray-400 hover:text-amber-600 cursor-help" />
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-sm">
-                                      <div className="space-y-2">
-                                        <p className="font-medium">
-                                          Database & Message Store Operations
-                                        </p>
-                                        <p className="text-sm">
-                                          Internal RabbitMQ database activity.
-                                          Key indicators:
-                                        </p>
-                                        <ul className="text-sm space-y-1 ml-4">
-                                          <li>
-                                            • Mnesia transactions manage
-                                            queue/exchange metadata
-                                          </li>
-                                          <li>
-                                            • Message store operations handle
-                                            persistent messages
-                                          </li>
-                                          <li>
-                                            • Queue index tracks message
-                                            positions
-                                          </li>
-                                          <li>
-                                            • High activity during heavy message
-                                            loads
-                                          </li>
-                                        </ul>
-                                      </div>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </div>
-                                <div className="space-y-2 text-sm">
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                      Mnesia RAM Tx:
-                                    </span>
-                                    <span className="font-medium text-amber-700">
-                                      {node.mnesia_ram_tx_count
-                                        ? formatNumber(node.mnesia_ram_tx_count)
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                      Mnesia Disk Tx:
-                                    </span>
-                                    <span className="font-medium text-orange-700">
-                                      {node.mnesia_disk_tx_count
-                                        ? formatNumber(
-                                            node.mnesia_disk_tx_count
-                                          )
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                      Msg Store Reads:
-                                    </span>
-                                    <span className="font-medium text-blue-700">
-                                      {node.msg_store_read_count
-                                        ? formatNumber(
-                                            node.msg_store_read_count
-                                          )
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                      Msg Store Writes:
-                                    </span>
-                                    <span className="font-medium text-indigo-700">
-                                      {node.msg_store_write_count
-                                        ? formatNumber(
-                                            node.msg_store_write_count
-                                          )
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                      Queue Index Reads:
-                                    </span>
-                                    <span className="font-medium text-cyan-700">
-                                      {node.queue_index_read_count
-                                        ? formatNumber(
-                                            node.queue_index_read_count
-                                          )
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                      Queue Index Writes:
-                                    </span>
-                                    <span className="font-medium text-teal-700">
-                                      {node.queue_index_write_count
-                                        ? formatNumber(
-                                            node.queue_index_write_count
-                                          )
-                                        : "N/A"}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Additional System Information */}
-                            <div className="mt-6 pt-6 border-t border-gray-200">
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                {/* System Details */}
-                                <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
-                                  <div className="flex items-center gap-2">
-                                    <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                                      <Cpu className="h-4 w-4 text-slate-600" />
-                                      <span className="text-slate-900">
-                                        System Details
-                                      </span>
-                                    </h4>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Info className="h-4 w-4 text-gray-400 hover:text-slate-600 cursor-help" />
-                                      </TooltipTrigger>
-                                      <TooltipContent className="max-w-sm">
-                                        <div className="space-y-2">
-                                          <p className="font-medium">
-                                            System Resources & Configuration
-                                          </p>
-                                          <p className="text-sm">
-                                            Core system information about this
-                                            node:
-                                          </p>
-                                          <ul className="text-sm space-y-1 ml-4">
-                                            <li>
-                                              • RabbitMQNode type: disk
-                                              (persistent) or ram (temporary)
-                                            </li>
-                                            <li>
-                                              • CPU cores available for Erlang
-                                              processing
-                                            </li>
-                                            <li>
-                                              • Process limits and current usage
-                                            </li>
-                                            <li>
-                                              • Run queue shows system load
-                                            </li>
-                                          </ul>
-                                        </div>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </div>
-                                  <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">
-                                        Type:
-                                      </span>
-                                      <Badge
-                                        variant="outline"
-                                        className="border-slate-300 text-slate-700"
-                                      >
-                                        {node.type}
-                                      </Badge>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">
-                                        Processors:
-                                      </span>
-                                      <span className="font-medium text-slate-700">
-                                        {node.processors || "N/A"}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">
-                                        OS PID:
-                                      </span>
-                                      <span className="font-mono text-xs text-slate-700">
-                                        {node.os_pid || "N/A"}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">
-                                        Run Queue:
-                                      </span>
-                                      <span className="font-medium text-slate-700">
-                                        {node.run_queue !== undefined
-                                          ? node.run_queue
-                                          : "N/A"}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">
-                                        Processes:
-                                      </span>
-                                      <span className="font-medium text-slate-700">
-                                        {node.proc_used !== undefined &&
-                                        node.proc_total !== undefined
-                                          ? `${node.proc_used} / ${node.proc_total}`
-                                          : "N/A"}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* Runtime Information */}
-                                <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
-                                  <div className="flex items-center gap-2">
-                                    <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                                      <Settings className="h-4 w-4 text-rose-600" />
-                                      <span className="text-rose-900">
-                                        Runtime Info
-                                      </span>
-                                    </h4>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <HelpCircle className="h-4 w-4 text-gray-400 hover:text-rose-600 cursor-help" />
-                                      </TooltipTrigger>
-                                      <TooltipContent className="max-w-sm">
-                                        <div className="space-y-2">
-                                          <p className="font-medium">
-                                            Runtime Configuration
-                                          </p>
-                                          <p className="text-sm">
-                                            Shows current runtime configuration:
-                                          </p>
-                                          <ul className="text-sm space-y-1 ml-4">
-                                            <li>
-                                              • Enabled plugins extend RabbitMQ
-                                              functionality
-                                            </li>
-                                            <li>
-                                              • Auth mechanisms available for
-                                              client connections
-                                            </li>
-                                            <li>
-                                              • Exchange types supported by this
-                                              node
-                                            </li>
-                                            <li>
-                                              • Configuration and log file
-                                              counts
-                                            </li>
-                                          </ul>
-                                        </div>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </div>
-                                  <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">
-                                        Enabled Plugins:
-                                      </span>
-                                      <span className="font-medium text-rose-700">
-                                        {node.enabled_plugins?.length || 0}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">
-                                        Auth Mechanisms:
-                                      </span>
-                                      <span className="font-medium text-pink-700">
-                                        {node.auth_mechanisms?.length || 0}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">
-                                        Exchange Types:
-                                      </span>
-                                      <span className="font-medium text-rose-600">
-                                        {node.exchange_types?.length || 0}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">
-                                        Config Files:
-                                      </span>
-                                      <span className="font-medium text-pink-600">
-                                        {node.config_files?.length || 0}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">
-                                        Log Files:
-                                      </span>
-                                      <span className="font-medium text-rose-600">
-                                        {node.log_files?.length || 0}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* Health Status */}
-                                <div className="space-y-3 bg-card rounded-lg p-4 border border-border">
-                                  <div className="flex items-center gap-2">
-                                    <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                                      <Wifi className="h-4 w-4 text-emerald-600" />
-                                      <span className="text-emerald-900">
-                                        Health Status
-                                      </span>
-                                    </h4>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Info className="h-4 w-4 text-gray-400 hover:text-emerald-600 cursor-help" />
-                                      </TooltipTrigger>
-                                      <TooltipContent className="max-w-sm">
-                                        <div className="space-y-2">
-                                          <p className="font-medium">
-                                            RabbitMQNode Health & Alarms
-                                          </p>
-                                          <p className="text-sm">
-                                            Critical health indicators to
-                                            monitor:
-                                          </p>
-                                          <ul className="text-sm space-y-1 ml-4">
-                                            <li>
-                                              • Running status - node
-                                              operational state
-                                            </li>
-                                            <li>
-                                              • Memory/disk alarms - resource
-                                              warnings
-                                            </li>
-                                            <li>
-                                              • Being drained - maintenance mode
-                                            </li>
-                                            <li>
-                                              • Partitions - network split-brain
-                                              issues
-                                            </li>
-                                          </ul>
-                                        </div>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </div>
-                                  <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">
-                                        Running:
-                                      </span>
-                                      <Badge
-                                        variant={
-                                          node.running
-                                            ? "secondary"
-                                            : "destructive"
-                                        }
-                                        className={
-                                          node.running
-                                            ? "bg-green-100 text-green-800 border-green-200"
-                                            : ""
-                                        }
-                                      >
-                                        {node.running ? "Yes" : "No"}
-                                      </Badge>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">
-                                        Being Drained:
-                                      </span>
-                                      <Badge
-                                        variant={
-                                          node.being_drained
-                                            ? "destructive"
-                                            : "secondary"
-                                        }
-                                        className={
-                                          !node.being_drained
-                                            ? "bg-green-100 text-green-800 border-green-200"
-                                            : ""
-                                        }
-                                      >
-                                        {node.being_drained ? "Yes" : "No"}
-                                      </Badge>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">
-                                        Memory Alarm:
-                                      </span>
-                                      <Badge
-                                        variant={
-                                          node.mem_alarm
-                                            ? "destructive"
-                                            : "secondary"
-                                        }
-                                        className={
-                                          !node.mem_alarm
-                                            ? "bg-green-100 text-green-800 border-green-200"
-                                            : ""
-                                        }
-                                      >
-                                        {node.mem_alarm ? "Active" : "None"}
-                                      </Badge>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">
-                                        Disk Alarm:
-                                      </span>
-                                      <Badge
-                                        variant={
-                                          node.disk_free_alarm
-                                            ? "destructive"
-                                            : "secondary"
-                                        }
-                                        className={
-                                          !node.disk_free_alarm
-                                            ? "bg-green-100 text-green-800 border-green-200"
-                                            : ""
-                                        }
-                                      >
-                                        {node.disk_free_alarm
-                                          ? "Active"
-                                          : "None"}
-                                      </Badge>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">
-                                        Partitions:
-                                      </span>
-                                      <Badge
-                                        variant={
-                                          node.partitions?.length > 0
-                                            ? "destructive"
-                                            : "secondary"
-                                        }
-                                        className={
-                                          (node.partitions?.length || 0) === 0
-                                            ? "bg-green-100 text-green-800 border-green-200"
-                                            : ""
-                                        }
-                                      >
-                                        {node.partitions?.length || 0}
-                                      </Badge>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </TooltipProvider>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </Fragment>
-                );
-              })}
-            </TableBody>
-          </Table>
-        ) : (
-          <div className="text-center py-8">
-            <Server className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">No nodes found</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      {/* Rows */}
+      <div className="divide-y divide-border">
+        {sorted.map((node) => (
+          <NodeRow
+            key={node.name}
+            node={node}
+            isOpen={expandedNodes.has(node.name)}
+            onOpenChange={(open) => toggleExpanded(node.name, open)}
+          />
+        ))}
+      </div>
+    </div>
   );
 };
+
+/* ------------------------------------------------------------------ */
+/*  Node Row                                                           */
+/* ------------------------------------------------------------------ */
+
+function NodeRow({
+  node,
+  isOpen,
+  onOpenChange,
+}: {
+  node: RabbitMQNode;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const status = getNodeStatus(node);
+  const StatusIcon = status.icon;
+  const memoryUsage =
+    node.mem_used && node.mem_limit
+      ? (node.mem_used / node.mem_limit) * 100
+      : 0;
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={onOpenChange}>
+      <CollapsibleTrigger asChild>
+        <button
+          type="button"
+          className="w-full flex items-center px-4 py-3 hover:bg-accent transition-colors text-left"
+        >
+          {/* Left: identity */}
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <span
+              className="font-medium truncate font-mono text-sm"
+              title={node.name}
+            >
+              {node.name}
+            </span>
+            <Badge className={status.color}>
+              <StatusIcon className="w-3 h-3 mr-1" />
+              {status.label}
+            </Badge>
+          </div>
+
+          {/* Right: metrics aligned to sort headers */}
+          <div className="flex items-center gap-0">
+            <span className="w-24 hidden xl:block" />
+            <div className="w-32 text-right">
+              <div className="flex items-center justify-end gap-2">
+                <span className="font-mono tabular-nums text-sm text-foreground">
+                  {node.mem_used ? formatBytes(node.mem_used) : "—"}
+                </span>
+              </div>
+              {node.mem_used && node.mem_limit ? (
+                <Progress
+                  value={memoryUsage}
+                  className={`h-1.5 w-16 ml-auto mt-1 ${
+                    memoryUsage > 80
+                      ? "[&>div]:bg-destructive"
+                      : memoryUsage > 60
+                        ? "[&>div]:bg-warning"
+                        : "[&>div]:bg-success"
+                  }`}
+                />
+              ) : null}
+            </div>
+            <span className="w-28 text-right font-mono tabular-nums text-sm text-foreground">
+              {node.disk_free ? formatBytes(node.disk_free) : "—"}
+            </span>
+            <span className="w-24 text-right font-mono tabular-nums text-sm text-muted-foreground">
+              {node.uptime ? formatUptime(node.uptime) : "—"}
+            </span>
+            <span className="w-28 text-right font-mono tabular-nums text-sm text-foreground">
+              {node.sockets_used !== undefined
+                ? formatNumber(node.sockets_used)
+                : "—"}
+            </span>
+            <div className="w-8 flex justify-center">
+              <PixelChevronRight
+                className={`h-3 text-muted-foreground transition-transform duration-150 shrink-0 ${
+                  isOpen ? "rotate-90" : ""
+                }`}
+                aria-hidden="true"
+              />
+            </div>
+          </div>
+        </button>
+      </CollapsibleTrigger>
+
+      <CollapsibleContent>
+        <NodeDetailsPanel node={node} memoryUsage={memoryUsage} />
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Details Panel (expanded)                                           */
+/* ------------------------------------------------------------------ */
+
+function NodeDetailsPanel({
+  node,
+  memoryUsage,
+}: {
+  node: RabbitMQNode;
+  memoryUsage: number;
+}) {
+  return (
+    <div className="border-t border-border bg-muted/20">
+      {/* Primary metrics band — 5 equal sections */}
+      <div className="grid grid-cols-5 divide-x divide-border">
+        {/* Health */}
+        <div className="px-5 py-4">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+            Health
+          </p>
+          <dl className="space-y-2">
+            <ExpandedRow
+              label="Running"
+              value={node.running ? "Yes" : "No"}
+              tone={node.running ? "success" : "destructive"}
+            />
+            <ExpandedRow
+              label="Draining"
+              value={node.being_drained ? "Yes" : "No"}
+              tone={node.being_drained ? "warning" : undefined}
+            />
+            <ExpandedRow
+              label="Mem alarm"
+              value={node.mem_alarm ? "Active" : "None"}
+              tone={node.mem_alarm ? "destructive" : undefined}
+            />
+            <ExpandedRow
+              label="Disk alarm"
+              value={node.disk_free_alarm ? "Active" : "None"}
+              tone={node.disk_free_alarm ? "destructive" : undefined}
+            />
+            <ExpandedRow
+              label="Partitions"
+              value={node.partitions?.length ?? 0}
+              mono
+              tone={
+                (node.partitions?.length ?? 0) > 0 ? "destructive" : undefined
+              }
+            />
+          </dl>
+        </div>
+
+        {/* Memory */}
+        <div className="px-5 py-4">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+            Memory
+          </p>
+          <dl className="space-y-2">
+            <ExpandedRow
+              label="Used"
+              value={node.mem_used ? formatBytes(node.mem_used) : "—"}
+              mono
+            />
+            <ExpandedRow
+              label="Limit"
+              value={node.mem_limit ? formatBytes(node.mem_limit) : "—"}
+              mono
+            />
+            <ExpandedRow
+              label="Usage"
+              value={
+                node.mem_used && node.mem_limit
+                  ? `${memoryUsage.toFixed(1)}%`
+                  : "—"
+              }
+              mono
+              tone={
+                memoryUsage > 90
+                  ? "destructive"
+                  : memoryUsage > 75
+                    ? "warning"
+                    : undefined
+              }
+            />
+            <ExpandedRow
+              label="Disk free"
+              value={node.disk_free ? formatBytes(node.disk_free) : "—"}
+              mono
+            />
+          </dl>
+        </div>
+
+        {/* Disk I/O */}
+        <div className="px-5 py-4">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+            Disk I/O
+          </p>
+          <dl className="space-y-2">
+            <ExpandedRow
+              label="Reads"
+              value={
+                node.io_read_count ? formatNumber(node.io_read_count) : "—"
+              }
+              mono
+            />
+            <ExpandedRow
+              label="Writes"
+              value={
+                node.io_write_count ? formatNumber(node.io_write_count) : "—"
+              }
+              mono
+            />
+            <ExpandedRow
+              label="Read rate"
+              value={
+                node.io_read_count_details?.rate
+                  ? formatRate(node.io_read_count_details.rate)
+                  : "0/s"
+              }
+              mono
+            />
+            <ExpandedRow
+              label="Write rate"
+              value={
+                node.io_write_count_details?.rate
+                  ? formatRate(node.io_write_count_details.rate)
+                  : "0/s"
+              }
+              mono
+            />
+            <ExpandedRow
+              label="Avg read"
+              value={
+                node.io_read_avg_time
+                  ? `${node.io_read_avg_time.toFixed(2)}ms`
+                  : "—"
+              }
+              mono
+            />
+            <ExpandedRow
+              label="Avg write"
+              value={
+                node.io_write_avg_time
+                  ? `${node.io_write_avg_time.toFixed(2)}ms`
+                  : "—"
+              }
+              mono
+            />
+          </dl>
+        </div>
+
+        {/* Connections */}
+        <div className="px-5 py-4">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+            Connections
+          </p>
+          <dl className="space-y-2">
+            <ExpandedRow
+              label="Sockets"
+              value={
+                node.sockets_used !== undefined
+                  ? `${node.sockets_used} / ${node.sockets_total ?? 0}`
+                  : "—"
+              }
+              mono
+            />
+            <ExpandedRow
+              label="Created"
+              value={
+                node.connection_created
+                  ? formatNumber(node.connection_created)
+                  : "—"
+              }
+              mono
+            />
+            <ExpandedRow
+              label="Closed"
+              value={
+                node.connection_closed
+                  ? formatNumber(node.connection_closed)
+                  : "—"
+              }
+              mono
+            />
+            <ExpandedRow
+              label="Channels"
+              value={
+                node.channel_created ? formatNumber(node.channel_created) : "—"
+              }
+              mono
+            />
+            <ExpandedRow
+              label="Net tick"
+              value={node.net_ticktime ? `${node.net_ticktime}s` : "—"}
+              mono
+            />
+          </dl>
+        </div>
+
+        {/* System */}
+        <div className="px-5 py-4">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+            System
+          </p>
+          <dl className="space-y-2">
+            <ExpandedRow label="Type" value={node.type ?? "—"} />
+            <ExpandedRow
+              label="Processors"
+              value={node.processors ?? "—"}
+              mono
+            />
+            <ExpandedRow label="OS PID" value={node.os_pid ?? "—"} mono />
+            <ExpandedRow
+              label="Run queue"
+              value={node.run_queue !== undefined ? node.run_queue : "—"}
+              mono
+            />
+            <ExpandedRow
+              label="Processes"
+              value={
+                node.proc_used !== undefined && node.proc_total !== undefined
+                  ? `${node.proc_used} / ${node.proc_total}`
+                  : "—"
+              }
+              mono
+            />
+            <ExpandedRow
+              label="Plugins"
+              value={node.enabled_plugins?.length ?? 0}
+              mono
+            />
+          </dl>
+        </div>
+      </div>
+
+      {/* Internal store — secondary diagnostic strip */}
+      <div className="px-5 py-3 border-t border-border/60 flex flex-wrap gap-x-6 gap-y-1.5">
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest w-full mb-0.5">
+          Internal store
+        </p>
+        <InlineMetric
+          label="Mnesia RAM"
+          value={
+            node.mnesia_ram_tx_count
+              ? formatNumber(node.mnesia_ram_tx_count)
+              : "—"
+          }
+        />
+        <InlineMetric
+          label="Mnesia disk"
+          value={
+            node.mnesia_disk_tx_count
+              ? formatNumber(node.mnesia_disk_tx_count)
+              : "—"
+          }
+        />
+        <InlineMetric
+          label="Msg reads"
+          value={
+            node.msg_store_read_count
+              ? formatNumber(node.msg_store_read_count)
+              : "—"
+          }
+        />
+        <InlineMetric
+          label="Msg writes"
+          value={
+            node.msg_store_write_count
+              ? formatNumber(node.msg_store_write_count)
+              : "—"
+          }
+        />
+        <InlineMetric
+          label="Queue idx R"
+          value={
+            node.queue_index_read_count
+              ? formatNumber(node.queue_index_read_count)
+              : "—"
+          }
+        />
+        <InlineMetric
+          label="Queue idx W"
+          value={
+            node.queue_index_write_count
+              ? formatNumber(node.queue_index_write_count)
+              : "—"
+          }
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Shared sub-components                                              */
+/* ------------------------------------------------------------------ */
+
+function ExpandedRow({
+  label,
+  value,
+  mono = false,
+  tone,
+}: {
+  label: string;
+  value: string | number;
+  mono?: boolean;
+  tone?: "success" | "warning" | "destructive";
+}) {
+  const toneClass =
+    tone === "success"
+      ? "text-success"
+      : tone === "warning"
+        ? "text-warning"
+        : tone === "destructive"
+          ? "text-destructive"
+          : "text-foreground";
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <dt className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
+        {label}
+      </dt>
+      <dd
+        className={`text-xs font-medium text-right ${toneClass} ${mono ? "font-mono tabular-nums" : ""}`}
+      >
+        {value}
+      </dd>
+    </div>
+  );
+}
+
+function InlineMetric({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number;
+}) {
+  return (
+    <div className="flex items-baseline gap-1.5">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className="text-xs font-mono tabular-nums text-muted-foreground/80">
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function SortHeader({
+  label,
+  field,
+  currentField,
+  currentDir,
+  onToggle,
+  className = "",
+}: {
+  label: string;
+  field: SortField;
+  currentField: SortField;
+  currentDir: SortDir;
+  onToggle: (field: SortField) => void;
+  className?: string;
+}) {
+  const isActive = currentField === field;
+  return (
+    <button
+      type="button"
+      onClick={() => onToggle(field)}
+      className={`inline-flex items-center gap-1 hover:text-foreground transition-colors ${
+        isActive ? "text-foreground" : ""
+      } ${className}`}
+    >
+      {label}
+      {isActive ? (
+        currentDir === "asc" ? (
+          <ArrowUp className="h-3 w-3" />
+        ) : (
+          <ArrowDown className="h-3 w-3" />
+        )
+      ) : (
+        <ArrowUpDown className="h-3 w-3 opacity-40" />
+      )}
+    </button>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Utility functions                                                  */
+/* ------------------------------------------------------------------ */
+
+function getNodeStatus(node: RabbitMQNode) {
+  if (!node.running) {
+    return {
+      label: "Error",
+      color: "bg-destructive/10 text-destructive",
+      icon: XCircle,
+    };
+  }
+
+  const memoryUsage =
+    node.mem_used && node.mem_limit
+      ? (node.mem_used / node.mem_limit) * 100
+      : 0;
+  const diskUsage =
+    node.disk_free_limit && node.disk_free
+      ? ((node.disk_free_limit - node.disk_free) / node.disk_free_limit) * 100
+      : 0;
+
+  if (memoryUsage > 80 || diskUsage > 80) {
+    return {
+      label: "Warning",
+      color: "bg-warning-muted text-warning",
+      icon: AlertTriangle,
+    };
+  }
+
+  return {
+    label: "Healthy",
+    color: "bg-success-muted text-success",
+    icon: CheckCircle,
+  };
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+}
+
+function formatUptime(uptime: number): string {
+  const seconds = Math.floor(uptime / 1000);
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+}
+
+function formatNumber(num: number): string {
+  if (num >= 1e6) return (num / 1e6).toFixed(1) + "M";
+  if (num >= 1e3) return (num / 1e3).toFixed(1) + "K";
+  return num?.toString();
+}
+
+function formatRate(rate: number): string {
+  return rate > 0 ? `${rate.toFixed(1)}/s` : "0/s";
+}

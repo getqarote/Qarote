@@ -1,52 +1,87 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 import { AlertCircle, CheckCircle, Clock, Receipt } from "lucide-react";
 
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+
+type PaymentStatus =
+  | "SUCCEEDED"
+  | "FAILED"
+  | "CANCELED"
+  | "PENDING"
+  | "REQUIRES_ACTION";
+
+interface StatusStyle {
+  icon: React.ReactNode;
+  iconBg: string;
+  badge: string;
+  labelKey: string;
+}
 
 // Matches PaymentStatus enum: SUCCEEDED, PENDING, FAILED, CANCELED, REQUIRES_ACTION
-function getStatusStyle(status: string) {
-  switch (status) {
+function getStatusStyle(status: string): StatusStyle {
+  switch (status as PaymentStatus) {
     case "SUCCEEDED":
       return {
         icon: (
-          <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          <CheckCircle className="h-4 w-4 text-success" aria-hidden="true" />
         ),
-        iconBg: "bg-emerald-50 dark:bg-emerald-950/30",
-        badge:
-          "text-emerald-600 border-emerald-200 bg-emerald-50 dark:text-emerald-400 dark:border-emerald-800 dark:bg-emerald-950/30",
+        iconBg: "bg-success-muted",
+        badge: "text-success border-success/30 bg-success-muted",
+        labelKey: "paymentStatus.succeeded",
       };
     case "FAILED":
       return {
         icon: (
-          <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+          <AlertCircle
+            className="h-4 w-4 text-destructive"
+            aria-hidden="true"
+          />
         ),
-        iconBg: "bg-red-50 dark:bg-red-950/30",
-        badge:
-          "text-red-600 border-red-200 bg-red-50 dark:text-red-400 dark:border-red-800 dark:bg-red-950/30",
+        iconBg: "bg-destructive/10",
+        badge: "text-destructive border-destructive/30 bg-destructive/10",
+        labelKey: "paymentStatus.failed",
       };
     case "CANCELED":
       return {
-        icon: <AlertCircle className="w-4 h-4 text-muted-foreground" />,
+        icon: (
+          <AlertCircle
+            className="h-4 w-4 text-muted-foreground"
+            aria-hidden="true"
+          />
+        ),
         iconBg: "bg-muted",
         badge: "text-muted-foreground border-border bg-muted",
+        labelKey: "paymentStatus.canceled",
       };
     case "PENDING":
+      return {
+        icon: <Clock className="h-4 w-4 text-warning" aria-hidden="true" />,
+        iconBg: "bg-warning-muted",
+        badge: "text-warning border-warning/30 bg-warning-muted",
+        labelKey: "paymentStatus.pending",
+      };
     case "REQUIRES_ACTION":
       return {
-        icon: <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />,
-        iconBg: "bg-amber-50 dark:bg-amber-950/30",
-        badge:
-          "text-amber-600 border-amber-200 bg-amber-50 dark:text-amber-400 dark:border-amber-800 dark:bg-amber-950/30",
+        icon: <Clock className="h-4 w-4 text-warning" aria-hidden="true" />,
+        iconBg: "bg-warning-muted",
+        badge: "text-warning border-warning/30 bg-warning-muted",
+        labelKey: "paymentStatus.requiresAction",
       };
     default:
       return {
-        icon: <Receipt className="w-4 h-4 text-muted-foreground" />,
+        icon: (
+          <Receipt
+            className="h-4 w-4 text-muted-foreground"
+            aria-hidden="true"
+          />
+        ),
         iconBg: "bg-muted",
         badge: "text-muted-foreground border-border bg-muted",
+        labelKey: "paymentStatus.pending",
       };
   }
 }
@@ -64,61 +99,69 @@ interface RecentPaymentsProps {
 export const RecentPayments: React.FC<RecentPaymentsProps> = ({
   recentPayments,
 }) => {
+  const { t } = useTranslation("billing");
+
   if (recentPayments.length === 0) {
     return null;
   }
 
   return (
-    <Card>
-      <CardContent className="pt-6 pb-2 px-6">
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="p-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
-            <Receipt className="w-4 h-4 text-muted-foreground" />
+          <div
+            className="flex items-center justify-center h-9 w-9 rounded-lg bg-primary/10 shrink-0"
+            aria-hidden="true"
+          >
+            <Receipt className="h-4 w-4 text-primary" />
           </div>
-          <div>
-            <h3 className="font-semibold text-sm">Recent Payments</h3>
+          <div className="min-w-0">
+            <h3 className="font-semibold text-sm leading-tight">
+              {t("recentPayments.title")}
+            </h3>
             <p className="text-xs text-muted-foreground">
-              Your latest transactions
+              {t("recentPayments.subtitle")}
             </p>
           </div>
         </div>
 
-        <div className="divide-y divide-border">
-          {recentPayments.map((payment) => (
-            <div
-              key={payment.id}
-              className="flex items-center justify-between py-3"
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`h-8 w-8 rounded-full ${getStatusStyle(payment.status).iconBg} flex items-center justify-center shrink-0`}
-                >
-                  {getStatusStyle(payment.status).icon}
+        <ul className="divide-y divide-border">
+          {recentPayments.map((payment) => {
+            const style = getStatusStyle(payment.status);
+            return (
+              <li
+                key={payment.id}
+                className="flex items-center justify-between py-3 first:pt-0 last:pb-0"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div
+                    className={`flex items-center justify-center h-8 w-8 rounded-full shrink-0 ${style.iconBg}`}
+                  >
+                    {style.icon}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">
+                      {payment.description ||
+                        t("recentPayments.defaultDescription")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatDate(new Date(payment.createdAt))}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium">
-                    {payment.description || "Subscription payment"}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatDate(new Date(payment.createdAt))}
+                <div className="flex items-center gap-3 shrink-0">
+                  <Badge variant="outline" className={`text-xs ${style.badge}`}>
+                    {t(style.labelKey)}
+                  </Badge>
+                  <p className="font-semibold text-sm tabular-nums">
+                    {formatCurrency(payment.amount)}
                   </p>
                 </div>
-              </div>
-              <div className="text-right flex items-center gap-3">
-                <Badge
-                  variant="outline"
-                  className={`text-xs ${getStatusStyle(payment.status).badge}`}
-                >
-                  {payment.status}
-                </Badge>
-                <p className="font-semibold text-sm tabular-nums">
-                  {formatCurrency(payment.amount)}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </div>
   );
 };

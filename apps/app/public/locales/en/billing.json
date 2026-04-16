@@ -5,6 +5,27 @@
     "noInfo": "No organization billing information available.",
     "billingTitle": "Billing"
   },
+  "header": {
+    "title": "Billing & usage",
+    "subtitle": "Manage your subscription and payment details",
+    "backAriaLabel": "Back to subscription"
+  },
+  "errors": {
+    "loadTitle": "Unable to load billing information",
+    "loadDescription": "Please try again later or contact support."
+  },
+  "recentPayments": {
+    "title": "Recent payments",
+    "subtitle": "Your latest transactions",
+    "defaultDescription": "Subscription payment"
+  },
+  "paymentStatus": {
+    "succeeded": "Succeeded",
+    "failed": "Failed",
+    "canceled": "Canceled",
+    "pending": "Pending",
+    "requiresAction": "Action required"
+  },
   "plans": {
     "chooseYourPlan": "Choose Your Plan",
     "subtitle": "Scale your RabbitMQ monitoring with plans designed for teams of all sizes.",
@@ -70,21 +91,21 @@
     "description": "Your payment has been processed successfully.",
     "planActivated": "{{plan}} plan activated",
     "welcomeMessage": "Welcome to your new plan! Enjoy all the features.",
-    "exploreDashboard": "Explore Dashboard",
-    "manageSubscription": "Manage Subscription",
+    "exploreDashboard": "Explore dashboard",
+    "manageSubscription": "Manage subscription",
     "needHelp": "Need help? Contact our support team."
   },
   "paymentCancelled": {
     "title": "Payment Cancelled",
     "description": "Your payment was cancelled. No charges were made.",
-    "tryAgain": "Try Again",
+    "tryAgain": "Try again",
     "processing": "Processing...",
     "backToDashboard": "Back to Dashboard"
   },
   "upgradeModal": {
     "licenseRequired": "License Required",
     "licenseDescription": "To use {{feature}}, activate a license key on the License page.",
-    "activateLicense": "Activate License",
+    "activateLicense": "Activate license",
     "purchase": "Purchase",
     "loadingPlans": "Loading plans...",
     "upgradeYourPlan": "Upgrade Your Plan",
@@ -114,7 +135,15 @@
     "trialActiveWithPayment": "Your trial is active until {{date}}. Your subscription will start automatically when the trial ends.",
     "cancelTrial": "Cancel Trial",
     "trialCanceled": "Trial canceled",
-    "trialEndsOnDate": "Your trial will end on {{date}}. You will be downgraded to the Free plan."
+    "trialEndsOnDate": "Your trial will end on {{date}}. You will be downgraded to the Free plan.",
+    "started": "Trial started",
+    "endsDate": "Trial ends {{date}}",
+    "daysRemaining": "{{count}} days remaining",
+    "daysRemaining_one": "{{count}} day remaining in trial",
+    "daysRemaining_other": "{{count}} days remaining in trial",
+    "daysLeft": "{{count}} days left",
+    "daysLeft_one": "{{count}} day left",
+    "daysLeft_other": "{{count}} days left"
   },
   "currentPlan": {
     "noSubscription": "No subscription required",
@@ -125,7 +154,10 @@
     "paymentMethod": "Payment Method",
     "planName": "{{plan}} Plan",
     "activeSubscription": "Your active subscription",
-    "changePaymentMethod": "Change payment method"
+    "changePaymentMethod": "Change payment method",
+    "toDate": "to {{date}}",
+    "canceling": "Canceling",
+    "addPaymentMethodCta": "Add payment method"
   },
   "status": {
     "active": "Active"
@@ -135,7 +167,7 @@
     "description": "Manage your plan, billing cycle, and subscription settings for all your workspaces",
     "renewPlan": "Renew {{plan}} Plan",
     "reactivate": "Reactivate",
-    "cancelSubscription": "Cancel Subscription",
+    "cancelSubscription": "Cancel subscription",
     "endsSoon": "Ends soon",
     "endsOn": "Ends {{date}}",
     "readyToComeBack": "Ready to come back?",
@@ -157,17 +189,17 @@
     "support": "Support",
     "unlockPremium": "Unlock premium features",
     "unlockPremiumDesc": "Activate a license to unlock alerting, Slack & webhook integrations, and more",
-    "activateLicense": "Activate License",
+    "activateLicense": "Activate license",
     "purchase": "Purchase",
     "readyToGrow": "Ready to grow? Upgrade to {{plan}}",
     "unlockMore": "Unlock more features and higher limits",
     "youllGet": "You'll get:",
     "processing": "Processing...",
-    "upgradeNow": "Upgrade Now",
+    "upgradeNow": "Upgrade now",
     "billingUsage": "Billing & Usage",
     "manageSubscription": "View recent payments, manage subscription, and cancellation",
     "manage": "Manage",
-    "comparePlans": "Compare Plans",
+    "comparePlans": "Compare plans",
     "seeAllOptions": "See all available options",
     "compare": "Compare",
     "license": "License",

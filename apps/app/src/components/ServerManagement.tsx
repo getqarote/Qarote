@@ -1,14 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
-import {
-  Edit,
-  Loader2,
-  Plus,
-  Server as ServerIcon,
-  Settings,
-  Trash2,
-} from "lucide-react";
+import { Loader2, Server as ServerIcon, Settings } from "lucide-react";
 import { toast } from "sonner";
 
 import { Server } from "@/lib/api/types";
@@ -34,6 +27,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { PixelEdit } from "@/components/ui/pixel-edit";
+import { PixelTrash } from "@/components/ui/pixel-trash";
 
 import { useServerContext } from "@/contexts/ServerContext";
 
@@ -66,25 +61,19 @@ export function ServerManagement({ trigger }: ServerManagementProps) {
       <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Server Management
-          </DialogTitle>
+          <DialogTitle>Server Management</DialogTitle>
           <DialogDescription>
             Add, edit, or remove RabbitMQ server connections.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Add Server Button */}
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium">Your Servers</h3>
-          </div>
+          <h3 className="text-lg font-medium">Your Servers</h3>
 
           {/* Server List */}
           {servers.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <ServerIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <div className="text-center py-8 text-muted-foreground">
+              <ServerIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <p className="text-lg font-medium mb-2">No servers configured</p>
               <p className="text-sm">
                 Add your first RabbitMQ server to get started.
@@ -106,7 +95,6 @@ export function ServerManagement({ trigger }: ServerManagementProps) {
           <AddServerForm
             trigger={
               <button className="flex items-center gap-2 w-full p-4 border-2 border-dashed rounded-lg text-muted-foreground hover:text-foreground hover:border-primary/50 hover:bg-accent cursor-pointer transition-colors">
-                <Plus className="h-4 w-4" />
                 <span className="font-medium">Add Server</span>
               </button>
             }
@@ -170,14 +158,11 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
   return (
     <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent">
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-white-100 rounded-lg">
-          <ServerIcon className="h-4 w-4 text-orange-600" />
-        </div>
         <div>
           <div className="flex items-center gap-2">
             <h4 className="font-medium">{server.name}</h4>
           </div>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             {server.username}@{server.host}:{server.port} ({server.vhost})
           </p>
         </div>
@@ -188,10 +173,10 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
           variant="ghost"
           size="sm"
           onClick={() => setIsEditDialogOpen(true)}
-          className="text-muted-foreground hover:text-foreground hover:bg-accent"
+          className="text-muted-foreground hover:text-foreground hover:bg-muted"
           title="Edit Server"
         >
-          <Edit className="h-4 w-4" />
+          <PixelEdit className="h-4 w-auto shrink-0" />
         </Button>
         <Button
           variant="ghost"
@@ -200,7 +185,7 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
           className="text-destructive hover:text-destructive hover:bg-destructive/10"
           title="Delete Server"
         >
-          <Trash2 className="h-4 w-4" />
+          <PixelTrash className="h-4 w-auto shrink-0" />
         </Button>
       </div>
 
@@ -220,24 +205,21 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <Trash2 className="h-5 w-5 text-red-500" />
-              Delete Server
-            </AlertDialogTitle>
+            <AlertDialogTitle>Delete Server</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete the server{" "}
               <strong>"{server.name}"</strong>?
             </AlertDialogDescription>
             <div className="space-y-2 mt-4">
-              <div className="bg-gray-50 p-3 rounded-lg text-sm">
-                <div className="flex items-center gap-2 text-gray-600">
+              <div className="bg-muted p-3 rounded-lg text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground">
                   <ServerIcon className="h-4 w-4" />
                   <span>
                     {server.host}:{server.port} ({server.vhost})
                   </span>
                 </div>
               </div>
-              <p className="text-red-600 font-medium text-sm">
+              <p className="text-destructive font-medium text-sm">
                 This action cannot be undone. All associated data and
                 configurations will be permanently removed.
               </p>
@@ -248,7 +230,7 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
             <AlertDialogAction
               onClick={handleDeleteServer}
               disabled={deleteServerMutation.isPending}
-              className="bg-red-500 hover:bg-red-600 focus:ring-red-500"
+              className="bg-destructive hover:bg-destructive/90"
             >
               {deleteServerMutation.isPending ? (
                 <>
@@ -257,7 +239,7 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
                 </>
               ) : (
                 <>
-                  <Trash2 className="mr-2 h-4 w-4" />
+                  <PixelTrash className="h-4 w-auto shrink-0 mr-2" />
                   Delete Server
                 </>
               )}

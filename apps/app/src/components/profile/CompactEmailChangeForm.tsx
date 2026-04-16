@@ -1,15 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import {
-  AlertCircle,
-  CheckCircle,
-  Eye,
-  EyeOff,
-  Info,
-  Mail,
-  X,
-} from "lucide-react";
+import { AlertCircle, CheckCircle, Eye, EyeOff, Info } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
@@ -19,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PixelX } from "@/components/ui/pixel-x";
 
 interface CompactEmailChangeFormProps {
   currentEmail: string;
@@ -116,7 +109,6 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
       {/* Current Email Status */}
       <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
         <div className="flex items-center gap-2">
-          <Mail className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-medium">Current:</span>
           <span className="text-sm">{currentEmail}</span>
         </div>
@@ -127,17 +119,17 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
 
       {/* Security Notice / Email Disabled Notice */}
       {emailEnabled ? (
-        <Alert className="border-blue-200 bg-blue-50">
-          <CheckCircle className="h-4 w-4 text-blue-600" />
-          <AlertDescription className="text-xs text-blue-700">
+        <Alert className="border-info/30 bg-info-muted">
+          <CheckCircle className="h-4 w-4 text-info" />
+          <AlertDescription className="text-xs text-info">
             <strong>Security:</strong> We'll send a verification link to your
             new email. Your current email remains active until verified.
           </AlertDescription>
         </Alert>
       ) : (
-        <Alert className="border-amber-200 bg-amber-50">
-          <Info className="h-4 w-4 text-amber-600" />
-          <AlertDescription className="text-xs text-amber-700">
+        <Alert className="border-warning/30 bg-warning-muted">
+          <Info className="h-4 w-4 text-warning" />
+          <AlertDescription className="text-xs text-warning">
             {t("emailChange.smtpDisabledMessage")}
           </AlertDescription>
         </Alert>
@@ -145,15 +137,15 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
 
       {/* Pending Email Change Status */}
       {hasPendingEmailChange && pendingEmail && (
-        <Alert className="border-orange-200 bg-orange-50">
-          <AlertCircle className="h-4 w-4 text-orange-600" />
+        <Alert className="border-warning/30 bg-warning-muted">
+          <AlertCircle className="h-4 w-4 text-warning" />
           <AlertDescription className="flex items-center justify-between">
             <div className="flex-1">
-              <div className="font-medium text-orange-800">
+              <div className="font-medium text-warning">
                 Email change pending
               </div>
-              <div className="text-sm text-orange-700 mt-1">{pendingEmail}</div>
-              <div className="text-xs text-orange-600 mt-1">
+              <div className="text-sm text-warning mt-1">{pendingEmail}</div>
+              <div className="text-xs text-warning mt-1">
                 Check your new email inbox and verify to complete the change
               </div>
             </div>
@@ -164,7 +156,7 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
               disabled={isCancelling}
               className="ml-3 shrink-0"
             >
-              <X className="h-3 w-3 mr-1" />
+              <PixelX className="h-3 w-auto shrink-0 mr-1" />
               Cancel
             </Button>
           </AlertDescription>
@@ -241,25 +233,6 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
               disabled={isLoading}
               size="sm"
               className="w-full"
-              style={{
-                background: isLoading
-                  ? "#9ca3af"
-                  : "linear-gradient(135deg, #f97316 0%, #dc2626 100%)",
-                color: "white",
-                border: "none",
-              }}
-              onMouseEnter={(e) => {
-                if (!isLoading) {
-                  e.currentTarget.style.background =
-                    "linear-gradient(135deg, #ea580c 0%, #b91c1c 100%)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isLoading) {
-                  e.currentTarget.style.background =
-                    "linear-gradient(135deg, #f97316 0%, #dc2626 100%)";
-                }
-              }}
             >
               {isLoading ? (
                 <>
@@ -267,10 +240,7 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
                   Requesting...
                 </>
               ) : (
-                <>
-                  <Mail className="h-3 w-3 mr-2" />
-                  Request Email Change
-                </>
+                "Request email change"
               )}
             </Button>
           </form>

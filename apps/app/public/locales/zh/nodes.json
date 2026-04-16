@@ -3,5 +3,13 @@
   "pageSubtitle": "集群节点及其指标的详细视图",
   "noServerTitle": "节点",
   "noServerDescription": "添加 RabbitMQ 服务器连接以查看集群节点及其指标。",
-  "selectServerPrompt": "请选择一个 RabbitMQ 服务器以查看其节点"
+  "selectServerPrompt": "请选择一个 RabbitMQ 服务器以查看其节点",
+  "nodeName": "节点",
+  "status": "状态",
+  "memory": "内存",
+  "diskFree": "可用磁盘",
+  "uptime": "运行时间",
+  "connections": "连接数",
+  "noNodesFound": "未找到节点",
+  "permissionErrorTitle": "节点信息不可用"
 }

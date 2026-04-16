@@ -158,11 +158,11 @@ export default function VerifyEmail() {
 
   if (verificationState.loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-              <RefreshCw className="h-6 w-6 text-blue-600 animate-spin" />
+            <div className="mx-auto mb-4 w-12 h-12 bg-info-muted rounded-full flex items-center justify-center">
+              <RefreshCw className="h-6 w-6 text-info animate-spin" />
             </div>
             <CardTitle>{t("verifyingEmail")}</CardTitle>
             <CardDescription>{t("verifyingEmailDescription")}</CardDescription>
@@ -179,18 +179,18 @@ export default function VerifyEmail() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-muted">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div
             className={`mx-auto mb-4 w-12 h-12 rounded-full flex items-center justify-center ${
-              result.success ? "bg-green-100" : "bg-red-100"
+              result.success ? "bg-success-muted" : "bg-destructive/10"
             }`}
           >
             {result.success ? (
-              <CheckCircle className="h-6 w-6 text-green-600" />
+              <CheckCircle className="h-6 w-6 text-success" />
             ) : (
-              <XCircle className="h-6 w-6 text-red-600" />
+              <XCircle className="h-6 w-6 text-destructive" />
             )}
           </div>
           <CardTitle>
@@ -208,9 +208,9 @@ export default function VerifyEmail() {
         <CardContent className="space-y-4">
           {result.success ? (
             <>
-              <Alert className="border-green-200 bg-green-50">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-green-800">
+              <Alert className="border-success/30 bg-success-muted">
+                <CheckCircle className="h-4 w-4 text-success" />
+                <AlertDescription className="text-success">
                   {result.message || t("emailVerificationComplete")}
                   {result.type === "SIGNUP" && t("signupVerifiedExtra")}
                 </AlertDescription>
@@ -221,20 +221,20 @@ export default function VerifyEmail() {
                   onClick={
                     isAuthenticated ? handleGoToDashboard : handleGoToSignIn
                   }
-                  className="w-full bg-gradient-button hover:bg-gradient-button-hover"
+                  className="w-full bg-primary hover:bg-primary/90"
                 >
                   {isAuthenticated ? t("goToDashboard") : t("signInToContinue")}
                 </Button>
-                <p className="text-sm text-gray-500 text-center">
+                <p className="text-sm text-muted-foreground text-center">
                   {t("redirectingAutomatically")}
                 </p>
               </div>
             </>
           ) : (
             <>
-              <Alert className="border-red-200 bg-red-50">
-                <XCircle className="h-4 w-4 text-red-600" />
-                <AlertDescription className="text-red-800">
+              <Alert className="border-destructive/30 bg-destructive/10">
+                <XCircle className="h-4 w-4 text-destructive" />
+                <AlertDescription className="text-destructive">
                   {result.error}
                 </AlertDescription>
               </Alert>

@@ -8,7 +8,7 @@
     "description": "Privacy Policy for Qarote - Learn how we collect, use, and protect your data.",
     "sections": {
       "informationWeCollect": {
-        "title": "1. Information We Collect",
+        "title": "Information We Collect",
         "accountInfo": {
           "title": "1.1 Account Information",
           "description": "When you create an account with Qarote, we collect:",
@@ -43,7 +43,7 @@
         }
       },
       "howWeUse": {
-        "title": "2. How We Use Your Information",
+        "title": "How We Use Your Information",
         "description": "We use the information we collect to:",
         "items": [
           "Provide and maintain our RabbitMQ monitoring service",
@@ -56,7 +56,7 @@
         ]
       },
       "informationSharing": {
-        "title": "3. Information Sharing and Disclosure",
+        "title": "Information Sharing and Disclosure",
         "description": "We do not sell, trade, or rent your personal information to third parties. We may share your information only in the following circumstances:",
         "serviceProviders": {
           "title": "3.1 Service Providers",
@@ -80,7 +80,7 @@
         }
       },
       "dataSecurity": {
-        "title": "4. Data Security",
+        "title": "Data Security",
         "description": "We implement appropriate security measures to protect your personal information:",
         "items": [
           "Encryption of data in transit and at rest",
@@ -92,7 +92,7 @@
         "disclaimer": "However, no method of transmission over the internet or electronic storage is 100% secure. While we strive to protect your information, we cannot guarantee absolute security."
       },
       "dataRetention": {
-        "title": "5. Data Retention",
+        "title": "Data Retention",
         "description": "We retain your personal information for as long as necessary to provide our service and fulfill the purposes outlined in this privacy policy. Specifically:",
         "items": [
           "Account information: Until you delete your account",
@@ -102,7 +102,7 @@
         ]
       },
       "yourRights": {
-        "title": "6. Your Rights",
+        "title": "Your Rights",
         "description": "Depending on your location, you may have the following rights regarding your personal information:",
         "items": {
           "access": {
@@ -133,7 +133,7 @@
         "contact": "To exercise these rights, please contact us at privacy@qarote.io"
       },
       "cookies": {
-        "title": "7. Cookies and Tracking",
+        "title": "Cookies and Tracking",
         "description": "We use cookies and similar technologies to enhance your experience:",
         "items": {
           "essential": {
@@ -156,7 +156,7 @@
         "control": "You can control cookie settings through your browser preferences."
       },
       "internationalTransfers": {
-        "title": "8. International Data Transfers",
+        "title": "International Data Transfers",
         "description": "Your information may be transferred to and processed in countries other than your own. We ensure appropriate safeguards are in place for such transfers, including:",
         "items": [
           "Standard contractual clauses",
@@ -166,11 +166,11 @@
         ]
       },
       "childrensPrivacy": {
-        "title": "9. Children's Privacy",
+        "title": "Children's Privacy",
         "description": "Our service is not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If you become aware that a child has provided us with personal information, please contact us immediately."
       },
       "changes": {
-        "title": "10. Changes to This Privacy Policy",
+        "title": "Changes to This Privacy Policy",
         "description": "We may update this privacy policy from time to time. We will notify you of any material changes by:",
         "items": [
           "Posting the updated policy on our website",
@@ -180,7 +180,7 @@
         "continued": "Your continued use of our service after any changes constitutes acceptance of the updated policy."
       },
       "contactUs": {
-        "title": "11. Contact Us",
+        "title": "Contact Us",
         "description": "If you have any questions about this privacy policy or our data practices, please contact us:",
         "email": "support@qarote.io",
         "address": "229 rue Saint-Honoré, 75001, Paris, France"
@@ -193,12 +193,12 @@
     "description": "Terms of Service for Qarote - Learn about your rights and responsibilities when using our service.",
     "sections": {
       "acceptance": {
-        "title": "1. Acceptance of Terms",
+        "title": "Acceptance of Terms",
         "p1": "By accessing and using Qarote (\"the Service\"), you accept and agree to be bound by the terms and provisions of this agreement. If you do not agree to abide by the above, please do not use this service.",
         "p2": "These Terms of Service (\"Terms\") govern your use of our RabbitMQ monitoring and management platform operated by Qarote (\"us\", \"we\", or \"our\")."
       },
       "description": {
-        "title": "2. Description of Service",
+        "title": "Description of Service",
         "description": "Qarote provides a modern, web-based interface for monitoring and managing RabbitMQ message brokers. Our service includes:",
         "items": [
           "Live queue monitoring and analytics",
@@ -210,9 +210,9 @@
         ]
       },
       "accounts": {
-        "title": "3. User Accounts and Registration",
+        "title": "User Accounts and Registration",
         "creation": {
-          "title": "3.1 Account Creation",
+          "title": "Account Creation",
           "description": "To use our service, you must create an account by providing accurate and complete information. You are responsible for:",
           "items": [
             "Maintaining the confidentiality of your account credentials",
@@ -222,7 +222,7 @@
           ]
         },
         "eligibility": {
-          "title": "3.2 Account Eligibility",
+          "title": "Account Eligibility",
           "description": "You must be at least 18 years old to create an account. By creating an account, you represent and warrant that:",
           "items": [
             "You are of legal age to form a binding contract",
@@ -232,23 +232,23 @@
         }
       },
       "billing": {
-        "title": "4. Subscription Plans and Billing",
+        "title": "Subscription Plans and Billing",
         "description": "We offer multiple subscription plans. Subscription fees are billed in advance on a monthly or annual basis. You may cancel your subscription at any time."
       },
       "acceptableUse": {
-        "title": "5. Acceptable Use Policy",
+        "title": "Acceptable Use Policy",
         "description": "You agree to use our service only for lawful purposes and in accordance with these Terms."
       },
       "dataPrivacy": {
-        "title": "6. Data and Privacy",
+        "title": "Data and Privacy",
         "description": "Your privacy is important to us. Our collection and use of personal information is governed by our Privacy Policy."
       },
       "liability": {
-        "title": "7. Limitation of Liability",
+        "title": "Limitation of Liability",
         "description": "To the maximum extent permitted by law, Qarote shall not be liable for any indirect, incidental, special, consequential, or punitive damages."
       },
       "contactUs": {
-        "title": "8. Contact Information",
+        "title": "Contact Information",
         "description": "If you have any questions about these Terms, please contact us:",
         "email": "support@qarote.io",
         "address": "229 rue Saint-Honoré, 75001, Paris, France"

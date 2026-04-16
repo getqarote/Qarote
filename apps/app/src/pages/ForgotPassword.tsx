@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 
-import { ArrowLeft, Mail, Send } from "lucide-react";
+import { Loader2, Mail, Send } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PixelChevronLeft } from "@/components/ui/pixel-chevron-left";
 
 import { useRequestPasswordReset } from "@/hooks/queries/useProfile";
 
@@ -59,8 +60,8 @@ const ForgotPassword: React.FC = () => {
       <div className="h-full flex items-center justify-center page-layout p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-              <Mail className="h-6 w-6 text-green-600" />
+            <div className="mx-auto w-12 h-12 bg-success-muted rounded-full flex items-center justify-center mb-4">
+              <Mail className="h-6 w-6 text-success" />
             </div>
             <CardTitle className="text-2xl">{t("checkYourEmail")}</CardTitle>
             <CardDescription>
@@ -84,7 +85,7 @@ const ForgotPassword: React.FC = () => {
               </Button>
 
               <Button onClick={() => navigate("/auth/sign-in")} variant="ghost">
-                <ArrowLeft className="h-4 w-4" />
+                <PixelChevronLeft className="h-4 w-auto shrink-0" />
                 {t("backToSignIn")}
               </Button>
             </div>
@@ -119,17 +120,20 @@ const ForgotPassword: React.FC = () => {
 
             <Button
               type="submit"
-              className="w-full bg-gradient-button hover:bg-gradient-button-hover"
+              className="w-full"
               disabled={resetPasswordMutation.isPending}
             >
               {resetPasswordMutation.isPending ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                  <Loader2
+                    className="h-4 w-4 mr-2 animate-spin"
+                    aria-hidden="true"
+                  />
                   {t("sendingResetLink")}
                 </>
               ) : (
                 <>
-                  <Send className="h-4 w-4 mr-2" />
+                  <Send className="h-4 w-4 mr-2" aria-hidden="true" />
                   {t("sendResetLink")}
                 </>
               )}

@@ -31,5 +31,17 @@
   "stateBlocked": "bloqueado",
   "stateFlow": "flujo",
   "stateClosing": "cerrando",
-  "failedToLoad": "No se pudieron cargar las conexiones"
+  "failedToLoad": "No se pudieron cargar las conexiones",
+  "allRunning": "Todo funcionando",
+  "nBlocked": "{{count}} bloqueada(s)",
+  "connection": "conexión",
+  "connections": "conexiones",
+  "channel": "canal",
+  "channels": "canales",
+  "maxChPerConn": "máx ch/conn",
+  "stateBlockedTooltip": "La conexión está esperando confirmación del broker. Puede indicar consumidores lentos o presión de memoria.",
+  "stateFlowTooltip": "Control de flujo activo — el broker está limitando esta conexión para evitar sobrecarga.",
+  "stateClosingTooltip": "La conexión se está cerrando. No se requiere acción.",
+  "maxChannelsTooltip": "Mayor cantidad de canales en una sola conexión. 50+ puede indicar contención de recursos; 100+ es crítico.",
+  "searchPlaceholder": "Filtrar por nombre, usuario, vhost o nodo..."
 }

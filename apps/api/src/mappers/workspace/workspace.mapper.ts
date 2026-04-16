@@ -31,6 +31,8 @@ export class WorkspaceMapper {
       browserNotificationsEnabled: workspace.browserNotificationsEnabled,
       browserNotificationSeverities: workspace.browserNotificationSeverities,
       notificationServerIds: workspace.notificationServerIds,
+      unackedWarnThreshold: workspace.unackedWarnThreshold,
+      vhostThresholds: workspace.vhostThresholds,
       createdAt: workspace.createdAt.toISOString(),
       updatedAt: workspace.updatedAt.toISOString(),
     };
@@ -55,6 +57,8 @@ export class WorkspaceMapper {
           "browserNotificationsEnabled",
           "browserNotificationSeverities",
           "notificationServerIds",
+          "unackedWarnThreshold",
+          "vhostThresholds",
           "createdAt",
           "updatedAt",
           "_count",

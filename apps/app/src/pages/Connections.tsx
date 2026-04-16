@@ -1,32 +1,19 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import {
-  Activity,
-  ArrowUpDown,
-  Cable,
-  Globe,
-  Link,
-  Network,
-  Radio,
-  Server,
-  Users,
-  Wifi,
-  Zap,
-} from "lucide-react";
+import { Search } from "lucide-react";
 
-import { AppSidebar } from "@/components/AppSidebar";
+import { ConnectionsList } from "@/components/ConnectionsList/ConnectionsList";
+import { ConnectionsOverviewCards } from "@/components/ConnectionsList/ConnectionsOverviewCards";
+import { LoadingSkeleton } from "@/components/ConnectionsList/LoadingSkeleton";
+import type { ConnectionListItem } from "@/components/ConnectionsList/types";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { PageError } from "@/components/PageError";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Skeleton } from "@/components/ui/skeleton";
+import { NoServerSelectedCard, PageShell } from "@/components/PageShell";
+import { Input } from "@/components/ui/input";
+import { PixelX } from "@/components/ui/pixel-x";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { TitleWithCount } from "@/components/ui/TitleWithCount";
 
 import { useServerContext } from "@/contexts/ServerContext";
 
@@ -35,9 +22,7 @@ import { useChannels, useConnections } from "@/hooks/queries/useRabbitMQ";
 const Connections = () => {
   const { t } = useTranslation("connections");
   const { selectedServerId, hasServers } = useServerContext();
-  const [expandedConnections, setExpandedConnections] = useState<Set<string>>(
-    new Set()
-  );
+  const [searchTerm, setSearchTerm] = useState("");
 
   const {
     data: connectionsData,
@@ -48,491 +33,117 @@ const Connections = () => {
   const { data: channelsData, isLoading: channelsLoading } =
     useChannels(selectedServerId);
 
-  const toggleConnection = (connectionName: string) => {
-    const newExpanded = new Set(expandedConnections);
-    if (newExpanded.has(connectionName)) {
-      newExpanded.delete(connectionName);
-    } else {
-      newExpanded.add(connectionName);
-    }
-    setExpandedConnections(newExpanded);
-  };
+  const connections = useMemo(
+    () => (connectionsData?.connections ?? []) as ConnectionListItem[],
+    [connectionsData?.connections]
+  );
 
-  const formatBytes = (bytes: number) => {
-    if (bytes === 0) return "0 B";
-    const k = 1024;
-    const sizes = ["B", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
-  };
+  const filtered = useMemo(() => {
+    if (!searchTerm.trim()) return connections;
+    const q = searchTerm.toLowerCase();
+    return connections.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        c.user.toLowerCase().includes(q) ||
+        c.vhost.toLowerCase().includes(q) ||
+        c.node.toLowerCase().includes(q)
+    );
+  }, [connections, searchTerm]);
 
-  const getStateColor = (state?: string) => {
-    switch (state?.toLowerCase()) {
-      case "running":
-        return "bg-green-100 text-green-800";
-      case "blocked":
-        return "bg-yellow-100 text-yellow-800";
-      case "flow":
-        return "bg-blue-100 text-blue-800";
-      case "closing":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getConnectionIcon = (state?: string, protocol?: string) => {
-    // Prioritize by state first, then protocol
-    switch (state?.toLowerCase()) {
-      case "running":
-        return <Wifi className="h-4 w-4" />;
-      case "blocked":
-        return <Cable className="h-4 w-4" />;
-      case "flow":
-        return <Radio className="h-4 w-4" />;
-      case "closing":
-        return <Link className="h-4 w-4" />;
-      default:
-        // Fallback to protocol-based icons
-        switch (protocol?.toLowerCase()) {
-          case "amqp":
-            return <Network className="h-4 w-4" />;
-          default:
-            return <Globe className="h-4 w-4" />;
-        }
-    }
-  };
-
-  const getConnectionIconColor = (state?: string) => {
-    switch (state?.toLowerCase()) {
-      case "running":
-        return "text-green-600";
-      case "blocked":
-        return "text-yellow-600";
-      case "flow":
-        return "text-blue-600";
-      case "closing":
-        return "text-red-600";
-      default:
-        return "text-muted-foreground";
-    }
-  };
-
+  // Guard: zero servers configured — onboarding state owns its own
+  // content container, so render it bare.
   if (!hasServers) {
     return (
-      <SidebarProvider>
-        <div className="page-layout">
-          <AppSidebar />
-          <main className="main-content-scrollable">
-            <div className="flex items-center gap-4">
-              <SidebarTrigger />
-            </div>
-            <NoServerConfigured
-              title={t("noServerTitle")}
-              subtitle={t("pageSubtitle")}
-              description={t("noServerDescription")}
-            />
-          </main>
-        </div>
-      </SidebarProvider>
+      <PageShell bare>
+        <NoServerConfigured
+          title={t("noServerTitle")}
+          subtitle={t("pageSubtitle")}
+          description={t("noServerDescription")}
+        />
+      </PageShell>
     );
   }
 
+  // Guard: servers exist but none selected.
   if (!selectedServerId) {
     return (
-      <SidebarProvider>
-        <div className="page-layout">
-          <AppSidebar />
-          <main className="main-content-scrollable">
-            <div className="content-container-large">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <div>
-                  <h1 className="title-page">{t("pageTitle")}</h1>
-                  <p className="text-muted-foreground">{t("pageSubtitle")}</p>
-                </div>
-              </div>
-              <Card className="border-0 shadow-md bg-card">
-                <CardContent className="p-12">
-                  <div className="text-center">
-                    <Server className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                    <h2 className="text-2xl font-semibold text-foreground mb-2">
-                      {t("noServerSelected")}
-                    </h2>
-                    <p className="text-muted-foreground">
-                      {t("selectServerPrompt")}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </main>
-        </div>
-      </SidebarProvider>
+      <PageShell>
+        <NoServerSelectedCard
+          title={t("pageTitle")}
+          subtitle={t("pageSubtitle")}
+          heading={t("noServerSelected")}
+          description={t("selectServerPrompt")}
+        />
+      </PageShell>
     );
   }
 
   if (connectionsError) {
     return (
-      <SidebarProvider>
-        <div className="page-layout">
-          <AppSidebar />
-          <main className="main-content-scrollable">
-            <div className="content-container-large">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <div>
-                  <h1 className="title-page">{t("pageTitle")}</h1>
-                  <p className="text-muted-foreground">{t("pageSubtitle")}</p>
-                </div>
-              </div>
-              <PageError message={t("common:serverConnectionError")} />
-            </div>
-          </main>
+      <PageShell>
+        <div className="flex items-center gap-4">
+          <SidebarTrigger />
+          <div>
+            <h1 className="title-page">{t("pageTitle")}</h1>
+          </div>
         </div>
-      </SidebarProvider>
+        <PageError message={t("common:serverConnectionError")} />
+      </PageShell>
+    );
+  }
+
+  if (connectionsLoading) {
+    return (
+      <PageShell>
+        <LoadingSkeleton />
+      </PageShell>
     );
   }
 
   return (
-    <SidebarProvider>
-      <div className="page-layout">
-        <AppSidebar />
-        <main className="main-content-scrollable">
-          <div className="content-container-large">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <div>
-                  <h1 className="title-page">{t("pageTitle")}</h1>
-                  <p className="text-muted-foreground">{t("pageSubtitle")}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Overview Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="border-0 shadow-md bg-card">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {t("totalConnections")}
-                  </CardTitle>
-                  <Network className="h-4 w-4 text-blue-600" />
-                </CardHeader>
-                <CardContent>
-                  {connectionsLoading ? (
-                    <Skeleton className="h-8 w-16" />
-                  ) : (
-                    <div className="text-2xl font-bold">
-                      {connectionsData?.totalConnections ?? 0}
-                    </div>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    {t("activeClientConnections")}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-md bg-card">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {t("totalChannels")}
-                  </CardTitle>
-                  <Zap className="h-4 w-4 text-yellow-600" />
-                </CardHeader>
-                <CardContent>
-                  {channelsLoading ? (
-                    <Skeleton className="h-8 w-16" />
-                  ) : (
-                    <div className="text-2xl font-bold">
-                      {channelsData?.totalChannels ?? 0}
-                    </div>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    {t("activeCommunicationChannels")}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-md bg-card">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {t("avgChannelsPerConnection")}
-                  </CardTitle>
-                  <Activity className="h-4 w-4 text-green-600" />
-                </CardHeader>
-                <CardContent>
-                  {connectionsLoading || channelsLoading ? (
-                    <Skeleton className="h-8 w-16" />
-                  ) : (
-                    <div className="text-2xl font-bold">
-                      {connectionsData?.totalConnections &&
-                      connectionsData.totalConnections > 0
-                        ? Math.round(
-                            ((channelsData?.totalChannels ?? 0) /
-                              connectionsData.totalConnections) *
-                              10
-                          ) / 10
-                        : 0}
-                    </div>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    {t("channelsPerConnection")}
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Connections Table */}
-            <Card className="border-0 shadow-md bg-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Network className="h-5 w-5" />
-                  {t("activeConnections")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {connectionsLoading ? (
-                  <div className="space-y-3">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Skeleton key={i} className="h-16 w-full rounded-lg" />
-                    ))}
-                  </div>
-                ) : connectionsData?.connections?.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Network className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
-                      {t("noActiveConnections")}
-                    </h3>
-                    <p className="text-muted-foreground">
-                      {t("noActiveConnectionsDesc")}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {connectionsData?.connections?.map((connection) => (
-                      <Collapsible key={connection.name}>
-                        <div className="border rounded-lg">
-                          <CollapsibleTrigger asChild>
-                            <div
-                              className="flex items-center justify-between p-4 hover:bg-gray-50 cursor-pointer"
-                              onClick={() => toggleConnection(connection.name)}
-                            >
-                              <div className="flex items-center gap-4">
-                                <div className="flex items-center gap-2">
-                                  <div
-                                    className={getConnectionIconColor(
-                                      connection.state
-                                    )}
-                                  >
-                                    {getConnectionIcon(
-                                      connection.state,
-                                      connection.protocol
-                                    )}
-                                  </div>
-                                  <span
-                                    className="font-medium truncate max-w-[300px]"
-                                    title={connection.name}
-                                  >
-                                    {connection.name}
-                                  </span>
-                                </div>
-                                <Badge
-                                  className={getStateColor(connection.state)}
-                                >
-                                  {connection.state}
-                                </Badge>
-                                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                  <Users className="h-3 w-3" />
-                                  {connection.user}
-                                </div>
-                                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                  <Server className="h-3 w-3" />
-                                  {connection.node}
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-4 text-sm">
-                                <div className="text-center">
-                                  <div className="font-medium">
-                                    {connection.channelCount}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {t("totalChannels")}
-                                  </div>
-                                </div>
-                                <div className="text-center">
-                                  <div className="font-medium">
-                                    {formatBytes(connection.recv_oct || 0)}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {t("bytesReceived")}
-                                  </div>
-                                </div>
-                                <div className="text-center">
-                                  <div className="font-medium">
-                                    {formatBytes(connection.send_oct || 0)}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {t("bytesSent")}
-                                  </div>
-                                </div>
-                                <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
-                              </div>
-                            </div>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <div className="border-t p-4">
-                              <div className="grid grid-cols-2 gap-4 mb-4">
-                                <div>
-                                  <h4 className="font-medium mb-2">
-                                    {t("connectionDetails")}
-                                  </h4>
-                                  <div className="space-y-1 text-sm">
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        {t("protocol")}:
-                                      </span>{" "}
-                                      {connection.protocol}
-                                    </div>
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        {t("virtualHost")}:
-                                      </span>{" "}
-                                      {connection.vhost}
-                                    </div>
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        {t("packetsReceived")}:
-                                      </span>{" "}
-                                      {connection.recv_cnt?.toLocaleString()}
-                                    </div>
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        {t("packetsSent")}:
-                                      </span>{" "}
-                                      {connection.send_cnt?.toLocaleString()}
-                                    </div>
-                                  </div>
-                                </div>
-                                <div>
-                                  <h4 className="font-medium mb-2">
-                                    {t("trafficStatistics")}
-                                  </h4>
-                                  <div className="space-y-1 text-sm">
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        {t("bytesReceived")}:
-                                      </span>{" "}
-                                      {formatBytes(connection.recv_oct || 0)}
-                                    </div>
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        {t("bytesSent")}:
-                                      </span>{" "}
-                                      {formatBytes(connection.send_oct || 0)}
-                                    </div>
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        {t("activeChannels")}:
-                                      </span>{" "}
-                                      {connection.channelCount}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {connection.channelDetails?.length > 0 && (
-                                <div>
-                                  <h4 className="font-medium mb-3 flex items-center gap-2">
-                                    <Zap className="h-4 w-4" />
-                                    {t("activeChannels")} (
-                                    {connection.channelDetails.length})
-                                  </h4>
-                                  <div className="grid gap-3">
-                                    {connection.channelDetails.map(
-                                      (channel) => (
-                                        <div
-                                          key={channel.name}
-                                          className="border rounded-lg p-3 bg-linear-to-r from-gray-50 to-gray-100"
-                                        >
-                                          <div className="flex items-center justify-between mb-2">
-                                            <div className="flex items-center gap-3">
-                                              <Badge
-                                                variant="outline"
-                                                className="font-mono"
-                                              >
-                                                #{channel.number}
-                                              </Badge>
-                                              <span className="font-medium text-sm">
-                                                {channel.name}
-                                              </span>
-                                              <Badge
-                                                className={getStateColor(
-                                                  channel.state
-                                                )}
-                                              >
-                                                {channel.state}
-                                              </Badge>
-                                            </div>
-                                            <div className="text-xs text-muted-foreground">
-                                              {
-                                                channel.connection_details
-                                                  ?.peer_host
-                                              }
-                                              :
-                                              {
-                                                channel.connection_details
-                                                  ?.peer_port
-                                              }
-                                            </div>
-                                          </div>
-
-                                          <div className="grid grid-cols-3 gap-4 text-xs">
-                                            <div>
-                                              <span className="text-muted-foreground">
-                                                {t("user")}:
-                                              </span>
-                                              <div className="font-medium">
-                                                {channel.user}
-                                              </div>
-                                            </div>
-                                            <div>
-                                              <span className="text-muted-foreground">
-                                                {t("vhost")}:
-                                              </span>
-                                              <div className="font-medium">
-                                                {channel.vhost}
-                                              </div>
-                                            </div>
-                                            <div>
-                                              <span className="text-muted-foreground">
-                                                {t("node")}:
-                                              </span>
-                                              <div className="font-medium">
-                                                {channel.node}
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      )
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </CollapsibleContent>
-                        </div>
-                      </Collapsible>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+    <PageShell>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4 min-w-0">
+          <SidebarTrigger />
+          <div className="min-w-0">
+            <TitleWithCount count={connections.length}>
+              {t("pageTitle")}
+            </TitleWithCount>
           </div>
-        </main>
+        </div>
       </div>
-    </SidebarProvider>
+
+      <ConnectionsOverviewCards
+        totalConnections={connectionsData?.totalConnections}
+        totalChannels={channelsData?.totalChannels}
+        connections={connections}
+        isLoadingConnections={connectionsLoading}
+        isLoadingChannels={channelsLoading}
+      />
+
+      {connections.length > 0 && (
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            placeholder={t("searchPlaceholder")}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9 pr-8 h-9"
+          />
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={() => setSearchTerm("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <PixelX className="h-4 w-auto shrink-0" />
+            </button>
+          )}
+        </div>
+      )}
+
+      <ConnectionsList connections={filtered} isLoading={connectionsLoading} />
+    </PageShell>
   );
 };
 

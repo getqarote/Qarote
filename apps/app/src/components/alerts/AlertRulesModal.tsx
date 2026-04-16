@@ -1,15 +1,10 @@
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useForm } from "react-hook-form";
+import { Trans, useTranslation } from "react-i18next";
 
-import {
-  AlertTriangle,
-  CheckCircle,
-  Loader2,
-  Plus,
-  Settings,
-  Trash2,
-  XCircle,
-} from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Bell, Info, Loader2, Search } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 import type {
@@ -17,9 +12,9 @@ import type {
   AlertSeverity,
   AlertType,
   ComparisonOperator,
-  CreateAlertRuleInput,
   UpdateAlertRuleInput,
 } from "@/lib/api/alertTypes";
+import { cn } from "@/lib/utils";
 
 import {
   AlertDialog,
@@ -37,11 +32,22 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { PixelPen } from "@/components/ui/pixel-pen";
+import { PixelTrash } from "@/components/ui/pixel-trash";
 import {
   Select,
   SelectContent,
@@ -50,6 +56,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import { useServerContext } from "@/contexts/ServerContext";
 
@@ -59,6 +71,12 @@ import {
   useDeleteAlertRule,
   useUpdateAlertRule,
 } from "@/hooks/queries/useAlerts";
+
+import {
+  ALERT_PERCENTAGE_TYPES,
+  type AlertRuleFormValues,
+  alertRuleSchema,
+} from "@/schemas";
 
 const ALERT_TYPE_KEYS: { value: AlertType; key: string }[] = [
   { value: "QUEUE_DEPTH", key: "rules.type.queueDepth" },
@@ -86,6 +104,55 @@ const SEVERITY_KEYS: { value: AlertSeverity; key: string }[] = [
   { value: "CRITICAL", key: "rules.severity.critical" },
 ];
 
+const SEVERITY_DOT: Record<string, string> = {
+  LOW: "bg-blue-500",
+  MEDIUM: "bg-yellow-500",
+  HIGH: "bg-orange-500",
+  CRITICAL: "bg-red-500",
+};
+
+const SEVERITY_BADGE: Record<string, string> = {
+  LOW: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300",
+  MEDIUM:
+    "border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300",
+  HIGH: "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-800 dark:bg-orange-950 dark:text-orange-300",
+  CRITICAL:
+    "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300",
+};
+
+function getThresholdHintKey(type: AlertType): string {
+  if ((ALERT_PERCENTAGE_TYPES as Set<string>).has(type))
+    return "rules.form.thresholdHintPercent";
+  if (type === "MESSAGE_RATE") return "rules.form.thresholdHintMsgRate";
+  if (type === "NODE_DOWN") return "rules.form.thresholdHintNodeDown";
+  return "rules.form.thresholdHintCount";
+}
+
+function getOperatorSymbol(operator: ComparisonOperator): string {
+  switch (operator) {
+    case "GREATER_THAN":
+      return ">";
+    case "LESS_THAN":
+      return "<";
+    case "EQUALS":
+      return "=";
+    case "NOT_EQUALS":
+      return "≠";
+    default:
+      return operator;
+  }
+}
+
+function formatCondition(rule: AlertRule): string {
+  const symbol = getOperatorSymbol(rule.operator);
+  const isPercent = (ALERT_PERCENTAGE_TYPES as Set<string>).has(rule.type);
+  return `${symbol} ${rule.threshold}${isPercent ? "%" : ""}`;
+}
+
+// ---------------------------------------------------------------------------
+// AlertRuleForm
+// ---------------------------------------------------------------------------
+
 interface AlertRuleFormProps {
   rule?: AlertRule;
   onClose: () => void;
@@ -95,25 +162,29 @@ interface AlertRuleFormProps {
 function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
   const { t } = useTranslation("alerts");
   const { selectedServerId } = useServerContext();
-  const [formData, setFormData] = useState<CreateAlertRuleInput>({
-    name: rule?.name || "",
-    description: rule?.description || "",
-    type: rule?.type || "QUEUE_DEPTH",
-    threshold: rule?.threshold || 0,
-    operator: rule?.operator || "GREATER_THAN",
-    severity: rule?.severity || "MEDIUM",
-    enabled: rule?.enabled ?? true,
-    serverId: selectedServerId || "",
+
+  const isDefault = rule?.isDefault ?? false;
+
+  const form = useForm<AlertRuleFormValues>({
+    resolver: zodResolver(alertRuleSchema),
+    defaultValues: {
+      name: rule?.name ?? "",
+      description: rule?.description ?? "",
+      type: rule?.type ?? "QUEUE_DEPTH",
+      threshold: rule?.threshold ?? 0,
+      operator: rule?.operator ?? "GREATER_THAN",
+      severity: rule?.severity ?? "MEDIUM",
+      enabled: rule?.enabled ?? true,
+    },
   });
 
   const createMutation = useCreateAlertRule();
   const updateMutation = useUpdateAlertRule();
-
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const watchedType = form.watch("type");
 
+  const onSubmit = async (data: AlertRuleFormValues) => {
     if (!selectedServerId) {
       toast.error(t("rules.toast.selectServer"));
       return;
@@ -121,201 +192,268 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
 
     try {
       if (rule) {
-        // Default rules allow threshold, severity, and enabled changes;
-        // identity fields (name, type, operator) are protected.
-        const updateData: UpdateAlertRuleInput = rule.isDefault
+        const updateData: UpdateAlertRuleInput = isDefault
           ? {
-              threshold: formData.threshold,
-              severity: formData.severity,
-              enabled: formData.enabled,
+              threshold: data.threshold,
+              severity: data.severity,
+              enabled: data.enabled,
             }
           : {
-              name: formData.name,
-              description: formData.description || undefined,
-              type: formData.type,
-              threshold: formData.threshold,
-              operator: formData.operator,
-              severity: formData.severity,
-              enabled: formData.enabled,
+              name: data.name,
+              description: data.description || undefined,
+              type: data.type,
+              threshold: data.threshold,
+              operator: data.operator,
+              severity: data.severity,
+              enabled: data.enabled,
             };
         await updateMutation.mutateAsync({ id: rule.id, ...updateData });
         toast.success(t("rules.toast.updateSuccess"));
       } else {
-        const createData: CreateAlertRuleInput = {
-          ...formData,
+        await createMutation.mutateAsync({
+          name: data.name,
+          description: data.description || undefined,
+          type: data.type,
+          threshold: data.threshold,
+          operator: data.operator,
+          severity: data.severity,
+          enabled: data.enabled,
           serverId: selectedServerId,
-          description: formData.description || undefined,
-        };
-        await createMutation.mutateAsync(createData);
+        });
         toast.success(t("rules.toast.createSuccess"));
       }
       onSuccess();
       onClose();
     } catch (error) {
-      let errorMessage = rule
+      let message = rule
         ? t("rules.toast.updateError")
         : t("rules.toast.createError");
       if (error instanceof Error) {
-        errorMessage = error.message;
+        message = error.message;
       } else if (typeof error === "object" && error !== null) {
         const err = error as Record<string, unknown>;
-        errorMessage =
+        message =
           (err.message as string) ||
           (err.error as string) ||
           JSON.stringify(err);
       }
-      toast.error(errorMessage);
+      toast.error(message);
     }
   };
 
-  const isDefault = rule?.isDefault ?? false;
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      e.preventDefault();
+      form.handleSubmit(onSubmit)();
+    }
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label htmlFor="name">{t("rules.form.name")}</Label>
-        <Input
-          id="name"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          required
-          disabled={isDefault}
-          placeholder={t("rules.form.namePlaceholder")}
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-4"
+        onKeyDown={handleKeyDown}
+      >
+        {isDefault && (
+          <div className="flex items-start gap-2 rounded-md border border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
+            <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" aria-hidden />
+            <span>{t("rules.form.isDefaultNote")}</span>
+          </div>
+        )}
+
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("rules.form.name")}</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder={t("rules.form.namePlaceholder")}
+                  disabled={isDefault}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div>
-        <Label htmlFor="description">{t("rules.form.description")}</Label>
-        <Input
-          id="description"
-          value={formData.description || ""}
-          onChange={(e) =>
-            setFormData({ ...formData, description: e.target.value })
-          }
-          disabled={isDefault}
-          placeholder={t("rules.form.descriptionPlaceholder")}
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("rules.form.description")}</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder={t("rules.form.descriptionPlaceholder")}
+                  disabled={isDefault}
+                  rows={2}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div>
-        <Label htmlFor="type">{t("rules.form.alertType")}</Label>
-        <Select
-          value={formData.type}
-          onValueChange={(value) =>
-            setFormData({ ...formData, type: value as AlertType })
-          }
-          disabled={isDefault}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {ALERT_TYPE_KEYS.map((type) => (
-              <SelectItem key={type.value} value={type.value}>
-                {t(type.key)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+        <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("rules.form.alertType")}</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value}
+                disabled={isDefault}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {ALERT_TYPE_KEYS.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {t(type.key)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="operator">{t("rules.form.operator")}</Label>
-          <Select
-            value={formData.operator}
-            onValueChange={(value) =>
-              setFormData({
-                ...formData,
-                operator: value as ComparisonOperator,
-              })
-            }
-            disabled={isDefault}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {OPERATOR_KEYS.map((op) => (
-                <SelectItem key={op.value} value={op.value}>
-                  {t(op.key)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="operator"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("rules.form.operator")}</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  disabled={isDefault}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {OPERATOR_KEYS.map((op) => (
+                      <SelectItem key={op.value} value={op.value}>
+                        {t(op.key)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <div>
-          <Label htmlFor="threshold">{t("rules.form.threshold")}</Label>
-          <Input
-            id="threshold"
-            type="number"
-            min="0"
-            step="0.01"
-            value={formData.threshold}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                threshold: parseFloat(e.target.value) || 0,
-              })
-            }
-            required
+          <FormField
+            control={form.control}
+            name="threshold"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("rules.form.threshold")}</FormLabel>
+                <FormControl>
+                  <Input type="number" min="0" step="any" {...field} />
+                </FormControl>
+                <FormDescription className="text-xs">
+                  {t(getThresholdHintKey(watchedType))}
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
           />
         </div>
-      </div>
 
-      <div>
-        <Label htmlFor="severity">{t("rules.form.severity")}</Label>
-        <Select
-          value={formData.severity}
-          onValueChange={(value) =>
-            setFormData({ ...formData, severity: value as AlertSeverity })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {SEVERITY_KEYS.map((sev) => (
-              <SelectItem key={sev.value} value={sev.value}>
-                {t(sev.key)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="flex items-center space-x-2">
-        <Switch
-          id="enabled"
-          checked={formData.enabled}
-          onCheckedChange={(checked) =>
-            setFormData({ ...formData, enabled: checked })
-          }
-        />
-        <Label htmlFor="enabled">{t("rules.form.enabled")}</Label>
-      </div>
-
-      <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={onClose}>
-          {t("rules.form.cancel")}
-        </Button>
-        <Button type="submit" disabled={isSubmitting} className="btn-primary">
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {t("rules.form.saving")}
-            </>
-          ) : rule ? (
-            t("rules.form.updateRule")
-          ) : (
-            t("rules.form.createRule")
+        <FormField
+          control={form.control}
+          name="severity"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("rules.form.severity")}</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {SEVERITY_KEYS.map((sev) => (
+                    <SelectItem key={sev.value} value={sev.value}>
+                      <span className="flex items-center gap-2">
+                        <span
+                          className={cn(
+                            "h-2 w-2 rounded-full shrink-0",
+                            SEVERITY_DOT[sev.value]
+                          )}
+                          aria-hidden
+                        />
+                        {t(sev.key)}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
           )}
-        </Button>
-      </div>
-    </form>
+        />
+
+        <FormField
+          control={form.control}
+          name="enabled"
+          render={({ field }) => (
+            <FormItem className="flex items-center gap-3 space-y-0">
+              <FormControl>
+                <Switch
+                  id="enabled"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <FormLabel htmlFor="enabled" className="cursor-pointer">
+                {t("rules.form.enabled")}
+              </FormLabel>
+            </FormItem>
+          )}
+        />
+
+        <DialogFooter className="pt-2">
+          <Button type="button" variant="outline" onClick={onClose}>
+            {t("rules.form.cancel")}
+          </Button>
+          <Button type="submit" disabled={isSubmitting} className="btn-primary">
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {t("rules.form.saving")}
+              </>
+            ) : rule ? (
+              t("rules.form.updateRule")
+            ) : (
+              t("rules.form.createRule")
+            )}
+          </Button>
+        </DialogFooter>
+      </form>
+    </Form>
   );
 }
+
+// ---------------------------------------------------------------------------
+// AlertRulesModal
+// ---------------------------------------------------------------------------
 
 interface AlertRulesModalProps {
   isOpen: boolean;
@@ -329,6 +467,7 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
   const [editingRule, setEditingRule] = useState<AlertRule | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [ruleToDelete, setRuleToDelete] = useState<AlertRule | null>(null);
+  const [query, setQuery] = useState("");
 
   const { data: alertRules, isLoading } = useAlertRules();
   const deleteMutation = useDeleteAlertRule();
@@ -340,7 +479,6 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
 
   const handleDeleteConfirm = async () => {
     if (!ruleToDelete) return;
-
     try {
       await deleteMutation.mutateAsync({ id: ruleToDelete.id });
       toast.success(t("rules.toast.deleteSuccess"));
@@ -369,56 +507,50 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
   };
 
   const getSeverityBadge = (severity: AlertSeverity) => {
+    const severityKey = SEVERITY_KEYS.find((s) => s.value === severity);
     return (
       <Badge
-        variant={
-          severity === "CRITICAL"
-            ? "destructive"
-            : severity === "HIGH"
-              ? "default"
-              : "secondary"
-        }
+        variant="outline"
+        className={cn(
+          "gap-1.5",
+          SEVERITY_BADGE[severity] ?? "border-border text-muted-foreground"
+        )}
       >
-        {SEVERITY_KEYS.find((s) => s.value === severity)
-          ? t(SEVERITY_KEYS.find((s) => s.value === severity)!.key)
-          : severity}
+        <span
+          className={cn(
+            "h-1.5 w-1.5 rounded-full shrink-0",
+            SEVERITY_DOT[severity] ?? "bg-muted-foreground"
+          )}
+          aria-hidden
+        />
+        {severityKey ? t(severityKey.key) : severity}
       </Badge>
     );
   };
 
-  const getOperatorSymbol = (operator: ComparisonOperator) => {
-    switch (operator) {
-      case "GREATER_THAN":
-        return ">";
-      case "LESS_THAN":
-        return "<";
-      case "EQUALS":
-        return "=";
-      case "NOT_EQUALS":
-        return "≠";
-      default:
-        return operator;
-    }
-  };
+  const serverRules =
+    alertRules?.filter((rule) => rule.serverId === selectedServerId) ?? [];
 
-  const filteredRules =
-    alertRules?.filter((rule) => rule.serverId === selectedServerId) || [];
+  const hasQuery = query.trim().length > 0;
+
+  const filteredRules = serverRules.filter((rule) => {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    const typeEntry = ALERT_TYPE_KEYS.find((at) => at.value === rule.type);
+    return (
+      rule.name.toLowerCase().includes(q) ||
+      rule.type.toLowerCase().includes(q) ||
+      (typeEntry ? t(typeEntry.key).toLowerCase().includes(q) : false)
+    );
+  });
 
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <div className="flex items-center justify-between pr-12">
-              <div>
-                <DialogTitle>{t("rules.title")}</DialogTitle>
-                <DialogDescription>{t("rules.description")}</DialogDescription>
-              </div>
-              <Button onClick={handleCreate} className="btn-primary">
-                <Plus className="h-4 w-4 mr-2" />
-                {t("rules.createRule")}
-              </Button>
-            </div>
+            <DialogTitle>{t("rules.title")}</DialogTitle>
+            <DialogDescription>{t("rules.description")}</DialogDescription>
           </DialogHeader>
 
           <div className="mt-4">
@@ -436,107 +568,155 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
                   {t("rules.selectServer")}
                 </p>
               </div>
-            ) : filteredRules.length === 0 ? (
-              <div className="text-center py-8">
-                <Settings className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">
-                  {t("rules.noRules")}
-                </h3>
-                <p className="text-muted-foreground">
-                  {t("rules.noRulesDescription")}
-                </p>
-              </div>
             ) : (
-              <div className="space-y-4">
-                {filteredRules.map((rule) => (
-                  <div
-                    key={rule.id}
-                    className="flex items-start justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-medium">{rule.name}</h4>
-                        {getSeverityBadge(rule.severity)}
-                        {rule.enabled ? (
-                          <Badge variant="outline" className="text-green-600">
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            {t("rules.badge.enabled")}
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-gray-500">
-                            <XCircle className="h-3 w-3 mr-1" />
-                            {t("rules.badge.disabled")}
-                          </Badge>
-                        )}
-                      </div>
-                      {rule.description && (
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {rule.description}
-                        </p>
-                      )}
-                      <div className="text-sm text-muted-foreground space-y-1">
-                        <div>
-                          <span className="font-medium">
-                            {t("rules.detail.type")}
-                          </span>{" "}
-                          {ALERT_TYPE_KEYS.find((at) => at.value === rule.type)
-                            ? t(
-                                ALERT_TYPE_KEYS.find(
-                                  (at) => at.value === rule.type
-                                )!.key
-                              )
-                            : rule.type}
-                        </div>
-                        <div>
-                          <span className="font-medium">
-                            {t("rules.detail.condition")}
-                          </span>{" "}
-                          {getOperatorSymbol(rule.operator)} {rule.threshold}
-                        </div>
-                        <div>
-                          <span className="font-medium">
-                            {t("rules.detail.server")}
-                          </span>{" "}
-                          {rule.server.name}
-                        </div>
-                        {rule._count && (
-                          <div>
-                            <span className="font-medium">
-                              {t("rules.detail.activeAlerts")}
-                            </span>{" "}
-                            {rule._count.alerts}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(rule)}
-                      >
-                        <Settings className="h-4 w-4" />
-                      </Button>
-                      {!rule.isDefault && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteClick(rule)}
-                          disabled={deleteMutation.isPending}
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
-                      )}
-                    </div>
+              <div className="space-y-3">
+                {/* Toolbar: search + create */}
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Input
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      placeholder={t("rules.searchPlaceholder")}
+                      className="pl-9"
+                    />
                   </div>
-                ))}
+                  <Button
+                    onClick={handleCreate}
+                    className="btn-primary shrink-0"
+                  >
+                    {t("rules.createRule")}
+                  </Button>
+                </div>
+
+                {/* No rules exist yet */}
+                {serverRules.length === 0 && (
+                  <div className="text-center py-8">
+                    <Bell className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-medium mb-2">
+                      {t("rules.noRules")}
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      {t("rules.noRulesDescription")}
+                    </p>
+                    <Button onClick={handleCreate} variant="outline">
+                      {t("rules.createFirstRule")}
+                    </Button>
+                  </div>
+                )}
+
+                {/* Search returned no results */}
+                {serverRules.length > 0 &&
+                  filteredRules.length === 0 &&
+                  hasQuery && (
+                    <div className="text-center py-8">
+                      <Search className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+                      <p className="font-medium mb-1">{t("rules.noResults")}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {t("rules.noResultsDescription")}
+                      </p>
+                    </div>
+                  )}
+
+                {/* Rules list */}
+                {filteredRules.map((rule) => {
+                  const typeEntry = ALERT_TYPE_KEYS.find(
+                    (at) => at.value === rule.type
+                  );
+                  const subtitle = [
+                    typeEntry ? t(typeEntry.key) : rule.type,
+                    formatCondition(rule),
+                    rule.server.name,
+                  ].join(" · ");
+                  return (
+                    <div
+                      key={rule.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors gap-4"
+                    >
+                      {/* Dot + content */}
+                      <div className="flex items-start gap-3 min-w-0 flex-1">
+                        <span
+                          className={cn(
+                            "mt-1.5 h-2.5 w-2.5 rounded-full shrink-0",
+                            SEVERITY_DOT[rule.severity]
+                          )}
+                        />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="font-semibold text-foreground">
+                              {rule.name}
+                            </h4>
+                            {!rule.enabled && (
+                              <span className="text-xs text-muted-foreground border rounded px-1.5 py-0.5 leading-none">
+                                {t("rules.badge.disabled")}
+                              </span>
+                            )}
+                            {rule.isDefault && (
+                              <span className="text-xs text-muted-foreground border rounded px-1.5 py-0.5 leading-none">
+                                {t("rules.badge.default")}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-0.5 truncate">
+                            {subtitle}
+                            {rule._count && rule._count.alerts > 0 && (
+                              <span className="text-warning font-medium">
+                                {" "}
+                                · {rule._count.alerts}{" "}
+                                {t("rules.detail.activeAlerts")}
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Severity badge + actions */}
+                      <div className="flex items-center gap-1 shrink-0">
+                        {getSeverityBadge(rule.severity)}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEdit(rule)}
+                              aria-label={t("rules.actions.edit")}
+                            >
+                              <PixelPen className="h-4 w-auto shrink-0" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {t("rules.actions.edit")}
+                          </TooltipContent>
+                        </Tooltip>
+                        {!rule.isDefault && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteClick(rule)}
+                                disabled={deleteMutation.isPending}
+                                aria-label={t("rules.actions.delete")}
+                              >
+                                <PixelTrash className="h-4 w-auto shrink-0 text-destructive" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {t("rules.actions.delete")}
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Create/Edit Form Modal */}
+      {/* Create / Edit form modal */}
       <Dialog
         open={showFormModal}
         onOpenChange={(open) => {
@@ -568,20 +748,19 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete confirmation */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("rules.delete.title")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              <span
-                dangerouslySetInnerHTML={{
-                  __html: t("rules.delete.confirmation", {
-                    name: ruleToDelete?.name,
-                    interpolation: { escapeValue: true },
-                  }),
-                }}
-              />
+            <AlertDialogDescription asChild>
+              <span>
+                <Trans
+                  i18nKey="alerts:rules.delete.confirmation"
+                  values={{ name: ruleToDelete?.name }}
+                  components={{ strong: <strong /> }}
+                />
+              </span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -590,7 +769,7 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-destructive hover:bg-destructive/90"
               disabled={deleteMutation.isPending}
             >
               {deleteMutation.isPending ? (

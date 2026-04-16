@@ -3,5 +3,13 @@
   "pageSubtitle": "Detailed view of cluster nodes and their metrics",
   "noServerTitle": "Nodes",
   "noServerDescription": "Add a RabbitMQ server connection to view cluster nodes and their metrics.",
-  "selectServerPrompt": "Please select a RabbitMQ server to view its nodes"
+  "selectServerPrompt": "Please select a RabbitMQ server to view its nodes",
+  "nodeName": "Node",
+  "status": "Status",
+  "memory": "Memory",
+  "diskFree": "Disk Free",
+  "uptime": "Uptime",
+  "connections": "Connections",
+  "noNodesFound": "No nodes found",
+  "permissionErrorTitle": "Node Information Unavailable"
 }

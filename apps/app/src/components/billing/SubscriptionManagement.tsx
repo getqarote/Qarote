@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Clock, RefreshCw, Settings, X } from "lucide-react";
+import { Clock, RefreshCw, Settings } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { PixelX } from "@/components/ui/pixel-x";
 
 import { UserPlan } from "@/types/plans";
 
@@ -66,15 +66,18 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
 
   return (
     <>
-      <Card>
-        <CardContent className="pt-6 pb-6 px-6">
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                <Settings className="w-4 h-4 text-muted-foreground" />
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className="flex items-center justify-center h-9 w-9 rounded-lg bg-primary/10 shrink-0"
+                aria-hidden="true"
+              >
+                <Settings className="h-4 w-4 text-primary" />
               </div>
-              <div>
-                <h3 className="font-semibold text-sm">
+              <div className="min-w-0">
+                <h3 className="font-semibold text-sm leading-tight">
                   {t("subscriptionManagement.title")}
                 </h3>
                 <p className="text-xs text-muted-foreground">
@@ -92,10 +95,9 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                 <Button
                   onClick={onRenewSubscription}
                   size="sm"
-                  className="btn-primary"
                   disabled={isLoading}
                 >
-                  <RefreshCw className="w-4 h-4 mr-2" />
+                  <RefreshCw className="w-4 h-4 mr-2" aria-hidden="true" />
                   {t("subscriptionManagement.renewPlan", { plan: lastPlan })}
                 </Button>
               ) : currentPlan !== UserPlan.FREE ? (
@@ -106,16 +108,18 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                         <Button
                           onClick={onRenewSubscription}
                           size="sm"
-                          className="btn-primary"
                           disabled={isLoading}
                         >
-                          <RefreshCw className="w-4 h-4 mr-2" />
+                          <RefreshCw
+                            className="w-4 h-4 mr-2"
+                            aria-hidden="true"
+                          />
                           {t("subscriptionManagement.reactivate")}
                         </Button>
                       )}
                       <Badge
                         variant="outline"
-                        className="border-orange-300 text-orange-600 bg-orange-50 dark:border-orange-700 dark:text-orange-400 dark:bg-orange-950/50 py-1.5 px-3"
+                        className="border-warning/40 text-warning bg-warning-muted py-1.5 px-3"
                       >
                         <Clock className="w-3 h-3 mr-1.5" />
                         {periodEnd
@@ -136,7 +140,7 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                       className="text-muted-foreground hover:text-destructive"
                       disabled={isLoading}
                     >
-                      <X className="w-4 h-4 mr-2" />
+                      <PixelX className="h-4 w-auto shrink-0 mr-2" />
                       {t("subscriptionManagement.cancelSubscription")}
                     </Button>
                   )}
@@ -149,10 +153,10 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
           {currentPlan === UserPlan.FREE &&
             subscriptionCanceled &&
             lastPlan && (
-              <div className="mt-4 rounded-lg border border-orange-200 bg-orange-50/50 dark:border-orange-900/50 dark:bg-orange-950/20 p-4">
+              <div className="mt-4 rounded-lg border border-warning/30 bg-warning-muted/50 p-4">
                 <div className="flex items-start gap-3">
-                  <div className="shrink-0 rounded-full p-1.5 bg-orange-100 dark:bg-orange-900/30 mt-0.5">
-                    <RefreshCw className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                  <div className="shrink-0 rounded-full p-1.5 bg-warning-muted mt-0.5">
+                    <RefreshCw className="w-4 h-4 text-warning" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-sm">
@@ -167,8 +171,8 @@ export const SubscriptionManagement: React.FC<SubscriptionManagementProps> = ({
                 </div>
               </div>
             )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <CancelSubscriptionModal
         isOpen={showCancelModal}

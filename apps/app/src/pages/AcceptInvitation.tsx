@@ -1,5 +1,5 @@
-import { type ReactNode, useEffect, useReducer, useState } from "react";
-import { useForm, type UseFormReturn } from "react-hook-form";
+import { useEffect, useReducer } from "react";
+import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
@@ -10,26 +10,16 @@ import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
 
+import { AuthPageHeader } from "@/components/auth/AuthPageHeader";
+import { AuthPageWrapper } from "@/components/auth/AuthPageWrapper";
+import { InviteAcceptanceForm } from "@/components/auth/InviteAcceptanceForm";
+import {
+  type InviteInfoField,
+  InviteInfoPanel,
+} from "@/components/auth/InviteInfoPanel";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { PasswordInput } from "@/components/ui/password-input";
-import { PasswordRequirements } from "@/components/ui/password-requirements";
+import { CardContent } from "@/components/ui/card";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
@@ -94,193 +84,16 @@ const PLAN_DISPLAY_NAMES: Record<string, string> = {
   ENTERPRISE: "Enterprise",
 };
 
-const PageWrapper = ({ children }: { children: ReactNode }) => (
-  <div className="min-h-screen flex items-center justify-center bg-gradient-auth py-12 px-4 sm:px-6 lg:px-8">
-    <Card className="w-full max-w-md bg-card/95 backdrop-blur-xs border-border/20 shadow-2xl">
-      {children}
-    </Card>
-  </div>
-);
-
-const InvitationInfo = ({
-  invitation,
-  planDisplayName,
-}: {
-  invitation: InvitationDetails;
-  planDisplayName: string;
-}) => {
-  const { t } = useTranslation("auth");
-  return (
-    <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-      <div className="flex items-center gap-2 text-sm text-gray-600">
-        <Building className="h-4 w-4" />
-        <span>
-          {t("workspace")}: <strong>{invitation.workspace.name}</strong>
-        </span>
-      </div>
-      <div className="flex items-center gap-2 text-sm text-gray-600">
-        <Users className="h-4 w-4" />
-        <span>
-          {t("plan")}: <strong>{planDisplayName}</strong>
-        </span>
-      </div>
-      <div className="text-sm text-gray-600">
-        {t("invitedBy")}: <strong>{invitation.invitedBy.displayName}</strong>
-      </div>
-    </div>
-  );
-};
-
-const InvitationForm = ({
-  form,
-  email,
-  isPending,
-  onSubmit,
-  onNavigateSignIn,
-}: {
-  form: UseFormReturn<AcceptInvitationFormData>;
-  email: string;
-  isPending: boolean;
-  onSubmit: (data: AcceptInvitationFormData) => void;
-  onNavigateSignIn: () => void;
-}) => {
-  const { t } = useTranslation("auth");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  return (
-    <>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="firstName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("firstName")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("firstNamePlaceholder")}
-                      disabled={isPending}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="lastName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("lastName")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("lastNamePlaceholder")}
-                      disabled={isPending}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <FormLabel>{t("email")}</FormLabel>
-            <Input
-              type="email"
-              value={email}
-              disabled
-              className="bg-gray-50"
-              autoComplete="username"
-            />
-          </div>
-
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t("password")}</FormLabel>
-                <FormControl>
-                  <PasswordInput
-                    placeholder={t("enterYourPassword")}
-                    disabled={isPending}
-                    showPassword={showPassword}
-                    onToggleVisibility={() => setShowPassword(!showPassword)}
-                    autoComplete="new-password"
-                    {...field}
-                  />
-                </FormControl>
-                <PasswordRequirements
-                  password={field.value || ""}
-                  className="mt-2"
-                />
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t("confirmPassword")}</FormLabel>
-                <FormControl>
-                  <PasswordInput
-                    placeholder={t("confirmYourPassword")}
-                    disabled={isPending}
-                    showPassword={showConfirmPassword}
-                    onToggleVisibility={() =>
-                      setShowConfirmPassword(!showConfirmPassword)
-                    }
-                    autoComplete="new-password"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <Button
-            type="submit"
-            className="w-full bg-gradient-button hover:bg-gradient-button-hover"
-            disabled={isPending || !form.formState.isValid}
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                {t("creatingAccount")}
-              </>
-            ) : (
-              t("acceptInvitationAndCreate")
-            )}
-          </Button>
-        </form>
-      </Form>
-
-      <div className="text-center">
-        <p className="text-sm text-gray-500">
-          {t("alreadyHaveAccount")}{" "}
-          <button
-            type="button"
-            onClick={onNavigateSignIn}
-            className="text-blue-600 hover:underline"
-          >
-            {t("signInInstead")}
-          </button>
-        </p>
-      </div>
-    </>
-  );
-};
-
+/**
+ * Workspace-level invitation acceptance page. Reached via
+ * `/invite/:token`. Fetches the invitation details, presents the
+ * workspace name + plan + inviter, and collects the new user's
+ * name + password to create their account and log them in.
+ *
+ * The related `AcceptOrgInvitation` page handles organization-level
+ * invitations and shares the `AuthPageWrapper`, `AuthPageHeader`,
+ * `InviteInfoPanel`, and `InviteAcceptanceForm` components.
+ */
 const AcceptInvitation = () => {
   const { t } = useTranslation("auth");
   const { token } = useParams<{ token: string }>();
@@ -331,7 +144,8 @@ const AcceptInvitation = () => {
     };
 
     fetchInvitationDetails();
-  }, [token, utils]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
   const onSubmit = (data: AcceptInvitationFormData) => {
     if (!token) return;
@@ -391,32 +205,29 @@ const AcceptInvitation = () => {
 
   if (loading) {
     return (
-      <PageWrapper>
+      <AuthPageWrapper>
         <CardContent className="flex items-center justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin" />
+          <Loader2 className="h-8 w-8 animate-spin" aria-hidden="true" />
         </CardContent>
-      </PageWrapper>
+      </AuthPageWrapper>
     );
   }
 
   if (error && !invitation) {
     return (
-      <PageWrapper>
-        <CardHeader className="text-center">
-          <CardTitle className="text-red-600">
-            {t("invalidInvitation")}
-          </CardTitle>
-          <CardDescription>{error}</CardDescription>
-        </CardHeader>
+      <AuthPageWrapper>
+        <AuthPageHeader
+          Icon={Mail}
+          title={t("invalidInvitation")}
+          description={error}
+          variant="destructive"
+        />
         <CardContent>
-          <Button
-            onClick={() => navigate("/auth/sign-in")}
-            className="w-full bg-gradient-button hover:bg-gradient-button-hover"
-          >
+          <Button onClick={() => navigate("/auth/sign-in")} className="w-full">
             {t("goToSignIn")}
           </Button>
         </CardContent>
-      </PageWrapper>
+      </AuthPageWrapper>
     );
   }
 
@@ -425,23 +236,35 @@ const AcceptInvitation = () => {
     invitation?.workspace.plan ||
     "";
 
+  const infoFields: InviteInfoField[] = invitation
+    ? [
+        {
+          Icon: Building,
+          label: `${t("workspace")}:`,
+          value: invitation.workspace.name,
+        },
+        {
+          Icon: Users,
+          label: `${t("plan")}:`,
+          value: planDisplayName,
+        },
+        {
+          label: `${t("invitedBy")}:`,
+          value: invitation.invitedBy.displayName,
+        },
+      ]
+    : [];
+
   return (
-    <PageWrapper>
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-          <Mail className="h-6 w-6 text-blue-600" />
-        </div>
-        <CardTitle>{t("joinQaroteTitle")}</CardTitle>
-        <CardDescription>{t("setUpAccount")}</CardDescription>
-      </CardHeader>
+    <AuthPageWrapper>
+      <AuthPageHeader
+        Icon={Mail}
+        title={t("joinQaroteTitle")}
+        description={t("setUpAccount")}
+      />
 
       <CardContent className="space-y-6">
-        {invitation && (
-          <InvitationInfo
-            invitation={invitation}
-            planDisplayName={planDisplayName}
-          />
-        )}
+        {invitation && <InviteInfoPanel fields={infoFields} />}
 
         {error && (
           <Alert variant="destructive">
@@ -449,7 +272,7 @@ const AcceptInvitation = () => {
           </Alert>
         )}
 
-        <InvitationForm
+        <InviteAcceptanceForm
           form={form}
           email={invitation?.email || ""}
           isPending={acceptInvitationMutation.isPending}
@@ -457,7 +280,7 @@ const AcceptInvitation = () => {
           onNavigateSignIn={() => navigate("/auth/sign-in")}
         />
       </CardContent>
-    </PageWrapper>
+    </AuthPageWrapper>
   );
 };
 

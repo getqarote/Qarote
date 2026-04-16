@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
@@ -6,31 +8,31 @@ import type { SeverityCheckboxGroupProps } from "./types";
 const SEVERITY_LEVELS = [
   {
     key: "CRITICAL",
-    color: "text-red-600",
+    color: "text-destructive",
     labelKey: "modal.severityCritical",
     descKey: "modal.severityCriticalDesc",
   },
   {
     key: "HIGH",
-    color: "text-orange-600",
+    color: "text-orange-500",
     labelKey: "modal.severityHigh",
     descKey: "modal.severityHighDesc",
   },
   {
     key: "MEDIUM",
-    color: "text-yellow-600",
+    color: "text-yellow-600 dark:text-yellow-500",
     labelKey: "modal.severityMedium",
     descKey: "modal.severityMediumDesc",
   },
   {
     key: "LOW",
-    color: "text-blue-600",
+    color: "text-blue-500",
     labelKey: "modal.severityLow",
     descKey: "modal.severityLowDesc",
   },
   {
     key: "INFO",
-    color: "text-gray-600",
+    color: "text-muted-foreground",
     labelKey: "modal.severityInfo",
     descKey: "modal.severityInfoDesc",
   },
@@ -41,8 +43,9 @@ export function SeverityCheckboxGroup({
   onChange,
   disabled = false,
   idPrefix,
-  t,
 }: SeverityCheckboxGroupProps) {
+  const { t } = useTranslation("alerts");
+
   return (
     <div className="space-y-3">
       {SEVERITY_LEVELS.map(({ key, color, labelKey, descKey }) => (
@@ -57,7 +60,6 @@ export function SeverityCheckboxGroup({
               onChange(newSeverities);
             }}
             disabled={disabled}
-            className="data-[state=checked]:bg-gradient-button data-[state=checked]:border-gradient-button"
           />
           <Label
             htmlFor={`${idPrefix}-${key.toLowerCase()}`}

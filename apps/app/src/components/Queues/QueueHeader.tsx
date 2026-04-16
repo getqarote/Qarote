@@ -18,6 +18,8 @@ interface QueueHeaderProps {
 
 export function QueueHeader({
   selectedServerId,
+  queueCount,
+  workspaceLoading,
   isAdmin,
   onRefetch,
 }: QueueHeaderProps) {
@@ -29,10 +31,23 @@ export function QueueHeader({
     </>
   ) : null;
 
+  // Show the row count inline with the title so users know magnitude before
+  // parsing the table. Hidden while workspace is still loading to avoid a
+  // distracting "0" flash.
+  const titleNode = (
+    <span className="flex items-baseline gap-2">
+      {t("pageTitle")}
+      {!workspaceLoading && (
+        <span className="text-xl font-normal text-muted-foreground tabular-nums">
+          {queueCount.toLocaleString()}
+        </span>
+      )}
+    </span>
+  );
+
   return (
     <PageHeader
-      title={t("pageTitle")}
-      subtitle={t("pageSubtitle")}
+      title={titleNode}
       actions={actions}
       showSidebarTrigger={false}
     />

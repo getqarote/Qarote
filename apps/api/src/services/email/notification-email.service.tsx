@@ -306,7 +306,7 @@ export class NotificationEmailService {
         </p>
         <p>Please update your payment method to continue using our service.</p>
         <a
-          href={`${frontendUrl}/billing`}
+          href={`${frontendUrl}/settings/subscription/billing`}
           style={{
             display: "inline-block",
             padding: "12px 24px",

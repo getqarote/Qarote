@@ -2,21 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router";
 
-import {
-  Activity,
-  AlertTriangle,
-  Clock,
-  Database,
-  FolderTree,
-  HelpCircle,
-  LogOut,
-  MessageSquare,
-  Network,
-  Plus,
-  Server,
-  Settings,
-  User,
-} from "lucide-react";
+import { Plus } from "lucide-react";
 
 import { UserRole } from "@/lib/api";
 
@@ -24,6 +10,18 @@ import { AddServerForm } from "@/components/AddServerFormComponent";
 import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
 import { ServerManagement } from "@/components/ServerManagement";
 import { Button } from "@/components/ui/button";
+import { PixelActivity } from "@/components/ui/pixel-activity";
+import { PixelChart } from "@/components/ui/pixel-chart";
+import { PixelClock } from "@/components/ui/pixel-clock";
+import { PixelFlag } from "@/components/ui/pixel-flag";
+import { PixelHelp } from "@/components/ui/pixel-help";
+import { PixelLayers } from "@/components/ui/pixel-layers";
+import { PixelLogout } from "@/components/ui/pixel-logout";
+import { PixelMessage } from "@/components/ui/pixel-message";
+import { PixelNetwork } from "@/components/ui/pixel-network";
+import { PixelServer } from "@/components/ui/pixel-server";
+import { PixelSettings } from "@/components/ui/pixel-settings";
+import { PixelUser } from "@/components/ui/pixel-user";
 import {
   Select,
   SelectContent,
@@ -49,25 +47,42 @@ import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
+import { useOverview } from "@/hooks/queries/useRabbitMQ";
 import { useServers } from "@/hooks/queries/useServer";
 import { useLogout } from "@/hooks/ui/useAuth";
 import { useUser } from "@/hooks/ui/useUser";
 
+function ServerStatusDot({ serverId }: { serverId: string }) {
+  const { data, isLoading, isError } = useOverview(serverId);
+  if (isLoading)
+    return (
+      <span className="h-2 w-2 rounded-full bg-muted-foreground/30 shrink-0" />
+    );
+  if (isError || !data?.overview)
+    return <span className="h-2 w-2 rounded-full bg-destructive shrink-0" />;
+  return <span className="h-2 w-2 rounded-full bg-green-500 shrink-0" />;
+}
+
 const menuItems = [
-  { titleKey: "sidebar:dashboard", url: "/", icon: Activity },
-  { titleKey: "sidebar:queues", url: "/queues", icon: MessageSquare },
-  { titleKey: "sidebar:connections", url: "/connections", icon: Clock },
-  { titleKey: "sidebar:nodes", url: "/nodes", icon: Server },
-  { titleKey: "sidebar:exchanges", url: "/exchanges", icon: Activity },
-  { titleKey: "sidebar:topology", url: "/topology", icon: Network },
+  { titleKey: "sidebar:dashboard", url: "/", icon: PixelChart },
+  { titleKey: "sidebar:queues", url: "/queues", icon: PixelMessage },
+  { titleKey: "sidebar:connections", url: "/connections", icon: PixelClock },
+  { titleKey: "sidebar:nodes", url: "/nodes", icon: PixelServer },
+  { titleKey: "sidebar:exchanges", url: "/exchanges", icon: PixelActivity },
+  { titleKey: "sidebar:topology", url: "/topology", icon: PixelNetwork },
   {
     titleKey: "sidebar:virtualHosts",
     url: "/vhosts",
-    icon: Database,
+    icon: PixelLayers,
     adminOnly: true,
   },
-  { titleKey: "sidebar:users", url: "/users", icon: User, adminOnly: true },
-  { titleKey: "sidebar:alerts", url: "/alerts", icon: AlertTriangle },
+  {
+    titleKey: "sidebar:users",
+    url: "/users",
+    icon: PixelUser,
+    adminOnly: true,
+  },
+  { titleKey: "sidebar:alerts", url: "/alerts", icon: PixelFlag },
 ];
 
 // Helper function to shorten hostnames
@@ -139,7 +154,7 @@ export function AppSidebar() {
                       className="h-6 w-6 p-0"
                       title={t("common:manageServers")}
                     >
-                      <Settings className="h-3 w-3" />
+                      <PixelSettings className="h-3 w-auto" />
                     </Button>
                   }
                 />
@@ -159,50 +174,49 @@ export function AppSidebar() {
                   setSelectedServerId(value);
                 }}
               >
-                <SelectTrigger className="w-full text-sm text-left">
+                <SelectTrigger className="w-full text-sm text-left h-auto py-2">
                   <SelectValue placeholder={t("selectServer")}>
-                    {selectedServerId &&
-                      servers.find((s) => s.id === selectedServerId) && (
-                        <div className="flex items-center gap-2 w-full min-w-0">
-                          <Server className="h-3 w-3 shrink-0" />
-                          <div className="flex flex-col min-w-0 flex-1 text-left">
-                            <span className="truncate font-medium">
-                              {
-                                servers.find((s) => s.id === selectedServerId)
-                                  ?.name
-                              }
+                    {(() => {
+                      const s = servers.find((s) => s.id === selectedServerId);
+                      if (!s) return null;
+                      return (
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <PixelServer className="h-4 text-primary shrink-0" />
+                          <div className="flex flex-col min-w-0 text-left">
+                            <span className="truncate font-medium leading-tight">
+                              {s.name}
                             </span>
-                            <span
-                              className="text-xs text-sidebar-foreground/70 truncate"
-                              title={
-                                servers.find((s) => s.id === selectedServerId)
-                                  ?.host
-                              }
-                            >
-                              {shortenHost(
-                                servers.find((s) => s.id === selectedServerId)
-                                  ?.host || ""
-                              )}
+                            <span className="text-xs text-sidebar-foreground/60 truncate leading-tight">
+                              {shortenHost(s.host)}
+                              {s.useHttps ? " · TLS" : ""}
                             </span>
                           </div>
                         </div>
-                      )}
+                      );
+                    })()}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="min-w-[300px]">
+                <SelectContent className="min-w-[280px]">
                   {servers.map((server) => (
-                    <SelectItem key={server.id} value={server.id}>
-                      <div className="flex items-center gap-2 w-full min-w-0">
-                        <Server className="h-3 w-3 shrink-0" />
-                        <div className="flex flex-col min-w-0 flex-1">
-                          <span className="font-medium">{server.name}</span>
-                          <span
-                            className="text-xs text-muted-foreground truncate"
-                            title={server.host}
-                          >
-                            {shortenHost(server.host)}
-                          </span>
+                    <SelectItem
+                      key={server.id}
+                      value={server.id}
+                      className="py-3"
+                    >
+                      <div className="flex items-center justify-between w-full gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <PixelServer className="h-4 text-primary shrink-0" />
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-medium text-foreground leading-tight">
+                              {server.name}
+                            </span>
+                            <span className="text-xs text-muted-foreground leading-tight">
+                              {shortenHost(server.host)}
+                              {server.useHttps ? " · TLS" : ""}
+                            </span>
+                          </div>
                         </div>
+                        <ServerStatusDot serverId={server.id} />
                       </div>
                     </SelectItem>
                   ))}
@@ -214,7 +228,6 @@ export function AppSidebar() {
                         className="cursor-pointer py-3"
                       >
                         <div className="flex items-center gap-2">
-                          <Plus className="h-4 w-4 text-muted-foreground" />
                           <span className="font-medium">{t("addServer")}</span>
                         </div>
                       </SelectItem>
@@ -230,7 +243,7 @@ export function AppSidebar() {
             </>
           ) : (
             <div className="text-center p-3 bg-sidebar-accent rounded-lg border-2 border-dashed border-sidebar-border">
-              <Server className="h-8 w-8 text-sidebar-foreground/70 mx-auto mb-2" />
+              <PixelServer className="h-8 text-sidebar-foreground/70 mx-auto mb-2" />
               <p className="text-xs text-sidebar-foreground/70 mb-2">
                 {t("noServersConfigured")}
               </p>
@@ -276,7 +289,7 @@ export function AppSidebar() {
                       <SelectValue placeholder={t("selectVhost")}>
                         {selectedVHost && (
                           <div className="flex items-center gap-2 w-full min-w-0">
-                            <FolderTree className="h-3 w-3 shrink-0" />
+                            <PixelLayers className="h-3 shrink-0" />
                             <span className="truncate font-medium">
                               {selectedVHost === "/"
                                 ? t("common:default")
@@ -290,7 +303,7 @@ export function AppSidebar() {
                       {availableVHosts.map((vhost) => (
                         <SelectItem key={vhost.name} value={vhost.name}>
                           <div className="flex items-center gap-2 w-full min-w-0">
-                            <FolderTree className="h-3 w-3 shrink-0" />
+                            <PixelLayers className="h-3 shrink-0" />
                             <span className="font-medium">
                               {vhost.name === "/"
                                 ? t("common:default")
@@ -307,7 +320,6 @@ export function AppSidebar() {
                             className="cursor-pointer py-3"
                           >
                             <div className="flex items-center gap-2">
-                              <Plus className="h-4 w-4 text-muted-foreground" />
                               <span className="font-medium">
                                 {t("createVirtualHost")}
                               </span>
@@ -320,7 +332,7 @@ export function AppSidebar() {
                 </>
               ) : (
                 <div className="text-center p-3 bg-sidebar-accent rounded-lg border-2 border-dashed border-sidebar-border">
-                  <FolderTree className="h-8 w-8 text-sidebar-foreground/70 mx-auto mb-2" />
+                  <PixelLayers className="h-8 text-sidebar-foreground/70 mx-auto mb-2" />
                   <p className="text-xs text-sidebar-foreground/70 mb-2">
                     {t("noVhostsAvailable")}
                   </p>
@@ -371,9 +383,9 @@ export function AppSidebar() {
                     <SidebarMenuItem key={item.titleKey}>
                       <SidebarMenuButton
                         asChild
-                        className={`w-full justify-start transition-all duration-200 ${
+                        className={`w-full justify-start transition-colors duration-150 ${
                           isActive
-                            ? "bg-linear-to-r from-orange-600 to-red-600 text-white hover:text-white"
+                            ? "bg-sidebar-accent text-primary font-semibold"
                             : "hover:bg-sidebar-accent text-sidebar-foreground"
                         }`}
                       >
@@ -381,7 +393,7 @@ export function AppSidebar() {
                           to={item.url}
                           className="flex items-center gap-3 px-3 py-2 rounded-lg"
                         >
-                          <item.icon className="w-4 h-4" />
+                          <item.icon className="h-4 w-auto shrink-0" />
                           <span className="font-medium truncate">
                             {t(item.titleKey)}
                           </span>
@@ -401,11 +413,11 @@ export function AppSidebar() {
           to="/help"
           className={`flex items-center gap-2 text-sm rounded-md px-2 py-1.5 transition-colors ${
             location.pathname === "/help"
-              ? "bg-linear-to-r from-orange-600 to-red-600 text-white hover:text-white font-medium"
+              ? "bg-sidebar-accent text-primary font-semibold"
               : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
           }`}
         >
-          <HelpCircle className="w-4 h-4" />
+          <PixelHelp className="h-4 w-auto shrink-0" />
           {t("helpSupport")}
         </Link>
 
@@ -414,11 +426,11 @@ export function AppSidebar() {
           to="/settings"
           className={`flex items-center gap-2 text-sm rounded-md px-2 py-1.5 transition-colors ${
             location.pathname.startsWith("/settings")
-              ? "bg-linear-to-r from-orange-600 to-red-600 text-white hover:text-white font-medium"
+              ? "bg-sidebar-accent text-primary font-semibold"
               : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
           }`}
         >
-          <Settings className="w-4 h-4" />
+          <PixelSettings className="h-4 w-auto shrink-0" />
           {t("settings")}
         </Link>
 
@@ -429,11 +441,15 @@ export function AppSidebar() {
               <img
                 src={user.image}
                 alt=""
+                aria-hidden="true"
                 className="w-6 h-6 rounded-full object-cover shrink-0"
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <User className="w-4 h-4 text-sidebar-foreground/70 shrink-0" />
+              <PixelUser
+                className="h-4 w-auto text-sidebar-foreground/70 shrink-0"
+                aria-hidden="true"
+              />
             )}
             <div className="flex flex-col min-w-0">
               <span className="font-medium text-sidebar-foreground">
@@ -449,9 +465,10 @@ export function AppSidebar() {
             size="sm"
             onClick={() => logoutMutation.mutate()}
             disabled={logoutMutation.isPending}
-            className="text-sidebar-foreground/70 hover:text-red-400 p-1"
+            className="text-sidebar-foreground/70 hover:text-destructive p-1"
+            title={t("auth:signOut")}
           >
-            <LogOut className="w-4 h-4" />
+            <PixelLogout className="h-4 w-auto shrink-0" />
           </Button>
         </div>
       </SidebarFooter>

@@ -40,23 +40,23 @@ const ProfileSection = () => {
 
   const profile = profileData?.user;
 
-  // Initialize form when profile data first loads
-  const [prevProfileId, setPrevProfileId] = useState<string | null>(null);
-  if (profile?.id && profile.id !== prevProfileId) {
-    setPrevProfileId(profile.id);
+  const resetFormFromProfile = () => {
     setProfileForm({
-      firstName: profile.firstName || "",
-      lastName: profile.lastName || "",
+      firstName: profile?.firstName || "",
+      lastName: profile?.lastName || "",
     });
-  }
+  };
 
   const handleUpdateProfile = async () => {
     try {
       await updateProfileMutation.mutateAsync(profileForm);
       setEditingProfile(false);
       toast.success(t("toast.profileUpdated"));
-    } catch {
-      toast.error(t("toast.profileUpdateFailed"));
+    } catch (error) {
+      logger.error("Profile update error:", error);
+      toast.error(t("toast.profileUpdateFailed"), {
+        description: extractErrorMessage(error),
+      });
     }
   };
 
@@ -121,7 +121,14 @@ const ProfileSection = () => {
         editingProfile={editingProfile}
         profileForm={profileForm}
         setProfileForm={setProfileForm}
-        setEditingProfile={setEditingProfile}
+        onStartEdit={() => {
+          resetFormFromProfile();
+          setEditingProfile(true);
+        }}
+        onCancelEdit={() => {
+          resetFormFromProfile();
+          setEditingProfile(false);
+        }}
         onUpdateProfile={handleUpdateProfile}
         onPasswordChange={handlePasswordChange}
         onEmailChangeRequest={handleEmailChangeRequest}

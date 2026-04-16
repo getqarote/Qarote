@@ -1,14 +1,15 @@
-import { useEffect } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Trans, useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UserCog } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 import { RabbitMQUser } from "@/lib/api/userTypes";
 
+import { UserTagToggles } from "@/components/AddUserFormComponent/UserTagToggles";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,13 +27,18 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 
 import { useUpdateUser } from "@/hooks/queries/useRabbitMQUsers";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
-import { type EditUserForm, editUserSchema } from "@/schemas";
+import {
+  type EditUserForm,
+  editUserSchema,
+  USER_TAGS,
+  type UserTag,
+} from "@/schemas";
 
 interface EditUserModalProps {
   isOpen: boolean;
@@ -41,14 +47,11 @@ interface EditUserModalProps {
   user: RabbitMQUser;
 }
 
-const TAG_SHORTCUTS = [
-  "administrator",
-  "policymaker",
-  "monitoring",
-  "management",
-  "impersonator",
-  "none",
-] as const;
+function toUserTags(raw: string[] | undefined): UserTag[] {
+  return (raw ?? []).filter((t): t is UserTag =>
+    (USER_TAGS as readonly string[]).includes(t)
+  );
+}
 
 export function EditUserModal({
   isOpen,
@@ -59,26 +62,16 @@ export function EditUserModal({
   const { t } = useTranslation("users");
   const queryClient = useQueryClient();
   const { workspace } = useWorkspace();
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<EditUserForm>({
     resolver: zodResolver(editUserSchema),
     defaultValues: {
       password: "",
-      tags: user.tags?.join(", ") || "",
+      tags: toUserTags(user.tags),
       passwordAction: "keep",
     },
   });
-
-  // Reset form when user changes
-  useEffect(() => {
-    if (isOpen) {
-      form.reset({
-        password: "",
-        tags: user.tags?.join(", ") || "",
-        passwordAction: "keep",
-      });
-    }
-  }, [isOpen, user]);
 
   const updateUserMutation = useUpdateUser();
 
@@ -97,7 +90,7 @@ export function EditUserModal({
           data.passwordAction === "set"
             ? data.password?.trim() || undefined
             : undefined,
-        tags: data.tags || "",
+        tags: data.tags.join(","),
         removePassword: data.passwordAction === "remove",
       });
 
@@ -113,35 +106,32 @@ export function EditUserModal({
   };
 
   const handleClose = () => {
-    form.reset();
+    form.reset({
+      password: "",
+      tags: toUserTags(user.tags),
+      passwordAction: "keep",
+    });
+    setShowPassword(false);
     onClose();
   };
 
-  const handleTagClick = (tag: string) => {
-    const currentTags = form.getValues("tags") || "";
-    if (tag === "none") {
-      form.setValue("tags", "");
-      return;
-    }
-    const tagList = currentTags
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    if (tagList.includes(tag)) {
-      form.setValue("tags", tagList.filter((s) => s !== tag).join(", "));
-    } else {
-      form.setValue("tags", [...tagList, tag].join(", "));
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      e.preventDefault();
+      form.handleSubmit(onSubmit)();
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog
+      open={isOpen}
+      onOpenChange={(next) => {
+        if (!next) handleClose();
+      }}
+    >
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <UserCog className="h-5 w-5" />
-            {t("editUser")}
-          </DialogTitle>
+          <DialogTitle>{t("editUser")}</DialogTitle>
           <DialogDescription>
             <Trans
               i18nKey="users:editUserDescription"
@@ -152,7 +142,11 @@ export function EditUserModal({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-4"
+            onKeyDown={handleKeyDown}
+          >
             <FormField
               control={form.control}
               name="tags"
@@ -160,22 +154,11 @@ export function EditUserModal({
                 <FormItem>
                   <FormLabel>{t("tagLabel")}</FormLabel>
                   <FormControl>
-                    <Input placeholder={t("tagPlaceholder")} {...field} />
+                    <UserTagToggles
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
                   </FormControl>
-                  <div className="flex flex-wrap gap-1 pt-1">
-                    {TAG_SHORTCUTS.map((tag) => (
-                      <Button
-                        key={tag}
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="h-6 px-2 text-xs"
-                        onClick={() => handleTagClick(tag)}
-                      >
-                        {t(tag)}
-                      </Button>
-                    ))}
-                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -205,6 +188,7 @@ export function EditUserModal({
                           {t("passwordKeep")}
                         </Label>
                       </div>
+
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <input
@@ -219,36 +203,58 @@ export function EditUserModal({
                             htmlFor="pw-set"
                             className="font-normal cursor-pointer"
                           >
-                            {t("passwordSet")}
+                            {t("passwordSetAction")}
                           </Label>
                         </div>
                         {field.value === "set" && (
-                          <Input
-                            type="password"
-                            placeholder={t("passwordNewPlaceholder")}
-                            value={form.watch("password") || ""}
-                            onChange={(e) =>
-                              form.setValue("password", e.target.value)
-                            }
-                            className="ml-6"
+                          <FormField
+                            control={form.control}
+                            name="password"
+                            render={({ field: pwField }) => (
+                              <PasswordInput
+                                placeholder={t("passwordNewPlaceholder")}
+                                autoComplete="new-password"
+                                showPassword={showPassword}
+                                onToggleVisibility={() =>
+                                  setShowPassword((s) => !s)
+                                }
+                                className="ml-6"
+                                {...pwField}
+                              />
+                            )}
                           />
                         )}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="radio"
-                          id="pw-remove"
-                          value="remove"
-                          checked={field.value === "remove"}
-                          onChange={() => field.onChange("remove")}
-                          className="accent-primary"
-                        />
-                        <Label
-                          htmlFor="pw-remove"
-                          className="font-normal cursor-pointer text-red-600"
-                        >
-                          {t("removePassword")}
-                        </Label>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            id="pw-remove"
+                            value="remove"
+                            checked={field.value === "remove"}
+                            onChange={() => field.onChange("remove")}
+                            className="accent-primary"
+                          />
+                          <Label
+                            htmlFor="pw-remove"
+                            className="font-normal cursor-pointer text-destructive"
+                          >
+                            {t("removePassword")}
+                          </Label>
+                        </div>
+                        {field.value === "remove" && (
+                          <div
+                            role="alert"
+                            className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-xs text-destructive ml-6"
+                          >
+                            <AlertTriangle
+                              className="h-3.5 w-3.5 mt-0.5 shrink-0"
+                              aria-hidden
+                            />
+                            <span>{t("removePasswordWarning")}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </FormControl>
@@ -257,7 +263,7 @@ export function EditUserModal({
               )}
             />
 
-            <DialogFooter>
+            <DialogFooter className="pt-2">
               <Button
                 type="button"
                 variant="outline"
@@ -269,7 +275,7 @@ export function EditUserModal({
               <Button
                 type="submit"
                 disabled={updateUserMutation.isPending}
-                className="btn-primary text-white"
+                className="btn-primary"
               >
                 {updateUserMutation.isPending ? t("updating") : t("updateUser")}
               </Button>

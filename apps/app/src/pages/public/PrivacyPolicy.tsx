@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router";
 
-import { ArrowLeft, Shield } from "lucide-react";
+import { Shield } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PixelChevronLeft } from "@/components/ui/pixel-chevron-left";
 
 export default function PrivacyPolicy() {
   const navigate = useNavigate();
@@ -15,17 +16,17 @@ export default function PrivacyPolicy() {
         <div className="flex items-center justify-between mb-8">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <Shield className="w-6 h-6 text-blue-600" />
+              <Shield className="w-6 h-6 text-muted-foreground" />
               <h1 className="text-2xl font-bold">Privacy Policy</h1>
             </div>
-            <p className="text-gray-600">Last updated: July 15, 2025</p>
+            <p className="text-muted-foreground">Last updated: July 15, 2025</p>
           </div>
           <Button
             variant="outline"
             onClick={() => navigate(-1)}
             className="gap-2"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <PixelChevronLeft className="h-4 w-auto shrink-0" />
             Back
           </Button>
         </div>
@@ -207,15 +208,15 @@ export default function PrivacyPolicy() {
         </Card>
 
         {/* Contact Information */}
-        <Card className="mb-6 border-blue-200 bg-blue-50">
+        <Card className="mb-6 border-info/30 bg-info-muted">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <Shield className="w-5 h-5 text-blue-600 mt-0.5" />
+              <Shield className="w-5 h-5 text-info mt-0.5" />
               <div>
-                <h3 className="font-semibold text-blue-900">
+                <h3 className="font-semibold text-info">
                   Questions about Privacy?
                 </h3>
-                <p className="text-sm text-blue-700 mt-1">
+                <p className="text-sm text-info mt-1">
                   If you have any questions about our privacy practices or need
                   help with your data settings, please contact our privacy team
                   at{" "}
@@ -229,7 +230,7 @@ export default function PrivacyPolicy() {
         </Card>
 
         {/* Footer */}
-        <div className="mt-8 text-center text-sm text-gray-500">
+        <div className="mt-8 text-center text-sm text-muted-foreground">
           <p>© {new Date().getFullYear()} Qarote. All rights reserved.</p>
           <div className="flex justify-center gap-4 mt-2">
             <a href="/" className="hover:underline">

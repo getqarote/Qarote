@@ -3,11 +3,13 @@ import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router";
 
-import { ArrowRight, CheckCircle, CreditCard } from "lucide-react";
+import { CheckCircle, CreditCard } from "lucide-react";
 
 import { trackPurchase } from "@/lib/ga";
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
+
+import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
 
 import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
@@ -114,28 +116,30 @@ const PaymentSuccess: React.FC = () => {
   }, [sessionId, workspace?.id, utils]);
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-orange-600 via-red-600 to-orange-700 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-8 text-center">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="bg-card border border-border rounded-lg shadow-sm max-w-md w-full p-8 text-center">
         <div className="mb-6">
-          <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <CheckCircle className="w-16 h-16 text-success mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-foreground mb-2">
             {t("paymentSuccess.title")}
           </h1>
-          <p className="text-gray-600">{t("paymentSuccess.description")}</p>
+          <p className="text-muted-foreground">
+            {t("paymentSuccess.description")}
+          </p>
         </div>
 
         {/* Show plan information instead of session ID */}
         {planData && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="mb-6 p-4 bg-success-muted border border-success/30 rounded-lg">
             <div className="flex items-center justify-center mb-2">
-              <CreditCard className="w-5 h-5 text-green-600 mr-2" />
-              <span className="font-medium text-green-800">
+              <CreditCard className="w-5 h-5 text-success mr-2" />
+              <span className="font-medium text-success">
                 {t("paymentSuccess.planActivated", {
                   plan: planData.user.plan,
                 })}
               </span>
             </div>
-            <p className="text-sm text-green-600">
+            <p className="text-sm text-success">
               {t("paymentSuccess.welcomeMessage")}
             </p>
           </div>
@@ -144,22 +148,22 @@ const PaymentSuccess: React.FC = () => {
         <div className="space-y-3">
           <button
             onClick={() => navigate("/")}
-            className="w-full bg-gradient-button hover:bg-gradient-button-hover text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
+            className="btn-primary w-full flex items-center justify-center"
           >
             {t("paymentSuccess.exploreDashboard")}
-            <ArrowRight className="w-4 h-4 ml-2" />
+            <PixelChevronRight className="h-3 shrink-0 ml-2" />
           </button>
 
           <button
-            onClick={() => navigate("/billing")}
-            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 py-2 px-4 rounded-lg font-medium transition-colors"
+            onClick={() => navigate("/settings/subscription/billing")}
+            className="w-full bg-muted hover:bg-border text-foreground py-2 px-4 rounded-lg font-medium transition-colors"
           >
             {t("paymentSuccess.manageSubscription")}
           </button>
         </div>
 
-        <div className="mt-6 pt-4 border-t border-gray-200">
-          <p className="text-xs text-gray-500">
+        <div className="mt-6 pt-4 border-t border-border">
+          <p className="text-xs text-muted-foreground">
             {t("paymentSuccess.needHelp")}
           </p>
         </div>

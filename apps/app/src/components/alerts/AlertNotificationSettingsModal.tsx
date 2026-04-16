@@ -53,12 +53,26 @@ interface AlertNotificationSettingsModalProps {
   onClose: () => void;
 }
 
-function StatusDot({ enabled }: { enabled: boolean }) {
+const EMPTY_SERVERS: Array<{
+  id: string;
+  name: string;
+  host: string;
+  port: number;
+}> = [];
+
+function StatusDot({
+  enabled,
+  configured = true,
+}: {
+  enabled: boolean;
+  configured?: boolean;
+}) {
+  if (!configured) return null;
   return (
     <span
       aria-hidden="true"
       className={`h-2 w-2 rounded-full shrink-0 ${
-        enabled ? "bg-green-500" : "bg-muted-foreground/30"
+        enabled ? "bg-success" : "bg-muted-foreground/30"
       }`}
     />
   );
@@ -107,7 +121,7 @@ export function AlertNotificationSettingsModal({
 
   // Query for servers
   const { data: serversData } = useServers();
-  const servers = serversData?.servers || [];
+  const servers = serversData?.servers ?? EMPTY_SERVERS;
 
   // Get selected server objects
   const selectedServers = useMemo(() => {
@@ -190,7 +204,7 @@ export function AlertNotificationSettingsModal({
       }, 200);
       return () => clearTimeout(timeoutId);
     }
-  }, [settingsData, workspace?.contactEmail]);
+  }, [settingsData, user?.email, workspace?.contactEmail]);
 
   // Update webhook fields from first webhook
   useEffect(() => {
@@ -266,12 +280,14 @@ export function AlertNotificationSettingsModal({
         skipValidation?: boolean;
         onlyBrowserNotifications?: boolean;
         onlyEmailNotifications?: boolean;
+        silent?: boolean;
       } = {}
     ) => {
       const {
         skipValidation = false,
         onlyBrowserNotifications = false,
         onlyEmailNotifications = false,
+        silent = false,
       } = options;
       const currentEnabled = emailNotificationsEnabledRef.current;
       const currentEmail = contactEmailRef.current;
@@ -337,7 +353,9 @@ export function AlertNotificationSettingsModal({
 
       updateSettingsMutation.mutate(updatePayload, {
         onSuccess: () => {
-          toast.success(t("modal.toastSettingsUpdated"));
+          if (!silent) {
+            toast.success(t("modal.toastSettingsUpdated"));
+          }
         },
         onError: (error: ApiError) => {
           const errorMessage =
@@ -347,7 +365,7 @@ export function AlertNotificationSettingsModal({
         },
       });
     },
-    [updateSettingsMutation]
+    [notificationServerIds, t, updateSettingsMutation]
   );
 
   // Auto-save when email notifications toggle changes
@@ -357,6 +375,7 @@ export function AlertNotificationSettingsModal({
       autoSaveSettings({
         skipValidation: !emailNotificationsEnabled,
         onlyEmailNotifications: true,
+        silent: true,
       });
     }, 100);
     return () => clearTimeout(timeoutId);
@@ -368,7 +387,7 @@ export function AlertNotificationSettingsModal({
     if (isInitialMount.current) return;
     const timeoutId = setTimeout(() => {
       if (emailNotificationsEnabled) {
-        autoSaveSettings({ onlyEmailNotifications: true });
+        autoSaveSettings({ onlyEmailNotifications: true, silent: true });
       }
     }, 100);
     return () => clearTimeout(timeoutId);
@@ -380,7 +399,7 @@ export function AlertNotificationSettingsModal({
     if (isInitialMount.current) return;
     const timeoutId = setTimeout(() => {
       if (emailNotificationsEnabled) {
-        autoSaveSettings({ onlyEmailNotifications: true });
+        autoSaveSettings({ onlyEmailNotifications: true, silent: true });
       }
     }, 100);
     return () => clearTimeout(timeoutId);
@@ -394,6 +413,7 @@ export function AlertNotificationSettingsModal({
       autoSaveSettings({
         skipValidation: !browserNotificationsEnabled,
         onlyBrowserNotifications: true,
+        silent: true,
       });
     }, 100);
     return () => clearTimeout(timeoutId);
@@ -405,7 +425,7 @@ export function AlertNotificationSettingsModal({
     if (isInitialMount.current) return;
     const timeoutId = setTimeout(() => {
       if (browserNotificationsEnabled) {
-        autoSaveSettings({ onlyBrowserNotifications: true });
+        autoSaveSettings({ onlyBrowserNotifications: true, silent: true });
       }
     }, 100);
     return () => clearTimeout(timeoutId);
@@ -602,10 +622,7 @@ export function AlertNotificationSettingsModal({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
         <div className="p-6 pb-0">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5" />
-              {t("modal.title")}
-            </DialogTitle>
+            <DialogTitle>{t("modal.title")}</DialogTitle>
             <DialogDescription>{t("modal.description")}</DialogDescription>
           </DialogHeader>
         </div>
@@ -645,7 +662,10 @@ export function AlertNotificationSettingsModal({
             >
               <Webhook className="h-4 w-4" />
               {t("modal.tabs.webhook")}
-              <StatusDot enabled={!!firstWebhook?.enabled} />
+              <StatusDot
+                enabled={!!firstWebhook?.enabled}
+                configured={!!firstWebhook}
+              />
             </TabsTrigger>
             <TabsTrigger
               value="slack"
@@ -653,7 +673,10 @@ export function AlertNotificationSettingsModal({
             >
               <MessageSquare className="h-4 w-4" />
               {t("modal.tabs.slack")}
-              <StatusDot enabled={!!firstSlack?.enabled} />
+              <StatusDot
+                enabled={!!firstSlack?.enabled}
+                configured={!!firstSlack}
+              />
             </TabsTrigger>
           </TabsList>
 
@@ -673,7 +696,6 @@ export function AlertNotificationSettingsModal({
                 notificationSeverities={notificationSeverities}
                 setNotificationSeverities={setNotificationSeverities}
                 isPending={updateSettingsMutation.isPending}
-                t={t}
               />
             </TabsContent>
 
@@ -685,7 +707,6 @@ export function AlertNotificationSettingsModal({
                 setContactEmail={setContactEmail}
                 onSaveEmail={handleSaveEmail}
                 isPending={updateSettingsMutation.isPending}
-                t={t}
               />
             </TabsContent>
 
@@ -700,7 +721,6 @@ export function AlertNotificationSettingsModal({
                 notificationPermission={notificationPermission}
                 setNotificationPermission={setNotificationPermission}
                 isPending={updateSettingsMutation.isPending}
-                t={t}
               />
             </TabsContent>
 
@@ -723,7 +743,6 @@ export function AlertNotificationSettingsModal({
                   updateWebhookMutation.isPending
                 }
                 isDeleting={deleteWebhookMutation.isPending}
-                t={t}
               />
             </TabsContent>
 
@@ -741,7 +760,6 @@ export function AlertNotificationSettingsModal({
                   updateSlackConfigMutation.isPending
                 }
                 isDeleting={deleteSlackConfigMutation.isPending}
-                t={t}
               />
             </TabsContent>
           </div>
@@ -764,7 +782,6 @@ export function AlertNotificationSettingsModal({
       <WebhookExampleModal
         open={showWebhookExample}
         onOpenChange={setShowWebhookExample}
-        t={t}
       />
     </Dialog>
   );

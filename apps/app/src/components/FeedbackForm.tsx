@@ -59,28 +59,28 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
       label: t("feedback.bugReport"),
       description: t("feedback.bugReportDesc"),
       icon: Bug,
-      color: "text-red-600",
+      color: "text-destructive",
     },
     {
       value: "FEATURE" as const,
       label: t("feedback.featureRequest"),
       description: t("feedback.featureRequestDesc"),
       icon: Lightbulb,
-      color: "text-yellow-600",
+      color: "text-warning",
     },
     {
       value: "IMPROVEMENT" as const,
       label: t("feedback.improvement"),
       description: t("feedback.improvementDesc"),
       icon: Zap,
-      color: "text-blue-600",
+      color: "text-info",
     },
     {
       value: "GENERAL" as const,
       label: t("feedback.generalFeedback"),
       description: t("feedback.generalFeedbackDesc"),
       icon: MessageSquare,
-      color: "text-green-600",
+      color: "text-success",
     },
   ];
 
@@ -338,7 +338,7 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
                         <SelectItem key={priority.value} value={priority.value}>
                           <div className="flex flex-col">
                             <span>{priority.label}</span>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-muted-foreground">
                               {priority.description}
                             </span>
                           </div>

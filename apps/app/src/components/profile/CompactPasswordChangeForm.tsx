@@ -1,7 +1,7 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import { Eye, EyeOff, Shield } from "lucide-react";
-import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 
 import { logger } from "@/lib/logger";
 
@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PixelShield } from "@/components/ui/pixel-shield";
 
 interface CompactPasswordChangeFormProps {
   onPasswordChange: (data: {
@@ -21,6 +22,7 @@ interface CompactPasswordChangeFormProps {
 export const CompactPasswordChangeForm: React.FC<
   CompactPasswordChangeFormProps
 > = ({ onPasswordChange, isLoading = false }) => {
+  const { t } = useTranslation("profile");
   const [formData, setFormData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -81,7 +83,6 @@ export const CompactPasswordChangeForm: React.FC<
         confirmPassword: "",
       });
       setErrors({});
-      toast.success("Password changed successfully");
     } catch (error) {
       logger.error("Password change error:", error);
       // Error handling is done by the parent component
@@ -102,7 +103,7 @@ export const CompactPasswordChangeForm: React.FC<
           {/* Current Password */}
           <div className="space-y-2">
             <Label htmlFor="currentPassword" className="text-sm">
-              Current Password
+              {t("personal.changePassword")}
             </Label>
             <div className="relative">
               <Input
@@ -219,7 +220,7 @@ export const CompactPasswordChangeForm: React.FC<
 
           {/* Password Requirements */}
           <Alert className="py-2">
-            <Shield className="h-3 w-3" />
+            <PixelShield className="h-3" />
             <AlertDescription className="text-xs">
               Password must be at least 8 characters long and include a mix of
               letters, numbers, and symbols.
@@ -227,39 +228,17 @@ export const CompactPasswordChangeForm: React.FC<
           </Alert>
         </div>
 
-        {/* Submit Button */}
-        <Button
-          type="submit"
-          disabled={isLoading}
-          className="w-full"
-          size="sm"
-          style={{
-            background: isLoading
-              ? "#9ca3af"
-              : "linear-gradient(135deg, #f97316 0%, #dc2626 100%)",
-            color: "white",
-            border: "none",
-          }}
-          onMouseEnter={(e) => {
-            if (!isLoading) {
-              e.currentTarget.style.background =
-                "linear-gradient(135deg, #ea580c 0%, #b91c1c 100%)";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isLoading) {
-              e.currentTarget.style.background =
-                "linear-gradient(135deg, #f97316 0%, #dc2626 100%)";
-            }
-          }}
-        >
+        {/* Submit Button — uses Button's default variant (bg-primary
+            text-primary-foreground hover:bg-primary/90) so it matches the
+            rest of the app's solid primary buttons. */}
+        <Button type="submit" disabled={isLoading} className="w-full" size="sm">
           {isLoading ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-              Changing Password...
+              Changing password...
             </>
           ) : (
-            "Change Password"
+            "Change password"
           )}
         </Button>
       </form>

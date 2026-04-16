@@ -1,11 +1,13 @@
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
+import { UserPermissionsCard } from "@/components/AddUserFormComponent/UserPermissionsCard";
+import { UserTagToggles } from "@/components/AddUserFormComponent/UserTagToggles";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,6 +27,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import {
   Select,
   SelectContent,
@@ -50,15 +53,6 @@ interface CreateUserModalProps {
   onSuccess?: () => void;
 }
 
-const TAG_SHORTCUTS = [
-  "administrator",
-  "policymaker",
-  "monitoring",
-  "management",
-  "impersonator",
-  "none",
-] as const;
-
 export function CreateUserModal({
   isOpen,
   onClose,
@@ -66,16 +60,22 @@ export function CreateUserModal({
   onSuccess,
 }: CreateUserModalProps) {
   const { t } = useTranslation("users");
+  const { t: tc } = useTranslation("common");
   const queryClient = useQueryClient();
   const { workspace } = useWorkspace();
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<CreateUserForm>({
     resolver: zodResolver(createUserSchema),
+    mode: "onChange",
     defaultValues: {
       username: "",
       password: "",
-      tags: "",
+      tags: [],
       vhost: "/",
+      configure: ".*",
+      write: ".*",
+      read: ".*",
     },
   });
 
@@ -84,11 +84,37 @@ export function CreateUserModal({
   const deleteUserMutation = useDeleteUser();
   const { data: vhostsData, isLoading: vhostsLoading } = useVHosts(serverId);
 
+  const selectedVhost = form.watch("vhost") || "/";
+  const isPending =
+    createUserMutation.isPending || setPermissionsMutation.isPending;
+
+  const resetAll = () => {
+    form.reset({
+      username: "",
+      password: "",
+      tags: [],
+      vhost: "/",
+      configure: ".*",
+      write: ".*",
+      read: ".*",
+    });
+    setShowPassword(false);
+  };
+
+  const handleClose = () => {
+    resetAll();
+    onClose();
+  };
+
   const onSubmit = async (data: CreateUserForm) => {
     if (!workspace?.id) {
-      toast.error(t("requiredWorkspace"));
+      toast.error(t("toast.workspaceRequired"));
       return;
     }
+
+    // Map the array form field to RabbitMQ's comma-separated CSV
+    // contract only at the mutation boundary.
+    const tagsCsv = data.tags.join(",");
 
     try {
       await createUserMutation.mutateAsync({
@@ -96,10 +122,15 @@ export function CreateUserModal({
         workspaceId: workspace.id,
         username: data.username,
         password: data.password?.trim() || undefined,
-        tags: data.tags || "",
+        tags: tagsCsv,
       });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t("createError"));
+      const message = error instanceof Error ? error.message : "";
+      if (message.toLowerCase().includes("already exists")) {
+        toast.error(t("toast.alreadyExistsDesc", { name: data.username }));
+      } else {
+        toast.error(message || t("createError"));
+      }
       return;
     }
 
@@ -109,183 +140,186 @@ export function CreateUserModal({
         workspaceId: workspace.id,
         username: data.username,
         vhost: data.vhost,
-        configure: ".*",
-        write: ".*",
-        read: ".*",
+        configure: data.configure,
+        write: data.write,
+        read: data.read,
       });
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : t("setPermissionsError")
-      );
-      // Permission setup failed — clean up the orphaned user
+      // Permissions failed — clean up the orphaned user so the list
+      // doesn't gain an unusable account. Tell the user we did it.
       try {
         await deleteUserMutation.mutateAsync({
           serverId,
           workspaceId: workspace.id,
           username: data.username,
         });
+        toast.error(
+          error instanceof Error
+            ? `${error.message} — ${t("toast.userRolledBack")}`
+            : t("toast.permissionsFailedRolledBack")
+        );
       } catch {
-        // Cleanup failed — user exists without permissions
+        toast.error(
+          error instanceof Error
+            ? `${error.message} — ${t("toast.rollbackFailed")}`
+            : t("toast.rollbackFailed")
+        );
       }
       return;
     }
 
-    // Both mutations succeeded
     queryClient.invalidateQueries({ queryKey: ["users", serverId] });
-    toast.success(t("createSuccess"));
-    form.reset();
+    toast.success(t("toast.userCreatedDesc", { name: data.username }));
+    resetAll();
     onSuccess?.();
     onClose();
   };
 
-  const handleClose = () => {
-    form.reset();
-    onClose();
-  };
-
-  const handleTagClick = (tag: string) => {
-    const currentTags = form.getValues("tags") || "";
-    if (tag === "none") {
-      form.setValue("tags", "");
-      return;
-    }
-    const tagList = currentTags
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    if (tagList.includes(tag)) {
-      form.setValue("tags", tagList.filter((s) => s !== tag).join(", "));
-    } else {
-      form.setValue("tags", [...tagList, tag].join(", "));
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      e.preventDefault();
+      form.handleSubmit(onSubmit)();
     }
   };
-
-  const isPending =
-    createUserMutation.isPending || setPermissionsMutation.isPending;
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <UserPlus className="h-5 w-5" />
-            {t("addUser")}
-          </DialogTitle>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(next) => {
+        if (!next) handleClose();
+      }}
+    >
+      <DialogContent className="sm:max-w-xl lg:max-w-2xl max-h-[90vh] p-0 gap-0 flex flex-col bg-card">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
+          <DialogTitle>{t("addUser")}</DialogTitle>
           <DialogDescription>{t("createUserDescription")}</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="username"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("username")}</FormLabel>
-                  <FormControl>
-                    <Input placeholder={t("usernamePlaceholder")} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    {t("password")} {t("passwordOptional")}
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder={t("passwordPlaceholder")}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>{t("passwordAwsNote")}</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="tags"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("tagLabel")}</FormLabel>
-                  <FormControl>
-                    <Input placeholder={t("tagPlaceholder")} {...field} />
-                  </FormControl>
-                  <div className="flex flex-wrap gap-1 pt-1">
-                    {TAG_SHORTCUTS.map((tag) => (
-                      <Button
-                        key={tag}
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="h-6 px-2 text-xs"
-                        onClick={() => handleTagClick(tag)}
-                      >
-                        {t(tag)}
-                      </Button>
-                    ))}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="vhost"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("virtualHostAccess")}</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    disabled={vhostsLoading}
-                  >
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="flex flex-col flex-1 min-h-0"
+            onKeyDown={handleKeyDown}
+          >
+            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("username")}</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder={
-                            vhostsLoading
-                              ? t("common:loading")
-                              : t("virtualHostAccess")
-                          }
-                        />
-                      </SelectTrigger>
+                      <Input
+                        placeholder={t("usernamePlaceholder")}
+                        autoComplete="off"
+                        autoFocus
+                        spellCheck={false}
+                        autoCapitalize="off"
+                        {...field}
+                      />
                     </FormControl>
-                    <SelectContent>
-                      {vhostsLoading ? (
-                        <SelectItem value="/" disabled>
-                          {t("common:loading")}
-                        </SelectItem>
-                      ) : vhostsData?.vhosts?.length ? (
-                        vhostsData.vhosts.map((vhost) => (
-                          <SelectItem key={vhost.name} value={vhost.name}>
-                            {vhost.name}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem value="/" disabled>
-                          {t("noVhostsAvailable")}
-                        </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>{t("userPermissions")}</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormDescription>{t("usernameHelp")}</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <DialogFooter>
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {t("password")}{" "}
+                      <span className="text-muted-foreground font-normal">
+                        {t("passwordOptional")}
+                      </span>
+                    </FormLabel>
+                    <FormControl>
+                      <PasswordInput
+                        placeholder={t("passwordPlaceholder")}
+                        autoComplete="new-password"
+                        showPassword={showPassword}
+                        onToggleVisibility={() => setShowPassword((s) => !s)}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      {t("passwordOptionalHint")}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="tags"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("tagLabel")}</FormLabel>
+                    <FormControl>
+                      <UserTagToggles
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="vhost"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("virtualHostAccess")}</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      disabled={vhostsLoading}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder={
+                              vhostsLoading
+                                ? tc("loading")
+                                : t("virtualHostAccess")
+                            }
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {vhostsLoading ? (
+                          <SelectItem value="/" disabled>
+                            {tc("loading")}
+                          </SelectItem>
+                        ) : vhostsData?.vhosts?.length ? (
+                          vhostsData.vhosts.map((vhost) => (
+                            <SelectItem key={vhost.name} value={vhost.name}>
+                              {vhost.name === "/"
+                                ? t("defaultVhost")
+                                : vhost.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="/" disabled>
+                            {t("noVhostsAvailable")}
+                          </SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <UserPermissionsCard vhost={selectedVhost} />
+            </div>
+
+            <DialogFooter className="px-6 py-4 border-t border-border shrink-0">
               <Button
                 type="button"
                 variant="outline"
@@ -297,7 +331,7 @@ export function CreateUserModal({
               <Button
                 type="submit"
                 disabled={isPending}
-                className="btn-primary text-white"
+                className="btn-primary"
               >
                 {isPending ? t("creating") : t("create")}
               </Button>

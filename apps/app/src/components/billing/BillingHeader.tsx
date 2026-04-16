@@ -1,35 +1,33 @@
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
 
-import { ArrowLeft, Receipt } from "lucide-react";
+import { PixelReceipt } from "@/components/ui/pixel-receipt";
 
+/**
+ * Header for the billing detail view (`/settings/subscription/
+ * billing`). Matches the primary-tinted badge pattern used by
+ * SSOHeader and OrgContextHeader so the operator sees a
+ * consistent header treatment across every settings surface.
+ *
+ * No back button: the settings sidebar (with "Subscription"
+ * highlighted) is the back affordance — a separate back button
+ * would be a second, weaker navigation channel.
+ */
 export const BillingHeader = () => {
-  const navigate = useNavigate();
   const { t } = useTranslation("billing");
 
   return (
-    <div className="flex items-center gap-4">
-      <button
-        type="button"
-        onClick={() => navigate("/settings/plans")}
-        className="p-2 hover:bg-muted rounded-lg transition-colors shrink-0"
-        title={t("plans.backToPlans")}
-        aria-label={t("plans.backToPlans")}
+    <div className="flex items-center gap-3 pb-2">
+      <div
+        className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10 shrink-0"
+        aria-hidden="true"
       >
-        <ArrowLeft className="w-4 h-4" />
-      </button>
-      <div className="flex items-center gap-3">
-        <div className="hidden sm:flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-          <Receipt className="h-5 w-5 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">
-            Billing & Usage
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Manage your subscription and payment details
-          </p>
-        </div>
+        <PixelReceipt className="h-5 w-auto shrink-0 text-primary" />
+      </div>
+      <div className="min-w-0">
+        <h2 className="text-lg font-semibold leading-tight">
+          {t("header.title")}
+        </h2>
+        <p className="text-sm text-muted-foreground">{t("header.subtitle")}</p>
       </div>
     </div>
   );

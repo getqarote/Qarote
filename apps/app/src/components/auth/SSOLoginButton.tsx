@@ -97,7 +97,7 @@ export const SSOLoginButton: React.FC<SSOLoginButtonProps> = ({
             <Button
               type="submit"
               disabled={isPending || !email.trim()}
-              className="bg-gradient-button hover:bg-gradient-button-hover text-white"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               Continue
             </Button>

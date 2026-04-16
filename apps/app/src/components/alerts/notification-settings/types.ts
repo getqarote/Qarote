@@ -2,9 +2,6 @@ import type { Server } from "@/lib/api/types";
 
 import type { Dispatch, SetStateAction } from "react";
 
-/** Shared translation function signature for all notification setting components */
-type TranslationFn = (key: string, options?: Record<string, unknown>) => string;
-
 export type { Server };
 
 export interface SeverityCheckboxGroupProps {
@@ -12,7 +9,6 @@ export interface SeverityCheckboxGroupProps {
   onChange: (severities: string[]) => void;
   disabled?: boolean;
   idPrefix: string;
-  t: TranslationFn;
 }
 
 export interface GeneralTabProps {
@@ -29,7 +25,6 @@ export interface GeneralTabProps {
   notificationSeverities: string[];
   setNotificationSeverities: (severities: string[]) => void;
   isPending: boolean;
-  t: TranslationFn;
 }
 
 export interface EmailTabProps {
@@ -39,7 +34,6 @@ export interface EmailTabProps {
   setContactEmail: (email: string) => void;
   onSaveEmail: () => void;
   isPending: boolean;
-  t: TranslationFn;
 }
 
 export interface BrowserTabProps {
@@ -52,7 +46,6 @@ export interface BrowserTabProps {
     permission: NotificationPermission | "unsupported"
   ) => void;
   isPending: boolean;
-  t: TranslationFn;
 }
 
 export interface WebhookTabProps {
@@ -70,7 +63,6 @@ export interface WebhookTabProps {
   hasExistingWebhook: boolean;
   isSaving: boolean;
   isDeleting: boolean;
-  t: TranslationFn;
 }
 
 export interface SlackTabProps {
@@ -83,5 +75,4 @@ export interface SlackTabProps {
   hasExistingSlack: boolean;
   isSaving: boolean;
   isDeleting: boolean;
-  t: TranslationFn;
 }

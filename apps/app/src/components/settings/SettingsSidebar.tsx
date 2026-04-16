@@ -1,22 +1,17 @@
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router";
 
-import {
-  Building,
-  Building2,
-  CreditCard,
-  KeyRound,
-  Mail,
-  Palette,
-  Shield,
-  User,
-  Users,
-} from "lucide-react";
-
 import { UserRole } from "@/lib/api";
 import { isCloudMode } from "@/lib/featureFlags";
 
 import { Badge } from "@/components/ui/badge";
+import { PixelBuilding } from "@/components/ui/pixel-building";
+import { PixelCreditCard } from "@/components/ui/pixel-credit-card";
+import { PixelEmail } from "@/components/ui/pixel-email";
+import { PixelKey } from "@/components/ui/pixel-key";
+import { PixelPalette } from "@/components/ui/pixel-palette";
+import { PixelShield } from "@/components/ui/pixel-shield";
+import { PixelUser } from "@/components/ui/pixel-user";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
@@ -50,13 +45,13 @@ const navGroups: NavGroup[] = [
       {
         key: "profile",
         path: "/settings/profile",
-        icon: User,
+        icon: PixelUser,
         labelKey: "settings:nav.profile",
       },
       {
         key: "appearance",
         path: "/settings/appearance",
-        icon: Palette,
+        icon: PixelPalette,
         labelKey: "settings:nav.appearance",
       },
     ],
@@ -68,14 +63,14 @@ const navGroups: NavGroup[] = [
       {
         key: "workspace",
         path: "/settings/workspace",
-        icon: Building,
+        icon: PixelBuilding,
         labelKey: "settings:nav.workspaceSettings",
         adminOnly: true,
       },
       {
         key: "members",
         path: "/settings/members",
-        icon: Users,
+        icon: PixelUser,
         labelKey: "settings:nav.members",
         adminOnly: true,
       },
@@ -88,14 +83,14 @@ const navGroups: NavGroup[] = [
       {
         key: "organization",
         path: "/settings/organization",
-        icon: Building2,
+        icon: PixelBuilding,
         labelKey: "settings:nav.organization",
         adminOnly: true,
       },
       {
         key: "subscription",
         path: "/settings/subscription",
-        icon: CreditCard,
+        icon: PixelCreditCard,
         labelKey: "settings:nav.subscription",
         adminOnly: true,
         cloudOnly: true,
@@ -103,7 +98,7 @@ const navGroups: NavGroup[] = [
       {
         key: "sso",
         path: "/settings/sso",
-        icon: Shield,
+        icon: PixelShield,
         labelKey: "settings:nav.sso",
         adminOnly: true,
         enterpriseOnly: true,
@@ -111,7 +106,7 @@ const navGroups: NavGroup[] = [
       {
         key: "license",
         path: "/settings/license",
-        icon: KeyRound,
+        icon: PixelKey,
         labelKey: "settings:nav.license",
         adminOnly: true,
         selfHostedOnly: true,
@@ -119,7 +114,7 @@ const navGroups: NavGroup[] = [
       {
         key: "smtp",
         path: "/settings/smtp",
-        icon: Mail,
+        icon: PixelEmail,
         labelKey: "settings:nav.smtp",
         adminOnly: true,
         selfHostedOnly: true,
@@ -177,18 +172,20 @@ export const SettingsSidebar = () => {
     return (
       <nav className="flex gap-1 overflow-x-auto pb-2 -mx-1 px-1">
         {allItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive =
+            location.pathname === item.path ||
+            location.pathname.startsWith(item.path + "/");
           return (
             <Link
               key={item.key}
               to={item.path}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
                 isActive
-                  ? "bg-linear-to-r from-orange-600 to-red-600 text-white"
+                  ? "bg-sidebar-accent text-primary font-semibold"
                   : "text-muted-foreground hover:bg-muted"
               }`}
             >
-              <item.icon className="h-3.5 w-3.5" />
+              <item.icon className="h-3.5 w-auto shrink-0" />
               {t(item.labelKey)}
               {item.enterpriseOnly && !isEnterprise && (
                 <Badge
@@ -196,7 +193,7 @@ export const SettingsSidebar = () => {
                   className={`text-[10px] px-1.5 py-0 font-medium ${
                     isActive
                       ? "border-white/40 text-white/90"
-                      : "border-purple-300 text-purple-600 dark:border-purple-500 dark:text-purple-400"
+                      : "border-border text-muted-foreground dark:border-border dark:text-muted-foreground"
                   }`}
                 >
                   {t("settings:nav.enterprise")}
@@ -224,18 +221,20 @@ export const SettingsSidebar = () => {
             )}
             <ul className="space-y-0.5">
               {group.items.map((item) => {
-                const isActive = location.pathname === item.path;
+                const isActive =
+                  location.pathname === item.path ||
+                  location.pathname.startsWith(item.path + "/");
                 return (
                   <li key={item.key}>
                     <Link
                       to={item.path}
                       className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                         isActive
-                          ? "bg-linear-to-r from-orange-600 to-red-600 text-white"
+                          ? "bg-sidebar-accent text-primary font-semibold"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground"
                       }`}
                     >
-                      <item.icon className="h-4 w-4" />
+                      <item.icon className="h-4 w-auto shrink-0" />
                       <span className="flex-1">{t(item.labelKey)}</span>
                       {item.enterpriseOnly && !isEnterprise && (
                         <Badge
@@ -243,7 +242,7 @@ export const SettingsSidebar = () => {
                           className={`text-[10px] px-1.5 py-0 font-medium ${
                             isActive
                               ? "border-white/40 text-white/90"
-                              : "border-purple-300 text-purple-600 dark:border-purple-500 dark:text-purple-400"
+                              : "border-border text-muted-foreground dark:border-border dark:text-muted-foreground"
                           }`}
                         >
                           {t("settings:nav.enterprise")}

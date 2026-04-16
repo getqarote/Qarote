@@ -96,17 +96,6 @@ interface AlertInstance {
   };
 }
 
-export interface CreateAlertRuleInput {
-  name: string;
-  description?: string;
-  type: AlertType;
-  threshold: number;
-  operator: ComparisonOperator;
-  severity: AlertSeverity;
-  enabled?: boolean;
-  serverId: string;
-}
-
 export interface UpdateAlertRuleInput {
   name?: string;
   description?: string;

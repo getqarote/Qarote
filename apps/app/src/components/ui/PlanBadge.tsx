@@ -32,12 +32,14 @@ export function PlanBadge({ size = "md" }: PlanBadgeProps) {
   // Map plan colors explicitly so Tailwind can detect the classes at build time
   // (dynamic classes from the backend would be purged otherwise).
   const planColorMap: Record<string, string> = {
-    "text-white bg-gray-600": "text-white bg-gray-600",
-    "text-white bg-blue-600": "text-white bg-blue-600",
-    "text-white bg-purple-600": "text-white bg-purple-600",
+    "text-primary-foreground bg-muted-foreground":
+      "text-primary-foreground bg-muted-foreground",
+    "text-white bg-info": "text-white bg-info",
+    "text-white bg-muted": "text-white bg-muted",
   };
   const color =
-    planColorMap[planFeatures?.color ?? ""] || "text-white bg-gray-600";
+    planColorMap[planFeatures?.color ?? ""] ||
+    "text-primary-foreground bg-muted-foreground";
   const displayName = planFeatures?.displayName || "Free";
 
   return (

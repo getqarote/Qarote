@@ -7,7 +7,6 @@ import {
   Loader2,
   Shield,
   Users,
-  X,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -22,6 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { PixelX } from "@/components/ui/pixel-x";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radioGroup";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -93,8 +93,7 @@ export const CancelSubscriptionModal: React.FC<
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-destructive">
-            <AlertTriangle className="h-5 w-5" />
+          <DialogTitle className="text-destructive">
             Cancel Subscription
           </DialogTitle>
           <DialogDescription>
@@ -235,7 +234,7 @@ export const CancelSubscriptionModal: React.FC<
             Keep Subscription
           </Button>
           <Button
-            variant="destructive"
+            variant="destructive-outline"
             onClick={handleSubmit}
             disabled={!reason || !understanding || isSubmitting || isLoading}
           >
@@ -246,7 +245,7 @@ export const CancelSubscriptionModal: React.FC<
               </>
             ) : (
               <>
-                <X className="mr-2 h-4 w-4" />
+                <PixelX className="h-4 w-auto shrink-0 mr-2" />
                 {cancelImmediately ? "Cancel Now" : "Cancel at Period End"}
               </>
             )}

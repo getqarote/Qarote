@@ -1,8 +1,11 @@
-import { Loader2, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+
+import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PixelTrash } from "@/components/ui/pixel-trash";
 import { Switch } from "@/components/ui/switch";
 
 import type { SlackTabProps } from "./types";
@@ -17,8 +20,8 @@ export function SlackTab({
   hasExistingSlack,
   isSaving,
   isDeleting,
-  t,
 }: SlackTabProps) {
+  const { t } = useTranslation("alerts");
   return (
     <div className="space-y-4">
       <div>
@@ -32,7 +35,7 @@ export function SlackTab({
         <div className="space-y-2">
           <Label htmlFor="slack-webhook-url">
             {t("modal.slackWebhookUrl")}
-            <span className="text-red-500 ml-1">*</span>
+            <span className="text-destructive ml-1">*</span>
           </Label>
           <Input
             id="slack-webhook-url"
@@ -63,7 +66,6 @@ export function SlackTab({
               checked={slackEnabled}
               onCheckedChange={onToggleSlack}
               disabled={isSaving}
-              className="data-[state=checked]:bg-gradient-button"
             />
             <Label htmlFor="slack-enabled">{t("modal.enabled")}</Label>
           </div>
@@ -77,14 +79,15 @@ export function SlackTab({
                 disabled={isDeleting}
                 aria-label="Delete Slack integration"
               >
-                <Trash2 className="h-4 w-4 text-red-600" />
+                <PixelTrash className="h-4 w-auto shrink-0 text-destructive" />
               </Button>
             )}
             <Button
               type="button"
+              size="sm"
               onClick={onSaveSlack}
               disabled={isSaving || !slackWebhookUrl.trim()}
-              className="bg-gradient-button hover:bg-gradient-button-hover text-white hover:text-white"
+              className="btn-primary"
             >
               {isSaving ? (
                 <>

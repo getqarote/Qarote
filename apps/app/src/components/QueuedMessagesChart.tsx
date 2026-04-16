@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { HelpCircle, RefreshCw } from "lucide-react";
@@ -12,9 +12,14 @@ import {
   YAxis,
 } from "recharts";
 
+import {
+  CHART_QUEUED_READY,
+  CHART_QUEUED_TOTAL,
+  CHART_QUEUED_UNACKED,
+} from "@/lib/chartColors";
+
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { TimeRange, TimeRangeSelector } from "@/components/TimeRangeSelector";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Tooltip as UITooltip,
   TooltipContent,
@@ -61,17 +66,6 @@ export const QueuedMessagesChart = ({
     }));
   };
 
-  // Handle permission errors
-  if (error && isRabbitMQAuthError(error)) {
-    return (
-      <RabbitMQPermissionError
-        requiredPermission={error.requiredPermission}
-        message={error.message}
-        title={t("cannotViewQueuedMessages")}
-      />
-    );
-  }
-
   const emptyPoint = {
     total: 0,
     ready: 0,
@@ -97,86 +91,94 @@ export const QueuedMessagesChart = ({
     unacked: point.messages_unacknowledged || 0,
   }));
 
-  // Only generate placeholder data when queueTotals is a defined empty array
-  // (no queues exist). When undefined, data is unavailable — don't fake zeros.
-  const now = Date.now();
-  const chartData =
-    mappedData === undefined
-      ? undefined
-      : mappedData.length > 0
-        ? mappedData
-        : Array.from({ length: 7 }, (_, i) => {
-            const ts = now - (6 - i) * 10000;
-            return {
-              ...emptyPoint,
-              timestamp: ts,
-              time: new Date(ts).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
-              dateTime: "",
-            };
-          });
+  // Only generate placeholder data when queueTotals is a defined
+  // empty array (no queues exist). When undefined, data is
+  // unavailable — don't fake zeros. Memoized so `Date.now()` is
+  // only called when the data shape changes, not on every render.
+  const chartData = useMemo(() => {
+    if (mappedData === undefined) return undefined;
+    if (mappedData.length > 0) return mappedData;
+    const now = Date.now();
+    return Array.from({ length: 7 }, (_, i) => {
+      const ts = now - (6 - i) * 10000;
+      return {
+        ...emptyPoint,
+        timestamp: ts,
+        time: new Date(ts).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        dateTime: "",
+      };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mappedData?.length]);
+
+  // Handle permission errors — rendered AFTER all hooks to satisfy
+  // the rules-of-hooks invariant.
+  if (error && isRabbitMQAuthError(error)) {
+    return (
+      <RabbitMQPermissionError
+        requiredPermission={error.requiredPermission}
+        message={error.message}
+        title={t("cannotViewQueuedMessages")}
+      />
+    );
+  }
 
   return (
-    <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-lg font-semibold text-foreground">
-              {t("queuedMessages")}
-            </CardTitle>
-            <TooltipProvider>
-              <UITooltip>
-                <TooltipTrigger asChild>
-                  <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent className="max-w-sm p-3">
-                  <div className="space-y-2 text-sm">
-                    <p className="font-medium">
-                      {t("queuedMessageDefinitions")}
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
+        <div className="flex items-center gap-2">
+          <h2 className="title-section">{t("queuedMessages")}</h2>
+          <TooltipProvider>
+            <UITooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-sm p-3">
+                <div className="space-y-2 text-sm">
+                  <p className="font-medium">{t("queuedMessageDefinitions")}</p>
+                  <div className="space-y-1 text-xs">
+                    <p>
+                      <strong>Total:</strong> {t("defTotal")}
                     </p>
-                    <div className="space-y-1 text-xs">
-                      <p>
-                        <strong>Total:</strong> {t("defTotal")}
-                      </p>
-                      <p>
-                        <strong>Ready:</strong> {t("defReady")}
-                      </p>
-                      <p>
-                        <strong>Unacked:</strong> {t("defUnacked")}
-                      </p>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {t("queuedMetricsNote")}
+                    <p>
+                      <strong>Ready:</strong> {t("defReady")}
+                    </p>
+                    <p>
+                      <strong>Unacked:</strong> {t("defUnacked")}
                     </p>
                   </div>
-                </TooltipContent>
-              </UITooltip>
-            </TooltipProvider>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-xs text-gray-500">
-                {t("updatesEvery5s")}
-              </span>
-            </div>
-            {onTimeRangeChange && (
-              <TimeRangeSelector
-                value={timeRange}
-                onValueChange={onTimeRangeChange}
-              />
-            )}
-          </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {t("queuedMetricsNote")}
+                  </p>
+                </div>
+              </TooltipContent>
+            </UITooltip>
+          </TooltipProvider>
         </div>
-      </CardHeader>
-      <CardContent>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+            <span className="text-xs text-muted-foreground">
+              {t("updatesEvery5s")}
+            </span>
+          </div>
+          {onTimeRangeChange && (
+            <TimeRangeSelector
+              value={timeRange}
+              onValueChange={onTimeRangeChange}
+            />
+          )}
+        </div>
+      </div>
+      <div className="p-4">
         {isLoading ? (
-          <div className="h-96 w-full flex items-center justify-center">
+          <div className="h-64 w-full flex items-center justify-center">
             <div className="flex flex-col items-center gap-2">
-              <RefreshCw className="h-6 w-6 animate-spin text-blue-600" />
-              <p className="text-sm text-gray-500">
+              <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">
                 {t("loadingQueuedMessages")}
               </p>
             </div>
@@ -184,7 +186,7 @@ export const QueuedMessagesChart = ({
         ) : (
           <div>
             {/* Chart */}
-            <div className="h-96 w-full">
+            <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={chartData}
@@ -233,7 +235,7 @@ export const QueuedMessagesChart = ({
                     <Line
                       type="monotone"
                       dataKey="total"
-                      stroke="#DC2626"
+                      stroke={CHART_QUEUED_TOTAL}
                       strokeWidth={2}
                       dot={false}
                       name={t("total")}
@@ -243,7 +245,7 @@ export const QueuedMessagesChart = ({
                     <Line
                       type="monotone"
                       dataKey="ready"
-                      stroke="#F59E0B"
+                      stroke={CHART_QUEUED_READY}
                       strokeWidth={2}
                       dot={false}
                       name={t("ready")}
@@ -253,7 +255,7 @@ export const QueuedMessagesChart = ({
                     <Line
                       type="monotone"
                       dataKey="unacked"
-                      stroke="#06B6D4"
+                      stroke={CHART_QUEUED_UNACKED}
                       strokeWidth={2}
                       dot={false}
                       name={t("unacked")}
@@ -266,9 +268,13 @@ export const QueuedMessagesChart = ({
             {/* Custom Toggleable Legend */}
             <div className="mt-4 flex gap-4 text-xs">
               {[
-                { key: "total", name: t("total"), color: "#DC2626" },
-                { key: "ready", name: t("ready"), color: "#F59E0B" },
-                { key: "unacked", name: t("unacked"), color: "#06B6D4" },
+                { key: "total", name: t("total"), color: CHART_QUEUED_TOTAL },
+                { key: "ready", name: t("ready"), color: CHART_QUEUED_READY },
+                {
+                  key: "unacked",
+                  name: t("unacked"),
+                  color: CHART_QUEUED_UNACKED,
+                },
               ].map((metric) => (
                 <div
                   key={metric.key}
@@ -291,7 +297,7 @@ export const QueuedMessagesChart = ({
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

@@ -4,7 +4,7 @@
     "titleHighlight": "RabbitMQ",
     "titleAfter": " 服务器的最简单方式",
     "subtitle": "Qarote 提供简洁直观的界面，让你轻松监控、分析和管理 RabbitMQ 服务器。",
-    "noCreditCard": "14 天免费试用 • 无需信用卡"
+    "noCreditCard": "免费开源 • 专业版功能 14 天试用"
   },
   "cta": {
     "getStartedForFree": "免费开始使用",
@@ -104,9 +104,12 @@
     }
   },
   "finalCta": {
-    "title": "准备好升级你的 RabbitMQ 体验了吗？",
+    "title": "准备好监控你的 RabbitMQ 服务器了吗？",
     "subtitle": "今天就免费开始监控你的 RabbitMQ 服务器。",
-    "noCreditCard": "无需信用卡"
+    "noCreditCard": "无需信用卡",
+    "openSource": "Open source",
+    "selfHostable": "Self-hostable",
+    "freeForever": "Free forever (self-hosted)"
   },
   "footer": {
     "about": "关于我们",

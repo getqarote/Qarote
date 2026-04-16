@@ -8,8 +8,8 @@
     "tagsLabel": "Tags (Optional)",
     "tagsPlaceholder": "Add tags to organize your workspace",
     "tagsHint": "Use tags like \"production\", \"development\", or \"testing\" to organize your workspace",
-    "submit": "Create Workspace",
-    "creating": "Creating Workspace...",
+    "submit": "Create workspace",
+    "creating": "Creating workspace...",
     "inviteMembers": "Invite Members",
     "optional": "Optional",
     "invitePlaceholder": "Type an email and press Enter to add",
@@ -40,7 +40,7 @@
     "roleAdmin": "Admin",
     "cancel": "Cancel",
     "creating": "Creating...",
-    "submit": "Create Workspace"
+    "submit": "Create workspace"
   },
   "inviteLinks": {
     "title": "Share Invitation Links",

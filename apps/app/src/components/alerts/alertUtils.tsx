@@ -1,110 +1,46 @@
-import React from "react";
-
-import {
-  Activity,
-  AlertTriangle,
-  Clock,
-  Info,
-  Server,
-  XCircle,
-} from "lucide-react";
-
-import {
-  RabbitMQAlertCategory,
-  RabbitMQAlertSeverity,
-} from "@/lib/api/alertTypes";
+import { RabbitMQAlertSeverity } from "@/lib/api/alertTypes";
 
 // Alert utility functions for consistent alert rendering across the application
 
-type BadgeVariant = "default" | "secondary" | "destructive" | "outline";
-
 /**
- * Get the badge variant for a given alert severity
+ * Get colored dot + badge classes for a given severity (clean alert style).
  */
-export const getSeverityBadgeVariant = (
+export const getSeverityColor = (
   severity: RabbitMQAlertSeverity
-): BadgeVariant => {
+): { dot: string; badge: string } => {
   switch (severity) {
     case RabbitMQAlertSeverity.CRITICAL:
-      return "destructive";
+      return {
+        dot: "bg-red-500",
+        badge: "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400",
+      };
     case RabbitMQAlertSeverity.HIGH:
-      return "destructive";
+      return {
+        dot: "bg-orange-500",
+        badge:
+          "bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400",
+      };
     case RabbitMQAlertSeverity.MEDIUM:
-      return "default";
+      return {
+        dot: "bg-yellow-500",
+        badge:
+          "bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400",
+      };
     case RabbitMQAlertSeverity.LOW:
-      return "secondary";
+      return {
+        dot: "bg-blue-500",
+        badge: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400",
+      };
     case RabbitMQAlertSeverity.INFO:
-      return "outline";
+      return {
+        dot: "bg-muted-foreground",
+        badge: "bg-muted text-muted-foreground",
+      };
     default:
-      return "outline";
-  }
-};
-
-/**
- * Get the icon component for a given alert severity
- * @param severity - The alert severity level
- * @param options - Optional configuration for icon size and colors
- */
-export const getSeverityIcon = (
-  severity: RabbitMQAlertSeverity,
-  options?: {
-    size?: string;
-    showColors?: boolean;
-  }
-) => {
-  const size = options?.size || "h-4 w-4";
-  const showColors = options?.showColors ?? false;
-
-  switch (severity) {
-    case RabbitMQAlertSeverity.CRITICAL:
-      return (
-        <XCircle className={`${size} ${showColors ? "text-red-500" : ""}`} />
-      );
-    case RabbitMQAlertSeverity.HIGH:
-      return (
-        <AlertTriangle
-          className={`${size} ${showColors ? "text-orange-500" : ""}`}
-        />
-      );
-    case RabbitMQAlertSeverity.MEDIUM:
-      return (
-        <AlertTriangle
-          className={`${size} ${showColors ? "text-yellow-500" : ""}`}
-        />
-      );
-    case RabbitMQAlertSeverity.LOW:
-      return (
-        <Info className={`${size} ${showColors ? "text-blue-500" : ""}`} />
-      );
-    case RabbitMQAlertSeverity.INFO:
-      return (
-        <Info
-          className={`${size} ${showColors ? "text-muted-foreground" : ""}`}
-        />
-      );
-    default:
-      return <Activity className={size} />;
-  }
-};
-
-/**
- * Get the icon component for a given alert category
- * @param category - The alert category
- * @param size - Optional size class (default: "h-4 w-4")
- */
-export const getCategoryIcon = (
-  category: RabbitMQAlertCategory,
-  size: string = "h-4 w-4"
-) => {
-  switch (category) {
-    case RabbitMQAlertCategory.MEMORY:
-      return <Activity className={size} />;
-    case RabbitMQAlertCategory.DISK:
-      return <Server className={size} />;
-    case RabbitMQAlertCategory.QUEUE:
-      return <Clock className={size} />;
-    default:
-      return <Activity className={size} />;
+      return {
+        dot: "bg-muted-foreground",
+        badge: "bg-muted text-muted-foreground",
+      };
   }
 };
 

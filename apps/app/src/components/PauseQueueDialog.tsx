@@ -115,8 +115,8 @@ export function PauseQueueDialog({
       size="sm"
       className={`flex items-center gap-2 ${
         isPaused
-          ? "text-green-600 hover:text-green-700"
-          : "text-yellow-600 hover:text-yellow-700"
+          ? "text-success hover:text-success"
+          : "text-warning hover:text-warning"
       }`}
     >
       {isPaused ? (
@@ -172,10 +172,9 @@ export function PauseQueueDialog({
             Cancel
           </Button>
           <Button
-            variant={isPaused ? "default" : "secondary"}
             onClick={isPaused ? handleResumeQueue : handlePauseQueue}
             disabled={isLoading}
-            className={"btn-primary text-white"}
+            className="btn-primary"
           >
             {isLoading
               ? `${isPaused ? "Resuming" : "Pausing"}...`

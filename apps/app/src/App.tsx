@@ -86,7 +86,7 @@ const OrganizationSection = lazy(() =>
   }))
 );
 const SubscriptionSection = lazy(() =>
-  import("./pages/settings/BillingSection").then((m) => ({
+  import("./pages/settings/SubscriptionSection").then((m) => ({
     default: m.default,
   }))
 );
@@ -385,9 +385,16 @@ const AppCore = () => (
                               element={<SubscriptionSection />}
                             />
                             <Route
+                              path="subscription/billing"
+                              element={<Billing />}
+                            />
+                            <Route
                               path="billing"
                               element={
-                                <Navigate to="/settings/subscription" replace />
+                                <Navigate
+                                  to="/settings/subscription/billing"
+                                  replace
+                                />
                               }
                             />
                             <Route path="sso" element={<SSOSection />} />
@@ -410,11 +417,10 @@ const AppCore = () => (
                           <Route
                             path="/billing"
                             element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <Billing />
-                                </Layout>
-                              </ProtectedRoute>
+                              <Navigate
+                                to="/settings/subscription/billing"
+                                replace
+                              />
                             }
                           />
                           <Route
@@ -497,7 +503,7 @@ const App = withSentryProfiling(
           <button
             type="button"
             onClick={resetError}
-            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 h-10 px-6 py-2 bg-gradient-button hover:bg-gradient-button-hover text-white"
+            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 h-10 px-6 py-2 bg-primary text-primary-foreground hover:bg-primary/90"
           >
             {t("common:tryAgain", "Try again")}
           </button>

@@ -6,8 +6,6 @@ export const addQueueSchema = z.object({
   durable: z.boolean(),
   autoDelete: z.boolean(),
   exclusive: z.boolean(),
-  maxLength: z.string().optional(),
-  messageTtl: z.string().optional(),
   bindToExchange: z.string().optional(),
   routingKey: z.string().optional(),
 });

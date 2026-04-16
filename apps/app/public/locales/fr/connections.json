@@ -31,5 +31,17 @@
   "stateBlocked": "bloqué",
   "stateFlow": "flux",
   "stateClosing": "fermeture",
-  "failedToLoad": "Échec du chargement des connexions"
+  "failedToLoad": "Échec du chargement des connexions",
+  "allRunning": "Tout fonctionne",
+  "nBlocked": "{{count}} bloquée(s)",
+  "connection": "connexion",
+  "connections": "connexions",
+  "channel": "canal",
+  "channels": "canaux",
+  "maxChPerConn": "max ch/conn",
+  "stateBlockedTooltip": "La connexion attend un accusé de réception du broker. Peut indiquer des consommateurs lents ou une pression mémoire.",
+  "stateFlowTooltip": "Contrôle de flux actif — le broker limite cette connexion pour éviter la surcharge.",
+  "stateClosingTooltip": "La connexion est en cours de fermeture. Aucune action requise.",
+  "maxChannelsTooltip": "Nombre de canaux le plus élevé sur une seule connexion. 50+ peut indiquer un conflit de ressources ; 100+ est critique.",
+  "searchPlaceholder": "Filtrer par nom, utilisateur, vhost ou nœud..."
 }

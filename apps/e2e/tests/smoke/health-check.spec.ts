@@ -25,7 +25,7 @@ test.describe("Smoke Tests @p0 @smoke", () => {
   test("Frontend loads sign-in page", async ({ page }) => {
     await page.goto("/auth/sign-in");
     await expect(
-      page.getByRole("heading", { name: /sign in/i })
+      page.getByRole("heading", { name: /welcome back/i })
     ).toBeVisible();
   });
 });

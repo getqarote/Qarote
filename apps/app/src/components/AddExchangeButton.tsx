@@ -1,22 +1,24 @@
 import { useTranslation } from "react-i18next";
 
-import { Plus } from "lucide-react";
-
+import { AddExchangeForm } from "@/components/AddExchangeForm";
 import { Button } from "@/components/ui/button";
 
 interface AddExchangeButtonProps {
-  onAddClick?: () => void;
+  serverId: string;
+  onSuccess?: () => void;
 }
 
-export const AddExchangeButton = ({ onAddClick }: AddExchangeButtonProps) => {
+export const AddExchangeButton = ({
+  serverId,
+  onSuccess,
+}: AddExchangeButtonProps) => {
   const { t } = useTranslation("exchanges");
+
   return (
-    <Button
-      onClick={onAddClick}
-      className="btn-primary flex items-center gap-2"
-    >
-      <Plus className="w-4 h-4" />
-      {t("addExchange")}
-    </Button>
+    <AddExchangeForm
+      serverId={serverId}
+      onSuccess={onSuccess}
+      trigger={<Button className="btn-primary">{t("addExchange")}</Button>}
+    />
   );
 };

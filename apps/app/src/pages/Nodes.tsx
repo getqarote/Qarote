@@ -1,11 +1,12 @@
 import { useTranslation } from "react-i18next";
 
-import { AppSidebar } from "@/components/AppSidebar";
 import { EnhancedNodesOverview } from "@/components/nodes/EnhancedNodesOverview";
 import { EnhancedNodesTable } from "@/components/nodes/EnhancedNodesTable";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { PageError } from "@/components/PageError";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { NoServerSelectedCard, PageShell } from "@/components/PageShell";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { TitleWithCount } from "@/components/ui/TitleWithCount";
 
 import { useServerContext } from "@/contexts/ServerContext";
 
@@ -16,7 +17,6 @@ import { RabbitMQAuthorizationError } from "@/types/apiErrors";
 const Nodes = () => {
   const { t } = useTranslation("nodes");
   const { selectedServerId, hasServers } = useServerContext();
-  // Single useNodes call for all child components
   const {
     data: nodesData,
     isLoading: nodesLoading,
@@ -24,7 +24,6 @@ const Nodes = () => {
   } = useNodes(selectedServerId);
   const nodes = nodesData?.nodes || [];
 
-  // Check for permission status and create error object for backward compatibility with UI components
   const nodesPermissionStatus = nodesData?.permissionStatus;
   const processedNodesError =
     nodesPermissionStatus && !nodesPermissionStatus.hasPermission
@@ -38,103 +37,76 @@ const Nodes = () => {
 
   if (!hasServers) {
     return (
-      <SidebarProvider>
-        <div className="page-layout">
-          <AppSidebar />
-          <main className="main-content-scrollable">
-            <div className="flex items-center gap-4">
-              <SidebarTrigger />
-            </div>
-            <NoServerConfigured
-              title={t("noServerTitle")}
-              subtitle={t("pageSubtitle")}
-              description={t("noServerDescription")}
-            />
-          </main>
+      <PageShell bare>
+        <div className="flex items-center gap-4">
+          <SidebarTrigger />
         </div>
-      </SidebarProvider>
+        <NoServerConfigured
+          title={t("noServerTitle")}
+          subtitle={t("pageSubtitle")}
+          description={t("noServerDescription")}
+        />
+      </PageShell>
     );
   }
 
   if (!selectedServerId) {
     return (
-      <SidebarProvider>
-        <div className="page-layout">
-          <AppSidebar />
-          <main className="main-content-scrollable">
-            <div className="content-container-large">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <div>
-                  <h1 className="title-page">{t("pageTitle")}</h1>
-                  <p className="text-gray-500">{t("selectServerPrompt")}</p>
-                </div>
-              </div>
-            </div>
-          </main>
-        </div>
-      </SidebarProvider>
+      <PageShell>
+        <NoServerSelectedCard
+          title={t("pageTitle")}
+          subtitle={t("pageSubtitle")}
+          heading={t("noServerTitle")}
+          description={t("selectServerPrompt")}
+        />
+      </PageShell>
     );
   }
 
   if (nodesQueryError) {
     return (
-      <SidebarProvider>
-        <div className="page-layout">
-          <AppSidebar />
-          <main className="main-content-scrollable">
-            <div className="content-container-large">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <div>
-                  <h1 className="title-page">{t("pageTitle")}</h1>
-                  <p className="text-gray-500">{t("pageSubtitle")}</p>
-                </div>
-              </div>
-              <PageError message={t("common:serverConnectionError")} />
-            </div>
-          </main>
+      <PageShell>
+        <div className="flex items-center gap-4">
+          <SidebarTrigger />
+          <div>
+            <h1 className="title-page">{t("pageTitle")}</h1>
+          </div>
         </div>
-      </SidebarProvider>
+        <PageError message={t("common:serverConnectionError")} />
+      </PageShell>
     );
   }
 
   return (
-    <SidebarProvider>
-      <div className="page-layout">
-        <AppSidebar />
-        <main className="main-content-scrollable">
-          <div className="content-container-large">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <div>
-                  <h1 className="title-page">{t("pageTitle")}</h1>
-                  <p className="text-gray-500">{t("pageSubtitle")}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Cluster Overview */}
-            <EnhancedNodesOverview
-              serverId={selectedServerId}
-              nodes={nodes}
-              isLoading={nodesLoading}
-              nodesError={processedNodesError}
-            />
-
-            {/* Enhanced Node Table with Expandable Details */}
-            <EnhancedNodesTable
-              serverId={selectedServerId}
-              nodes={nodes}
-              isLoading={nodesLoading}
-              nodesError={processedNodesError}
-            />
+    <PageShell>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <SidebarTrigger />
+          <div>
+            <TitleWithCount count={nodes.length}>
+              {t("pageTitle")}
+            </TitleWithCount>
           </div>
-        </main>
+        </div>
       </div>
-    </SidebarProvider>
+
+      {/* Cluster Overview */}
+      <EnhancedNodesOverview
+        serverId={selectedServerId}
+        nodes={nodes}
+        isLoading={nodesLoading}
+        nodesError={processedNodesError}
+      />
+
+      {/* Node Table */}
+      <EnhancedNodesTable
+        serverId={selectedServerId}
+        nodes={nodes}
+        isLoading={nodesLoading}
+        nodesError={processedNodesError}
+      />
+    </PageShell>
   );
 };
 

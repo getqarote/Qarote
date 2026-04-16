@@ -322,6 +322,8 @@ model Workspace {
   browserNotificationsEnabled   Boolean                   @default(false)
   browserNotificationSeverities Json?
   notificationServerIds         Json?
+  unackedWarnThreshold          Int                       @default(100)
+  vhostThresholds               Json?
   alerts                        Alert[]
   alertRules                    AlertRule[]
   feedback                      Feedback[]

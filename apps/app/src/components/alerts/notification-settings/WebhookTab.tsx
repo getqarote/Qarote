@@ -1,8 +1,11 @@
-import { Eye, EyeOff, Loader2, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PixelTrash } from "@/components/ui/pixel-trash";
 import { Switch } from "@/components/ui/switch";
 
 import type { WebhookTabProps } from "./types";
@@ -22,8 +25,8 @@ export function WebhookTab({
   hasExistingWebhook,
   isSaving,
   isDeleting,
-  t,
 }: WebhookTabProps) {
+  const { t } = useTranslation("alerts");
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -47,7 +50,7 @@ export function WebhookTab({
         <div className="space-y-2">
           <Label htmlFor="webhook-url">
             {t("modal.webhookUrl")}
-            <span className="text-red-500 ml-1">*</span>
+            <span className="text-destructive ml-1">*</span>
           </Label>
           <Input
             id="webhook-url"
@@ -98,7 +101,6 @@ export function WebhookTab({
               checked={webhookEnabled}
               onCheckedChange={onToggleWebhook}
               disabled={isSaving}
-              className="data-[state=checked]:bg-gradient-button"
             />
             <Label htmlFor="webhook-enabled">{t("modal.enabled")}</Label>
           </div>
@@ -111,7 +113,7 @@ export function WebhookTab({
                 onClick={onDeleteWebhook}
                 disabled={isDeleting}
               >
-                <Trash2 className="h-4 w-4 text-red-600" />
+                <PixelTrash className="h-4 w-auto shrink-0 text-destructive" />
               </Button>
             )}
             <Button
@@ -119,7 +121,7 @@ export function WebhookTab({
               size="sm"
               onClick={onSaveWebhook}
               disabled={isSaving || !webhookUrl.trim()}
-              className="bg-gradient-button hover:bg-gradient-button-hover text-white hover:text-white"
+              className="btn-primary"
             >
               {isSaving ? (
                 <>

@@ -5,6 +5,27 @@
     "noInfo": "没有可用的组织账单信息。",
     "billingTitle": "账单"
   },
+  "header": {
+    "title": "账单与用量",
+    "subtitle": "管理您的订阅和支付详情",
+    "backAriaLabel": "返回订阅"
+  },
+  "errors": {
+    "loadTitle": "无法加载账单信息",
+    "loadDescription": "请稍后重试或联系支持团队。"
+  },
+  "recentPayments": {
+    "title": "最近付款",
+    "subtitle": "您最近的交易记录",
+    "defaultDescription": "订阅付款"
+  },
+  "paymentStatus": {
+    "succeeded": "成功",
+    "failed": "失败",
+    "canceled": "已取消",
+    "pending": "处理中",
+    "requiresAction": "需要操作"
+  },
   "plans": {
     "chooseYourPlan": "选择您的方案",
     "subtitle": "通过专为各种规模团队设计的方案扩展您的 RabbitMQ 监控能力。",
@@ -114,7 +135,15 @@
     "trialActiveWithPayment": "您的试用期有效至 {{date}}。试用结束后，您的订阅将自动开始。",
     "cancelTrial": "取消试用",
     "trialCanceled": "试用已取消",
-    "trialEndsOnDate": "您的试用将于 {{date}} 结束。届时将降级为免费方案。"
+    "trialEndsOnDate": "您的试用将于 {{date}} 结束。届时将降级为免费方案。",
+    "started": "试用已开始",
+    "endsDate": "试用将于 {{date}} 结束",
+    "daysRemaining": "{{count}} days remaining",
+    "daysRemaining_one": "试用还剩 {{count}} 天",
+    "daysRemaining_other": "试用还剩 {{count}} 天",
+    "daysLeft": "{{count}} days left",
+    "daysLeft_one": "还剩 {{count}} 天",
+    "daysLeft_other": "还剩 {{count}} 天"
   },
   "currentPlan": {
     "noSubscription": "无需订阅",
@@ -125,7 +154,10 @@
     "paymentMethod": "支付方式",
     "planName": "{{plan}}方案",
     "activeSubscription": "您的活跃订阅",
-    "changePaymentMethod": "更改支付方式"
+    "changePaymentMethod": "更改支付方式",
+    "toDate": "至 {{date}}",
+    "canceling": "取消中",
+    "addPaymentMethodCta": "添加支付方式"
   },
   "status": {
     "active": "活跃"

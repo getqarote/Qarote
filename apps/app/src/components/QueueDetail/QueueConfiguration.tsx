@@ -1,24 +1,22 @@
-import { Settings } from "lucide-react";
-
 import { Queue } from "@/lib/api";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface QueueConfigurationProps {
   queue: Queue;
 }
 
 export function QueueConfiguration({ queue }: QueueConfigurationProps) {
+  const args = Object.entries(queue.arguments).filter(
+    ([, value]) => value !== undefined && value !== null
+  );
+
   return (
-    <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Settings className="w-5 h-5" />
-          Queue Configuration
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="px-4 py-3 bg-muted/30 border-b border-border">
+        <h3 className="title-section">Queue Configuration</h3>
+      </div>
+      <div className="p-4 space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-sm text-muted-foreground">VHost</p>
@@ -36,16 +34,21 @@ export function QueueConfiguration({ queue }: QueueConfigurationProps) {
             <p className="text-sm text-muted-foreground">Type</p>
             <Badge variant="outline">{queue.type}</Badge>
           </div>
-          <div>
-            <p className="text-sm text-muted-foreground">State</p>
-            <Badge className="bg-green-100 text-green-700">{queue.state}</Badge>
-          </div>
         </div>
-        <div className="pt-4 border-t">
+        <div className="pt-4 border-t border-border">
           <div className="grid grid-cols-2 gap-4">
+            {/* Durable / Exclusive are configuration toggles, not status —
+                "Yes" doesn't deserve the brand-orange `default` badge variant
+                (which renders as bg-primary). Demoted to `secondary` so the
+                "Yes" state has visible weight without using the brand color
+                for a non-status signal.
+
+                Auto Delete keeps `destructive` when true because auto-delete
+                = "queue is destroyed when the last consumer disconnects" =
+                real data-loss risk worth highlighting. */}
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Durable</span>
-              <Badge variant={queue.durable ? "default" : "outline"}>
+              <Badge variant={queue.durable ? "secondary" : "outline"}>
                 {queue.durable ? "Yes" : "No"}
               </Badge>
             </div>
@@ -57,7 +60,7 @@ export function QueueConfiguration({ queue }: QueueConfigurationProps) {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Exclusive</span>
-              <Badge variant={queue.exclusive ? "default" : "outline"}>
+              <Badge variant={queue.exclusive ? "secondary" : "outline"}>
                 {queue.exclusive ? "Yes" : "No"}
               </Badge>
             </div>
@@ -94,16 +97,14 @@ export function QueueConfiguration({ queue }: QueueConfigurationProps) {
           </div>
         </div>
 
-        {/* Queue Arguments Section */}
-        {/* {queue.arguments && Object.keys(queue.arguments).length > 0 && ( */}
-        <div className="pt-4 border-t">
-          <h4 className="text-sm font-medium text-foreground mb-3">
-            Arguments
-          </h4>
-          <div className="space-y-2">
-            {Object.entries(queue.arguments)
-              .filter(([, value]) => value !== undefined && value !== null)
-              .map(([key, value]) => (
+        {/* Queue Arguments — only render when there are arguments */}
+        {args.length > 0 && (
+          <div className="pt-4 border-t border-border">
+            <h4 className="text-sm font-medium text-foreground mb-3">
+              Arguments
+            </h4>
+            <div className="space-y-2">
+              {args.map(([key, value]) => (
                 <div key={key} className="flex items-center justify-between">
                   <span className="text-sm font-mono text-muted-foreground">
                     {key}:
@@ -122,10 +123,10 @@ export function QueueConfiguration({ queue }: QueueConfigurationProps) {
                   </Badge>
                 </div>
               ))}
+            </div>
           </div>
-        </div>
-        {/* )} */}
-      </CardContent>
-    </Card>
+        )}
+      </div>
+    </div>
   );
 }

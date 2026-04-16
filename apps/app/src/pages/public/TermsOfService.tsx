@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router";
 
-import { ArrowLeft, FileText } from "lucide-react";
+import { FileText } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PixelChevronLeft } from "@/components/ui/pixel-chevron-left";
 
 export default function TermsOfService() {
   const navigate = useNavigate();
@@ -15,17 +16,17 @@ export default function TermsOfService() {
         <div className="flex items-center justify-between mb-8">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <FileText className="w-6 h-6 text-blue-600" />
+              <FileText className="w-6 h-6 text-muted-foreground" />
               <h1 className="text-2xl font-bold">Terms of Service</h1>
             </div>
-            <p className="text-gray-600">Last updated: July 15, 2025</p>
+            <p className="text-muted-foreground">Last updated: July 15, 2025</p>
           </div>
           <Button
             variant="outline"
             onClick={() => navigate(-1)}
             className="gap-2"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <PixelChevronLeft className="h-4 w-auto shrink-0" />
             Back
           </Button>
         </div>
@@ -151,7 +152,7 @@ export default function TermsOfService() {
               Our Privacy Policy, available at{" "}
               <a
                 href="/privacy-policy"
-                className="text-blue-600 hover:underline"
+                className="text-primary hover:underline"
               >
                 Privacy Policy
               </a>
@@ -228,7 +229,7 @@ export default function TermsOfService() {
               If you have any questions about these Terms, please contact us at{" "}
               <a
                 href="mailto:support@qarote.io"
-                className="text-blue-600 hover:underline"
+                className="text-primary hover:underline"
               >
                 support@qarote.io
               </a>
@@ -238,7 +239,7 @@ export default function TermsOfService() {
         </Card>
 
         {/* Footer */}
-        <div className="mt-8 text-center text-sm text-gray-500">
+        <div className="mt-8 text-center text-sm text-muted-foreground">
           <p>© {new Date().getFullYear()} Qarote. All rights reserved.</p>
           <div className="flex justify-center gap-4 mt-2">
             <a href="/" className="hover:underline">

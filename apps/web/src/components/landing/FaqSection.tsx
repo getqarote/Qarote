@@ -12,7 +12,7 @@ const FaqSection = () => {
   const { t: tFaq } = useTranslation("faq");
 
   return (
-    <section id="faq" className="pt-12 pb-20 bg-white">
+    <section id="faq" className="pt-12 pb-20 bg-muted/20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 max-w-4xl mx-auto leading-[1.2] font-normal">
@@ -27,7 +27,7 @@ const FaqSection = () => {
           <Accordion type="single" collapsible className="space-y-4">
             <AccordionItem
               value="item-1"
-              className="border border-border  px-6 bg-transparent mb-4 last:mb-0"
+              className="border border-border px-6 bg-transparent mb-4 last:mb-0"
             >
               <AccordionTrigger className="text-left text-foreground hover:no-underline">
                 {tFaq("q1.question")}
@@ -39,7 +39,7 @@ const FaqSection = () => {
 
             <AccordionItem
               value="item-2"
-              className="border border-border  px-6 bg-transparent mb-4 last:mb-0"
+              className="border border-border px-6 bg-transparent mb-4 last:mb-0"
             >
               <AccordionTrigger className="text-left text-foreground hover:no-underline">
                 {tFaq("q2.question")}
@@ -51,7 +51,7 @@ const FaqSection = () => {
 
             <AccordionItem
               value="item-3"
-              className="border border-border  px-6 bg-transparent mb-4 last:mb-0"
+              className="border border-border px-6 bg-transparent mb-4 last:mb-0"
             >
               <AccordionTrigger className="text-left text-foreground hover:no-underline">
                 {tFaq("q3.question")}
@@ -63,51 +63,31 @@ const FaqSection = () => {
 
             <AccordionItem
               value="item-4"
-              className="border border-border  px-6 bg-transparent mb-4 last:mb-0"
+              className="border border-border px-6 bg-transparent mb-4 last:mb-0"
             >
               <AccordionTrigger className="text-left text-foreground hover:no-underline">
                 {tFaq("q4.question")}
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
                 {tFaq("q4.answer")}
-                {(() => {
-                  const list = tFaq("q4.list", { returnObjects: true });
-                  return Array.isArray(list) ? (
-                    <ul className="list-disc list-inside mt-2 space-y-1">
-                      {(list as string[]).map((item, index) => (
-                        <li key={index}>{item}</li>
-                      ))}
-                    </ul>
-                  ) : null;
-                })()}
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem
               value="item-5"
-              className="border border-border  px-6 bg-transparent mb-4 last:mb-0"
+              className="border border-border px-6 bg-transparent mb-4 last:mb-0"
             >
               <AccordionTrigger className="text-left text-foreground hover:no-underline">
                 {tFaq("q5.question")}
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
                 {tFaq("q5.answer")}
-                {(() => {
-                  const list = tFaq("q5.list", { returnObjects: true });
-                  return Array.isArray(list) ? (
-                    <ul className="list-disc list-inside mt-2 space-y-1">
-                      {(list as string[]).map((item, index) => (
-                        <li key={index}>{item}</li>
-                      ))}
-                    </ul>
-                  ) : null;
-                })()}
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem
               value="item-6"
-              className="border border-border  px-6 bg-transparent mb-4 last:mb-0"
+              className="border border-border px-6 bg-transparent mb-4 last:mb-0"
             >
               <AccordionTrigger className="text-left text-foreground hover:no-underline">
                 {tFaq("q6.question")}
@@ -119,49 +99,13 @@ const FaqSection = () => {
 
             <AccordionItem
               value="item-7"
-              className="border border-border  px-6 bg-transparent mb-4 last:mb-0"
+              className="border border-border px-6 bg-transparent mb-4 last:mb-0"
             >
               <AccordionTrigger className="text-left text-foreground hover:no-underline">
                 {tFaq("q7.question")}
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
                 {tFaq("q7.answer")}
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem
-              value="item-8"
-              className="border border-border  px-6 bg-transparent mb-4 last:mb-0"
-            >
-              <AccordionTrigger className="text-left text-foreground hover:no-underline">
-                {tFaq("q8.question")}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                {tFaq("q8.answer")}
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem
-              value="item-9"
-              className="border border-border  px-6 bg-transparent mb-4 last:mb-0"
-            >
-              <AccordionTrigger className="text-left text-foreground hover:no-underline">
-                {tFaq("q9.question")}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                {tFaq("q9.answer")}
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem
-              value="item-10"
-              className="border border-border  px-6 bg-transparent mb-4 last:mb-0"
-            >
-              <AccordionTrigger className="text-left text-foreground hover:no-underline">
-                {tFaq("q10.question")}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                {tFaq("q10.answer")}
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -183,7 +127,7 @@ const FaqSection = () => {
                 window.location.href = "mailto:support@qarote.io";
               }
             }}
-            className="inline-flex items-center justify-center text-foreground hover:text-primary px-4 py-3 sm:px-8 sm:py-4  transition-all duration-200 text-base sm:text-lg font-medium underline decoration-1 underline-offset-[0.625rem] hover:decoration-primary"
+            className="inline-flex items-center justify-center text-foreground hover:text-primary px-4 py-3 sm:px-8 sm:py-4 transition-all duration-200 text-base sm:text-lg font-medium underline decoration-1 underline-offset-[0.625rem] hover:decoration-primary"
           >
             {t("cta.contactUs")}
           </button>

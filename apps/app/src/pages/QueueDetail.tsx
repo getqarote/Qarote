@@ -5,15 +5,14 @@ import { useNavigate, useParams } from "react-router";
 import { UserRole } from "@/lib/api";
 import { logger } from "@/lib/logger";
 
-import { AppSidebar } from "@/components/AppSidebar";
 import { MessagesRatesChart } from "@/components/MessagesRatesChart";
+import { PageShell } from "@/components/PageShell";
 import { ConsumerDetails } from "@/components/QueueDetail/ConsumerDetails";
 import { LoadingSkeleton } from "@/components/QueueDetail/LoadingSkeleton";
 import { MessageStatistics } from "@/components/QueueDetail/MessageStatistics";
 import { NotFound } from "@/components/QueueDetail/NotFound";
 import { QueueBindings } from "@/components/QueueDetail/QueueBindings";
 import { QueueConfiguration } from "@/components/QueueDetail/QueueConfiguration";
-// Queue Detail Components
 import { QueueHeader } from "@/components/QueueDetail/QueueHeader";
 import { QueueSpy } from "@/components/QueueDetail/QueueSpy";
 import { QueueStats } from "@/components/QueueDetail/QueueStats";
@@ -29,7 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
@@ -56,6 +55,7 @@ const QueueDetail = () => {
   const { selectedVHost } = useVHostContext();
   const { toast } = useToast();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
   const [timeRange, setTimeRange] = useState<TimeRange>("1m");
   const [spyEnabled, setSpyEnabled] = useState(false);
 
@@ -122,118 +122,147 @@ const QueueDetail = () => {
 
   if (!selectedServerId || !queueName) {
     return (
-      <SidebarProvider>
-        <div className="page-layout">
-          <AppSidebar />
-          <main className="main-content-scrollable">
-            <div className="content-container-large">
-              <NotFound
-                title={t("queueNotFound")}
-                description={t("queueNotFoundDesc")}
-                onNavigateBack={handleNavigateBack}
-              />
-            </div>
-          </main>
-        </div>
-      </SidebarProvider>
+      <PageShell>
+        <NotFound
+          title={t("queueNotFound")}
+          description={t("queueNotFoundDesc")}
+          onNavigateBack={handleNavigateBack}
+        />
+      </PageShell>
     );
   }
 
   return (
     <TooltipProvider>
-      <SidebarProvider>
-        <div className="page-layout">
-          <AppSidebar />
-          <main className="main-content-scrollable">
-            <div className="content-container-large">
-              {/* Header */}
-              <QueueHeader
-                queueName={queueName}
-                selectedServerId={selectedServerId}
-                messageCount={queue?.messages || 0}
-                consumerCount={queue?.consumers || 0}
-                isAdmin={isAdmin}
-                isSpying={spyEnabled}
-                onSpyToggle={() => setSpyEnabled((prev) => !prev)}
-                onNavigateBack={handleNavigateBack}
-                onRefetch={refetch}
-                onDeleteQueue={isAdmin ? confirmDeleteQueue : undefined}
-              />
+      <PageShell>
+        <QueueHeader
+          queueName={queueName}
+          selectedServerId={selectedServerId}
+          messageCount={queue?.messages || 0}
+          consumerCount={queue?.consumers || 0}
+          isAdmin={isAdmin}
+          onNavigateBack={handleNavigateBack}
+          onRefetch={refetch}
+          onDeleteQueue={isAdmin ? confirmDeleteQueue : undefined}
+        />
 
-              {isLoading ? (
-                <LoadingSkeleton />
-              ) : queue ? (
-                <>
-                  {/* Status and Quick Stats */}
-                  <QueueStats queue={queue} />
+        {isLoading ? (
+          <LoadingSkeleton />
+        ) : queue ? (
+          <>
+            {/* Stats — always visible at top */}
+            <QueueStats queue={queue} />
 
-                  {/* Detailed Message Statistics */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <MessageStatistics queue={queue} />
-                    <QueueConfiguration queue={queue} />
-                  </div>
-
-                  {/* Additional Details */}
-                  <QueueTiming queue={queue} />
-
-                  {/* Live Rates Chart */}
-                  <MessagesRatesChart
-                    messagesRates={queueLiveRatesData?.rates}
-                    ratesMode={queueLiveRatesData?.ratesMode}
-                    isLoading={liveRatesLoading}
-                    error={null}
-                    timeRange={timeRange}
-                    onTimeRangeChange={setTimeRange}
-                  />
-
-                  {/* Queued Messages Chart */}
-                  <QueuedMessagesChart
-                    queueTotals={queueLiveRatesData?.queueTotals}
-                    isLoading={liveRatesLoading}
-                    error={null}
-                    timeRange={timeRange}
-                    onTimeRangeChange={setTimeRange}
-                  />
-
-                  {/* Spy on Queue — conditionally mounted.
-                      The `key` forces a full unmount/remount (and therefore
-                      a clean subscription teardown + state reset) whenever
-                      the spy target changes, e.g. when navigating between
-                      /queues/foo and /queues/bar without leaving the page. */}
-                  {spyEnabled && (
-                    <QueueSpy
-                      key={`${selectedServerId}|${queueName}|${selectedVHost || "/"}`}
-                      serverId={selectedServerId}
-                      queueName={queueName}
-                      vhost={selectedVHost || "/"}
-                    />
+            {/* Spy toggle — prominent, lives above tabs */}
+            <div className="flex items-center gap-3">
+              <Button
+                variant={spyEnabled ? "default" : "outline"}
+                onClick={() => setSpyEnabled((prev) => !prev)}
+                className="rounded-none"
+              >
+                <span className="relative flex h-2 w-2 mr-2">
+                  {spyEnabled ? (
+                    <>
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary-foreground opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-primary-foreground" />
+                    </>
+                  ) : (
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-muted-foreground" />
                   )}
-
-                  {/* Consumer Details Section */}
-                  <ConsumerDetails
-                    consumersData={consumersData}
-                    consumersLoading={consumersLoading}
-                  />
-
-                  {/* Queue Bindings Section */}
-                  <QueueBindings
-                    bindingsData={bindingsData}
-                    bindingsLoading={bindingsLoading}
-                  />
-                </>
-              ) : (
-                <NotFound
-                  title={t("queueNotFound")}
-                  description={t("notFoundMessage", { queueName })}
-                  onNavigateBack={handleNavigateBack}
-                />
+                </span>
+                {spyEnabled ? t("stopSpy") : t("spyOnQueue")}
+              </Button>
+              {spyEnabled && (
+                <span className="text-xs text-muted-foreground">
+                  {t("spyDescription")}
+                </span>
               )}
             </div>
-          </main>
-        </div>
 
-        {/* Delete Confirmation Dialog */}
-        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            {/* Spy panel — expands when active */}
+            {spyEnabled && (
+              <QueueSpy
+                key={`${selectedServerId}|${queueName}|${selectedVHost || "/"}`}
+                serverId={selectedServerId}
+                queueName={queueName}
+                vhost={selectedVHost || "/"}
+              />
+            )}
+
+            {/* Tabbed content */}
+            <Tabs defaultValue="health" className="space-y-6">
+              <TabsList>
+                <TabsTrigger value="health">{t("tabHealth")}</TabsTrigger>
+                <TabsTrigger value="configuration">
+                  {t("tabConfiguration")}
+                </TabsTrigger>
+                <TabsTrigger value="bindings">
+                  {t("tabBindings")}
+                  {bindingsData?.totalBindings ? (
+                    <span className="ml-1.5 text-xs text-muted-foreground">
+                      {bindingsData.totalBindings}
+                    </span>
+                  ) : null}
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Health tab — SRE-first: consumers right after stats */}
+              <TabsContent value="health" className="space-y-6 mt-0">
+                <ConsumerDetails
+                  consumersData={consumersData}
+                  consumersLoading={consumersLoading}
+                />
+
+                <MessageStatistics queue={queue} />
+
+                <MessagesRatesChart
+                  messagesRates={queueLiveRatesData?.rates}
+                  ratesMode={queueLiveRatesData?.ratesMode}
+                  isLoading={liveRatesLoading}
+                  error={null}
+                  timeRange={timeRange}
+                  onTimeRangeChange={setTimeRange}
+                />
+
+                <QueuedMessagesChart
+                  queueTotals={queueLiveRatesData?.queueTotals}
+                  isLoading={liveRatesLoading}
+                  error={null}
+                  timeRange={timeRange}
+                  onTimeRangeChange={setTimeRange}
+                />
+              </TabsContent>
+
+              {/* Configuration tab */}
+              <TabsContent value="configuration" className="space-y-6 mt-0">
+                <QueueConfiguration queue={queue} />
+                <QueueTiming queue={queue} />
+              </TabsContent>
+
+              {/* Bindings tab */}
+              <TabsContent value="bindings" className="mt-0">
+                <QueueBindings
+                  bindingsData={bindingsData}
+                  bindingsLoading={bindingsLoading}
+                />
+              </TabsContent>
+            </Tabs>
+          </>
+        ) : (
+          <NotFound
+            title={t("queueNotFound")}
+            description={t("notFoundMessage", { queueName })}
+            onNavigateBack={handleNavigateBack}
+          />
+        )}
+
+        <Dialog
+          open={deleteDialogOpen}
+          onOpenChange={(open) => {
+            setDeleteDialogOpen(open);
+            if (!open) setDeleteConfirmName("");
+          }}
+        >
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{t("deleteTitle")}</DialogTitle>
@@ -241,18 +270,68 @@ const QueueDetail = () => {
                 {t("deleteDescription", { queueName })}
               </DialogDescription>
             </DialogHeader>
+
+            {/* Context: show current queue state */}
+            {queue && (queue.messages > 0 || queue.consumers > 0) && (
+              <div className="rounded-md bg-muted/50 p-3 text-sm space-y-1">
+                {queue.messages > 0 && (
+                  <p className="text-warning font-medium">
+                    {t("deleteWarningMessages", {
+                      count: queue.messages,
+                    })}
+                  </p>
+                )}
+                {queue.consumers > 0 && (
+                  <p className="text-warning font-medium">
+                    {t("deleteWarningConsumers", {
+                      count: queue.consumers,
+                    })}
+                  </p>
+                )}
+                <p className="text-muted-foreground">
+                  {t("deleteConstraints")}
+                </p>
+              </div>
+            )}
+
+            {/* Type-to-confirm */}
+            <div className="space-y-2">
+              <label
+                htmlFor="delete-confirm"
+                className="text-sm text-muted-foreground"
+              >
+                {t("deleteTypeConfirm", { queueName })}
+              </label>
+              <input
+                id="delete-confirm"
+                type="text"
+                value={deleteConfirmName}
+                onChange={(e) => setDeleteConfirmName(e.target.value)}
+                className="flex h-9 w-full rounded-none border border-border bg-background px-3 py-1 text-sm font-mono transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                placeholder={queueName}
+                autoComplete="off"
+                spellCheck={false}
+              />
+            </div>
+
             <DialogFooter>
               <Button
                 variant="outline"
-                onClick={() => setDeleteDialogOpen(false)}
+                onClick={() => {
+                  setDeleteDialogOpen(false);
+                  setDeleteConfirmName("");
+                }}
                 disabled={deleteQueueMutation.isPending}
               >
                 {t("common:cancel")}
               </Button>
               <Button
-                variant="destructive"
+                variant="destructive-outline"
                 onClick={handleDeleteQueue}
-                disabled={deleteQueueMutation.isPending}
+                disabled={
+                  deleteQueueMutation.isPending ||
+                  deleteConfirmName !== queueName
+                }
               >
                 {deleteQueueMutation.isPending
                   ? t("deleting")
@@ -261,7 +340,7 @@ const QueueDetail = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </SidebarProvider>
+      </PageShell>
     </TooltipProvider>
   );
 };

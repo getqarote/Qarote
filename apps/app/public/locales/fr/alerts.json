@@ -7,6 +7,15 @@
   "notificationSettings": "Paramètres de notification",
   "activeAlerts": "Alertes actives",
   "resolvedAlerts": "Alertes résolues",
+  "active": {
+    "noneTitle": "Aucune alerte active",
+    "noneDesc": "Votre cluster RabbitMQ fonctionne sans alerte.",
+    "upgradeTitleWithCount": "Vous avez {{count}} alerte active",
+    "upgradeTitleWithCount_other": "Vous avez {{count}} alertes actives",
+    "upgradeSubtitle": "Passez à une offre supérieure pour voir les détails et configurer les seuils.",
+    "upgradeHint": "Developer et Enterprise débloquent les détails, les règles et les canaux de notification.",
+    "upgradeCta": "Mettre à niveau"
+  },
   "failedToLoad": "Échec du chargement des données d'alertes. Veuillez réessayer.",
   "loadingResolved": "Chargement des alertes résolues...",
   "failedToLoadResolved": "Échec du chargement des alertes résolues. Veuillez réessayer.",
@@ -21,6 +30,8 @@
   "rules.noRules": "Aucune règle d'alerte",
   "rules.noRulesDescription": "Créez des règles d'alerte personnalisées pour surveiller des métriques spécifiques",
   "rules.createFirstRule": "Créer votre première règle",
+  "rules.noResults": "Aucune règle correspondante",
+  "rules.noResultsDescription": "Aucune règle ne correspond à votre recherche. Essayez un autre terme.",
   "rules.editTitle": "Modifier la règle d'alerte",
   "rules.editDescription": "Mettre à jour la configuration de votre règle d'alerte personnalisée",
   "rules.createDescription": "Créer une règle d'alerte personnalisée pour surveiller des métriques RabbitMQ spécifiques",
@@ -41,14 +52,19 @@
   "rules.severity.medium": "Moyen",
   "rules.severity.high": "Élevé",
   "rules.severity.critical": "Critique",
-  "rules.form.name": "Nom *",
+  "rules.form.name": "Nom",
   "rules.form.namePlaceholder": "ex., Alerte de profondeur de file élevée",
   "rules.form.description": "Description",
   "rules.form.descriptionPlaceholder": "Description optionnelle",
-  "rules.form.alertType": "Type d'alerte *",
-  "rules.form.operator": "Opérateur *",
-  "rules.form.threshold": "Seuil *",
-  "rules.form.severity": "Sévérité *",
+  "rules.form.alertType": "Type d'alerte",
+  "rules.form.operator": "Opérateur",
+  "rules.form.threshold": "Seuil",
+  "rules.form.thresholdHintCount": "Nombre de messages, connexions ou canaux",
+  "rules.form.thresholdHintPercent": "Pourcentage (0–100)",
+  "rules.form.thresholdHintMsgRate": "Messages par seconde",
+  "rules.form.thresholdHintNodeDown": "Le seuil ne s'applique pas — l'alerte se déclenche quand le nœud devient inaccessible",
+  "rules.form.severity": "Sévérité",
+  "rules.form.isDefaultNote": "Cette règle est générée par le système. Le nom, le type et l'opérateur sont fixes et ne peuvent pas être modifiés.",
   "rules.form.enabled": "Activée",
   "rules.form.cancel": "Annuler",
   "rules.form.saving": "Enregistrement...",
@@ -71,6 +87,45 @@
   "rules.toast.createError": "Échec de la création de la règle d'alerte",
   "rules.toast.deleteError": "Échec de la suppression de la règle d'alerte",
   "rules.toast.selectServer": "Veuillez d'abord sélectionner un serveur",
+  "rules.searchPlaceholder": "Rechercher des règles par nom ou type...",
+  "rules.actions.edit": "Modifier",
+  "rules.actions.delete": "Supprimer",
+  "rules.badge.default": "Par défaut",
+  "summary": {
+    "count": "{{count}} alert",
+    "count_other": "{{count}} alerts",
+    "severity": {
+      "critical": "critical",
+      "high": "high",
+      "medium": "medium",
+      "low": "low",
+      "info": "info"
+    }
+  },
+  "item": {
+    "scope": {
+      "vhost": "vhost : {{vhost}}",
+      "defaultVhost": "Par défaut",
+      "cluster": "cluster"
+    },
+    "detail": {
+      "current": "Actuel",
+      "threshold": "Seuil",
+      "affected": "Affecté",
+      "recommended": "Recommandé"
+    },
+    "meta": {
+      "duration": "Durée",
+      "durationHours": "{{count}} heure",
+      "durationHours_other": "{{count}} heures",
+      "durationMinutes": "{{count}} minute",
+      "durationMinutes_other": "{{count}} minutes",
+      "unknown": "Inconnu",
+      "firstSeen": "Vu pour la première fois",
+      "resolved": "Résolu",
+      "source": "{{type}} : {{name}}"
+    }
+  },
   "modal": {
     "title": "Paramètres de notification d'alertes",
     "description": "Configurez les notifications par e-mail et webhook pour les nouvelles alertes. Sélectionnez les niveaux de gravité pour lesquels vous souhaitez recevoir des notifications.",

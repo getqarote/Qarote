@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,14 +21,13 @@ import {
 interface WebhookExampleModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  t: (key: string) => string;
 }
 
 export function WebhookExampleModal({
   open,
   onOpenChange,
-  t,
 }: WebhookExampleModalProps) {
+  const { t } = useTranslation("alerts");
   const [version, setVersion] = useState("v1");
 
   return (
@@ -156,11 +156,11 @@ X-Qarote-Signature: sha256=abc123... (if secret is configured)`}
             </div>
           </div>
 
-          <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
-            <p className="text-sm text-blue-900 dark:text-blue-100">
+          <div className="p-4 bg-info-muted rounded-lg">
+            <p className="text-sm text-info">
               <strong>{t("modal.webhookSignatureNoteLabel")}</strong>{" "}
               {t("modal.webhookSignatureNoteText")}{" "}
-              <code className="text-xs bg-blue-100 dark:bg-blue-900 px-1 py-0.5 rounded">
+              <code className="text-xs bg-info-muted px-1 py-0.5 rounded">
                 X-Qarote-Signature
               </code>{" "}
               {t("modal.webhookSignatureNoteSuffix")}

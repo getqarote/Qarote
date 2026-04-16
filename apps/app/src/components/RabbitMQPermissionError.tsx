@@ -23,37 +23,37 @@ export const RabbitMQPermissionError = ({
   };
 
   return (
-    <Card className="border-orange-200 bg-orange-50/50">
+    <Card className="border-warning/30 bg-warning-muted/50">
       <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-          <Shield className="h-5 w-5 text-orange-600" />
+        <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
+          <Shield className="h-5 w-5 text-warning" />
           {title}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Alert className="border-orange-200 bg-orange-50">
-          <AlertTriangle className="h-4 w-4 text-orange-600" />
-          <AlertDescription className="text-orange-800">
+        <Alert className="border-warning/30 bg-warning-muted">
+          <AlertTriangle className="h-4 w-4 text-warning" />
+          <AlertDescription className="text-warning">
             {message}
           </AlertDescription>
         </Alert>
 
-        <div className="bg-white p-4 rounded-lg border border-orange-200">
-          <h4 className="font-medium text-gray-900 mb-2">
+        <div className="bg-background p-4 rounded-lg border border-warning/30">
+          <h4 className="font-medium text-foreground mb-2">
             Required Permission:
           </h4>
-          <code className="bg-orange-100 text-orange-800 px-2 py-1 rounded text-sm font-mono">
+          <code className="bg-warning-muted text-warning px-2 py-1 rounded text-sm font-mono">
             {requiredPermission}
           </code>
         </div>
 
-        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-          <h4 className="font-medium text-blue-900 mb-2">What can you do?</h4>
-          <ul className="text-sm text-blue-800 space-y-1">
+        <div className="bg-info-muted p-4 rounded-lg border border-info/30">
+          <h4 className="font-medium text-info mb-2">What can you do?</h4>
+          <ul className="text-sm text-info space-y-1">
             <li>• Contact your RabbitMQ administrator</li>
             <li>
               • Request the required{" "}
-              <code className="bg-blue-100 px-1 rounded">
+              <code className="bg-info-muted px-1 rounded">
                 {requiredPermission}
               </code>{" "}
               permission

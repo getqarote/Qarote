@@ -1,23 +1,8 @@
-import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 
-import { BarChart3 } from "lucide-react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-interface QueueDepthData {
-  name: string;
-  messages: number;
-}
+import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface QueueData {
   name: string;
@@ -31,165 +16,124 @@ interface QueueDepthsChartProps {
 }
 
 const EMPTY_QUEUES: QueueData[] = [];
+const DEFAULT_VISIBLE = 10;
 
-const CustomXAxisTick = ({
-  x,
-  y,
-  payload,
-}: {
-  x?: number;
-  y?: number;
-  payload?: { value: string };
-}) => {
-  if (!payload) return null;
-  return (
-    <g transform={`translate(${x},${y})`}>
-      <text
-        x={0}
-        y={0}
-        dy={8}
-        textAnchor="end"
-        fill="#6b7280"
-        fontSize={11}
-        transform="rotate(-40)"
-      >
-        {payload.value}
-      </text>
-    </g>
-  );
-};
-
-const CustomTooltip = ({
-  active,
-  payload,
-  label,
-  queues,
-}: {
-  active?: boolean;
-  payload?: ReadonlyArray<{ value: number }>;
-  label?: string | number;
-  queues: Array<QueueData>;
-  [key: string]: unknown;
-}) => {
-  if (active && payload && payload.length) {
-    const labelStr = String(label);
-    const originalQueue = queues.find((q) => q.name === labelStr);
-    return (
-      <div className="bg-white p-3 border rounded-lg shadow-lg">
-        <p className="font-medium text-gray-900">
-          {originalQueue?.name || label}
-        </p>
-        <p className="text-orange-600">
-          Messages: {payload[0].value.toLocaleString()}
-        </p>
-        {originalQueue?.vhost && originalQueue.vhost !== "/" && (
-          <p className="text-gray-500 text-sm">VHost: {originalQueue.vhost}</p>
-        )}
-      </div>
-    );
-  }
-  return null;
-};
-
+/**
+ * Queue depths — proportional bar list, not a chart.
+ *
+ * Shows the top 10 queues by message count with a "See more" link
+ * to the full Queues page when there are more.
+ */
 export const QueueDepthsChart = ({
   queues = EMPTY_QUEUES,
   isLoading,
 }: QueueDepthsChartProps) => {
   const { t } = useTranslation("dashboard");
 
-  const tooltipContent = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (props: any) => <CustomTooltip {...props} queues={queues} />,
-    [queues]
-  );
+  const sorted = [...queues].sort((a, b) => b.messages - a.messages);
+  const visible = sorted.slice(0, DEFAULT_VISIBLE);
 
-  // Prepare data for the chart - show all queues, prioritize those with messages
-  const chartData: QueueDepthData[] = [...queues]
-    .sort((a, b) => b.messages - a.messages) // Sort by message count descending (queues with messages first)
-    .slice(0, 10) // Take top 10 queues (including empty ones)
-    .map((queue) => ({
-      name: queue.name,
-      messages: queue.messages,
-    }));
-
-  // Calculate dynamic Y-axis domain
-  const maxMessages = Math.max(...chartData.map((d) => d.messages), 0);
-  const minMessages = Math.min(...chartData.map((d) => d.messages), 0);
-
-  // Add some padding to the scale (10% on top, start from 0 or slightly below min if negative)
-  const yAxisMax = maxMessages === 0 ? 10 : Math.ceil(maxMessages * 1.1);
-  const yAxisMin = minMessages < 0 ? Math.floor(minMessages * 1.1) : 0;
+  const maxMessages =
+    visible.length > 0 ? Math.max(...visible.map((q) => q.messages), 1) : 1;
 
   return (
-    <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-xl font-semibold text-foreground">
-              <BarChart3 className="h-5 w-5 text-orange-600" />
-              {t("queueDepths")}
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {t("currentMessageBacklog")}
-            </p>
-          </div>
+    <div className="rounded-lg border border-border overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
+        <div>
+          <h2 className="title-section flex items-center gap-2">
+            {t("queueDepths")}
+            <span className="text-sm font-normal text-muted-foreground">
+              ({sorted.length})
+            </span>
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {t("currentMessageBacklog")}
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
             <span className="text-xs text-muted-foreground">
               {t("updatesEvery5s")}
             </span>
           </div>
+          <Link
+            to="/queues"
+            className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+          >
+            {t("seeMore")}
+            <PixelChevronRight className="h-3 shrink-0" />
+          </Link>
         </div>
-      </CardHeader>
-      <CardContent>
+      </div>
+      <div className="p-4">
         {isLoading ? (
-          <div className="h-80 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+          <div className="space-y-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-7 w-full rounded" />
+            ))}
           </div>
-        ) : queues.length === 0 ? (
-          <div className="h-80 flex items-center justify-center">
-            <div className="text-center">
-              <BarChart3 className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">{t("noQueuesFound")}</p>
-            </div>
-          </div>
+        ) : sorted.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-6 text-center">
+            {t("noQueuesFound")}
+          </p>
         ) : (
-          <div className="h-96">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={chartData}
-                margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
-                <XAxis
-                  dataKey="name"
-                  tick={<CustomXAxisTick />}
-                  height={130}
-                  interval={0}
-                />
-                <YAxis
-                  tick={{ fontSize: 12, fill: "#6b7280" }}
-                  tickFormatter={(value) => value.toLocaleString()}
-                  domain={[yAxisMin, yAxisMax]}
-                  allowDataOverflow={false}
-                />
-                <Tooltip content={tooltipContent} />
-                <Bar
-                  dataKey="messages"
-                  fill="url(#barGradient)"
-                  radius={[4, 4, 0, 0]}
-                />
-                <defs>
-                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="rgb(234 88 12)" />
-                    <stop offset="100%" stopColor="rgb(220 38 38)" />
-                  </linearGradient>
-                </defs>
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="space-y-1">
+            {visible.map((queue) => (
+              <QueueRow
+                key={`${queue.name}-${queue.vhost}`}
+                queue={queue}
+                maxMessages={maxMessages}
+              />
+            ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
+
+function QueueRow({
+  queue,
+  maxMessages,
+}: {
+  queue: QueueData;
+  maxMessages: number;
+}) {
+  const pct = maxMessages > 0 ? (queue.messages / maxMessages) * 100 : 0;
+
+  const fillTone =
+    queue.messages >= 10000
+      ? "bg-destructive/15"
+      : queue.messages >= 1000
+        ? "bg-warning/15"
+        : "bg-primary/10";
+
+  return (
+    <div className="relative flex items-center justify-between gap-3 px-3 py-1.5 rounded">
+      <div
+        className={`absolute inset-y-0 left-0 rounded ${fillTone} transition-all duration-300`}
+        style={{ width: `${Math.max(pct, 2)}%` }}
+      />
+      <span
+        className="relative text-sm font-mono truncate min-w-0 text-foreground"
+        title={
+          queue.vhost !== "/" ? `${queue.name} (${queue.vhost})` : queue.name
+        }
+      >
+        {queue.name}
+      </span>
+      <span
+        className={`relative text-sm font-mono tabular-nums font-semibold shrink-0 ${
+          queue.messages >= 10000
+            ? "text-destructive"
+            : queue.messages >= 1000
+              ? "text-warning"
+              : "text-foreground"
+        }`}
+      >
+        {queue.messages.toLocaleString()}
+      </span>
+    </div>
+  );
+}

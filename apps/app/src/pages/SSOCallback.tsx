@@ -1,13 +1,23 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
+import { AlertCircle } from "lucide-react";
+
+import { AuthPageHeader } from "@/components/auth/AuthPageHeader";
+import { AuthPageWrapper } from "@/components/auth/AuthPageWrapper";
 import { PageLoader } from "@/components/PageLoader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
+/**
+ * Human-readable error messages for the error codes the server
+ * returns on a failed SSO callback. Unrecognized codes fall through
+ * to a generic "Authentication error: {code}" message so the
+ * operator still sees something actionable.
+ */
 const ERROR_MESSAGES: Record<string, string> = {
   missing_code: "Authorization code was not provided.",
   invalid_state:
@@ -25,7 +35,19 @@ const ERROR_MESSAGES: Record<string, string> = {
     "An account with this email already exists using a different sign-in method. Please sign in with your existing method.",
 };
 
-const SSOCallback: React.FC = () => {
+/**
+ * SSO callback handler. Reached when the IdP redirects the browser
+ * back to Qarote after authentication. Two render branches:
+ *
+ *   1. **Error** — the URL has an `?error=` param; we surface the
+ *      error in an AuthPageWrapper with a "return to sign in"
+ *      fallback
+ *   2. **Success** — session cookie is set; we figure out where to
+ *      land (pending org invitation, workspace dashboard, or
+ *      onboarding) and navigate there. Shows a `PageLoader` while
+ *      the auth context resolves.
+ */
+const SSOCallback = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -34,12 +56,13 @@ const SSOCallback: React.FC = () => {
     ? ERROR_MESSAGES[errorParam] || `Authentication error: ${errorParam}`
     : null;
 
-  // Wait for auth to resolve, then navigate based on state
   useEffect(() => {
     if (error || isLoading) return;
 
     if (isAuthenticated) {
-      // Check for pending org invitation (query param first, sessionStorage fallback)
+      // Check for pending org invitation (query param first,
+      // sessionStorage fallback for browsers that stripped the
+      // query param during the OAuth round-trip)
       const orgInviteToken =
         searchParams.get("orgInviteToken") ||
         sessionStorage.getItem("pendingOrgInviteToken");
@@ -52,7 +75,8 @@ const SSOCallback: React.FC = () => {
       const target = user?.workspaceId ? "/" : "/onboarding";
       navigate(target, { replace: true });
     } else {
-      // Session cookie was expected but auth check found nothing — redirect to sign-in
+      // Session cookie was expected but auth check found nothing —
+      // redirect to sign-in to restart the flow
       navigate("/auth/sign-in", { replace: true });
     }
   }, [
@@ -66,26 +90,24 @@ const SSOCallback: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-auth py-12 px-4">
-        <Card className="max-w-md w-full bg-card/95 backdrop-blur-xs border-border/20 shadow-2xl">
-          <CardHeader>
-            <CardTitle className="text-card-foreground">
-              Authentication Error
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-            <Button
-              className="w-full mt-4 bg-gradient-button hover:bg-gradient-button-hover"
-              onClick={() => navigate("/auth/sign-in", { replace: true })}
-            >
-              Return to Sign In
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <AuthPageWrapper>
+        <AuthPageHeader
+          Icon={AlertCircle}
+          title="Authentication Error"
+          variant="destructive"
+        />
+        <CardContent className="space-y-4">
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+          <Button
+            className="w-full"
+            onClick={() => navigate("/auth/sign-in", { replace: true })}
+          >
+            Return to Sign In
+          </Button>
+        </CardContent>
+      </AuthPageWrapper>
     );
   }
 

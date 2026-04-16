@@ -24,10 +24,10 @@
     "upgradeRequirement": "Enterprise Plan Required",
     "upgradeCloudHint": "Upgrade your plan to configure single sign-on for your organization.",
     "upgradeSelfHostedHint": "Activate an Enterprise license to configure single sign-on for your organization.",
-    "viewPlans": "View Plans",
-    "contactSales": "Contact Sales",
-    "activateLicense": "Activate License",
-    "purchaseLicense": "Purchase License"
+    "viewPlans": "View plans",
+    "contactSales": "Contact sales",
+    "activateLicense": "Activate license",
+    "purchaseLicense": "Purchase license"
   },
   "feedback": {
     "title": "Send Feedback",
@@ -64,7 +64,7 @@
     "emailOptional": "Email (optional)",
     "emailHelp": "We'll only use this to follow up on your feedback if needed",
     "submitting": "Submitting...",
-    "submitFeedback": "Submit Feedback",
+    "submitFeedback": "Submit feedback",
     "toastSubmitted": "Feedback Submitted",
     "toastSubmittedDesc": "Thank you for your feedback! We'll review it and get back to you if needed.",
     "toastFailed": "Submission Failed",

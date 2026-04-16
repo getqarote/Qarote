@@ -1,12 +1,12 @@
-import { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { useQueryClient } from "@tanstack/react-query";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Database } from "lucide-react";
 import { toast } from "sonner";
 
+import { VHostPreviewCard } from "@/components/AddVirtualHostFormComponent/VHostPreviewCard";
+import { VHostTypePreset } from "@/components/AddVirtualHostFormComponent/VHostTypePreset";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -27,13 +27,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 
 import { useCreateVHost } from "@/hooks/queries/useRabbitMQVHosts";
@@ -49,6 +43,8 @@ interface CreateVHostModalProps {
   onSuccess?: () => void;
 }
 
+type Mode = "quick" | "advanced";
+
 export function CreateVHostModal({
   isOpen,
   onClose,
@@ -57,182 +53,244 @@ export function CreateVHostModal({
   onSuccess,
 }: CreateVHostModalProps) {
   const { t } = useTranslation("vhosts");
-  const queryClient = useQueryClient();
   const { workspace } = useWorkspace();
+  const [mode, setMode] = useState<Mode>("quick");
 
   const form = useForm<CreateVHostForm>({
     resolver: zodResolver(createVHostSchema),
+    mode: "onChange",
     defaultValues: {
       name: initialName,
       description: "",
+      defaultQueueType: undefined,
       tracing: false,
     },
   });
 
-  // Update form when initialName changes
+  // Sync `initialName` from props without resetting user edits if they've
+  // already started typing. We only force-set when the dialog opens fresh.
   useEffect(() => {
-    if (initialName) {
+    if (isOpen && initialName) {
       form.setValue("name", initialName);
     }
-  }, [initialName, form]);
+  }, [initialName, isOpen, form]);
 
   const createVHostMutation = useCreateVHost();
 
-  // Handle success/error
-  useEffect(() => {
-    if (createVHostMutation.isSuccess) {
-      queryClient.invalidateQueries({ queryKey: ["vhosts", serverId] });
-      toast.success(t("createSuccess"));
-      form.reset();
-      onSuccess?.();
-      onClose();
-    }
-    if (createVHostMutation.isError) {
-      toast.error(createVHostMutation.error?.message || t("createError"));
-    }
-  }, [
-    createVHostMutation.isSuccess,
-    createVHostMutation.isError,
-    createVHostMutation.error,
-  ]);
+  const name = form.watch("name");
+  const defaultQueueType = form.watch("defaultQueueType");
+  const tracing = form.watch("tracing");
 
-  const onSubmit = (data: CreateVHostForm) => {
-    if (!workspace?.id) {
-      toast.error(t("workspaceRequired"));
-      return;
-    }
-    createVHostMutation.mutate({
-      serverId,
-      workspaceId: workspace.id,
-      name: data.name,
-      description: data.description,
-      default_queue_type: data.default_queue_type,
-      tracing: data.tracing,
+  const resetAll = () => {
+    form.reset({
+      name: "",
+      description: "",
+      defaultQueueType: undefined,
+      tracing: false,
     });
+    setMode("quick");
   };
 
   const handleClose = () => {
-    form.reset();
+    resetAll();
     onClose();
   };
 
+  const onSubmit = (data: CreateVHostForm) => {
+    if (!workspace?.id) {
+      toast.error(t("toast.workspaceRequired"));
+      return;
+    }
+
+    createVHostMutation.mutate(
+      {
+        serverId,
+        workspaceId: workspace.id,
+        name: data.name.trim(),
+        description: data.description,
+        // Map camelCase form field to API's snake_case contract at the edge.
+        default_queue_type: data.defaultQueueType,
+        tracing: data.tracing,
+      },
+      {
+        onSuccess: () => {
+          toast.success(t("toast.vhostCreatedDesc", { name: data.name }));
+          resetAll();
+          onSuccess?.();
+          onClose();
+        },
+        onError: (error) => {
+          const message = error?.message ?? "";
+          if (message.toLowerCase().includes("already exists")) {
+            toast.error(t("toast.alreadyExistsDesc", { name: data.name }));
+            return;
+          }
+          if (
+            message.includes("Server not found") ||
+            message.includes("access denied")
+          ) {
+            toast.error(t("toast.serverErrorDesc"));
+            return;
+          }
+          toast.error(message || t("createError"));
+        },
+      }
+    );
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      e.preventDefault();
+      form.handleSubmit(onSubmit)();
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Database className="h-5 w-5" />
-            {t("createVhost")}
-          </DialogTitle>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(next) => {
+        if (!next) handleClose();
+      }}
+    >
+      <DialogContent className="sm:max-w-xl lg:max-w-2xl max-h-[90vh] flex flex-col bg-card">
+        <DialogHeader className="shrink-0">
+          <DialogTitle>{t("createVhost")}</DialogTitle>
           <DialogDescription>{t("createVhostDescription")}</DialogDescription>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("name")}</FormLabel>
-                  <FormControl>
-                    <Input placeholder={t("namePlaceholder")} {...field} />
-                  </FormControl>
-                  <FormDescription>{t("nameDescription")}</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <div
+          className="flex-1 overflow-y-auto px-6 pb-6"
+          onKeyDown={handleKeyDown}
+        >
+          <Tabs
+            value={mode}
+            onValueChange={(v) => setMode(v as Mode)}
+            className="mb-6"
+          >
+            <TabsList>
+              <TabsTrigger value="quick">{t("quickCreate")}</TabsTrigger>
+              <TabsTrigger value="advanced">{t("advancedCreate")}</TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("descriptionOptional")}</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder={t("descriptionPlaceholder")}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="default_queue_type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("defaultQueueTypeOptional")}</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("name")}</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("serverDefault")} />
-                      </SelectTrigger>
+                      <Input
+                        placeholder={t("namePlaceholder")}
+                        autoFocus
+                        {...field}
+                      />
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="classic">
-                        {t("queueTypeClassic")}
-                      </SelectItem>
-                      <SelectItem value="quorum">
-                        {t("queueTypeQuorum")}
-                      </SelectItem>
-                      <SelectItem value="stream">
-                        {t("queueTypeStream")}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    {t("defaultQueueTypeDescription")}
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormDescription>{t("nameDescription")}</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="tracing"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
+              <FormField
+                control={form.control}
+                name="defaultQueueType"
+                render={({ field }) => (
+                  <FormItem>
+                    <VHostTypePreset
+                      value={field.value}
+                      onChange={field.onChange}
                     />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>{t("enableTracing")}</FormLabel>
-                    <FormDescription>
-                      {t("enableTracingDescription")}
-                    </FormDescription>
-                  </div>
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleClose}
-                disabled={createVHostMutation.isPending}
-              >
-                {t("cancel")}
-              </Button>
-              <Button
-                type="submit"
-                disabled={createVHostMutation.isPending}
-                className="btn-primary text-white"
-              >
-                {createVHostMutation.isPending ? t("creating") : t("create")}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+              {mode === "advanced" && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("description")}</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder={t("descriptionPlaceholder")}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="tracing"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start gap-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            id="vhost-tracing"
+                            className="mt-0.5"
+                          />
+                        </FormControl>
+                        <label
+                          htmlFor="vhost-tracing"
+                          className="flex flex-col gap-0.5 cursor-pointer"
+                        >
+                          <span className="text-sm font-medium text-foreground">
+                            {t("enableTracing")}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {t("enableTracingDescription")}
+                          </span>
+                        </label>
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+
+              <VHostPreviewCard
+                name={name}
+                defaultQueueType={defaultQueueType}
+                tracing={tracing}
+              />
+            </form>
+          </Form>
+        </div>
+
+        <DialogFooter className="flex gap-2 shrink-0 pt-6 border-t border-border">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleClose}
+            disabled={createVHostMutation.isPending}
+          >
+            {t("cancel")}
+          </Button>
+          <Button
+            type="submit"
+            onClick={form.handleSubmit(onSubmit)}
+            disabled={createVHostMutation.isPending}
+            className="btn-primary"
+          >
+            {createVHostMutation.isPending ? (
+              <>
+                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                {t("creating")}
+              </>
+            ) : (
+              t("create")
+            )}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

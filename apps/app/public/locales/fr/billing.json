@@ -5,6 +5,27 @@
     "noInfo": "Aucune information de facturation disponible.",
     "billingTitle": "Facturation"
   },
+  "header": {
+    "title": "Facturation et utilisation",
+    "subtitle": "Gérez votre abonnement et vos moyens de paiement",
+    "backAriaLabel": "Retour à l'abonnement"
+  },
+  "errors": {
+    "loadTitle": "Impossible de charger les informations de facturation",
+    "loadDescription": "Veuillez réessayer plus tard ou contacter le support."
+  },
+  "recentPayments": {
+    "title": "Paiements récents",
+    "subtitle": "Vos dernières transactions",
+    "defaultDescription": "Paiement d'abonnement"
+  },
+  "paymentStatus": {
+    "succeeded": "Réussi",
+    "failed": "Échoué",
+    "canceled": "Annulé",
+    "pending": "En attente",
+    "requiresAction": "Action requise"
+  },
   "plans": {
     "chooseYourPlan": "Choisissez votre forfait",
     "subtitle": "Faites évoluer votre surveillance RabbitMQ avec des forfaits conçus pour des équipes de toutes tailles.",
@@ -114,7 +135,15 @@
     "trialActiveWithPayment": "Votre essai est actif jusqu'au {{date}}. Votre abonnement commencera automatiquement à la fin de l'essai.",
     "cancelTrial": "Annuler l'essai",
     "trialCanceled": "Essai annulé",
-    "trialEndsOnDate": "Votre essai se terminera le {{date}}. Vous serez rétrogradé au forfait Gratuit."
+    "trialEndsOnDate": "Votre essai se terminera le {{date}}. Vous serez rétrogradé au forfait Gratuit.",
+    "started": "Essai commencé",
+    "endsDate": "Essai terminé le {{date}}",
+    "daysRemaining": "{{count}} days remaining",
+    "daysRemaining_one": "{{count}} jour restant dans l'essai",
+    "daysRemaining_other": "{{count}} jours restants dans l'essai",
+    "daysLeft": "{{count}} days left",
+    "daysLeft_one": "{{count}} jour restant",
+    "daysLeft_other": "{{count}} jours restants"
   },
   "currentPlan": {
     "noSubscription": "Aucun abonnement requis",
@@ -125,7 +154,10 @@
     "paymentMethod": "Moyen de paiement",
     "planName": "Forfait {{plan}}",
     "activeSubscription": "Votre abonnement actif",
-    "changePaymentMethod": "Modifier le moyen de paiement"
+    "changePaymentMethod": "Modifier le moyen de paiement",
+    "toDate": "au {{date}}",
+    "canceling": "Annulation en cours",
+    "addPaymentMethodCta": "Ajouter un moyen de paiement"
   },
   "status": {
     "active": "Actif"

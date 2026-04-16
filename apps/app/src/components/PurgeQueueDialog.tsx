@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { AlertTriangle, Trash2 } from "lucide-react";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -108,26 +106,22 @@ export const PurgeQueueDialog = ({
         {trigger || (
           <Button
             size="sm"
-            variant="outline"
-            className="text-red-600 hover:text-red-700"
+            variant="destructive-outline"
+            className="rounded-none"
           >
-            <Trash2 className="w-4 h-4 mr-1" />
             {t("purge.trigger")}
           </Button>
         )}
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-red-600" />
-            {t("purge.title", { queueName })}
-          </AlertDialogTitle>
+          <AlertDialogTitle>{t("purge.title", { queueName })}</AlertDialogTitle>
           <AlertDialogDescription className="space-y-3">
             <div>
               <strong>⚠️ {t("purge.cannotBeUndone")}</strong>
             </div>
             <div>{t("purge.description")}</div>
-            <div className="p-3 bg-gray-50 rounded-lg border">
+            <div className="p-3 bg-muted rounded-lg border">
               <div className="flex items-center justify-between">
                 <span className="font-medium">{queueName}</span>
                 {messageCount > 0 && (
@@ -139,7 +133,7 @@ export const PurgeQueueDialog = ({
                 )}
               </div>
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-muted-foreground">
               {messageCount > 0
                 ? t("purge.allMessagesDeleted", {
                     count: messageCount.toLocaleString(),
@@ -147,16 +141,16 @@ export const PurgeQueueDialog = ({
                 : t("purge.allMessagesDeletedEmpty")}{" "}
               {t("purge.operationWill")}
             </div>
-            <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
+            <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
               <li>{t("purge.removeAllPending")}</li>
               <li>{t("purge.clearReadyAndUnacked")}</li>
               <li>{t("purge.resetCount")}</li>
               <li>{t("purge.cannotBeReversed")}</li>
             </ul>
-            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="mt-3 p-3 bg-info-muted border border-info/30 rounded-lg">
               <div className="flex items-start gap-2">
-                <div className="w-4 h-4 text-blue-600 mt-0.5">ℹ️</div>
-                <div className="text-sm text-blue-800">
+                <div className="w-4 h-4 text-info mt-0.5">ℹ️</div>
+                <div className="text-sm text-info">
                   <strong>Note:</strong> {t("purge.note")}
                 </div>
               </div>
@@ -164,23 +158,17 @@ export const PurgeQueueDialog = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+          <AlertDialogCancel className="rounded-none">
+            {t("cancel")}
+          </AlertDialogCancel>
           <AlertDialogAction
             onClick={handlePurge}
             disabled={purgeQueueMutation.isPending}
-            className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            className="border border-destructive/30 bg-background text-destructive hover:bg-destructive/10 hover:border-destructive/50 rounded-none"
           >
-            {purgeQueueMutation.isPending ? (
-              <>
-                <div className="w-4 h-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
-                {t("purge.purging")}
-              </>
-            ) : (
-              <>
-                <Trash2 className="w-4 h-4 mr-2" />
-                {t("purge.confirm")}
-              </>
-            )}
+            {purgeQueueMutation.isPending
+              ? t("purge.purging")
+              : t("purge.confirm")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

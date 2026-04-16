@@ -7,6 +7,15 @@
   "notificationSettings": "Configuración de notificaciones",
   "activeAlerts": "Alertas activas",
   "resolvedAlerts": "Alertas resueltas",
+  "active": {
+    "noneTitle": "Sin alertas activas",
+    "noneDesc": "Tu clúster de RabbitMQ está funcionando sin alertas.",
+    "upgradeTitleWithCount": "Tienes {{count}} alerta activa",
+    "upgradeTitleWithCount_other": "Tienes {{count}} alertas activas",
+    "upgradeSubtitle": "Actualiza para ver detalles de alertas y configurar umbrales.",
+    "upgradeHint": "Developer y Enterprise desbloquean detalles, reglas y canales de notificación.",
+    "upgradeCta": "Actualizar ahora"
+  },
   "failedToLoad": "No se pudieron cargar los datos de alertas. Por favor inténtalo de nuevo.",
   "loadingResolved": "Cargando alertas resueltas...",
   "failedToLoadResolved": "No se pudieron cargar las alertas resueltas. Por favor inténtalo de nuevo.",
@@ -21,6 +30,8 @@
   "rules.noRules": "Sin reglas de alerta",
   "rules.noRulesDescription": "Crea reglas de alerta personalizadas para monitorear métricas específicas",
   "rules.createFirstRule": "Crea tu primera regla",
+  "rules.noResults": "Sin reglas coincidentes",
+  "rules.noResultsDescription": "Ninguna regla coincide con tu búsqueda. Prueba con un término diferente.",
   "rules.editTitle": "Editar regla de alerta",
   "rules.editDescription": "Actualiza la configuración de tu regla de alerta personalizada",
   "rules.createDescription": "Crea una regla de alerta personalizada para monitorear métricas específicas de RabbitMQ",
@@ -41,14 +52,19 @@
   "rules.severity.medium": "Media",
   "rules.severity.high": "Alta",
   "rules.severity.critical": "Crítica",
-  "rules.form.name": "Nombre *",
+  "rules.form.name": "Nombre",
   "rules.form.namePlaceholder": "ej., Alerta de profundidad de cola alta",
   "rules.form.description": "Descripción",
   "rules.form.descriptionPlaceholder": "Descripción opcional",
-  "rules.form.alertType": "Tipo de alerta *",
-  "rules.form.operator": "Operador *",
-  "rules.form.threshold": "Umbral *",
-  "rules.form.severity": "Severidad *",
+  "rules.form.alertType": "Tipo de alerta",
+  "rules.form.operator": "Operador",
+  "rules.form.threshold": "Umbral",
+  "rules.form.thresholdHintCount": "Número de mensajes, conexiones o canales",
+  "rules.form.thresholdHintPercent": "Porcentaje (0–100)",
+  "rules.form.thresholdHintMsgRate": "Mensajes por segundo",
+  "rules.form.thresholdHintNodeDown": "El umbral no aplica — la alerta se activa cuando el nodo se vuelve inalcanzable",
+  "rules.form.severity": "Severidad",
+  "rules.form.isDefaultNote": "Esta regla es generada por el sistema. El nombre, tipo y operador son fijos y no pueden modificarse.",
   "rules.form.enabled": "Habilitada",
   "rules.form.cancel": "Cancelar",
   "rules.form.saving": "Guardando...",
@@ -71,6 +87,45 @@
   "rules.toast.createError": "Error al crear la regla de alerta",
   "rules.toast.deleteError": "Error al eliminar la regla de alerta",
   "rules.toast.selectServer": "Por favor selecciona un servidor primero",
+  "rules.searchPlaceholder": "Buscar reglas por nombre o tipo...",
+  "rules.actions.edit": "Editar",
+  "rules.actions.delete": "Eliminar",
+  "rules.badge.default": "Predeterminada",
+  "summary": {
+    "count": "{{count}} alert",
+    "count_other": "{{count}} alerts",
+    "severity": {
+      "critical": "critical",
+      "high": "high",
+      "medium": "medium",
+      "low": "low",
+      "info": "info"
+    }
+  },
+  "item": {
+    "scope": {
+      "vhost": "vhost: {{vhost}}",
+      "defaultVhost": "Predeterminado",
+      "cluster": "clúster"
+    },
+    "detail": {
+      "current": "Actual",
+      "threshold": "Umbral",
+      "affected": "Afectado",
+      "recommended": "Recomendado"
+    },
+    "meta": {
+      "duration": "Duración",
+      "durationHours": "{{count}} hora",
+      "durationHours_other": "{{count}} horas",
+      "durationMinutes": "{{count}} minuto",
+      "durationMinutes_other": "{{count}} minutos",
+      "unknown": "Desconocido",
+      "firstSeen": "Visto por primera vez",
+      "resolved": "Resuelto",
+      "source": "{{type}}: {{name}}"
+    }
+  },
   "modal": {
     "title": "Configuración de notificaciones de alertas",
     "description": "Configura las notificaciones por correo electrónico y webhook para nuevas alertas. Selecciona los niveles de gravedad para los que deseas recibir notificaciones.",

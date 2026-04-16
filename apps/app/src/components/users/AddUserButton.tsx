@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Plus } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 
 import { CreateUserModal } from "./CreateUserModal";
@@ -18,11 +16,7 @@ export function AddUserButton({ serverId, onSuccess }: AddUserButtonProps) {
 
   return (
     <>
-      <Button
-        onClick={() => setShowCreateModal(true)}
-        className="btn-primary flex items-center gap-2"
-      >
-        <Plus className="w-4 h-4" />
+      <Button onClick={() => setShowCreateModal(true)} className="btn-primary">
         {t("addUser")}
       </Button>
       <CreateUserModal

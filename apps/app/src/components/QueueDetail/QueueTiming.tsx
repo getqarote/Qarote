@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
 
-import { Activity, Clock } from "lucide-react";
-
 import { Queue } from "@/lib/api";
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatBytes } from "@/lib/utils";
 
 interface QueueTimingProps {
   queue: Queue;
@@ -32,51 +29,37 @@ export function QueueTiming({ queue }: QueueTimingProps) {
     return () => clearInterval(id);
   }, []);
 
-  const formatBytes = (bytes: number) => {
-    if (bytes === 0) return "0 B";
-    const k = 1024;
-    const sizes = ["B", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  };
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="w-5 h-5" />
-            Timing Information
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="px-4 py-3 bg-muted/30 border-b border-border">
+          <h3 className="title-section">Timing Information</h3>
+        </div>
+        <div className="p-4 space-y-4">
           <div>
             <p className="text-sm text-muted-foreground">Idle Since</p>
-            <p className="text-lg font-semibold">
+            <p className="text-lg font-semibold font-mono tabular-nums">
               {formatDuration(queue.idle_since, now)}
             </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Last Message</p>
-            <p className="text-lg font-semibold">
+            <p className="text-lg font-semibold font-mono tabular-nums">
               {formatDuration(queue.head_message_timestamp, now)}
             </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <Card className="border-0 shadow-md bg-card backdrop-blur-xs">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="w-5 h-5" />
-            Performance Metrics
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="px-4 py-3 bg-muted/30 border-b border-border">
+          <h3 className="title-section">Performance Metrics</h3>
+        </div>
+        <div className="p-4 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Consumer Capacity</p>
-              <p className="text-lg font-semibold">
+              <p className="text-lg font-semibold font-mono tabular-nums">
                 {queue.consumer_capacity != null
                   ? `${(queue.consumer_capacity * 100).toFixed(1)}%`
                   : "N/A"}
@@ -84,21 +67,21 @@ export function QueueTiming({ queue }: QueueTimingProps) {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Reductions</p>
-              <p className="text-lg font-semibold">
+              <p className="text-lg font-semibold font-mono tabular-nums">
                 {queue.reductions?.toLocaleString() || "0"}
               </p>
             </div>
           </div>
-          <div className="pt-4 border-t">
+          <div className="pt-4 border-t border-border">
             <div>
               <p className="text-sm text-muted-foreground">Message Bytes</p>
-              <p className="text-lg font-semibold">
+              <p className="text-lg font-semibold font-mono tabular-nums">
                 {formatBytes(queue.message_bytes || 0)}
               </p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

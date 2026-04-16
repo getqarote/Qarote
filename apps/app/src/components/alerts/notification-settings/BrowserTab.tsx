@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { BellOff } from "lucide-react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -16,8 +18,8 @@ export function BrowserTab({
   notificationPermission,
   setNotificationPermission,
   isPending,
-  t,
 }: BrowserTabProps) {
+  const { t } = useTranslation("alerts");
   const handleToggle = (checked: boolean) => {
     if (!checked) {
       setBrowserNotificationsEnabled(false);
@@ -56,7 +58,7 @@ export function BrowserTab({
             {notificationPermission === "granted" && (
               <Badge
                 variant="secondary"
-                className="text-xs font-normal text-green-600"
+                className="text-xs font-normal text-success"
               >
                 {t("modal.permissionGranted")}
               </Badge>
@@ -76,7 +78,6 @@ export function BrowserTab({
           checked={browserNotificationsEnabled}
           onCheckedChange={handleToggle}
           disabled={isPending}
-          className="data-[state=checked]:bg-gradient-button"
         />
       </div>
 
@@ -113,10 +114,9 @@ export function BrowserTab({
             onChange={setBrowserNotificationSeverities}
             disabled={isPending}
             idPrefix="browser-severity"
-            t={t}
           />
           {browserNotificationSeverities.length === 0 && (
-            <p className="text-xs text-red-500 mt-2">
+            <p className="text-xs text-destructive mt-2">
               {t("modal.selectAtLeastOneBrowserSeverity")}
             </p>
           )}
@@ -125,12 +125,9 @@ export function BrowserTab({
 
       {/* Disabled Info */}
       {!browserNotificationsEnabled && (
-        <Alert>
-          <BellOff className="h-4 w-4" />
-          <AlertDescription>
-            {t("modal.browserNotificationsDisabled")}
-          </AlertDescription>
-        </Alert>
+        <p className="text-sm text-muted-foreground">
+          {t("modal.browserNotificationsDisabled")}
+        </p>
       )}
     </div>
   );

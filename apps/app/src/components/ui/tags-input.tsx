@@ -1,11 +1,10 @@
 import React, { KeyboardEvent, useRef, useState } from "react";
 
-import { X } from "lucide-react";
-
 import { cn } from "@/lib/utils";
 
 import { Badge } from "./badge";
 import { Input } from "./input";
+import { PixelX } from "./pixel-x";
 
 interface TagsInputProps {
   value: string[];
@@ -95,7 +94,7 @@ const TagsInput: React.FC<TagsInputProps> = ({
               }}
               className="ml-1 rounded-full hover:bg-destructive hover:text-destructive-foreground"
             >
-              <X className="h-3 w-3" />
+              <PixelX className="h-3 w-auto shrink-0" />
             </button>
           )}
         </Badge>
