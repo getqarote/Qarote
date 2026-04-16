@@ -104,7 +104,7 @@ export function UserPermissionsCard({ vhost }: UserPermissionsCardProps) {
               className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground shrink-0"
             >
               <PixelChevronDown
-                className="h-2 w-auto shrink-0 mr-1"
+                className="h-3 w-auto shrink-0 mr-1"
                 aria-hidden
               />
               {t("permissionsAdvancedToggle")}
@@ -195,7 +195,7 @@ export function UserPermissionsCard({ vhost }: UserPermissionsCardProps) {
               className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
             >
               <PixelChevronUp
-                className="h-2 w-auto shrink-0 mr-1"
+                className="h-3 w-auto shrink-0 mr-1"
                 aria-hidden
               />
               {t("permissionsAdvancedCollapse")}

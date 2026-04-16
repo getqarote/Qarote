@@ -272,7 +272,7 @@ export const ServerDetails = ({
         aria-expanded={isOpen}
       >
         <PixelChevronDown
-          className={`h-2 w-auto shrink-0 transition-transform ${isOpen ? "rotate-0" : "-rotate-90"}`}
+          className={`h-3 w-auto shrink-0 transition-transform ${isOpen ? "rotate-0" : "-rotate-90"}`}
         />
         {isOpen ? t("manualSetupHide") : t("manualSetupShow")}
       </button>
