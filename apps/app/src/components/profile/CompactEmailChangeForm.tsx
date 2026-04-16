@@ -11,7 +11,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PixelEmail } from "@/components/ui/pixel-email";
 
 interface CompactEmailChangeFormProps {
   currentEmail: string;
@@ -109,7 +108,6 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
       {/* Current Email Status */}
       <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
         <div className="flex items-center gap-2">
-          <PixelEmail className="h-4 text-muted-foreground" />
           <span className="text-sm font-medium">Current:</span>
           <span className="text-sm">{currentEmail}</span>
         </div>
