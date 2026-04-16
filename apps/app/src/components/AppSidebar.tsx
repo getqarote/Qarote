@@ -466,6 +466,7 @@ export function AppSidebar() {
             onClick={() => logoutMutation.mutate()}
             disabled={logoutMutation.isPending}
             className="text-sidebar-foreground/70 hover:text-destructive p-1"
+            title={t("auth:signOut")}
           >
             <PixelLogout className="h-4 w-auto shrink-0" />
           </Button>
