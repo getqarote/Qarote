@@ -25,6 +25,7 @@
   "creating": "Configuration en cours...",
   "loading": "Chargement...",
   "orgRenameFailed": "Impossible de definir le nom de l'organisation. Vous pouvez le faire depuis les parametres.",
+  "inviteRemove": "Remove invitee",
   "inviteSent": "Invitation envoyee a {{email}}",
   "inviteFailed": "Echec de l'invitation de {{email}} : {{error}}",
   "setupFailed": "Echec de la configuration : {{error}}"

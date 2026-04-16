@@ -10,10 +10,13 @@
   "noTopologyData": "No topology data",
   "noTopologyDataDesc": "No exchanges or queues found for the selected server and virtual host.",
   "stats": {
+    "exchanges": "exchanges",
     "exchanges_one": "exchange",
     "exchanges_other": "exchanges",
+    "queues": "queues",
     "queues_one": "queue",
     "queues_other": "queues",
+    "bindings": "bindings",
     "bindings_one": "binding",
     "bindings_other": "bindings"
   },

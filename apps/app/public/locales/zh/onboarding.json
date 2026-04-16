@@ -25,6 +25,7 @@
   "creating": "设置中...",
   "loading": "加载中...",
   "orgRenameFailed": "无法设置组织名称。您可以在设置中修改。",
+  "inviteRemove": "Remove invitee",
   "inviteSent": "邀请已发送至 {{email}}",
   "inviteFailed": "邀请 {{email}} 失败：{{error}}",
   "setupFailed": "设置失败：{{error}}"

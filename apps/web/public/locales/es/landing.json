@@ -106,7 +106,10 @@
   "finalCta": {
     "title": "¿Listo para monitorear tus servidores RabbitMQ?",
     "subtitle": "Comienza a monitorear tus servidores RabbitMQ gratis hoy mismo.",
-    "noCreditCard": "No se requiere tarjeta de crédito"
+    "noCreditCard": "No se requiere tarjeta de crédito",
+    "openSource": "Open source",
+    "selfHostable": "Self-hostable",
+    "freeForever": "Free forever (self-hosted)"
   },
   "footer": {
     "about": "Acerca de",

@@ -138,8 +138,10 @@
     "trialEndsOnDate": "您的试用将于 {{date}} 结束。届时将降级为免费方案。",
     "started": "试用已开始",
     "endsDate": "试用将于 {{date}} 结束",
+    "daysRemaining": "{{count}} days remaining",
     "daysRemaining_one": "试用还剩 {{count}} 天",
     "daysRemaining_other": "试用还剩 {{count}} 天",
+    "daysLeft": "{{count}} days left",
     "daysLeft_one": "还剩 {{count}} 天",
     "daysLeft_other": "还剩 {{count}} 天"
   },

@@ -25,6 +25,7 @@
   "creating": "Setting up...",
   "loading": "Loading...",
   "orgRenameFailed": "Could not set organization's name. You can do it from Settings.",
+  "inviteRemove": "Remove invitee",
   "inviteSent": "Invitation sent to {{email}}",
   "inviteFailed": "Failed to invite {{email}}: {{error}}",
   "setupFailed": "Setup failed: {{error}}"

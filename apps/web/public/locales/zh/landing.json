@@ -106,7 +106,10 @@
   "finalCta": {
     "title": "准备好监控你的 RabbitMQ 服务器了吗？",
     "subtitle": "今天就免费开始监控你的 RabbitMQ 服务器。",
-    "noCreditCard": "无需信用卡"
+    "noCreditCard": "无需信用卡",
+    "openSource": "Open source",
+    "selfHostable": "Self-hostable",
+    "freeForever": "Free forever (self-hosted)"
   },
   "footer": {
     "about": "关于我们",

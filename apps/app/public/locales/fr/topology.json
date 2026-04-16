@@ -10,10 +10,13 @@
   "noTopologyData": "Aucune donnée de topologie",
   "noTopologyDataDesc": "Aucun échange ou file d'attente trouvé pour le serveur et l'hôte virtuel sélectionnés.",
   "stats": {
+    "exchanges": "exchanges",
     "exchanges_one": "échange",
     "exchanges_other": "échanges",
+    "queues": "queues",
     "queues_one": "file",
     "queues_other": "files",
+    "bindings": "bindings",
     "bindings_one": "liaison",
     "bindings_other": "liaisons"
   },

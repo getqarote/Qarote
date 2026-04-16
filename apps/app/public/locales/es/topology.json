@@ -10,10 +10,13 @@
   "noTopologyData": "Sin datos de topología",
   "noTopologyDataDesc": "No se encontraron intercambios ni colas para el servidor y host virtual seleccionados.",
   "stats": {
+    "exchanges": "exchanges",
     "exchanges_one": "intercambio",
     "exchanges_other": "intercambios",
+    "queues": "queues",
     "queues_one": "cola",
     "queues_other": "colas",
+    "bindings": "bindings",
     "bindings_one": "enlace",
     "bindings_other": "enlaces"
   },

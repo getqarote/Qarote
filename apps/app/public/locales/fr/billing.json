@@ -138,8 +138,10 @@
     "trialEndsOnDate": "Votre essai se terminera le {{date}}. Vous serez rétrogradé au forfait Gratuit.",
     "started": "Essai commencé",
     "endsDate": "Essai terminé le {{date}}",
+    "daysRemaining": "{{count}} days remaining",
     "daysRemaining_one": "{{count}} jour restant dans l'essai",
     "daysRemaining_other": "{{count}} jours restants dans l'essai",
+    "daysLeft": "{{count}} days left",
     "daysLeft_one": "{{count}} jour restant",
     "daysLeft_other": "{{count}} jours restants"
   },

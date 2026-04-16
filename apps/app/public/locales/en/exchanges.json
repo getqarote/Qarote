@@ -94,6 +94,7 @@
   "previewAutoDelete": "auto-delete",
   "previewInternal": "internal",
   "previewTemplateExchange": "Declares a {{adjectives}} {{type}} exchange named {{name}}.",
+  "previewArgsCount": "{{count}} arguments configured.",
   "previewArgsCount_one": "{{count}} argument configured.",
   "previewArgsCount_other": "{{count}} arguments configured.",
   "toast": {
@@ -132,6 +133,7 @@
     "previewTargetExchange": "Publishing to exchange `{{exchange}}` with routing key `{{routingKey}}`.",
     "previewNoRoutingKey": "(no routing key)",
     "previewFooter": "{{bytes}} · {{persistence}} · {{properties}}",
+    "previewPropertiesCount": "{{count}} properties",
     "previewPropertiesCount_one": "{{count}} extra property",
     "previewPropertiesCount_other": "{{count}} extra properties",
     "previewNoProperties": "no extra properties",

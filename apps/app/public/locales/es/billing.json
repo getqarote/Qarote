@@ -138,8 +138,10 @@
     "trialEndsOnDate": "Tu prueba terminará el {{date}}. Serás degradado al plan Gratuito.",
     "started": "Prueba iniciada",
     "endsDate": "La prueba termina el {{date}}",
+    "daysRemaining": "{{count}} days remaining",
     "daysRemaining_one": "{{count}} día restante en la prueba",
     "daysRemaining_other": "{{count}} días restantes en la prueba",
+    "daysLeft": "{{count}} days left",
     "daysLeft_one": "{{count}} día restante",
     "daysLeft_other": "{{count}} días restantes"
   },

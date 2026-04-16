@@ -91,6 +91,17 @@
   "rules.actions.edit": "Editar",
   "rules.actions.delete": "Eliminar",
   "rules.badge.default": "Predeterminada",
+  "summary": {
+    "count": "{{count}} alert",
+    "count_other": "{{count}} alerts",
+    "severity": {
+      "critical": "critical",
+      "high": "high",
+      "medium": "medium",
+      "low": "low",
+      "info": "info"
+    }
+  },
   "item": {
     "scope": {
       "vhost": "vhost: {{vhost}}",

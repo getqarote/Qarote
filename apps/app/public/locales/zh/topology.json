@@ -10,10 +10,13 @@
   "noTopologyData": "无拓扑数据",
   "noTopologyDataDesc": "未找到所选服务器和虚拟主机的交换机或队列。",
   "stats": {
+    "exchanges": "exchanges",
     "exchanges_one": "交换机",
     "exchanges_other": "交换机",
+    "queues": "queues",
     "queues_one": "队列",
     "queues_other": "队列",
+    "bindings": "bindings",
     "bindings_one": "绑定",
     "bindings_other": "绑定"
   },

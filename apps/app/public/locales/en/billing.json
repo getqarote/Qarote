@@ -138,8 +138,10 @@
     "trialEndsOnDate": "Your trial will end on {{date}}. You will be downgraded to the Free plan.",
     "started": "Trial started",
     "endsDate": "Trial ends {{date}}",
+    "daysRemaining": "{{count}} days remaining",
     "daysRemaining_one": "{{count}} day remaining in trial",
     "daysRemaining_other": "{{count}} days remaining in trial",
+    "daysLeft": "{{count}} days left",
     "daysLeft_one": "{{count}} day left",
     "daysLeft_other": "{{count}} days left"
   },

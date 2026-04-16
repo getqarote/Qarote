@@ -91,6 +91,17 @@
   "rules.actions.edit": "编辑",
   "rules.actions.delete": "删除",
   "rules.badge.default": "默认",
+  "summary": {
+    "count": "{{count}} alert",
+    "count_other": "{{count}} alerts",
+    "severity": {
+      "critical": "critical",
+      "high": "high",
+      "medium": "medium",
+      "low": "low",
+      "info": "info"
+    }
+  },
   "item": {
     "scope": {
       "vhost": "vhost：{{vhost}}",

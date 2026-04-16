@@ -99,6 +99,7 @@
   "previewTemplateNoBinding": "{{adjectives}} queue {{name}} with no exchange binding.",
   "previewTemplateWithBinding": "{{adjectives}} queue {{name}} bound to {{exchange}}{{routingClause}}.",
   "previewRoutingClause": " with routing key {{key}}",
+  "previewArgsCount": "{{count}} arguments configured.",
   "previewArgsCount_one": "{{count}} argument configured",
   "previewArgsCount_other": "{{count}} arguments configured",
   "argumentsBuilderTitle": "Arguments",

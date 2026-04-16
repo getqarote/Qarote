@@ -94,6 +94,7 @@
   "previewAutoDelete": "auto-delete",
   "previewInternal": "interno",
   "previewTemplateExchange": "Declara un intercambio {{type}} {{adjectives}} llamado {{name}}.",
+  "previewArgsCount": "{{count}} arguments configured.",
   "previewArgsCount_one": "{{count}} argumento configurado.",
   "previewArgsCount_other": "{{count}} argumentos configurados.",
   "toast": {
@@ -132,6 +133,7 @@
     "previewTargetExchange": "Publicando en el intercambio `{{exchange}}` con clave de enrutamiento `{{routingKey}}`.",
     "previewNoRoutingKey": "(sin clave de enrutamiento)",
     "previewFooter": "{{bytes}} · {{persistence}} · {{properties}}",
+    "previewPropertiesCount": "{{count}} properties",
     "previewPropertiesCount_one": "{{count}} propiedad adicional",
     "previewPropertiesCount_other": "{{count}} propiedades adicionales",
     "previewNoProperties": "sin propiedades adicionales",

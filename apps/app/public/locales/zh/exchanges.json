@@ -94,6 +94,7 @@
   "previewAutoDelete": "自动删除",
   "previewInternal": "内部",
   "previewTemplateExchange": "声明一个{{adjectives}}的 {{type}} 交换机,名为 {{name}}。",
+  "previewArgsCount": "{{count}} arguments configured.",
   "previewArgsCount_one": "已配置 {{count}} 个参数。",
   "previewArgsCount_other": "已配置 {{count}} 个参数。",
   "toast": {
@@ -132,6 +133,7 @@
     "previewTargetExchange": "发布到交换机 `{{exchange}}`，路由键为 `{{routingKey}}`。",
     "previewNoRoutingKey": "（无路由键）",
     "previewFooter": "{{bytes}} · {{persistence}} · {{properties}}",
+    "previewPropertiesCount": "{{count}} properties",
     "previewPropertiesCount_other": "{{count}} 个额外属性",
     "previewNoProperties": "无额外属性",
     "exchangeLabel": "交换机 *",
@@ -218,6 +220,7 @@
     "boundTo": "绑定到：",
     "queues": "{{count}} 个队列",
     "queues_other": "{{count}} 个队列",
-    "routingKeyInfoLabel": "路由键："
+    "routingKeyInfoLabel": "路由键：",
+    "previewPropertiesCount_one": "{{count}} extra property"
   }
 }
