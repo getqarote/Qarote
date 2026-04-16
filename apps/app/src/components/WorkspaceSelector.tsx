@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { Carrot, ChevronLeft, User } from "lucide-react";
+import { Carrot, User } from "lucide-react";
 import { toast } from "sonner";
 
 import { UserRole } from "@/lib/api";
@@ -12,6 +12,7 @@ import { logger } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
 import { PixelCheck } from "@/components/ui/pixel-check";
 import { PixelChevronDown } from "@/components/ui/pixel-chevron-down";
+import { PixelChevronLeft } from "@/components/ui/pixel-chevron-left";
 import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
 import {
   Popover,
@@ -266,7 +267,7 @@ export function WorkspaceSelector() {
                 {currentWorkspace?.name || workspace?.name}
               </span>
             </div>
-            <PixelChevronDown className="h-4 w-auto shrink-0 text-muted-foreground ml-2" />
+            <PixelChevronDown className="h-2 w-auto shrink-0 text-muted-foreground ml-2" />
           </Button>
         </PopoverTrigger>
 
@@ -405,7 +406,7 @@ export function WorkspaceSelector() {
                       onClick={() => setView("workspaces")}
                     >
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <ChevronLeft className="w-4 h-4" />
+                        <PixelChevronLeft className="h-3 w-auto shrink-0" />
                         <span>{t("backToWorkspaces")}</span>
                       </div>
                     </button>

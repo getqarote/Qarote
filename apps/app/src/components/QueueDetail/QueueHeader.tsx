@@ -69,7 +69,7 @@ export function QueueHeader({
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="rounded-none">
                   {t("actions")}
-                  <PixelChevronDown className="ml-1 h-3.5 w-auto shrink-0" />
+                  <PixelChevronDown className="ml-1 h-2 w-auto shrink-0" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
