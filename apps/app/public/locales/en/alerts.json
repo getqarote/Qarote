@@ -24,7 +24,7 @@
   "resolvedAlertsLabel": "resolved alerts",
   "rules.title": "Alert Rules",
   "rules.description": "Manage your custom alert rules for monitoring RabbitMQ metrics",
-  "rules.createRule": "Create Alert Rule",
+  "rules.createRule": "Create alert rule",
   "rules.loading": "Loading alert rules...",
   "rules.selectServer": "Please select a server to view alert rules",
   "rules.noRules": "No alert rules",
@@ -68,8 +68,8 @@
   "rules.form.enabled": "Enabled",
   "rules.form.cancel": "Cancel",
   "rules.form.saving": "Saving...",
-  "rules.form.updateRule": "Update Rule",
-  "rules.form.createRule": "Create Rule",
+  "rules.form.updateRule": "Update rule",
+  "rules.form.createRule": "Create rule",
   "rules.delete.title": "Delete Alert Rule",
   "rules.delete.confirmation": "Are you sure you want to delete the alert rule <strong>\"{{name}}\"</strong>? This action cannot be undone.",
   "rules.delete.delete": "Delete",
@@ -91,6 +91,17 @@
   "rules.actions.edit": "Edit",
   "rules.actions.delete": "Delete",
   "rules.badge.default": "Default",
+  "summary": {
+    "count": "{{count}} alert",
+    "count_other": "{{count}} alerts",
+    "severity": {
+      "critical": "critical",
+      "high": "high",
+      "medium": "medium",
+      "low": "low",
+      "info": "info"
+    }
+  },
   "item": {
     "scope": {
       "vhost": "vhost: {{vhost}}",
@@ -135,7 +146,7 @@
     "searchPlaceholder": "Search servers by name, host, or port...",
     "noServersFound": "No servers found matching \"{{term}}\"",
     "noServersAvailable": "No servers available",
-    "clearAll": "Clear All",
+    "clearAll": "Clear all",
     "serverSelectionCount": "{{selected}} of {{total}} server selected. Leave empty to receive notifications for all servers.",
     "serverSelectionCount_other": "{{selected}} of {{total}} servers selected. Leave empty to receive notifications for all servers.",
     "alertSeverities": "Alert Severities",
@@ -168,7 +179,7 @@
     "emailHelp": "This email will receive notifications for new alerts",
     "emailNotificationsDisabled": "Email notifications are disabled. You won't receive alerts via email, but you can still view them in the dashboard.",
     "webhookNotifications": "Webhook Notifications",
-    "viewExamplePayload": "View Example Payload",
+    "viewExamplePayload": "View example payload",
     "webhookDescription": "Configure webhook endpoint to receive alert notifications via POST requests.",
     "webhookUrl": "Webhook URL",
     "webhookSecretOptional": "Secret (Optional)",

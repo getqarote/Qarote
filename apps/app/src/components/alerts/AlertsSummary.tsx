@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 interface AlertsSummaryProps {
   summary: {
     total: number;
@@ -20,29 +22,31 @@ interface AlertsSummaryProps {
  * the severities that actually have alerts.
  */
 export const AlertsSummary = ({ summary }: AlertsSummaryProps) => {
+  const { t } = useTranslation("alerts");
+
   const items: Array<{ label: string; count: number; tone: string }> = [
     {
-      label: "critical",
+      label: t("summary.severity.critical"),
       count: summary.critical,
       tone: summary.critical > 0 ? "text-destructive" : "text-muted-foreground",
     },
     {
-      label: "high",
+      label: t("summary.severity.high"),
       count: summary.high,
       tone: summary.high > 0 ? "text-warning" : "text-muted-foreground",
     },
     {
-      label: "medium",
+      label: t("summary.severity.medium"),
       count: summary.medium,
       tone: summary.medium > 0 ? "text-warning/70" : "text-muted-foreground",
     },
     {
-      label: "low",
+      label: t("summary.severity.low"),
       count: summary.low,
       tone: "text-muted-foreground",
     },
     {
-      label: "info",
+      label: t("summary.severity.info"),
       count: summary.info,
       tone: "text-muted-foreground",
     },
@@ -52,7 +56,7 @@ export const AlertsSummary = ({ summary }: AlertsSummaryProps) => {
     <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
       <span className="font-semibold text-foreground">
         <span className="font-mono tabular-nums">{summary.total}</span>{" "}
-        {summary.total === 1 ? "alert" : "alerts"}
+        {t("summary.count", { count: summary.total })}
       </span>
       <span className="text-muted-foreground">·</span>
       {items.map((item, i) => (
