@@ -2,16 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 
-import {
-  ArrowRight,
-  Crown,
-  ExternalLink,
-  Key,
-  Loader2,
-  Server,
-  Users,
-  Zap,
-} from "lucide-react";
+import { ArrowRight, ExternalLink, Loader2 } from "lucide-react";
 
 import { UserRole } from "@/lib/api";
 import { isSelfHostedMode } from "@/lib/featureFlags";
@@ -19,6 +10,11 @@ import { formatDate } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PixelCrown } from "@/components/ui/pixel-crown";
+import { PixelKey } from "@/components/ui/pixel-key";
+import { PixelServer } from "@/components/ui/pixel-server";
+import { PixelUser } from "@/components/ui/pixel-user";
+import { PixelZap } from "@/components/ui/pixel-zap";
 
 import { useAllPlans } from "@/hooks/queries/usePlans";
 import { usePlanUpgrade } from "@/hooks/ui/usePlanUpgrade";
@@ -41,17 +37,17 @@ interface PlanStyle {
 // everything goes through the design-system color tokens.
 const PLAN_STYLE: Record<string, PlanStyle> = {
   [UserPlan.FREE]: {
-    icon: <Users className="h-5 w-5" aria-hidden="true" />,
+    icon: <PixelUser className="h-5 w-auto shrink-0" aria-hidden="true" />,
     iconColor: "text-muted-foreground",
     iconBg: "bg-muted",
   },
   [UserPlan.DEVELOPER]: {
-    icon: <Zap className="h-5 w-5" aria-hidden="true" />,
+    icon: <PixelZap className="h-5 w-auto shrink-0" aria-hidden="true" />,
     iconColor: "text-primary",
     iconBg: "bg-primary/10",
   },
   [UserPlan.ENTERPRISE]: {
-    icon: <Crown className="h-5 w-5" aria-hidden="true" />,
+    icon: <PixelCrown className="h-5 w-auto shrink-0" aria-hidden="true" />,
     iconColor: "text-primary",
     iconBg: "bg-primary/10",
   },
@@ -177,7 +173,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                   className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10 shrink-0"
                   aria-hidden="true"
                 >
-                  <Key className="h-5 w-5 text-primary" />
+                  <PixelKey className="h-5 w-auto shrink-0 text-primary" />
                 </div>
                 <div className="min-w-0">
                   <h3 className="font-semibold leading-tight">
@@ -361,7 +357,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                 className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10 shrink-0"
                 aria-hidden="true"
               >
-                <Server className="h-5 w-5 text-primary" />
+                <PixelServer className="h-5 w-auto shrink-0 text-primary" />
               </div>
               <div className="min-w-0">
                 <p className="font-medium text-sm">

@@ -1,19 +1,16 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import {
-  Calendar,
-  Clock,
-  CreditCard,
-  ExternalLink,
-  Sparkles,
-  X,
-} from "lucide-react";
+import { ExternalLink, X } from "lucide-react";
 
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PixelCalendar } from "@/components/ui/pixel-calendar";
+import { PixelClock } from "@/components/ui/pixel-clock";
+import { PixelCreditCard } from "@/components/ui/pixel-credit-card";
+import { PixelStar } from "@/components/ui/pixel-star";
 
 import { getPlanDisplayName, UserPlan } from "@/types/plans";
 
@@ -210,7 +207,10 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
             {/* Current period */}
             <div className="p-6 sm:border-r border-border">
               <dt className="flex items-center gap-2 text-muted-foreground mb-2">
-                <Calendar className="h-4 w-4" aria-hidden="true" />
+                <PixelCalendar
+                  className="h-4 w-auto shrink-0"
+                  aria-hidden="true"
+                />
                 <span className="text-xs font-medium uppercase tracking-wider">
                   {t("currentPlan.currentPeriod")}
                 </span>
@@ -232,7 +232,10 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
             {/* Trial end / Next billing */}
             <div className="p-6 border-t sm:border-t-0 sm:border-r border-border">
               <dt className="flex items-center gap-2 text-muted-foreground mb-2">
-                <Clock className="h-4 w-4" aria-hidden="true" />
+                <PixelClock
+                  className="h-4 w-auto shrink-0"
+                  aria-hidden="true"
+                />
                 <span className="text-xs font-medium uppercase tracking-wider">
                   {isTrialing && trialEndDate
                     ? t("trial.endsOn")
@@ -259,7 +262,10 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
               data-testid="current-plan-payment-section"
             >
               <dt className="flex items-center gap-2 text-muted-foreground mb-2">
-                <CreditCard className="h-4 w-4" aria-hidden="true" />
+                <PixelCreditCard
+                  className="h-4 w-auto shrink-0"
+                  aria-hidden="true"
+                />
                 <span className="text-xs font-medium uppercase tracking-wider">
                   {t("currentPlan.paymentMethod")}
                 </span>
@@ -321,7 +327,7 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
                 {cancelAtPeriodEnd ? (
                   <X className="h-4 w-4 text-destructive" />
                 ) : (
-                  <Sparkles className="h-4 w-4 text-muted-foreground" />
+                  <PixelStar className="h-4 w-auto shrink-0 text-muted-foreground" />
                 )}
               </div>
               <div className="min-w-0">
@@ -363,7 +369,10 @@ export const CurrentPlanCard: React.FC<CurrentPlanCardProps> = ({
             <div className="flex items-center gap-2 sm:shrink-0">
               {!paymentMethod && onManagePaymentMethod && (
                 <Button onClick={onManagePaymentMethod} size="sm">
-                  <CreditCard className="h-4 w-4 mr-2" aria-hidden="true" />
+                  <PixelCreditCard
+                    className="h-4 w-auto shrink-0 mr-2"
+                    aria-hidden="true"
+                  />
                   {t("trial.addPaymentMethod")}
                 </Button>
               )}

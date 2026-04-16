@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-import { Receipt } from "lucide-react";
+import { PixelReceipt } from "@/components/ui/pixel-receipt";
 
 /**
  * Header for the billing detail view (`/settings/subscription/
@@ -21,7 +21,7 @@ export const BillingHeader = () => {
         className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10 shrink-0"
         aria-hidden="true"
       >
-        <Receipt className="h-5 w-5 text-primary" />
+        <PixelReceipt className="h-5 w-auto shrink-0 text-primary" />
       </div>
       <div className="min-w-0">
         <h2 className="text-lg font-semibold leading-tight">
