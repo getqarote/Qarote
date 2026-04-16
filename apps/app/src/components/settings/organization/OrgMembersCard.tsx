@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Info, Mail, Settings, Trash2, User } from "lucide-react";
+import { Info, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
@@ -10,6 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PaginationControls } from "@/components/ui/PaginationControls";
+import { PixelEmail } from "@/components/ui/pixel-email";
+import { PixelSettings } from "@/components/ui/pixel-settings";
+import { PixelUser } from "@/components/ui/pixel-user";
 import {
   Select,
   SelectContent,
@@ -279,13 +282,13 @@ function MemberRow({
               className="h-8 w-8 rounded-full object-cover"
             />
           ) : (
-            <User className="h-4 w-4 text-muted-foreground" />
+            <PixelUser className="h-4 w-auto shrink-0 text-muted-foreground" />
           )}
         </div>
         <div className="min-w-0">
           <div className="font-medium text-sm truncate">{fullName}</div>
           <div className="text-xs text-muted-foreground flex items-center gap-1 min-w-0">
-            <Mail className="h-3 w-3 shrink-0" aria-hidden="true" />
+            <PixelEmail className="h-3 w-auto shrink-0" aria-hidden="true" />
             <span className="truncate">{member.email}</span>
           </div>
         </div>
@@ -356,7 +359,10 @@ function MemberRow({
               onClick={onManageWorkspaces}
               aria-label={`${t("org.workspaces")}: ${fullName}`}
             >
-              <Settings className="h-3.5 w-3.5" aria-hidden="true" />
+              <PixelSettings
+                className="h-3.5 w-auto shrink-0"
+                aria-hidden="true"
+              />
               <span className="hidden sm:inline">{t("org.workspaces")}</span>
             </Button>
             <Button

@@ -1,9 +1,9 @@
 import { useTranslation } from "react-i18next";
 
-import { Building2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
+import { PixelBuilding } from "@/components/ui/pixel-building";
 import {
   Select,
   SelectContent,
@@ -92,7 +92,7 @@ export function OrgContextHeader({
           className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10 shrink-0"
           aria-hidden="true"
         >
-          <Building2 className="h-5 w-5 text-primary" />
+          <PixelBuilding className="h-5 w-auto shrink-0 text-primary" />
         </div>
         <div className="min-w-0">
           <h2 className="text-lg font-semibold leading-tight">
@@ -111,8 +111,8 @@ export function OrgContextHeader({
           >
             <SelectTrigger className="h-9 w-[240px] text-sm font-medium">
               <div className="flex items-center gap-2 truncate">
-                <Building2
-                  className="h-3.5 w-3.5 text-muted-foreground shrink-0"
+                <PixelBuilding
+                  className="h-3.5 w-auto shrink-0 text-muted-foreground"
                   aria-hidden="true"
                 />
                 <SelectValue />

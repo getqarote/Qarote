@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
-import { FolderOpen, UserPlus, Users } from "lucide-react";
+import { FolderOpen, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 import { UserRole } from "@/lib/api";
@@ -14,6 +14,7 @@ import { EnhancedTeamTab, InviteFormState } from "@/components/profile";
 import { AddFromOrgDialog } from "@/components/settings/team/AddFromOrgDialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { PixelUser } from "@/components/ui/pixel-user";
 import {
   Select,
   SelectContent,
@@ -205,7 +206,7 @@ const TeamSection = () => {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-border">
         <div className="flex items-center gap-3 min-w-0">
           <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10 shrink-0">
-            <Users className="h-5 w-5 text-primary" />
+            <PixelUser className="h-5 w-auto shrink-0 text-primary" />
           </div>
           <div className="min-w-0">
             <h2 className="text-lg font-semibold leading-tight">

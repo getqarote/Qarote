@@ -1,16 +1,7 @@
 import { useId, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
-import {
-  Building2,
-  Calendar,
-  ChevronRight,
-  Save,
-  Settings,
-  Trash2,
-  Users,
-  X,
-} from "lucide-react";
+import { Calendar, ChevronRight, Save, Trash2, X } from "lucide-react";
 
 import {
   Accordion,
@@ -30,6 +21,9 @@ import {
 } from "@/components/ui/alertDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PixelBuilding } from "@/components/ui/pixel-building";
+import { PixelSettings } from "@/components/ui/pixel-settings";
+import { PixelUser } from "@/components/ui/pixel-user";
 import { Separator } from "@/components/ui/separator";
 
 import { ExtendedWorkspace } from "@/contexts/WorkspaceContextDefinition";
@@ -85,7 +79,7 @@ export const WorkspaceInfoTab = ({
             className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10 shrink-0"
             aria-hidden="true"
           >
-            <Building2 className="h-5 w-5 text-primary" />
+            <PixelBuilding className="h-5 w-auto shrink-0 text-primary" />
           </div>
           <div className="min-w-0">
             <h2 className="title-section">{t("workspace.information")}</h2>
@@ -147,8 +141,8 @@ export const WorkspaceInfoTab = ({
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 rounded-lg border bg-muted/30 p-3">
             <div className="flex items-center gap-2">
-              <Users
-                className="h-4 w-4 text-muted-foreground"
+              <PixelUser
+                className="h-4 w-auto shrink-0 text-muted-foreground"
                 aria-hidden="true"
               />
               <div className="min-w-0">
@@ -161,8 +155,8 @@ export const WorkspaceInfoTab = ({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Settings
-                className="h-4 w-4 text-muted-foreground"
+              <PixelSettings
+                className="h-4 w-auto shrink-0 text-muted-foreground"
                 aria-hidden="true"
               />
               <div className="min-w-0">

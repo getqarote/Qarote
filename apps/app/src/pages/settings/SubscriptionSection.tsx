@@ -1,8 +1,7 @@
 import { useTranslation } from "react-i18next";
 
-import { CreditCard } from "lucide-react";
-
 import { PlansSummaryTab } from "@/components/profile/PlansSummaryTab";
+import { PixelCreditCard } from "@/components/ui/pixel-credit-card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { useOrgBillingInfo } from "@/hooks/queries/useOrganization";
@@ -27,7 +26,7 @@ const SubscriptionSection = () => {
         className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10 shrink-0"
         aria-hidden="true"
       >
-        <CreditCard className="h-5 w-5 text-primary" />
+        <PixelCreditCard className="h-5 w-auto shrink-0 text-primary" />
       </div>
       <div className="min-w-0">
         <h2 className="text-lg font-semibold leading-tight">

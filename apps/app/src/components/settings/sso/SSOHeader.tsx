@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-import { Shield } from "lucide-react";
+import { PixelShield } from "@/components/ui/pixel-shield";
 
 interface SSOHeaderProps {
   title: ReactNode;
@@ -25,7 +25,7 @@ export function SSOHeader({ title, description }: SSOHeaderProps) {
         className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10 shrink-0"
         aria-hidden="true"
       >
-        <Shield className="h-5 w-5 text-primary" />
+        <PixelShield className="h-5 w-auto shrink-0 text-primary" />
       </div>
       <div className="min-w-0">
         <h2 className="text-lg font-semibold leading-tight">{title}</h2>

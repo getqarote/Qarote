@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Calendar, Loader2, Save, Settings, Users, X } from "lucide-react";
+import { Calendar, Loader2, Save, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
@@ -9,6 +9,8 @@ import { logger } from "@/lib/logger";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PixelSettings } from "@/components/ui/pixel-settings";
+import { PixelUser } from "@/components/ui/pixel-user";
 
 import { useUpdateOrganization } from "@/hooks/queries/useOrganization";
 
@@ -129,14 +131,17 @@ export function OrgInfoCard({ org, isOrgAdmin }: OrgInfoCardProps) {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
-                <Users className="h-4 w-4" aria-hidden="true" />
+                <PixelUser className="h-4 w-auto shrink-0" aria-hidden="true" />
                 {t("org.members")}:{" "}
                 <span className="font-mono tabular-nums text-foreground">
                   {org._count?.members ?? 0}
                 </span>
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Settings className="h-4 w-4" aria-hidden="true" />
+                <PixelSettings
+                  className="h-4 w-auto shrink-0"
+                  aria-hidden="true"
+                />
                 {t("org.workspaces")}:{" "}
                 <span className="font-mono tabular-nums text-foreground">
                   {org._count?.workspaces ?? 0}

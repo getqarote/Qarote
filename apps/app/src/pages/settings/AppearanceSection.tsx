@@ -6,8 +6,10 @@ import {
   SUPPORTED_LOCALES,
   type SupportedLocale,
 } from "@qarote/i18n";
-import { Globe, Monitor, Moon, Sun } from "lucide-react";
 
+import { PixelMonitor } from "@/components/ui/pixel-monitor";
+import { PixelMoon } from "@/components/ui/pixel-moon";
+import { PixelPalette } from "@/components/ui/pixel-palette";
 import {
   Select,
   SelectContent,
@@ -20,9 +22,9 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggleGroup";
 import { useTheme } from "@/contexts/ThemeContext";
 
 const themes = [
-  { value: "light" as const, icon: Sun, labelKey: "light" },
-  { value: "dark" as const, icon: Moon, labelKey: "dark" },
-  { value: "system" as const, icon: Monitor, labelKey: "system" },
+  { value: "light" as const, icon: PixelPalette, labelKey: "light" },
+  { value: "dark" as const, icon: PixelMoon, labelKey: "dark" },
+  { value: "system" as const, icon: PixelMonitor, labelKey: "system" },
 ];
 
 const AppearanceSection = () => {
@@ -74,7 +76,7 @@ const AppearanceSection = () => {
                   }`}
                 >
                   <Icon
-                    className={`h-5 w-5 ${selected ? "text-primary" : ""}`}
+                    className={`h-5 w-auto shrink-0 ${selected ? "text-primary" : ""}`}
                     aria-hidden="true"
                   />
                   <span className="text-sm font-medium">{t(labelKey)}</span>
@@ -100,7 +102,6 @@ const AppearanceSection = () => {
             <SelectTrigger className="w-full sm:w-72">
               <SelectValue>
                 <div className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 shrink-0" aria-hidden="true" />
                   <span>
                     {LOCALE_FLAGS[currentLocale]} {LOCALE_LABELS[currentLocale]}
                   </span>
