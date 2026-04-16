@@ -5,7 +5,6 @@ import { UserRole } from "@/lib/api";
 import { logger } from "@/lib/logger";
 
 import { AddExchangeButton } from "@/components/AddExchangeButton";
-import CreateExchangeDialog from "@/components/ExchangeManagement";
 import { DeleteExchangeDialog } from "@/components/ExchangesList/DeleteExchangeDialog";
 import { ExchangesList } from "@/components/ExchangesList/ExchangesList";
 import { ExchangesOverviewCards } from "@/components/ExchangesList/ExchangesOverviewCards";
@@ -40,7 +39,6 @@ const Exchanges = () => {
     useState<ExchangeTypeFilterValue>("all");
   const [exchangeToDelete, setExchangeToDelete] =
     useState<ExchangeListItem | null>(null);
-  const [showCreateExchangeModal, setShowCreateExchangeModal] = useState(false);
 
   const {
     data: exchangesData,
@@ -171,11 +169,7 @@ const Exchanges = () => {
             </TitleWithCount>
           </div>
         </div>
-        {isAdmin && (
-          <AddExchangeButton
-            onAddClick={() => setShowCreateExchangeModal(true)}
-          />
-        )}
+        {isAdmin && <AddExchangeButton serverId={selectedServerId} />}
       </div>
 
       <ExchangesOverviewCards
@@ -200,12 +194,6 @@ const Exchanges = () => {
         isDeleting={deleteExchangeMutation.isPending}
         onCancel={() => setExchangeToDelete(null)}
         onConfirm={handleDeleteExchange}
-      />
-
-      <CreateExchangeDialog
-        serverId={selectedServerId}
-        isOpen={showCreateExchangeModal}
-        onClose={() => setShowCreateExchangeModal(false)}
       />
     </PageShell>
   );

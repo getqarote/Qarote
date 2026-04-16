@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 
 import { Info, Loader2, Search } from "lucide-react";
 
@@ -414,14 +414,13 @@ export const EnhancedTeamTab = ({
           <DialogHeader>
             <DialogTitle>{t("team.removeDialogTitle")}</DialogTitle>
             <DialogDescription>
-              <span
-                dangerouslySetInnerHTML={{
-                  __html: t("team.removeDialogDescription", {
-                    name: userToRemove?.name,
-                    email: userToRemove?.email,
-                    interpolation: { escapeValue: false },
-                  }),
+              <Trans
+                i18nKey="profile:team.removeDialogDescription"
+                values={{
+                  name: userToRemove?.name,
+                  email: userToRemove?.email,
                 }}
+                components={{ strong: <strong /> }}
               />
               <br />
               <br />
