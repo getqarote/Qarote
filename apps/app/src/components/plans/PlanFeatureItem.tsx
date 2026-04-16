@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-import { Check } from "lucide-react";
+import { PixelCheck } from "@/components/ui/pixel-check";
 
 interface PlanFeatureItemProps {
   label: ReactNode;
@@ -30,8 +30,8 @@ export function PlanFeatureItem({
   return (
     <li className="flex items-start gap-3">
       <div className="mt-1.5 w-3.5 shrink-0 flex items-start">
-        <Check
-          className="text-success w-[0.7rem] h-[0.7rem]"
+        <PixelCheck
+          className="h-[0.7rem] w-auto shrink-0 text-success"
           aria-hidden="true"
         />
       </div>
