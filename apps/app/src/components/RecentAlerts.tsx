@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 
-import { AlertTriangle, ArrowRight, CheckCircle2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2 } from "lucide-react";
 
 import { getUpgradePath } from "@/lib/featureFlags";
 
@@ -11,6 +11,7 @@ import {
 } from "@/components/alerts/alertUtils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
 
 import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
@@ -71,7 +72,7 @@ export const RecentAlerts = () => {
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors shrink-0"
         >
           {t("viewAll")}
-          <ArrowRight className="h-3.5 w-3.5" />
+          <PixelChevronRight className="h-3 shrink-0" />
         </Link>
       </div>
     );
@@ -123,7 +124,7 @@ export const RecentAlerts = () => {
           className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
         >
           {t("viewAll")}
-          <ArrowRight className="h-4 w-4" />
+          <PixelChevronRight className="h-3 shrink-0" />
         </Link>
       </div>
       <div className="p-4">

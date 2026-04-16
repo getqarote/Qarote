@@ -2,7 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 
-import { ArrowRight, ExternalLink, Loader2 } from "lucide-react";
+import { ExternalLink, Loader2 } from "lucide-react";
 
 import { UserRole } from "@/lib/api";
 import { isSelfHostedMode } from "@/lib/featureFlags";
@@ -10,6 +10,7 @@ import { formatDate } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
 import { PixelCrown } from "@/components/ui/pixel-crown";
 import { PixelKey } from "@/components/ui/pixel-key";
 import { PixelServer } from "@/components/ui/pixel-server";
@@ -291,10 +292,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                       {t("plansSummary.manageLicense")}
                     </p>
                   </div>
-                  <ArrowRight
-                    className="h-4 w-4 text-muted-foreground shrink-0"
-                    aria-hidden="true"
-                  />
+                  <PixelChevronRight className="h-3 text-muted-foreground shrink-0" />
                 </Link>
               </li>
             ) : (

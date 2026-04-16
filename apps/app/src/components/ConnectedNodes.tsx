@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
-import { ArrowRight, ChevronRight, Server, Wifi } from "lucide-react";
+import { ChevronRight, Server, Wifi } from "lucide-react";
 
 import { RabbitMQNode } from "@/lib/api";
 
@@ -13,6 +13,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { isRabbitMQAuthError } from "@/types/apiErrors";
@@ -94,7 +95,7 @@ export const ConnectedNodes = ({
           className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
         >
           {t("seeMore")}
-          <ArrowRight className="h-4 w-4" />
+          <PixelChevronRight className="h-3 shrink-0" />
         </Link>
       </div>
       {nodesError && isRabbitMQAuthError(nodesError) ? (

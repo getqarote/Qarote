@@ -1,8 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
-import { ArrowRight } from "lucide-react";
-
+import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface QueueData {
@@ -63,7 +62,7 @@ export const QueueDepthsChart = ({
             className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
           >
             {t("seeMore")}
-            <ArrowRight className="h-4 w-4" />
+            <PixelChevronRight className="h-3 shrink-0" />
           </Link>
         </div>
       </div>

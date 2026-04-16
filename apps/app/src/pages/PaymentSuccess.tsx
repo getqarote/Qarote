@@ -3,11 +3,13 @@ import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router";
 
-import { ArrowRight, CheckCircle, CreditCard } from "lucide-react";
+import { CheckCircle, CreditCard } from "lucide-react";
 
 import { trackPurchase } from "@/lib/ga";
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
+
+import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
 
 import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
@@ -149,7 +151,7 @@ const PaymentSuccess: React.FC = () => {
             className="btn-primary w-full flex items-center justify-center"
           >
             {t("paymentSuccess.exploreDashboard")}
-            <ArrowRight className="w-4 h-4 ml-2" />
+            <PixelChevronRight className="h-3 shrink-0 ml-2" />
           </button>
 
           <button
