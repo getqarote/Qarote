@@ -15,8 +15,8 @@ import { PixelChart } from "@/components/ui/pixel-chart";
 import { PixelClock } from "@/components/ui/pixel-clock";
 import { PixelDatabase } from "@/components/ui/pixel-database";
 import { PixelFlag } from "@/components/ui/pixel-flag";
-import { PixelFolder } from "@/components/ui/pixel-folder";
 import { PixelHelp } from "@/components/ui/pixel-help";
+import { PixelLayers } from "@/components/ui/pixel-layers";
 import { PixelMessage } from "@/components/ui/pixel-message";
 import { PixelNetwork } from "@/components/ui/pixel-network";
 import { PixelServer } from "@/components/ui/pixel-server";
@@ -289,7 +289,7 @@ export function AppSidebar() {
                       <SelectValue placeholder={t("selectVhost")}>
                         {selectedVHost && (
                           <div className="flex items-center gap-2 w-full min-w-0">
-                            <PixelFolder className="h-3 shrink-0" />
+                            <PixelLayers className="h-3 shrink-0" />
                             <span className="truncate font-medium">
                               {selectedVHost === "/"
                                 ? t("common:default")
@@ -303,7 +303,7 @@ export function AppSidebar() {
                       {availableVHosts.map((vhost) => (
                         <SelectItem key={vhost.name} value={vhost.name}>
                           <div className="flex items-center gap-2 w-full min-w-0">
-                            <PixelFolder className="h-3 shrink-0" />
+                            <PixelLayers className="h-3 shrink-0" />
                             <span className="font-medium">
                               {vhost.name === "/"
                                 ? t("common:default")
@@ -332,7 +332,7 @@ export function AppSidebar() {
                 </>
               ) : (
                 <div className="text-center p-3 bg-sidebar-accent rounded-lg border-2 border-dashed border-sidebar-border">
-                  <PixelFolder className="h-8 text-sidebar-foreground/70 mx-auto mb-2" />
+                  <PixelLayers className="h-8 text-sidebar-foreground/70 mx-auto mb-2" />
                   <p className="text-xs text-sidebar-foreground/70 mb-2">
                     {t("noVhostsAvailable")}
                   </p>
