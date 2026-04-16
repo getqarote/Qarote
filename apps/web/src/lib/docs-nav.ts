@@ -1,9 +1,9 @@
-export interface DocsPage {
+interface DocsPage {
   title: string;
   slug: string;
 }
 
-export interface DocsSection {
+interface DocsSection {
   section: string;
   pages: DocsPage[];
 }
