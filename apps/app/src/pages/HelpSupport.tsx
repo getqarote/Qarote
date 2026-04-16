@@ -2,14 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
-import {
-  ChevronDown,
-  ChevronRight,
-  Copy,
-  Mail,
-  MessageCircle,
-  MessageSquare,
-} from "lucide-react";
+import { ChevronDown, ChevronRight, Copy } from "lucide-react";
 
 import { isCloudMode } from "@/lib/featureFlags";
 
@@ -29,6 +22,8 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
+import { PixelEmail } from "@/components/ui/pixel-email";
+import { PixelMessage } from "@/components/ui/pixel-message";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
@@ -157,7 +152,7 @@ function HelpSupport() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Mail className="w-5 h-5" />
+                <PixelEmail className="h-5" />
                 {t("contact.title")}
               </CardTitle>
               <CardDescription>{t("contact.description")}</CardDescription>
@@ -199,7 +194,7 @@ function HelpSupport() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <MessageCircle className="w-5 h-5" />
+                  <PixelMessage className="h-5" />
                   {t("chat.title")}
                 </CardTitle>
                 <CardDescription>{t("chat.description")}</CardDescription>
@@ -219,7 +214,7 @@ function HelpSupport() {
                   }}
                   className="w-full bg-primary! text-primary-foreground! hover:bg-primary/90! shadow-sm ring-1 ring-primary/20"
                 >
-                  <MessageCircle className="w-4 h-4 mr-2" aria-hidden="true" />
+                  <PixelMessage className="h-4 mr-2" aria-hidden="true" />
                   {t("chat.startChat")}
                 </Button>
               </CardContent>
@@ -230,7 +225,7 @@ function HelpSupport() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="w-5 h-5" />
+                <PixelMessage className="h-5" />
                 {t("community.title")}
               </CardTitle>
               <CardDescription>{t("community.description")}</CardDescription>

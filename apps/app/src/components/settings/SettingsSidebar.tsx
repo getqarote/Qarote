@@ -1,22 +1,17 @@
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router";
 
-import {
-  Building,
-  Building2,
-  CreditCard,
-  KeyRound,
-  Mail,
-  Palette,
-  Shield,
-  User,
-  Users,
-} from "lucide-react";
-
 import { UserRole } from "@/lib/api";
 import { isCloudMode } from "@/lib/featureFlags";
 
 import { Badge } from "@/components/ui/badge";
+import { PixelBuilding } from "@/components/ui/pixel-building";
+import { PixelCreditCard } from "@/components/ui/pixel-credit-card";
+import { PixelEmail } from "@/components/ui/pixel-email";
+import { PixelKey } from "@/components/ui/pixel-key";
+import { PixelPalette } from "@/components/ui/pixel-palette";
+import { PixelShield } from "@/components/ui/pixel-shield";
+import { PixelUser } from "@/components/ui/pixel-user";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
@@ -50,13 +45,13 @@ const navGroups: NavGroup[] = [
       {
         key: "profile",
         path: "/settings/profile",
-        icon: User,
+        icon: PixelUser,
         labelKey: "settings:nav.profile",
       },
       {
         key: "appearance",
         path: "/settings/appearance",
-        icon: Palette,
+        icon: PixelPalette,
         labelKey: "settings:nav.appearance",
       },
     ],
@@ -68,14 +63,14 @@ const navGroups: NavGroup[] = [
       {
         key: "workspace",
         path: "/settings/workspace",
-        icon: Building,
+        icon: PixelBuilding,
         labelKey: "settings:nav.workspaceSettings",
         adminOnly: true,
       },
       {
         key: "members",
         path: "/settings/members",
-        icon: Users,
+        icon: PixelUser,
         labelKey: "settings:nav.members",
         adminOnly: true,
       },
@@ -88,14 +83,14 @@ const navGroups: NavGroup[] = [
       {
         key: "organization",
         path: "/settings/organization",
-        icon: Building2,
+        icon: PixelBuilding,
         labelKey: "settings:nav.organization",
         adminOnly: true,
       },
       {
         key: "subscription",
         path: "/settings/subscription",
-        icon: CreditCard,
+        icon: PixelCreditCard,
         labelKey: "settings:nav.subscription",
         adminOnly: true,
         cloudOnly: true,
@@ -103,7 +98,7 @@ const navGroups: NavGroup[] = [
       {
         key: "sso",
         path: "/settings/sso",
-        icon: Shield,
+        icon: PixelShield,
         labelKey: "settings:nav.sso",
         adminOnly: true,
         enterpriseOnly: true,
@@ -111,7 +106,7 @@ const navGroups: NavGroup[] = [
       {
         key: "license",
         path: "/settings/license",
-        icon: KeyRound,
+        icon: PixelKey,
         labelKey: "settings:nav.license",
         adminOnly: true,
         selfHostedOnly: true,
@@ -119,7 +114,7 @@ const navGroups: NavGroup[] = [
       {
         key: "smtp",
         path: "/settings/smtp",
-        icon: Mail,
+        icon: PixelEmail,
         labelKey: "settings:nav.smtp",
         adminOnly: true,
         selfHostedOnly: true,
@@ -190,7 +185,7 @@ export const SettingsSidebar = () => {
                   : "text-muted-foreground hover:bg-muted"
               }`}
             >
-              <item.icon className="h-3.5 w-3.5" />
+              <item.icon className="h-3.5 w-auto shrink-0" />
               {t(item.labelKey)}
               {item.enterpriseOnly && !isEnterprise && (
                 <Badge
@@ -239,7 +234,7 @@ export const SettingsSidebar = () => {
                           : "text-muted-foreground hover:bg-muted hover:text-foreground"
                       }`}
                     >
-                      <item.icon className="h-4 w-4" />
+                      <item.icon className="h-4 w-auto shrink-0" />
                       <span className="flex-1">{t(item.labelKey)}</span>
                       {item.enterpriseOnly && !isEnterprise && (
                         <Badge
