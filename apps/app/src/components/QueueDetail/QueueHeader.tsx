@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-import { ArrowLeft, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 import { PauseQueueDialog } from "@/components/PauseQueueDialog";
 import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
@@ -13,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdownMenu";
+import { PixelChevronLeft } from "@/components/ui/pixel-chevron-left";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useQueuePauseStatus } from "@/hooks/queries/useRabbitMQ";
@@ -57,7 +58,7 @@ export function QueueHeader({
             onClick={onNavigateBack}
             className="mr-2 flex items-center gap-1 shrink-0"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <PixelChevronLeft className="h-4 w-auto shrink-0" />
           </Button>
           <h1 className="title-page break-all min-w-0">{queueName}</h1>
         </div>

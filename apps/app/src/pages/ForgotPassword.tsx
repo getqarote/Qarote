@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 
-import { ArrowLeft, Loader2, Mail, Send } from "lucide-react";
+import { Loader2, Mail, Send } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PixelChevronLeft } from "@/components/ui/pixel-chevron-left";
 
 import { useRequestPasswordReset } from "@/hooks/queries/useProfile";
 
@@ -84,7 +85,7 @@ const ForgotPassword: React.FC = () => {
               </Button>
 
               <Button onClick={() => navigate("/auth/sign-in")} variant="ghost">
-                <ArrowLeft className="h-4 w-4" />
+                <PixelChevronLeft className="h-4 w-auto shrink-0" />
                 {t("backToSignIn")}
               </Button>
             </div>

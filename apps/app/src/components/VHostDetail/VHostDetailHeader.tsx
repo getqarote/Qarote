@@ -1,11 +1,12 @@
 import { useTranslation } from "react-i18next";
 
-import { ArrowLeft, Lock, Radio } from "lucide-react";
+import { Lock, Radio } from "lucide-react";
 
 import type { VHost } from "@/lib/api/vhostTypes";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PixelChevronLeft } from "@/components/ui/pixel-chevron-left";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 interface VHostDetailHeaderProps {
@@ -38,7 +39,7 @@ export function VHostDetailHeader({
           onClick={onNavigateBack}
           className="mr-2 flex items-center gap-1 shrink-0"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <PixelChevronLeft className="h-4 w-auto shrink-0" />
         </Button>
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">

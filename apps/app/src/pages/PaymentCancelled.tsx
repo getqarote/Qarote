@@ -1,10 +1,11 @@
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { ArrowLeft, CreditCard, Loader2, XCircle } from "lucide-react";
+import { CreditCard, Loader2, XCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { PixelChevronLeft } from "@/components/ui/pixel-chevron-left";
 
 import { usePlanUpgrade } from "@/hooks/ui/usePlanUpgrade";
 import { useUser } from "@/hooks/ui/useUser";
@@ -92,7 +93,10 @@ const PaymentCancelled = () => {
               onClick={() => navigate("/")}
               className="w-full"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" aria-hidden="true" />
+              <PixelChevronLeft
+                className="h-4 w-auto shrink-0 mr-2"
+                aria-hidden="true"
+              />
               {t("paymentCancelled.backToDashboard")}
             </Button>
           </div>

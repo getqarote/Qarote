@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 
 import { AppSidebar } from "@/components/AppSidebar";
 import { PlanBillingToggle } from "@/components/plans/PlanBillingToggle";
@@ -13,6 +13,7 @@ import {
   getPlanPricing,
 } from "@/components/plans/planHelpers";
 import { Button } from "@/components/ui/button";
+import { PixelChevronLeft } from "@/components/ui/pixel-chevron-left";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useAllPlans } from "@/hooks/queries/usePlans";
@@ -70,7 +71,10 @@ export const PlansPage = ({ onUpgrade, isUpgrading }: PlansPageProps) => {
                   aria-label={t("plans.backToPlans")}
                   title={t("plans.backToPlans")}
                 >
-                  <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+                  <PixelChevronLeft
+                    className="h-4 w-auto shrink-0"
+                    aria-hidden="true"
+                  />
                 </Button>
                 <div>
                   <h1 className="title-page">{t("plans.chooseYourPlan")}</h1>

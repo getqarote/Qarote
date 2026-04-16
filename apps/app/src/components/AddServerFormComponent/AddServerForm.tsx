@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 import { logger } from "@/lib/logger";
 
@@ -26,6 +26,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PixelChevronLeft } from "@/components/ui/pixel-chevron-left";
 
 import { useServerContext } from "@/contexts/ServerContext";
 
@@ -371,7 +372,7 @@ export const AddServerForm = ({
               disabled={isLoading}
               className="mr-auto"
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <PixelChevronLeft className="h-4 w-auto shrink-0 mr-2" />
               {t("back")}
             </Button>
           )}

@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router";
 
-import { ArrowLeft, FileText } from "lucide-react";
+import { FileText } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PixelChevronLeft } from "@/components/ui/pixel-chevron-left";
 
 export default function TermsOfService() {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ export default function TermsOfService() {
             onClick={() => navigate(-1)}
             className="gap-2"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <PixelChevronLeft className="h-4 w-auto shrink-0" />
             Back
           </Button>
         </div>
