@@ -55,7 +55,10 @@ export const ConnectionStatus = () => {
 
   return (
     <div className="flex items-center gap-2 mt-1 flex-wrap">
-      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+      <div className="relative flex items-center justify-center w-2 h-2">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-60"></span>
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500"></span>
+      </div>
       <Badge
         variant="secondary"
         className="bg-success-muted text-success max-w-xs truncate"
