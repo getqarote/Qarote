@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { PixelActivity } from "@/components/ui/pixel-activity";
 import { PixelChart } from "@/components/ui/pixel-chart";
 import { PixelClock } from "@/components/ui/pixel-clock";
-import { PixelDatabase } from "@/components/ui/pixel-database";
 import { PixelFlag } from "@/components/ui/pixel-flag";
 import { PixelHelp } from "@/components/ui/pixel-help";
 import { PixelLayers } from "@/components/ui/pixel-layers";
@@ -73,7 +72,7 @@ const menuItems = [
   {
     titleKey: "sidebar:virtualHosts",
     url: "/vhosts",
-    icon: PixelDatabase,
+    icon: PixelLayers,
     adminOnly: true,
   },
   {
