@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
@@ -107,10 +107,6 @@ function HelpSupport() {
           faq.answer.toLowerCase().includes(query)
       );
   }, [faqs, faqQuery]);
-
-  useEffect(() => {
-    setOpenFaq(null);
-  }, [faqQuery]);
 
   const handleEmailCopy = async () => {
     try {
@@ -293,7 +289,10 @@ function HelpSupport() {
               </div>
               <Input
                 value={faqQuery}
-                onChange={(e) => setFaqQuery(e.target.value)}
+                onChange={(e) => {
+                  setFaqQuery(e.target.value);
+                  setOpenFaq(null);
+                }}
                 placeholder={t("faqSearchPlaceholder")}
                 className="w-full sm:w-72"
               />
