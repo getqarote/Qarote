@@ -1,15 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import {
-  AlertCircle,
-  CheckCircle,
-  Eye,
-  EyeOff,
-  Info,
-  Mail,
-  X,
-} from "lucide-react";
+import { AlertCircle, CheckCircle, Eye, EyeOff, Info, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
@@ -19,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PixelEmail } from "@/components/ui/pixel-email";
 
 interface CompactEmailChangeFormProps {
   currentEmail: string;
@@ -116,7 +109,7 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
       {/* Current Email Status */}
       <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
         <div className="flex items-center gap-2">
-          <Mail className="h-4 w-4 text-muted-foreground" />
+          <PixelEmail className="h-4 text-muted-foreground" />
           <span className="text-sm font-medium">Current:</span>
           <span className="text-sm">{currentEmail}</span>
         </div>
@@ -248,10 +241,7 @@ export const CompactEmailChangeForm: React.FC<CompactEmailChangeFormProps> = ({
                   Requesting...
                 </>
               ) : (
-                <>
-                  <Mail className="h-3 w-3 mr-2" />
-                  Request Email Change
-                </>
+                "Request email change"
               )}
             </Button>
           </form>

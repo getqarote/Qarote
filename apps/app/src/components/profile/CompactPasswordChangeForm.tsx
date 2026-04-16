@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Eye, EyeOff, Shield } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 import { logger } from "@/lib/logger";
 
@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PixelShield } from "@/components/ui/pixel-shield";
 
 interface CompactPasswordChangeFormProps {
   onPasswordChange: (data: {
@@ -219,7 +220,7 @@ export const CompactPasswordChangeForm: React.FC<
 
           {/* Password Requirements */}
           <Alert className="py-2">
-            <Shield className="h-3 w-3" />
+            <PixelShield className="h-3" />
             <AlertDescription className="text-xs">
               Password must be at least 8 characters long and include a mix of
               letters, numbers, and symbols.
@@ -234,10 +235,10 @@ export const CompactPasswordChangeForm: React.FC<
           {isLoading ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-              Changing Password...
+              Changing password...
             </>
           ) : (
-            "Change Password"
+            "Change password"
           )}
         </Button>
       </form>

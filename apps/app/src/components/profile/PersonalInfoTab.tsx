@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-import { Calendar, Lock, Mail, Save, Settings, X } from "lucide-react";
+import { Calendar, Save, X } from "lucide-react";
 
 import { UserProfile } from "@/lib/api/authTypes";
 
@@ -9,6 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PixelEmail } from "@/components/ui/pixel-email";
+import { PixelKey } from "@/components/ui/pixel-key";
+import { PixelSettings } from "@/components/ui/pixel-settings";
 import { Separator } from "@/components/ui/separator";
 
 import { CompactEmailChangeForm } from "./CompactEmailChangeForm";
@@ -165,7 +168,7 @@ export const PersonalInfoTab = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
-              <Mail className="h-4 w-4" />
+              <PixelEmail className="h-4" />
               <span>
                 {t("personal.email")} {profile.email}
               </span>
@@ -178,7 +181,7 @@ export const PersonalInfoTab = ({
             </div>
             {profile.lastLogin && (
               <div className="flex items-center gap-2">
-                <Settings className="h-4 w-4" />
+                <PixelSettings className="h-4" />
                 <span>
                   {t("personal.lastLogin")} {formatDate(profile.lastLogin)}
                 </span>
@@ -193,7 +196,7 @@ export const PersonalInfoTab = ({
         <div className="rounded-lg border border-border overflow-hidden">
           <div className="px-4 py-3 bg-muted/30 border-b border-border">
             <h2 className="title-section flex items-center gap-2">
-              <Settings className="h-5 w-5" />
+              <PixelSettings className="h-5" />
               {t("personal.securitySettings")}
             </h2>
             <p className="text-sm text-muted-foreground">
@@ -205,7 +208,7 @@ export const PersonalInfoTab = ({
               {/* Password Change Section */}
               <div className="space-y-3 lg:pr-6 flex flex-col">
                 <div className="flex items-center gap-2 pb-1">
-                  <Lock className="h-4 w-4 text-muted-foreground" />
+                  <PixelKey className="h-4 text-muted-foreground" />
                   <h3 className="font-medium">
                     {t("personal.changePassword")}
                   </h3>
@@ -221,7 +224,7 @@ export const PersonalInfoTab = ({
               {/* Email Change Section */}
               <div className="space-y-3 lg:pl-6 flex flex-col">
                 <div className="flex items-center gap-2 pb-1">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <PixelEmail className="h-4 text-muted-foreground" />
                   <h3 className="font-medium">{t("personal.emailAddress")}</h3>
                 </div>
                 <div className="flex-1">
