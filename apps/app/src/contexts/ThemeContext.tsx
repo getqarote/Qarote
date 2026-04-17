@@ -30,6 +30,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     // Load theme from localStorage on mount
     const storedTheme = localStorage.getItem("theme") as Theme;
     if (storedTheme && ["light", "dark", "system"].includes(storedTheme)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTheme(storedTheme);
     }
   }, []);

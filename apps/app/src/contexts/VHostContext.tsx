@@ -80,6 +80,7 @@ export const VHostProvider: React.FC<VHostProviderProps> = ({ children }) => {
   // Only runs if no vhost is currently selected (doesn't override URL parameters)
   useEffect(() => {
     if (!selectedServerId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedVHostState(null);
       return;
     }
