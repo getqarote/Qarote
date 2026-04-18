@@ -26,31 +26,41 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          // CRITICAL: React must be in its own chunk to prevent bundling issues
-          // This ensures React is properly resolved and prevents production errors
-          "vendor-react": ["react", "react-dom", "react-router"],
-          // UI components chunk
-          "vendor-ui": ["@radix-ui/react-label", "@radix-ui/react-slot"],
-          // Data fetching and state management
-          "vendor-data": ["@tanstack/react-query"],
-          // Icons
-          "vendor-icons": ["lucide-react"],
-          // Form and validation
-          "vendor-forms": ["react-hook-form", "@hookform/resolvers", "zod"],
-          // i18n
-          "vendor-i18n": [
-            "i18next",
-            "react-i18next",
-            "i18next-http-backend",
-            "i18next-browser-languagedetector",
-          ],
-          // Date and time utilities
-          "vendor-utils": [
-            "clsx",
-            "class-variance-authority",
-            "tailwind-merge",
-          ],
+        // Rollup 4+ requires manualChunks to be a function, not an object.
+        manualChunks: (id) => {
+          if (!id.includes("node_modules")) return;
+          if (
+            id.includes("/react/") ||
+            id.includes("/react-dom/") ||
+            id.includes("/react-router/")
+          )
+            return "vendor-react";
+          if (
+            id.includes("/@radix-ui/react-label/") ||
+            id.includes("/@radix-ui/react-slot/")
+          )
+            return "vendor-ui";
+          if (id.includes("/@tanstack/react-query/")) return "vendor-data";
+          if (id.includes("/lucide-react/")) return "vendor-icons";
+          if (
+            id.includes("/react-hook-form/") ||
+            id.includes("/@hookform/resolvers/") ||
+            id.includes("/zod/")
+          )
+            return "vendor-forms";
+          if (
+            id.includes("/i18next/") ||
+            id.includes("/react-i18next/") ||
+            id.includes("/i18next-http-backend/") ||
+            id.includes("/i18next-browser-languagedetector/")
+          )
+            return "vendor-i18n";
+          if (
+            id.includes("/clsx/") ||
+            id.includes("/class-variance-authority/") ||
+            id.includes("/tailwind-merge/")
+          )
+            return "vendor-utils";
         },
       },
     },
