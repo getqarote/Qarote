@@ -113,6 +113,15 @@ const StickyNav = ({ currentPage }: { currentPage?: string }) => {
               {t("features")}
             </a>
             <a
+              href={`${localePrefix}/docs/`}
+              className={`px-4 py-2 text-base font-medium transition-colors ${currentPage === "docs" ? "text-primary" : "text-foreground hover:text-primary"}`}
+              {...(currentPage === "docs"
+                ? { "aria-current": "page" as const }
+                : {})}
+            >
+              {t("docs")}
+            </a>
+            <a
               href={`${localePrefix}/changelog/`}
               className={`px-4 py-2 text-base font-medium transition-colors ${currentPage === "changelog" ? "text-primary" : "text-foreground hover:text-primary"}`}
               {...(currentPage === "changelog"
@@ -208,6 +217,15 @@ const StickyNav = ({ currentPage }: { currentPage?: string }) => {
                 : {})}
             >
               {t("features")}
+            </a>
+            <a
+              href={`${localePrefix}/docs/`}
+              className={`px-4 py-3 text-base font-medium hover:bg-muted rounded-md transition-colors ${currentPage === "docs" ? "text-primary" : "text-foreground hover:text-primary"}`}
+              {...(currentPage === "docs"
+                ? { "aria-current": "page" as const }
+                : {})}
+            >
+              {t("docs")}
             </a>
             <a
               href={`${localePrefix}/changelog/`}

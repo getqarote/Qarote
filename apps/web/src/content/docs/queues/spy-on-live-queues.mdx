@@ -1,0 +1,80 @@
+---
+title: "Spy on live queues"
+description: "Inspect messages flowing through a RabbitMQ queue in real time — without consuming them from your real consumers. Learn how Qarote's spy feature works and when to use it."
+section: "Queues"
+---
+
+# Spy on live queues
+
+Qarote lets you observe what is flowing through a queue — routing keys, headers, and payloads — **without stealing messages from your real consumers**. This is useful for debugging production issues, validating message formats, and understanding how your routing topology behaves under real traffic.
+
+<Callout type="info">
+  Spying is a read-only observation. Your actual consumers continue receiving messages as normal. The only overhead is the brief setup of a temporary AMQP binding and the bandwidth of duplicating messages to Qarote's inspection buffer.
+</Callout>
+
+## How it works
+
+When you start a spy session, Qarote opens a direct AMQP connection to your broker and creates a temporary binding from the target queue's exchange to a short-lived, auto-delete queue. RabbitMQ routes a copy of each message to both your real consumers and to Qarote's shadow queue.
+
+Qarote reads from the shadow queue and streams the messages to your browser. When you stop the spy session (or navigate away), Qarote cancels the consumer, deletes the shadow queue, and closes the AMQP connection. Nothing is left behind on the broker.
+
+<Callout type="warning" title="High-throughput queues">
+  On queues with very high message rates, spying may capture only a sample of messages rather than every one — Qarote limits its shadow queue depth to avoid buffer overflow. Use this feature for inspection and debugging, not as a reliable message tap for production pipelines.
+</Callout>
+
+## Requirements
+
+To use the spy feature, your RabbitMQ connection in Qarote must:
+
+- Have AMQP access enabled (host + port `5672`, or your custom AMQP port)
+- Use a user with permission to **read** from the target vhost and **configure** temporary queues:
+  ```
+  configure: ^qarote\.spy\..*$
+  write:     ^qarote\.spy\..*$
+  read:      .*
+  ```
+- Have the `rabbitmq_management` plugin enabled (for metadata lookup)
+
+## Starting a spy session
+
+1. Open the **Queues** view in your Qarote dashboard.
+2. Click on the queue you want to inspect.
+3. On the queue detail page, click **Spy** in the top action bar.
+4. Qarote opens the spy panel at the bottom of the page and begins streaming incoming messages.
+5. Each message shows its **routing key**, **exchange**, **headers**, and **body** (JSON is pretty-printed automatically).
+6. Click **Stop** when you are done. The session closes and the temporary queue is removed.
+
+## What you see
+
+Each captured message shows:
+
+| Field | Description |
+|---|---|
+| **Routing key** | The routing key the publisher used |
+| **Exchange** | The exchange the message was published to |
+| **Body** | The raw message payload (JSON auto-formatted) |
+| **Headers** | Any custom AMQP headers attached to the message |
+| **Properties** | Content-type, delivery-mode, priority, timestamp |
+| **Size** | Payload size in bytes |
+
+## Limitations
+
+### Exchange binding required
+
+If a queue has no exchange binding (e.g. published directly to the default exchange), spying is not supported. You must have an exchange-to-queue binding for the shadow queue mechanism to work.
+
+### Transient data only
+
+Message bodies are displayed in your browser only. Nothing is persisted to Qarote's database. If you need to retain captured messages, copy them from the spy panel before closing the session.
+
+### One session at a time
+
+You can only spy on one queue at a time per browser tab. Open a second tab to observe multiple queues simultaneously.
+
+### AMQP connection required
+
+The spy feature requires a working AMQP connection. If Qarote can only reach your broker via the HTTP Management API (e.g. port `15672` is open but `5672` is not), spying will not be available. See [Requirements](#requirements) for the exact permissions needed.
+
+<Callout type="tip" title="Inspecting queued messages">
+  To inspect messages that are already sitting in a queue (not just new arrivals), use the **Peek** feature instead. Peek fetches existing messages from the queue without removing them, using the Management HTTP API.
+</Callout>
