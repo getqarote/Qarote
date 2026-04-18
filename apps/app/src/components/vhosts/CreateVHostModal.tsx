@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -77,9 +77,12 @@ export function CreateVHostModal({
 
   const createVHostMutation = useCreateVHost();
 
-  const name = form.watch("name");
-  const defaultQueueType = form.watch("defaultQueueType");
-  const tracing = form.watch("tracing");
+  const name = useWatch({ control: form.control, name: "name" });
+  const defaultQueueType = useWatch({
+    control: form.control,
+    name: "defaultQueueType",
+  });
+  const tracing = useWatch({ control: form.control, name: "tracing" });
 
   const resetAll = () => {
     form.reset({

@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useState } from "react";
 
 import { Eye, EyeOff } from "lucide-react";
 
@@ -14,7 +14,7 @@ export interface PasswordInputProps extends Omit<
 
 const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
   ({ className, showPassword, onToggleVisibility, ...props }, ref) => {
-    const [internalShow, setInternalShow] = React.useState(false);
+    const [internalShow, setInternalShow] = useState(false);
     const isShowing = showPassword ?? internalShow;
     const toggle = onToggleVisibility ?? (() => setInternalShow((v) => !v));
 

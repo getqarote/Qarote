@@ -39,6 +39,7 @@ export function InviteLinksDialog({
     publicConfig?.frontendUrl && isLocalhostUrl(publicConfig.frontendUrl);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setEditableUrls(inviteLinks.map((link) => link.inviteUrl));
   }, [inviteLinks]);
 

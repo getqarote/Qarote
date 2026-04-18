@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -84,7 +84,8 @@ export function CreateUserModal({
   const deleteUserMutation = useDeleteUser();
   const { data: vhostsData, isLoading: vhostsLoading } = useVHosts(serverId);
 
-  const selectedVhost = form.watch("vhost") || "/";
+  const selectedVhost =
+    useWatch({ control: form.control, name: "vhost" }) || "/";
   const isPending =
     createUserMutation.isPending || setPermissionsMutation.isPending;
 

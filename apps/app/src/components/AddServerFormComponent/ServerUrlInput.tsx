@@ -34,6 +34,7 @@ export const ServerUrlInput = ({
   // Debounce URL parsing
   useEffect(() => {
     if (!url.trim()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setParseStatus("idle");
       return;
     }

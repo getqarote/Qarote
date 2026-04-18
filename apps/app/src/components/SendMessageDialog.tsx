@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -106,13 +106,16 @@ export function SendMessageDialog({
     ) || [];
   const queues = queuesData?.queues || [];
 
-  const exchange = form.watch("exchange");
-  const routingKey = form.watch("routingKey");
-  const payload = form.watch("payload");
-  const contentType = form.watch("contentType");
-  const deliveryMode = form.watch("deliveryMode");
-  const priority = form.watch("priority");
-  const expiration = form.watch("expiration");
+  const exchange = useWatch({ control: form.control, name: "exchange" });
+  const routingKey = useWatch({ control: form.control, name: "routingKey" });
+  const payload = useWatch({ control: form.control, name: "payload" });
+  const contentType = useWatch({ control: form.control, name: "contentType" });
+  const deliveryMode = useWatch({
+    control: form.control,
+    name: "deliveryMode",
+  });
+  const priority = useWatch({ control: form.control, name: "priority" });
+  const expiration = useWatch({ control: form.control, name: "expiration" });
   const correlationId = form.watch("correlationId");
   const replyTo = form.watch("replyTo");
   const messageId = form.watch("messageId");

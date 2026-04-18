@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { Trans, useTranslation } from "react-i18next";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -182,7 +182,7 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
   const updateMutation = useUpdateAlertRule();
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
-  const watchedType = form.watch("type");
+  const watchedType = useWatch({ control: form.control, name: "type" });
 
   const onSubmit = async (data: AlertRuleFormValues) => {
     if (!selectedServerId) {

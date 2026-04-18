@@ -1,5 +1,5 @@
 import React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { Trans, useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -73,7 +73,7 @@ export function EditVHostModal({
   });
 
   const updateVHostMutation = useUpdateVHost();
-  const tracingValue = form.watch("tracing");
+  const tracingValue = useWatch({ control: form.control, name: "tracing" });
 
   const onSubmit = (data: EditVHostForm) => {
     if (!workspace?.id) {

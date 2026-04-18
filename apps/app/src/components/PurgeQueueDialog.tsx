@@ -69,6 +69,7 @@ export const PurgeQueueDialog = ({
         variant: "destructive",
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     purgeQueueMutation.isSuccess,
     purgeQueueMutation.isError,

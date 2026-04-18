@@ -64,6 +64,7 @@ export const ServerProvider: React.FC<ServerProviderProps> = ({ children }) => {
   // Auto-select first server if none is selected and servers are available
   useEffect(() => {
     if (!selectedServerId && hasServers && servers.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       handleSetSelectedServerId(servers[0].id);
     }
   }, [selectedServerId, hasServers, servers]);
@@ -74,6 +75,7 @@ export const ServerProvider: React.FC<ServerProviderProps> = ({ children }) => {
       const serverExists = servers.find((s) => s.id === selectedServerId);
       if (!serverExists) {
         // Server was deleted - clear selection
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         handleSetSelectedServerId(servers.length > 0 ? servers[0].id : null);
       }
     }

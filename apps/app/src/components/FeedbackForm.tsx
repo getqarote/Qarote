@@ -145,6 +145,7 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
       });
 
       onSuccess?.();
+
       setIsSubmitting(false);
     }
     if (submitFeedbackMutation.isError) {
@@ -154,8 +155,10 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
         description: t("feedback.toastFailedDesc"),
         variant: "destructive",
       });
+
       setIsSubmitting(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     submitFeedbackMutation.isSuccess,
     submitFeedbackMutation.isError,
