@@ -154,6 +154,9 @@ const sectionFirstSlug = sectionData?.pages[0]?.slug ?? "getting-started";
 <script>
   // Copy-to-clipboard buttons on all code blocks
   document.querySelectorAll<HTMLElement>(".docs-prose pre").forEach((pre) => {
+    // Skip if already processed
+    if (pre.parentElement?.classList.contains("docs-pre-wrapper")) return;
+
     const wrapper = document.createElement("div");
     wrapper.className = "docs-pre-wrapper";
     pre.parentNode?.insertBefore(wrapper, pre);
@@ -214,6 +217,8 @@ const sectionFirstSlug = sectionData?.pages[0]?.slug ?? "getting-started";
     .querySelectorAll<HTMLElement>(".docs-prose h2, .docs-prose h3")
     .forEach((heading) => {
       if (!heading.id) return;
+      // Skip if already processed
+      if (heading.querySelector(".docs-anchor")) return;
       const anchor = document.createElement("a");
       anchor.href = `#${heading.id}`;
       anchor.className = "docs-anchor";
