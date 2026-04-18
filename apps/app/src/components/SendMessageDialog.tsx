@@ -116,13 +116,19 @@ export function SendMessageDialog({
   });
   const priority = useWatch({ control: form.control, name: "priority" });
   const expiration = useWatch({ control: form.control, name: "expiration" });
-  const correlationId = form.watch("correlationId");
-  const replyTo = form.watch("replyTo");
-  const messageId = form.watch("messageId");
-  const appId = form.watch("appId");
-  const messageType = form.watch("messageType");
-  const headers = form.watch("headers");
-  const contentEncoding = form.watch("contentEncoding");
+  const correlationId = useWatch({
+    control: form.control,
+    name: "correlationId",
+  });
+  const replyTo = useWatch({ control: form.control, name: "replyTo" });
+  const messageId = useWatch({ control: form.control, name: "messageId" });
+  const appId = useWatch({ control: form.control, name: "appId" });
+  const messageType = useWatch({ control: form.control, name: "messageType" });
+  const headers = useWatch({ control: form.control, name: "headers" });
+  const contentEncoding = useWatch({
+    control: form.control,
+    name: "contentEncoding",
+  });
 
   // Count non-default properties for preview
   const propertiesCount = useMemo(() => {
