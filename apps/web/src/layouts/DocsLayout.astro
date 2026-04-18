@@ -21,6 +21,10 @@ const allPages = docsNav.flatMap((s) => s.pages);
 const currentIdx = allPages.findIndex((p) => p.slug === slug);
 const prevPage = currentIdx > 0 ? allPages[currentIdx - 1] : null;
 const nextPage = currentIdx < allPages.length - 1 ? allPages[currentIdx + 1] : null;
+
+// Breadcrumb: link to the first page of the current section
+const sectionData = docsNav.find((s) => s.section === section);
+const sectionFirstSlug = sectionData?.pages[0]?.slug ?? "getting-started";
 ---
 
 <BaseLayout
@@ -91,11 +95,11 @@ const nextPage = currentIdx < allPages.length - 1 ? allPages[currentIdx + 1] : n
 
     <!-- Main content -->
     <main class="flex-1 min-w-0 px-6 sm:px-10 lg:px-14 py-10">
-      <div class="max-w-2xl">
+      <div class="max-w-[65ch]">
         <!-- Breadcrumb -->
         {section && (
           <nav class="flex items-center gap-2 text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
-            <a href="/docs/getting-started/" class="hover:text-foreground transition-colors">{section}</a>
+            <a href={`/docs/${sectionFirstSlug}/`} class="hover:text-foreground transition-colors">{section}</a>
             <span aria-hidden="true">›</span>
             <span class="text-foreground">{title}</span>
           </nav>
@@ -140,7 +144,7 @@ const nextPage = currentIdx < allPages.length - 1 ? allPages[currentIdx + 1] : n
     </main>
 
     <!-- ToC -->
-    <aside class="hidden xl:block w-56 shrink-0 border-l border-border">
+    <aside class="hidden xl:block w-64 shrink-0 border-l border-border">
       <div class="sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto py-8 px-5">
         <DocsToC headings={headings} client:load />
       </div>

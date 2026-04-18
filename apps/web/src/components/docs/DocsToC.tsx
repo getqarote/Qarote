@@ -26,7 +26,7 @@ const DocsToC = ({ headings }: DocsToCProps) => {
           }
         }
       },
-      { rootMargin: "-56px 0px -70% 0px", threshold: 0 }
+      { rootMargin: "-56px 0px -40% 0px", threshold: 0 }
     );
 
     for (const heading of tocHeadings) {

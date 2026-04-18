@@ -24,6 +24,10 @@ Your browser → Qarote server (self-hosted) → Your RabbitMQ broker
 
 There is no hop to any Qarote-operated service in this path.
 
+<Callout type="info" title="Ports used">
+  By default, Qarote connects to RabbitMQ on port `15672` (HTTP Management API) and `5672` (AMQP). If your broker uses different ports or TLS (e.g. `5671`), you can configure these per connection in the Qarote UI.
+</Callout>
+
 ## What Qarote stores
 
 Qarote stores the following in its own PostgreSQL database:
@@ -54,7 +58,7 @@ Qarote does not phone home, collect telemetry, or send usage data unless you exp
 
 Always run Qarote behind a reverse proxy (Caddy, Nginx, Traefik) with a valid TLS certificate, especially if the dashboard is internet-accessible. Qarote's Docker and Dokku deployments include Caddy with automatic HTTPS by default.
 
-### Use a least-privilege RabbitMQ user
+### Least-privilege RabbitMQ user
 
 Qarote only needs the `monitoring` tag for read-only access. If you use features like publishing messages or managing queues, grant `management` or `administrator` as appropriate — but avoid using your main admin credentials in Qarote.
 
@@ -65,7 +69,3 @@ If Qarote doesn't need to be public, put it behind a VPN or firewall. The dashbo
 ### Rotate credentials periodically
 
 RabbitMQ connection credentials can be updated in Qarote's Settings at any time without restarting the service.
-
-<Callout type="info" title="Ports used">
-  By default, Qarote connects to RabbitMQ on port `15672` (HTTP Management API) and `5672` (AMQP). If your broker uses different ports or TLS (e.g. `5671`), you can configure these per connection in the Qarote UI.
-</Callout>

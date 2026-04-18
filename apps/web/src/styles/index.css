@@ -371,11 +371,11 @@
 
 .docs-prose h3 {
   font-family: var(--font-display);
-  font-size: 0.9375rem;
+  font-size: 1.0625rem;
   font-weight: 500;
   line-height: 1.4;
   margin-top: 1.75rem;
-  margin-bottom: 0.375rem;
+  margin-bottom: 0.5rem;
   color: hsl(var(--foreground));
   scroll-margin-top: 5rem;
   position: relative;
@@ -465,18 +465,13 @@
   color: hsl(var(--foreground)) !important;
 }
 
-/* Override shiki theme colors so text is always readable on our background */
+/* Preserve Shiki token colors — only reset layout properties */
 .docs-prose pre code {
   background: none !important;
   border: none !important;
   padding: 0 !important;
   font-family: var(--font-mono);
   font-size: inherit;
-  color: inherit !important;
-}
-
-.docs-prose pre code span {
-  color: inherit !important;
 }
 
 /* Tables — square borders, matches feature comparison table style */
@@ -516,7 +511,6 @@
 .docs-prose td:first-child {
   font-weight: 500;
   color: hsl(var(--foreground));
-  font-family: var(--font-mono);
   font-size: 0.9375rem;
 }
 

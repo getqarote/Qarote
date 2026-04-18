@@ -7,7 +7,13 @@ export default defineConfig({
   site: "https://qarote.io",
   output: "static",
   server: { port: 8082 },
-  integrations: [react(), mdx(), sitemap()],
+  integrations: [
+    react(),
+    mdx({
+      shikiConfig: { theme: "min-light" },
+    }),
+    sitemap(),
+  ],
   i18n: {
     defaultLocale: "en",
     locales: ["en", "fr", "es", "zh"],

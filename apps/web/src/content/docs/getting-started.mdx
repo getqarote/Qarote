@@ -21,9 +21,13 @@ Qarote is an open-source RabbitMQ monitoring and management dashboard. It gives 
 
 Qarote uses two protocols to talk to your broker:
 
-**Management HTTP API** — used for most operations: reading queue/exchange/binding metadata, publishing test messages, purging queues, and fetching metrics history. This requires the `rabbitmq_management` plugin to be enabled.
+### Management HTTP API
 
-**AMQP** — used for features that need a live connection to the broker, such as [spying on live queues](/docs/queues/spy-on-live-queues/). Qarote opens a direct AMQP connection and closes it when the feature is no longer in use.
+Used for most operations: reading queue/exchange/binding metadata, publishing test messages, purging queues, and fetching metrics history. This requires the `rabbitmq_management` plugin to be enabled.
+
+### AMQP
+
+Used for features that need a live connection to the broker, such as [spying on live queues](/docs/queues/spy-on-live-queues/). Qarote opens a direct AMQP connection and closes it when the feature is no longer in use.
 
 ## Requirements
 
