@@ -233,6 +233,8 @@ const sectionFirstSlug = sectionData?.pages[0]?.slug ?? "getting-started";
   if (sidebarTrigger) {
     sidebarTrigger.addEventListener("click", () => {
       sidebarTrigger.setAttribute("aria-expanded", "true");
+      // Set dataset flag so the intent survives if React hasn't hydrated yet
+      document.documentElement.dataset.docsSidebarOpen = "true";
       document.dispatchEvent(new CustomEvent("open-docs-sidebar"));
     });
     document.addEventListener("close-docs-sidebar", () => {

@@ -425,7 +425,7 @@
   top: 0.6em;
   width: 0.375rem;
   height: 0.375rem;
-  background-color: hsl(var(--primary) / 0.6);
+  background-color: hsl(var(--primary) / 60%);
   flex-shrink: 0;
 }
 
@@ -447,7 +447,7 @@
 .docs-prose :not(pre) > code {
   font-family: var(--font-mono);
   font-size: 0.84em;
-  background-color: hsl(var(--muted) / 0.5);
+  background-color: hsl(var(--muted) / 50%);
   color: hsl(var(--foreground));
   border: 1px solid hsl(var(--border));
   padding: 0.1em 0.35em;
@@ -455,7 +455,7 @@
 
 /* Code blocks — square border, bg-muted/30 matching feature card style */
 .docs-prose pre {
-  background-color: hsl(var(--muted) / 0.5) !important;
+  background-color: hsl(var(--muted) / 50%) !important;
   border: 1px solid hsl(var(--border));
   padding: 1rem 1.25rem;
   overflow-x: auto;
@@ -484,7 +484,7 @@
 }
 
 .docs-prose thead {
-  background-color: hsl(var(--muted) / 0.3);
+  background-color: hsl(var(--muted) / 30%);
   border-bottom: 1px solid hsl(var(--border));
 }
 
@@ -554,7 +554,7 @@
   font-family: var(--font-sans);
   font-weight: 500;
   color: hsl(var(--muted-foreground));
-  background-color: hsl(var(--muted) / 0.5);
+  background-color: hsl(var(--muted) / 50%);
   border: 1px solid hsl(var(--border));
   cursor: pointer;
   opacity: 0;

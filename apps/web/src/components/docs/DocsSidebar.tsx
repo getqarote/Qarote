@@ -55,6 +55,11 @@ const DocsSidebar = ({ currentSlug }: DocsSidebarProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
+    // Capture pre-hydration intent: button was clicked before React mounted
+    if (document.documentElement.dataset.docsSidebarOpen) {
+      delete document.documentElement.dataset.docsSidebarOpen;
+      setMobileOpen(true);
+    }
     const handler = () => setMobileOpen(true);
     document.addEventListener("open-docs-sidebar", handler);
     return () => document.removeEventListener("open-docs-sidebar", handler);
