@@ -572,6 +572,11 @@
   opacity: 1;
 }
 
+.docs-copy-btn.failed {
+  color: hsl(var(--destructive));
+  opacity: 1;
+}
+
 /* Blockquote */
 .docs-prose blockquote {
   border-left: 2px solid hsl(var(--primary));

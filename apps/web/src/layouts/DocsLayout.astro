@@ -168,14 +168,44 @@ const sectionFirstSlug = sectionData?.pages[0]?.slug ?? "getting-started";
 
     btn.addEventListener("click", () => {
       const text = pre.textContent ?? "";
-      navigator.clipboard.writeText(text).then(() => {
+
+      const onSuccess = () => {
         btn.textContent = "Copied!";
         btn.classList.add("copied");
         setTimeout(() => {
           btn.textContent = "Copy";
           btn.classList.remove("copied");
         }, 2000);
-      });
+      };
+
+      const onFailure = () => {
+        btn.textContent = "Failed";
+        btn.classList.add("failed");
+        setTimeout(() => {
+          btn.textContent = "Copy";
+          btn.classList.remove("failed");
+        }, 2000);
+      };
+
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+        navigator.clipboard.writeText(text).then(onSuccess).catch(onFailure);
+      } else {
+        // DOM fallback for non-secure contexts (HTTP, old browsers)
+        try {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          const ok = document.execCommand("copy");
+          document.body.removeChild(ta);
+          ok ? onSuccess() : onFailure();
+        } catch {
+          onFailure();
+        }
+      }
     });
   });
 
