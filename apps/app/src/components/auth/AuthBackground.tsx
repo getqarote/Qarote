@@ -124,8 +124,6 @@ export function AuthBackground() {
             />
           </div>
         ))}
-
-
       </div>
     </>
   );

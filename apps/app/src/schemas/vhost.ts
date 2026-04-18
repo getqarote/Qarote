@@ -24,7 +24,7 @@ export const createVHostSchema = z.object({
     .refine((v) => v.trim().length > 0, "Virtual host name cannot be blank")
     .refine(
       RESERVED_DEFAULT,
-      'The name "/" is reserved for the default virtual host',
+      'The name "/" is reserved for the default virtual host'
     ),
   description: z.string().max(1024).optional(),
   defaultQueueType: z.enum(VHOST_QUEUE_TYPES).optional(),

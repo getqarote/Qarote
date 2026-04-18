@@ -26,9 +26,9 @@
      the self-hosted ethos and ships zero bytes. Arial is kept only as a late
      fallback for systems without a better option. */
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", roboto, "Helvetica Neue",
-    arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
-    "Noto Color Emoji";
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", roboto,
+    "Helvetica Neue", arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
   /* Numeric font: Fragment Mono — loaded via Google Fonts. Used for all
      metric numbers, queue depths, rates, IDs, routing keys, and code. */
   --font-mono:
