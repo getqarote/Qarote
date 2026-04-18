@@ -455,21 +455,28 @@
 
 /* Code blocks — square border, bg-muted/30 matching feature card style */
 .docs-prose pre {
-  background-color: hsl(var(--muted) / 0.3) !important;
+  background-color: hsl(var(--muted) / 0.5) !important;
   border: 1px solid hsl(var(--border));
   padding: 1rem 1.25rem;
   overflow-x: auto;
   margin-bottom: 1.5rem;
   font-size: 0.875rem;
   line-height: 1.7;
+  color: hsl(var(--foreground)) !important;
 }
 
+/* Override shiki theme colors so text is always readable on our background */
 .docs-prose pre code {
   background: none !important;
   border: none !important;
   padding: 0 !important;
   font-family: var(--font-mono);
   font-size: inherit;
+  color: inherit !important;
+}
+
+.docs-prose pre code span {
+  color: inherit !important;
 }
 
 /* Tables — square borders, matches feature comparison table style */
