@@ -66,7 +66,14 @@ const DocsSidebar = ({ currentSlug }: DocsSidebarProps) => {
       <SidebarNav currentSlug={currentSlug} />
 
       {/* Mobile Sheet — portaled to body, triggered by custom event */}
-      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+      <Sheet
+        open={mobileOpen}
+        onOpenChange={(open) => {
+          setMobileOpen(open);
+          if (!open)
+            document.dispatchEvent(new CustomEvent("close-docs-sidebar"));
+        }}
+      >
         <SheetContent side="left" className="w-72 p-0">
           <SheetHeader className="px-6 pt-6 pb-2">
             <SheetTitle className="text-base font-display font-normal">
