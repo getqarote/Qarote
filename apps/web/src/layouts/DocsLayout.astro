@@ -20,7 +20,7 @@ const section = getSectionForSlug(slug);
 const allPages = docsNav.flatMap((s) => s.pages);
 const currentIdx = allPages.findIndex((p) => p.slug === slug);
 const prevPage = currentIdx > 0 ? allPages[currentIdx - 1] : null;
-const nextPage = currentIdx < allPages.length - 1 ? allPages[currentIdx + 1] : null;
+const nextPage = currentIdx !== -1 && currentIdx < allPages.length - 1 ? allPages[currentIdx + 1] : null;
 
 // Breadcrumb: link to the first page of the current section
 const sectionData = docsNav.find((s) => s.section === section);
