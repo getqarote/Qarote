@@ -113,13 +113,13 @@ const StickyNav = ({ currentPage }: { currentPage?: string }) => {
               {t("features")}
             </a>
             <a
-              href="/docs/"
+              href={`${localePrefix}/docs/`}
               className={`px-4 py-2 text-base font-medium transition-colors ${currentPage === "docs" ? "text-primary" : "text-foreground hover:text-primary"}`}
               {...(currentPage === "docs"
                 ? { "aria-current": "page" as const }
                 : {})}
             >
-              Docs
+              {t("docs")}
             </a>
             <a
               href={`${localePrefix}/changelog/`}
@@ -219,13 +219,13 @@ const StickyNav = ({ currentPage }: { currentPage?: string }) => {
               {t("features")}
             </a>
             <a
-              href="/docs/"
+              href={`${localePrefix}/docs/`}
               className={`px-4 py-3 text-base font-medium hover:bg-muted rounded-md transition-colors ${currentPage === "docs" ? "text-primary" : "text-foreground hover:text-primary"}`}
               {...(currentPage === "docs"
                 ? { "aria-current": "page" as const }
                 : {})}
             >
-              Docs
+              {t("docs")}
             </a>
             <a
               href={`${localePrefix}/changelog/`}
