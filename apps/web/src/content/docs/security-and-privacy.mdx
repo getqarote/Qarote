@@ -50,13 +50,21 @@ Qarote does not phone home, collect telemetry, or send usage data unless you exp
 
 ## Recommended security practices
 
-**Enable HTTPS.** Always run Qarote behind a reverse proxy (Caddy, Nginx, Traefik) with a valid TLS certificate, especially if the dashboard is internet-accessible. Qarote's Docker and Dokku deployments include Caddy with automatic HTTPS by default.
+### Enable HTTPS
 
-**Use a least-privilege RabbitMQ user.** Qarote only needs the `monitoring` tag for read-only access. If you use features like publishing messages or managing queues, grant `management` or `administrator` as appropriate — but avoid using your main admin credentials in Qarote.
+Always run Qarote behind a reverse proxy (Caddy, Nginx, Traefik) with a valid TLS certificate, especially if the dashboard is internet-accessible. Qarote's Docker and Dokku deployments include Caddy with automatic HTTPS by default.
 
-**Restrict Qarote's network access.** If Qarote doesn't need to be public, put it behind a VPN or firewall. The dashboard only needs to reach your RabbitMQ broker and your PostgreSQL instance.
+### Use a least-privilege RabbitMQ user
 
-**Rotate credentials periodically.** RabbitMQ connection credentials can be updated in Qarote's Settings at any time without restarting the service.
+Qarote only needs the `monitoring` tag for read-only access. If you use features like publishing messages or managing queues, grant `management` or `administrator` as appropriate — but avoid using your main admin credentials in Qarote.
+
+### Restrict Qarote's network access
+
+If Qarote doesn't need to be public, put it behind a VPN or firewall. The dashboard only needs to reach your RabbitMQ broker and your PostgreSQL instance.
+
+### Rotate credentials periodically
+
+RabbitMQ connection credentials can be updated in Qarote's Settings at any time without restarting the service.
 
 <Callout type="info" title="Ports used">
   By default, Qarote connects to RabbitMQ on port `15672` (HTTP Management API) and `5672` (AMQP). If your broker uses different ports or TLS (e.g. `5671`), you can configure these per connection in the Qarote UI.

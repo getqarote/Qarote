@@ -1,7 +1,7 @@
 ---
 import type { MarkdownHeading } from "astro";
 
-import { getSectionForSlug } from "../lib/docs-nav";
+import { docsNav, getSectionForSlug } from "../lib/docs-nav";
 import BaseLayout from "./BaseLayout.astro";
 import DocsSidebar from "../components/docs/DocsSidebar";
 import DocsToC from "../components/docs/DocsToC";
@@ -15,6 +15,12 @@ interface Props {
 
 const { title, description, headings, slug } = Astro.props;
 const section = getSectionForSlug(slug);
+
+// Flatten all pages for prev/next navigation
+const allPages = docsNav.flatMap((s) => s.pages);
+const currentIdx = allPages.findIndex((p) => p.slug === slug);
+const prevPage = currentIdx > 0 ? allPages[currentIdx - 1] : null;
+const nextPage = currentIdx < allPages.length - 1 ? allPages[currentIdx + 1] : null;
 ---
 
 <BaseLayout
@@ -99,6 +105,37 @@ const section = getSectionForSlug(slug);
         <article class="docs-prose">
           <slot />
         </article>
+
+        <!-- Prev / Next navigation -->
+        {(prevPage || nextPage) && (
+          <nav
+            class="flex items-center justify-between mt-12 pt-6 border-t border-border gap-4"
+            aria-label="Page navigation"
+          >
+            <div class="flex-1">
+              {prevPage && (
+                <a
+                  href={`/docs/${prevPage.slug}/`}
+                  class="group flex flex-col gap-0.5 text-sm no-underline"
+                >
+                  <span class="text-xs text-muted-foreground uppercase tracking-wider font-medium">← Previous</span>
+                  <span class="text-foreground group-hover:text-primary transition-colors font-medium">{prevPage.title}</span>
+                </a>
+              )}
+            </div>
+            <div class="flex-1 flex justify-end text-right">
+              {nextPage && (
+                <a
+                  href={`/docs/${nextPage.slug}/`}
+                  class="group flex flex-col gap-0.5 text-sm no-underline"
+                >
+                  <span class="text-xs text-muted-foreground uppercase tracking-wider font-medium">Next →</span>
+                  <span class="text-foreground group-hover:text-primary transition-colors font-medium">{nextPage.title}</span>
+                </a>
+              )}
+            </div>
+          </nav>
+        )}
       </div>
     </main>
 
@@ -109,4 +146,46 @@ const section = getSectionForSlug(slug);
       </div>
     </aside>
   </div>
+
+<script>
+  // Copy-to-clipboard buttons on all code blocks
+  document.querySelectorAll<HTMLElement>(".docs-prose pre").forEach((pre) => {
+    const wrapper = document.createElement("div");
+    wrapper.className = "docs-pre-wrapper";
+    pre.parentNode?.insertBefore(wrapper, pre);
+    wrapper.appendChild(pre);
+
+    const btn = document.createElement("button");
+    btn.textContent = "Copy";
+    btn.className = "docs-copy-btn";
+    btn.setAttribute("aria-label", "Copy code to clipboard");
+    btn.setAttribute("type", "button");
+    wrapper.appendChild(btn);
+
+    btn.addEventListener("click", () => {
+      const text = pre.textContent ?? "";
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = "Copied!";
+        btn.classList.add("copied");
+        setTimeout(() => {
+          btn.textContent = "Copy";
+          btn.classList.remove("copied");
+        }, 2000);
+      });
+    });
+  });
+
+  // Anchor links on headings
+  document
+    .querySelectorAll<HTMLElement>(".docs-prose h2, .docs-prose h3")
+    .forEach((heading) => {
+      if (!heading.id) return;
+      const anchor = document.createElement("a");
+      anchor.href = `#${heading.id}`;
+      anchor.className = "docs-anchor";
+      anchor.setAttribute("aria-label", `Link to section: ${heading.textContent}`);
+      anchor.textContent = "#";
+      heading.appendChild(anchor);
+    });
+</script>
 </BaseLayout>

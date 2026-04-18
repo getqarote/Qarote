@@ -59,10 +59,21 @@ Each captured message shows:
 
 ## Limitations
 
-- **Auto-delete queues only** — if a queue has no exchange binding (e.g. published directly to the default exchange), spying is not supported.
-- **Transient data** — message bodies are displayed in your browser only. Nothing is persisted to Qarote's database.
-- **One session at a time** — you can only spy on one queue at a time per browser tab.
-- **AMQP required** — the spy feature requires a working AMQP connection. If Qarote can only reach your broker via the HTTP Management API (e.g. port 15672 is open but 5672 is not), spying will not be available.
+### Exchange binding required
+
+If a queue has no exchange binding (e.g. published directly to the default exchange), spying is not supported. You must have an exchange-to-queue binding for the shadow queue mechanism to work.
+
+### Transient data only
+
+Message bodies are displayed in your browser only. Nothing is persisted to Qarote's database. If you need to retain captured messages, copy them from the spy panel before closing the session.
+
+### One session at a time
+
+You can only spy on one queue at a time per browser tab. Open a second tab to observe multiple queues simultaneously.
+
+### AMQP connection required
+
+The spy feature requires a working AMQP connection. If Qarote can only reach your broker via the HTTP Management API (e.g. port `15672` is open but `5672` is not), spying will not be available. See [Requirements](#requirements) for the exact permissions needed.
 
 <Callout type="tip" title="Inspecting queued messages">
   To inspect messages that are already sitting in a queue (not just new arrivals), use the **Peek** feature instead. Peek fetches existing messages from the queue without removing them, using the Management HTTP API.
