@@ -14,6 +14,10 @@ export const docsNav: DocsSection[] = [
     pages: [{ title: "Introduction", slug: "getting-started" }],
   },
   {
+    section: "Self-Hosted",
+    pages: [{ title: "Deploying Qarote", slug: "self-hosted/deployment" }],
+  },
+  {
     section: "Queues",
     pages: [{ title: "Spy on live queues", slug: "queues/spy-on-live-queues" }],
   },
