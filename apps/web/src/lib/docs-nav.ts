@@ -1,9 +1,9 @@
-interface DocsPage {
+export interface DocsPage {
   title: string;
   slug: string;
 }
 
-interface DocsSection {
+export interface DocsSection {
   section: string;
   pages: DocsPage[];
 }
@@ -28,7 +28,13 @@ export const docsNav: DocsSection[] = [
 ];
 
 export function getFirstDocSlug(): string {
-  return docsNav[0].pages[0].slug;
+  const firstPage = docsNav[0]?.pages[0];
+  if (!firstPage) {
+    throw new Error(
+      "docs-nav: docsNav must contain at least one section with one page"
+    );
+  }
+  return firstPage.slug;
 }
 
 export function getSectionForSlug(slug: string): string | undefined {
