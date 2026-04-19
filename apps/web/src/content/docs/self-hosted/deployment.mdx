@@ -8,11 +8,11 @@ section: "Self-Hosted"
 
 Qarote ships as a self-contained application. Pick the deployment method that fits your environment — all three give you the same dashboard.
 
-| Method | Best for |
-|---|---|
-| [Binary](#binary) | Minimal footprint, existing PostgreSQL, VMs or bare metal |
-| [Docker Compose](#docker-compose) | Containerised setup, everything bundled including Postgres |
-| [Dokku](#dokku) | Git-push deploys, automatic HTTPS, Heroku-style PaaS on your own server |
+| Method                            | Best for                                                                |
+| --------------------------------- | ----------------------------------------------------------------------- |
+| [Binary](#binary)                 | Minimal footprint, existing PostgreSQL, VMs or bare metal               |
+| [Docker Compose](#docker-compose) | Containerised setup, everything bundled including Postgres              |
+| [Dokku](#dokku)                   | Git-push deploys, automatic HTTPS, Heroku-style PaaS on your own server |
 
 All deployments start with the **free tier** (core monitoring). Premium features — workspaces, alerting, integrations — unlock when you activate a license key in **Settings → License**. No restart needed.
 
@@ -63,12 +63,12 @@ curl -L "https://github.com/getqarote/Qarote/releases/latest/download/qarote-${P
 
 Or download a specific build from [GitHub Releases](https://github.com/getqarote/Qarote/releases):
 
-| Platform | File |
-|---|---|
-| Linux x64 | `qarote-linux-x64.tar.gz` |
-| Linux ARM64 | `qarote-linux-arm64.tar.gz` |
+| Platform            | File                         |
+| ------------------- | ---------------------------- |
+| Linux x64           | `qarote-linux-x64.tar.gz`    |
+| Linux ARM64         | `qarote-linux-arm64.tar.gz`  |
 | macOS Apple Silicon | `qarote-darwin-arm64.tar.gz` |
-| macOS Intel | `qarote-darwin-x64.tar.gz` |
+| macOS Intel         | `qarote-darwin-x64.tar.gz`   |
 
 <Callout type="tip" title="Windows">
   Run the binary inside WSL2. Native Windows is not supported.
@@ -89,7 +89,8 @@ The wizard will:
 - Write a `.env` file in the current directory
 
 <Callout type="tip">
-  Say **Yes** to creating an admin account and **No** to public registration. You can invite team members later from inside the app.
+  Say **Yes** to creating an admin account and **No** to public registration.
+  You can invite team members later from inside the app.
 </Callout>
 
 ### 4. Start Qarote
@@ -119,24 +120,24 @@ If you prefer flags over the interactive wizard:
 
 ### CLI reference
 
-| Flag | Description |
-|---|---|
-| `./qarote setup` | Interactive setup wizard (generates `.env`) |
-| `./qarote worker` | Start the alert worker process |
-| `--database-url <url>` | PostgreSQL connection URL |
-| `--jwt-secret <secret>` | JWT signing secret (min 32 chars) |
-| `--encryption-key <key>` | Encryption key (min 32 chars) |
-| `-p`, `--port <port>` | Server port (default: `3000`) |
-| `-h`, `--host <host>` | Server host (default: `localhost`) |
-| `--enable-email <bool>` | Enable email features (default: `false`) |
-| `--smtp-host <host>` | SMTP server hostname |
-| `--smtp-port <port>` | SMTP server port (default: `587`) |
-| `--smtp-user <user>` | SMTP username |
-| `--smtp-pass <pass>` | SMTP password |
-| `--smtp-service <name>` | SMTP service for OAuth2 (e.g. `gmail`) |
-| `--smtp-oauth-client-id <id>` | OAuth2 client ID |
-| `--smtp-oauth-client-secret <s>` | OAuth2 client secret |
-| `--smtp-oauth-refresh-token <t>` | OAuth2 refresh token |
+| Flag                             | Description                                 |
+| -------------------------------- | ------------------------------------------- |
+| `./qarote setup`                 | Interactive setup wizard (generates `.env`) |
+| `./qarote worker`                | Start the alert worker process              |
+| `--database-url <url>`           | PostgreSQL connection URL                   |
+| `--jwt-secret <secret>`          | JWT signing secret (min 32 chars)           |
+| `--encryption-key <key>`         | Encryption key (min 32 chars)               |
+| `-p`, `--port <port>`            | Server port (default: `3000`)               |
+| `-h`, `--host <host>`            | Server host (default: `localhost`)          |
+| `--enable-email <bool>`          | Enable email features (default: `false`)    |
+| `--smtp-host <host>`             | SMTP server hostname                        |
+| `--smtp-port <port>`             | SMTP server port (default: `587`)           |
+| `--smtp-user <user>`             | SMTP username                               |
+| `--smtp-pass <pass>`             | SMTP password                               |
+| `--smtp-service <name>`          | SMTP service for OAuth2 (e.g. `gmail`)      |
+| `--smtp-oauth-client-id <id>`    | OAuth2 client ID                            |
+| `--smtp-oauth-client-secret <s>` | OAuth2 client secret                        |
+| `--smtp-oauth-refresh-token <t>` | OAuth2 refresh token                        |
 
 ### Updating (binary)
 
@@ -199,12 +200,12 @@ docker compose -f docker-compose.selfhosted.yml up -d
 
 This starts four containers:
 
-| Container | Purpose |
-|---|---|
-| `qarote_postgres` | PostgreSQL 15 database |
-| `qarote_backend` | API server on port 3000 |
-| `qarote_alert_worker` | Alert evaluation worker |
-| `qarote_frontend` | React frontend on port 8080 |
+| Container             | Purpose                     |
+| --------------------- | --------------------------- |
+| `qarote_postgres`     | PostgreSQL 15 database      |
+| `qarote_backend`      | API server on port 3000     |
+| `qarote_alert_worker` | Alert evaluation worker     |
+| `qarote_frontend`     | React frontend on port 8080 |
 
 ### 4. Run database migrations
 
@@ -217,7 +218,8 @@ docker exec qarote_backend pnpm run db:migrate
 Navigate to [http://localhost:8080](http://localhost:8080) and create your first account.
 
 <Callout type="info" title="Ports">
-  Frontend is served on `FRONTEND_PORT` (default 8080). The backend API is on `BACKEND_PORT` (default 3000). Both are configurable in `.env`.
+  Frontend is served on `FRONTEND_PORT` (default 8080). The backend API is on
+  `BACKEND_PORT` (default 3000). Both are configurable in `.env`.
 </Callout>
 
 ### Updating (Docker Compose)
@@ -241,7 +243,9 @@ docker compose -f docker-compose.selfhosted.yml logs -f
 Dokku gives you git-push deploys, automatic HTTPS via Let's Encrypt, and managed PostgreSQL — on a server you control.
 
 <Callout type="info" title="Why Dokku?">
-  Dokku is a lightweight self-hosted PaaS. Push your code with `git push dokku main` and it rebuilds and redeploys automatically. The Postgres plugin handles backups and linking. Caddy handles SSL.
+  Dokku is a lightweight self-hosted PaaS. Push your code with `git push dokku
+  main` and it rebuilds and redeploys automatically. The Postgres plugin handles
+  backups and linking. Caddy handles SSL.
 </Callout>
 
 ### 1. Install Dokku
@@ -368,7 +372,10 @@ SMTP_PASS=your-ses-smtp-password
 ```
 
 <Callout type="tip" title="Use OAuth2 for production">
-  Gmail and Office 365 support OAuth2 authentication, which is more secure than app passwords and doesn't require storing credentials directly. See the [Nodemailer OAuth2 guide](https://nodemailer.com/smtp/oauth2/) for setup instructions.
+  Gmail and Office 365 support OAuth2 authentication, which is more secure than
+  app passwords and doesn't require storing credentials directly. See the
+  [Nodemailer OAuth2 guide](https://nodemailer.com/smtp/oauth2/) for setup
+  instructions.
 </Callout>
 
 ### Test your SMTP configuration

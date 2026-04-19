@@ -25,25 +25,29 @@ Your browser → Qarote server (self-hosted) → Your RabbitMQ broker
 There is no hop to any Qarote-operated service in this path.
 
 <Callout type="info" title="Ports used">
-  By default, Qarote connects to RabbitMQ on port `15672` (HTTP Management API) and `5672` (AMQP). If your broker uses different ports or TLS (e.g. `5671`), you can configure these per connection in the Qarote UI.
+  By default, Qarote connects to RabbitMQ on port `15672` (HTTP Management API)
+  and `5672` (AMQP). If your broker uses different ports or TLS (e.g. `5671`),
+  you can configure these per connection in the Qarote UI.
 </Callout>
 
 ## What Qarote stores
 
 Qarote stores the following in its own PostgreSQL database:
 
-| Data | Purpose |
-|---|---|
-| RabbitMQ host, port, vhost | To establish connections |
-| RabbitMQ username & password | Stored encrypted at rest |
-| Qarote user accounts | Authentication to the dashboard |
-| Alert rules and notification channels | For the alerting feature |
-| Metrics snapshots | For trend charts (configurable retention) |
+| Data                                  | Purpose                                   |
+| ------------------------------------- | ----------------------------------------- |
+| RabbitMQ host, port, vhost            | To establish connections                  |
+| RabbitMQ username & password          | Stored encrypted at rest                  |
+| Qarote user accounts                  | Authentication to the dashboard           |
+| Alert rules and notification channels | For the alerting feature                  |
+| Metrics snapshots                     | For trend charts (configurable retention) |
 
 Qarote does **not** store message bodies, routing keys, or queue contents. The only time message data appears in Qarote is transiently during a live spy session — it is displayed in your browser and never written to disk.
 
 <Callout type="warning" title="Protect your database">
-  The PostgreSQL database contains your RabbitMQ credentials. Apply standard database hardening: restrict network access, use a dedicated database user, and enable encryption at rest if your provider supports it.
+  The PostgreSQL database contains your RabbitMQ credentials. Apply standard
+  database hardening: restrict network access, use a dedicated database user,
+  and enable encryption at rest if your provider supports it.
 </Callout>
 
 ## License validation
