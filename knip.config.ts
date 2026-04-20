@@ -67,6 +67,7 @@ const config: KnipConfig = {
     "packages/i18n/src/server.ts",
     // Ignore standalone scripts (run via CLI, not imported)
     "scripts/validate-i18n-keys.mjs",
+    "scripts/generate-compare-og.mjs",
     // Ignore config files
     "**/vite-env.d.ts",
     // Ignore type definitions
