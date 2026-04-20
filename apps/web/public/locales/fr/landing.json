@@ -115,7 +115,9 @@
     "about": "À propos",
     "privacyPolicy": "Politique de confidentialité",
     "termsOfService": "Conditions d'utilisation",
-    "contact": "Contact"
+    "contact": "Contact",
+    "vsDatadog": "Qarote vs Datadog",
+    "vsGrafana": "Qarote vs Grafana + Prometheus"
   },
   "faqSection": {
     "title": "Questions fréquentes",

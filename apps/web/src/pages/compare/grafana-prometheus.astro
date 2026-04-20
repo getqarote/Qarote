@@ -1,0 +1,54 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { CompareGrafanaIsland } from "../../components/CompareIsland";
+import { loadTranslations, loadAllTranslations, t } from "../../lib/i18n-static";
+
+const compare = loadTranslations("en", "compare-grafana");
+const resources = { ...loadAllTranslations("en"), "compare-grafana": compare };
+
+const grafanaSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Grafana",
+  url: "https://grafana.com/",
+  applicationCategory: "DeveloperApplication",
+  description: "Open-source analytics and interactive visualization platform.",
+  sameAs: "https://www.wikidata.org/wiki/Q28054656",
+};
+
+const prometheusSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Prometheus",
+  url: "https://prometheus.io/",
+  applicationCategory: "DeveloperApplication",
+  description: "Open-source systems monitoring and alerting toolkit.",
+  sameAs: "https://www.wikidata.org/wiki/Q27913733",
+};
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: (compare.faq as { items: Array<{ question: string; answer: string }> }).items.map(
+    (item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: { "@type": "Answer", text: item.answer },
+    })
+  ),
+};
+---
+
+<BaseLayout
+  title={t(compare, "seo.title")}
+  description={t(compare, "seo.description")}
+  canonicalPath="/compare/grafana-prometheus/"
+  image="https://qarote.io/images/compare-grafana-card.jpg"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(grafanaSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(prometheusSchema)} />
+  </Fragment>
+  <CompareGrafanaIsland resources={resources} client:load />
+</BaseLayout>

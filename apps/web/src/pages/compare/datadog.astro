@@ -1,0 +1,43 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { CompareDatadogIsland } from "../../components/CompareIsland";
+import { loadTranslations, loadAllTranslations, t } from "../../lib/i18n-static";
+
+const compare = loadTranslations("en", "compare-datadog");
+const resources = { ...loadAllTranslations("en"), "compare-datadog": compare };
+
+const competitorSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Datadog",
+  url: "https://www.datadoghq.com/",
+  applicationCategory: "DeveloperApplication",
+  description: "Cloud-based monitoring and analytics platform for infrastructure, applications, and logs.",
+  sameAs: "https://www.wikidata.org/wiki/Q22679942",
+};
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: (compare.faq as { items: Array<{ question: string; answer: string }> }).items.map(
+    (item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: { "@type": "Answer", text: item.answer },
+    })
+  ),
+};
+---
+
+<BaseLayout
+  title={t(compare, "seo.title")}
+  description={t(compare, "seo.description")}
+  canonicalPath="/compare/datadog/"
+  image="https://qarote.io/images/compare-datadog-card.jpg"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(competitorSchema)} />
+  </Fragment>
+  <CompareDatadogIsland resources={resources} client:load />
+</BaseLayout>

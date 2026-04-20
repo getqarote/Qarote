@@ -115,7 +115,9 @@
     "about": "关于我们",
     "privacyPolicy": "隐私政策",
     "termsOfService": "服务条款",
-    "contact": "联系我们"
+    "contact": "联系我们",
+    "vsDatadog": "Qarote vs Datadog",
+    "vsGrafana": "Qarote vs Grafana + Prometheus"
   },
   "faqSection": {
     "title": "常见问题",
