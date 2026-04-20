@@ -90,6 +90,7 @@ const SubscriptionSection = lazy(() =>
     default: m.default,
   }))
 );
+const Policies = lazy(() => import("./pages/Policies"));
 const Plans = lazy(() => import("./pages/Plans"));
 const Billing = lazy(() => import("./pages/Billing"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
@@ -265,6 +266,16 @@ const AppCore = () => (
                               <ProtectedRoute>
                                 <Layout>
                                   <Exchanges />
+                                </Layout>
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/policies"
+                            element={
+                              <ProtectedRoute>
+                                <Layout>
+                                  <Policies />
                                 </Layout>
                               </ProtectedRoute>
                             }

@@ -76,6 +76,15 @@ export function ExchangeRow({
                 {t("durable")}
               </span>
             )}
+            {exchange.policy && (
+              <Badge
+                variant="outline"
+                className="text-xs shrink-0 font-mono hidden xl:inline-flex"
+                title={`Policy: ${exchange.policy}`}
+              >
+                {exchange.policy}
+              </Badge>
+            )}
           </div>
 
           {/* Right: metrics aligned to sort headers */}

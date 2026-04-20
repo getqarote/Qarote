@@ -46,6 +46,8 @@
   "queueNamePlaceholder": "e.g., email.notifications, user.events",
   "queueProperties": "Queue Properties",
   "durable": "Durable",
+  "policy": "Policy",
+  "operatorPolicy": "Operator policy",
   "durableDesc": "(Queue survives server restarts)",
   "autoDelete": "Auto-delete",
   "autoDeleteDesc": "(Queue is deleted when last consumer unsubscribes)",

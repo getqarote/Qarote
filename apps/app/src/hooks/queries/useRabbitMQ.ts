@@ -427,6 +427,49 @@ export const useQueuePauseStatus = (serverId: string, queueName: string) => {
   return query;
 };
 
+export const usePolicies = (serverId: string | null, vhost?: string | null) => {
+  const { workspace } = useWorkspace();
+
+  const query = trpc.rabbitmq.policies.getPolicies.useQuery(
+    {
+      serverId: serverId || "",
+      workspaceId: workspace?.id || "",
+      vhost: vhost ? encodeURIComponent(vhost) : undefined,
+    },
+    {
+      enabled: !!serverId && !!workspace?.id,
+      staleTime: 0,
+      refetchInterval: 10000,
+    }
+  );
+
+  return query;
+};
+
+export const useCreateOrUpdatePolicy = () => {
+  const utils = trpc.useUtils();
+
+  const mutation = trpc.rabbitmq.policies.createOrUpdatePolicy.useMutation({
+    onSuccess: async () => {
+      await utils.rabbitmq.policies.getPolicies.invalidate();
+    },
+  });
+
+  return mutation;
+};
+
+export const useDeletePolicy = () => {
+  const utils = trpc.useUtils();
+
+  const mutation = trpc.rabbitmq.policies.deletePolicy.useMutation({
+    onSuccess: async () => {
+      await utils.rabbitmq.policies.getPolicies.invalidate();
+    },
+  });
+
+  return mutation;
+};
+
 export const useTopology = (
   serverId: string | null,
   vhost?: string | null,

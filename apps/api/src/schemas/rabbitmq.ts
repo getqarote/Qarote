@@ -183,6 +183,20 @@ export const TestConnectionWithWorkspaceSchema =
     workspaceId: z.string(),
   });
 
+// Schema for creating/updating a policy
+export const CreateOrUpdatePolicySchema = z.object({
+  name: z.string().min(1, "Policy name is required"),
+  pattern: z.string().min(1, "Pattern is required"),
+  applyTo: z.enum(["queues", "exchanges", "all"]).default("all"),
+  definition: z.record(z.string(), z.unknown()).default({}),
+  priority: z.number().int().min(0).default(0),
+});
+
+// Schema for deleting a policy
+export const DeletePolicySchema = z.object({
+  policyName: z.string().min(1, "Policy name is required"),
+});
+
 // Metrics schemas
 export const GetMetricsSchema = ServerWorkspaceInputSchema.extend({
   timeRange: TimeRangeSchema.optional().default("1m"),
