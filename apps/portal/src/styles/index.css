@@ -170,6 +170,36 @@
       opacity: 0;
     }
   }
+  @keyframes auth-packet-rise {
+    0%   { transform: translateY(0)     rotate(-4deg); opacity: 0;   }
+    8%   { opacity: 1;                                               }
+    88%  { opacity: 0.7;                                             }
+    100% { transform: translateY(-80px) rotate(5deg);  opacity: 0;  }
+  }
+}
+
+@utility auth-bg-grid {
+  background-image: radial-gradient(circle, hsl(var(--primary) / 0.055) 1.5px, transparent 1.5px);
+  background-size: 28px 28px;
+}
+
+@layer base {
+  .auth-packet {
+    position: absolute;
+    animation: auth-packet-rise var(--packet-dur, 8s) ease-in-out var(--packet-delay, 0s) infinite;
+  }
+  .auth-packet-0 { left: 6%;  bottom: 18%; --packet-dur: 8s;  --packet-delay: 0s;   }
+  .auth-packet-1 { left: 13%; bottom: 52%; --packet-dur: 11s; --packet-delay: 3.2s; }
+  .auth-packet-2 { left: 7%;  bottom: 78%; --packet-dur: 9s;  --packet-delay: 1.5s; }
+  .auth-packet-3 { left: 82%; bottom: 28%; --packet-dur: 7s;  --packet-delay: 0.8s; }
+  .auth-packet-4 { left: 90%; bottom: 55%; --packet-dur: 10s; --packet-delay: 4s;   }
+  .auth-packet-5 { left: 86%; bottom: 72%; --packet-dur: 12s; --packet-delay: 2.1s; }
+  @media (prefers-reduced-motion: reduce) {
+    .auth-packet {
+      animation: none !important;
+      opacity: 0.2 !important;
+    }
+  }
 }
 
 /*

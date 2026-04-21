@@ -2,6 +2,7 @@ import * as React from "react";
 
 import { Eye, EyeOff } from "lucide-react";
 
+import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 
 export interface PasswordInputProps extends Omit<
@@ -15,8 +16,24 @@ export interface PasswordInputProps extends Omit<
 const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
   ({ className, showPassword, onToggleVisibility, ...props }, ref) => {
     const [internalShow, setInternalShow] = React.useState(false);
-    const isShowing = showPassword ?? internalShow;
-    const toggle = onToggleVisibility ?? (() => setInternalShow((v) => !v));
+
+    const hasControlledShow = showPassword !== undefined;
+    const hasControlledToggle = onToggleVisibility !== undefined;
+    if (
+      process.env.NODE_ENV !== "production" &&
+      hasControlledShow !== hasControlledToggle
+    ) {
+      logger.warn(
+        "PasswordInput: `showPassword` and `onToggleVisibility` must be provided together. " +
+          "Provide both for controlled mode, or neither for uncontrolled mode."
+      );
+    }
+
+    const isControlled = hasControlledShow && hasControlledToggle;
+    const isShowing = isControlled ? showPassword! : internalShow;
+    const toggle = isControlled
+      ? onToggleVisibility!
+      : () => setInternalShow((v) => !v);
 
     return (
       <div className="relative">
