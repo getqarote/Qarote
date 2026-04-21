@@ -10,4 +10,16 @@ const docs = defineCollection({
   }),
 });
 
-export const collections = { docs };
+const blog = defineCollection({
+  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/blog" }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    publishedAt: z.string(), // ISO date string e.g. "2026-04-21"
+    updatedAt: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+    readingTimeMin: z.number().optional(),
+  }),
+});
+
+export const collections = { docs, blog };
