@@ -198,7 +198,9 @@
     "failedToUpdateThresholds": "更新阈值失败",
     "failedToGetAlertSettings": "获取告警设置失败",
     "onlyOwnerCanUpdateAlertSettings": "只有工作区所有者才能更新告警设置",
-    "failedToUpdateAlertSettings": "更新告警设置失败"
+    "failedToUpdateAlertSettings": "更新告警设置失败",
+    "failedToFetchDefinitions": "获取Broker定义失败",
+    "failedToImportDefinitions": "导入Broker定义失败"
   },
   "alerts": {
     "failedToGetRules": "获取告警规则失败",

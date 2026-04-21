@@ -198,7 +198,9 @@
     "failedToUpdateThresholds": "Échec de la mise à jour des seuils",
     "failedToGetAlertSettings": "Échec de la récupération des paramètres d'alerte",
     "onlyOwnerCanUpdateAlertSettings": "Seuls les propriétaires de l'espace de travail peuvent modifier les paramètres d'alerte",
-    "failedToUpdateAlertSettings": "Échec de la mise à jour des paramètres d'alerte"
+    "failedToUpdateAlertSettings": "Échec de la mise à jour des paramètres d'alerte",
+    "failedToFetchDefinitions": "Échec de la récupération des définitions du broker",
+    "failedToImportDefinitions": "Échec de l'importation des définitions du broker"
   },
   "alerts": {
     "failedToGetRules": "Échec de la récupération des règles d'alerte",

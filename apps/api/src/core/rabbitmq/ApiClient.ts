@@ -1375,6 +1375,54 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     }
   }
 
+  async getDefinitions(vhost?: string): Promise<unknown> {
+    try {
+      const endpoint = vhost
+        ? `/definitions/${encodeURIComponent(vhost)}`
+        : "/definitions";
+      logger.debug({ vhost: vhost || "all" }, "Fetching RabbitMQ definitions");
+      const definitions = await this.request<unknown>(endpoint);
+      logger.debug("RabbitMQ definitions fetched successfully");
+      return definitions;
+    } catch (error) {
+      logger.error({ error }, "Failed to fetch RabbitMQ definitions");
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "getDefinitions",
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
+  }
+
+  async uploadDefinitions(definitions: unknown, vhost?: string): Promise<void> {
+    try {
+      const endpoint = vhost
+        ? `/definitions/${encodeURIComponent(vhost)}`
+        : "/definitions";
+      logger.debug({ vhost: vhost || "all" }, "Uploading RabbitMQ definitions");
+      await this.request(endpoint, {
+        method: "POST",
+        body: JSON.stringify(definitions),
+      });
+      logger.debug("RabbitMQ definitions uploaded successfully");
+    } catch (error) {
+      logger.error({ error }, "Failed to upload RabbitMQ definitions");
+
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "uploadDefinitions",
+          serverId: this.baseUrl,
+        });
+      }
+
+      throw error;
+    }
+  }
+
   async deleteUser(username: string): Promise<void> {
     try {
       const encodedUsername = encodeURIComponent(username);

@@ -1,6 +1,7 @@
 import { router } from "@/trpc/trpc";
 
 import { alertsRouter } from "./alerts";
+import { definitionsRouter } from "./definitions";
 import { infrastructureRouter } from "./infrastructure";
 import { memoryRouter } from "./memory";
 import { messagesRouter } from "./messages";
@@ -30,4 +31,5 @@ export const rabbitmqRouter = router({
   users: usersRouter,
   topology: topologyRouter,
   policies: policiesRouter,
+  definitions: definitionsRouter,
 });

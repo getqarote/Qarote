@@ -197,7 +197,9 @@
     "failedToUpdateThresholds": "Failed to update thresholds",
     "failedToGetAlertSettings": "Failed to get alert settings",
     "onlyOwnerCanUpdateAlertSettings": "Only workspace owners can update alert settings",
-    "failedToUpdateAlertSettings": "Failed to update alert settings"
+    "failedToUpdateAlertSettings": "Failed to update alert settings",
+    "failedToFetchDefinitions": "Failed to fetch broker definitions",
+    "failedToImportDefinitions": "Failed to import broker definitions"
   },
   "alerts": {
     "failedToGetRules": "Failed to get alert rules",

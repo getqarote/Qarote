@@ -198,7 +198,9 @@
     "failedToUpdateThresholds": "Error al actualizar los umbrales",
     "failedToGetAlertSettings": "Error al obtener la configuración de alertas",
     "onlyOwnerCanUpdateAlertSettings": "Solo los propietarios del espacio de trabajo pueden actualizar la configuración de alertas",
-    "failedToUpdateAlertSettings": "Error al actualizar la configuración de alertas"
+    "failedToUpdateAlertSettings": "Error al actualizar la configuración de alertas",
+    "failedToFetchDefinitions": "Error al obtener las definiciones del broker",
+    "failedToImportDefinitions": "Error al importar las definiciones del broker"
   },
   "alerts": {
     "failedToGetRules": "Error al obtener las reglas de alerta",
