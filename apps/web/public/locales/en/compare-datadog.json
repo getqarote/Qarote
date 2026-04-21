@@ -33,7 +33,7 @@
     "qaroteLabel": "Qarote",
     "featureLabel": "Feature",
     "caption": "Qarote vs Datadog Feature Comparison",
-    "asOf": "Pricing as of April 2025. Datadog Infrastructure Pro tier applied to RabbitMQ host monitoring.",
+    "asOf": "Pricing as of April 2026. Datadog Infrastructure Pro tier applied to RabbitMQ host monitoring.",
     "rows": {
       "rabbitmqNative": {
         "feature": "RabbitMQ-native monitoring",
@@ -62,7 +62,7 @@
       },
       "estimatedCost": {
         "feature": "Estimated cost (3-node cluster)",
-        "competitor": "~$45–$69/month",
+        "competitor": "~$45–$54/month",
         "qarote": "$29/month (Developer plan)"
       },
       "multiVhost": {
@@ -96,7 +96,7 @@
     },
     "pricing": {
       "heading": "Datadog's per-host pricing surprises teams at scale",
-      "p1": "Datadog's Infrastructure Pro plan charges ~$15–$23 per host per month. For a 3-node RabbitMQ cluster, that's $45–$69/month for the infrastructure monitoring tier alone — before data ingestion, log indexing, or any other Datadog features. As your cluster grows, the bill grows with it.",
+      "p1": "Datadog's Infrastructure Pro plan charges $15–$18 per host per month. For a 3-node RabbitMQ cluster, that's $45–$54/month for the infrastructure monitoring tier alone — before data ingestion, log indexing, or any other Datadog features. As your cluster grows, the bill grows with it.",
       "p2": "Qarote's Developer plan is $348/year ($29/month flat) for a team. Enterprise is $1,188/year. Both are flat-rate: no per-host metering, no data volume charges, no surprise line items. If you self-host the MIT open-source edition, the monitoring itself is free.",
       "p3": "The comparison sharpens when you consider what you're actually getting: Datadog's per-host pricing buys you one integration among 700. Qarote's flat rate buys you a tool built entirely around your use case."
     },
