@@ -638,6 +638,10 @@ export function analyzeChurnRates(
     rate: number;
     thresholdKey: keyof AlertThresholds;
     category: AlertCategory;
+    // Unique source name per churn type — used for both ID generation and
+    // fingerprinting so that connection, channel, and queue churn alerts
+    // never collide even when they fire in the same millisecond.
+    sourceName: string;
     title: string;
     description: string;
     recommended: string;
@@ -646,6 +650,7 @@ export function analyzeChurnRates(
       rate: churnRates.connection_created_details.rate,
       thresholdKey: "connectionChurnRate",
       category: AlertCategory.CONNECTION,
+      sourceName: "cluster-connection-churn",
       title: "Connection Churn Rate",
       description: `Connections are being created at ${churnRates.connection_created_details.rate.toFixed(2)}/s on ${serverName}`,
       recommended:
@@ -655,6 +660,7 @@ export function analyzeChurnRates(
       rate: churnRates.channel_created_details.rate,
       thresholdKey: "channelChurnRate",
       category: AlertCategory.CONNECTION,
+      sourceName: "cluster-channel-churn",
       title: "Channel Churn Rate",
       description: `Channels are being created at ${churnRates.channel_created_details.rate.toFixed(2)}/s on ${serverName}`,
       recommended:
@@ -664,6 +670,7 @@ export function analyzeChurnRates(
       rate: churnRates.queue_declared_details.rate,
       thresholdKey: "queueChurnRate",
       category: AlertCategory.QUEUE,
+      sourceName: "cluster-queue-churn",
       title: "Queue Churn Rate",
       description: `Queues are being declared at ${churnRates.queue_declared_details.rate.toFixed(2)}/s on ${serverName}`,
       recommended:
@@ -677,7 +684,7 @@ export function analyzeChurnRates(
     if (severity) {
       const prefix = SEVERITY_TITLE_PREFIX[severity];
       alerts.push({
-        id: generateAlertId(serverId, check.category, "cluster"),
+        id: generateAlertId(serverId, check.category, check.sourceName),
         serverId,
         serverName,
         severity,
@@ -692,7 +699,9 @@ export function analyzeChurnRates(
         },
         timestamp,
         resolved: false,
-        source: { type: "cluster", name: serverName },
+        // sourceName is a stable discriminator; serverName surfaces in
+        // details.affected and the description for human-readable context.
+        source: { type: "cluster", name: check.sourceName },
       });
     }
   }

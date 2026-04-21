@@ -1127,18 +1127,41 @@ describe("analyzeChurnRates", () => {
   });
 
   describe("alert shape", () => {
-    it("sets source.type to 'cluster' and source.name to serverName", () => {
+    it("sets source.type to 'cluster' and source.name to a per-metric discriminator", () => {
       const alerts = analyzeChurnRates(
-        makeChurnRates({ connection_created_details: { rate: 50 } }),
+        makeChurnRates({
+          connection_created_details: { rate: 50 },
+          channel_created_details: { rate: 100 },
+          queue_declared_details: { rate: 20 },
+        }),
         SERVER_ID,
         SERVER_NAME,
         DEFAULT_THRESHOLDS
       );
-      expect(alerts.length).toBeGreaterThan(0);
+      expect(alerts).toHaveLength(3);
       for (const alert of alerts) {
         expect(alert.source.type).toBe("cluster");
-        expect(alert.source.name).toBe(SERVER_NAME);
       }
+      const sourceNames = alerts.map((a) => a.source.name);
+      expect(sourceNames).toContain("cluster-connection-churn");
+      expect(sourceNames).toContain("cluster-channel-churn");
+      expect(sourceNames).toContain("cluster-queue-churn");
+    });
+
+    it("produces distinct IDs for all three churn alerts (no fingerprint collision)", () => {
+      const alerts = analyzeChurnRates(
+        makeChurnRates({
+          connection_created_details: { rate: 50 },
+          channel_created_details: { rate: 100 },
+          queue_declared_details: { rate: 20 },
+        }),
+        SERVER_ID,
+        SERVER_NAME,
+        DEFAULT_THRESHOLDS
+      );
+      expect(alerts).toHaveLength(3);
+      const ids = alerts.map((a) => a.id);
+      expect(new Set(ids).size).toBe(3);
     });
 
     it("sets resolved: false on all churn alerts", () => {
