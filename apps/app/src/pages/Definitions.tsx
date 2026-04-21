@@ -300,7 +300,7 @@ const Definitions = () => {
             )}
 
             <Button
-              variant="destructive-outline"
+              variant="outline"
               onClick={() => setShowConfirmDialog(true)}
               disabled={!importFile || importMutation.isPending}
               className="w-full"

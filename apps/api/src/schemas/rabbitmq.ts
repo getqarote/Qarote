@@ -192,7 +192,11 @@ export const CreateOrUpdatePolicySchema = z.object({
   name: z.string().trim().min(1, "Policy name is required"),
   pattern: z.string().trim().min(1, "Pattern is required"),
   applyTo: z.enum(["queues", "exchanges", "all"]).default("all"),
-  definition: z.record(z.string(), z.unknown()).default({}),
+  definition: z
+    .record(z.string(), z.unknown())
+    .refine((obj) => Object.keys(obj).length > 0, {
+      message: "Policy definition must contain at least one key",
+    }),
   priority: z.number().int().min(0).max(1_000_000).default(0),
 });
 
