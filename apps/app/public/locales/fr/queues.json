@@ -45,6 +45,8 @@
   "queueNameLabel": "Nom de la file d'attente *",
   "queueNamePlaceholder": "ex. : email.notifications, user.events",
   "queueProperties": "Propriétés de la file d'attente",
+  "policy": "Politique",
+  "operatorPolicy": "Politique opérateur",
   "durable": "Durable",
   "durableDesc": "(La file d'attente survit aux redémarrages du serveur)",
   "autoDelete": "Suppression automatique",

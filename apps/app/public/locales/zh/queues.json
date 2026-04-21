@@ -45,6 +45,8 @@
   "queueNameLabel": "队列名称 *",
   "queueNamePlaceholder": "例如：email.notifications、user.events",
   "queueProperties": "队列属性",
+  "policy": "策略",
+  "operatorPolicy": "运营商策略",
   "durable": "持久化",
   "durableDesc": "（队列在服务器重启后仍然存在）",
   "autoDelete": "自动删除",

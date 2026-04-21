@@ -45,6 +45,8 @@
   "queueNameLabel": "Nombre de la cola *",
   "queueNamePlaceholder": "ej., email.notifications, user.events",
   "queueProperties": "Propiedades de la cola",
+  "policy": "Política",
+  "operatorPolicy": "Política de operador",
   "durable": "Durable",
   "durableDesc": "(La cola sobrevive a los reinicios del servidor)",
   "autoDelete": "Auto-eliminar",
