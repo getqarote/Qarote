@@ -205,6 +205,20 @@ export interface RabbitMQChannel {
     peer_port: number;
     peer_host: string;
   };
+  consumer_count: number;
+  prefetch_count: number;
+  messages_unacknowledged: number;
+  messages_unconfirmed: number;
+  message_stats?: {
+    publish?: number;
+    publish_details?: { rate: number };
+    deliver?: number;
+    deliver_details?: { rate: number };
+    ack?: number;
+    ack_details?: { rate: number };
+    confirm?: number;
+    confirm_details?: { rate: number };
+  };
 }
 
 export interface RabbitMQExchange {

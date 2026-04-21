@@ -1,6 +1,7 @@
 {
   "dashboard": "Panel",
   "queues": "Colas",
+  "channels": "Canales",
   "connections": "Conexiones",
   "nodes": "Nodos",
   "exchanges": "Intercambios",

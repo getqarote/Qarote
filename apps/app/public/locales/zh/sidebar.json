@@ -1,6 +1,7 @@
 {
   "dashboard": "仪表盘",
   "queues": "队列",
+  "channels": "通道",
   "connections": "连接",
   "nodes": "节点",
   "exchanges": "交换机",
