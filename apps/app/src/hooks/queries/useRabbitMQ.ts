@@ -427,7 +427,11 @@ export const useQueuePauseStatus = (serverId: string, queueName: string) => {
   return query;
 };
 
-export const usePolicies = (serverId: string | null, vhost?: string | null) => {
+export const usePolicies = (
+  serverId: string | null,
+  vhost?: string | null,
+  serverExists: boolean = true
+) => {
   const { workspace } = useWorkspace();
 
   const query = trpc.rabbitmq.policies.getPolicies.useQuery(
@@ -437,7 +441,7 @@ export const usePolicies = (serverId: string | null, vhost?: string | null) => {
       vhost: vhost ? encodeURIComponent(vhost) : undefined,
     },
     {
-      enabled: !!serverId && !!workspace?.id,
+      enabled: !!serverId && !!workspace?.id && serverExists,
       staleTime: 0,
       refetchInterval: 10000,
     }
@@ -451,7 +455,11 @@ export const useCreateOrUpdatePolicy = () => {
 
   const mutation = trpc.rabbitmq.policies.createOrUpdatePolicy.useMutation({
     onSuccess: async () => {
-      await utils.rabbitmq.policies.getPolicies.invalidate();
+      await Promise.all([
+        utils.rabbitmq.policies.getPolicies.invalidate(),
+        utils.rabbitmq.queues.getQueues.invalidate(),
+        utils.rabbitmq.infrastructure.getExchanges.invalidate(),
+      ]);
     },
   });
 
@@ -463,7 +471,11 @@ export const useDeletePolicy = () => {
 
   const mutation = trpc.rabbitmq.policies.deletePolicy.useMutation({
     onSuccess: async () => {
-      await utils.rabbitmq.policies.getPolicies.invalidate();
+      await Promise.all([
+        utils.rabbitmq.policies.getPolicies.invalidate(),
+        utils.rabbitmq.queues.getQueues.invalidate(),
+        utils.rabbitmq.infrastructure.getExchanges.invalidate(),
+      ]);
     },
   });
 

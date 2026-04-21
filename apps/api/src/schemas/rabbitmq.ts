@@ -185,16 +185,16 @@ export const TestConnectionWithWorkspaceSchema =
 
 // Schema for creating/updating a policy
 export const CreateOrUpdatePolicySchema = z.object({
-  name: z.string().min(1, "Policy name is required"),
-  pattern: z.string().min(1, "Pattern is required"),
+  name: z.string().trim().min(1, "Policy name is required"),
+  pattern: z.string().trim().min(1, "Pattern is required"),
   applyTo: z.enum(["queues", "exchanges", "all"]).default("all"),
   definition: z.record(z.string(), z.unknown()).default({}),
-  priority: z.number().int().min(0).default(0),
+  priority: z.number().int().min(0).max(1_000_000).default(0),
 });
 
 // Schema for deleting a policy
 export const DeletePolicySchema = z.object({
-  policyName: z.string().min(1, "Policy name is required"),
+  policyName: z.string().trim().min(1, "Policy name is required"),
 });
 
 // Metrics schemas

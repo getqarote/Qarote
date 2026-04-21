@@ -194,6 +194,7 @@ function PolicyRow({
                 className="h-7 w-7 p-0"
                 onClick={() => onEdit(policy)}
                 title={t("editPolicy")}
+                aria-label={t("editPolicy")}
               >
                 <Pencil className="h-3.5 w-3.5" />
               </Button>
@@ -206,6 +207,7 @@ function PolicyRow({
                 onClick={() => onDelete(policy)}
                 disabled={isDeleting}
                 title={t("deletePolicy")}
+                aria-label={t("deletePolicy")}
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>

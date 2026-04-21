@@ -80,7 +80,7 @@ export function ExchangeRow({
               <Badge
                 variant="outline"
                 className="text-xs shrink-0 font-mono hidden xl:inline-flex"
-                title={`Policy: ${exchange.policy}`}
+                title={`${t("policy")}: ${exchange.policy}`}
               >
                 {exchange.policy}
               </Badge>

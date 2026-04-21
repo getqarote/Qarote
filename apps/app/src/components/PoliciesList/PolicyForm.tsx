@@ -134,7 +134,11 @@ const policyFormSchema = z.object({
     (val) => {
       try {
         const parsed = JSON.parse(val);
-        return typeof parsed === "object" && parsed !== null;
+        return (
+          typeof parsed === "object" &&
+          parsed !== null &&
+          !Array.isArray(parsed)
+        );
       } catch {
         return false;
       }
@@ -217,6 +221,12 @@ export function PolicyForm({
     const current = form.getValues("definitionJson");
     try {
       const parsed = JSON.parse(current);
+      if (
+        typeof parsed !== "object" ||
+        parsed === null ||
+        Array.isArray(parsed)
+      )
+        throw new Error();
       parsed[key] = JSON.parse(example);
       form.setValue("definitionJson", JSON.stringify(parsed, null, 2), {
         shouldValidate: true,

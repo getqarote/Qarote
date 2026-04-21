@@ -1386,7 +1386,10 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
         : "/policies";
       logger.debug({ vhost }, "Fetching RabbitMQ policies");
       const policies = await this.request<RabbitMQPolicy[]>(path);
-      logger.debug({ count: policies.length }, "RabbitMQ policies fetched");
+      logger.debug(
+        { count: policies?.length ?? 0 },
+        "RabbitMQ policies fetched"
+      );
       return policies;
     } catch (error) {
       logger.error({ error, vhost }, "Failed to fetch RabbitMQ policies");

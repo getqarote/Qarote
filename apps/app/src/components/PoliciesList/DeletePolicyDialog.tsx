@@ -28,7 +28,7 @@ export function DeletePolicyDialog({
   const { t } = useTranslation("policies");
 
   const handleOpenChange = (nextOpen: boolean) => {
-    if (!nextOpen) onCancel();
+    if (!nextOpen && !isDeleting) onCancel();
   };
 
   return (

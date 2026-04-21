@@ -104,7 +104,6 @@ export const policiesRouter = router({
 
         return {
           success: true,
-          message: `Policy "${name}" saved successfully`,
         };
       } catch (error) {
         ctx.logger.error(
@@ -148,7 +147,6 @@ export const policiesRouter = router({
 
         return {
           success: true,
-          message: `Policy "${policyName}" deleted successfully`,
         };
       } catch (error) {
         ctx.logger.error(

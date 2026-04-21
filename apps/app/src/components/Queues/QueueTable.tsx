@@ -266,7 +266,7 @@ function QueueRow({
               <Badge
                 variant="outline"
                 className="text-xs shrink-0 font-mono hidden xl:inline-flex"
-                title={`Policy: ${queue.policy}`}
+                title={`${t("policy")}: ${queue.policy}`}
               >
                 {queue.policy}
               </Badge>
