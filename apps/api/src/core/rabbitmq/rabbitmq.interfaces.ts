@@ -904,3 +904,19 @@ export interface TunnelConfig {
   shouldUseHttps: boolean;
   recommendedPort: number;
 }
+
+export interface RabbitMQPolicy {
+  vhost: string;
+  name: string;
+  pattern: string;
+  "apply-to": "queues" | "exchanges" | "all";
+  definition: Record<string, unknown>;
+  priority: number;
+}
+
+export interface CreateOrUpdatePolicyRequest {
+  pattern: string;
+  "apply-to": "queues" | "exchanges" | "all";
+  definition: Record<string, unknown>;
+  priority: number;
+}

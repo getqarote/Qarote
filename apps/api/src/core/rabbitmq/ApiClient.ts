@@ -2,6 +2,7 @@ import { captureRabbitMQError } from "../../services/sentry";
 import { logger } from "../logger";
 import { RabbitMQBaseClient } from "./BaseClient";
 import type {
+  CreateOrUpdatePolicyRequest,
   CreateVHostRequest,
   RabbitMQBinding,
   RabbitMQChannel,
@@ -10,6 +11,7 @@ import type {
   RabbitMQExchange,
   RabbitMQNode,
   RabbitMQOverview,
+  RabbitMQPolicy,
   RabbitMQQueue,
   RabbitMQUser,
   RabbitMQUserPermission,
@@ -1373,6 +1375,77 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
         });
       }
 
+      throw error;
+    }
+  }
+
+  async getPolicies(vhost?: string): Promise<RabbitMQPolicy[]> {
+    try {
+      const path = vhost
+        ? `/policies/${encodeURIComponent(vhost)}`
+        : "/policies";
+      logger.debug({ vhost }, "Fetching RabbitMQ policies");
+      const policies = await this.request<RabbitMQPolicy[]>(path);
+      logger.debug(
+        { count: policies?.length ?? 0 },
+        "RabbitMQ policies fetched"
+      );
+      return policies;
+    } catch (error) {
+      logger.error({ error, vhost }, "Failed to fetch RabbitMQ policies");
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "getPolicies",
+          serverId: this.baseUrl,
+        });
+      }
+      throw error;
+    }
+  }
+
+  async createOrUpdatePolicy(
+    vhost: string,
+    name: string,
+    data: CreateOrUpdatePolicyRequest
+  ): Promise<void> {
+    try {
+      const encodedVhost = encodeURIComponent(vhost);
+      const encodedName = encodeURIComponent(name);
+      logger.debug({ vhost, name }, "Creating/updating RabbitMQ policy");
+      await this.request(`/policies/${encodedVhost}/${encodedName}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      });
+      logger.debug({ vhost, name }, "RabbitMQ policy saved successfully");
+    } catch (error) {
+      logger.error({ error, vhost, name }, "Failed to save RabbitMQ policy");
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "createOrUpdatePolicy",
+          serverId: this.baseUrl,
+        });
+      }
+      throw error;
+    }
+  }
+
+  async deletePolicy(vhost: string, name: string): Promise<void> {
+    try {
+      const encodedVhost = encodeURIComponent(vhost);
+      const encodedName = encodeURIComponent(name);
+      logger.debug({ vhost, name }, "Deleting RabbitMQ policy");
+      await this.request(`/policies/${encodedVhost}/${encodedName}`, {
+        method: "DELETE",
+      });
+      logger.debug({ vhost, name }, "RabbitMQ policy deleted successfully");
+    } catch (error) {
+      logger.error({ error, vhost, name }, "Failed to delete RabbitMQ policy");
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "deletePolicy",
+          serverId: this.baseUrl,
+        });
+      }
       throw error;
     }
   }

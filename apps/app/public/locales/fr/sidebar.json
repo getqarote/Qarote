@@ -4,6 +4,7 @@
   "connections": "Connexions",
   "nodes": "Nœuds",
   "exchanges": "Échanges",
+  "policies": "Politiques",
   "topology": "Topologie",
   "virtualHosts": "Hôtes virtuels",
   "users": "Utilisateurs",

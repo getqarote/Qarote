@@ -262,6 +262,15 @@ function QueueRow({
               )}
             </div>
             <QueueStatusBadge state={queue.state} />
+            {queue.policy && (
+              <Badge
+                variant="outline"
+                className="text-xs shrink-0 font-mono hidden xl:inline-flex"
+                title={`${t("policy")}: ${queue.policy}`}
+              >
+                {queue.policy}
+              </Badge>
+            )}
             <span className="hidden xl:inline-flex items-center gap-1 text-xs text-muted-foreground">
               <Users className="h-3 w-3 shrink-0" aria-hidden="true" />
               <span className="font-mono tabular-nums">{queue.consumers}</span>
@@ -358,6 +367,16 @@ function QueueDetailsPanel({
         />
         {queue.durable && (
           <DetailItem label={t("durable")} value={t("durable")} />
+        )}
+        {queue.policy && (
+          <DetailItem label={t("policy")} value={queue.policy} mono />
+        )}
+        {queue.operator_policy && (
+          <DetailItem
+            label={t("operatorPolicy")}
+            value={queue.operator_policy}
+            mono
+          />
         )}
       </div>
 

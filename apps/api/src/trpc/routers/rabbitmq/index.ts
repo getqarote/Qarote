@@ -6,6 +6,7 @@ import { memoryRouter } from "./memory";
 import { messagesRouter } from "./messages";
 import { metricsRouter } from "./metrics";
 import { overviewRouter } from "./overview";
+import { policiesRouter } from "./policies";
 import { queuesRouter } from "./queues";
 import { serverRouter } from "./server";
 import { topologyRouter } from "./topology";
@@ -28,4 +29,5 @@ export const rabbitmqRouter = router({
   alerts: alertsRouter,
   users: usersRouter,
   topology: topologyRouter,
+  policies: policiesRouter,
 });

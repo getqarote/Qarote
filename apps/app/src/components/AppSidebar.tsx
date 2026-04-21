@@ -15,6 +15,7 @@ import { PixelChart } from "@/components/ui/pixel-chart";
 import { PixelClock } from "@/components/ui/pixel-clock";
 import { PixelFlag } from "@/components/ui/pixel-flag";
 import { PixelHelp } from "@/components/ui/pixel-help";
+import { PixelKey } from "@/components/ui/pixel-key";
 import { PixelLayers } from "@/components/ui/pixel-layers";
 import { PixelLogout } from "@/components/ui/pixel-logout";
 import { PixelMessage } from "@/components/ui/pixel-message";
@@ -69,6 +70,7 @@ const menuItems = [
   { titleKey: "sidebar:connections", url: "/connections", icon: PixelClock },
   { titleKey: "sidebar:nodes", url: "/nodes", icon: PixelServer },
   { titleKey: "sidebar:exchanges", url: "/exchanges", icon: PixelActivity },
+  { titleKey: "sidebar:policies", url: "/policies", icon: PixelKey },
   { titleKey: "sidebar:topology", url: "/topology", icon: PixelNetwork },
   {
     titleKey: "sidebar:virtualHosts",
