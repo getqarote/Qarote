@@ -66,6 +66,9 @@ const AlertTypeSchema = z.enum([
   "SOCKET_USAGE",
   "PROCESS_USAGE",
   "RUN_QUEUE_LENGTH",
+  "CONNECTION_CHURN_RATE",
+  "CHANNEL_CHURN_RATE",
+  "QUEUE_CHURN_RATE",
 ]);
 
 const LegacyAlertSeveritySchema = z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]);

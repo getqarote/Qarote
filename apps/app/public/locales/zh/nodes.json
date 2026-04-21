@@ -17,5 +17,14 @@
   "saveClusterName": "保存",
   "cancelEdit": "取消",
   "clusterNameUpdated": "集群名称已更新",
-  "clusterNameError": "更新集群名称失败"
+  "clusterNameError": "更新集群名称失败",
+  "churnStatistics": {
+    "connectionOperations": "连接操作",
+    "channelOperations": "信道操作",
+    "queueOperations": "队列操作",
+    "created": "已创建",
+    "closed": "已关闭",
+    "declared": "已声明",
+    "deleted": "已删除"
+  }
 }

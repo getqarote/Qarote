@@ -56,6 +56,9 @@ export interface AlertThresholds {
   unackedMessages: MetricThresholds;
   consumerUtilization: MetricThresholds;
   runQueue: MetricThresholds;
+  connectionChurnRate: MetricThresholds;
+  channelChurnRate: MetricThresholds;
+  queueChurnRate: MetricThresholds;
 }
 
 export interface AlertSummary {

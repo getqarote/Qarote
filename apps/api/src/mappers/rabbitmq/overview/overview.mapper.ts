@@ -19,6 +19,38 @@ export class OverviewMapper {
       node_tags: overview.node_tags,
       default_queue_type: overview.default_queue_type,
       release_series_support_status: overview.release_series_support_status,
+      churnRates: overview.churn_rates
+        ? {
+            connectionCreated: {
+              count: overview.churn_rates.connection_created,
+              rate: overview.churn_rates.connection_created_details.rate,
+            },
+            connectionClosed: {
+              count: overview.churn_rates.connection_closed,
+              rate: overview.churn_rates.connection_closed_details.rate,
+            },
+            channelCreated: {
+              count: overview.churn_rates.channel_created,
+              rate: overview.churn_rates.channel_created_details.rate,
+            },
+            channelClosed: {
+              count: overview.churn_rates.channel_closed,
+              rate: overview.churn_rates.channel_closed_details.rate,
+            },
+            queueDeclared: {
+              count: overview.churn_rates.queue_declared,
+              rate: overview.churn_rates.queue_declared_details.rate,
+            },
+            queueCreated: {
+              count: overview.churn_rates.queue_created,
+              rate: overview.churn_rates.queue_created_details.rate,
+            },
+            queueDeleted: {
+              count: overview.churn_rates.queue_deleted,
+              rate: overview.churn_rates.queue_deleted_details.rate,
+            },
+          }
+        : undefined,
     };
   }
 }

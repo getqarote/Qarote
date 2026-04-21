@@ -17,5 +17,14 @@
   "saveClusterName": "Enregistrer",
   "cancelEdit": "Annuler",
   "clusterNameUpdated": "Nom du cluster mis à jour",
-  "clusterNameError": "Échec de la mise à jour du nom du cluster"
+  "clusterNameError": "Échec de la mise à jour du nom du cluster",
+  "churnStatistics": {
+    "connectionOperations": "Opérations de connexion",
+    "channelOperations": "Opérations de canal",
+    "queueOperations": "Opérations de file d'attente",
+    "created": "Créées",
+    "closed": "Fermées",
+    "declared": "Déclarées",
+    "deleted": "Supprimées"
+  }
 }

@@ -23,6 +23,9 @@ const DEFAULT_THRESHOLDS: AlertThresholds = {
   unackedMessages: { medium: 1_000, critical: 5_000 },
   consumerUtilization: { medium: 10 },
   runQueue: { medium: 10, critical: 20 },
+  connectionChurnRate: { medium: 10, critical: 50 },
+  channelChurnRate: { medium: 20, critical: 100 },
+  queueChurnRate: { medium: 5, critical: 20 },
 };
 
 function makeNode(overrides: Partial<RabbitMQNode> = {}): RabbitMQNode {

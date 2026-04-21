@@ -190,6 +190,63 @@ const DEFAULT_RULE_DEFINITIONS: DefaultRuleDefinition[] = [
     operator: ComparisonOperator.GREATER_THAN,
     severity: AlertSeverity.CRITICAL,
   },
+  // Connection churn
+  {
+    slug: "high-connection-churn",
+    name: "High Connection Churn Rate",
+    description: "Alert when connection creation rate exceeds 10/s",
+    type: AlertType.CONNECTION_CHURN_RATE,
+    threshold: 10,
+    operator: ComparisonOperator.GREATER_THAN,
+    severity: AlertSeverity.MEDIUM,
+  },
+  {
+    slug: "critical-connection-churn",
+    name: "Critical Connection Churn Rate",
+    description: "Alert when connection creation rate exceeds 50/s",
+    type: AlertType.CONNECTION_CHURN_RATE,
+    threshold: 50,
+    operator: ComparisonOperator.GREATER_THAN,
+    severity: AlertSeverity.CRITICAL,
+  },
+  // Channel churn
+  {
+    slug: "high-channel-churn",
+    name: "High Channel Churn Rate",
+    description: "Alert when channel creation rate exceeds 20/s",
+    type: AlertType.CHANNEL_CHURN_RATE,
+    threshold: 20,
+    operator: ComparisonOperator.GREATER_THAN,
+    severity: AlertSeverity.MEDIUM,
+  },
+  {
+    slug: "critical-channel-churn",
+    name: "Critical Channel Churn Rate",
+    description: "Alert when channel creation rate exceeds 100/s",
+    type: AlertType.CHANNEL_CHURN_RATE,
+    threshold: 100,
+    operator: ComparisonOperator.GREATER_THAN,
+    severity: AlertSeverity.CRITICAL,
+  },
+  // Queue churn
+  {
+    slug: "high-queue-churn",
+    name: "High Queue Churn Rate",
+    description: "Alert when queue declaration rate exceeds 5/s",
+    type: AlertType.QUEUE_CHURN_RATE,
+    threshold: 5,
+    operator: ComparisonOperator.GREATER_THAN,
+    severity: AlertSeverity.MEDIUM,
+  },
+  {
+    slug: "critical-queue-churn",
+    name: "Critical Queue Churn Rate",
+    description: "Alert when queue declaration rate exceeds 20/s",
+    type: AlertType.QUEUE_CHURN_RATE,
+    threshold: 20,
+    operator: ComparisonOperator.GREATER_THAN,
+    severity: AlertSeverity.CRITICAL,
+  },
 ];
 
 /**

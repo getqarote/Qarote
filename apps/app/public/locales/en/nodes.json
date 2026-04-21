@@ -17,5 +17,14 @@
   "saveClusterName": "Save",
   "cancelEdit": "Cancel",
   "clusterNameUpdated": "Cluster name updated",
-  "clusterNameError": "Failed to update cluster name"
+  "clusterNameError": "Failed to update cluster name",
+  "churnStatistics": {
+    "connectionOperations": "Connection operations",
+    "channelOperations": "Channel operations",
+    "queueOperations": "Queue operations",
+    "created": "Created",
+    "closed": "Closed",
+    "declared": "Declared",
+    "deleted": "Deleted"
+  }
 }
