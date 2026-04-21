@@ -255,7 +255,11 @@ function SignInErrorMessage({
     return <>{t("failedSignIn")}</>;
   }
 
-  if (error.message.includes("Email not verified")) {
+  const isEmailNotVerified =
+    (error as Error & { code?: string }).code === "EMAIL_NOT_VERIFIED" ||
+    error.message.includes("Email not verified");
+
+  if (isEmailNotVerified) {
     return (
       <div>
         <div className="font-medium mb-2">{t("emailNotVerified")}</div>

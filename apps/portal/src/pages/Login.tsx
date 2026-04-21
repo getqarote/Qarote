@@ -1,23 +1,17 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Github } from "lucide-react";
 
 import { logger } from "@/lib/logger";
 
+import { AuthPageHeader } from "@/components/auth/AuthPageHeader";
+import { AuthPageWrapper } from "@/components/auth/AuthPageWrapper";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -28,19 +22,18 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
+import { PixelLogin } from "@/components/ui/pixel-login";
 
 import { useLogin } from "@/hooks/ui/useAuth";
 
 import { type SignInFormData, signInSchema } from "@/schemas";
 
 const Login = () => {
-  const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
-  const loginMutation = useLogin();
   const { t } = useTranslation("auth");
   const { t: tCommon } = useTranslation("common");
+  const navigate = useNavigate();
+  const loginMutation = useLogin();
 
-  // Initialize form with react-hook-form
   const form = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -52,10 +45,7 @@ const Login = () => {
   const onSubmit = (data: SignInFormData) => {
     logger.info("Login form submitted");
     loginMutation.mutate(
-      {
-        email: data.email,
-        password: data.password,
-      },
+      { email: data.email, password: data.password },
       {
         onSuccess: () => {
           navigate("/licenses", { replace: true });
@@ -65,185 +55,167 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-auth py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h2 className="mt-6 text-3xl font-extrabold text-white">
-            {t("signInToAccount")}
-          </h2>
-          <p className="mt-2 text-sm text-orange-100">
-            {t("or")}{" "}
-            <Link
-              to="/auth/sign-up"
-              className="font-medium text-orange-300 hover:text-orange-200 transition-colors"
-            >
-              {t("createAccount")}
-            </Link>
-          </p>
-        </div>
+    <AuthPageWrapper>
+      <AuthPageHeader
+        Icon={PixelLogin}
+        title={t("welcomeBack")}
+        description={t("enterCredentials")}
+      />
 
-        <Card className="bg-card/95 backdrop-blur-xs border-border/20 shadow-2xl">
-          <CardHeader>
-            <CardTitle className="text-card-foreground">
-              {t("welcomeBack")}
-            </CardTitle>
-            <CardDescription>{t("enterCredentials")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-4"
-              >
-                {loginMutation.isError && (
-                  <Alert variant="destructive">
-                    <AlertDescription>
-                      {(() => {
-                        const error = loginMutation.error;
-                        if (error instanceof Error) {
-                          const message = error.message;
-                          if (message.includes("Email not verified")) {
-                            return (
-                              <div>
-                                <div className="font-medium mb-2">
-                                  {t("emailNotVerified")}
-                                </div>
-                                <p className="text-sm mb-3">
-                                  {t("emailNotVerifiedDescription")}
-                                </p>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => navigate("/verify-email")}
-                                  className="bg-white text-red-700 border-red-300 hover:bg-red-50"
-                                >
-                                  {t("goToVerification")}
-                                </Button>
-                              </div>
-                            );
-                          }
-                          return message;
-                        }
-                        return t("failedSignIn");
-                      })()}
-                    </AlertDescription>
-                  </Alert>
-                )}
+      <CardContent className="space-y-4">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {loginMutation.isError && (
+              <Alert variant="destructive">
+                <AlertDescription>
+                  <LoginErrorMessage
+                    error={loginMutation.error}
+                    onGoToVerification={() => navigate("/verify-email")}
+                  />
+                </AlertDescription>
+              </Alert>
+            )}
 
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("emailAddress")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder={t("enterEmail")}
-                          disabled={loginMutation.isPending}
-                          autoComplete="username"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("password")}</FormLabel>
-                      <FormControl>
-                        <PasswordInput
-                          placeholder={t("enterPassword")}
-                          disabled={loginMutation.isPending}
-                          showPassword={showPassword}
-                          onToggleVisibility={() =>
-                            setShowPassword(!showPassword)
-                          }
-                          autoComplete="current-password"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button
-                  type="submit"
-                  className="w-full bg-gradient-button hover:bg-gradient-button-hover"
-                  disabled={loginMutation.isPending || !form.formState.isValid}
-                >
-                  {loginMutation.isPending ? t("signingIn") : t("signIn")}
-                </Button>
-              </form>
-            </Form>
-
-            {/* Divider */}
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                  {t("orContinueWith")}
-                </span>
-              </div>
-            </div>
-
-            {/* Google Login */}
-            <GoogleLoginButton
-              onError={(error) => {
-                logger.error("Google login error:", error);
-              }}
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("emailAddress")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder={t("enterEmail")}
+                      disabled={loginMutation.isPending}
+                      autoComplete="username"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
 
-            {/* Forgot Password Link */}
-            <div className="mt-4 text-center">
-              <Link
-                to="/forgot-password"
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                {t("forgotPassword")}
-              </Link>
-            </div>
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex items-center justify-between">
+                    <FormLabel>{t("password")}</FormLabel>
+                    <Link
+                      to="/forgot-password"
+                      className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      {t("forgotPassword")}
+                    </Link>
+                  </div>
+                  <FormControl>
+                    <PasswordInput
+                      placeholder={t("enterPassword")}
+                      disabled={loginMutation.isPending}
+                      autoComplete="current-password"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-            {/* Legal Links */}
-            <div className="mt-6 text-center text-sm text-muted-foreground">
-              <div className="flex justify-center gap-4 mt-2 items-center">
-                <a
-                  href="https://github.com/getqarote/Qarote"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="View on GitHub"
-                  className="hover:text-primary transition-colors"
-                >
-                  <Github className="w-4 h-4 sm:w-5 sm:h-5" />
-                </a>
-                <Link
-                  to="/terms-of-service"
-                  className="hover:text-primary transition-colors"
-                >
-                  {tCommon("termsOfService")}
-                </Link>
-                <Link
-                  to="/privacy-policy"
-                  className="hover:text-primary transition-colors"
-                >
-                  {tCommon("privacyPolicy")}
-                </Link>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+            <Button
+              type="submit"
+              className="w-full btn-primary"
+              disabled={loginMutation.isPending}
+            >
+              {loginMutation.isPending ? t("signingIn") : t("signIn")}
+            </Button>
+          </form>
+        </Form>
+
+        <div className="relative my-6">
+          <div
+            className="absolute inset-0 flex items-center"
+            aria-hidden="true"
+          >
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs">
+            <span className="bg-card px-2 text-muted-foreground">
+              {t("orContinueWith")}
+            </span>
+          </div>
+        </div>
+
+        <GoogleLoginButton
+          onError={(error) => logger.error("Google login error:", error)}
+        />
+
+        <div className="pt-2 text-center text-sm text-muted-foreground">
+          {t("or")}{" "}
+          <Link
+            to="/auth/sign-up"
+            className="font-medium text-primary hover:underline underline-offset-2"
+          >
+            {t("createAccount")}
+          </Link>
+        </div>
+
+        <div className="pt-4 flex justify-center gap-4 text-sm text-muted-foreground">
+          <Link
+            to="/terms-of-service"
+            className="hover:text-primary transition-colors"
+          >
+            {tCommon("termsOfService")}
+          </Link>
+          <Link
+            to="/privacy-policy"
+            className="hover:text-primary transition-colors"
+          >
+            {tCommon("privacyPolicy")}
+          </Link>
+        </div>
+      </CardContent>
+    </AuthPageWrapper>
   );
 };
+
+function LoginErrorMessage({
+  error,
+  onGoToVerification,
+}: {
+  error: unknown;
+  onGoToVerification: () => void;
+}) {
+  const { t } = useTranslation("auth");
+
+  if (!(error instanceof Error)) {
+    return <>{t("failedSignIn")}</>;
+  }
+
+  const isEmailNotVerified =
+    (error as Error & { code?: string }).code === "EMAIL_NOT_VERIFIED" ||
+    error.message.includes("Email not verified");
+
+  if (isEmailNotVerified) {
+    return (
+      <div>
+        <div className="font-medium mb-2">{t("emailNotVerified")}</div>
+        <p className="text-sm mb-3">{t("emailNotVerifiedDescription")}</p>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onGoToVerification}
+          className="text-destructive border-destructive/30 hover:bg-destructive/10"
+        >
+          {t("goToVerification")}
+        </Button>
+      </div>
+    );
+  }
+
+  return <>{error.message}</>;
+}
 
 export default Login;

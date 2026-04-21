@@ -2,7 +2,6 @@
   "layout": {
     "title": "Portal de Qarote",
     "licenses": "Licencias",
-    "documentation": "Documentación",
     "account": "Cuenta",
 
     "logout": "Cerrar sesión"
@@ -52,17 +51,6 @@
         }
       }
     }
-  },
-  "documentation": {
-    "searchPlaceholder": "Buscar en la documentación...",
-    "title": "Implementación autoalojada",
-    "description": "Todo lo que necesita para implementar Qarote en su propia infraestructura",
-    "dockerComposeFile": "Archivo Docker Compose",
-    "environmentConfiguration": "Configuración del entorno",
-    "installationGuide": "Guía de instalación",
-    "installationGuideDescription": "Instrucciones paso a paso para implementar Qarote",
-    "dockerComposeDescription": "Configuración de Docker Compose lista para producción para las ediciones Community y Enterprise",
-    "environmentConfigDescription": "Plantilla de variables de entorno — cópiela en .env y actualice con sus valores"
   },
   "codeBlock": {
     "copied": "Copiado",

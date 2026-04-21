@@ -33,7 +33,12 @@ export const useLogin = () => {
       })
       .then(async (result) => {
         if (result.error) {
-          const err = new Error(result.error.message || "Login failed");
+          const err = new Error(
+            result.error.message || "Login failed"
+          ) as Error & { code?: string };
+          err.code = (result.error as Record<string, unknown>).code as
+            | string
+            | undefined;
           setError(err);
           setIsError(true);
           setIsPending(false);
