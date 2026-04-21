@@ -6,6 +6,7 @@ import { Check, Pencil, X } from "lucide-react";
 import { ChurnStatistics } from "@/components/nodes/ChurnStatistics";
 import { EnhancedNodesOverview } from "@/components/nodes/EnhancedNodesOverview";
 import { EnhancedNodesTable } from "@/components/nodes/EnhancedNodesTable";
+import { PortsAndContexts } from "@/components/nodes/PortsAndContexts";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { PageError } from "@/components/PageError";
 import { NoServerSelectedCard, PageShell } from "@/components/PageShell";
@@ -38,8 +39,18 @@ const Nodes = () => {
   const {
     data: nodesData,
     isLoading: nodesLoading,
+    isFetching: nodesFetching,
+    dataUpdatedAt: nodesUpdatedAt,
     error: nodesQueryError,
+    refetch: refetchNodes,
   } = useNodes(selectedServerId);
+
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    if (nodesFetching || nodesUpdatedAt === 0) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [nodesFetching, nodesUpdatedAt]);
 
   const { data: overviewData, isLoading: overviewLoading } =
     useOverview(selectedServerId);
@@ -53,6 +64,7 @@ const Nodes = () => {
 
   useEffect(() => {
     if (editingClusterName) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setClusterNameValue(currentClusterName);
       setTimeout(() => inputRef.current?.focus(), 0);
     }
@@ -127,7 +139,10 @@ const Nodes = () => {
             <h1 className="title-page">{t("pageTitle")}</h1>
           </div>
         </div>
-        <PageError message={t("common:serverConnectionError")} />
+        <PageError
+          message={t("common:serverConnectionError")}
+          onRetry={() => refetchNodes()}
+        />
       </PageShell>
     );
   }
@@ -144,6 +159,17 @@ const Nodes = () => {
             </TitleWithCount>
           </div>
         </div>
+        {nodesUpdatedAt > 0 && (
+          <span className="text-xs text-muted-foreground tabular-nums">
+            {nodesFetching
+              ? t("common:updating")
+              : Math.floor((now - nodesUpdatedAt) / 1000) <= 2
+                ? t("common:justUpdated")
+                : t("common:updatedAgo", {
+                    seconds: Math.floor((now - nodesUpdatedAt) / 1000),
+                  })}
+          </span>
+        )}
       </div>
 
       {/* Cluster Name */}
@@ -226,6 +252,13 @@ const Nodes = () => {
       {/* Churn Statistics */}
       <ChurnStatistics
         churnRates={overviewData?.overview?.churnRates}
+        isLoading={overviewLoading}
+      />
+
+      {/* Ports & Contexts */}
+      <PortsAndContexts
+        listeners={overviewData?.overview?.listeners ?? []}
+        contexts={overviewData?.overview?.contexts ?? []}
         isLoading={overviewLoading}
       />
     </PageShell>

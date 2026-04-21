@@ -26,5 +26,15 @@
     "closed": "已关闭",
     "declared": "已声明",
     "deleted": "已删除"
+  },
+  "ports": {
+    "listeningPorts": "Listening ports",
+    "webContexts": "Web contexts",
+    "protocol": "Protocol",
+    "boundTo": "Bound to",
+    "port": "Port",
+    "context": "Context",
+    "ssl": "SSL",
+    "path": "Path"
   }
 }

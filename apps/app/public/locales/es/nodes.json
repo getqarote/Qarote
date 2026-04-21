@@ -26,5 +26,15 @@
     "closed": "Cerradas",
     "declared": "Declaradas",
     "deleted": "Eliminadas"
+  },
+  "ports": {
+    "listeningPorts": "Listening ports",
+    "webContexts": "Web contexts",
+    "protocol": "Protocol",
+    "boundTo": "Bound to",
+    "port": "Port",
+    "context": "Context",
+    "ssl": "SSL",
+    "path": "Path"
   }
 }

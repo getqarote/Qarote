@@ -11,6 +11,10 @@
  * the data warrants it.
  */
 
+/** Shared memory thresholds — used by badge, progress bar, and stat line so they never disagree. */
+export const MEMORY_WARN_PCT = 75;
+export const MEMORY_CRITICAL_PCT = 90;
+
 export type HealthTone =
   | "text-success"
   | "text-warning"

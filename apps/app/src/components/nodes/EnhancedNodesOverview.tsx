@@ -1,7 +1,12 @@
 import { AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 
 import { RabbitMQNode } from "@/lib/api";
-import { getUsageTone } from "@/lib/health-tones";
+import {
+  getClusterHealthBgClasses,
+  getUsageTone,
+  MEMORY_CRITICAL_PCT,
+  MEMORY_WARN_PCT,
+} from "@/lib/health-tones";
 
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -76,23 +81,28 @@ export const EnhancedNodesOverview = ({
   let PillIcon: typeof CheckCircle;
   let pillText: string;
 
+  const pillBgClasses = getClusterHealthBgClasses(clusterHealth);
   if (isHealthy) {
-    pillClass = "bg-success/10 text-success border border-success/20";
+    pillClass = `${pillBgClasses} border border-success/20`;
     PillIcon = CheckCircle;
     pillText = "All Healthy";
   } else if (isDegraded) {
-    pillClass = "bg-warning/10 text-warning border border-warning/20";
+    pillClass = `${pillBgClasses} border border-warning/20`;
     PillIcon = AlertTriangle;
     pillText = `${unhealthyNodes} degraded`;
   } else {
-    pillClass =
-      "bg-destructive/10 text-destructive border border-destructive/20";
+    pillClass = `${pillBgClasses} border border-destructive/20`;
     PillIcon = XCircle;
     pillText = `${unhealthyNodes} critical`;
   }
 
   const memTone =
-    runningNodes.length > 0 ? getUsageTone(avgMemoryPct) : "text-foreground";
+    runningNodes.length > 0
+      ? getUsageTone(avgMemoryPct, {
+          warn: MEMORY_WARN_PCT,
+          critical: MEMORY_CRITICAL_PCT,
+        })
+      : "text-foreground";
 
   return (
     <div className="flex items-center flex-wrap gap-x-3 gap-y-1.5 text-sm text-muted-foreground py-0.5">
@@ -109,20 +119,19 @@ export const EnhancedNodesOverview = ({
       {runningNodes.length > 0 && (
         <>
           <span className="select-none text-border">·</span>
-          <span className={`font-mono tabular-nums font-semibold ${memTone}`}>
-            {avgMemoryPct.toFixed(1)}
+          <span
+            className={`whitespace-nowrap font-mono tabular-nums font-semibold ${memTone}`}
+          >
+            {avgMemoryPct.toFixed(1)}% memory
           </span>
-          <span>% memory</span>
           <span className="select-none text-border">·</span>
-          <span className="font-mono tabular-nums font-semibold text-foreground">
-            {diskFreeGB}
+          <span className="whitespace-nowrap font-mono tabular-nums font-semibold text-foreground">
+            {diskFreeGB} GB disk free
           </span>
-          <span>GB disk free</span>
           <span className="select-none text-border">·</span>
-          <span className="font-mono tabular-nums font-semibold text-foreground">
-            {totalConnections}
+          <span className="whitespace-nowrap font-mono tabular-nums font-semibold text-foreground">
+            {totalConnections} connections
           </span>
-          <span>connections</span>
         </>
       )}
     </div>

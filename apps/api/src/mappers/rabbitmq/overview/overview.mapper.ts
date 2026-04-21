@@ -1,6 +1,10 @@
 import type { RabbitMQOverview } from "@/core/rabbitmq/rabbitmq.interfaces";
 
-import type { OverviewApiResponse } from "./overview.interfaces";
+import type {
+  OverviewApiResponse,
+  OverviewContext,
+  OverviewListener,
+} from "./overview.interfaces";
 
 /**
  * Mapper for transforming RabbitMQOverview to OverviewApiResponse
@@ -19,6 +23,25 @@ export class OverviewMapper {
       node_tags: overview.node_tags,
       default_queue_type: overview.default_queue_type,
       release_series_support_status: overview.release_series_support_status,
+      listeners: (
+        (overview as { listeners?: OverviewListener[] }).listeners ?? []
+      ).map((l) => ({
+        node: l.node,
+        protocol: l.protocol,
+        ip_address: l.ip_address,
+        port: l.port,
+      })),
+      contexts: (
+        (overview as { contexts?: OverviewContext[] }).contexts ?? []
+      ).map((c) => ({
+        node: c.node,
+        description: c.description,
+        path: c.path,
+        ip: c.ip,
+        port: c.port,
+        protocol: c.protocol,
+        ssl_opts: c.ssl_opts,
+      })),
       churnRates: overview.churn_rates
         ? {
             connectionCreated: {
