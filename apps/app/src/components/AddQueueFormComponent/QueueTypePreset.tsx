@@ -18,10 +18,10 @@ export const QueueTypePreset = ({ value, onChange }: QueueTypePresetProps) => {
     <fieldset
       className="space-y-3"
       role="radiogroup"
-      aria-label={t("queueTypeTitle")}
+      aria-label={t("presetSectionTitle")}
     >
       <legend className="text-sm font-medium text-foreground">
-        {t("queueTypeTitle")}
+        {t("presetSectionTitle")}
       </legend>
       <div className="grid gap-2 sm:grid-cols-2">
         {QUEUE_PRESETS.map((preset) => {
