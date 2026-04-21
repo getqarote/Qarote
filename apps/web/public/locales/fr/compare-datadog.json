@@ -88,6 +88,7 @@
     }
   },
   "sections": {
+    "eyebrow": "Analyse approfondie",
     "native": {
       "heading": "RabbitMQ est secondaire dans Datadog — il est natif dans Qarote",
       "p1": "Datadog surveille tout : serveurs, conteneurs, bases de données, traces APM, logs et, oui, RabbitMQ. Cette exhaustivité est réellement précieuse si vous avez besoin d'une vue unifiée de l'ensemble de votre stack. Mais pour RabbitMQ spécifiquement, cela implique d'installer un agent, d'activer l'intégration et de travailler avec un schéma de métriques conçu pour s'adapter à des centaines de services différents.",
@@ -114,7 +115,9 @@
   },
   "crossLink": {
     "text": "Aussi en comparaison :",
-    "grafana": "Qarote vs Grafana + Prometheus →"
+    "grafana": "Qarote vs Grafana + Prometheus →",
+    "pricing": "Tarifs",
+    "features": "Fonctionnalités"
   },
   "faq": {
     "heading": "Questions fréquentes",

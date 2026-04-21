@@ -88,6 +88,7 @@
     }
   },
   "sections": {
+    "eyebrow": "Analyse approfondie",
     "assembly": {
       "heading": "Grafana + Prometheus nécessite d'assembler un stack — Qarote s'installe en une fois",
       "p1": "La combinaison Grafana + Prometheus est l'une des configurations de surveillance les plus puissantes disponibles. Mais « puissant » et « prêt à l'emploi » sont deux choses différentes. Pour surveiller RabbitMQ, vous avez besoin de : Prometheus en cours d'exécution et récoltant les métriques, le plugin Prometheus de RabbitMQ activé sur chaque broker, Alertmanager configuré pour les notifications, et Grafana avec un tableau de bord affichant réellement ce qui vous importe. Chaque composant a sa propre version, son propre format de configuration et son propre chemin de mise à jour.",
@@ -114,7 +115,9 @@
   },
   "crossLink": {
     "text": "Aussi en comparaison :",
-    "datadog": "Qarote vs Datadog →"
+    "datadog": "Qarote vs Datadog →",
+    "pricing": "Tarifs",
+    "features": "Fonctionnalités"
   },
   "faq": {
     "heading": "Questions fréquentes",

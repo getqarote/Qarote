@@ -88,6 +88,7 @@
     }
   },
   "sections": {
+    "eyebrow": "深度分析",
     "native": {
       "heading": "RabbitMQ 在 Datadog 中是附带功能——在 Qarote 中是核心",
       "p1": "Datadog 监控一切：服务器、容器、数据库、APM 追踪、日志，以及 RabbitMQ。如果你需要整个技术栈的统一视图，这种广度确实很有价值。但对于 RabbitMQ 而言，这意味着需要安装 Agent、启用集成，并在为数百种不同服务设计的指标架构中工作。",
@@ -114,7 +115,9 @@
   },
   "crossLink": {
     "text": "还在比较：",
-    "grafana": "Qarote vs Grafana + Prometheus →"
+    "grafana": "Qarote vs Grafana + Prometheus →",
+    "pricing": "定价",
+    "features": "功能"
   },
   "faq": {
     "heading": "常见问题",

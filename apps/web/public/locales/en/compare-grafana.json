@@ -88,6 +88,7 @@
     }
   },
   "sections": {
+    "eyebrow": "Deep dive",
     "assembly": {
       "heading": "Grafana + Prometheus requires assembling a stack — Qarote is one install",
       "p1": "The Grafana + Prometheus combination is one of the most powerful monitoring setups available. But 'powerful' and 'ready' are different things. To monitor RabbitMQ you need: Prometheus running and scraping metrics, the RabbitMQ Prometheus plugin enabled on each broker, Alertmanager configured for notifications, and Grafana with a dashboard that actually shows what you care about. Each component has its own version, its own configuration format, and its own upgrade path.",
@@ -114,7 +115,9 @@
   },
   "crossLink": {
     "text": "Also comparing:",
-    "datadog": "Qarote vs Datadog →"
+    "datadog": "Qarote vs Datadog →",
+    "pricing": "Pricing",
+    "features": "Features"
   },
   "faq": {
     "heading": "Frequently asked questions",

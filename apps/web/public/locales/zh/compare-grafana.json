@@ -88,6 +88,7 @@
     }
   },
   "sections": {
+    "eyebrow": "深度分析",
     "assembly": {
       "heading": "Grafana + Prometheus 需要组装技术栈——Qarote 只需一次安装",
       "p1": "Grafana + Prometheus 组合是最强大的监控方案之一。但「强大」和「就绪」是两回事。要监控 RabbitMQ，你需要：运行 Prometheus 并抓取指标、在每个 Broker 上启用 RabbitMQ Prometheus 插件、配置 Alertmanager 以发送通知，以及配置 Grafana 并创建真正有用的仪表盘。每个组件都有自己的版本、配置格式和升级路径。",
@@ -114,7 +115,9 @@
   },
   "crossLink": {
     "text": "还在比较：",
-    "datadog": "Qarote vs Datadog →"
+    "datadog": "Qarote vs Datadog →",
+    "pricing": "定价",
+    "features": "功能"
   },
   "faq": {
     "heading": "常见问题",

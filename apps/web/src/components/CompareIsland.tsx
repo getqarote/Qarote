@@ -59,23 +59,10 @@ const GRAFANA_ROWS: TableRow[] = [
 // Shared sub-components
 // ---------------------------------------------------------------------------
 
-function CheckIcon() {
+function StatusIcon({ variant }: { variant: "check" | "cross" }) {
   return (
     <img
-      src="/images/check.svg"
-      alt=""
-      aria-hidden="true"
-      className="h-3 w-auto shrink-0 image-crisp"
-      width={12}
-      height={12}
-    />
-  );
-}
-
-function CrossIcon() {
-  return (
-    <img
-      src="/images/cross.svg"
+      src={`/images/${variant}.svg`}
       alt=""
       aria-hidden="true"
       className="h-3 w-auto shrink-0 image-crisp"
@@ -195,7 +182,7 @@ function TableCell({ text, type, isQarote }: TableCellProps) {
       <td className={`${baseClass}${isQarote ? " bg-primary/5" : ""}`}>
         <span className="flex items-start gap-2">
           <span className="mt-0.5 shrink-0">
-            <CheckIcon />
+            <StatusIcon variant="check" />
           </span>
           <span className="text-foreground">{text}</span>
         </span>
@@ -208,7 +195,7 @@ function TableCell({ text, type, isQarote }: TableCellProps) {
       <td className={baseClass}>
         <span className="flex items-start gap-2">
           <span className="mt-0.5 shrink-0">
-            <CrossIcon />
+            <StatusIcon variant="cross" />
           </span>
           <span className="text-muted-foreground">{text}</span>
         </span>
@@ -255,15 +242,8 @@ function ComparisonTable({ ns, rows }: { ns: string; rows: TableRow[] }) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, i) => (
-              <tr
-                key={row.key}
-                className={
-                  i % 2 === 1
-                    ? "border-t border-border"
-                    : "border-t border-border"
-                }
-              >
+            {rows.map((row) => (
+              <tr key={row.key} className="border-t border-border">
                 <td className="sticky left-0 bg-background px-4 py-3 text-sm font-medium text-foreground align-top">
                   {t(`table.rows.${row.key}.feature`)}
                 </td>
@@ -308,7 +288,7 @@ function NarrativeSections({
         const paragraphs: string[] = [];
         for (const pKey of ["p1", "p2", "p3"]) {
           const val = t(`sections.${key}.${pKey}`, { defaultValue: "" });
-          if (val && val !== `sections.${key}.${pKey}`) {
+          if (val) {
             paragraphs.push(val);
           }
         }
@@ -317,7 +297,7 @@ function NarrativeSections({
           <div key={key} className="border border-border overflow-hidden">
             <div className="px-6 py-3 bg-muted/30 border-b border-border">
               <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Deep dive
+                {t("sections.eyebrow")}
               </span>
             </div>
             <div className="p-6 sm:p-8">
@@ -351,11 +331,14 @@ interface CrossLinkConfig {
 function CrossLinkSection({
   ns,
   crossLink,
+  locale,
 }: {
   ns: string;
   crossLink: CrossLinkConfig;
+  locale: SupportedLocale;
 }) {
   const { t } = useTranslation(ns);
+  const lp = (path: string) => (locale === "en" ? path : `/${locale}${path}`);
 
   return (
     <div className="border border-border overflow-hidden mb-8">
@@ -366,23 +349,23 @@ function CrossLinkSection({
       </div>
       <div className="p-6 flex flex-wrap gap-x-6 gap-y-3 items-center">
         <a
-          href={crossLink.linkHref}
+          href={lp(crossLink.linkHref)}
           className="text-sm text-primary hover:underline"
         >
           {t(crossLink.linkKey)}
         </a>
         <span className="text-muted-foreground text-xs">·</span>
         <a
-          href="/pricing/"
+          href={lp("/pricing/")}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          Pricing
+          {t("crossLink.pricing")}
         </a>
         <a
-          href="/features/"
+          href={lp("/features/")}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          Features
+          {t("crossLink.features")}
         </a>
       </div>
     </div>
@@ -459,7 +442,7 @@ function CompareLayout({
           <VerdictSection ns={ns} />
           <ComparisonTable ns={ns} rows={rows} />
           <NarrativeSections ns={ns} sectionKeys={sectionKeys} />
-          <CrossLinkSection ns={ns} crossLink={crossLink} />
+          <CrossLinkSection ns={ns} crossLink={crossLink} locale={locale} />
           <FaqSection ns={ns} />
         </main>
         <FinalCtaSection />
