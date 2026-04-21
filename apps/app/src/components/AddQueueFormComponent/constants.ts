@@ -89,6 +89,8 @@ export const CATALOG_BY_KEY: Record<string, ArgDefinition> = Object.fromEntries(
   ARG_CATALOG.map((a) => [a.key, a])
 );
 
+export type RabbitMQQueueType = "default" | "classic" | "quorum" | "stream";
+
 export type QueuePresetId =
   | "classic"
   | "transient"
