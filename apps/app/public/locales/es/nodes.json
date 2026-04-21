@@ -1,8 +1,8 @@
 {
   "pageTitle": "Nodos",
-  "pageSubtitle": "Vista detallada de los nodos del cl\u00faster y sus m\u00e9tricas",
+  "pageSubtitle": "Vista detallada de los nodos del clúster y sus métricas",
   "noServerTitle": "Nodos",
-  "noServerDescription": "Agrega una conexi\u00f3n de servidor RabbitMQ para ver los nodos del cl\u00faster y sus m\u00e9tricas.",
+  "noServerDescription": "Agrega una conexión de servidor RabbitMQ para ver los nodos del clúster y sus métricas.",
   "selectServerPrompt": "Por favor selecciona un servidor RabbitMQ para ver sus nodos",
   "nodeName": "Nodo",
   "status": "Estado",
@@ -17,5 +17,14 @@
   "saveClusterName": "Guardar",
   "cancelEdit": "Cancelar",
   "clusterNameUpdated": "Nombre del clúster actualizado",
-  "clusterNameError": "Error al actualizar el nombre del clúster"
+  "clusterNameError": "Error al actualizar el nombre del clúster",
+  "churnStatistics": {
+    "connectionOperations": "Operaciones de conexión",
+    "channelOperations": "Operaciones de canal",
+    "queueOperations": "Operaciones de cola",
+    "created": "Creadas",
+    "closed": "Cerradas",
+    "declared": "Declaradas",
+    "deleted": "Eliminadas"
+  }
 }

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { Check, Pencil, X } from "lucide-react";
 
+import { ChurnStatistics } from "@/components/nodes/ChurnStatistics";
 import { EnhancedNodesOverview } from "@/components/nodes/EnhancedNodesOverview";
 import { EnhancedNodesTable } from "@/components/nodes/EnhancedNodesTable";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
@@ -40,7 +41,8 @@ const Nodes = () => {
     error: nodesQueryError,
   } = useNodes(selectedServerId);
 
-  const { data: overviewData } = useOverview(selectedServerId);
+  const { data: overviewData, isLoading: overviewLoading } =
+    useOverview(selectedServerId);
 
   const setClusterNameMutation = useSetClusterName();
   const [editingClusterName, setEditingClusterName] = useState(false);
@@ -219,6 +221,12 @@ const Nodes = () => {
         nodes={nodes}
         isLoading={nodesLoading}
         nodesError={processedNodesError}
+      />
+
+      {/* Churn Statistics */}
+      <ChurnStatistics
+        churnRates={overviewData?.overview?.churnRates}
+        isLoading={overviewLoading}
       />
     </PageShell>
   );

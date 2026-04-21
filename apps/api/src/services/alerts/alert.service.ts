@@ -3,7 +3,11 @@ import { prisma } from "@/core/prisma";
 
 import { createRabbitMQClient } from "@/trpc/routers/rabbitmq/shared";
 
-import { analyzeNodeHealth, analyzeQueueHealth } from "./alert.analyzer";
+import {
+  analyzeChurnRates,
+  analyzeNodeHealth,
+  analyzeQueueHealth,
+} from "./alert.analyzer";
 import { alertHealthService } from "./alert.health";
 import {
   AlertCategory,
@@ -80,6 +84,24 @@ class AlertService {
       }
     } catch (error) {
       logger.warn({ error }, `Failed to get queues for server ${serverId}`);
+    }
+
+    try {
+      const overview = await client.getOverview();
+      if (overview.churn_rates) {
+        const churnAlerts = analyzeChurnRates(
+          overview.churn_rates,
+          serverId,
+          serverName,
+          thresholds
+        );
+        alerts.push(...churnAlerts);
+      }
+    } catch (error) {
+      logger.warn(
+        { error },
+        `Failed to get overview for churn alerts on server ${serverId}`
+      );
     }
 
     // Sort alerts by severity and timestamp

@@ -5,7 +5,11 @@ import type {
   RabbitMQQueue,
 } from "@/core/rabbitmq/rabbitmq.interfaces";
 
-import { analyzeNodeHealth, analyzeQueueHealth } from "../alert.analyzer";
+import {
+  analyzeChurnRates,
+  analyzeNodeHealth,
+  analyzeQueueHealth,
+} from "../alert.analyzer";
 import {
   AlertCategory,
   AlertSeverity,
@@ -23,6 +27,9 @@ const DEFAULT_THRESHOLDS: AlertThresholds = {
   unackedMessages: { medium: 1_000, critical: 5_000 },
   consumerUtilization: { medium: 10 },
   runQueue: { medium: 10, critical: 20 },
+  connectionChurnRate: { medium: 10, critical: 50 },
+  channelChurnRate: { medium: 20, critical: 100 },
+  queueChurnRate: { medium: 5, critical: 20 },
 };
 
 function makeNode(overrides: Partial<RabbitMQNode> = {}): RabbitMQNode {
@@ -952,6 +959,231 @@ describe("analyzeQueueHealth", () => {
     it("returns empty array when queue is perfectly healthy", () => {
       const alerts = analyzeQueueHealth(
         makeQueue(),
+        SERVER_ID,
+        SERVER_NAME,
+        DEFAULT_THRESHOLDS
+      );
+      expect(alerts).toHaveLength(0);
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// analyzeChurnRates
+// ---------------------------------------------------------------------------
+
+type ChurnRatesInput = Parameters<typeof analyzeChurnRates>[0];
+
+function makeChurnRates(
+  overrides: Partial<ChurnRatesInput> = {}
+): ChurnRatesInput {
+  const zero = { rate: 0 };
+  return {
+    connection_created: 0,
+    connection_created_details: { rate: 0 },
+    connection_closed: 0,
+    connection_closed_details: zero,
+    channel_created: 0,
+    channel_created_details: { rate: 0 },
+    channel_closed: 0,
+    channel_closed_details: zero,
+    queue_declared: 0,
+    queue_declared_details: { rate: 0 },
+    queue_created: 0,
+    queue_created_details: zero,
+    queue_deleted: 0,
+    queue_deleted_details: zero,
+    ...overrides,
+  };
+}
+
+describe("analyzeChurnRates", () => {
+  describe("connectionChurnRate", () => {
+    it("returns no alert when connection creation rate is below medium threshold (9/s < 10)", () => {
+      const alerts = analyzeChurnRates(
+        makeChurnRates({ connection_created_details: { rate: 9 } }),
+        SERVER_ID,
+        SERVER_NAME,
+        DEFAULT_THRESHOLDS
+      );
+      expect(
+        alerts.find((a) => a.title.includes("Connection Churn"))
+      ).toBeUndefined();
+    });
+
+    it("returns a MEDIUM CONNECTION alert when rate equals medium threshold (10/s)", () => {
+      const alerts = analyzeChurnRates(
+        makeChurnRates({ connection_created_details: { rate: 10 } }),
+        SERVER_ID,
+        SERVER_NAME,
+        DEFAULT_THRESHOLDS
+      );
+      const alert = alerts.find(
+        (a) => a.title === "Moderate Connection Churn Rate"
+      );
+      expect(alert).toBeDefined();
+      expect(alert?.severity).toBe(AlertSeverity.MEDIUM);
+      expect(alert?.category).toBe(AlertCategory.CONNECTION);
+    });
+
+    it("returns a CRITICAL CONNECTION alert when rate equals critical threshold (50/s)", () => {
+      const alerts = analyzeChurnRates(
+        makeChurnRates({ connection_created_details: { rate: 50 } }),
+        SERVER_ID,
+        SERVER_NAME,
+        DEFAULT_THRESHOLDS
+      );
+      const alert = alerts.find(
+        (a) => a.title === "Critical Connection Churn Rate"
+      );
+      expect(alert).toBeDefined();
+      expect(alert?.severity).toBe(AlertSeverity.CRITICAL);
+      expect(alert?.category).toBe(AlertCategory.CONNECTION);
+    });
+  });
+
+  describe("channelChurnRate", () => {
+    it("returns no alert when channel creation rate is below medium threshold (19/s < 20)", () => {
+      const alerts = analyzeChurnRates(
+        makeChurnRates({ channel_created_details: { rate: 19 } }),
+        SERVER_ID,
+        SERVER_NAME,
+        DEFAULT_THRESHOLDS
+      );
+      expect(
+        alerts.find((a) => a.title.includes("Channel Churn"))
+      ).toBeUndefined();
+    });
+
+    it("returns a MEDIUM CONNECTION alert when rate equals medium threshold (20/s)", () => {
+      const alerts = analyzeChurnRates(
+        makeChurnRates({ channel_created_details: { rate: 20 } }),
+        SERVER_ID,
+        SERVER_NAME,
+        DEFAULT_THRESHOLDS
+      );
+      const alert = alerts.find(
+        (a) => a.title === "Moderate Channel Churn Rate"
+      );
+      expect(alert).toBeDefined();
+      expect(alert?.severity).toBe(AlertSeverity.MEDIUM);
+      expect(alert?.category).toBe(AlertCategory.CONNECTION);
+    });
+
+    it("returns a CRITICAL CONNECTION alert when rate equals critical threshold (100/s)", () => {
+      const alerts = analyzeChurnRates(
+        makeChurnRates({ channel_created_details: { rate: 100 } }),
+        SERVER_ID,
+        SERVER_NAME,
+        DEFAULT_THRESHOLDS
+      );
+      const alert = alerts.find(
+        (a) => a.title === "Critical Channel Churn Rate"
+      );
+      expect(alert).toBeDefined();
+      expect(alert?.severity).toBe(AlertSeverity.CRITICAL);
+      expect(alert?.category).toBe(AlertCategory.CONNECTION);
+    });
+  });
+
+  describe("queueChurnRate", () => {
+    it("returns no alert when queue declare rate is below medium threshold (4/s < 5)", () => {
+      const alerts = analyzeChurnRates(
+        makeChurnRates({ queue_declared_details: { rate: 4 } }),
+        SERVER_ID,
+        SERVER_NAME,
+        DEFAULT_THRESHOLDS
+      );
+      expect(
+        alerts.find((a) => a.title.includes("Queue Churn"))
+      ).toBeUndefined();
+    });
+
+    it("returns a MEDIUM QUEUE alert when rate equals medium threshold (5/s)", () => {
+      const alerts = analyzeChurnRates(
+        makeChurnRates({ queue_declared_details: { rate: 5 } }),
+        SERVER_ID,
+        SERVER_NAME,
+        DEFAULT_THRESHOLDS
+      );
+      const alert = alerts.find((a) => a.title === "Moderate Queue Churn Rate");
+      expect(alert).toBeDefined();
+      expect(alert?.severity).toBe(AlertSeverity.MEDIUM);
+      expect(alert?.category).toBe(AlertCategory.QUEUE);
+    });
+
+    it("returns a CRITICAL QUEUE alert when rate equals critical threshold (20/s)", () => {
+      const alerts = analyzeChurnRates(
+        makeChurnRates({ queue_declared_details: { rate: 20 } }),
+        SERVER_ID,
+        SERVER_NAME,
+        DEFAULT_THRESHOLDS
+      );
+      const alert = alerts.find((a) => a.title === "Critical Queue Churn Rate");
+      expect(alert).toBeDefined();
+      expect(alert?.severity).toBe(AlertSeverity.CRITICAL);
+      expect(alert?.category).toBe(AlertCategory.QUEUE);
+    });
+  });
+
+  describe("alert shape", () => {
+    it("sets source.type to 'cluster' and source.name to a per-metric discriminator", () => {
+      const alerts = analyzeChurnRates(
+        makeChurnRates({
+          connection_created_details: { rate: 50 },
+          channel_created_details: { rate: 100 },
+          queue_declared_details: { rate: 20 },
+        }),
+        SERVER_ID,
+        SERVER_NAME,
+        DEFAULT_THRESHOLDS
+      );
+      expect(alerts).toHaveLength(3);
+      for (const alert of alerts) {
+        expect(alert.source.type).toBe("cluster");
+      }
+      const sourceNames = alerts.map((a) => a.source.name);
+      expect(sourceNames).toContain("cluster-connection-churn");
+      expect(sourceNames).toContain("cluster-channel-churn");
+      expect(sourceNames).toContain("cluster-queue-churn");
+    });
+
+    it("produces distinct IDs for all three churn alerts (no fingerprint collision)", () => {
+      const alerts = analyzeChurnRates(
+        makeChurnRates({
+          connection_created_details: { rate: 50 },
+          channel_created_details: { rate: 100 },
+          queue_declared_details: { rate: 20 },
+        }),
+        SERVER_ID,
+        SERVER_NAME,
+        DEFAULT_THRESHOLDS
+      );
+      expect(alerts).toHaveLength(3);
+      const ids = alerts.map((a) => a.id);
+      expect(new Set(ids).size).toBe(3);
+    });
+
+    it("sets resolved: false on all churn alerts", () => {
+      const alerts = analyzeChurnRates(
+        makeChurnRates({
+          connection_created_details: { rate: 50 },
+          channel_created_details: { rate: 100 },
+          queue_declared_details: { rate: 20 },
+        }),
+        SERVER_ID,
+        SERVER_NAME,
+        DEFAULT_THRESHOLDS
+      );
+      expect(alerts.length).toBeGreaterThan(0);
+      for (const alert of alerts) {
+        expect(alert.resolved).toBe(false);
+      }
+    });
+
+    it("returns empty array when all rates are below thresholds", () => {
+      const alerts = analyzeChurnRates(
+        makeChurnRates(),
         SERVER_ID,
         SERVER_NAME,
         DEFAULT_THRESHOLDS

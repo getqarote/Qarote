@@ -1,5 +1,6 @@
-import {
+import type {
   RabbitMQNode,
+  RabbitMQOverview,
   RabbitMQQueue,
 } from "@/core/rabbitmq/rabbitmq.interfaces";
 
@@ -614,6 +615,94 @@ export function analyzeQueueHealth(
           source: { type: "queue", name: queue.name },
         });
       }
+    }
+  }
+
+  return alerts;
+}
+
+/**
+ * Analyze cluster-level churn rates and generate alerts.
+ * Uses instantaneous rates from RabbitMQ's /api/overview churn_rates field.
+ */
+export function analyzeChurnRates(
+  churnRates: RabbitMQOverview["churn_rates"],
+  serverId: string,
+  serverName: string,
+  thresholds: AlertThresholds
+): RabbitMQAlert[] {
+  const alerts: RabbitMQAlert[] = [];
+  const timestamp = new Date().toISOString();
+
+  const checks: {
+    rate: number;
+    thresholdKey: keyof AlertThresholds;
+    category: AlertCategory;
+    // Unique source name per churn type — used for both ID generation and
+    // fingerprinting so that connection, channel, and queue churn alerts
+    // never collide even when they fire in the same millisecond.
+    sourceName: string;
+    title: string;
+    description: string;
+    recommended: string;
+  }[] = [
+    {
+      rate: churnRates.connection_created_details.rate,
+      thresholdKey: "connectionChurnRate",
+      category: AlertCategory.CONNECTION,
+      sourceName: "cluster-connection-churn",
+      title: "Connection Churn Rate",
+      description: `Connections are being created at ${churnRates.connection_created_details.rate.toFixed(2)}/s on ${serverName}`,
+      recommended:
+        "Check for connection leaks — clients should reuse long-lived connections instead of reconnecting per operation",
+    },
+    {
+      rate: churnRates.channel_created_details.rate,
+      thresholdKey: "channelChurnRate",
+      category: AlertCategory.CONNECTION,
+      sourceName: "cluster-channel-churn",
+      title: "Channel Churn Rate",
+      description: `Channels are being created at ${churnRates.channel_created_details.rate.toFixed(2)}/s on ${serverName}`,
+      recommended:
+        "Check for channel leaks — clients should reuse channels per thread rather than opening a new channel per message",
+    },
+    {
+      rate: churnRates.queue_declared_details.rate,
+      thresholdKey: "queueChurnRate",
+      category: AlertCategory.QUEUE,
+      sourceName: "cluster-queue-churn",
+      title: "Queue Churn Rate",
+      description: `Queues are being declared at ${churnRates.queue_declared_details.rate.toFixed(2)}/s on ${serverName}`,
+      recommended:
+        "Check for per-request temporary queues — consider using a single reply queue with correlation IDs instead",
+    },
+  ];
+
+  for (const check of checks) {
+    const metric = thresholds[check.thresholdKey] as MetricThresholds;
+    const severity = checkThreshold(check.rate, metric, "gte");
+    if (severity) {
+      const prefix = SEVERITY_TITLE_PREFIX[severity];
+      alerts.push({
+        id: generateAlertId(serverId, check.category, check.sourceName),
+        serverId,
+        serverName,
+        severity,
+        category: check.category,
+        title: `${prefix} ${check.title}`,
+        description: check.description,
+        details: {
+          current: parseFloat(check.rate.toFixed(2)),
+          threshold: getMatchedThreshold(metric, severity),
+          recommended: check.recommended,
+          affected: [serverName],
+        },
+        timestamp,
+        resolved: false,
+        // sourceName is a stable discriminator; serverName surfaces in
+        // details.affected and the description for human-readable context.
+        source: { type: "cluster", name: check.sourceName },
+      });
     }
   }
 

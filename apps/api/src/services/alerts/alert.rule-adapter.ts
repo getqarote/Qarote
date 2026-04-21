@@ -24,6 +24,9 @@ const ALERT_TYPE_TO_THRESHOLD_KEY: Partial<
   UNACKED_MESSAGES: "unackedMessages",
   CONSUMER_UTILIZATION: "consumerUtilization",
   RUN_QUEUE_LENGTH: "runQueue",
+  CONNECTION_CHURN_RATE: "connectionChurnRate",
+  CHANNEL_CHURN_RATE: "channelChurnRate",
+  QUEUE_CHURN_RATE: "queueChurnRate",
 };
 
 /**
@@ -52,6 +55,9 @@ function createEmptyThresholds(): AlertThresholds {
     unackedMessages: {},
     consumerUtilization: {},
     runQueue: {},
+    connectionChurnRate: {},
+    channelChurnRate: {},
+    queueChurnRate: {},
   };
 }
 
