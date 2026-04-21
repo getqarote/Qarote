@@ -1,0 +1,139 @@
+{
+  "seo": {
+    "title": "Qarote vs Grafana + Prometheus：RabbitMQ 替代方案",
+    "description": "Qarote vs Grafana + Prometheus RabbitMQ 监控对比。专用替代方案——60 秒即可就绪，无需 PromQL 或复杂的技术栈组装。"
+  },
+  "hero": {
+    "eyebrow": "对比",
+    "title": "Qarote vs Grafana + Prometheus",
+    "subtitle": "Grafana 和 Prometheus 是优秀的、经过实战检验的开源工具。使用它们监控 RabbitMQ 意味着需要组装技术栈：Prometheus、RabbitMQ Exporter、自定义仪表盘，以及用 PromQL 编写的告警规则。Qarote 开箱即用——连接你的 RabbitMQ 服务器，监控立即开始。"
+  },
+  "verdict": {
+    "heading": "快速结论",
+    "competitor": {
+      "label": "选择 Grafana + Prometheus，如果…",
+      "points": [
+        "你需要完全可定制的监控技术栈，并希望端到端掌控",
+        "你已在为其他服务运行 Prometheus 和 Grafana，希望统一管理",
+        "你有足够的工程能力维护技术栈，且熟悉 PromQL"
+      ]
+    },
+    "qarote": {
+      "label": "选择 Qarote，如果…",
+      "points": [
+        "你希望 RabbitMQ 监控在几分钟内就绪，而非数小时",
+        "你不想学习 PromQL，也不想维护多组件可观测性技术栈",
+        "你偏好开箱即用的 RabbitMQ 仪表盘，而非从头构建一切"
+      ]
+    }
+  },
+  "table": {
+    "heading": "功能对比",
+    "competitorLabel": "Grafana + Prometheus",
+    "qaroteLabel": "Qarote",
+    "featureLabel": "功能",
+    "caption": "Qarote vs Grafana + Prometheus 功能对比",
+    "asOf": "Grafana OSS 和 Prometheus 免费。基础设施和维护成本因部署方式而异。",
+    "rows": {
+      "rabbitmqNative": {
+        "feature": "RabbitMQ 原生监控",
+        "competitor": "通过 rabbitmq_prometheus 插件 + 自定义仪表盘",
+        "qarote": "原生——专为 RabbitMQ 构建"
+      },
+      "components": {
+        "feature": "需安装的组件",
+        "competitor": "Prometheus、RabbitMQ Exporter、Grafana、Alertmanager",
+        "qarote": "仅一个——Qarote（单一二进制或 Docker 镜像）"
+      },
+      "setupTime": {
+        "feature": "配置时间",
+        "competitor": "基础可用配置需 2 小时以上",
+        "qarote": "60 秒——粘贴连接字符串即完成"
+      },
+      "queryLanguage": {
+        "feature": "所需查询语言",
+        "competitor": "PromQL——告警规则学习曲线陡峭",
+        "qarote": "无——仪表盘和告警均已内置"
+      },
+      "dashboards": {
+        "feature": "预置 RabbitMQ 仪表盘",
+        "competitor": "社区仪表盘（质量参差不齐，可能落后于 RabbitMQ 版本）",
+        "qarote": "是——精心策划，始终保持最新"
+      },
+      "alerting": {
+        "feature": "RabbitMQ 专用告警模板",
+        "competitor": "需自行用 PromQL + Alertmanager YAML 编写",
+        "qarote": "是——队列深度、消费者饱和、DLQ 等"
+      },
+      "selfHosted": {
+        "feature": "自托管选项",
+        "competitor": "是——完全自管理",
+        "qarote": "是——完全在你的基础设施上运行"
+      },
+      "maintenance": {
+        "feature": "持续维护",
+        "competitor": "各组件独立升级版本",
+        "qarote": "单一二进制升级"
+      },
+      "openSource": {
+        "feature": "开源核心",
+        "competitor": "是——Apache 2.0 / AGPL",
+        "qarote": "是——MIT 许可证"
+      },
+      "flexibility": {
+        "feature": "仪表盘可定制性",
+        "competitor": "无限——Grafana 完全灵活",
+        "qarote": "专注的、目标明确的视图"
+      }
+    }
+  },
+  "sections": {
+    "eyebrow": "深度分析",
+    "assembly": {
+      "heading": "Grafana + Prometheus 需要组装技术栈——Qarote 只需一次安装",
+      "p1": "Grafana + Prometheus 组合是最强大的监控方案之一。但「强大」和「就绪」是两回事。要监控 RabbitMQ，你需要：运行 Prometheus 并抓取指标、在每个 Broker 上启用 RabbitMQ Prometheus 插件、配置 Alertmanager 以发送通知，以及配置 Grafana 并创建真正有用的仪表盘。每个组件都有自己的版本、配置格式和升级路径。",
+      "p2": "Qarote 是单一二进制文件。用连接字符串指向你的 RabbitMQ 服务器，监控即刻启动。无需组件协调、无版本兼容矩阵、无需在四个独立服务中维护配置文件。",
+      "p3": "如果你已在为其他服务运行 Prometheus 和 Grafana，将 RabbitMQ 加入该技术栈是合理的选择。但如果 RabbitMQ 监控本身就是目标，为一个本应是已解决问题的事情组装完整技术栈，投入成本相当可观。"
+    },
+    "promql": {
+      "heading": "PromQL 很强大，但监控队列不需要它",
+      "p1": "Prometheus 的查询语言表达力强，经过实战检验。但它也是一项需要相当学习投入的技能。用 PromQL 编写「所有 vhost 中队列深度超过 10,000 并持续 5 分钟」的可靠告警，需要理解指标标签、区间向量和 Alertmanager 路由。学习曲线是真实存在的——当标签变更或 RabbitMQ 指标架构在版本间演进时，维护成本也是真实存在的。",
+      "p2": "Qarote 通过点击界面表达相同的逻辑。选择队列、条件（深度、消费者数量、消息年龄）、阈值和通知渠道。底层查询自动生成，并随 RabbitMQ 演进保持更新。",
+      "p3": "PromQL 专业知识是值得掌握的技能。但它不应该成为你的团队与可靠 RabbitMQ 告警之间的障碍。"
+    },
+    "dashboards": {
+      "heading": "预置仪表盘 vs 从头构建",
+      "p1": "Grafana 社区发布了 RabbitMQ 仪表盘——其中一些质量不错。但社区仪表盘会老化：它们落后于 RabbitMQ 版本，使用已废弃的指标名称，且通常监控的是容易导出的指标，而非你在事故中真正需要的指标。",
+      "p2": "Qarote 的仪表盘围绕运维问题构建：哪些队列在积压？哪些消费者已停止工作？消息在哪里被发送到死信队列？布局专为事故处理时的快速扫描设计，而非演示截图。",
+      "p3": "权衡点在于灵活性。Grafana 让你构建任何能想象到的仪表盘。Qarote 提供专为 RabbitMQ 运维设计的、有主见的精心策划视图。对大多数团队而言，有主见的方式比从头构建更快速、更可靠。"
+    },
+    "maintenance": {
+      "heading": "升级一个组件，而非四个",
+      "p1": "自管理的 Prometheus + Grafana 技术栈意味着需要分别跟踪 Prometheus、Grafana、RabbitMQ Exporter 插件和 Alertmanager 的升级。每个都有自己的变更日志、破坏性变更和配置迁移。这是可以管理的，但随着时间累积，这是持续的工程工作。",
+      "p2": "Qarote 是单一二进制，只有一条升级路径。当新版 RabbitMQ 更改指标名称或添加新的队列属性时，Qarote 的更新会处理它。你无需同时维护四个组件的兼容性。"
+    }
+  },
+  "crossLink": {
+    "text": "还在比较：",
+    "datadog": "Qarote vs Datadog →",
+    "pricing": "定价",
+    "features": "功能"
+  },
+  "faq": {
+    "heading": "常见问题",
+    "items": [
+      {
+        "question": "我可以在现有 Grafana 设置旁边使用 Qarote 吗？",
+        "answer": "可以。Qarote 和 Grafana + Prometheus 可以共存。一些团队使用 Qarote 进行日常 RabbitMQ 监控，同时保留 Prometheus/Grafana 技术栈用于更广泛的基础设施可观测性。Qarote 不需要替换你现有的设置。"
+      },
+      {
+        "question": "Qarote 是否暴露供 Prometheus 抓取的指标？",
+        "answer": "目前不支持。Qarote 是一个独立的监控应用程序，而非指标导出器。如果你需要从 RabbitMQ 获取 Prometheus 兼容的指标，官方的 rabbitmq_prometheus 插件是正确的工具。Qarote 专注于监控体验，而非指标管道。"
+      },
+      {
+        "question": "Qarote 的开源版真的免费吗？",
+        "answer": "是的。Qarote 的 MIT 许可核心——实时队列监控、Exchange 可见性、消费者追踪和多服务器支持——可以免费自托管，无需任何许可证密钥。高级功能（工作区共享、高级告警、集成）需要 Developer 或 Enterprise 许可证。"
+      }
+    ]
+  }
+}

@@ -21,6 +21,18 @@ const FooterLinks = ({ locale = "en" }: { locale?: string }) => {
         {t("footer.about", "About")}
       </a>
       <a
+        href={`${prefix}/compare/datadog/`}
+        className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+      >
+        {t("footer.vsDatadog")}
+      </a>
+      <a
+        href={`${prefix}/compare/grafana-prometheus/`}
+        className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+      >
+        {t("footer.vsGrafana")}
+      </a>
+      <a
         href={`${prefix}/privacy-policy/`}
         className="text-muted-foreground hover:text-foreground transition-colors text-sm"
       >

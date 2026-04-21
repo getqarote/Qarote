@@ -34,6 +34,7 @@
       "point3": "Smart, actionable alerts that catch issues early",
       "point4": "Zero-setup monitoring, no scripts, no maintenance"
     },
+    "compareWith": "Compare Qarote with:",
     "messagesPerSec": "Messages/sec",
     "activeQueues": "Active Queues",
     "allSystemsOperational": "All systems operational"
@@ -115,7 +116,9 @@
     "about": "About",
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
-    "contact": "Contact"
+    "contact": "Contact",
+    "vsDatadog": "Qarote vs Datadog",
+    "vsGrafana": "Qarote vs Grafana + Prometheus"
   },
   "faqSection": {
     "title": "Frequently Asked Questions",

@@ -34,6 +34,7 @@
       "point3": "Des alertes intelligentes et exploitables qui détectent les problèmes en amont",
       "point4": "Un monitoring clé en main, sans scripts ni maintenance"
     },
+    "compareWith": "Comparer Qarote avec :",
     "messagesPerSec": "Messages/sec",
     "activeQueues": "Files actives",
     "allSystemsOperational": "Tous les systèmes sont opérationnels"
@@ -115,7 +116,9 @@
     "about": "À propos",
     "privacyPolicy": "Politique de confidentialité",
     "termsOfService": "Conditions d'utilisation",
-    "contact": "Contact"
+    "contact": "Contact",
+    "vsDatadog": "Qarote vs Datadog",
+    "vsGrafana": "Qarote vs Grafana + Prometheus"
   },
   "faqSection": {
     "title": "Questions fréquentes",

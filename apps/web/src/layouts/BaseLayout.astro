@@ -49,7 +49,7 @@ const breadcrumbs = {
           {
             "@type": "ListItem",
             position: 2,
-            name: title.replace(/ \| Qarote$|- Modern RabbitMQ.*$/, ""),
+            name: title.replace(/ \| Qarote$|- Modern RabbitMQ.*$| [—–].*$|:.*$/, ""),
             item: canonicalUrl,
           },
         ]
@@ -155,6 +155,7 @@ const webpage = {
   about: { "@id": `${baseUrl}/#software` },
   publisher: { "@id": `${baseUrl}/#organization` },
   inLanguage: locale,
+  dateModified: new Date().toISOString().split("T")[0],
 };
 
 const isProd = import.meta.env.PROD;
@@ -170,13 +171,10 @@ const isProd = import.meta.env.PROD;
     <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
     <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
 
-    <!-- Preload LCP hero image -->
-    <link
-      rel="preload"
-      as="image"
-      type="image/webp"
-      href="/images/dashboard.webp"
-    />
+    <!-- Preload LCP hero image (homepage only) -->
+    {canonicalPath === "/" && (
+      <link rel="preload" as="image" type="image/webp" href="/images/dashboard.webp" />
+    )}
 
     <title>{fullTitle}</title>
     <meta name="description" content={description} />

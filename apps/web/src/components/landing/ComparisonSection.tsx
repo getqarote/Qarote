@@ -30,6 +30,32 @@ const ComparisonSection = () => {
           </h2>
         </div>
 
+        {/* Compare links */}
+        <nav
+          aria-label={t("comparison.compareWith")}
+          className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-10 text-sm text-muted-foreground"
+        >
+          <span aria-hidden="true">{t("comparison.compareWith")}</span>
+          <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2 list-none">
+            <li>
+              <a
+                href="/compare/datadog/"
+                className="text-primary hover:underline"
+              >
+                {t("footer.vsDatadog")}
+              </a>
+            </li>
+            <li>
+              <a
+                href="/compare/grafana-prometheus/"
+                className="text-primary hover:underline"
+              >
+                {t("footer.vsGrafana")}
+              </a>
+            </li>
+          </ul>
+        </nav>
+
         {/* Main Comparison Container */}
         <div className="border border-border overflow-hidden">
           <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
