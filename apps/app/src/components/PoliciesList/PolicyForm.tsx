@@ -130,21 +130,35 @@ const policyFormSchema = z.object({
   pattern: z.string().min(1, "Pattern is required"),
   applyTo: z.enum(["queues", "exchanges", "all"]),
   priority: z.coerce.number().int().min(0),
-  definitionJson: z.string().refine(
-    (val) => {
-      try {
-        const parsed = JSON.parse(val);
-        return (
-          typeof parsed === "object" &&
-          parsed !== null &&
-          !Array.isArray(parsed)
-        );
-      } catch {
-        return false;
-      }
-    },
-    { message: "Must be a valid JSON object" }
-  ),
+  definitionJson: z.string().superRefine((val, ctx) => {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(val);
+    } catch {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Must be a valid JSON object",
+      });
+      return;
+    }
+    if (
+      typeof parsed !== "object" ||
+      parsed === null ||
+      Array.isArray(parsed)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Must be a valid JSON object",
+      });
+      return;
+    }
+    if (Object.keys(parsed as object).length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Definition must contain at least one key",
+      });
+    }
+  }),
 });
 
 type PolicyFormData = z.infer<typeof policyFormSchema>;
