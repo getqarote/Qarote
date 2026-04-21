@@ -13,10 +13,12 @@ import {
   normalizeArgValue,
   QUEUE_PRESETS,
   type QueuePresetId,
+  type RabbitMQQueueType,
 } from "@/components/AddQueueFormComponent/constants";
 import { ExchangeBindingField } from "@/components/AddQueueFormComponent/ExchangeBindingField";
 import { QueuePreviewCard } from "@/components/AddQueueFormComponent/QueuePreviewCard";
 import { QueueTypePreset } from "@/components/AddQueueFormComponent/QueueTypePreset";
+import { RabbitMQQueueTypeSelector } from "@/components/AddQueueFormComponent/RabbitMQQueueTypeSelector";
 import type { ArgRow } from "@/components/AddQueueFormComponent/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -75,6 +77,7 @@ export function AddQueueForm({
   const [mode, setMode] = useState<Mode>("quick");
   const [preset, setPreset] = useState<QueuePresetId>("classic");
   const [rows, setRows] = useState<ArgRow[]>([]);
+  const [queueType, setQueueType] = useState<RabbitMQQueueType>("default");
 
   const createQueueMutation = useCreateQueue();
   const { toast } = useToast();
@@ -121,6 +124,15 @@ export function AddQueueForm({
     setRows(rowsFromPreset(id));
   };
 
+  const handleQueueTypeChange = (type: RabbitMQQueueType) => {
+    setQueueType(type);
+    if (type === "quorum") {
+      form.setValue("durable", true);
+      form.setValue("autoDelete", false);
+      form.setValue("exclusive", false);
+    }
+  };
+
   const resetAll = () => {
     form.reset({
       name: "",
@@ -133,6 +145,7 @@ export function AddQueueForm({
     setRows([]);
     setPreset("classic");
     setMode("quick");
+    setQueueType("default");
   };
 
   const onSubmit = (data: AddQueueFormData) => {
@@ -160,6 +173,9 @@ export function AddQueueForm({
       const value = normalizeArgValue(row.key, row.value);
       if (value === undefined) continue;
       finalArguments[row.key] = value;
+    }
+    if (queueType === "quorum" || queueType === "stream") {
+      finalArguments["x-queue-type"] = queueType;
     }
 
     const bindValue = data.bindToExchange;
@@ -289,6 +305,11 @@ export function AddQueueForm({
                 )}
               />
 
+              <RabbitMQQueueTypeSelector
+                value={queueType}
+                onChange={handleQueueTypeChange}
+              />
+
               {mode === "quick" && (
                 <QueueTypePreset value={preset} onChange={applyPreset} />
               )}
@@ -310,6 +331,7 @@ export function AddQueueForm({
                 bindToExchange={bindToExchange}
                 routingKey={routingKey}
                 rows={previewRows}
+                queueType={queueType}
               />
             </form>
           </Form>

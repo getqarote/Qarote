@@ -3,7 +3,12 @@ import { useTranslation } from "react-i18next";
 
 import { Sparkles } from "lucide-react";
 
-import { DEFAULT_EXCHANGE, NO_BINDING, normalizeArgValue } from "./constants";
+import {
+  DEFAULT_EXCHANGE,
+  NO_BINDING,
+  normalizeArgValue,
+  type RabbitMQQueueType,
+} from "./constants";
 import type { ArgRow } from "./types";
 
 interface QueuePreviewCardProps {
@@ -14,6 +19,7 @@ interface QueuePreviewCardProps {
   bindToExchange?: string;
   routingKey?: string;
   rows: ArgRow[];
+  queueType?: RabbitMQQueueType;
 }
 
 export const QueuePreviewCard = ({
@@ -24,6 +30,7 @@ export const QueuePreviewCard = ({
   bindToExchange,
   routingKey,
   rows,
+  queueType,
 }: QueuePreviewCardProps) => {
   const { t } = useTranslation("queues");
 
@@ -57,6 +64,11 @@ export const QueuePreviewCard = ({
         name: displayName,
       });
 
+  const typeLabel =
+    queueType && queueType !== "default"
+      ? t("previewQueueType", { type: queueType })
+      : "";
+
   // Count active argument rows (non-empty, normalizable values).
   const argsCount = rows.filter(
     (r) => r.key && normalizeArgValue(r.key, r.value) !== undefined
@@ -70,6 +82,9 @@ export const QueuePreviewCard = ({
       </div>
       <p className="text-sm text-foreground leading-relaxed">
         {renderInlineCode(sentence)}
+        {typeLabel && (
+          <span className="text-muted-foreground">{typeLabel}</span>
+        )}
       </p>
       {argsCount > 0 && (
         <p className="text-xs text-muted-foreground">
