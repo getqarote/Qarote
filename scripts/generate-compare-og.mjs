@@ -55,7 +55,7 @@ function buildHtml({ title, subtitle, badge }) {
   body {
     width: 1200px;
     height: 630px;
-    background: #FFFAEA;
+    background: #FEF8F4;
     font-family: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
     display: flex;
     align-items: stretch;
