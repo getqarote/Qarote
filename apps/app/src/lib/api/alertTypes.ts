@@ -22,7 +22,10 @@ export type AlertType =
   | "EXCHANGE_ERROR"
   | "SOCKET_USAGE"
   | "PROCESS_USAGE"
-  | "RUN_QUEUE_LENGTH";
+  | "RUN_QUEUE_LENGTH"
+  | "CONNECTION_CHURN_RATE"
+  | "CHANNEL_CHURN_RATE"
+  | "QUEUE_CHURN_RATE";
 
 export type AlertSeverity = "INFO" | "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 type AlertStatus = "ACTIVE" | "ACKNOWLEDGED" | "RESOLVED";

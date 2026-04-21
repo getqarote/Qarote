@@ -3,8 +3,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { Trans, useTranslation } from "react-i18next";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Bell, Info, Loader2, Search } from "lucide-react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Bell, Info, Loader2, Search } from "lucide-react";
 import { toast } from "sonner";
 
 import type {
@@ -81,13 +80,56 @@ import {
 const ALERT_TYPE_KEYS: { value: AlertType; key: string }[] = [
   { value: "QUEUE_DEPTH", key: "rules.type.queueDepth" },
   { value: "MESSAGE_RATE", key: "rules.type.messageRate" },
+  { value: "UNACKED_MESSAGES", key: "rules.type.unackedMessages" },
   { value: "CONSUMER_COUNT", key: "rules.type.consumerCount" },
+  { value: "CONSUMER_UTILIZATION", key: "rules.type.consumerUtilization" },
+  { value: "QUEUE_CHURN_RATE", key: "rules.type.queueChurnRate" },
   { value: "MEMORY_USAGE", key: "rules.type.memoryUsage" },
   { value: "DISK_USAGE", key: "rules.type.diskUsage" },
+  { value: "FILE_DESCRIPTOR_USAGE", key: "rules.type.fileDescriptorUsage" },
   { value: "CONNECTION_COUNT", key: "rules.type.connectionCount" },
   { value: "CHANNEL_COUNT", key: "rules.type.channelCount" },
+  { value: "SOCKET_USAGE", key: "rules.type.socketUsage" },
+  { value: "CONNECTION_CHURN_RATE", key: "rules.type.connectionChurnRate" },
+  { value: "CHANNEL_CHURN_RATE", key: "rules.type.channelChurnRate" },
   { value: "NODE_DOWN", key: "rules.type.nodeDown" },
+  { value: "PROCESS_USAGE", key: "rules.type.processUsage" },
+  { value: "RUN_QUEUE_LENGTH", key: "rules.type.runQueueLength" },
   { value: "EXCHANGE_ERROR", key: "rules.type.exchangeError" },
+];
+
+const ALERT_CATEGORIES: { labelKey: string; types: AlertType[] }[] = [
+  {
+    labelKey: "rules.category.queues",
+    types: [
+      "QUEUE_DEPTH",
+      "MESSAGE_RATE",
+      "UNACKED_MESSAGES",
+      "CONSUMER_COUNT",
+      "CONSUMER_UTILIZATION",
+      "QUEUE_CHURN_RATE",
+    ],
+  },
+  { labelKey: "rules.category.memory", types: ["MEMORY_USAGE"] },
+  {
+    labelKey: "rules.category.storage",
+    types: ["DISK_USAGE", "FILE_DESCRIPTOR_USAGE"],
+  },
+  {
+    labelKey: "rules.category.connections",
+    types: [
+      "CONNECTION_COUNT",
+      "CHANNEL_COUNT",
+      "SOCKET_USAGE",
+      "CONNECTION_CHURN_RATE",
+      "CHANNEL_CHURN_RATE",
+    ],
+  },
+  {
+    labelKey: "rules.category.nodes",
+    types: ["NODE_DOWN", "PROCESS_USAGE", "RUN_QUEUE_LENGTH"],
+  },
+  { labelKey: "rules.category.exchanges", types: ["EXCHANGE_ERROR"] },
 ];
 
 const OPERATOR_KEYS: { value: ComparisonOperator; key: string }[] = [
@@ -471,6 +513,11 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
 
   const { data: alertRules, isLoading } = useAlertRules();
   const deleteMutation = useDeleteAlertRule();
+  const toggleMutation = useUpdateAlertRule();
+
+  const handleToggle = (rule: AlertRule, enabled: boolean) => {
+    toggleMutation.mutate({ id: rule.id, enabled });
+  };
 
   const handleDeleteClick = (rule: AlertRule) => {
     setRuleToDelete(rule);
@@ -512,17 +559,9 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
       <Badge
         variant="outline"
         className={cn(
-          "gap-1.5",
           SEVERITY_BADGE[severity] ?? "border-border text-muted-foreground"
         )}
       >
-        <span
-          className={cn(
-            "h-1.5 w-1.5 rounded-full shrink-0",
-            SEVERITY_DOT[severity] ?? "bg-muted-foreground"
-          )}
-          aria-hidden
-        />
         {severityKey ? t(severityKey.key) : severity}
       </Badge>
     );
@@ -547,7 +586,7 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] w-full max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t("rules.title")}</DialogTitle>
             <DialogDescription>{t("rules.description")}</DialogDescription>
@@ -619,97 +658,179 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
                   )}
 
                 {/* Rules list */}
-                {filteredRules.map((rule) => {
-                  const typeEntry = ALERT_TYPE_KEYS.find(
-                    (at) => at.value === rule.type
-                  );
-                  const subtitle = [
-                    typeEntry ? t(typeEntry.key) : rule.type,
-                    formatCondition(rule),
-                    rule.server.name,
-                  ].join(" · ");
-                  return (
-                    <div
-                      key={rule.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors gap-4"
-                    >
-                      {/* Dot + content */}
-                      <div className="flex items-start gap-3 min-w-0 flex-1">
-                        <span
+                {filteredRules.length > 0 &&
+                  (() => {
+                    const renderRule = (rule: AlertRule) => {
+                      const typeEntry = ALERT_TYPE_KEYS.find(
+                        (at) => at.value === rule.type
+                      );
+                      const isFiring = (rule._count?.alerts ?? 0) > 0;
+                      return (
+                        <div
+                          key={rule.id}
                           className={cn(
-                            "mt-1.5 h-2.5 w-2.5 rounded-full shrink-0",
-                            SEVERITY_DOT[rule.severity]
+                            "grid grid-cols-[8px_1fr] gap-x-2 p-3 border rounded-lg transition-colors",
+                            isFiring
+                              ? "bg-destructive/[0.04] border-destructive/20 hover:bg-destructive/[0.06]"
+                              : "bg-card hover:bg-accent/50"
                           )}
-                        />
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="font-semibold text-foreground">
-                              {rule.name}
-                            </h4>
-                            {!rule.enabled && (
-                              <span className="text-xs text-muted-foreground border rounded px-1.5 py-0.5 leading-none">
-                                {t("rules.badge.disabled")}
-                              </span>
+                        >
+                          {/* Severity dot */}
+                          <span
+                            aria-hidden
+                            className={cn(
+                              "self-start mt-[3px] h-2 w-2 rounded-full shrink-0",
+                              SEVERITY_DOT[rule.severity],
+                              isFiring &&
+                                "ring-2 ring-offset-1 ring-destructive/40"
                             )}
-                            {rule.isDefault && (
-                              <span className="text-xs text-muted-foreground border rounded px-1.5 py-0.5 leading-none">
-                                {t("rules.badge.default")}
+                          />
+                          {/* Content */}
+                          <div className="space-y-1.5 min-w-0">
+                            {/* Row 1: name + firing count + actions */}
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <h4 className="truncate font-semibold text-foreground text-sm leading-tight">
+                                  {rule.name}
+                                </h4>
+                                {isFiring && (
+                                  <span className="shrink-0 text-xs font-semibold text-destructive bg-destructive/10 rounded px-1.5 py-px leading-none tabular-nums">
+                                    {rule._count?.alerts}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1 shrink-0 -mr-1">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      role="switch"
+                                      aria-checked={rule.enabled}
+                                      aria-label={
+                                        rule.enabled
+                                          ? t("rules.badge.enabled")
+                                          : t("rules.badge.disabled")
+                                      }
+                                      onClick={() =>
+                                        handleToggle(rule, !rule.enabled)
+                                      }
+                                      disabled={toggleMutation.isPending}
+                                      className={cn(
+                                        "relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+                                        rule.enabled
+                                          ? "bg-green-500"
+                                          : "bg-input"
+                                      )}
+                                    >
+                                      <span
+                                        className={cn(
+                                          "pointer-events-none block h-3 w-3 rounded-full bg-white shadow-sm transition-transform",
+                                          rule.enabled
+                                            ? "translate-x-3"
+                                            : "translate-x-0"
+                                        )}
+                                      />
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    {rule.enabled
+                                      ? t("rules.badge.enabled")
+                                      : t("rules.badge.disabled")}
+                                  </TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-6 w-6 p-0"
+                                      onClick={() => handleEdit(rule)}
+                                      aria-label={t("rules.actions.edit")}
+                                    >
+                                      <PixelPen className="h-3.5 w-auto shrink-0" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    {t("rules.actions.edit")}
+                                  </TooltipContent>
+                                </Tooltip>
+                                {!rule.isDefault && (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-6 w-6 p-0"
+                                        onClick={() => handleDeleteClick(rule)}
+                                        disabled={deleteMutation.isPending}
+                                        aria-label={t("rules.actions.delete")}
+                                      >
+                                        <PixelTrash className="h-3.5 w-auto shrink-0 text-destructive" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      {t("rules.actions.delete")}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )}
+                              </div>
+                            </div>
+                            {/* Row 2: severity + default badge */}
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {getSeverityBadge(rule.severity)}
+                              {rule.isDefault && (
+                                <span className="text-xs text-muted-foreground bg-muted rounded px-1.5 py-0.5 leading-none">
+                                  {t("rules.badge.default")}
+                                </span>
+                              )}
+                            </div>
+                            {/* Row 3: condition subtitle with Fragment Mono on numbers */}
+                            <p className="text-xs text-muted-foreground truncate">
+                              {typeEntry ? t(typeEntry.key) : rule.type}
+                              {" · "}
+                              <span className="font-mono">
+                                {formatCondition(rule)}
                               </span>
-                            )}
+                              {" · "}
+                              {rule.server?.name}
+                            </p>
                           </div>
-                          <p className="text-sm text-muted-foreground mt-0.5 truncate">
-                            {subtitle}
-                            {rule._count && rule._count.alerts > 0 && (
-                              <span className="text-warning font-medium">
-                                {" "}
-                                · {rule._count.alerts}{" "}
-                                {t("rules.detail.activeAlerts")}
-                              </span>
-                            )}
-                          </p>
+                        </div>
+                      );
+                    };
+
+                    if (hasQuery) {
+                      return filteredRules.map(renderRule);
+                    }
+
+                    const nonEmptyCategories = ALERT_CATEGORIES.map(
+                      ({ labelKey, types }) => ({
+                        labelKey,
+                        catRules: serverRules.filter((r) =>
+                          types.includes(r.type)
+                        ),
+                      })
+                    ).filter(({ catRules }) => catRules.length > 0);
+
+                    return (
+                      <div className="overflow-x-auto">
+                        <div
+                          className="grid gap-4"
+                          style={{
+                            gridTemplateColumns: `repeat(${nonEmptyCategories.length}, minmax(220px, 1fr))`,
+                          }}
+                        >
+                          {nonEmptyCategories.map(({ labelKey, catRules }) => (
+                            <div key={labelKey} className="space-y-2">
+                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
+                                {t(labelKey)}
+                              </p>
+                              {catRules.map(renderRule)}
+                            </div>
+                          ))}
                         </div>
                       </div>
-
-                      {/* Severity badge + actions */}
-                      <div className="flex items-center gap-1 shrink-0">
-                        {getSeverityBadge(rule.severity)}
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEdit(rule)}
-                              aria-label={t("rules.actions.edit")}
-                            >
-                              <PixelPen className="h-4 w-auto shrink-0" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {t("rules.actions.edit")}
-                          </TooltipContent>
-                        </Tooltip>
-                        {!rule.isDefault && (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDeleteClick(rule)}
-                                disabled={deleteMutation.isPending}
-                                aria-label={t("rules.actions.delete")}
-                              >
-                                <PixelTrash className="h-4 w-auto shrink-0 text-destructive" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              {t("rules.actions.delete")}
-                            </TooltipContent>
-                          </Tooltip>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })()}
               </div>
             )}
           </div>
