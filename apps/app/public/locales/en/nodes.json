@@ -11,5 +11,11 @@
   "uptime": "Uptime",
   "connections": "Connections",
   "noNodesFound": "No nodes found",
-  "permissionErrorTitle": "Node Information Unavailable"
+  "permissionErrorTitle": "Node Information Unavailable",
+  "clusterName": "Cluster name",
+  "editClusterName": "Edit cluster name",
+  "saveClusterName": "Save",
+  "cancelEdit": "Cancel",
+  "clusterNameUpdated": "Cluster name updated",
+  "clusterNameError": "Failed to update cluster name"
 }

@@ -145,6 +145,7 @@
     "failedToDeleteServer": "Failed to delete server",
     "connectionFailed": "Connection failed",
     "failedToFetchOverview": "Failed to fetch server overview",
+    "failedToSetClusterName": "Failed to update cluster name",
     "serverWorkspaceNotFound": "Server workspace not found",
     "failedToFetchQueues": "Failed to fetch queues",
     "failedToFetchQueue": "Failed to fetch queue",

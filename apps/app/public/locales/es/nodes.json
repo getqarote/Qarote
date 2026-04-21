@@ -11,5 +11,11 @@
   "uptime": "Tiempo activo",
   "connections": "Conexiones",
   "noNodesFound": "No se encontraron nodos",
-  "permissionErrorTitle": "Información de nodos no disponible"
+  "permissionErrorTitle": "Información de nodos no disponible",
+  "clusterName": "Nombre del clúster",
+  "editClusterName": "Editar nombre del clúster",
+  "saveClusterName": "Guardar",
+  "cancelEdit": "Cancelar",
+  "clusterNameUpdated": "Nombre del clúster actualizado",
+  "clusterNameError": "Error al actualizar el nombre del clúster"
 }

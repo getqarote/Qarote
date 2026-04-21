@@ -6,15 +6,18 @@ import {
   getUpgradeRecommendationForOverLimit,
 } from "@/services/plan/plan.service";
 
-import { ServerWorkspaceInputSchema } from "@/schemas/rabbitmq";
+import {
+  ServerWorkspaceInputSchema,
+  SetClusterNameSchema,
+} from "@/schemas/rabbitmq";
 
 import { OverviewMapper } from "@/mappers/rabbitmq";
 
-import { router, workspaceProcedure } from "@/trpc/trpc";
+import { authorize, router, workspaceProcedure } from "@/trpc/trpc";
 
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
-import { UserPlan } from "@/generated/prisma/client";
+import { UserPlan, UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -103,6 +106,43 @@ export const overviewRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: te(ctx.locale, "rabbitmq.failedToFetchOverview"),
+        });
+      }
+    }),
+
+  setClusterName: authorize([UserRole.ADMIN])
+    .input(SetClusterNameSchema)
+    .mutation(async ({ input, ctx }) => {
+      const { serverId, workspaceId, name } = input;
+
+      try {
+        const server = await verifyServerAccess(serverId, workspaceId);
+        if (!server) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
+          });
+        }
+
+        const client = await createRabbitMQClient(serverId, workspaceId);
+        await client.setClusterName(name);
+
+        ctx.logger.info(
+          { serverId, name },
+          `Cluster name updated to "${name}" by user ${ctx.user.id}`
+        );
+
+        return { success: true };
+      } catch (error) {
+        ctx.logger.error({ error, serverId }, "Error setting cluster name");
+
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: te(ctx.locale, "rabbitmq.failedToSetClusterName"),
         });
       }
     }),

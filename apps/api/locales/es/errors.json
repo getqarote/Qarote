@@ -146,6 +146,7 @@
     "failedToDeleteServer": "Error al eliminar el servidor",
     "connectionFailed": "Error de conexión",
     "failedToFetchOverview": "Error al obtener la descripción general del servidor",
+    "failedToSetClusterName": "Error al actualizar el nombre del clúster",
     "serverWorkspaceNotFound": "Espacio de trabajo del servidor no encontrado",
     "failedToFetchQueues": "Error al obtener las colas",
     "failedToFetchQueue": "Error al obtener la cola",

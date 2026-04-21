@@ -146,6 +146,7 @@
     "failedToDeleteServer": "删除服务器失败",
     "connectionFailed": "连接失败",
     "failedToFetchOverview": "获取服务器概览失败",
+    "failedToSetClusterName": "更新集群名称失败",
     "serverWorkspaceNotFound": "未找到服务器工作区",
     "failedToFetchQueues": "获取队列列表失败",
     "failedToFetchQueue": "获取队列信息失败",
