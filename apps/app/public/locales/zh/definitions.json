@@ -1,0 +1,31 @@
+{
+  "pageTitle": "定义",
+  "pageSubtitle": "导出和导入 Broker 定义，用于备份或迁移",
+  "noServerTitle": "定义",
+  "noServerDescription": "添加 RabbitMQ 服务器连接以导出或导入 Broker 定义。",
+  "selectServerPrompt": "请选择一个 RabbitMQ 服务器以管理其 Broker 定义",
+  "allVhosts": "所有虚拟主机",
+  "export": {
+    "title": "导出定义",
+    "description": "将 Broker 配置下载为 JSON 文件。可以将导出范围限定为特定虚拟主机。",
+    "filenameLabel": "文件名",
+    "filenamePlaceholder": "rabbit_definitions_YYYY-MM-DD",
+    "vhostLabel": "虚拟主机",
+    "downloadButton": "下载 Broker 定义",
+    "downloading": "下载中..."
+  },
+  "import": {
+    "title": "导入定义",
+    "description": "上传 Broker 定义 JSON 文件以恢复或迁移配置。现有定义将被保留，新条目将被添加，冲突项将被忽略。",
+    "fileLabel": "定义文件",
+    "vhostLabel": "虚拟主机",
+    "uploadButton": "上传 Broker 定义",
+    "uploading": "上传中...",
+    "confirmTitle": "导入 Broker 定义？",
+    "confirmDescription": "上传的定义将与您的 Broker 合并。现有的交换机、队列、绑定、用户和策略将被保留，仅添加新条目，冲突项将被忽略。",
+    "confirmButton": "确认覆盖",
+    "successMessage": "定义导入成功。",
+    "errorMessage": "导入定义失败，请检查文件后重试。",
+    "parseError": "JSON 文件无效，请选择有效的 Broker 定义文件。"
+  }
+}

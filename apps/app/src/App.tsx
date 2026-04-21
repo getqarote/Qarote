@@ -107,6 +107,7 @@ const AcceptInvitation = lazy(() => import("./pages/AcceptInvitation"));
 const AcceptOrgInvitation = lazy(() => import("./pages/AcceptOrgInvitation"));
 const SSOCallback = lazy(() => import("./pages/SSOCallback"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
+const Definitions = lazy(() => import("./pages/Definitions"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const AppCore = () => (
@@ -286,6 +287,16 @@ const AppCore = () => (
                               <ProtectedRoute>
                                 <Layout>
                                   <Topology />
+                                </Layout>
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/definitions"
+                            element={
+                              <ProtectedRoute>
+                                <Layout>
+                                  <Definitions />
                                 </Layout>
                               </ProtectedRoute>
                             }

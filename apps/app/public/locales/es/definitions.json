@@ -1,0 +1,31 @@
+{
+  "pageTitle": "Definiciones",
+  "pageSubtitle": "Exporta e importa definiciones del broker para copia de seguridad o migración",
+  "noServerTitle": "Definiciones",
+  "noServerDescription": "Agrega una conexión de servidor RabbitMQ para exportar o importar definiciones del broker.",
+  "selectServerPrompt": "Por favor selecciona un servidor RabbitMQ para gestionar sus definiciones de broker",
+  "allVhosts": "Todos los hosts virtuales",
+  "export": {
+    "title": "Exportar definiciones",
+    "description": "Descarga la configuración del broker como archivo JSON. Puedes limitar la exportación a un host virtual específico.",
+    "filenameLabel": "Nombre de archivo",
+    "filenamePlaceholder": "rabbit_definitions_AAAA-MM-DD",
+    "vhostLabel": "Host virtual",
+    "downloadButton": "Descargar definiciones del broker",
+    "downloading": "Descargando..."
+  },
+  "import": {
+    "title": "Importar definiciones",
+    "description": "Sube un archivo JSON de definiciones del broker para restaurar o migrar la configuración. Las definiciones existentes se conservan; se añaden nuevas entradas y los conflictos se ignoran.",
+    "fileLabel": "Archivo de definiciones",
+    "vhostLabel": "Host virtual",
+    "uploadButton": "Subir definiciones del broker",
+    "uploading": "Subiendo...",
+    "confirmTitle": "¿Importar definiciones del broker?",
+    "confirmDescription": "Las definiciones importadas se fusionarán en tu broker. Los intercambios, colas, enlaces, usuarios y políticas existentes se conservan; solo se añaden nuevas entradas y los conflictos se ignoran.",
+    "confirmButton": "Sí, sobrescribir",
+    "successMessage": "Definiciones importadas correctamente.",
+    "errorMessage": "Error al importar las definiciones. Por favor verifica el archivo e inténtalo de nuevo.",
+    "parseError": "Archivo JSON inválido. Por favor selecciona un archivo de definiciones de broker válido."
+  }
+}

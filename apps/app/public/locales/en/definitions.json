@@ -1,0 +1,31 @@
+{
+  "pageTitle": "Definitions",
+  "pageSubtitle": "Export and import broker definitions for backup or migration",
+  "noServerTitle": "Definitions",
+  "noServerDescription": "Add a RabbitMQ server connection to export or import broker definitions.",
+  "selectServerPrompt": "Please select a RabbitMQ server to manage its broker definitions",
+  "allVhosts": "All virtual hosts",
+  "export": {
+    "title": "Export definitions",
+    "description": "Download the broker configuration as a JSON file. You can scope the export to a specific virtual host.",
+    "filenameLabel": "Filename",
+    "filenamePlaceholder": "rabbit_definitions_YYYY-MM-DD",
+    "vhostLabel": "Virtual host",
+    "downloadButton": "Download broker definitions",
+    "downloading": "Downloading..."
+  },
+  "import": {
+    "title": "Import definitions",
+    "description": "Upload a broker definitions JSON file to restore or migrate configuration. Existing definitions are preserved; new entries are added and conflicts are ignored.",
+    "fileLabel": "Definitions file",
+    "vhostLabel": "Virtual host",
+    "uploadButton": "Upload broker definitions",
+    "uploading": "Uploading...",
+    "confirmTitle": "Import broker definitions?",
+    "confirmDescription": "This will merge the uploaded definitions into your broker. Existing exchanges, queues, bindings, users, and policies are preserved; only new entries are added and conflicting ones are ignored.",
+    "confirmButton": "Yes, overwrite",
+    "successMessage": "Definitions imported successfully.",
+    "errorMessage": "Failed to import definitions. Please check the file and try again.",
+    "parseError": "Invalid JSON file. Please select a valid broker definitions file."
+  }
+}

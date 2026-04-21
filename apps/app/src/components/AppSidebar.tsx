@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { PixelActivity } from "@/components/ui/pixel-activity";
 import { PixelChart } from "@/components/ui/pixel-chart";
 import { PixelClock } from "@/components/ui/pixel-clock";
+import { PixelDatabase } from "@/components/ui/pixel-database";
 import { PixelFlag } from "@/components/ui/pixel-flag";
 import { PixelHelp } from "@/components/ui/pixel-help";
 import { PixelKey } from "@/components/ui/pixel-key";
@@ -85,6 +86,12 @@ const menuItems = [
     adminOnly: true,
   },
   { titleKey: "sidebar:alerts", url: "/alerts", icon: PixelFlag },
+  {
+    titleKey: "sidebar:definitions",
+    url: "/definitions",
+    icon: PixelDatabase,
+    adminOnly: true,
+  },
 ];
 
 // Helper function to shorten hostnames
