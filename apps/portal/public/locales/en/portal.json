@@ -2,7 +2,6 @@
   "layout": {
     "title": "Qarote Portal",
     "licenses": "Licenses",
-    "documentation": "Documentation",
     "account": "Account",
 
     "logout": "Logout"
@@ -52,21 +51,6 @@
         }
       }
     }
-  },
-  "documentation": {
-    "searchPlaceholder": "Search documentation...",
-    "title": "Self-Hosted Deployment",
-    "description": "Everything you need to deploy Qarote on your own infrastructure",
-    "dockerComposeFile": "Docker Compose File",
-    "environmentConfiguration": "Environment Configuration",
-    "installationGuide": "Installation Guide",
-    "installationGuideDescription": "Step-by-step instructions for deploying Qarote",
-    "dockerComposeDescription": "Production-ready Docker Compose configuration for both Community and Enterprise editions",
-    "environmentConfigDescription": "Environment variables template - copy this to .env and update with your values"
-  },
-  "codeBlock": {
-    "copied": "Copied",
-    "copy": "Copy"
   },
   "signupVerifiedExtra": " You can now purchase and manage your licenses.",
   "goToLicenses": "Go to Licenses"

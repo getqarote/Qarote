@@ -2,7 +2,6 @@ import { useTranslation } from "react-i18next";
 import { Link, Outlet, useLocation } from "react-router";
 
 import {
-  BookOpen,
   ChevronDown,
   Github,
   LayoutDashboard,
@@ -30,7 +29,6 @@ const Layout = () => {
 
   const navigation = [
     { name: t("layout.licenses"), href: "/licenses", icon: LayoutDashboard },
-    { name: t("layout.documentation"), href: "/documentation", icon: BookOpen },
   ];
 
   return (

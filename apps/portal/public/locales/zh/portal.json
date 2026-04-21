@@ -2,7 +2,6 @@
   "layout": {
     "title": "Qarote 门户",
     "licenses": "许可证",
-    "documentation": "文档",
     "account": "账户",
 
     "logout": "退出登录"
@@ -52,21 +51,6 @@
         }
       }
     }
-  },
-  "documentation": {
-    "searchPlaceholder": "搜索文档...",
-    "title": "自托管部署",
-    "description": "在您自己的基础设施上部署 Qarote 所需的一切",
-    "dockerComposeFile": "Docker Compose 文件",
-    "environmentConfiguration": "环境配置",
-    "installationGuide": "安装指南",
-    "installationGuideDescription": "部署 Qarote 的分步说明",
-    "dockerComposeDescription": "适用于 Community 和 Enterprise 版本的生产就绪 Docker Compose 配置",
-    "environmentConfigDescription": "环境变量模板 -- 将其复制到 .env 文件并更新为您的值"
-  },
-  "codeBlock": {
-    "copied": "已复制",
-    "copy": "复制"
   },
   "signupVerifiedExtra": " 您现在可以购买和管理您的许可证。",
   "goToLicenses": "前往许可证"
