@@ -6,44 +6,57 @@
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const { chromium } = require("/Users/brice/Code/Personal/Active/Qarote/apps/e2e/node_modules/@playwright/test");
-import { writeFileSync } from "fs";
+import { writeFileSync, readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = resolve(__dirname, "../apps/web/public/images");
 
+const logoSvg = readFileSync(resolve(OUT_DIR, "new_icon.svg"), "utf8");
+const logoDataUrl = `data:image/svg+xml;base64,${Buffer.from(logoSvg).toString("base64")}`;
+
+// Bricolage Grotesque woff2 — same URL used in apps/web/src/styles/index.css
+const FONT_URL = "https://fonts.gstatic.com/s/bricolagegrotesque/v7/3y9U6as8bTXq_nANBjzKo3IeZx8z6up5BeSl5jBNz_19PcbfFA.woff2";
+
 const cards = [
   {
     title: "Qarote vs Datadog",
     subtitle: "RabbitMQ-native monitoring · Free & open-source core · Self-hosted",
     badge: "Datadog Alternative",
-    accent: "#EA580C",
+    accent: "#FF691B",
     out: "compare-datadog-card.jpg",
   },
   {
     title: "Qarote vs Grafana + Prometheus",
     subtitle: "Purpose-built for RabbitMQ · No assembly required · MIT licensed",
     badge: "Grafana Alternative",
-    accent: "#EA580C",
+    accent: "#FF691B",
     out: "compare-grafana-card.jpg",
   },
 ];
 
-function buildHtml({ title, subtitle, badge, accent }) {
+function buildHtml({ title, subtitle, badge }) {
   return `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
 <style>
+  @font-face {
+    font-family: "Bricolage Grotesque";
+    font-style: normal;
+    font-display: block;
+    font-weight: 200 800;
+    src: url("${FONT_URL}") format("woff2");
+  }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
 
   body {
     width: 1200px;
     height: 630px;
-    background: #FFECE2;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #FFFAEA;
+    font-family: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
     display: flex;
     align-items: stretch;
     overflow: hidden;
@@ -51,7 +64,7 @@ function buildHtml({ title, subtitle, badge, accent }) {
 
   .sidebar {
     width: 12px;
-    background: linear-gradient(180deg, #EA580C 0%, #DC2626 100%);
+    background: linear-gradient(180deg, #FF691B 0%, #FF6A00 100%);
     flex-shrink: 0;
   }
 
@@ -69,25 +82,10 @@ function buildHtml({ title, subtitle, badge, accent }) {
     gap: 16px;
   }
 
-  .logo-mark {
-    width: 52px;
+  .logo-img {
     height: 52px;
-    background: linear-gradient(135deg, #EA580C 0%, #DC2626 100%);
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    gap: 5px;
-    padding: 10px 10px 8px;
-    border-radius: 4px;
+    width: auto;
   }
-
-  .bar {
-    background: white;
-    border-radius: 2px;
-  }
-
-  .bar-tall { width: 10px; height: 24px; }
-  .bar-short { width: 10px; height: 16px; }
 
   .brand-name {
     font-size: 26px;
@@ -99,7 +97,7 @@ function buildHtml({ title, subtitle, badge, accent }) {
   .badge {
     margin-left: auto;
     background: rgba(234, 88, 12, 0.12);
-    color: #C2410C;
+    color: #CC4400;
     font-size: 14px;
     font-weight: 600;
     padding: 6px 14px;
@@ -126,7 +124,7 @@ function buildHtml({ title, subtitle, badge, accent }) {
   }
 
   h1 .vs {
-    color: #EA580C;
+    color: #FF691B;
   }
 
   .subtitle {
@@ -178,10 +176,7 @@ function buildHtml({ title, subtitle, badge, accent }) {
   <div class="sidebar"></div>
   <div class="content">
     <div class="top">
-      <div class="logo-mark">
-        <div class="bar bar-tall"></div>
-        <div class="bar bar-short"></div>
-      </div>
+      <img src="${logoDataUrl}" class="logo-img" alt="Qarote" />
       <span class="brand-name">Qarote</span>
       <span class="badge">${badge}</span>
     </div>
