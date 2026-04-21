@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-
-import { logger } from "@/lib/logger";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -61,6 +60,7 @@ export const AddServerForm = ({
   onOpenChange: controlledOnOpenChange,
 }: AddServerFormProps) => {
   const { t } = useTranslation("dashboard");
+  const navigate = useNavigate();
   const { setSelectedServerId } = useServerContext();
   const { refetchPlan } = useUser();
   const { workspace } = useWorkspace();
@@ -74,6 +74,7 @@ export const AddServerForm = ({
     status: "idle",
   });
   const [step, setStep] = useState<Step>(1);
+  const [detailsExpanded, setDetailsExpanded] = useState(false);
 
   const isOpen =
     controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
@@ -126,7 +127,10 @@ export const AddServerForm = ({
           ];
 
     const isValid = await form.trigger(fieldsToValidate);
-    if (!isValid) return;
+    if (!isValid) {
+      setDetailsExpanded(true);
+      return;
+    }
 
     const formData = form.getValues();
     setIsTestingConnection(true);
@@ -246,10 +250,11 @@ export const AddServerForm = ({
     form.reset();
     setConnectionStatus({ status: "idle" });
     setStep(1);
+    setDetailsExpanded(false);
   };
 
   const handleUpgrade = () => {
-    logger.info("Upgrade plan requested");
+    navigate("/settings/billing");
   };
 
   const isEdit = mode === "edit";
@@ -284,7 +289,11 @@ export const AddServerForm = ({
 
         <div className="flex-1 overflow-y-auto px-6 pb-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form
+              id="add-server-form"
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-6"
+            >
               {isEdit && (
                 <>
                   <ServerDetails form={form} alwaysExpanded />
@@ -297,9 +306,17 @@ export const AddServerForm = ({
 
               {!isEdit && step === 1 && (
                 <>
-                  <ServerUrlInput form={form} />
+                  <ServerUrlInput
+                    form={form}
+                    onParseSuccess={() => setDetailsExpanded(true)}
+                  />
                   <TunnelHelper form={form} />
-                  <ServerDetails form={form} hideNameField hideVhostField />
+                  <ServerDetails
+                    form={form}
+                    hideNameField
+                    hideVhostField
+                    forceExpanded={detailsExpanded}
+                  />
                   <ConnectionStatusDisplay
                     connectionStatus={connectionStatus}
                     onUpgrade={handleUpgrade}
@@ -388,7 +405,7 @@ export const AddServerForm = ({
           {(isEdit || step === 2) && (
             <Button
               type="submit"
-              onClick={form.handleSubmit(onSubmit)}
+              form="add-server-form"
               disabled={isLoading || isTestingConnection}
               className="btn-primary"
             >
