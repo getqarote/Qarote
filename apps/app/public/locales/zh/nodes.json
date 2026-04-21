@@ -11,5 +11,11 @@
   "uptime": "运行时间",
   "connections": "连接数",
   "noNodesFound": "未找到节点",
-  "permissionErrorTitle": "节点信息不可用"
+  "permissionErrorTitle": "节点信息不可用",
+  "clusterName": "集群名称",
+  "editClusterName": "编辑集群名称",
+  "saveClusterName": "保存",
+  "cancelEdit": "取消",
+  "clusterNameUpdated": "集群名称已更新",
+  "clusterNameError": "更新集群名称失败"
 }

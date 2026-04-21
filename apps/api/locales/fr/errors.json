@@ -146,6 +146,7 @@
     "failedToDeleteServer": "Échec de la suppression du serveur",
     "connectionFailed": "Échec de la connexion",
     "failedToFetchOverview": "Échec de la récupération de l'aperçu du serveur",
+    "failedToSetClusterName": "Échec de la mise à jour du nom du cluster",
     "serverWorkspaceNotFound": "Espace de travail du serveur introuvable",
     "failedToFetchQueues": "Échec de la récupération des files d'attente",
     "failedToFetchQueue": "Échec de la récupération de la file d'attente",

@@ -1168,6 +1168,26 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     }
   }
 
+  async setClusterName(name: string): Promise<void> {
+    try {
+      logger.debug({ name }, "Setting RabbitMQ cluster name");
+      await this.request("/cluster-name", {
+        method: "PUT",
+        body: JSON.stringify({ name }),
+      });
+      logger.debug({ name }, "RabbitMQ cluster name set successfully");
+    } catch (error) {
+      logger.error({ error, name }, "Failed to set RabbitMQ cluster name");
+      if (error instanceof Error) {
+        captureRabbitMQError(error, {
+          operation: "setClusterName",
+          serverId: this.baseUrl,
+        });
+      }
+      throw error;
+    }
+  }
+
   // User Management Methods
   async getUsers(): Promise<RabbitMQUser[]> {
     try {

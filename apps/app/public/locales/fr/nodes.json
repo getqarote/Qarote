@@ -11,5 +11,11 @@
   "uptime": "Disponibilité",
   "connections": "Connexions",
   "noNodesFound": "Aucun nœud trouvé",
-  "permissionErrorTitle": "Informations sur les nœuds indisponibles"
+  "permissionErrorTitle": "Informations sur les nœuds indisponibles",
+  "clusterName": "Nom du cluster",
+  "editClusterName": "Modifier le nom du cluster",
+  "saveClusterName": "Enregistrer",
+  "cancelEdit": "Annuler",
+  "clusterNameUpdated": "Nom du cluster mis à jour",
+  "clusterNameError": "Échec de la mise à jour du nom du cluster"
 }

@@ -108,6 +108,10 @@ export const ServerWorkspaceInputSchema = z.object({
   workspaceId: z.string(),
 });
 
+export const SetClusterNameSchema = ServerWorkspaceInputSchema.extend({
+  name: z.string().min(1, "Cluster name is required").max(255),
+});
+
 // Schema for creating an exchange
 export const CreateExchangeSchema = z.object({
   name: z.string().min(1, "Exchange name is required"),

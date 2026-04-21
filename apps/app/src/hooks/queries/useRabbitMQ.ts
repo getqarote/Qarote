@@ -482,6 +482,18 @@ export const useDeletePolicy = () => {
   return mutation;
 };
 
+export const useSetClusterName = () => {
+  const utils = trpc.useUtils();
+
+  const mutation = trpc.rabbitmq.overview.setClusterName.useMutation({
+    onSuccess: () => {
+      utils.rabbitmq.overview.getOverview.invalidate();
+    },
+  });
+
+  return mutation;
+};
+
 export const useTopology = (
   serverId: string | null,
   vhost?: string | null,
