@@ -52,6 +52,10 @@
       }
     }
   },
+  "codeBlock": {
+    "copied": "Copiado",
+    "copy": "Copiar"
+  },
   "signupVerifiedExtra": " Ahora puede comprar y administrar sus licencias.",
   "goToLicenses": "Ir a licencias"
 }

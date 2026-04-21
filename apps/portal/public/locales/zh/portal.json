@@ -52,6 +52,10 @@
       }
     }
   },
+  "codeBlock": {
+    "copied": "已复制",
+    "copy": "复制"
+  },
   "signupVerifiedExtra": " 您现在可以购买和管理您的许可证。",
   "goToLicenses": "前往许可证"
 }
