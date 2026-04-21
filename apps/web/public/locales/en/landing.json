@@ -34,6 +34,7 @@
       "point3": "Smart, actionable alerts that catch issues early",
       "point4": "Zero-setup monitoring, no scripts, no maintenance"
     },
+    "compareWith": "Compare Qarote with:",
     "messagesPerSec": "Messages/sec",
     "activeQueues": "Active Queues",
     "allSystemsOperational": "All systems operational"

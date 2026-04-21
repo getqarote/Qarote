@@ -34,6 +34,7 @@
       "point3": "智能且可操作的告警，提前发现问题",
       "point4": "零配置监控，无需脚本，无需维护"
     },
+    "compareWith": "对比 Qarote 与：",
     "messagesPerSec": "消息/秒",
     "activeQueues": "活跃队列",
     "allSystemsOperational": "所有系统运行正常"

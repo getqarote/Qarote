@@ -34,6 +34,7 @@
       "point3": "Des alertes intelligentes et exploitables qui détectent les problèmes en amont",
       "point4": "Un monitoring clé en main, sans scripts ni maintenance"
     },
+    "compareWith": "Comparer Qarote avec :",
     "messagesPerSec": "Messages/sec",
     "activeQueues": "Files actives",
     "allSystemsOperational": "Tous les systèmes sont opérationnels"

@@ -31,18 +31,30 @@ const ComparisonSection = () => {
         </div>
 
         {/* Compare links */}
-        <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-10 text-sm text-muted-foreground">
-          <span>{t("comparison.compareWith", "Compare Qarote with:")}</span>
-          <a href="/compare/datadog/" className="text-primary hover:underline">
-            {t("footer.vsDatadog", "Qarote vs Datadog")}
-          </a>
-          <a
-            href="/compare/grafana-prometheus/"
-            className="text-primary hover:underline"
-          >
-            {t("footer.vsGrafana", "Qarote vs Grafana + Prometheus")}
-          </a>
-        </div>
+        <nav
+          aria-label={t("comparison.compareWith")}
+          className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-10 text-sm text-muted-foreground"
+        >
+          <span aria-hidden="true">{t("comparison.compareWith")}</span>
+          <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2 list-none">
+            <li>
+              <a
+                href="/compare/datadog/"
+                className="text-primary hover:underline"
+              >
+                {t("footer.vsDatadog")}
+              </a>
+            </li>
+            <li>
+              <a
+                href="/compare/grafana-prometheus/"
+                className="text-primary hover:underline"
+              >
+                {t("footer.vsGrafana")}
+              </a>
+            </li>
+          </ul>
+        </nav>
 
         {/* Main Comparison Container */}
         <div className="border border-border overflow-hidden">

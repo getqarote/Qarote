@@ -396,18 +396,28 @@ function FaqSection({ ns }: { ns: string }) {
           {t("faq.heading")}
         </span>
       </div>
-      <div className="divide-y divide-border">
+      <ul className="divide-y divide-border list-none">
         {items.map((item, i) => (
-          <div key={i} className="p-6">
-            <p className="text-sm font-semibold text-foreground mb-2">
-              {item.question}
-            </p>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {item.answer}
-            </p>
-          </div>
+          <li key={i}>
+            <details className="group">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-6 marker:hidden [&::-webkit-details-marker]:hidden">
+                <h3 className="text-sm font-semibold text-foreground">
+                  {item.question}
+                </h3>
+                <span
+                  className="shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
+                  aria-hidden="true"
+                >
+                  ▾
+                </span>
+              </summary>
+              <p className="px-6 pb-6 text-sm text-muted-foreground leading-relaxed">
+                {item.answer}
+              </p>
+            </details>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }

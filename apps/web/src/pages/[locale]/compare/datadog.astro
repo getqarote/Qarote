@@ -3,10 +3,16 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
 import { CompareDatadogIsland } from "../../../components/CompareIsland";
 import { loadTranslations, loadAllTranslations, t } from "../../../lib/i18n-static";
 import { getLocaleStaticPaths } from "../../../lib/locales";
+import { SUPPORTED_LOCALES, type SupportedLocale } from "@qarote/i18n";
+import { buildFaqSchema } from "../../../lib/schema";
 
 export const getStaticPaths = getLocaleStaticPaths;
 
-const { locale } = Astro.params;
+const rawLocale = Astro.params.locale;
+if (!rawLocale || !SUPPORTED_LOCALES.includes(rawLocale as SupportedLocale)) {
+  return Astro.redirect("/");
+}
+const locale = rawLocale as SupportedLocale;
 const compare = loadTranslations(locale, "compare-datadog");
 const resources = { ...loadAllTranslations(locale), "compare-datadog": compare };
 
@@ -20,17 +26,7 @@ const competitorSchema = {
   sameAs: "https://www.wikidata.org/wiki/Q22679942",
 };
 
-const faqSchema = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: (compare.faq as { items: Array<{ question: string; answer: string }> }).items.map(
-    (item) => ({
-      "@type": "Question",
-      name: item.question,
-      acceptedAnswer: { "@type": "Answer", text: item.answer },
-    })
-  ),
-};
+const faqSchema = buildFaqSchema(compare);
 ---
 
 <BaseLayout

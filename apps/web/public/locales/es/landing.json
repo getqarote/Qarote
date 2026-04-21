@@ -34,6 +34,7 @@
       "point3": "Alertas inteligentes y accionables que detectan problemas a tiempo",
       "point4": "Monitoreo listo para usar, sin scripts ni mantenimiento"
     },
+    "compareWith": "Comparar Qarote con:",
     "messagesPerSec": "Mensajes/seg",
     "activeQueues": "Colas activas",
     "allSystemsOperational": "Todos los sistemas operativos"
