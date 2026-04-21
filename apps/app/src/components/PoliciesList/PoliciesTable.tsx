@@ -1,17 +1,12 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import {
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
-  FileText,
-  Pencil,
-  Trash2,
-} from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, FileText } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PixelEdit } from "@/components/ui/pixel-edit";
+import { PixelTrash } from "@/components/ui/pixel-trash";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import type { PolicyListItem } from "./types";
@@ -196,7 +191,10 @@ function PolicyRow({
                 title={t("editPolicy")}
                 aria-label={t("editPolicy")}
               >
-                <Pencil className="h-3.5 w-3.5" />
+                <PixelEdit
+                  className="h-3.5 w-auto shrink-0"
+                  aria-hidden="true"
+                />
               </Button>
             )}
             {onDelete && (
@@ -209,7 +207,10 @@ function PolicyRow({
                 title={t("deletePolicy")}
                 aria-label={t("deletePolicy")}
               >
-                <Trash2 className="h-3.5 w-3.5" />
+                <PixelTrash
+                  className="h-3.5 w-auto shrink-0"
+                  aria-hidden="true"
+                />
               </Button>
             )}
           </div>
