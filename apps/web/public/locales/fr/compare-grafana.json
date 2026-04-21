@@ -1,135 +1,135 @@
 {
   "seo": {
-    "title": "Qarote vs Grafana + Prometheus: RabbitMQ Alternative",
-    "description": "Qarote vs Grafana + Prometheus for RabbitMQ monitoring. A purpose-built alternative — ready in 60 seconds, no PromQL or stack assembly required."
+    "title": "Qarote vs Grafana + Prometheus : Alternative RabbitMQ",
+    "description": "Qarote vs Grafana + Prometheus pour la surveillance RabbitMQ. Une alternative spécialisée — opérationnelle en 60 secondes, sans PromQL ni assemblage de stack nécessaire."
   },
   "hero": {
-    "eyebrow": "Comparison",
+    "eyebrow": "Comparaison",
     "title": "Qarote vs Grafana + Prometheus",
-    "subtitle": "Grafana and Prometheus are excellent, battle-tested open-source tools. Monitoring RabbitMQ with them means assembling a stack: Prometheus, the RabbitMQ exporter, custom dashboards, and alert rules written in PromQL. Qarote ships ready to go — connect your RabbitMQ server and monitoring starts immediately."
+    "subtitle": "Grafana et Prometheus sont d'excellents outils open source, éprouvés en production. Surveiller RabbitMQ avec eux implique d'assembler un stack : Prometheus, l'exporter RabbitMQ, des tableaux de bord personnalisés et des règles d'alerte écrites en PromQL. Qarote est prêt à l'emploi — connectez votre serveur RabbitMQ et la surveillance démarre immédiatement."
   },
   "verdict": {
-    "heading": "Quick verdict",
+    "heading": "Verdict rapide",
     "competitor": {
-      "label": "Choose Grafana + Prometheus if…",
+      "label": "Choisissez Grafana + Prometheus si…",
       "points": [
-        "You need a fully customizable monitoring stack that you control end-to-end",
-        "You're already running Prometheus and Grafana for other services and want to consolidate",
-        "You have engineering capacity to maintain the stack and are comfortable with PromQL"
+        "Vous avez besoin d'un stack de surveillance entièrement personnalisable que vous contrôlez de bout en bout",
+        "Vous utilisez déjà Prometheus et Grafana pour d'autres services et souhaitez consolider",
+        "Vous avez la capacité d'ingénierie pour maintenir le stack et êtes à l'aise avec PromQL"
       ]
     },
     "qarote": {
-      "label": "Choose Qarote if…",
+      "label": "Choisissez Qarote si…",
       "points": [
-        "You want RabbitMQ monitoring up and running in minutes, not hours",
-        "You don't want to learn PromQL or maintain a multi-component observability stack",
-        "You prefer pre-built RabbitMQ dashboards over building everything from scratch"
+        "Vous souhaitez que la surveillance RabbitMQ soit opérationnelle en minutes, pas en heures",
+        "Vous ne souhaitez pas apprendre PromQL ni maintenir un stack d'observabilité multi-composants",
+        "Vous préférez des tableaux de bord RabbitMQ pré-construits plutôt que de tout créer de zéro"
       ]
     }
   },
   "table": {
-    "heading": "Feature comparison",
+    "heading": "Comparaison des fonctionnalités",
     "competitorLabel": "Grafana + Prometheus",
     "qaroteLabel": "Qarote",
-    "featureLabel": "Feature",
-    "caption": "Qarote vs Grafana + Prometheus Feature Comparison",
-    "asOf": "Grafana OSS and Prometheus are free. Infrastructure and maintenance costs vary by deployment.",
+    "featureLabel": "Fonctionnalité",
+    "caption": "Comparaison des fonctionnalités Qarote vs Grafana + Prometheus",
+    "asOf": "Grafana OSS et Prometheus sont gratuits. Les coûts d'infrastructure et de maintenance varient selon le déploiement.",
     "rows": {
       "rabbitmqNative": {
-        "feature": "RabbitMQ-native monitoring",
-        "competitor": "Via rabbitmq_prometheus plugin + custom dashboards",
-        "qarote": "Native — built exclusively for RabbitMQ"
+        "feature": "Surveillance native RabbitMQ",
+        "competitor": "Via plugin rabbitmq_prometheus + tableaux de bord personnalisés",
+        "qarote": "Natif — conçu exclusivement pour RabbitMQ"
       },
       "components": {
-        "feature": "Components to install",
-        "competitor": "Prometheus, RabbitMQ exporter, Grafana, Alertmanager",
-        "qarote": "One — Qarote (single binary or Docker image)"
+        "feature": "Composants à installer",
+        "competitor": "Prometheus, exporter RabbitMQ, Grafana, Alertmanager",
+        "qarote": "Un seul — Qarote (binaire unique ou image Docker)"
       },
       "setupTime": {
-        "feature": "Setup time",
-        "competitor": "2+ hours for a basic working setup",
-        "qarote": "60 seconds — paste connection string, done"
+        "feature": "Temps de configuration",
+        "competitor": "Plus de 2 heures pour une configuration de base fonctionnelle",
+        "qarote": "60 secondes — collez la chaîne de connexion, c'est tout"
       },
       "queryLanguage": {
-        "feature": "Query language required",
-        "competitor": "PromQL — steep learning curve for alerts",
-        "qarote": "None — dashboards and alerts built in"
+        "feature": "Langage de requête requis",
+        "competitor": "PromQL — courbe d'apprentissage prononcée pour les alertes",
+        "qarote": "Aucun — tableaux de bord et alertes intégrés"
       },
       "dashboards": {
-        "feature": "Pre-built RabbitMQ dashboards",
-        "competitor": "Community dashboards (variable quality, may lag RabbitMQ versions)",
-        "qarote": "Yes — curated, always current"
+        "feature": "Tableaux de bord RabbitMQ pré-construits",
+        "competitor": "Tableaux de bord communautaires (qualité variable, peuvent être obsolètes)",
+        "qarote": "Oui — soignés et toujours à jour"
       },
       "alerting": {
-        "feature": "RabbitMQ-specific alert templates",
-        "competitor": "Write your own in PromQL + Alertmanager YAML",
-        "qarote": "Yes — queue depth, consumer saturation, DLQ, and more"
+        "feature": "Modèles d'alertes spécifiques à RabbitMQ",
+        "competitor": "À écrire en PromQL + YAML Alertmanager",
+        "qarote": "Oui — profondeur de file, saturation des consumers, DLQ, et plus"
       },
       "selfHosted": {
-        "feature": "Self-hosted option",
-        "competitor": "Yes — fully self-managed",
-        "qarote": "Yes — runs entirely on your infrastructure"
+        "feature": "Option auto-hébergée",
+        "competitor": "Oui — entièrement auto-géré",
+        "qarote": "Oui — fonctionne entièrement sur votre infrastructure"
       },
       "maintenance": {
-        "feature": "Ongoing maintenance",
-        "competitor": "Version upgrades for each component separately",
-        "qarote": "Single binary upgrade"
+        "feature": "Maintenance continue",
+        "competitor": "Mises à jour de version pour chaque composant séparément",
+        "qarote": "Mise à jour d'un seul binaire"
       },
       "openSource": {
-        "feature": "Open-source core",
-        "competitor": "Yes — Apache 2.0 / AGPL",
-        "qarote": "Yes — MIT licensed"
+        "feature": "Noyau open source",
+        "competitor": "Oui — Apache 2.0 / AGPL",
+        "qarote": "Oui — licence MIT"
       },
       "flexibility": {
-        "feature": "Dashboard customizability",
-        "competitor": "Unlimited — full Grafana flexibility",
-        "qarote": "Opinionated, purpose-built views"
+        "feature": "Personnalisation des tableaux de bord",
+        "competitor": "Illimitée — flexibilité totale de Grafana",
+        "qarote": "Vues spécialisées et structurées"
       }
     }
   },
   "sections": {
     "assembly": {
-      "heading": "Grafana + Prometheus requires assembling a stack — Qarote is one install",
-      "p1": "The Grafana + Prometheus combination is one of the most powerful monitoring setups available. But 'powerful' and 'ready' are different things. To monitor RabbitMQ you need: Prometheus running and scraping metrics, the RabbitMQ Prometheus plugin enabled on each broker, Alertmanager configured for notifications, and Grafana with a dashboard that actually shows what you care about. Each component has its own version, its own configuration format, and its own upgrade path.",
-      "p2": "Qarote is a single binary. You point it at your RabbitMQ server with a connection string and monitoring starts. No component coordination, no version compatibility matrix, no configuration files to maintain across four separate services.",
-      "p3": "If you're already running Prometheus and Grafana for other services, adding RabbitMQ to that stack is a reasonable choice. But if RabbitMQ monitoring is the goal in itself, assembling the full stack is a significant investment for what should be a solved problem."
+      "heading": "Grafana + Prometheus nécessite d'assembler un stack — Qarote s'installe en une fois",
+      "p1": "La combinaison Grafana + Prometheus est l'une des configurations de surveillance les plus puissantes disponibles. Mais « puissant » et « prêt à l'emploi » sont deux choses différentes. Pour surveiller RabbitMQ, vous avez besoin de : Prometheus en cours d'exécution et récoltant les métriques, le plugin Prometheus de RabbitMQ activé sur chaque broker, Alertmanager configuré pour les notifications, et Grafana avec un tableau de bord affichant réellement ce qui vous importe. Chaque composant a sa propre version, son propre format de configuration et son propre chemin de mise à jour.",
+      "p2": "Qarote est un seul binaire. Vous le pointez vers votre serveur RabbitMQ avec une chaîne de connexion et la surveillance démarre. Pas de coordination de composants, pas de matrice de compatibilité de versions, pas de fichiers de configuration à maintenir sur quatre services distincts.",
+      "p3": "Si vous utilisez déjà Prometheus et Grafana pour d'autres services, ajouter RabbitMQ à ce stack est un choix raisonnable. Mais si la surveillance RabbitMQ est l'objectif en lui-même, assembler le stack complet représente un investissement significatif pour ce qui devrait être un problème déjà résolu."
     },
     "promql": {
-      "heading": "PromQL is powerful, but you don't need it to monitor queues",
-      "p1": "Prometheus's query language is expressive and battle-tested. It's also a non-trivial skill to acquire. Writing a reliable alert for 'queue depth over 10,000 for 5 minutes across all vhosts' in PromQL requires understanding metric labels, range vectors, and Alertmanager routing. There's a real learning curve — and a real maintenance cost when labels change or RabbitMQ's metric schema evolves between versions.",
-      "p2": "Qarote expresses the same logic through a point-and-click interface. You select the queue, the condition (depth, consumer count, message age), the threshold, and the notification channel. The underlying query is generated for you and kept up to date as RabbitMQ evolves.",
-      "p3": "PromQL expertise is a legitimate skill worth having. But it shouldn't be the barrier between your team and reliable RabbitMQ alerts."
+      "heading": "PromQL est puissant, mais vous n'en avez pas besoin pour surveiller des files",
+      "p1": "Le langage de requête de Prometheus est expressif et éprouvé en production. C'est aussi une compétence non triviale à acquérir. Écrire une alerte fiable pour « profondeur de file supérieure à 10 000 pendant 5 minutes sur tous les vhosts » en PromQL nécessite de comprendre les labels de métriques, les vecteurs de plage et le routage Alertmanager. Il y a une vraie courbe d'apprentissage — et un vrai coût de maintenance quand les labels changent ou que le schéma de métriques de RabbitMQ évolue entre les versions.",
+      "p2": "Qarote exprime la même logique via une interface pointer-cliquer. Vous sélectionnez la file, la condition (profondeur, nombre de consumers, âge des messages), le seuil et le canal de notification. La requête sous-jacente est générée pour vous et maintenue à jour à mesure que RabbitMQ évolue.",
+      "p3": "L'expertise PromQL est une compétence légitime qui vaut la peine d'être acquise. Mais elle ne devrait pas être l'obstacle entre votre équipe et des alertes RabbitMQ fiables."
     },
     "dashboards": {
-      "heading": "Pre-built dashboards vs building your own from scratch",
-      "p1": "The Grafana community has published RabbitMQ dashboards — some of them good. But community dashboards age: they lag behind RabbitMQ versions, use deprecated metric names, and often monitor the metrics that were easy to export rather than the metrics you actually need in an incident.",
-      "p2": "Qarote's dashboards are built around operational questions: Which queues are backing up? Which consumers have stopped? Where are messages being dead-lettered? The layout is designed for incident-time scanning, not demo screenshots.",
-      "p3": "The trade-off is flexibility. Grafana lets you build any dashboard you can imagine. Qarote gives you opinionated, curated views designed for RabbitMQ operations specifically. For most teams, the opinionated approach is faster and more reliable than building from scratch."
+      "heading": "Tableaux de bord pré-construits vs construire les siens de zéro",
+      "p1": "La communauté Grafana a publié des tableaux de bord RabbitMQ — certains d'entre eux bons. Mais les tableaux de bord communautaires vieillissent : ils prennent du retard sur les versions de RabbitMQ, utilisent des noms de métriques dépréciés, et surveillent souvent les métriques faciles à exporter plutôt que celles dont vous avez réellement besoin lors d'un incident.",
+      "p2": "Les tableaux de bord de Qarote sont construits autour de questions opérationnelles : Quelles files s'accumulent ? Quels consumers se sont arrêtés ? Où les messages sont-ils envoyés en dead-letter ? La mise en page est conçue pour l'analyse lors d'incidents, pas pour des captures d'écran de démonstration.",
+      "p3": "Le compromis est la flexibilité. Grafana vous permet de construire n'importe quel tableau de bord imaginable. Qarote vous offre des vues structurées et soignées conçues spécifiquement pour les opérations RabbitMQ. Pour la plupart des équipes, l'approche structurée est plus rapide et plus fiable que construire de zéro."
     },
     "maintenance": {
-      "heading": "One thing to upgrade, not four",
-      "p1": "A self-managed Prometheus + Grafana stack means tracking upgrades for Prometheus, Grafana, the RabbitMQ exporter plugin, and Alertmanager separately. Each has its own changelog, breaking changes, and configuration migration. This is manageable, but it's ongoing engineering work that compounds over time.",
-      "p2": "Qarote is a single binary with a single upgrade path. When a new RabbitMQ version changes metric names or adds new queue attributes, Qarote's update handles it. You're not responsible for maintaining compatibility across four components simultaneously."
+      "heading": "Une chose à mettre à jour, pas quatre",
+      "p1": "Un stack Prometheus + Grafana auto-géré implique de suivre les mises à jour de Prometheus, Grafana, le plugin exporter RabbitMQ et Alertmanager séparément. Chacun a son propre changelog, ses propres changements incompatibles et sa propre migration de configuration. C'est gérable, mais c'est un travail d'ingénierie continu qui s'accumule avec le temps.",
+      "p2": "Qarote est un seul binaire avec un seul chemin de mise à jour. Quand une nouvelle version de RabbitMQ change des noms de métriques ou ajoute de nouveaux attributs de file, la mise à jour de Qarote s'en charge. Vous n'êtes pas responsable du maintien de la compatibilité sur quatre composants simultanément."
     }
   },
   "crossLink": {
-    "text": "Also comparing:",
+    "text": "Aussi en comparaison :",
     "datadog": "Qarote vs Datadog →"
   },
   "faq": {
-    "heading": "Frequently asked questions",
+    "heading": "Questions fréquentes",
     "items": [
       {
-        "question": "Can I use Qarote alongside my existing Grafana setup?",
-        "answer": "Yes. Qarote and Grafana + Prometheus can coexist. Some teams use Qarote for day-to-day RabbitMQ monitoring and keep their Prometheus/Grafana stack for broader infrastructure observability. Qarote doesn't require replacing your existing setup."
+        "question": "Puis-je utiliser Qarote avec ma configuration Grafana existante ?",
+        "answer": "Oui. Qarote et Grafana + Prometheus peuvent coexister. Certaines équipes utilisent Qarote pour la surveillance quotidienne de RabbitMQ et conservent leur stack Prometheus/Grafana pour l'observabilité de l'infrastructure plus large. Qarote ne nécessite pas de remplacer votre configuration existante."
       },
       {
-        "question": "Does Qarote expose metrics for Prometheus to scrape?",
-        "answer": "Not currently. Qarote is a self-contained monitoring application, not a metrics exporter. If you need Prometheus-compatible metrics from RabbitMQ, the official rabbitmq_prometheus plugin is the right tool. Qarote focuses on the monitoring experience rather than the metrics pipeline."
+        "question": "Qarote expose-t-il des métriques pour que Prometheus les collecte ?",
+        "answer": "Pas actuellement. Qarote est une application de surveillance autonome, pas un exporter de métriques. Si vous avez besoin de métriques compatibles Prometheus depuis RabbitMQ, le plugin officiel rabbitmq_prometheus est le bon outil. Qarote se concentre sur l'expérience de surveillance plutôt que sur le pipeline de métriques."
       },
       {
-        "question": "Is the open-source edition of Qarote really free?",
-        "answer": "Yes. The MIT-licensed core of Qarote — live queue monitoring, exchange visibility, consumer tracking, and multi-server support — is free to self-host without any license key. Premium features (workspace sharing, advanced alerting, integrations) require a Developer or Enterprise license."
+        "question": "L'édition open source de Qarote est-elle vraiment gratuite ?",
+        "answer": "Oui. Le noyau sous licence MIT de Qarote — surveillance en direct des files, visibilité des exchanges, suivi des consumers et support multi-serveur — est gratuit à auto-héberger sans aucune clé de licence. Les fonctionnalités premium (partage d'espaces de travail, alertes avancées, intégrations) nécessitent une licence Développeur ou Enterprise."
       }
     ]
   }

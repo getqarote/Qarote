@@ -1,135 +1,135 @@
 {
   "seo": {
-    "title": "Qarote vs Datadog: RabbitMQ Monitoring Alternative",
-    "description": "Qarote vs Datadog for RabbitMQ monitoring. Purpose-built, self-hosted alternative to Datadog's per-host pricing. Honest feature and cost comparison."
+    "title": "Qarote vs Datadog: Alternativa de Monitoreo para RabbitMQ",
+    "description": "Qarote vs Datadog para monitoreo de RabbitMQ. Alternativa autoalojada y especializada frente al precio por host de Datadog. Comparativa honesta de funcionalidades y costes."
   },
   "hero": {
-    "eyebrow": "Comparison",
+    "eyebrow": "Comparativa",
     "title": "Qarote vs Datadog",
-    "subtitle": "Datadog is a powerful general-purpose observability platform. If you're monitoring RabbitMQ, you're one integration among hundreds — paying per-host pricing for a dashboard built for the masses. Qarote is built exclusively for RabbitMQ, ships as a single self-hosted binary, and starts free."
+    "subtitle": "Datadog es una potente plataforma de observabilidad de propósito general. Si monitorizas RabbitMQ, eres una integración entre cientos — pagando por host por un dashboard diseñado para todos. Qarote está construido exclusivamente para RabbitMQ, se entrega como un único binario autoalojado y comienza gratis."
   },
   "verdict": {
-    "heading": "Quick verdict",
+    "heading": "Veredicto rápido",
     "competitor": {
-      "label": "Choose Datadog if…",
+      "label": "Elige Datadog si…",
       "points": [
-        "You need unified observability across many services (APM, logs, infrastructure) in a single platform",
-        "Your team already uses Datadog and RabbitMQ is one more integration in an existing workflow",
-        "You prefer a fully managed SaaS and per-host billing fits your team's budget"
+        "Necesitas observabilidad unificada en muchos servicios (APM, logs, infraestructura) en una sola plataforma",
+        "Tu equipo ya usa Datadog y RabbitMQ es una integración más en un flujo de trabajo existente",
+        "Prefieres un SaaS completamente gestionado y la facturación por host se ajusta al presupuesto de tu equipo"
       ]
     },
     "qarote": {
-      "label": "Choose Qarote if…",
+      "label": "Elige Qarote si…",
       "points": [
-        "RabbitMQ is a critical part of your infrastructure and deserves a purpose-built tool",
-        "You want self-hosted monitoring where queue data never leaves your network",
-        "You need predictable flat-rate pricing with no per-host surprises"
+        "RabbitMQ es una parte crítica de tu infraestructura y merece una herramienta especializada",
+        "Quieres monitoreo autoalojado donde los datos de las colas nunca abandonan tu red",
+        "Necesitas precios planos y predecibles sin sorpresas por host"
       ]
     }
   },
   "table": {
-    "heading": "Feature comparison",
+    "heading": "Comparativa de funcionalidades",
     "competitorLabel": "Datadog",
     "qaroteLabel": "Qarote",
-    "featureLabel": "Feature",
-    "caption": "Qarote vs Datadog Feature Comparison",
-    "asOf": "Pricing as of April 2025. Datadog Infrastructure Pro tier applied to RabbitMQ host monitoring.",
+    "featureLabel": "Característica",
+    "caption": "Comparativa de funcionalidades Qarote vs Datadog",
+    "asOf": "Precios a abril de 2026. Nivel Datadog Infrastructure Pro aplicado al monitoreo de hosts RabbitMQ.",
     "rows": {
       "rabbitmqNative": {
-        "feature": "RabbitMQ-native monitoring",
-        "competitor": "Via integration plugin — one of 700+ integrations",
-        "qarote": "Native — built exclusively for RabbitMQ"
+        "feature": "Monitoreo nativo de RabbitMQ",
+        "competitor": "Mediante plugin de integración — una de 700+ integraciones",
+        "qarote": "Nativo — construido exclusivamente para RabbitMQ"
       },
       "setupTime": {
-        "feature": "Setup time",
-        "competitor": "Agent install + integration config + dashboard setup (~30–60 min)",
-        "qarote": "60 seconds — paste connection string, done"
+        "feature": "Tiempo de configuración",
+        "competitor": "Instalación del agente + configuración de integración + configuración de dashboard (~30–60 min)",
+        "qarote": "60 segundos — pega la cadena de conexión y listo"
       },
       "selfHosted": {
-        "feature": "Self-hosted option",
-        "competitor": "No — SaaS only",
-        "qarote": "Yes — runs entirely on your infrastructure"
+        "feature": "Opción autoalojada",
+        "competitor": "No — solo SaaS",
+        "qarote": "Sí — se ejecuta completamente en tu infraestructura"
       },
       "dataPrivacy": {
-        "feature": "Queue data privacy",
-        "competitor": "Queue metrics sent to Datadog's cloud",
-        "qarote": "All data stays on your network"
+        "feature": "Privacidad de datos de colas",
+        "competitor": "Las métricas de colas se envían a la nube de Datadog",
+        "qarote": "Todos los datos permanecen en tu red"
       },
       "pricingModel": {
-        "feature": "Pricing model",
-        "competitor": "Per host/month + data ingestion fees",
-        "qarote": "Flat annual license or free (self-hosted MIT)"
+        "feature": "Modelo de precios",
+        "competitor": "Por host/mes + tarifas de ingesta de datos",
+        "qarote": "Licencia anual plana o gratuito (MIT autoalojado)"
       },
       "estimatedCost": {
-        "feature": "Estimated cost (3-node cluster)",
-        "competitor": "~$45–$69/month",
-        "qarote": "$29/month (Developer plan)"
+        "feature": "Coste estimado (clúster de 3 nodos)",
+        "competitor": "~$45–$54/mes",
+        "qarote": "$29/mes (plan Developer)"
       },
       "multiVhost": {
-        "feature": "Multi-vhost support",
-        "competitor": "Limited — requires custom tagging",
-        "qarote": "Yes — native vhost isolation"
+        "feature": "Soporte multi-vhost",
+        "competitor": "Limitado — requiere etiquetado personalizado",
+        "qarote": "Sí — aislamiento nativo de vhost"
       },
       "alerting": {
-        "feature": "Queue depth alerting",
-        "competitor": "Yes — via custom metric alerts",
-        "qarote": "Yes — built-in RabbitMQ alert templates"
+        "feature": "Alertas por profundidad de cola",
+        "competitor": "Sí — mediante alertas de métricas personalizadas",
+        "qarote": "Sí — plantillas de alertas RabbitMQ integradas"
       },
       "openSource": {
-        "feature": "Open-source core",
+        "feature": "Núcleo open source",
         "competitor": "No",
-        "qarote": "Yes — MIT licensed"
+        "qarote": "Sí — licencia MIT"
       },
       "integrations": {
-        "feature": "Platform breadth",
-        "competitor": "700+ integrations across your full stack",
-        "qarote": "RabbitMQ only"
+        "feature": "Amplitud de plataforma",
+        "competitor": "700+ integraciones en todo tu stack",
+        "qarote": "Solo RabbitMQ"
       }
     }
   },
   "sections": {
     "native": {
-      "heading": "RabbitMQ is an afterthought in Datadog — it's native in Qarote",
-      "p1": "Datadog monitors everything: servers, containers, databases, APM traces, logs, and yes, RabbitMQ. That breadth is genuinely valuable if you need a single pane of glass across your entire stack. But for RabbitMQ specifically, it means installing an agent, enabling the integration, and working within a metric schema designed to fit hundreds of different services.",
-      "p2": "Qarote was built for one thing: RabbitMQ. Every screen, every metric, and every alert template was designed around how queues, exchanges, bindings, and consumers actually work. There's no configuration layer to navigate — connect your RabbitMQ server and your queues appear immediately.",
-      "p3": "If RabbitMQ is a critical part of your infrastructure — not just an incidental integration — it deserves a tool that treats it as a first-class citizen."
+      "heading": "RabbitMQ es secundario en Datadog — es nativo en Qarote",
+      "p1": "Datadog monitoriza todo: servidores, contenedores, bases de datos, trazas APM, logs y, sí, RabbitMQ. Esa amplitud es genuinamente valiosa si necesitas una vista unificada de todo tu stack. Pero para RabbitMQ específicamente, implica instalar un agente, activar la integración y trabajar con un esquema de métricas diseñado para adaptarse a cientos de servicios distintos.",
+      "p2": "Qarote fue construido para una sola cosa: RabbitMQ. Cada pantalla, cada métrica y cada plantilla de alerta fue diseñada en torno a cómo funcionan realmente las colas, los exchanges, los bindings y los consumers. No hay capa de configuración que navegar — conecta tu servidor RabbitMQ y tus colas aparecen de inmediato.",
+      "p3": "Si RabbitMQ es una parte crítica de tu infraestructura — no solo una integración incidental — merece una herramienta que lo trate como ciudadano de primera clase."
     },
     "pricing": {
-      "heading": "Datadog's per-host pricing surprises teams at scale",
-      "p1": "Datadog's Infrastructure Pro plan charges ~$15–$23 per host per month. For a 3-node RabbitMQ cluster, that's $45–$69/month for the infrastructure monitoring tier alone — before data ingestion, log indexing, or any other Datadog features. As your cluster grows, the bill grows with it.",
-      "p2": "Qarote's Developer plan is $348/year ($29/month flat) for a team. Enterprise is $1,188/year. Both are flat-rate: no per-host metering, no data volume charges, no surprise line items. If you self-host the MIT open-source edition, the monitoring itself is free.",
-      "p3": "The comparison sharpens when you consider what you're actually getting: Datadog's per-host pricing buys you one integration among 700. Qarote's flat rate buys you a tool built entirely around your use case."
+      "heading": "Los precios por host de Datadog sorprenden a los equipos a escala",
+      "p1": "El plan Infrastructure Pro de Datadog cobra $15–$18 por host al mes. Para un clúster RabbitMQ de 3 nodos, eso son $45–$54/mes solo por el nivel de monitoreo de infraestructura — antes de la ingesta de datos, la indexación de logs o cualquier otra funcionalidad de Datadog. A medida que crece tu clúster, la factura crece con él.",
+      "p2": "El plan Developer de Qarote es $348/año ($29/mes fijo) para un equipo. Enterprise es $1.188/año. Ambos son tarifa plana: sin medición por host, sin cargos por volumen de datos, sin sorpresas en la factura. Si autoalojas la edición MIT open source, el monitoreo en sí es gratuito.",
+      "p3": "La comparativa se agudiza cuando consideras lo que realmente obtienes: el precio por host de Datadog te compra una integración entre 700. La tarifa plana de Qarote te compra una herramienta construida íntegramente para tu caso de uso."
     },
     "privacy": {
-      "heading": "Your queue data stays on your infrastructure",
-      "p1": "Datadog is SaaS-only: metrics, traces, and logs flow through Datadog's cloud. For many teams, that's a reasonable trade-off. But RabbitMQ often carries sensitive workloads — payment events, user data, internal service messages. Sending queue metrics, routing keys, and consumer patterns to a third-party cloud introduces a compliance surface that some teams can't accept.",
-      "p2": "Qarote runs entirely on your infrastructure. No queue data leaves your network. License validation happens offline using a baked-in public key — even the licensing system requires no outbound connection.",
-      "p3": "For teams in regulated industries (finance, healthcare, government) or under strict data residency requirements, self-hosted monitoring with offline license validation means Qarote can run in air-gapped environments where SaaS tools cannot."
+      "heading": "Los datos de tus colas permanecen en tu infraestructura",
+      "p1": "Datadog es solo SaaS: las métricas, trazas y logs fluyen a través de la nube de Datadog. Para muchos equipos, ese es un compromiso razonable. Pero RabbitMQ frecuentemente gestiona cargas de trabajo sensibles — eventos de pago, datos de usuarios, mensajes internos de servicios. Enviar métricas de colas, claves de enrutamiento y patrones de consumers a una nube de terceros introduce una superficie de cumplimiento normativo que algunos equipos no pueden aceptar.",
+      "p2": "Qarote se ejecuta completamente en tu infraestructura. Ningún dato de colas abandona tu red. La validación de licencias ocurre de forma offline usando una clave pública integrada — incluso el sistema de licencias no requiere conexión saliente.",
+      "p3": "Para equipos en industrias reguladas (finanzas, sanidad, administración pública) o bajo estrictos requisitos de residencia de datos, el monitoreo autoalojado con validación de licencias offline significa que Qarote puede funcionar en entornos air-gapped donde las herramientas SaaS no pueden."
     },
     "setup": {
-      "heading": "From zero to monitoring in 60 seconds",
-      "p1": "Getting Datadog to monitor RabbitMQ involves installing the Datadog agent on each node, enabling the RabbitMQ integration, configuring the YAML file, waiting for metrics to propagate, and then finding or building a useful dashboard. On a 3-node cluster, expect 30–60 minutes of setup work and ongoing agent maintenance.",
-      "p2": "Qarote's setup is three steps: sign up (or deploy the self-hosted Docker image), paste your RabbitMQ connection string, and you're done. Queues, exchanges, vhosts, consumers, and message rates appear immediately — no agent, no YAML, no dashboard hunting."
+      "heading": "De cero a monitorizando en 60 segundos",
+      "p1": "Configurar Datadog para monitorizar RabbitMQ implica instalar el agente Datadog en cada nodo, activar la integración RabbitMQ, configurar el archivo YAML, esperar a que las métricas se propaguen y luego buscar o construir un dashboard útil. En un clúster de 3 nodos, espera 30–60 minutos de trabajo de configuración y mantenimiento continuo del agente.",
+      "p2": "La configuración de Qarote son tres pasos: regístrate (o despliega la imagen Docker autoalojada), pega tu cadena de conexión RabbitMQ y listo. Las colas, exchanges, vhosts, consumers y tasas de mensajes aparecen de inmediato — sin agente, sin YAML, sin búsqueda de dashboards."
     }
   },
   "crossLink": {
-    "text": "Also comparing:",
+    "text": "También comparando:",
     "grafana": "Qarote vs Grafana + Prometheus →"
   },
   "faq": {
-    "heading": "Frequently asked questions",
+    "heading": "Preguntas frecuentes",
     "items": [
       {
-        "question": "Can Qarote replace Datadog entirely?",
-        "answer": "Qarote is a specialist tool, not a general-purpose observability platform. It replaces Datadog's RabbitMQ monitoring specifically — not Datadog's APM, log management, or infrastructure monitoring for your other services. If RabbitMQ is your primary monitoring need, Qarote is a more focused and cost-effective choice. If you need end-to-end observability across a polyglot stack, Datadog and Qarote can coexist."
+        "question": "¿Puede Qarote reemplazar Datadog por completo?",
+        "answer": "Qarote es una herramienta especializada, no una plataforma de observabilidad de propósito general. Reemplaza específicamente el monitoreo de RabbitMQ de Datadog — no el APM, la gestión de logs ni el monitoreo de infraestructura de Datadog para tus otros servicios. Si RabbitMQ es tu principal necesidad de monitoreo, Qarote es una opción más enfocada y rentable. Si necesitas observabilidad de extremo a extremo en un stack políglota, Datadog y Qarote pueden coexistir."
       },
       {
-        "question": "Is the open-source edition of Qarote really free?",
-        "answer": "Yes. The MIT-licensed core of Qarote — live queue monitoring, exchange visibility, consumer tracking, and multi-server support — is free to self-host without any license key. Premium features (workspace sharing, advanced alerting, integrations) require a Developer or Enterprise license."
+        "question": "¿La edición open source de Qarote es realmente gratuita?",
+        "answer": "Sí. El núcleo con licencia MIT de Qarote — monitoreo en vivo de colas, visibilidad de exchanges, seguimiento de consumers y soporte multi-servidor — es gratuito para autoalojar sin ninguna clave de licencia. Las funcionalidades premium (compartición de espacios de trabajo, alertas avanzadas, integraciones) requieren una licencia Developer o Enterprise."
       },
       {
-        "question": "Does Qarote require an agent on each RabbitMQ node?",
-        "answer": "No. Qarote connects directly to RabbitMQ using the standard management API and AMQP protocol. You install Qarote once; it does not require agents on each monitored host."
+        "question": "¿Requiere Qarote un agente en cada nodo RabbitMQ?",
+        "answer": "No. Qarote se conecta directamente a RabbitMQ usando la API de gestión estándar y el protocolo AMQP. Instalas Qarote una sola vez; no requiere agentes en cada host monitorizado."
       }
     ]
   }
