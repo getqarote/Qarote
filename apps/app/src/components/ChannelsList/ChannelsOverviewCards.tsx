@@ -89,25 +89,25 @@ export function ChannelsOverviewCards({
 
   return (
     <div className="flex items-center flex-wrap gap-x-3 gap-y-1.5 text-sm text-muted-foreground py-0.5">
-      <span
-        role={isFilterable ? "button" : undefined}
-        tabIndex={isFilterable ? 0 : undefined}
-        onClick={isFilterable ? handlePillClick : undefined}
-        onKeyDown={
-          isFilterable
-            ? (e) => (e.key === "Enter" || e.key === " ") && handlePillClick()
-            : undefined
-        }
-        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold border ${pillClass} ${
-          isFilterable
-            ? "cursor-pointer hover:opacity-80 transition-opacity"
-            : ""
-        } ${isActive ? "ring-2 ring-offset-1 ring-current" : ""}`}
-        title={isFilterable ? t("filterByState") : undefined}
-      >
-        <PillIcon className="h-3 w-3" aria-hidden="true" />
-        {pillText}
-      </span>
+      {isFilterable ? (
+        <button
+          type="button"
+          onClick={handlePillClick}
+          aria-pressed={isActive}
+          className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold border cursor-pointer hover:opacity-80 transition-opacity ${pillClass} ${isActive ? "ring-2 ring-offset-1 ring-current" : ""}`}
+          title={t("filterByState")}
+        >
+          <PillIcon className="h-3 w-3" aria-hidden="true" />
+          {pillText}
+        </button>
+      ) : (
+        <span
+          className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold border ${pillClass}`}
+        >
+          <PillIcon className="h-3 w-3" aria-hidden="true" />
+          {pillText}
+        </span>
+      )}
       <span className="font-mono tabular-nums font-semibold text-foreground">
         {total.toLocaleString()}
       </span>
