@@ -12,12 +12,10 @@ import { serverRouter } from "./server";
 import { usersRouter } from "./users";
 import { vhostRouter } from "./vhost";
 
-import { alertsRouter } from "@/ee/routers/rabbitmq/alerts";
-import { topologyRouter } from "@/ee/routers/rabbitmq/topology";
-
 /**
- * RabbitMQ router
- * Combines all RabbitMQ-related routers
+ * CE RabbitMQ router — no EE imports.
+ * The EE rabbitmq router (src/ee/trpc/routers/rabbitmq/index.ts) adds
+ * alerts and topology and is used by the EE assembly.
  */
 export const rabbitmqRouter = router({
   queues: queuesRouter,
@@ -28,9 +26,7 @@ export const rabbitmqRouter = router({
   messages: messagesRouter,
   server: serverRouter,
   vhost: vhostRouter,
-  alerts: alertsRouter,
   users: usersRouter,
-  topology: topologyRouter,
   policies: policiesRouter,
   definitions: definitionsRouter,
 });
