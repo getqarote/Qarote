@@ -24,7 +24,7 @@
     "expires": "Expira: {{date}}",
     "noExpiration": "Sin expiración",
     "purchasedOn": "Comprado: {{date}}",
-    "lastValidated": "Última validación {{date}}",
+    "lastValidated": "Última validación: {{date}}",
     "loadingLicenses": "Cargando licencias...",
     "errorLoadingLicenses": "No se pudieron cargar sus licencias.",
     "retryLoading": "Intentar de nuevo",
@@ -36,7 +36,16 @@
     "expiredNoDate": "Esta licencia ya no está activa.",
     "renewLicense": "Renovar",
     "purchaseSuccess": "Su licencia está lista",
-    "purchaseSuccessSubtitle": "Copie la clave a continuación para activar su instancia Qarote."
+    "purchaseSuccessSubtitle": "Copie la clave a continuación para activar su instancia Qarote.",
+    "tier": {
+      "developer": "Desarrollador",
+      "enterprise": "Empresa",
+      "free": "Gratuito"
+    },
+    "status": {
+      "active": "Activo",
+      "inactive": "Inactivo"
+    }
   },
   "licensePurchase": {
     "title": "Comprar licencia",

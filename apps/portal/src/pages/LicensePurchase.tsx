@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { trpc } from "@/lib/trpc/client";
@@ -33,29 +33,47 @@ const LicensePurchase = () => {
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const { t } = useTranslation("portal");
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const attemptIdRef = useRef(0);
 
-  const purchaseLicenseMutation = trpc.license.purchaseLicense.useMutation({
-    onSuccess: (data) => {
+  const purchaseLicenseMutation = trpc.license.purchaseLicense.useMutation();
+
+  useEffect(() => {
+    return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      window.location.href = data.checkoutUrl;
-    },
-    onError: (error) => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      setPurchaseError(error.message || t("licensePurchase.purchaseFailed"));
-      setIsLoading(false);
-    },
-  });
+      attemptIdRef.current++;
+    };
+  }, []);
 
   const handlePurchase = useCallback(() => {
     setPurchaseError(null);
     setIsLoading(true);
 
+    const myAttempt = ++attemptIdRef.current;
+
     timeoutRef.current = setTimeout(() => {
+      attemptIdRef.current++;
       setIsLoading(false);
       setPurchaseError(t("licensePurchase.purchaseFailed"));
     }, 30000);
 
-    purchaseLicenseMutation.mutate({ tier: selectedTier });
+    purchaseLicenseMutation.mutate(
+      { tier: selectedTier },
+      {
+        onSuccess: (data) => {
+          if (attemptIdRef.current !== myAttempt) return;
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+          window.location.href = data.checkoutUrl;
+        },
+        onError: (error) => {
+          if (attemptIdRef.current !== myAttempt) return;
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+          setPurchaseError(
+            error.message || t("licensePurchase.purchaseFailed")
+          );
+          setIsLoading(false);
+        },
+      }
+    );
   }, [selectedTier, purchaseLicenseMutation, t]);
 
   const handleCardKeyDown = useCallback(

@@ -13,22 +13,18 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { trpc } from "@/lib/trpc/client";
+import { getDateFnsLocale } from "@/lib/dateFnsLocale";
 import { type License } from "@/lib/types";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const TIER_LABELS: Record<string, string> = {
-  DEVELOPER: "Developer",
-  ENTERPRISE: "Enterprise",
-  FREE: "Free",
-};
+import { useLicenses } from "@/hooks/queries/useLicenses";
 
 const LicenseManagement = () => {
-  const { data, isLoading, isError, refetch } =
-    trpc.license.getLicenses.useQuery();
-  const { t } = useTranslation("portal");
+  const { data, isLoading, isError, refetch } = useLicenses();
+  const { t, i18n } = useTranslation("portal");
+  const dateLocale = getDateFnsLocale(i18n.language);
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
 
@@ -47,12 +43,12 @@ const LicenseManagement = () => {
       .writeText(text)
       .then(() => {
         toast.success(t("licenseManagement.copiedToClipboard"));
+        setCopiedId(licenseId);
+        setTimeout(() => setCopiedId(null), 2000);
       })
       .catch(() => {
         toast.error(t("licenseManagement.copyFailed"));
       });
-    setCopiedId(licenseId);
-    setTimeout(() => setCopiedId(null), 2000);
   };
 
   const toggleKey = (licenseId: string) => {
@@ -128,6 +124,12 @@ const LicenseManagement = () => {
 
   const licenses = data?.licenses ?? [];
 
+  const TIER_LABELS: Record<string, string> = {
+    DEVELOPER: t("licenseManagement.tier.developer"),
+    ENTERPRISE: t("licenseManagement.tier.enterprise"),
+    FREE: t("licenseManagement.tier.free"),
+  };
+
   return (
     <div className="space-y-6">
       {sessionId && (
@@ -187,12 +189,12 @@ const LicenseManagement = () => {
                       {license.isActive ? (
                         <span className="inline-flex items-center gap-1 text-xs font-medium text-success bg-success/10 px-2 py-0.5 rounded-full">
                           <ShieldCheck className="h-3 w-3" />
-                          Active
+                          {t("licenseManagement.status.active")}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 text-xs font-medium text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
                           <XCircle className="h-3 w-3" />
-                          Inactive
+                          {t("licenseManagement.status.inactive")}
                         </span>
                       )}
                     </CardTitle>
@@ -200,26 +202,31 @@ const LicenseManagement = () => {
                       <span>
                         {license.expiresAt
                           ? t("licenseManagement.expires", {
-                              date: format(new Date(license.expiresAt), "PPP"),
+                              date: format(new Date(license.expiresAt), "PPP", {
+                                locale: dateLocale,
+                              }),
                             })
                           : t("licenseManagement.noExpiration")}
                       </span>
                       <span>
                         {t("licenseManagement.purchasedOn", {
-                          date: format(new Date(license.createdAt), "PPP"),
+                          date: format(new Date(license.createdAt), "PPP", {
+                            locale: dateLocale,
+                          }),
                         })}
                       </span>
                       {license.lastValidatedAt && (
                         <span
                           title={formatDistanceToNow(
                             new Date(license.lastValidatedAt),
-                            { addSuffix: true }
+                            { addSuffix: true, locale: dateLocale }
                           )}
                         >
                           {t("licenseManagement.lastValidated", {
                             date: format(
                               new Date(license.lastValidatedAt),
-                              "PPP"
+                              "PPP",
+                              { locale: dateLocale }
                             ),
                           })}
                         </span>
@@ -233,7 +240,9 @@ const LicenseManagement = () => {
                       <p className="text-sm text-destructive">
                         {license.expiresAt
                           ? t("licenseManagement.expiredOn", {
-                              date: format(new Date(license.expiresAt), "PPP"),
+                              date: format(new Date(license.expiresAt), "PPP", {
+                                locale: dateLocale,
+                              }),
                             })
                           : t("licenseManagement.expiredNoDate")}
                       </p>

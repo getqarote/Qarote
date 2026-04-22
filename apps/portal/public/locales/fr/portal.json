@@ -36,7 +36,16 @@
     "expiredNoDate": "Cette licence n'est plus active.",
     "renewLicense": "Renouveler",
     "purchaseSuccess": "Votre licence est prête",
-    "purchaseSuccessSubtitle": "Copiez la clé ci-dessous pour activer votre instance Qarote."
+    "purchaseSuccessSubtitle": "Copiez la clé ci-dessous pour activer votre instance Qarote.",
+    "tier": {
+      "developer": "Développeur",
+      "enterprise": "Entreprise",
+      "free": "Gratuit"
+    },
+    "status": {
+      "active": "Actif",
+      "inactive": "Inactif"
+    }
   },
   "licensePurchase": {
     "title": "Acheter une licence",
@@ -48,7 +57,7 @@
     "tryAgain": "Réessayer",
     "or": "ou",
     "contactSupport": "contacter le support",
-    "stripeHandoff": "Redirigé vers Stripe pour un paiement sécurisé · Clé de licence livrée par e-mail",
+    "stripeHandoff": "Vous allez être redirigé vers Stripe pour un paiement sécurisé · la clé de licence sera envoyée par e-mail",
     "enterpriseContact": "Conditions personnalisées ou questions ?",
     "badges": {
       "selected": "Sélectionné",

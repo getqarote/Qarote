@@ -36,7 +36,16 @@
     "expiredNoDate": "此许可证已失效。",
     "renewLicense": "续费",
     "purchaseSuccess": "您的许可证已就绪",
-    "purchaseSuccessSubtitle": "复制以下密钥以激活您的 Qarote 实例。"
+    "purchaseSuccessSubtitle": "复制以下密钥以激活您的 Qarote 实例。",
+    "tier": {
+      "developer": "开发者版",
+      "enterprise": "企业版",
+      "free": "免费版"
+    },
+    "status": {
+      "active": "已激活",
+      "inactive": "未激活"
+    }
   },
   "licensePurchase": {
     "title": "购买许可证",
