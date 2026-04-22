@@ -10,13 +10,13 @@
  * - Verifying HMAC signatures
  */
 
-import { WebhookPayload } from "../../src/services/webhook/webhook.interfaces";
-import { WebhookService } from "../../src/services/webhook/webhook.service";
+import { WebhookPayload } from "../../src/ee/services/webhook/webhook.interfaces";
+import { WebhookService } from "../../src/ee/services/webhook/webhook.service";
 import {
   RabbitMQAlert,
   AlertSeverity,
   AlertCategory,
-} from "../../src/services/alerts/alert.interfaces";
+} from "../../src/ee/services/alerts/alert.interfaces";
 
 // Mock alert data for testing
 const createMockAlert = (
