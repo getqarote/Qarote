@@ -37,9 +37,3 @@ export const appRouter = router({
   sso: ssoRouter,
   public: publicRouter,
 });
-
-/**
- * AppRouter type — includes all CE + EE routes.
- * The frontend tRPC client references this for end-to-end type safety.
- */
-export type AppRouter = typeof appRouter;
