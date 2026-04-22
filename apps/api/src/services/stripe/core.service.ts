@@ -76,6 +76,7 @@ export interface CreateCheckoutSessionParams {
   billingInterval: "monthly" | "yearly";
   successUrl: string;
   cancelUrl: string;
+  customerId?: string;
   customerEmail?: string;
   trialDays?: number;
 }

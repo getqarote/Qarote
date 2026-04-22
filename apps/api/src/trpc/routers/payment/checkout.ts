@@ -77,7 +77,7 @@ export const checkoutRouter = router({
           billingInterval,
           successUrl: `${emailConfig.frontendUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl: `${emailConfig.frontendUrl}/payment/cancelled`,
-          customerEmail: user.email,
+          customerId,
         });
 
         return { url: session.url };

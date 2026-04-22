@@ -165,6 +165,12 @@ export const licenseRouter = router({
               quantity: 1,
             },
           ],
+          billing_address_collection: "required",
+          tax_id_collection: { enabled: true },
+          customer_update: {
+            address: "auto",
+            name: "auto",
+          },
           subscription_data: {
             // No trial period for self-hosted licenses
             metadata: {

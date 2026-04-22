@@ -15,40 +15,86 @@
     "description": "Manage your Qarote self-hosted licenses",
     "purchaseNew": "Purchase New License",
     "noLicenses": "You don't have any licenses yet.",
+    "noLicensesHint": "Licenses unlock premium features in your self-hosted instance. Just purchased? It may take a moment to appear.",
     "copiedToClipboard": "License key copied to clipboard",
     "copyLicenseKey": "Copy license key",
+    "copyFailed": "Failed to copy — please select and copy manually.",
     "licenseKey": "License Key",
     "license": "License",
     "expires": "Expires: {{date}}",
     "noExpiration": "No expiration",
-    "loadingLicenses": "Loading licenses..."
+    "purchasedOn": "Purchased: {{date}}",
+    "lastValidated": "Last validated: {{date}}",
+    "licenseOfTier": "{{tier}} License",
+    "loadingLicenses": "Loading licenses...",
+    "errorLoadingLicenses": "Couldn't load your licenses.",
+    "retryLoading": "Try again",
+    "showFullKey": "Show full key",
+    "hideKey": "Hide key",
+    "activationGuide": "Paste this key in your Qarote instance under Settings → License.",
+    "activationDocsLink": "View activation guide →",
+    "expiredOn": "This license expired on {{date}}.",
+    "expiredNoDate": "This license is no longer active.",
+    "renewLicense": "Renew",
+    "purchaseSuccess": "Your license is ready",
+    "purchaseSuccessSubtitle": "Copy the key below to activate your Qarote instance.",
+    "tier": {
+      "developer": "Developer",
+      "enterprise": "Enterprise",
+      "free": "Free"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    }
   },
   "licensePurchase": {
     "title": "Purchase License",
-    "description": "Choose a license tier for your self-hosted Qarote deployment",
-    "annualLicensing": "Annual licensing for self-hosted deployments (365-day validity with automatic renewal)",
-    "processing": "Processing...",
-    "purchaseLicense": "Purchase License",
-    "purchaseFailed": "Failed to initiate purchase",
+    "annualLicensing": "Annual licensing · 365-day validity · self-hosted deployments",
+    "purchaseFailed": "Failed to initiate purchase. You were not charged.",
     "perYear": "/year",
+    "redirectingToStripe": "Redirecting to Stripe...",
+    "purchasePlanLabel": "Purchase {{name}} License — {{price}}/yr",
+    "tryAgain": "Try again",
+    "or": "or",
+    "contactSupport": "contact support",
+    "stripeHandoff": "You will be redirected to Stripe for secure payment · License key delivered by email",
+    "enterpriseContact": "Need custom terms or have questions?",
+    "badges": {
+      "selected": "Selected",
+      "soon": "Soon"
+    },
+    "categories": {
+      "coreFeatures": "Core Features",
+      "security": "Security & Compatibility",
+      "support": "Support"
+    },
+    "features": {
+      "servers": "RabbitMQ Servers",
+      "workspaces": "Workspaces",
+      "teamMembers": "Team Members",
+      "advancedAnalytics": "Advanced analytics",
+      "queueManagement": "Queue, Exchange, VHost & User management",
+      "alertsWebhooks": "Alerts & webhooks",
+      "topologyVisualization": "Topology visualization",
+      "roleBasedAccess": "Role-based access",
+      "ssoSamlOidc": "SSO, SAML & OIDC",
+      "soc2": "SOC 2 compliance",
+      "rabbitmqVersions": "RabbitMQ version support",
+      "communitySupport": "Community support",
+      "prioritySupport": "Priority support"
+    },
+    "limits": {
+      "upTo3": "Up to 3",
+      "unlimited": "Unlimited",
+      "rabbitmqVersionsValue": "All versions 3.x and 4.x"
+    },
     "plans": {
       "developer": {
-        "name": "Developer",
-        "features": {
-          "servers": "Up to 5 servers",
-          "queueManagement": "Queue management",
-          "basicAlerts": "Basic alerts",
-          "emailSupport": "Email support"
-        }
+        "name": "Developer"
       },
       "enterprise": {
-        "name": "Enterprise",
-        "features": {
-          "unlimitedServers": "Unlimited servers",
-          "advancedMonitoring": "Advanced monitoring",
-          "prioritySupport": "Priority support",
-          "customIntegrations": "Custom integrations"
-        }
+        "name": "Enterprise"
       }
     }
   },
