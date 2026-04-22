@@ -1,10 +1,23 @@
+import { useTranslation } from "react-i18next";
+
 import { AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 
 import { RabbitMQNode } from "@/lib/api";
-import { getUsageTone } from "@/lib/health-tones";
+import {
+  getClusterHealthBgClasses,
+  getUsageTone,
+  MEMORY_CRITICAL_PCT,
+  MEMORY_WARN_PCT,
+} from "@/lib/health-tones";
 
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import { isRabbitMQAuthError } from "@/types/apiErrors";
 
@@ -31,6 +44,8 @@ export const EnhancedNodesOverview = ({
   isLoading,
   nodesError,
 }: NodesOverviewProps) => {
+  const { t } = useTranslation("nodes");
+
   if (nodesError && isRabbitMQAuthError(nodesError)) {
     return (
       <RabbitMQPermissionError
@@ -76,23 +91,28 @@ export const EnhancedNodesOverview = ({
   let PillIcon: typeof CheckCircle;
   let pillText: string;
 
+  const pillBgClasses = getClusterHealthBgClasses(clusterHealth);
   if (isHealthy) {
-    pillClass = "bg-success/10 text-success border border-success/20";
+    pillClass = `${pillBgClasses} border border-success/20`;
     PillIcon = CheckCircle;
     pillText = "All Healthy";
   } else if (isDegraded) {
-    pillClass = "bg-warning/10 text-warning border border-warning/20";
+    pillClass = `${pillBgClasses} border border-warning/20`;
     PillIcon = AlertTriangle;
     pillText = `${unhealthyNodes} degraded`;
   } else {
-    pillClass =
-      "bg-destructive/10 text-destructive border border-destructive/20";
+    pillClass = `${pillBgClasses} border border-destructive/20`;
     PillIcon = XCircle;
     pillText = `${unhealthyNodes} critical`;
   }
 
   const memTone =
-    runningNodes.length > 0 ? getUsageTone(avgMemoryPct) : "text-foreground";
+    runningNodes.length > 0
+      ? getUsageTone(avgMemoryPct, {
+          warn: MEMORY_WARN_PCT,
+          critical: MEMORY_CRITICAL_PCT,
+        })
+      : "text-foreground";
 
   return (
     <div className="flex items-center flex-wrap gap-x-3 gap-y-1.5 text-sm text-muted-foreground py-0.5">
@@ -105,24 +125,35 @@ export const EnhancedNodesOverview = ({
       <span className="font-mono tabular-nums font-semibold text-foreground">
         {totalNodes}
       </span>
-      <span>{totalNodes === 1 ? "node" : "nodes"}</span>
+      <span>{totalNodes === 1 ? t("overview.node") : t("overview.nodes")}</span>
       {runningNodes.length > 0 && (
         <>
-          <span className="select-none text-border">·</span>
-          <span className={`font-mono tabular-nums font-semibold ${memTone}`}>
-            {avgMemoryPct.toFixed(1)}
+          <span className="select-none text-muted-foreground/40">·</span>
+          <span
+            className={`whitespace-nowrap font-mono tabular-nums font-semibold ${memTone}`}
+          >
+            {avgMemoryPct.toFixed(1)}% {t("overview.memoryLabel")}
           </span>
-          <span>% memory</span>
-          <span className="select-none text-border">·</span>
-          <span className="font-mono tabular-nums font-semibold text-foreground">
-            {diskFreeGB}
+          <span className="select-none text-muted-foreground/40">·</span>
+          <span className="whitespace-nowrap font-mono tabular-nums font-semibold text-foreground">
+            {diskFreeGB} {t("overview.diskFreeLabel")}
           </span>
-          <span>GB disk free</span>
-          <span className="select-none text-border">·</span>
-          <span className="font-mono tabular-nums font-semibold text-foreground">
-            {totalConnections}
-          </span>
-          <span>connections</span>
+          <span className="select-none text-muted-foreground/40">·</span>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="whitespace-nowrap font-mono tabular-nums font-semibold text-foreground cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                >
+                  {totalConnections} {t("overview.socketsLabel")}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t("overview.socketsTooltip")}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </>
       )}
     </div>

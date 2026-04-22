@@ -14,7 +14,7 @@
   "search": "Search",
   "filter": "Filter",
   "filterPlaceholder": "Filter by name (supports regex)",
-  "filterHint": "Try ^prod or .*service.* \u2014 regex supported",
+  "filterHint": "Try ^prod or .*service.* — regex supported",
   "filterShortcut": "Press / to filter",
   "clearFilter": "Clear filter",
   "regexInvalid": "Invalid regex — showing substring matches",
@@ -97,5 +97,8 @@
     "code": "404",
     "message": "Page not found",
     "returnHome": "Return to home"
-  }
+  },
+  "updating": "Updating…",
+  "updatedAgo": "Updated {{seconds}}s ago",
+  "justUpdated": "Just updated"
 }

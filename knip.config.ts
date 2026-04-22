@@ -49,6 +49,8 @@ const config: KnipConfig = {
     "apps/app/src/hooks/ui/useWorkspaceInvites.ts",
     // In-progress nodes components — not yet wired into the page tree
     "apps/app/src/components/nodes/PortsAndContexts.tsx",
+    // ChurnStatistics removed from Nodes page — preserved for relocation to the main dashboard
+    "apps/app/src/components/nodes/ChurnStatistics.tsx",
     // In-progress policies components — DefinitionBuilder not yet wired into PolicyForm
     "apps/app/src/components/PoliciesList/DefinitionBuilder.tsx",
     "apps/app/src/components/PoliciesList/constants.ts",

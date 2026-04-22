@@ -18,6 +18,18 @@
   "cancelEdit": "取消",
   "clusterNameUpdated": "集群名称已更新",
   "clusterNameError": "更新集群名称失败",
+  "overview": {
+    "node": "节点",
+    "nodes": "节点",
+    "memoryLabel": "内存",
+    "diskFreeLabel": "GB 可用磁盘",
+    "socketsLabel": "套接字",
+    "socketsTooltip": "所有运行中节点的操作系统级套接字总数，包括 AMQP 连接和 RabbitMQ 内部套接字。"
+  },
+  "ports": {
+    "show": "显示端口与上下文",
+    "hide": "隐藏端口与上下文"
+  },
   "churnStatistics": {
     "connectionOperations": "连接操作",
     "channelOperations": "信道操作",
@@ -26,5 +38,85 @@
     "closed": "已关闭",
     "declared": "已声明",
     "deleted": "已删除"
+  },
+  "portsAndContexts": {
+    "listeners": "监听器",
+    "contexts": "上下文",
+    "node": "节点",
+    "protocol": "协议",
+    "ipAddress": "IP 地址",
+    "port": "端口",
+    "description": "描述",
+    "path": "路径",
+    "ssl": "SSL",
+    "yes": "是",
+    "no": "否"
+  },
+  "statusLabels": {
+    "healthy": "健康",
+    "error": "错误",
+    "critical": "严重",
+    "warning": "警告",
+    "draining": "排空中"
+  },
+  "details": {
+    "summary": "摘要",
+    "fullDetails": "完整详情",
+    "sections": {
+      "health": "健康",
+      "memory": "内存",
+      "connections": "连接",
+      "diskIO": "磁盘 I/O",
+      "system": "系统",
+      "internalStore": "内部存储"
+    },
+    "rows": {
+      "running": "运行中",
+      "draining": "排空中",
+      "memAlarm": "内存告警",
+      "diskAlarm": "磁盘告警",
+      "partitions": "分区",
+      "usage": "使用率",
+      "diskFree": "磁盘可用",
+      "used": "已用",
+      "limit": "限制",
+      "sockets": "套接字",
+      "created": "已创建",
+      "closed": "已关闭",
+      "channels": "信道",
+      "netTick": "网络心跳",
+      "readRate": "读取速率",
+      "writeRate": "写入速率",
+      "avgRead": "平均读取",
+      "avgWrite": "平均写入",
+      "type": "类型",
+      "processors": "处理器",
+      "osPid": "系统 PID",
+      "runQueue": "运行队列",
+      "processes": "进程",
+      "plugins": "插件"
+    },
+    "values": {
+      "yes": "是",
+      "no": "否",
+      "active": "活跃",
+      "none": "无"
+    },
+    "tooltips": {
+      "draining": "该节点正在被优雅地移除。新连接将被重定向到其他节点。",
+      "memAlarm": "内存使用超过水位线。发布者确认已阻塞，直至内存下降。",
+      "diskAlarm": "可用磁盘空间低于水位线。发布已阻塞，直至空间释放。",
+      "partitions": "检测到网络分区。节点之间无法通信——脑裂状态，需立即处理。",
+      "netTick": "Erlang 心跳间隔。若节点连续错过 4 次心跳，则被视为不可达。",
+      "runQueue": "等待调度的 Erlang 进程数。值大于 1 表示存在 CPU 争用。"
+    },
+    "inlineMetrics": {
+      "mnesiaRam": "Mnesia RAM",
+      "mnesiaDisk": "Mnesia 磁盘",
+      "msgReads": "消息读取",
+      "msgWrites": "消息写入",
+      "queueIdxR": "队列索引读",
+      "queueIdxW": "队列索引写"
+    }
   }
 }
