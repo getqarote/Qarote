@@ -21,13 +21,14 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+          path: source
 
       - name: Checkout public mirror
         uses: actions/checkout@v4
         with:
           repository: getqarote/qarote
           token: ${{ secrets.PUBLIC_REPO_TOKEN }}
-          path: /tmp/public-repo
+          path: public-repo
           fetch-depth: 0
 
       - name: Push CE mirror (without ee/)
@@ -38,7 +39,7 @@ jobs:
           # Explicitly remove the EE directory from the mirror so --exclude
           # on the source side cannot silently retain stale EE content that
           # was accidentally pushed there in a previous run.
-          rm -rf /tmp/public-repo/apps/api/src/ee
+          rm -rf public-repo/apps/api/src/ee
 
           rsync -av --delete \
             --exclude='.git' \
@@ -47,15 +48,15 @@ jobs:
             --exclude='.env' \
             --exclude='.env.local' \
             --exclude='.env.*.local' \
-            ./ /tmp/public-repo/
+            source/ public-repo/
 
           # Fail the job if EE content somehow ended up in the mirror.
-          if [ -d /tmp/public-repo/apps/api/src/ee ]; then
+          if [ -d public-repo/apps/api/src/ee ]; then
             echo "ERROR: apps/api/src/ee exists in the public mirror — aborting." >&2
             exit 1
           fi
 
-          cd /tmp/public-repo
+          cd public-repo
           git add -A
           if git diff --staged --quiet; then
             echo "Nothing to sync."
