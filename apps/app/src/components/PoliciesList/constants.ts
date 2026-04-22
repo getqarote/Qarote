@@ -194,17 +194,16 @@ export const GROUP_LABEL_KEY: Record<DefGroup, string> = {
 export function normalizeDefValue(
   key: string,
   raw: string
-): unknown | undefined {
+): string | number | boolean | undefined {
   const def = CATALOG_BY_KEY[key];
   const trimmed = raw.trim();
 
   if (!def) {
-    // Custom key: infer type from value string
+    // Custom key: infer type from value string (no boolean coercion —
+    // catalog-driven boolean support belongs in the switch below).
     if (trimmed === "") return undefined;
-    if (trimmed === "true") return true;
-    if (trimmed === "false") return false;
     const asNum = Number(trimmed);
-    if (!Number.isNaN(asNum) && trimmed !== "") return asNum;
+    if (Number.isFinite(asNum)) return asNum;
     return trimmed;
   }
 
