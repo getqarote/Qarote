@@ -49,6 +49,9 @@ const config: KnipConfig = {
     "apps/app/src/hooks/ui/useWorkspaceInvites.ts",
     // In-progress nodes components — not yet wired into the page tree
     "apps/app/src/components/nodes/PortsAndContexts.tsx",
+    // In-progress policies components — DefinitionBuilder not yet wired into PolicyForm
+    "apps/app/src/components/PoliciesList/DefinitionBuilder.tsx",
+    "apps/app/src/components/PoliciesList/constants.ts",
     // Threshold tone helpers — small library API of related helpers; some
     // exports (getUsageBgTone, getClusterHealthTone, getClusterHealthBgClasses)
     // are reserved for upcoming work and not yet referenced
