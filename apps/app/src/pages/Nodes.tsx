@@ -50,6 +50,7 @@ const Nodes = () => {
   const [now, setNow] = useState(Date.now);
   useEffect(() => {
     if (nodesFetching || nodesUpdatedAt === 0) return;
+    setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, [nodesFetching, nodesUpdatedAt]);

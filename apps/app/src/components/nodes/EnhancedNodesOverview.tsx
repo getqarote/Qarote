@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 
 import { RabbitMQNode } from "@/lib/api";
@@ -42,6 +44,8 @@ export const EnhancedNodesOverview = ({
   isLoading,
   nodesError,
 }: NodesOverviewProps) => {
+  const { t } = useTranslation("nodes");
+
   if (nodesError && isRabbitMQAuthError(nodesError)) {
     return (
       <RabbitMQPermissionError
@@ -121,32 +125,32 @@ export const EnhancedNodesOverview = ({
       <span className="font-mono tabular-nums font-semibold text-foreground">
         {totalNodes}
       </span>
-      <span>{totalNodes === 1 ? "node" : "nodes"}</span>
+      <span>{totalNodes === 1 ? t("overview.node") : t("overview.nodes")}</span>
       {runningNodes.length > 0 && (
         <>
           <span className="select-none text-muted-foreground/40">·</span>
           <span
             className={`whitespace-nowrap font-mono tabular-nums font-semibold ${memTone}`}
           >
-            {avgMemoryPct.toFixed(1)}% memory
+            {avgMemoryPct.toFixed(1)}% {t("overview.memoryLabel")}
           </span>
           <span className="select-none text-muted-foreground/40">·</span>
           <span className="whitespace-nowrap font-mono tabular-nums font-semibold text-foreground">
-            {diskFreeGB} GB disk free
+            {diskFreeGB} {t("overview.diskFreeLabel")}
           </span>
           <span className="select-none text-muted-foreground/40">·</span>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="whitespace-nowrap font-mono tabular-nums font-semibold text-foreground cursor-default">
-                  {totalConnections} sockets
-                </span>
+                <button
+                  type="button"
+                  className="whitespace-nowrap font-mono tabular-nums font-semibold text-foreground cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                >
+                  {totalConnections} {t("overview.socketsLabel")}
+                </button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>
-                  OS-level socket count across all running nodes. Includes AMQP
-                  connections and internal RabbitMQ sockets.
-                </p>
+                <p>{t("overview.socketsTooltip")}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

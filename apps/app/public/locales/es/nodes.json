@@ -18,6 +18,14 @@
   "cancelEdit": "Cancelar",
   "clusterNameUpdated": "Nombre del clúster actualizado",
   "clusterNameError": "Error al actualizar el nombre del clúster",
+  "overview": {
+    "node": "nodo",
+    "nodes": "nodos",
+    "memoryLabel": "memoria",
+    "diskFreeLabel": "GB de disco libre",
+    "socketsLabel": "sockets",
+    "socketsTooltip": "Recuento de sockets a nivel de SO en todos los nodos activos. Incluye conexiones AMQP y sockets internos de RabbitMQ."
+  },
   "ports": {
     "show": "Mostrar puertos y contextos",
     "hide": "Ocultar puertos y contextos"

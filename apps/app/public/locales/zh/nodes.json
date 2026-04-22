@@ -18,6 +18,14 @@
   "cancelEdit": "取消",
   "clusterNameUpdated": "集群名称已更新",
   "clusterNameError": "更新集群名称失败",
+  "overview": {
+    "node": "节点",
+    "nodes": "节点",
+    "memoryLabel": "内存",
+    "diskFreeLabel": "GB 可用磁盘",
+    "socketsLabel": "套接字",
+    "socketsTooltip": "所有运行中节点的操作系统级套接字总数，包括 AMQP 连接和 RabbitMQ 内部套接字。"
+  },
   "ports": {
     "show": "显示端口与上下文",
     "hide": "隐藏端口与上下文"

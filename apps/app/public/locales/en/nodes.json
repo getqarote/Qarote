@@ -18,6 +18,14 @@
   "cancelEdit": "Cancel",
   "clusterNameUpdated": "Cluster name updated",
   "clusterNameError": "Failed to update cluster name",
+  "overview": {
+    "node": "node",
+    "nodes": "nodes",
+    "memoryLabel": "memory",
+    "diskFreeLabel": "GB disk free",
+    "socketsLabel": "sockets",
+    "socketsTooltip": "OS-level socket count across all running nodes. Includes AMQP connections and internal RabbitMQ sockets."
+  },
   "ports": {
     "show": "Show ports & contexts",
     "hide": "Hide ports & contexts"

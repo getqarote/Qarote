@@ -18,6 +18,14 @@
   "cancelEdit": "Annuler",
   "clusterNameUpdated": "Nom du cluster mis à jour",
   "clusterNameError": "Échec de la mise à jour du nom du cluster",
+  "overview": {
+    "node": "nœud",
+    "nodes": "nœuds",
+    "memoryLabel": "mémoire",
+    "diskFreeLabel": "Go de disque libre",
+    "socketsLabel": "sockets",
+    "socketsTooltip": "Nombre de sockets au niveau OS sur tous les nœuds actifs. Inclut les connexions AMQP et les sockets internes de RabbitMQ."
+  },
   "ports": {
     "show": "Afficher les ports et contextes",
     "hide": "Masquer les ports et contextes"
