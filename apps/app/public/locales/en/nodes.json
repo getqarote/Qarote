@@ -10,7 +10,11 @@
   "diskFree": "Disk Free",
   "uptime": "Uptime",
   "connections": "Connections",
+  "sockets": "Sockets",
+  "socketsTooltip": "OS-level socket count. Includes AMQP connections and internal RabbitMQ sockets.",
   "noNodesFound": "No nodes found",
+  "fetchFailed": "Could not load node data",
+  "fetchFailedDesc": "Check your server connection and try refreshing the page.",
   "permissionErrorTitle": "Node Information Unavailable",
   "clusterName": "Cluster name",
   "editClusterName": "Edit cluster name",
@@ -30,11 +34,15 @@
   "ports": {
     "listeningPorts": "Listening ports",
     "webContexts": "Web contexts",
+    "webContextsSubtitle": "HTTP endpoints registered with the RabbitMQ management plugin",
     "protocol": "Protocol",
     "boundTo": "Bound to",
     "port": "Port",
     "context": "Context",
     "ssl": "SSL",
-    "path": "Path"
+    "path": "Path",
+    "show": "Show listening ports & contexts",
+    "hide": "Hide listening ports & contexts",
+    "fetchFailed": "Listening ports and contexts could not be loaded."
   }
 }

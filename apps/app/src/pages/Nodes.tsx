@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Check, Pencil, X } from "lucide-react";
+import { Check, ChevronDown, Pencil, X } from "lucide-react";
 
-import { ChurnStatistics } from "@/components/nodes/ChurnStatistics";
 import { EnhancedNodesOverview } from "@/components/nodes/EnhancedNodesOverview";
 import { EnhancedNodesTable } from "@/components/nodes/EnhancedNodesTable";
 import { PortsAndContexts } from "@/components/nodes/PortsAndContexts";
@@ -26,7 +25,10 @@ import {
 import { useToast } from "@/hooks/ui/useToast";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
-import { RabbitMQAuthorizationError } from "@/types/apiErrors";
+import {
+  isRabbitMQAuthError,
+  RabbitMQAuthorizationError,
+} from "@/types/apiErrors";
 
 const Nodes = () => {
   const { t } = useTranslation("nodes");
@@ -52,12 +54,16 @@ const Nodes = () => {
     return () => clearInterval(id);
   }, [nodesFetching, nodesUpdatedAt]);
 
-  const { data: overviewData, isLoading: overviewLoading } =
-    useOverview(selectedServerId);
+  const {
+    data: overviewData,
+    isLoading: overviewLoading,
+    error: overviewError,
+  } = useOverview(selectedServerId);
 
   const setClusterNameMutation = useSetClusterName();
   const [editingClusterName, setEditingClusterName] = useState(false);
   const [clusterNameValue, setClusterNameValue] = useState("");
+  const [showPorts, setShowPorts] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const currentClusterName = overviewData?.overview?.cluster_name ?? "";
@@ -130,7 +136,7 @@ const Nodes = () => {
     );
   }
 
-  if (nodesQueryError) {
+  if (nodesQueryError && !isRabbitMQAuthError(nodesQueryError)) {
     return (
       <PageShell>
         <div className="flex items-center gap-4">
@@ -147,6 +153,16 @@ const Nodes = () => {
     );
   }
 
+  const hasUnhealthyNodes = nodes.some(
+    (n) =>
+      !n.running ||
+      n.mem_alarm ||
+      n.disk_free_alarm ||
+      (n.partitions?.length ?? 0) > 0
+  );
+
+  const secondsAgo = Math.floor((now - nodesUpdatedAt) / 1000);
+
   return (
     <PageShell>
       {/* Header */}
@@ -157,81 +173,81 @@ const Nodes = () => {
             <TitleWithCount count={nodes.length}>
               {t("pageTitle")}
             </TitleWithCount>
+            {currentClusterName && !editingClusterName && (
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="text-xs text-muted-foreground font-mono">
+                  {currentClusterName}
+                </span>
+                {isOrgAdmin && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-5 w-5 opacity-50 hover:opacity-100"
+                    onClick={() => setEditingClusterName(true)}
+                    aria-label={t("editClusterName")}
+                  >
+                    <Pencil className="h-2.5 w-2.5" />
+                  </Button>
+                )}
+              </div>
+            )}
+            {editingClusterName && (
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <Input
+                  ref={inputRef}
+                  value={clusterNameValue}
+                  onChange={(e) => setClusterNameValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSaveClusterName();
+                    if (e.key === "Escape") handleCancelEdit();
+                  }}
+                  className="h-6 w-48 text-xs font-mono"
+                  disabled={setClusterNameMutation.isPending}
+                />
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-5 w-5"
+                  onClick={handleSaveClusterName}
+                  disabled={
+                    setClusterNameMutation.isPending || !clusterNameValue.trim()
+                  }
+                  aria-label={t("saveClusterName")}
+                >
+                  <Check className="h-3 w-3" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-5 w-5"
+                  onClick={handleCancelEdit}
+                  disabled={setClusterNameMutation.isPending}
+                  aria-label={t("cancelEdit")}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
           </div>
         </div>
         {nodesUpdatedAt > 0 && (
-          <span className="text-xs text-muted-foreground tabular-nums">
+          <span
+            className={`text-xs tabular-nums ${
+              !nodesFetching && secondsAgo > 30
+                ? "text-warning"
+                : "text-muted-foreground"
+            }`}
+          >
             {nodesFetching
               ? t("common:updating")
-              : Math.floor((now - nodesUpdatedAt) / 1000) <= 2
+              : secondsAgo <= 2
                 ? t("common:justUpdated")
                 : t("common:updatedAgo", {
-                    seconds: Math.floor((now - nodesUpdatedAt) / 1000),
+                    seconds: secondsAgo,
                   })}
           </span>
         )}
       </div>
-
-      {/* Cluster Name */}
-      {currentClusterName && (
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">{t("clusterName")}:</span>
-          {editingClusterName ? (
-            <>
-              <Input
-                ref={inputRef}
-                value={clusterNameValue}
-                onChange={(e) => setClusterNameValue(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleSaveClusterName();
-                  if (e.key === "Escape") handleCancelEdit();
-                }}
-                className="h-7 w-64 text-sm font-mono"
-                disabled={setClusterNameMutation.isPending}
-              />
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-7 w-7"
-                onClick={handleSaveClusterName}
-                disabled={
-                  setClusterNameMutation.isPending || !clusterNameValue.trim()
-                }
-                aria-label={t("saveClusterName")}
-              >
-                <Check className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-7 w-7"
-                onClick={handleCancelEdit}
-                disabled={setClusterNameMutation.isPending}
-                aria-label={t("cancelEdit")}
-              >
-                <X className="h-3.5 w-3.5" />
-              </Button>
-            </>
-          ) : (
-            <>
-              <span className="font-mono font-semibold text-foreground">
-                {currentClusterName}
-              </span>
-              {isOrgAdmin && (
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-7 w-7 opacity-50 hover:opacity-100"
-                  onClick={() => setEditingClusterName(true)}
-                  aria-label={t("editClusterName")}
-                >
-                  <Pencil className="h-3 w-3" />
-                </Button>
-              )}
-            </>
-          )}
-        </div>
-      )}
 
       {/* Cluster Overview */}
       <EnhancedNodesOverview
@@ -247,20 +263,38 @@ const Nodes = () => {
         nodes={nodes}
         isLoading={nodesLoading}
         nodesError={processedNodesError}
+        defaultSortByStatus={hasUnhealthyNodes}
+        fetchFailed={
+          nodesQueryError != null && !isRabbitMQAuthError(nodesQueryError)
+        }
       />
 
-      {/* Churn Statistics */}
-      <ChurnStatistics
-        churnRates={overviewData?.overview?.churnRates}
-        isLoading={overviewLoading}
-      />
-
-      {/* Ports & Contexts */}
-      <PortsAndContexts
-        listeners={overviewData?.overview?.listeners ?? []}
-        contexts={overviewData?.overview?.contexts ?? []}
-        isLoading={overviewLoading}
-      />
+      {/* Ports & Contexts — collapsed by default */}
+      {(overviewData?.overview?.listeners?.length ?? 0) > 0 ||
+      (overviewData?.overview?.contexts?.length ?? 0) > 0 ? (
+        <div>
+          <button
+            type="button"
+            onClick={() => setShowPorts((v) => !v)}
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ChevronDown
+              className={`h-3 w-3 transition-transform duration-150 ${showPorts ? "rotate-180" : ""}`}
+            />
+            {showPorts ? t("ports.hide") : t("ports.show")}
+          </button>
+          {showPorts && (
+            <div className="mt-3">
+              <PortsAndContexts
+                listeners={overviewData?.overview?.listeners ?? []}
+                contexts={overviewData?.overview?.contexts ?? []}
+                isLoading={overviewLoading}
+                fetchFailed={!!overviewError}
+              />
+            </div>
+          )}
+        </div>
+      ) : null}
     </PageShell>
   );
 };

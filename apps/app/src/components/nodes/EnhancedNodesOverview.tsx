@@ -10,6 +10,12 @@ import {
 
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import { isRabbitMQAuthError } from "@/types/apiErrors";
 
@@ -118,20 +124,32 @@ export const EnhancedNodesOverview = ({
       <span>{totalNodes === 1 ? "node" : "nodes"}</span>
       {runningNodes.length > 0 && (
         <>
-          <span className="select-none text-border">·</span>
+          <span className="select-none text-muted-foreground/40">·</span>
           <span
             className={`whitespace-nowrap font-mono tabular-nums font-semibold ${memTone}`}
           >
             {avgMemoryPct.toFixed(1)}% memory
           </span>
-          <span className="select-none text-border">·</span>
+          <span className="select-none text-muted-foreground/40">·</span>
           <span className="whitespace-nowrap font-mono tabular-nums font-semibold text-foreground">
             {diskFreeGB} GB disk free
           </span>
-          <span className="select-none text-border">·</span>
-          <span className="whitespace-nowrap font-mono tabular-nums font-semibold text-foreground">
-            {totalConnections} connections
-          </span>
+          <span className="select-none text-muted-foreground/40">·</span>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="whitespace-nowrap font-mono tabular-nums font-semibold text-foreground cursor-default">
+                  {totalConnections} sockets
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>
+                  OS-level socket count across all running nodes. Includes AMQP
+                  connections and internal RabbitMQ sockets.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </>
       )}
     </div>

@@ -38,7 +38,13 @@ import {
 
 import { isRabbitMQAuthError } from "@/types/apiErrors";
 
-type SortField = "name" | "memUsed" | "diskFree" | "uptime" | "connections";
+type SortField =
+  | "name"
+  | "status"
+  | "memUsed"
+  | "diskFree"
+  | "uptime"
+  | "connections";
 type SortDir = "asc" | "desc";
 
 interface EnhancedNodesTableProps {
@@ -46,6 +52,8 @@ interface EnhancedNodesTableProps {
   nodes: RabbitMQNode[];
   isLoading: boolean;
   nodesError?: Error | null;
+  defaultSortByStatus?: boolean;
+  fetchFailed?: boolean;
 }
 
 /**
@@ -59,11 +67,17 @@ export const EnhancedNodesTable = ({
   nodes,
   isLoading,
   nodesError,
+  defaultSortByStatus = false,
+  fetchFailed = false,
 }: EnhancedNodesTableProps) => {
   const { t } = useTranslation("nodes");
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
-  const [sortField, setSortField] = useState<SortField>("name");
-  const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const [sortField, setSortField] = useState<SortField>(
+    defaultSortByStatus ? "status" : "name"
+  );
+  const [sortDir, setSortDir] = useState<SortDir>(
+    defaultSortByStatus ? "asc" : "asc"
+  );
 
   const toggleExpanded = (name: string, isOpen: boolean) => {
     setExpandedNodes((prev) => {
@@ -93,6 +107,8 @@ export const EnhancedNodesTable = ({
       switch (sortField) {
         case "name":
           return dir * a.name.localeCompare(b.name);
+        case "status":
+          return dir * (getStatusWeight(a) - getStatusWeight(b));
         case "memUsed":
           return dir * ((a.mem_used || 0) - (b.mem_used || 0));
         case "diskFree":
@@ -128,26 +144,64 @@ export const EnhancedNodesTable = ({
     );
   }
 
+  if (!isLoading && fetchFailed && nodes.length === 0) {
+    return (
+      <div
+        className="border border-border rounded-lg overflow-hidden"
+        role="table"
+        aria-label="Cluster nodes"
+      >
+        <div className="py-12 text-center" role="row">
+          <div role="cell">
+            <AlertTriangle
+              className="h-8 w-8 text-muted-foreground mx-auto mb-3"
+              aria-hidden="true"
+            />
+            <h2 className="text-sm font-medium text-foreground mb-1">
+              {t("fetchFailed")}
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              {t("fetchFailedDesc")}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (nodes.length === 0) {
     return (
-      <div className="border border-border rounded-lg overflow-hidden">
-        <div className="py-12 text-center">
-          <Server
-            className="h-10 w-10 text-muted-foreground mx-auto mb-3"
-            aria-hidden="true"
-          />
-          <h2 className="text-sm font-medium text-foreground mb-1">
-            {t("noNodesFound")}
-          </h2>
+      <div
+        className="border border-border rounded-lg overflow-hidden"
+        role="table"
+        aria-label="Cluster nodes"
+      >
+        <div className="py-12 text-center" role="row">
+          <div role="cell">
+            <Server
+              className="h-10 w-10 text-muted-foreground mx-auto mb-3"
+              aria-hidden="true"
+            />
+            <h2 className="text-sm font-medium text-foreground mb-1">
+              {t("noNodesFound")}
+            </h2>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="border border-border rounded-lg overflow-hidden">
+    <div
+      className="border border-border rounded-lg overflow-hidden"
+      role="table"
+      aria-label="Cluster nodes"
+    >
       {/* Column headers with sort controls */}
-      <div className="flex items-center px-4 py-2 border-b border-border bg-muted/30 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+      <div
+        className="flex items-center px-4 py-2 border-b border-border bg-muted/30 text-xs font-medium uppercase tracking-wide text-muted-foreground"
+        role="row"
+      >
         <SortHeader
           label={t("nodeName")}
           field="name"
@@ -155,8 +209,17 @@ export const EnhancedNodesTable = ({
           currentDir={sortDir}
           onToggle={toggleSort}
           className="flex-1 min-w-0"
+          role="columnheader"
         />
-        <div className="w-24 text-right">{t("status")}</div>
+        <SortHeader
+          label={t("status")}
+          field="status"
+          currentField={sortField}
+          currentDir={sortDir}
+          onToggle={toggleSort}
+          className="w-24 text-right"
+          role="columnheader"
+        />
         <SortHeader
           label={t("memory")}
           field="memUsed"
@@ -164,6 +227,7 @@ export const EnhancedNodesTable = ({
           currentDir={sortDir}
           onToggle={toggleSort}
           className="w-32 text-right"
+          role="columnheader"
         />
         <SortHeader
           label={t("diskFree")}
@@ -172,6 +236,7 @@ export const EnhancedNodesTable = ({
           currentDir={sortDir}
           onToggle={toggleSort}
           className="w-28 text-right"
+          role="columnheader"
         />
         <SortHeader
           label={t("uptime")}
@@ -180,21 +245,24 @@ export const EnhancedNodesTable = ({
           currentDir={sortDir}
           onToggle={toggleSort}
           className="w-24 text-right"
+          role="columnheader"
         />
         <SortHeader
-          label={t("connections")}
+          label={t("sockets")}
           field="connections"
           currentField={sortField}
           currentDir={sortDir}
           onToggle={toggleSort}
           className="w-28 text-right"
+          role="columnheader"
+          tooltip="OS-level sockets per node. Includes AMQP connections and internal system sockets."
         />
         {/* Spacer for expand chevron */}
-        <div className="w-8" />
+        <div className="w-8" role="columnheader" aria-label="Expand" />
       </div>
 
       {/* Rows */}
-      <div className="divide-y divide-border">
+      <div className="divide-y divide-border" role="rowgroup">
         {sorted.map((node) => (
           <NodeRow
             key={node.name}
@@ -233,6 +301,9 @@ function NodeRow({
       <CollapsibleTrigger asChild>
         <button
           type="button"
+          role="row"
+          aria-expanded={isOpen}
+          aria-label={isOpen ? "Collapse node details" : "Expand node details"}
           className="w-full flex items-center px-4 py-3 hover:bg-accent transition-colors text-left"
         >
           {/* Left: identity */}
@@ -246,6 +317,8 @@ function NodeRow({
             <Badge className={status.color}>
               <StatusIcon
                 className={`w-3 h-3 ${status.label !== "Healthy" ? "mr-1" : ""}`}
+                aria-label={status.label === "Healthy" ? "Healthy" : undefined}
+                aria-hidden={status.label !== "Healthy"}
               />
               {status.label !== "Healthy" && status.label}
             </Badge>
@@ -352,7 +425,7 @@ function NodeDetailsPanel({
         <div className="flex flex-wrap items-start gap-x-8 gap-y-3 px-5 py-3">
           {/* Health flags */}
           <div>
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2">
               Health
             </p>
             <dl className="space-y-1.5">
@@ -396,7 +469,7 @@ function NodeDetailsPanel({
           {/* Memory */}
           {(node.mem_used || node.mem_limit || node.disk_free) && (
             <div>
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2">
                 Memory
               </p>
               <dl className="space-y-1.5">
@@ -428,7 +501,7 @@ function NodeDetailsPanel({
           {/* Connections */}
           {node.sockets_used !== undefined && (
             <div>
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2">
                 Connections
               </p>
               <dl className="space-y-1.5">
@@ -454,7 +527,7 @@ function NodeDetailsPanel({
           <div className="grid grid-cols-2 lg:grid-cols-5 divide-x divide-border">
             {/* Health */}
             <div className="px-5 py-4">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
                 Health
               </p>
               <dl className="space-y-2">
@@ -497,7 +570,7 @@ function NodeDetailsPanel({
 
             {/* Memory */}
             <div className="px-5 py-4">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
                 Memory
               </p>
               <dl className="space-y-2">
@@ -537,7 +610,7 @@ function NodeDetailsPanel({
 
             {/* Connections */}
             <div className="px-5 py-4">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
                 Connections
               </p>
               <dl className="space-y-2">
@@ -588,7 +661,7 @@ function NodeDetailsPanel({
 
             {/* Disk I/O */}
             <div className="px-5 py-4">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
                 Disk I/O
               </p>
               <dl className="space-y-2">
@@ -633,7 +706,7 @@ function NodeDetailsPanel({
 
             {/* System */}
             <div className="px-5 py-4">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
                 System
               </p>
               <dl className="space-y-2">
@@ -672,7 +745,7 @@ function NodeDetailsPanel({
           {/* Internal store — only rendered when data is present */}
           {hasInternalStore && (
             <div className="px-5 py-3 border-t border-border/60 flex flex-wrap gap-x-6 gap-y-1.5">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest w-full mb-0.5">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest w-full mb-0.5">
                 Internal store
               </p>
               {node.mnesia_ram_tx_count != null && (
@@ -783,7 +856,7 @@ function InlineMetric({
   return (
     <div className="flex items-baseline gap-1.5">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-xs font-mono tabular-nums text-muted-foreground/80">
+      <span className="text-xs font-mono tabular-nums text-muted-foreground">
         {value}
       </span>
     </div>
@@ -797,6 +870,8 @@ function SortHeader({
   currentDir,
   onToggle,
   className = "",
+  role,
+  tooltip,
 }: {
   label: string;
   field: SortField;
@@ -804,11 +879,21 @@ function SortHeader({
   currentDir: SortDir;
   onToggle: (field: SortField) => void;
   className?: string;
+  role?: string;
+  tooltip?: string;
 }) {
   const isActive = currentField === field;
+  const ariaSort: React.AriaAttributes["aria-sort"] = isActive
+    ? currentDir === "asc"
+      ? "ascending"
+      : "descending"
+    : "none";
   return (
     <button
       type="button"
+      role={role}
+      aria-sort={ariaSort}
+      title={tooltip}
       onClick={() => onToggle(field)}
       className={`inline-flex items-center gap-1 hover:text-foreground transition-colors ${
         isActive ? "text-foreground" : ""
@@ -822,7 +907,7 @@ function SortHeader({
           <ArrowDown className="h-3 w-3" />
         )
       ) : (
-        <ArrowUpDown className="h-3 w-3 opacity-40" />
+        <ArrowUpDown className="h-3 w-3 opacity-60" />
       )}
     </button>
   );
@@ -831,6 +916,24 @@ function SortHeader({
 /* ------------------------------------------------------------------ */
 /*  Utility functions                                                  */
 /* ------------------------------------------------------------------ */
+
+function getStatusWeight(node: RabbitMQNode): number {
+  if (!node.running) return 0;
+  if (
+    node.mem_alarm ||
+    node.disk_free_alarm ||
+    (node.partitions?.length ?? 0) > 0
+  )
+    return 1;
+  if (node.being_drained) return 2;
+  const mem =
+    node.mem_used && node.mem_limit
+      ? (node.mem_used / node.mem_limit) * 100
+      : 0;
+  if (mem >= MEMORY_CRITICAL_PCT) return 1;
+  if (mem >= MEMORY_WARN_PCT) return 2;
+  return 3; // healthy
+}
 
 function getNodeStatus(node: RabbitMQNode) {
   if (!node.running) {
