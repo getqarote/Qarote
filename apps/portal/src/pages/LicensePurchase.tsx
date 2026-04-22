@@ -48,6 +48,13 @@ const LicensePurchase = () => {
     setPurchaseError(null);
     setIsLoading(true);
 
+    // Clear any stale timer from a previous attempt so it can't
+    // fire and invalidate the new one.
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+
     const myAttempt = ++attemptIdRef.current;
 
     timeoutRef.current = setTimeout(() => {
@@ -61,12 +68,18 @@ const LicensePurchase = () => {
       {
         onSuccess: (data) => {
           if (attemptIdRef.current !== myAttempt) return;
-          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+          if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+          }
           window.location.href = data.checkoutUrl;
         },
         onError: (error) => {
           if (attemptIdRef.current !== myAttempt) return;
-          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+          if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+          }
           setPurchaseError(
             error.message || t("licensePurchase.purchaseFailed")
           );
@@ -267,6 +280,7 @@ const LicensePurchase = () => {
           <p className="text-sm text-destructive text-center">
             {purchaseError}{" "}
             <button
+              type="button"
               onClick={handlePurchase}
               className="underline hover:no-underline"
             >

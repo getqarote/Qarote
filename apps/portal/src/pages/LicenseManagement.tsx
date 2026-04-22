@@ -185,7 +185,9 @@ const LicenseManagement = () => {
                 <CardHeader>
                   <div className="space-y-1.5">
                     <CardTitle className="flex items-center gap-2">
-                      {tierLabel} {t("licenseManagement.license")}
+                      {t("licenseManagement.licenseOfTier", {
+                        tier: tierLabel,
+                      })}
                       {license.isActive ? (
                         <span className="inline-flex items-center gap-1 text-xs font-medium text-success bg-success/10 px-2 py-0.5 rounded-full">
                           <ShieldCheck className="h-3 w-3" />

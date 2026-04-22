@@ -25,6 +25,7 @@
     "noExpiration": "Sin expiración",
     "purchasedOn": "Comprado: {{date}}",
     "lastValidated": "Última validación: {{date}}",
+    "licenseOfTier": "Licencia {{tier}}",
     "loadingLicenses": "Cargando licencias...",
     "errorLoadingLicenses": "No se pudieron cargar sus licencias.",
     "retryLoading": "Intentar de nuevo",

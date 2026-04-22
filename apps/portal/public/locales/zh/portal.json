@@ -25,6 +25,7 @@
     "noExpiration": "永不过期",
     "purchasedOn": "购买日期：{{date}}",
     "lastValidated": "上次验证：{{date}}",
+    "licenseOfTier": "{{tier}}许可证",
     "loadingLicenses": "正在加载许可证...",
     "errorLoadingLicenses": "无法加载您的许可证。",
     "retryLoading": "重试",
