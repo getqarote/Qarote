@@ -81,7 +81,7 @@ curl -u guest:guest http://localhost:15672/api/channels \
   | jq '.[] | select(.flow_blocked == true) | .name'
 ```
 
-Or look for `flow control` entries in `var/log/rabbitmq/rabbit@<hostname>.log`.
+Or look for `flow control` entries in `/var/log/rabbitmq/rabbit@<hostname>.log`.
 
 **Fix:** Investigate memory pressure on the broker. Common causes: a queue accumulating millions of messages, a large individual message, or `vm_memory_high_watermark` set too low. Free up memory or increase the watermark.
 

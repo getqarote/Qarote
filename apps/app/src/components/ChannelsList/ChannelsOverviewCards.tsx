@@ -46,9 +46,14 @@ export function ChannelsOverviewCards({
       const s = c.state.toLowerCase();
       counts[s] = (counts[s] ?? 0) + 1;
     });
-    return Object.entries(counts).sort(
-      (a, b) => b[1] - a[1]
-    )[0][0] as StateFilter;
+    const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+    const VALID_FILTERS = new Set<string>([
+      "running",
+      "idle",
+      "blocked",
+      "flow",
+    ]);
+    return VALID_FILTERS.has(top) ? (top as StateFilter) : null;
   })();
 
   let pillClass: string;

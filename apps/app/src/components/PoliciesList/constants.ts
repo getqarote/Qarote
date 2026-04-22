@@ -226,6 +226,7 @@ export interface DefRow {
   id: string;
   key: string;
   value: string;
+  isCustom?: boolean;
 }
 
 export const newRowId = (): string =>

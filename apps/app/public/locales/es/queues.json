@@ -124,8 +124,10 @@
   "presetLockedDesc": "Las colas {{type}} aplican propiedades fijas: siempre durables, no exclusivas, sin eliminación automática.",
   "presetLockedCleared_one": "{{count}} argumento incompatible fue eliminado.",
   "presetLockedCleared_other": "{{count}} argumentos incompatibles fueron eliminados.",
+  "presetLockedCleared": "{{count}} argumentos incompatibles fueron eliminados.",
   "presetSwitchWarning_one": "Cambiar a {{type}} eliminará {{count}} argumento configurado — es incompatible con este tipo de cola.",
   "presetSwitchWarning_other": "Cambiar a {{type}} eliminará {{count}} argumentos configurados — son incompatibles con este tipo de cola.",
+  "presetSwitchWarning": "Cambiar a {{type}} eliminará {{count}} argumentos configurados — son incompatibles con este tipo de cola.",
   "presetSwitchConfirm": "Cambiar y eliminar argumentos",
   "presetSwitchCancel": "Mantener el tipo actual",
   "rabbitTypeTitle": "Tipo de cola RabbitMQ",
@@ -248,5 +250,15 @@
   "redeliveredRateInfo": "Redelivered rate info",
   "redeliveredRateTooltip": "Rate of messages redelivered after nack/reject.",
   "unacknowledged": "Unacknowledged",
-  "unlimited": "Unlimited"
+  "unlimited": "Unlimited",
+  "featureDurable": "Durable — sobrevive reinicios del broker",
+  "featureAutoDelete": "Auto-eliminar — eliminada cuando el último consumidor se desconecta",
+  "featureExclusive": "Exclusiva — solo accesible por la conexión declarante",
+  "featureQuorum": "Cola de quórum — replicada mediante consenso Raft",
+  "featureStream": "Cola de flujo — registro de solo adición, mensajes reproducibles",
+  "featureTtl": "TTL de mensaje: {{value}}ms",
+  "featureLim": "Límite de longitud máxima configurado",
+  "featureDlx": "Intercambio de mensajes muertos: {{exchange}}",
+  "featurePrio": "Cola de prioridad — prioridad máx: {{value}}",
+  "featureSac": "Consumidor activo único"
 }

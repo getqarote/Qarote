@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -59,6 +59,7 @@ export const AddServerForm = ({
   isOpen: controlledIsOpen,
   onOpenChange: controlledOnOpenChange,
 }: AddServerFormProps) => {
+  const formId = useId();
   const { t } = useTranslation("dashboard");
   const navigate = useNavigate();
   const { setSelectedServerId } = useServerContext();
@@ -128,7 +129,9 @@ export const AddServerForm = ({
 
     const isValid = await form.trigger(fieldsToValidate);
     if (!isValid) {
-      setDetailsExpanded(true);
+      // Toggle false→true so forceExpanded re-fires even if already true.
+      setDetailsExpanded(false);
+      setTimeout(() => setDetailsExpanded(true), 0);
       return;
     }
 
@@ -231,6 +234,7 @@ export const AddServerForm = ({
       form.reset();
       setConnectionStatus({ status: "idle" });
       setStep(1);
+      setDetailsExpanded(false);
     } catch (error) {
       setConnectionStatus({
         status: "error",
@@ -290,7 +294,7 @@ export const AddServerForm = ({
         <div className="flex-1 overflow-y-auto px-6 pb-6">
           <Form {...form}>
             <form
-              id="add-server-form"
+              id={formId}
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-6"
             >
@@ -308,7 +312,10 @@ export const AddServerForm = ({
                 <>
                   <ServerUrlInput
                     form={form}
-                    onParseSuccess={() => setDetailsExpanded(true)}
+                    onParseSuccess={() => {
+                      setDetailsExpanded(false);
+                      setTimeout(() => setDetailsExpanded(true), 0);
+                    }}
                   />
                   <TunnelHelper form={form} />
                   <ServerDetails
@@ -405,7 +412,7 @@ export const AddServerForm = ({
           {(isEdit || step === 2) && (
             <Button
               type="submit"
-              form="add-server-form"
+              form={formId}
               disabled={isLoading || isTestingConnection}
               className="btn-primary"
             >

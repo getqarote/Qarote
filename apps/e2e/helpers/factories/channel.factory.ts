@@ -40,5 +40,10 @@ const defaults: MockChannel = {
 };
 
 export function mockChannel(overrides?: Partial<MockChannel>): MockChannel {
-  return { ...defaults, ...overrides };
+  return {
+    ...defaults,
+    // Deep-clone nested objects so mutations in one test can't leak into others.
+    connection_details: { ...defaults.connection_details },
+    ...overrides,
+  };
 }

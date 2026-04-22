@@ -83,22 +83,42 @@ export async function mockTrpcMutationError(
 
     const errorEntry = {
       error: {
-        json: {
-          message,
-          code: -32603,
-          data: { code: "INTERNAL_SERVER_ERROR", httpStatus: 500 },
-        },
+        message,
+        code: -32603,
+        data: { code: "INTERNAL_SERVER_ERROR", httpStatus: 500 },
       },
     };
 
-    const batch = procedures.map((_, i) =>
-      i === index ? errorEntry : { result: { data: null } }
-    );
+    if (procedures.length === 1) {
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify([errorEntry]),
+      });
+    }
 
-    return route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(batch),
-    });
+    // Multi-procedure batch: fetch real responses, replace only our target
+    try {
+      const response = await route.fetch();
+      const body = await response.json();
+      body[index] = errorEntry;
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(body),
+      });
+    } catch {
+      // If upstream fetch fails, build a minimal batch response
+      const batch = procedures.map((_, i) =>
+        i === index
+          ? errorEntry
+          : { error: { code: -32603, message: "mocked", data: { code: "INTERNAL_SERVER_ERROR", httpStatus: 500 } } }
+      );
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(batch),
+      });
+    }
   });
 }

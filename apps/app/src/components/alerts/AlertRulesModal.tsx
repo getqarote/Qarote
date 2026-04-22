@@ -516,7 +516,21 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
   const toggleMutation = useUpdateAlertRule();
 
   const handleToggle = (rule: AlertRule, enabled: boolean) => {
-    toggleMutation.mutate({ id: rule.id, enabled });
+    toggleMutation.mutate(
+      { id: rule.id, enabled },
+      {
+        onSuccess: () => {
+          toast.success(t("rules.toast.updateSuccess"));
+        },
+        onError: (error) => {
+          toast.error(
+            error instanceof Error
+              ? error.message
+              : t("rules.toast.updateError")
+          );
+        },
+      }
+    );
   };
 
   const handleDeleteClick = (rule: AlertRule) => {
@@ -702,34 +716,19 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
                               <div className="flex items-center gap-1 shrink-0 -mr-1">
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <button
-                                      role="switch"
-                                      aria-checked={rule.enabled}
+                                    <Switch
+                                      checked={rule.enabled}
+                                      onCheckedChange={(checked) =>
+                                        handleToggle(rule, checked)
+                                      }
+                                      disabled={toggleMutation.isPending}
                                       aria-label={
                                         rule.enabled
                                           ? t("rules.badge.enabled")
                                           : t("rules.badge.disabled")
                                       }
-                                      onClick={() =>
-                                        handleToggle(rule, !rule.enabled)
-                                      }
-                                      disabled={toggleMutation.isPending}
-                                      className={cn(
-                                        "relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
-                                        rule.enabled
-                                          ? "bg-green-500"
-                                          : "bg-input"
-                                      )}
-                                    >
-                                      <span
-                                        className={cn(
-                                          "pointer-events-none block h-3 w-3 rounded-full bg-white shadow-sm transition-transform",
-                                          rule.enabled
-                                            ? "translate-x-3"
-                                            : "translate-x-0"
-                                        )}
-                                      />
-                                    </button>
+                                      className="h-4 w-7"
+                                    />
                                   </TooltipTrigger>
                                   <TooltipContent>
                                     {rule.enabled
@@ -811,14 +810,21 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
                       })
                     ).filter(({ catRules }) => catRules.length > 0);
 
+                    const colClass = (
+                      [
+                        "",
+                        "grid-cols-[repeat(1,minmax(220px,1fr))]",
+                        "grid-cols-[repeat(2,minmax(220px,1fr))]",
+                        "grid-cols-[repeat(3,minmax(220px,1fr))]",
+                        "grid-cols-[repeat(4,minmax(220px,1fr))]",
+                        "grid-cols-[repeat(5,minmax(220px,1fr))]",
+                        "grid-cols-[repeat(6,minmax(220px,1fr))]",
+                      ] as const
+                    )[Math.min(nonEmptyCategories.length, 6)];
+
                     return (
                       <div className="overflow-x-auto">
-                        <div
-                          className="grid gap-4"
-                          style={{
-                            gridTemplateColumns: `repeat(${nonEmptyCategories.length}, minmax(220px, 1fr))`,
-                          }}
-                        >
+                        <div className={cn("grid gap-4", colClass)}>
                           {nonEmptyCategories.map(({ labelKey, catRules }) => (
                             <div key={labelKey} className="space-y-2">
                               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">

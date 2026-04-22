@@ -9,6 +9,8 @@
   "noActiveChannels": "No active channels",
   "noActiveChannelsDesc": "There are currently no active channels on this RabbitMQ server.",
   "nNonRunning": "{{count}} not running",
+  "nNonRunning_one": "{{count}} not running",
+  "nNonRunning_other": "{{count}} not running",
   "filterByState": "Click to filter by this state",
   "channel": "channel",
   "channels": "channels",

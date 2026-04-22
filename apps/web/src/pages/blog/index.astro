@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BlogNav from "../../components/BlogNav.astro";
 
 const posts = (await getCollection("blog")).sort(
   (a, b) => new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime()
@@ -15,25 +16,7 @@ const dateStr = (iso: string) =>
   description="Practical guides for debugging RabbitMQ, optimizing consumer throughput, and running message queues in production."
   canonicalPath="/blog/"
 >
-  <!-- Top nav -->
-  <nav class="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm">
-    <div class="flex items-center justify-between h-14 px-4 sm:px-6 max-w-4xl mx-auto">
-      <a href="/" class="flex items-center gap-1.5 shrink-0">
-        <img src="/images/new_icon.svg" alt="" width={22} height={22} class="w-[22px] h-[22px]" aria-hidden="true" />
-        <span class="font-display font-normal text-[1.1rem] leading-none">Qarote</span>
-      </a>
-
-      <a
-        href="/"
-        class="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
-        Back to site
-      </a>
-    </div>
-  </nav>
+  <BlogNav backHref="/" backText="Back to site" />
 
   <!-- Header -->
   <header class="max-w-4xl mx-auto px-4 sm:px-6 pt-14 pb-10">
@@ -86,14 +69,6 @@ const dateStr = (iso: string) =>
                     <span>{post.data.readingTimeMin} min read</span>
                   </>
                 )}
-                <span aria-hidden="true">·</span>
-                <a
-                  href={`/blog/${post.id}/`}
-                  class="text-primary hover:underline font-medium"
-                  aria-label={`Read: ${post.data.title}`}
-                >
-                  Read →
-                </a>
               </div>
             </article>
           </li>

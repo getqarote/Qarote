@@ -124,8 +124,10 @@
   "presetLockedDesc": "{{type}} queues enforce fixed properties: always durable, non-exclusive, non-auto-delete.",
   "presetLockedCleared_one": "{{count}} incompatible argument was removed.",
   "presetLockedCleared_other": "{{count}} incompatible arguments were removed.",
+  "presetLockedCleared": "{{count}} incompatible arguments were removed.",
   "presetSwitchWarning_one": "Switching to {{type}} will remove {{count}} configured argument — it's incompatible with this queue type.",
   "presetSwitchWarning_other": "Switching to {{type}} will remove {{count}} configured arguments — they're incompatible with this queue type.",
+  "presetSwitchWarning": "Switching to {{type}} will remove {{count}} configured arguments — they're incompatible with this queue type.",
   "presetSwitchConfirm": "Switch and clear arguments",
   "presetSwitchCancel": "Keep current",
   "rabbitTypeTitle": "RabbitMQ queue type",
@@ -248,5 +250,15 @@
   "none": "None",
   "queueBindings": "Queue Bindings",
   "noBindings": "No Bindings Found",
-  "noBindingsDesc": "This queue is not bound to any exchanges."
+  "noBindingsDesc": "This queue is not bound to any exchanges.",
+  "featureDurable": "Durable — survives broker restarts",
+  "featureAutoDelete": "Auto-delete — removed when last consumer disconnects",
+  "featureExclusive": "Exclusive — only accessible by declaring connection",
+  "featureQuorum": "Quorum queue — replicated via Raft consensus",
+  "featureStream": "Stream queue — append-only log, messages are replayable",
+  "featureTtl": "Message TTL: {{value}}ms",
+  "featureLim": "Max length limit set",
+  "featureDlx": "Dead-letter exchange: {{exchange}}",
+  "featurePrio": "Priority queue — max priority: {{value}}",
+  "featureSac": "Single active consumer"
 }

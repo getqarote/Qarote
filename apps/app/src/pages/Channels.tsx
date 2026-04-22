@@ -54,7 +54,7 @@ const Channels = () => {
       );
     }
     if (searchTerm.trim()) {
-      const q = searchTerm.toLowerCase();
+      const q = searchTerm.trim().toLowerCase();
       result = result.filter(
         (c) =>
           c.name.toLowerCase().includes(q) ||
@@ -142,6 +142,7 @@ const Channels = () => {
               <button
                 key={String(value)}
                 type="button"
+                aria-pressed={isActive}
                 onClick={() => setActiveStateFilter(value)}
                 className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
                   isActive

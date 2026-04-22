@@ -54,21 +54,32 @@ export function DefinitionBuilder({
   }, [rows]);
 
   /**
-   * Compute per-row catalog: exclude keys used by OTHER rows so the current
-   * row's own key is always present as a selectable option.
+   * Memoized per-row catalog: for each row, exclude keys used by OTHER rows so
+   * the current row's own key is always present as a selectable option.
    */
-  const catalogForRow = (rowId: string) => {
-    const otherKeys = new Set<string>();
-    for (const [id, key] of usedKeysByRowId) {
-      if (id !== rowId) otherKeys.add(key);
+  const catalogByRowId = useMemo(() => {
+    const map = new Map<
+      string,
+      Array<{ group: string; defs: typeof DEF_CATALOG }>
+    >();
+    for (const [rowId] of usedKeysByRowId) {
+      const otherKeys = new Set<string>();
+      for (const [id, key] of usedKeysByRowId) {
+        if (id !== rowId) otherKeys.add(key);
+      }
+      map.set(
+        rowId,
+        GROUP_ORDER.map((group) => ({
+          group,
+          defs: DEF_CATALOG.filter(
+            (d) => d.group === group && !otherKeys.has(d.key)
+          ),
+        })).filter((g) => g.defs.length > 0)
+      );
     }
-    return GROUP_ORDER.map((group) => ({
-      group,
-      defs: DEF_CATALOG.filter(
-        (d) => d.group === group && !otherKeys.has(d.key)
-      ),
-    })).filter((g) => g.defs.length > 0);
-  };
+    // Rows with no key yet also need a catalog (all keys available).
+    return map;
+  }, [usedKeysByRowId]);
 
   const addRow = () => {
     onChange([...rows, { id: newRowId(), key: "", value: "" }]);
@@ -123,7 +134,13 @@ export function DefinitionBuilder({
             <DefRowItem
               key={row.id}
               row={row}
-              groupedCatalog={catalogForRow(row.id)}
+              groupedCatalog={
+                catalogByRowId.get(row.id) ??
+                GROUP_ORDER.map((group) => ({
+                  group,
+                  defs: DEF_CATALOG.filter((d) => d.group === group),
+                })).filter((g) => g.defs.length > 0)
+              }
               onChange={(patch) => updateRow(row.id, patch)}
               onRemove={() => removeRow(row.id)}
             />
@@ -171,16 +188,16 @@ function DefRowItem({
 }: DefRowItemProps) {
   const { t } = useTranslation("policies");
   const def = row.key ? CATALOG_BY_KEY[row.key] : undefined;
-  const isCustom = !!row.key && !def;
-  const hasAnyKey = !!row.key;
+  const isCustom = row.isCustom || (!!row.key && !def);
+  const hasAnyKey = isCustom || !!row.key;
 
   const handleKeyChange = (nextKey: string) => {
     if (nextKey === CUSTOM_SENTINEL) {
-      onChange({ key: "", value: "" });
+      onChange({ key: "", value: "", isCustom: true });
       return;
     }
     const d = CATALOG_BY_KEY[nextKey];
-    onChange({ key: nextKey, value: d?.defaultValue ?? "" });
+    onChange({ key: nextKey, value: d?.defaultValue ?? "", isCustom: false });
   };
 
   return (
@@ -188,7 +205,7 @@ function DefRowItem({
       {isCustom ? (
         <Input
           value={row.key}
-          onChange={(e) => onChange({ key: e.target.value })}
+          onChange={(e) => onChange({ key: e.target.value, isCustom: true })}
           placeholder={t("defCustomKeyPlaceholder")}
           className="font-mono text-sm"
         />

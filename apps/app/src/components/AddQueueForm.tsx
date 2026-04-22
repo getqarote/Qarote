@@ -151,7 +151,11 @@ export function AddQueueForm({
     // Harden: if switching to a locked type and the user has configured
     // arguments, pause and ask for confirmation before discarding them.
     if ((type === "quorum" || type === "stream") && rows.length > 0) {
-      prevQueueTypeRef.current = queueType;
+      // Only capture the prior type the first time so cancelTypeSwitch
+      // always reverts to the original type, not a chained intermediate.
+      if (!pendingTypeSwitch) {
+        prevQueueTypeRef.current = queueType;
+      }
       setQueueType(type); // update the selector immediately so it feels responsive
       setPendingTypeSwitch(type);
       return;
@@ -162,13 +166,9 @@ export function AddQueueForm({
   /** User confirmed they're OK discarding incompatible arguments. */
   const confirmTypeSwitch = () => {
     if (!pendingTypeSwitch) return;
-    setClearedArgsCount(rows.length);
-    form.setValue("durable", true);
-    form.setValue("autoDelete", false);
-    form.setValue("exclusive", false);
-    setPreset("classic");
-    setRows([]);
+    const type = pendingTypeSwitch;
     setPendingTypeSwitch(null);
+    commitTypeChange(type);
   };
 
   /** User changed their mind — revert the selector to the previous type. */
@@ -211,6 +211,9 @@ export function AddQueueForm({
       });
       return;
     }
+
+    // Guard: type-switch confirmation is pending — do not submit yet.
+    if (pendingTypeSwitch) return;
 
     // Build final arguments object from the structured builder rows.
     const finalArguments: Record<string, unknown> = {};
@@ -375,7 +378,10 @@ export function AddQueueForm({
                         <p className="text-xs text-muted-foreground leading-relaxed">
                           {t("presetSwitchWarning", {
                             count: rows.length,
-                            type: queueType,
+                            type:
+                              queueType === "quorum"
+                                ? t("rabbitTypeQuorum")
+                                : t("rabbitTypeStream"),
                           })}
                         </p>
                         <div className="flex gap-4 pt-0.5">
@@ -402,7 +408,12 @@ export function AddQueueForm({
                           {t("presetSectionTitle")}
                         </p>
                         <p className="text-xs text-muted-foreground leading-relaxed">
-                          {t("presetLockedDesc", { type: queueType })}
+                          {t("presetLockedDesc", {
+                            type:
+                              queueType === "quorum"
+                                ? t("rabbitTypeQuorum")
+                                : t("rabbitTypeStream"),
+                          })}
                           {clearedArgsCount > 0 && (
                             <>
                               {" "}
@@ -455,7 +466,7 @@ export function AddQueueForm({
           <Button
             type="submit"
             onClick={form.handleSubmit(onSubmit)}
-            disabled={createQueueMutation.isPending}
+            disabled={createQueueMutation.isPending || !!pendingTypeSwitch}
             className="btn-primary"
           >
             {createQueueMutation.isPending ? (
