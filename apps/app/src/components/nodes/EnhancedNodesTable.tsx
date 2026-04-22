@@ -7,11 +7,13 @@ import {
   ArrowUp,
   ArrowUpDown,
   CheckCircle,
+  HelpCircle,
   Server,
   XCircle,
 } from "lucide-react";
 
 import { RabbitMQNode } from "@/lib/api";
+import { MEMORY_CRITICAL_PCT, MEMORY_WARN_PCT } from "@/lib/health-tones";
 
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +25,12 @@ import {
 import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import { isRabbitMQAuthError } from "@/types/apiErrors";
 
@@ -209,6 +217,7 @@ function NodeRow({
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t } = useTranslation("nodes");
   const status = getNodeStatus(node);
   const StatusIcon = status.icon;
   const memoryUsage =
@@ -232,8 +241,17 @@ function NodeRow({
               {node.name}
             </span>
             <Badge className={status.color}>
-              <StatusIcon className="w-3 h-3 mr-1" />
-              {status.label}
+              <StatusIcon
+                className={`w-3 h-3 ${status.discriminant !== "healthy" ? "mr-1" : ""}`}
+                aria-label={
+                  status.discriminant === "healthy"
+                    ? t("statusLabels.healthy")
+                    : undefined
+                }
+                aria-hidden={status.discriminant !== "healthy"}
+              />
+              {status.discriminant !== "healthy" &&
+                t(`statusLabels.${status.discriminant}`)}
             </Badge>
           </div>
 
@@ -300,285 +318,305 @@ function NodeDetailsPanel({
   node: RabbitMQNode;
   memoryUsage: number;
 }) {
+  const { t } = useTranslation("nodes");
   return (
-    <div className="border-t border-border bg-muted/20">
-      {/* Primary metrics band — 5 equal sections */}
-      <div className="grid grid-cols-5 divide-x divide-border">
-        {/* Health */}
-        <div className="px-5 py-4">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
-            Health
-          </p>
-          <dl className="space-y-2">
-            <ExpandedRow
-              label="Running"
-              value={node.running ? "Yes" : "No"}
-              tone={node.running ? "success" : "destructive"}
-            />
-            <ExpandedRow
-              label="Draining"
-              value={node.being_drained ? "Yes" : "No"}
-              tone={node.being_drained ? "warning" : undefined}
-            />
-            <ExpandedRow
-              label="Mem alarm"
-              value={node.mem_alarm ? "Active" : "None"}
-              tone={node.mem_alarm ? "destructive" : undefined}
-            />
-            <ExpandedRow
-              label="Disk alarm"
-              value={node.disk_free_alarm ? "Active" : "None"}
-              tone={node.disk_free_alarm ? "destructive" : undefined}
-            />
-            <ExpandedRow
-              label="Partitions"
-              value={node.partitions?.length ?? 0}
-              mono
-              tone={
-                (node.partitions?.length ?? 0) > 0 ? "destructive" : undefined
-              }
-            />
-          </dl>
+    <TooltipProvider>
+      <div className="border-t border-border bg-muted/20">
+        {/* Primary metrics band — 5 equal sections */}
+        <div className="grid grid-cols-5 divide-x divide-border">
+          {/* Health */}
+          <div className="px-5 py-4">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+              {t("details.sections.health")}
+            </p>
+            <dl className="space-y-2">
+              <ExpandedRow
+                label={t("details.rows.running")}
+                value={
+                  node.running
+                    ? t("details.values.yes")
+                    : t("details.values.no")
+                }
+                tone={node.running ? "success" : "destructive"}
+              />
+              <ExpandedRow
+                label={t("details.rows.draining")}
+                value={
+                  node.being_drained
+                    ? t("details.values.yes")
+                    : t("details.values.no")
+                }
+                tone={node.being_drained ? "warning" : undefined}
+                tooltip={t("details.tooltips.draining")}
+              />
+              <ExpandedRow
+                label={t("details.rows.memAlarm")}
+                value={
+                  node.mem_alarm
+                    ? t("details.values.active")
+                    : t("details.values.none")
+                }
+                tone={node.mem_alarm ? "destructive" : undefined}
+                tooltip={t("details.tooltips.memAlarm")}
+              />
+              <ExpandedRow
+                label={t("details.rows.diskAlarm")}
+                value={
+                  node.disk_free_alarm
+                    ? t("details.values.active")
+                    : t("details.values.none")
+                }
+                tone={node.disk_free_alarm ? "destructive" : undefined}
+                tooltip={t("details.tooltips.diskAlarm")}
+              />
+              <ExpandedRow
+                label={t("details.rows.partitions")}
+                value={node.partitions?.length ?? 0}
+                mono
+                tone={
+                  (node.partitions?.length ?? 0) > 0 ? "destructive" : undefined
+                }
+                tooltip={t("details.tooltips.partitions")}
+              />
+            </dl>
+          </div>
+
+          {/* Memory */}
+          <div className="px-5 py-4">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+              {t("details.sections.memory")}
+            </p>
+            <dl className="space-y-2">
+              <ExpandedRow
+                label={t("details.rows.used")}
+                value={node.mem_used ? formatBytes(node.mem_used) : "—"}
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.limit")}
+                value={node.mem_limit ? formatBytes(node.mem_limit) : "—"}
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.usage")}
+                value={
+                  node.mem_used && node.mem_limit
+                    ? `${memoryUsage.toFixed(1)}%`
+                    : "—"
+                }
+                mono
+                tone={
+                  memoryUsage >= MEMORY_CRITICAL_PCT
+                    ? "destructive"
+                    : memoryUsage >= MEMORY_WARN_PCT
+                      ? "warning"
+                      : undefined
+                }
+              />
+              <ExpandedRow
+                label={t("details.rows.diskFree")}
+                value={node.disk_free ? formatBytes(node.disk_free) : "—"}
+                mono
+              />
+            </dl>
+          </div>
+
+          {/* Disk I/O */}
+          <div className="px-5 py-4">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+              {t("details.sections.diskIO")}
+            </p>
+            <dl className="space-y-2">
+              <ExpandedRow
+                label={t("details.rows.readRate")}
+                value={
+                  node.io_read_count_details?.rate
+                    ? formatRate(node.io_read_count_details.rate)
+                    : "0/s"
+                }
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.writeRate")}
+                value={
+                  node.io_write_count_details?.rate
+                    ? formatRate(node.io_write_count_details.rate)
+                    : "0/s"
+                }
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.avgRead")}
+                value={
+                  node.io_read_avg_time
+                    ? `${node.io_read_avg_time.toFixed(2)}ms`
+                    : "—"
+                }
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.avgWrite")}
+                value={
+                  node.io_write_avg_time
+                    ? `${node.io_write_avg_time.toFixed(2)}ms`
+                    : "—"
+                }
+                mono
+              />
+            </dl>
+          </div>
+
+          {/* Connections */}
+          <div className="px-5 py-4">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+              {t("details.sections.connections")}
+            </p>
+            <dl className="space-y-2">
+              <ExpandedRow
+                label={t("details.rows.sockets")}
+                value={
+                  node.sockets_used !== undefined
+                    ? `${node.sockets_used} / ${node.sockets_total ?? 0}`
+                    : "—"
+                }
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.created")}
+                value={
+                  node.connection_created
+                    ? formatNumber(node.connection_created)
+                    : "—"
+                }
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.closed")}
+                value={
+                  node.connection_closed
+                    ? formatNumber(node.connection_closed)
+                    : "—"
+                }
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.channels")}
+                value={
+                  node.channel_created
+                    ? formatNumber(node.channel_created)
+                    : "—"
+                }
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.netTick")}
+                value={node.net_ticktime ? `${node.net_ticktime}s` : "—"}
+                mono
+                tooltip={t("details.tooltips.netTick")}
+              />
+            </dl>
+          </div>
+
+          {/* System */}
+          <div className="px-5 py-4">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+              {t("details.sections.system")}
+            </p>
+            <dl className="space-y-2">
+              <ExpandedRow
+                label={t("details.rows.type")}
+                value={node.type ?? "—"}
+              />
+              <ExpandedRow
+                label={t("details.rows.processors")}
+                value={node.processors ?? "—"}
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.osPid")}
+                value={node.os_pid ?? "—"}
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.runQueue")}
+                value={node.run_queue !== undefined ? node.run_queue : "—"}
+                mono
+                tooltip={t("details.tooltips.runQueue")}
+              />
+              <ExpandedRow
+                label={t("details.rows.processes")}
+                value={
+                  node.proc_used !== undefined && node.proc_total !== undefined
+                    ? `${node.proc_used} / ${node.proc_total}`
+                    : "—"
+                }
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.plugins")}
+                value={node.enabled_plugins?.length ?? 0}
+                mono
+              />
+            </dl>
+          </div>
         </div>
 
-        {/* Memory */}
-        <div className="px-5 py-4">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
-            Memory
+        {/* Internal store — secondary diagnostic strip */}
+        <div className="px-5 py-3 border-t border-border/60 flex flex-wrap gap-x-6 gap-y-1.5">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest w-full mb-0.5">
+            {t("details.sections.internalStore")}
           </p>
-          <dl className="space-y-2">
-            <ExpandedRow
-              label="Used"
-              value={node.mem_used ? formatBytes(node.mem_used) : "—"}
-              mono
-            />
-            <ExpandedRow
-              label="Limit"
-              value={node.mem_limit ? formatBytes(node.mem_limit) : "—"}
-              mono
-            />
-            <ExpandedRow
-              label="Usage"
-              value={
-                node.mem_used && node.mem_limit
-                  ? `${memoryUsage.toFixed(1)}%`
-                  : "—"
-              }
-              mono
-              tone={
-                memoryUsage > 90
-                  ? "destructive"
-                  : memoryUsage > 75
-                    ? "warning"
-                    : undefined
-              }
-            />
-            <ExpandedRow
-              label="Disk free"
-              value={node.disk_free ? formatBytes(node.disk_free) : "—"}
-              mono
-            />
-          </dl>
-        </div>
-
-        {/* Disk I/O */}
-        <div className="px-5 py-4">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
-            Disk I/O
-          </p>
-          <dl className="space-y-2">
-            <ExpandedRow
-              label="Reads"
-              value={
-                node.io_read_count ? formatNumber(node.io_read_count) : "—"
-              }
-              mono
-            />
-            <ExpandedRow
-              label="Writes"
-              value={
-                node.io_write_count ? formatNumber(node.io_write_count) : "—"
-              }
-              mono
-            />
-            <ExpandedRow
-              label="Read rate"
-              value={
-                node.io_read_count_details?.rate
-                  ? formatRate(node.io_read_count_details.rate)
-                  : "0/s"
-              }
-              mono
-            />
-            <ExpandedRow
-              label="Write rate"
-              value={
-                node.io_write_count_details?.rate
-                  ? formatRate(node.io_write_count_details.rate)
-                  : "0/s"
-              }
-              mono
-            />
-            <ExpandedRow
-              label="Avg read"
-              value={
-                node.io_read_avg_time
-                  ? `${node.io_read_avg_time.toFixed(2)}ms`
-                  : "—"
-              }
-              mono
-            />
-            <ExpandedRow
-              label="Avg write"
-              value={
-                node.io_write_avg_time
-                  ? `${node.io_write_avg_time.toFixed(2)}ms`
-                  : "—"
-              }
-              mono
-            />
-          </dl>
-        </div>
-
-        {/* Connections */}
-        <div className="px-5 py-4">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
-            Connections
-          </p>
-          <dl className="space-y-2">
-            <ExpandedRow
-              label="Sockets"
-              value={
-                node.sockets_used !== undefined
-                  ? `${node.sockets_used} / ${node.sockets_total ?? 0}`
-                  : "—"
-              }
-              mono
-            />
-            <ExpandedRow
-              label="Created"
-              value={
-                node.connection_created
-                  ? formatNumber(node.connection_created)
-                  : "—"
-              }
-              mono
-            />
-            <ExpandedRow
-              label="Closed"
-              value={
-                node.connection_closed
-                  ? formatNumber(node.connection_closed)
-                  : "—"
-              }
-              mono
-            />
-            <ExpandedRow
-              label="Channels"
-              value={
-                node.channel_created ? formatNumber(node.channel_created) : "—"
-              }
-              mono
-            />
-            <ExpandedRow
-              label="Net tick"
-              value={node.net_ticktime ? `${node.net_ticktime}s` : "—"}
-              mono
-            />
-          </dl>
-        </div>
-
-        {/* System */}
-        <div className="px-5 py-4">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
-            System
-          </p>
-          <dl className="space-y-2">
-            <ExpandedRow label="Type" value={node.type ?? "—"} />
-            <ExpandedRow
-              label="Processors"
-              value={node.processors ?? "—"}
-              mono
-            />
-            <ExpandedRow label="OS PID" value={node.os_pid ?? "—"} mono />
-            <ExpandedRow
-              label="Run queue"
-              value={node.run_queue !== undefined ? node.run_queue : "—"}
-              mono
-            />
-            <ExpandedRow
-              label="Processes"
-              value={
-                node.proc_used !== undefined && node.proc_total !== undefined
-                  ? `${node.proc_used} / ${node.proc_total}`
-                  : "—"
-              }
-              mono
-            />
-            <ExpandedRow
-              label="Plugins"
-              value={node.enabled_plugins?.length ?? 0}
-              mono
-            />
-          </dl>
+          <InlineMetric
+            label={t("details.inlineMetrics.mnesiaRam")}
+            value={
+              node.mnesia_ram_tx_count
+                ? formatNumber(node.mnesia_ram_tx_count)
+                : "—"
+            }
+          />
+          <InlineMetric
+            label={t("details.inlineMetrics.mnesiaDisk")}
+            value={
+              node.mnesia_disk_tx_count
+                ? formatNumber(node.mnesia_disk_tx_count)
+                : "—"
+            }
+          />
+          <InlineMetric
+            label={t("details.inlineMetrics.msgReads")}
+            value={
+              node.msg_store_read_count
+                ? formatNumber(node.msg_store_read_count)
+                : "—"
+            }
+          />
+          <InlineMetric
+            label={t("details.inlineMetrics.msgWrites")}
+            value={
+              node.msg_store_write_count
+                ? formatNumber(node.msg_store_write_count)
+                : "—"
+            }
+          />
+          <InlineMetric
+            label={t("details.inlineMetrics.queueIdxR")}
+            value={
+              node.queue_index_read_count
+                ? formatNumber(node.queue_index_read_count)
+                : "—"
+            }
+          />
+          <InlineMetric
+            label={t("details.inlineMetrics.queueIdxW")}
+            value={
+              node.queue_index_write_count
+                ? formatNumber(node.queue_index_write_count)
+                : "—"
+            }
+          />
         </div>
       </div>
-
-      {/* Internal store — secondary diagnostic strip */}
-      <div className="px-5 py-3 border-t border-border/60 flex flex-wrap gap-x-6 gap-y-1.5">
-        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest w-full mb-0.5">
-          Internal store
-        </p>
-        <InlineMetric
-          label="Mnesia RAM"
-          value={
-            node.mnesia_ram_tx_count
-              ? formatNumber(node.mnesia_ram_tx_count)
-              : "—"
-          }
-        />
-        <InlineMetric
-          label="Mnesia disk"
-          value={
-            node.mnesia_disk_tx_count
-              ? formatNumber(node.mnesia_disk_tx_count)
-              : "—"
-          }
-        />
-        <InlineMetric
-          label="Msg reads"
-          value={
-            node.msg_store_read_count
-              ? formatNumber(node.msg_store_read_count)
-              : "—"
-          }
-        />
-        <InlineMetric
-          label="Msg writes"
-          value={
-            node.msg_store_write_count
-              ? formatNumber(node.msg_store_write_count)
-              : "—"
-          }
-        />
-        <InlineMetric
-          label="Queue idx R"
-          value={
-            node.queue_index_read_count
-              ? formatNumber(node.queue_index_read_count)
-              : "—"
-          }
-        />
-        <InlineMetric
-          label="Queue idx W"
-          value={
-            node.queue_index_write_count
-              ? formatNumber(node.queue_index_write_count)
-              : "—"
-          }
-        />
-      </div>
-    </div>
+    </TooltipProvider>
   );
 }
 
@@ -591,11 +629,13 @@ function ExpandedRow({
   value,
   mono = false,
   tone,
+  tooltip,
 }: {
   label: string;
   value: string | number;
   mono?: boolean;
   tone?: "success" | "warning" | "destructive";
+  tooltip?: string;
 }) {
   const toneClass =
     tone === "success"
@@ -607,8 +647,22 @@ function ExpandedRow({
           : "text-foreground";
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <dt className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
-        {label}
+      <dt className="text-xs text-muted-foreground whitespace-nowrap shrink-0 flex items-center gap-1">
+        {tooltip ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex items-center gap-1 cursor-help">
+                {label}
+                <HelpCircle className="h-3 w-3 opacity-50" />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs text-xs">
+              {tooltip}
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          label
+        )}
       </dt>
       <dd
         className={`text-xs font-medium text-right ${toneClass} ${mono ? "font-mono tabular-nums" : ""}`}
@@ -678,10 +732,14 @@ function SortHeader({
 /*  Utility functions                                                  */
 /* ------------------------------------------------------------------ */
 
-function getNodeStatus(node: RabbitMQNode) {
+function getNodeStatus(node: RabbitMQNode): {
+  discriminant: "error" | "critical" | "warning" | "draining" | "healthy";
+  color: string;
+  icon: typeof CheckCircle;
+} {
   if (!node.running) {
     return {
-      label: "Error",
+      discriminant: "error",
       color: "bg-destructive/10 text-destructive",
       icon: XCircle,
     };
@@ -691,21 +749,43 @@ function getNodeStatus(node: RabbitMQNode) {
     node.mem_used && node.mem_limit
       ? (node.mem_used / node.mem_limit) * 100
       : 0;
-  const diskUsage =
-    node.disk_free_limit && node.disk_free
-      ? ((node.disk_free_limit - node.disk_free) / node.disk_free_limit) * 100
-      : 0;
 
-  if (memoryUsage > 80 || diskUsage > 80) {
+  const partitions = node.partitions?.length ?? 0;
+
+  if (node.mem_alarm || node.disk_free_alarm || partitions > 0) {
     return {
-      label: "Warning",
+      discriminant: "critical",
+      color: "bg-destructive/10 text-destructive",
+      icon: AlertTriangle,
+    };
+  }
+
+  if (node.being_drained) {
+    return {
+      discriminant: "draining",
+      color: "bg-warning-muted text-warning",
+      icon: AlertTriangle,
+    };
+  }
+
+  if (memoryUsage >= MEMORY_CRITICAL_PCT) {
+    return {
+      discriminant: "critical",
+      color: "bg-destructive/10 text-destructive",
+      icon: AlertTriangle,
+    };
+  }
+
+  if (memoryUsage >= MEMORY_WARN_PCT) {
+    return {
+      discriminant: "warning",
       color: "bg-warning-muted text-warning",
       icon: AlertTriangle,
     };
   }
 
   return {
-    label: "Healthy",
+    discriminant: "healthy",
     color: "bg-success-muted text-success",
     icon: CheckCircle,
   };

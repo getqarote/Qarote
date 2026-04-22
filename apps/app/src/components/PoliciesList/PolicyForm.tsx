@@ -152,10 +152,10 @@ const policyFormSchema = z.object({
       });
       return;
     }
-    if (Object.keys(parsed as object).length === 0) {
+    if (Object.keys(parsed).length === 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Definition must contain at least one key",
+        message: "Policy definition must contain at least one key",
       });
     }
   }),

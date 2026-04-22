@@ -97,5 +97,8 @@
     "code": "404",
     "message": "页面未找到",
     "returnHome": "返回首页"
-  }
+  },
+  "updating": "更新中…",
+  "updatedAgo": "{{seconds}} 秒前更新",
+  "justUpdated": "刚刚更新"
 }
