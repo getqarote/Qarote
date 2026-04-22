@@ -9,6 +9,8 @@
   "noActiveChannels": "无活跃通道",
   "noActiveChannelsDesc": "当前此 RabbitMQ 服务器上没有活跃通道。",
   "nNonRunning": "{{count}} 个未运行",
+  "nNonRunning_one": "{{count}} 个未运行",
+  "nNonRunning_other": "{{count}} 个未运行",
   "filterByState": "点击按此状态筛选",
   "channel": "通道",
   "channels": "个通道",
