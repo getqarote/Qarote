@@ -1,0 +1,35 @@
+name: Sync public CE mirror
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push CE mirror (without ee/)
+        env:
+          PUBLIC_REPO_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+        run: |
+          git config user.email "ci@qarote.io"
+          git config user.name "Qarote CI"
+
+          git clone https://x-access-token:${PUBLIC_REPO_TOKEN}@github.com/getqarote/qarote.git /tmp/public-repo
+
+          rsync -av --delete \
+            --exclude='.git' \
+            --exclude='apps/api/src/ee' \
+            --exclude='node_modules' \
+            --exclude='.env' \
+            --exclude='.env.*' \
+            ./ /tmp/public-repo/
+
+          cd /tmp/public-repo
+          git add -A
+          git diff --staged --quiet && echo "Nothing to sync." || \
+            git commit -m "chore: sync CE mirror $(date +'%Y-%m-%d %H:%M UTC')" && git push
