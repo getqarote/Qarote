@@ -63,3 +63,6 @@ infrastructure/
 # License files
 qarote-license-*.json
 license.json
+
+# Local scripts
+scripts/sync-prod-db.sh
