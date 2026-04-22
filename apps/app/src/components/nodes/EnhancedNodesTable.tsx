@@ -7,20 +7,16 @@ import {
   ArrowUp,
   ArrowUpDown,
   CheckCircle,
-  ChevronDown,
+  HelpCircle,
   Server,
   XCircle,
 } from "lucide-react";
 
 import { RabbitMQNode } from "@/lib/api";
-import {
-  getUsageTone,
-  MEMORY_CRITICAL_PCT,
-  MEMORY_WARN_PCT,
-} from "@/lib/health-tones";
 
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
@@ -38,22 +34,17 @@ import {
 
 import { isRabbitMQAuthError } from "@/types/apiErrors";
 
-type SortField =
-  | "name"
-  | "status"
-  | "memUsed"
-  | "diskFree"
-  | "uptime"
-  | "connections";
+type SortField = "name" | "memUsed" | "diskFree" | "uptime" | "connections";
 type SortDir = "asc" | "desc";
+
+const MEMORY_CRITICAL_PCT = 90;
+const MEMORY_WARN_PCT = 75;
 
 interface EnhancedNodesTableProps {
   serverId: string;
   nodes: RabbitMQNode[];
   isLoading: boolean;
   nodesError?: Error | null;
-  defaultSortByStatus?: boolean;
-  fetchFailed?: boolean;
 }
 
 /**
@@ -67,17 +58,11 @@ export const EnhancedNodesTable = ({
   nodes,
   isLoading,
   nodesError,
-  defaultSortByStatus = false,
-  fetchFailed = false,
 }: EnhancedNodesTableProps) => {
   const { t } = useTranslation("nodes");
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
-  const [sortField, setSortField] = useState<SortField>(
-    defaultSortByStatus ? "status" : "name"
-  );
-  const [sortDir, setSortDir] = useState<SortDir>(
-    defaultSortByStatus ? "asc" : "asc"
-  );
+  const [sortField, setSortField] = useState<SortField>("name");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   const toggleExpanded = (name: string, isOpen: boolean) => {
     setExpandedNodes((prev) => {
@@ -107,8 +92,6 @@ export const EnhancedNodesTable = ({
       switch (sortField) {
         case "name":
           return dir * a.name.localeCompare(b.name);
-        case "status":
-          return dir * (getStatusWeight(a) - getStatusWeight(b));
         case "memUsed":
           return dir * ((a.mem_used || 0) - (b.mem_used || 0));
         case "diskFree":
@@ -144,64 +127,26 @@ export const EnhancedNodesTable = ({
     );
   }
 
-  if (!isLoading && fetchFailed && nodes.length === 0) {
-    return (
-      <div
-        className="border border-border rounded-lg overflow-hidden"
-        role="table"
-        aria-label="Cluster nodes"
-      >
-        <div className="py-12 text-center" role="row">
-          <div role="cell">
-            <AlertTriangle
-              className="h-8 w-8 text-muted-foreground mx-auto mb-3"
-              aria-hidden="true"
-            />
-            <h2 className="text-sm font-medium text-foreground mb-1">
-              {t("fetchFailed")}
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              {t("fetchFailedDesc")}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (nodes.length === 0) {
     return (
-      <div
-        className="border border-border rounded-lg overflow-hidden"
-        role="table"
-        aria-label="Cluster nodes"
-      >
-        <div className="py-12 text-center" role="row">
-          <div role="cell">
-            <Server
-              className="h-10 w-10 text-muted-foreground mx-auto mb-3"
-              aria-hidden="true"
-            />
-            <h2 className="text-sm font-medium text-foreground mb-1">
-              {t("noNodesFound")}
-            </h2>
-          </div>
+      <div className="border border-border rounded-lg overflow-hidden">
+        <div className="py-12 text-center">
+          <Server
+            className="h-10 w-10 text-muted-foreground mx-auto mb-3"
+            aria-hidden="true"
+          />
+          <h2 className="text-sm font-medium text-foreground mb-1">
+            {t("noNodesFound")}
+          </h2>
         </div>
       </div>
     );
   }
 
   return (
-    <div
-      className="border border-border rounded-lg overflow-hidden"
-      role="table"
-      aria-label="Cluster nodes"
-    >
+    <div className="border border-border rounded-lg overflow-hidden">
       {/* Column headers with sort controls */}
-      <div
-        className="flex items-center px-4 py-2 border-b border-border bg-muted/30 text-xs font-medium uppercase tracking-wide text-muted-foreground"
-        role="row"
-      >
+      <div className="flex items-center px-4 py-2 border-b border-border bg-muted/30 text-xs font-medium uppercase tracking-wide text-muted-foreground">
         <SortHeader
           label={t("nodeName")}
           field="name"
@@ -209,17 +154,8 @@ export const EnhancedNodesTable = ({
           currentDir={sortDir}
           onToggle={toggleSort}
           className="flex-1 min-w-0"
-          role="columnheader"
         />
-        <SortHeader
-          label={t("status")}
-          field="status"
-          currentField={sortField}
-          currentDir={sortDir}
-          onToggle={toggleSort}
-          className="w-24 text-right"
-          role="columnheader"
-        />
+        <div className="w-24 text-right">{t("status")}</div>
         <SortHeader
           label={t("memory")}
           field="memUsed"
@@ -227,7 +163,6 @@ export const EnhancedNodesTable = ({
           currentDir={sortDir}
           onToggle={toggleSort}
           className="w-32 text-right"
-          role="columnheader"
         />
         <SortHeader
           label={t("diskFree")}
@@ -236,7 +171,6 @@ export const EnhancedNodesTable = ({
           currentDir={sortDir}
           onToggle={toggleSort}
           className="w-28 text-right"
-          role="columnheader"
         />
         <SortHeader
           label={t("uptime")}
@@ -245,24 +179,21 @@ export const EnhancedNodesTable = ({
           currentDir={sortDir}
           onToggle={toggleSort}
           className="w-24 text-right"
-          role="columnheader"
         />
         <SortHeader
-          label={t("sockets")}
+          label={t("connections")}
           field="connections"
           currentField={sortField}
           currentDir={sortDir}
           onToggle={toggleSort}
           className="w-28 text-right"
-          role="columnheader"
-          tooltip="OS-level sockets per node. Includes AMQP connections and internal system sockets."
         />
         {/* Spacer for expand chevron */}
-        <div className="w-8" role="columnheader" aria-label="Expand" />
+        <div className="w-8" />
       </div>
 
       {/* Rows */}
-      <div className="divide-y divide-border" role="rowgroup">
+      <div className="divide-y divide-border">
         {sorted.map((node) => (
           <NodeRow
             key={node.name}
@@ -289,6 +220,7 @@ function NodeRow({
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t } = useTranslation("nodes");
   const status = getNodeStatus(node);
   const StatusIcon = status.icon;
   const memoryUsage =
@@ -301,9 +233,6 @@ function NodeRow({
       <CollapsibleTrigger asChild>
         <button
           type="button"
-          role="row"
-          aria-expanded={isOpen}
-          aria-label={isOpen ? "Collapse node details" : "Expand node details"}
           className="w-full flex items-center px-4 py-3 hover:bg-accent transition-colors text-left"
         >
           {/* Left: identity */}
@@ -316,11 +245,16 @@ function NodeRow({
             </span>
             <Badge className={status.color}>
               <StatusIcon
-                className={`w-3 h-3 ${status.label !== "Healthy" ? "mr-1" : ""}`}
-                aria-label={status.label === "Healthy" ? "Healthy" : undefined}
-                aria-hidden={status.label !== "Healthy"}
+                className={`w-3 h-3 ${status.discriminant !== "healthy" ? "mr-1" : ""}`}
+                aria-label={
+                  status.discriminant === "healthy"
+                    ? t("status.healthy")
+                    : undefined
+                }
+                aria-hidden={status.discriminant !== "healthy"}
               />
-              {status.label !== "Healthy" && status.label}
+              {status.discriminant !== "healthy" &&
+                t(`status.${status.discriminant}`)}
             </Badge>
           </div>
 
@@ -337,9 +271,9 @@ function NodeRow({
                 <Progress
                   value={memoryUsage}
                   className={`h-1.5 w-16 ml-auto mt-1 ${
-                    memoryUsage >= MEMORY_CRITICAL_PCT
+                    memoryUsage > 80
                       ? "[&>div]:bg-destructive"
-                      : memoryUsage >= MEMORY_WARN_PCT
+                      : memoryUsage > 60
                         ? "[&>div]:bg-warning"
                         : "[&>div]:bg-success"
                   }`}
@@ -387,418 +321,347 @@ function NodeDetailsPanel({
   node: RabbitMQNode;
   memoryUsage: number;
 }) {
+  const { t } = useTranslation("nodes");
   const [showAll, setShowAll] = useState(
-    () => getNodeStatus(node).label !== "Healthy"
+    () => getNodeStatus(node).discriminant !== "healthy"
   );
 
-  const memTone = getUsageTone(memoryUsage, {
-    warn: MEMORY_WARN_PCT,
-    critical: MEMORY_CRITICAL_PCT,
-  });
-
-  const detailsPanelId = `node-details-${node.name.replace(/[^a-z0-9]/gi, "-")}`;
-
-  const hasInternalStore =
-    node.mnesia_ram_tx_count != null ||
-    node.mnesia_disk_tx_count != null ||
-    node.msg_store_read_count != null ||
-    node.msg_store_write_count != null ||
-    node.queue_index_read_count != null ||
-    node.queue_index_write_count != null;
-
   return (
-    <div className="border-t border-border bg-muted/20">
-      {/* Toggle */}
-      <div className="flex justify-end px-5 pt-2">
-        <button
-          type="button"
-          onClick={() => setShowAll((v) => !v)}
-          aria-expanded={showAll}
-          aria-controls={detailsPanelId}
-          aria-label={showAll ? "Show summary" : "Show full details"}
-          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {showAll ? "Summary" : "Full details"}
-          <ChevronDown
-            className={`h-3 w-3 transition-transform duration-150 ${showAll ? "rotate-180" : ""}`}
-            aria-hidden="true"
-          />
-        </button>
-      </div>
+    <TooltipProvider>
+      <div className="border-t border-border bg-muted/20">
+        {/* Summary / Full details toggle */}
+        <div className="flex justify-end px-5 pt-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs h-7"
+            onClick={() => setShowAll((v) => !v)}
+          >
+            {showAll ? t("details.summary") : t("details.fullDetails")}
+          </Button>
+        </div>
 
-      <div id={detailsPanelId}>
-        {!showAll ? (
-          /* ── Triage view: critical signals at a glance ── */
-          <div className="flex flex-wrap items-start gap-x-8 gap-y-3 px-5 py-3">
-            {/* Health flags */}
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2">
-                Health
-              </p>
-              <dl className="space-y-1.5">
-                <ExpandedRow
-                  label="Running"
-                  value={node.running ? "Yes" : "No"}
-                  tone={node.running ? "success" : "destructive"}
-                />
-                {node.being_drained && (
-                  <ExpandedRow
-                    label="Draining"
-                    value="Yes"
-                    tone="warning"
-                    tooltip="This node is being gracefully removed. New connections are redirected to other nodes."
-                  />
-                )}
-                <ExpandedRow
-                  label="Mem alarm"
-                  value={node.mem_alarm ? "Active" : "None"}
-                  tone={node.mem_alarm ? "destructive" : undefined}
-                  tooltip="Memory usage exceeded the watermark. Publisher confirms are blocked until memory drops."
-                />
-                <ExpandedRow
-                  label="Disk alarm"
-                  value={node.disk_free_alarm ? "Active" : "None"}
-                  tone={node.disk_free_alarm ? "destructive" : undefined}
-                  tooltip="Free disk space dropped below the watermark. Publishing is blocked until space is freed."
-                />
-                <ExpandedRow
-                  label="Partitions"
-                  value={node.partitions?.length ?? 0}
-                  mono
-                  tone={
-                    (node.partitions?.length ?? 0) > 0
-                      ? "destructive"
+        {/* Primary metrics band — 5 equal sections */}
+        <div className="grid grid-cols-5 divide-x divide-border">
+          {/* Health */}
+          <div className="px-5 py-4">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+              {t("details.sections.health")}
+            </p>
+            <dl className="space-y-2">
+              <ExpandedRow
+                label={t("details.rows.running")}
+                value={
+                  node.running
+                    ? t("details.values.yes")
+                    : t("details.values.no")
+                }
+                tone={node.running ? "success" : "destructive"}
+              />
+              <ExpandedRow
+                label={t("details.rows.draining")}
+                value={
+                  node.being_drained
+                    ? t("details.values.yes")
+                    : t("details.values.no")
+                }
+                tone={node.being_drained ? "warning" : undefined}
+                tooltip={t("details.tooltips.draining")}
+              />
+              <ExpandedRow
+                label={t("details.rows.memAlarm")}
+                value={
+                  node.mem_alarm
+                    ? t("details.values.active")
+                    : t("details.values.none")
+                }
+                tone={node.mem_alarm ? "destructive" : undefined}
+                tooltip={t("details.tooltips.memAlarm")}
+              />
+              <ExpandedRow
+                label={t("details.rows.diskAlarm")}
+                value={
+                  node.disk_free_alarm
+                    ? t("details.values.active")
+                    : t("details.values.none")
+                }
+                tone={node.disk_free_alarm ? "destructive" : undefined}
+                tooltip={t("details.tooltips.diskAlarm")}
+              />
+              <ExpandedRow
+                label={t("details.rows.partitions")}
+                value={node.partitions?.length ?? 0}
+                mono
+                tone={
+                  (node.partitions?.length ?? 0) > 0 ? "destructive" : undefined
+                }
+                tooltip={t("details.tooltips.partitions")}
+              />
+            </dl>
+          </div>
+
+          {/* Memory */}
+          <div className="px-5 py-4">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+              {t("details.sections.memory")}
+            </p>
+            <dl className="space-y-2">
+              <ExpandedRow
+                label={t("details.rows.used")}
+                value={node.mem_used ? formatBytes(node.mem_used) : "—"}
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.limit")}
+                value={node.mem_limit ? formatBytes(node.mem_limit) : "—"}
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.usage")}
+                value={
+                  node.mem_used && node.mem_limit
+                    ? `${memoryUsage.toFixed(1)}%`
+                    : "—"
+                }
+                mono
+                tone={
+                  memoryUsage > 90
+                    ? "destructive"
+                    : memoryUsage > 75
+                      ? "warning"
                       : undefined
+                }
+              />
+              <ExpandedRow
+                label={t("details.rows.diskFree")}
+                value={node.disk_free ? formatBytes(node.disk_free) : "—"}
+                mono
+              />
+            </dl>
+          </div>
+
+          {/* Disk I/O */}
+          <div className="px-5 py-4">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+              {t("details.sections.diskIO")}
+            </p>
+            <dl className="space-y-2">
+              <ExpandedRow
+                label={t("details.rows.readRate")}
+                value={
+                  node.io_read_count_details?.rate
+                    ? formatRate(node.io_read_count_details.rate)
+                    : "0/s"
+                }
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.writeRate")}
+                value={
+                  node.io_write_count_details?.rate
+                    ? formatRate(node.io_write_count_details.rate)
+                    : "0/s"
+                }
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.avgRead")}
+                value={
+                  node.io_read_avg_time
+                    ? `${node.io_read_avg_time.toFixed(2)}ms`
+                    : "—"
+                }
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.avgWrite")}
+                value={
+                  node.io_write_avg_time
+                    ? `${node.io_write_avg_time.toFixed(2)}ms`
+                    : "—"
+                }
+                mono
+              />
+            </dl>
+          </div>
+
+          {/* Connections */}
+          <div className="px-5 py-4">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+              {t("details.sections.connections")}
+            </p>
+            <dl className="space-y-2">
+              <ExpandedRow
+                label={t("details.rows.sockets")}
+                value={
+                  node.sockets_used !== undefined
+                    ? `${node.sockets_used} / ${node.sockets_total ?? 0}`
+                    : "—"
+                }
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.created")}
+                value={
+                  node.connection_created
+                    ? formatNumber(node.connection_created)
+                    : "—"
+                }
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.closed")}
+                value={
+                  node.connection_closed
+                    ? formatNumber(node.connection_closed)
+                    : "—"
+                }
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.channels")}
+                value={
+                  node.channel_created
+                    ? formatNumber(node.channel_created)
+                    : "—"
+                }
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.netTick")}
+                value={node.net_ticktime ? `${node.net_ticktime}s` : "—"}
+                mono
+                tooltip={t("details.tooltips.netTick")}
+              />
+            </dl>
+          </div>
+
+          {/* System */}
+          <div className="px-5 py-4">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+              {t("details.sections.system")}
+            </p>
+            <dl className="space-y-2">
+              <ExpandedRow
+                label={t("details.rows.type")}
+                value={node.type ?? "—"}
+              />
+              <ExpandedRow
+                label={t("details.rows.processors")}
+                value={node.processors ?? "—"}
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.osPid")}
+                value={node.os_pid ?? "—"}
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.runQueue")}
+                value={node.run_queue !== undefined ? node.run_queue : "—"}
+                mono
+                tooltip={t("details.tooltips.runQueue")}
+              />
+              <ExpandedRow
+                label={t("details.rows.processes")}
+                value={
+                  node.proc_used !== undefined && node.proc_total !== undefined
+                    ? `${node.proc_used} / ${node.proc_total}`
+                    : "—"
+                }
+                mono
+              />
+              <ExpandedRow
+                label={t("details.rows.plugins")}
+                value={node.enabled_plugins?.length ?? 0}
+                mono
+              />
+            </dl>
+          </div>
+        </div>
+
+        {/* Full details section — hidden in summary mode */}
+        {showAll && (
+          <div className="grid grid-cols-5 divide-x divide-border border-t border-border/60">
+            {/* Extended health */}
+            <div className="px-5 py-4">
+              <dl className="space-y-2">
+                <ExpandedRow
+                  label={t("details.rows.draining")}
+                  value={
+                    node.being_drained
+                      ? t("details.values.yes")
+                      : t("details.values.no")
                   }
-                  tooltip="Network partition detected. Nodes cannot communicate — a split-brain condition requiring immediate attention."
+                  tone={node.being_drained ? "warning" : undefined}
                 />
               </dl>
             </div>
 
-            {/* Memory */}
-            {(node.mem_used || node.mem_limit || node.disk_free) && (
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2">
-                  Memory
-                </p>
-                <dl className="space-y-1.5">
-                  {node.mem_used && node.mem_limit && (
-                    <ExpandedRow
-                      label="Usage"
-                      value={`${memoryUsage.toFixed(1)}% · ${formatBytes(node.mem_used)} / ${formatBytes(node.mem_limit)}`}
-                      mono
-                      tone={
-                        memTone === "text-foreground"
-                          ? undefined
-                          : memTone === "text-warning"
-                            ? "warning"
-                            : "destructive"
-                      }
-                    />
-                  )}
-                  {node.disk_free && (
-                    <ExpandedRow
-                      label="Disk free"
-                      value={formatBytes(node.disk_free)}
-                      mono
-                    />
-                  )}
-                </dl>
-              </div>
-            )}
-
-            {/* Connections */}
-            {node.sockets_used !== undefined && (
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2">
-                  Connections
-                </p>
-                <dl className="space-y-1.5">
-                  <ExpandedRow
-                    label="Sockets"
-                    value={`${node.sockets_used} / ${node.sockets_total ?? 0}`}
-                    mono
-                  />
-                  {node.channel_created !== undefined && (
-                    <ExpandedRow
-                      label="Channels"
-                      value={formatNumber(node.channel_created)}
-                      mono
-                    />
-                  )}
-                </dl>
-              </div>
-            )}
+            {/* Extended memory — placeholder columns */}
+            <div className="px-5 py-4" />
+            <div className="px-5 py-4" />
+            <div className="px-5 py-4" />
+            <div className="px-5 py-4" />
           </div>
-        ) : (
-          /* ── Full view: all columns, urgency-ordered ── */
-          <>
-            <div className="grid grid-cols-2 lg:grid-cols-5 divide-x divide-border">
-              {/* Health */}
-              <div className="px-5 py-4">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
-                  Health
-                </p>
-                <dl className="space-y-2">
-                  <ExpandedRow
-                    label="Running"
-                    value={node.running ? "Yes" : "No"}
-                    tone={node.running ? "success" : "destructive"}
-                  />
-                  <ExpandedRow
-                    label="Draining"
-                    value={node.being_drained ? "Yes" : "No"}
-                    tone={node.being_drained ? "warning" : undefined}
-                    tooltip="This node is being gracefully removed. New connections are redirected to other nodes."
-                  />
-                  <ExpandedRow
-                    label="Mem alarm"
-                    value={node.mem_alarm ? "Active" : "None"}
-                    tone={node.mem_alarm ? "destructive" : undefined}
-                    tooltip="Memory usage exceeded the watermark. Publisher confirms are blocked until memory drops."
-                  />
-                  <ExpandedRow
-                    label="Disk alarm"
-                    value={node.disk_free_alarm ? "Active" : "None"}
-                    tone={node.disk_free_alarm ? "destructive" : undefined}
-                    tooltip="Free disk space dropped below the watermark. Publishing is blocked until space is freed."
-                  />
-                  <ExpandedRow
-                    label="Partitions"
-                    value={node.partitions?.length ?? 0}
-                    mono
-                    tone={
-                      (node.partitions?.length ?? 0) > 0
-                        ? "destructive"
-                        : undefined
-                    }
-                    tooltip="Network partition detected. Nodes cannot communicate — a split-brain condition requiring immediate attention."
-                  />
-                </dl>
-              </div>
-
-              {/* Memory */}
-              <div className="px-5 py-4">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
-                  Memory
-                </p>
-                <dl className="space-y-2">
-                  <ExpandedRow
-                    label="Used"
-                    value={node.mem_used ? formatBytes(node.mem_used) : "—"}
-                    mono
-                  />
-                  <ExpandedRow
-                    label="Limit"
-                    value={node.mem_limit ? formatBytes(node.mem_limit) : "—"}
-                    mono
-                  />
-                  <ExpandedRow
-                    label="Usage"
-                    value={
-                      node.mem_used && node.mem_limit
-                        ? `${memoryUsage.toFixed(1)}%`
-                        : "—"
-                    }
-                    mono
-                    tone={
-                      memTone === "text-foreground"
-                        ? undefined
-                        : memTone === "text-warning"
-                          ? "warning"
-                          : "destructive"
-                    }
-                  />
-                  <ExpandedRow
-                    label="Disk free"
-                    value={node.disk_free ? formatBytes(node.disk_free) : "—"}
-                    mono
-                  />
-                </dl>
-              </div>
-
-              {/* Connections */}
-              <div className="px-5 py-4">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
-                  Connections
-                </p>
-                <dl className="space-y-2">
-                  <ExpandedRow
-                    label="Sockets"
-                    value={
-                      node.sockets_used !== undefined
-                        ? `${node.sockets_used} / ${node.sockets_total ?? 0}`
-                        : "—"
-                    }
-                    mono
-                  />
-                  <ExpandedRow
-                    label="Created"
-                    value={
-                      node.connection_created
-                        ? formatNumber(node.connection_created)
-                        : "—"
-                    }
-                    mono
-                  />
-                  <ExpandedRow
-                    label="Closed"
-                    value={
-                      node.connection_closed
-                        ? formatNumber(node.connection_closed)
-                        : "—"
-                    }
-                    mono
-                  />
-                  <ExpandedRow
-                    label="Channels"
-                    value={
-                      node.channel_created
-                        ? formatNumber(node.channel_created)
-                        : "—"
-                    }
-                    mono
-                  />
-                  <ExpandedRow
-                    label="Net tick"
-                    value={node.net_ticktime ? `${node.net_ticktime}s` : "—"}
-                    mono
-                    tooltip="Erlang heartbeat interval. If a node misses 4 consecutive ticks, it is considered unreachable."
-                  />
-                </dl>
-              </div>
-
-              {/* Disk I/O */}
-              <div className="px-5 py-4">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
-                  Disk I/O
-                </p>
-                <dl className="space-y-2">
-                  <ExpandedRow
-                    label="Read rate"
-                    value={
-                      node.io_read_count_details?.rate
-                        ? formatRate(node.io_read_count_details.rate)
-                        : "0/s"
-                    }
-                    mono
-                  />
-                  <ExpandedRow
-                    label="Write rate"
-                    value={
-                      node.io_write_count_details?.rate
-                        ? formatRate(node.io_write_count_details.rate)
-                        : "0/s"
-                    }
-                    mono
-                  />
-                  <ExpandedRow
-                    label="Avg read"
-                    value={
-                      node.io_read_avg_time
-                        ? `${node.io_read_avg_time.toFixed(2)}ms`
-                        : "—"
-                    }
-                    mono
-                  />
-                  <ExpandedRow
-                    label="Avg write"
-                    value={
-                      node.io_write_avg_time
-                        ? `${node.io_write_avg_time.toFixed(2)}ms`
-                        : "—"
-                    }
-                    mono
-                  />
-                </dl>
-              </div>
-
-              {/* System */}
-              <div className="px-5 py-4">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
-                  System
-                </p>
-                <dl className="space-y-2">
-                  <ExpandedRow label="Type" value={node.type ?? "—"} />
-                  <ExpandedRow
-                    label="Processors"
-                    value={node.processors ?? "—"}
-                    mono
-                  />
-                  <ExpandedRow label="OS PID" value={node.os_pid ?? "—"} mono />
-                  <ExpandedRow
-                    label="Run queue"
-                    value={node.run_queue !== undefined ? node.run_queue : "—"}
-                    mono
-                    tooltip="Erlang processes waiting to be scheduled. Values above 1 indicate CPU contention."
-                  />
-                  <ExpandedRow
-                    label="Processes"
-                    value={
-                      node.proc_used !== undefined &&
-                      node.proc_total !== undefined
-                        ? `${node.proc_used} / ${node.proc_total}`
-                        : "—"
-                    }
-                    mono
-                  />
-                  <ExpandedRow
-                    label="Plugins"
-                    value={node.enabled_plugins?.length ?? 0}
-                    mono
-                  />
-                </dl>
-              </div>
-            </div>
-
-            {/* Internal store — only rendered when data is present */}
-            {hasInternalStore && (
-              <div className="px-5 py-3 border-t border-border/60 flex flex-wrap gap-x-6 gap-y-1.5">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest w-full mb-0.5">
-                  Internal store
-                </p>
-                {node.mnesia_ram_tx_count != null && (
-                  <InlineMetric
-                    label="Mnesia RAM"
-                    value={formatNumber(node.mnesia_ram_tx_count)}
-                  />
-                )}
-                {node.mnesia_disk_tx_count != null && (
-                  <InlineMetric
-                    label="Mnesia disk"
-                    value={formatNumber(node.mnesia_disk_tx_count)}
-                  />
-                )}
-                {node.msg_store_read_count != null && (
-                  <InlineMetric
-                    label="Msg reads"
-                    value={formatNumber(node.msg_store_read_count)}
-                  />
-                )}
-                {node.msg_store_write_count != null && (
-                  <InlineMetric
-                    label="Msg writes"
-                    value={formatNumber(node.msg_store_write_count)}
-                  />
-                )}
-                {node.queue_index_read_count != null && (
-                  <InlineMetric
-                    label="Queue idx R"
-                    value={formatNumber(node.queue_index_read_count)}
-                  />
-                )}
-                {node.queue_index_write_count != null && (
-                  <InlineMetric
-                    label="Queue idx W"
-                    value={formatNumber(node.queue_index_write_count)}
-                  />
-                )}
-              </div>
-            )}
-          </>
         )}
+
+        {/* Internal store — secondary diagnostic strip */}
+        <div className="px-5 py-3 border-t border-border/60 flex flex-wrap gap-x-6 gap-y-1.5">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest w-full mb-0.5">
+            {t("details.sections.internalStore")}
+          </p>
+          <InlineMetric
+            label={t("details.inlineMetrics.mnesiaRam")}
+            value={
+              node.mnesia_ram_tx_count
+                ? formatNumber(node.mnesia_ram_tx_count)
+                : "—"
+            }
+          />
+          <InlineMetric
+            label={t("details.inlineMetrics.mnesiaDisk")}
+            value={
+              node.mnesia_disk_tx_count
+                ? formatNumber(node.mnesia_disk_tx_count)
+                : "—"
+            }
+          />
+          <InlineMetric
+            label={t("details.inlineMetrics.msgReads")}
+            value={
+              node.msg_store_read_count
+                ? formatNumber(node.msg_store_read_count)
+                : "—"
+            }
+          />
+          <InlineMetric
+            label={t("details.inlineMetrics.msgWrites")}
+            value={
+              node.msg_store_write_count
+                ? formatNumber(node.msg_store_write_count)
+                : "—"
+            }
+          />
+          <InlineMetric
+            label={t("details.inlineMetrics.queueIdxR")}
+            value={
+              node.queue_index_read_count
+                ? formatNumber(node.queue_index_read_count)
+                : "—"
+            }
+          />
+          <InlineMetric
+            label={t("details.inlineMetrics.queueIdxW")}
+            value={
+              node.queue_index_write_count
+                ? formatNumber(node.queue_index_write_count)
+                : "—"
+            }
+          />
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 }
 
@@ -829,20 +692,19 @@ function ExpandedRow({
           : "text-foreground";
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <dt className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
+      <dt className="text-xs text-muted-foreground whitespace-nowrap shrink-0 flex items-center gap-1">
         {tooltip ? (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="cursor-help underline decoration-dotted decoration-muted-foreground/50 underline-offset-2">
-                  {label}
-                </span>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-60" collisionPadding={8}>
-                <p>{tooltip}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex items-center gap-1 cursor-help">
+                {label}
+                <HelpCircle className="h-3 w-3 opacity-50" />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs text-xs">
+              {tooltip}
+            </TooltipContent>
+          </Tooltip>
         ) : (
           label
         )}
@@ -866,7 +728,7 @@ function InlineMetric({
   return (
     <div className="flex items-baseline gap-1.5">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-xs font-mono tabular-nums text-muted-foreground">
+      <span className="text-xs font-mono tabular-nums text-muted-foreground/80">
         {value}
       </span>
     </div>
@@ -880,8 +742,6 @@ function SortHeader({
   currentDir,
   onToggle,
   className = "",
-  role,
-  tooltip,
 }: {
   label: string;
   field: SortField;
@@ -889,21 +749,11 @@ function SortHeader({
   currentDir: SortDir;
   onToggle: (field: SortField) => void;
   className?: string;
-  role?: string;
-  tooltip?: string;
 }) {
   const isActive = currentField === field;
-  const ariaSort: React.AriaAttributes["aria-sort"] = isActive
-    ? currentDir === "asc"
-      ? "ascending"
-      : "descending"
-    : "none";
   return (
     <button
       type="button"
-      role={role}
-      aria-sort={ariaSort}
-      title={tooltip}
       onClick={() => onToggle(field)}
       className={`inline-flex items-center gap-1 hover:text-foreground transition-colors ${
         isActive ? "text-foreground" : ""
@@ -917,7 +767,7 @@ function SortHeader({
           <ArrowDown className="h-3 w-3" />
         )
       ) : (
-        <ArrowUpDown className="h-3 w-3 opacity-60" />
+        <ArrowUpDown className="h-3 w-3 opacity-40" />
       )}
     </button>
   );
@@ -927,50 +777,16 @@ function SortHeader({
 /*  Utility functions                                                  */
 /* ------------------------------------------------------------------ */
 
-function getStatusWeight(node: RabbitMQNode): number {
-  if (!node.running) return 0;
-  if (
-    node.mem_alarm ||
-    node.disk_free_alarm ||
-    (node.partitions?.length ?? 0) > 0
-  )
-    return 1;
-  if (node.being_drained) return 2;
-  const mem =
-    node.mem_used && node.mem_limit
-      ? (node.mem_used / node.mem_limit) * 100
-      : 0;
-  if (mem >= MEMORY_CRITICAL_PCT) return 1;
-  if (mem >= MEMORY_WARN_PCT) return 2;
-  return 3; // healthy
-}
-
-function getNodeStatus(node: RabbitMQNode) {
+function getNodeStatus(node: RabbitMQNode): {
+  discriminant: "error" | "critical" | "warning" | "draining" | "healthy";
+  color: string;
+  icon: typeof CheckCircle;
+} {
   if (!node.running) {
     return {
-      label: "Error",
+      discriminant: "error",
       color: "bg-destructive/10 text-destructive",
       icon: XCircle,
-    };
-  }
-
-  if (
-    node.mem_alarm ||
-    node.disk_free_alarm ||
-    (node.partitions?.length ?? 0) > 0
-  ) {
-    return {
-      label: "Critical",
-      color: "bg-destructive/10 text-destructive",
-      icon: XCircle,
-    };
-  }
-
-  if (node.being_drained) {
-    return {
-      label: "Draining",
-      color: "bg-warning-muted text-warning",
-      icon: AlertTriangle,
     };
   }
 
@@ -979,24 +795,42 @@ function getNodeStatus(node: RabbitMQNode) {
       ? (node.mem_used / node.mem_limit) * 100
       : 0;
 
+  const partitions = node.partitions?.length ?? 0;
+
+  if (node.mem_alarm || node.disk_free_alarm || partitions > 0) {
+    return {
+      discriminant: "critical",
+      color: "bg-destructive/10 text-destructive",
+      icon: AlertTriangle,
+    };
+  }
+
+  if (node.being_drained) {
+    return {
+      discriminant: "draining",
+      color: "bg-warning-muted text-warning",
+      icon: AlertTriangle,
+    };
+  }
+
   if (memoryUsage >= MEMORY_CRITICAL_PCT) {
     return {
-      label: "Critical",
+      discriminant: "critical",
       color: "bg-destructive/10 text-destructive",
-      icon: XCircle,
+      icon: AlertTriangle,
     };
   }
 
   if (memoryUsage >= MEMORY_WARN_PCT) {
     return {
-      label: "Warning",
+      discriminant: "warning",
       color: "bg-warning-muted text-warning",
       icon: AlertTriangle,
     };
   }
 
   return {
-    label: "Healthy",
+    discriminant: "healthy",
     color: "bg-success-muted text-success",
     icon: CheckCircle,
   };

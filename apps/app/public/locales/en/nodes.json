@@ -10,11 +10,7 @@
   "diskFree": "Disk Free",
   "uptime": "Uptime",
   "connections": "Connections",
-  "sockets": "Sockets",
-  "socketsTooltip": "OS-level socket count. Includes AMQP connections and internal RabbitMQ sockets.",
   "noNodesFound": "No nodes found",
-  "fetchFailed": "Could not load node data",
-  "fetchFailedDesc": "Check your server connection and try refreshing the page.",
   "permissionErrorTitle": "Node Information Unavailable",
   "clusterName": "Cluster name",
   "editClusterName": "Edit cluster name",
@@ -31,18 +27,84 @@
     "declared": "Declared",
     "deleted": "Deleted"
   },
-  "ports": {
-    "listeningPorts": "Listening ports",
-    "webContexts": "Web contexts",
-    "webContextsSubtitle": "HTTP endpoints registered with the RabbitMQ management plugin",
+  "portsAndContexts": {
+    "listeners": "Listeners",
+    "contexts": "Contexts",
+    "node": "Node",
     "protocol": "Protocol",
-    "boundTo": "Bound to",
+    "ipAddress": "IP address",
     "port": "Port",
-    "context": "Context",
-    "ssl": "SSL",
+    "description": "Description",
     "path": "Path",
-    "show": "Show listening ports & contexts",
-    "hide": "Hide listening ports & contexts",
-    "fetchFailed": "Listening ports and contexts could not be loaded."
+    "ssl": "SSL",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "status": {
+    "healthy": "Healthy",
+    "error": "Error",
+    "critical": "Critical",
+    "warning": "Warning",
+    "draining": "Draining"
+  },
+  "details": {
+    "summary": "Summary",
+    "fullDetails": "Full details",
+    "sections": {
+      "health": "Health",
+      "memory": "Memory",
+      "connections": "Connections",
+      "diskIO": "Disk I/O",
+      "system": "System",
+      "internalStore": "Internal store"
+    },
+    "rows": {
+      "running": "Running",
+      "draining": "Draining",
+      "memAlarm": "Mem alarm",
+      "diskAlarm": "Disk alarm",
+      "partitions": "Partitions",
+      "usage": "Usage",
+      "diskFree": "Disk free",
+      "used": "Used",
+      "limit": "Limit",
+      "sockets": "Sockets",
+      "created": "Created",
+      "closed": "Closed",
+      "channels": "Channels",
+      "netTick": "Net tick",
+      "readRate": "Read rate",
+      "writeRate": "Write rate",
+      "avgRead": "Avg read",
+      "avgWrite": "Avg write",
+      "type": "Type",
+      "processors": "Processors",
+      "osPid": "OS PID",
+      "runQueue": "Run queue",
+      "processes": "Processes",
+      "plugins": "Plugins"
+    },
+    "values": {
+      "yes": "Yes",
+      "no": "No",
+      "active": "Active",
+      "none": "None"
+    },
+    "tooltips": {
+      "draining": "This node is being gracefully removed. New connections are redirected to other nodes.",
+      "memAlarm": "Memory usage exceeded the watermark. Publisher confirms are blocked until memory drops.",
+      "diskAlarm": "Free disk space dropped below the watermark. Publishing is blocked until space is freed.",
+      "partitions": "Network partition detected. Nodes cannot communicate — a split-brain condition requiring immediate attention.",
+      "netTick": "Erlang heartbeat interval. If a node misses 4 consecutive ticks, it is considered unreachable.",
+      "runQueue": "Erlang processes waiting to be scheduled. Values above 1 indicate CPU contention."
+    },
+    "inlineMetrics": {
+      "mnesiaRam": "Mnesia RAM",
+      "mnesiaDisk": "Mnesia disk",
+      "msgReads": "Msg reads",
+      "msgWrites": "Msg writes",
+      "queueIdxR": "Queue idx R",
+      "queueIdxW": "Queue idx W"
+    }
   }
 }

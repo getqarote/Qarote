@@ -27,14 +27,84 @@
     "declared": "Declaradas",
     "deleted": "Eliminadas"
   },
-  "ports": {
-    "listeningPorts": "Puertos de escucha",
-    "webContexts": "Contextos web",
+  "portsAndContexts": {
+    "listeners": "Oyentes",
+    "contexts": "Contextos",
+    "node": "Nodo",
     "protocol": "Protocolo",
-    "boundTo": "Enlazado a",
+    "ipAddress": "Dirección IP",
     "port": "Puerto",
-    "context": "Contexto",
+    "description": "Descripción",
+    "path": "Ruta",
     "ssl": "SSL",
-    "path": "Ruta"
+    "yes": "Sí",
+    "no": "No"
+  },
+  "status": {
+    "healthy": "En buen estado",
+    "error": "Error",
+    "critical": "Crítico",
+    "warning": "Advertencia",
+    "draining": "Vaciando"
+  },
+  "details": {
+    "summary": "Resumen",
+    "fullDetails": "Detalles completos",
+    "sections": {
+      "health": "Salud",
+      "memory": "Memoria",
+      "connections": "Conexiones",
+      "diskIO": "E/S de disco",
+      "system": "Sistema",
+      "internalStore": "Almacén interno"
+    },
+    "rows": {
+      "running": "En ejecución",
+      "draining": "Vaciando",
+      "memAlarm": "Alarma de memoria",
+      "diskAlarm": "Alarma de disco",
+      "partitions": "Particiones",
+      "usage": "Uso",
+      "diskFree": "Disco libre",
+      "used": "Usado",
+      "limit": "Límite",
+      "sockets": "Sockets",
+      "created": "Creadas",
+      "closed": "Cerradas",
+      "channels": "Canales",
+      "netTick": "Net tick",
+      "readRate": "Tasa de lectura",
+      "writeRate": "Tasa de escritura",
+      "avgRead": "Lect. media",
+      "avgWrite": "Escrit. media",
+      "type": "Tipo",
+      "processors": "Procesadores",
+      "osPid": "PID del SO",
+      "runQueue": "Cola de ejecución",
+      "processes": "Procesos",
+      "plugins": "Plugins"
+    },
+    "values": {
+      "yes": "Sí",
+      "no": "No",
+      "active": "Activa",
+      "none": "Ninguna"
+    },
+    "tooltips": {
+      "draining": "Este nodo está siendo eliminado de forma gradual. Las nuevas conexiones se redirigen a otros nodos.",
+      "memAlarm": "El uso de memoria superó el umbral. Las confirmaciones de publicación están bloqueadas hasta que baje la memoria.",
+      "diskAlarm": "El espacio en disco libre cayó por debajo del umbral. La publicación está bloqueada hasta liberar espacio.",
+      "partitions": "Partición de red detectada. Los nodos no pueden comunicarse — condición de cerebro dividido que requiere atención inmediata.",
+      "netTick": "Intervalo de latido de Erlang. Si un nodo pierde 4 ticks consecutivos, se considera inalcanzable.",
+      "runQueue": "Procesos de Erlang esperando ser programados. Valores superiores a 1 indican contención de CPU."
+    },
+    "inlineMetrics": {
+      "mnesiaRam": "RAM de Mnesia",
+      "mnesiaDisk": "Disco de Mnesia",
+      "msgReads": "Lecturas de msj",
+      "msgWrites": "Escrituras de msj",
+      "queueIdxR": "Índice cola L",
+      "queueIdxW": "Índice cola E"
+    }
   }
 }

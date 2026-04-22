@@ -1,8 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-import { Shield, ShieldOff } from "lucide-react";
-
-import { Skeleton } from "@/components/ui/skeleton";
+import { RabbitMQNode } from "@/lib/api";
 
 interface Listener {
   node: string;
@@ -15,202 +13,166 @@ interface Context {
   node: string;
   description: string;
   path: string;
-  ip?: string;
-  port: string;
-  protocol?: string;
-  ssl_opts: unknown[];
+  port: number;
+  ssl: boolean;
 }
 
 interface PortsAndContextsProps {
-  listeners: Listener[];
-  contexts: Context[];
-  isLoading: boolean;
-  fetchFailed?: boolean;
+  nodes: RabbitMQNode[];
 }
 
-export const PortsAndContexts = ({
-  listeners,
-  contexts,
-  isLoading,
-  fetchFailed = false,
-}: PortsAndContextsProps) => {
+export function PortsAndContexts({ nodes }: PortsAndContextsProps) {
   const { t } = useTranslation("nodes");
 
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <div className="border border-border rounded-lg overflow-hidden">
-          <div className="px-4 py-2 border-b border-border bg-muted/30">
-            <Skeleton className="h-3 w-48" />
-          </div>
-          <div className="divide-y divide-border">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="flex items-center px-4 py-2.5 gap-8">
-                <Skeleton className="h-3 w-20" />
-                <Skeleton className="h-3 w-24" />
-                <Skeleton className="h-3 w-10" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const listeners: Listener[] = nodes.flatMap(
+    (node) => (node.listeners as Listener[] | undefined) ?? []
+  );
 
-  if (!isLoading && fetchFailed) {
-    return (
-      <p className="text-xs text-muted-foreground italic">
-        {t("ports.fetchFailed")}
-      </p>
-    );
-  }
+  const contexts: Context[] = nodes.flatMap(
+    (node) => (node.contexts as Context[] | undefined) ?? []
+  );
 
-  if (listeners.length === 0 && contexts.length === 0) {
-    return null;
-  }
+  if (listeners.length === 0 && contexts.length === 0) return null;
 
   return (
     <div className="space-y-4">
+      {/* Listeners table */}
       {listeners.length > 0 && (
-        <div
-          className="border border-border rounded-lg overflow-hidden"
-          role="table"
-          aria-label={t("ports.listeningPorts")}
-        >
-          {/* Section header — presentational */}
-          <div className="flex items-center px-4 py-2 border-b border-border bg-muted/30 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            <span className="flex-1">{t("ports.listeningPorts")}</span>
-          </div>
-          {/* Column label row */}
-          <div role="rowgroup">
+        <div>
+          <h3 className="text-sm font-medium text-foreground mb-2">
+            {t("portsAndContexts.listeners")}
+          </h3>
+          <div className="overflow-x-auto">
             <div
-              className="flex items-center px-4 py-1.5 border-b border-border/60 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70"
-              role="row"
+              className="border border-border rounded-lg overflow-hidden"
+              role="table"
+              aria-label={t("portsAndContexts.listeners")}
             >
-              <span className="flex-1" role="columnheader">
-                {t("ports.protocol")}
-              </span>
-              <span className="w-40" role="columnheader">
-                {t("ports.boundTo")}
-              </span>
-              <span className="w-20 text-right" role="columnheader">
-                {t("ports.port")}
-              </span>
-            </div>
-          </div>
-          <div className="divide-y divide-border" role="rowgroup">
-            {listeners.map((listener) => (
+              {/* Header */}
               <div
-                key={`${listener.node}-${listener.protocol}-${listener.port}`}
-                className="flex items-center px-4 py-2.5 text-sm hover:bg-muted/20 transition-colors"
+                className="flex items-center px-4 py-2 border-b border-border bg-muted/30 text-xs font-medium uppercase tracking-wide text-muted-foreground"
                 role="row"
               >
-                <span className="flex-1 font-mono text-xs" role="cell">
-                  {listener.protocol}
+                <span className="flex-1" role="columnheader">
+                  {t("portsAndContexts.node")}
                 </span>
-                <span
-                  className="w-40 font-mono text-xs text-muted-foreground"
-                  role="cell"
-                >
-                  {listener.ip_address}
+                <span className="w-32" role="columnheader">
+                  {t("portsAndContexts.protocol")}
                 </span>
-                <span
-                  className="w-20 text-right font-mono tabular-nums text-xs"
-                  role="cell"
-                >
-                  {listener.port}
+                <span className="w-36" role="columnheader">
+                  {t("portsAndContexts.ipAddress")}
+                </span>
+                <span className="w-20 text-right" role="columnheader">
+                  {t("portsAndContexts.port")}
                 </span>
               </div>
-            ))}
+
+              {/* Rows */}
+              <div className="divide-y divide-border" role="rowgroup">
+                {listeners.map((listener) => (
+                  <div
+                    key={`${listener.node}-${listener.protocol}-${listener.port}-${listener.ip_address}`}
+                    className="flex items-center px-4 py-2.5 text-sm"
+                    role="row"
+                  >
+                    <span
+                      className="flex-1 font-mono text-xs truncate"
+                      role="cell"
+                    >
+                      {listener.node}
+                    </span>
+                    <span className="w-32 text-xs" role="cell">
+                      {listener.protocol}
+                    </span>
+                    <span className="w-36 font-mono text-xs" role="cell">
+                      {listener.ip_address}
+                    </span>
+                    <span
+                      className="w-20 text-right font-mono tabular-nums text-xs"
+                      role="cell"
+                    >
+                      {listener.port}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       )}
 
+      {/* Contexts table */}
       {contexts.length > 0 && (
-        <div
-          className="border border-border rounded-lg overflow-hidden"
-          role="table"
-          aria-label={t("ports.webContexts")}
-        >
-          {/* Section header — presentational, includes subtitle */}
-          <div className="flex items-center px-4 py-2 border-b border-border bg-muted/30">
-            <div className="flex-1">
-              <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                {t("ports.webContexts")}
-              </div>
-              <div className="text-[11px] text-muted-foreground/70 mt-0.5 normal-case tracking-normal font-normal">
-                {t("ports.webContextsSubtitle")}
-              </div>
-            </div>
-          </div>
-          {/* Column label row */}
-          <div role="rowgroup">
+        <div>
+          <h3 className="text-sm font-medium text-foreground mb-2">
+            {t("portsAndContexts.contexts")}
+          </h3>
+          <div className="overflow-x-auto">
             <div
-              className="flex items-center px-4 py-1.5 border-b border-border/60 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70"
-              role="row"
+              className="border border-border rounded-lg overflow-hidden"
+              role="table"
+              aria-label={t("portsAndContexts.contexts")}
             >
-              <span className="flex-1" role="columnheader">
-                {t("ports.context")}
-              </span>
-              <span className="w-40" role="columnheader">
-                {t("ports.boundTo")}
-              </span>
-              <span className="w-16 text-right" role="columnheader">
-                {t("ports.port")}
-              </span>
-              <span className="w-12 text-center" role="columnheader">
-                {t("ports.ssl")}
-              </span>
-              <span className="w-32 text-right" role="columnheader">
-                {t("ports.path")}
-              </span>
+              {/* Header */}
+              <div
+                className="flex items-center px-4 py-2 border-b border-border bg-muted/30 text-xs font-medium uppercase tracking-wide text-muted-foreground"
+                role="row"
+              >
+                <span className="flex-1" role="columnheader">
+                  {t("portsAndContexts.node")}
+                </span>
+                <span className="flex-1" role="columnheader">
+                  {t("portsAndContexts.description")}
+                </span>
+                <span className="w-32" role="columnheader">
+                  {t("portsAndContexts.path")}
+                </span>
+                <span className="w-20 text-right" role="columnheader">
+                  {t("portsAndContexts.port")}
+                </span>
+                <span className="w-16 text-center" role="columnheader">
+                  {t("portsAndContexts.ssl")}
+                </span>
+              </div>
+
+              {/* Rows */}
+              <div className="divide-y divide-border" role="rowgroup">
+                {contexts.map((ctx, idx) => (
+                  <div
+                    key={`${ctx.node}-${ctx.path}-${ctx.port}-${idx}`}
+                    className="flex items-center px-4 py-2.5 text-sm"
+                    role="row"
+                  >
+                    <span
+                      className="flex-1 font-mono text-xs truncate"
+                      role="cell"
+                    >
+                      {ctx.node}
+                    </span>
+                    <span className="flex-1 text-xs truncate" role="cell">
+                      {ctx.description}
+                    </span>
+                    <span className="w-32 font-mono text-xs" role="cell">
+                      {ctx.path}
+                    </span>
+                    <span
+                      className="w-20 text-right font-mono tabular-nums text-xs"
+                      role="cell"
+                    >
+                      {ctx.port}
+                    </span>
+                    <span className="w-16 text-center text-xs" role="cell">
+                      {ctx.ssl
+                        ? t("portsAndContexts.yes")
+                        : t("portsAndContexts.no")}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="divide-y divide-border" role="rowgroup">
-            {contexts.map((ctx) => {
-              const isSsl =
-                ctx.protocol === "https" ||
-                (Array.isArray(ctx.ssl_opts) && ctx.ssl_opts.length > 0);
-              return (
-                <div
-                  key={`${ctx.node}-${ctx.port}-${ctx.path}`}
-                  className="flex items-center px-4 py-2.5 text-sm hover:bg-muted/20 transition-colors"
-                  role="row"
-                >
-                  <span className="flex-1 text-xs" role="cell">
-                    {ctx.description}
-                  </span>
-                  <span
-                    className="w-40 font-mono text-xs text-muted-foreground"
-                    role="cell"
-                  >
-                    {ctx.ip ?? "0.0.0.0"}
-                  </span>
-                  <span
-                    className="w-16 text-right font-mono tabular-nums text-xs"
-                    role="cell"
-                  >
-                    {ctx.port}
-                  </span>
-                  <span className="w-12 flex justify-center" role="cell">
-                    {isSsl ? (
-                      <Shield className="h-3.5 w-3.5 text-success" />
-                    ) : (
-                      <ShieldOff className="h-3.5 w-3.5 text-muted-foreground/40" />
-                    )}
-                  </span>
-                  <span
-                    className="w-32 text-right font-mono text-xs text-muted-foreground"
-                    role="cell"
-                  >
-                    {ctx.path}
-                  </span>
-                </div>
-              );
-            })}
           </div>
         </div>
       )}
     </div>
   );
-};
+}

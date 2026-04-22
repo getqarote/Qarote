@@ -27,14 +27,84 @@
     "declared": "Déclarées",
     "deleted": "Supprimées"
   },
-  "ports": {
-    "listeningPorts": "Ports d'écoute",
-    "webContexts": "Contextes web",
+  "portsAndContexts": {
+    "listeners": "Écouteurs",
+    "contexts": "Contextes",
+    "node": "Nœud",
     "protocol": "Protocole",
-    "boundTo": "Lié à",
+    "ipAddress": "Adresse IP",
     "port": "Port",
-    "context": "Contexte",
+    "description": "Description",
+    "path": "Chemin",
     "ssl": "SSL",
-    "path": "Chemin"
+    "yes": "Oui",
+    "no": "Non"
+  },
+  "status": {
+    "healthy": "En bonne santé",
+    "error": "Erreur",
+    "critical": "Critique",
+    "warning": "Avertissement",
+    "draining": "Vidange"
+  },
+  "details": {
+    "summary": "Résumé",
+    "fullDetails": "Détails complets",
+    "sections": {
+      "health": "Santé",
+      "memory": "Mémoire",
+      "connections": "Connexions",
+      "diskIO": "E/S disque",
+      "system": "Système",
+      "internalStore": "Stockage interne"
+    },
+    "rows": {
+      "running": "En cours",
+      "draining": "Vidange",
+      "memAlarm": "Alarme mémoire",
+      "diskAlarm": "Alarme disque",
+      "partitions": "Partitions",
+      "usage": "Utilisation",
+      "diskFree": "Disque libre",
+      "used": "Utilisé",
+      "limit": "Limite",
+      "sockets": "Sockets",
+      "created": "Créées",
+      "closed": "Fermées",
+      "channels": "Canaux",
+      "netTick": "Net tick",
+      "readRate": "Débit lecture",
+      "writeRate": "Débit écriture",
+      "avgRead": "Moy. lecture",
+      "avgWrite": "Moy. écriture",
+      "type": "Type",
+      "processors": "Processeurs",
+      "osPid": "PID OS",
+      "runQueue": "File d'exécution",
+      "processes": "Processus",
+      "plugins": "Plugins"
+    },
+    "values": {
+      "yes": "Oui",
+      "no": "Non",
+      "active": "Active",
+      "none": "Aucune"
+    },
+    "tooltips": {
+      "draining": "Ce nœud est en cours de suppression progressive. Les nouvelles connexions sont redirigées vers d'autres nœuds.",
+      "memAlarm": "L'utilisation de la mémoire a dépassé le seuil. Les confirmations de publication sont bloquées jusqu'à la baisse de la mémoire.",
+      "diskAlarm": "L'espace disque libre est tombé sous le seuil. La publication est bloquée jusqu'à libération d'espace.",
+      "partitions": "Partition réseau détectée. Les nœuds ne peuvent pas communiquer — condition split-brain nécessitant une attention immédiate.",
+      "netTick": "Intervalle de battement Erlang. Si un nœud manque 4 ticks consécutifs, il est considéré comme injoignable.",
+      "runQueue": "Processus Erlang en attente de planification. Des valeurs supérieures à 1 indiquent une contention CPU."
+    },
+    "inlineMetrics": {
+      "mnesiaRam": "RAM Mnesia",
+      "mnesiaDisk": "Disque Mnesia",
+      "msgReads": "Lectures msg",
+      "msgWrites": "Écritures msg",
+      "queueIdxR": "Index file L",
+      "queueIdxW": "Index file E"
+    }
   }
 }
