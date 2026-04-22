@@ -4,6 +4,15 @@ on:
   push:
     branches: [main]
 
+# Serialize runs on the same ref so a slow job can't clobber a newer commit.
+concurrency:
+  group: sync-public-mirror-${{ github.ref }}
+  cancel-in-progress: true
+
+# This job only reads the source repo; push goes via PUBLIC_REPO_TOKEN.
+permissions:
+  contents: read
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -11,23 +20,40 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
+
+      - name: Checkout public mirror
+        uses: actions/checkout@v4
+        with:
+          repository: getqarote/qarote
+          token: ${{ secrets.PUBLIC_REPO_TOKEN }}
+          path: /tmp/public-repo
+          fetch-depth: 0
 
       - name: Push CE mirror (without ee/)
-        env:
-          PUBLIC_REPO_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
         run: |
-          git config user.email "ci@qarote.io"
-          git config user.name "Qarote CI"
+          git config --global user.email "ci@qarote.io"
+          git config --global user.name "Qarote CI"
 
-          git clone https://x-access-token:${PUBLIC_REPO_TOKEN}@github.com/getqarote/qarote.git /tmp/public-repo
+          # Explicitly remove the EE directory from the mirror so --exclude
+          # on the source side cannot silently retain stale EE content that
+          # was accidentally pushed there in a previous run.
+          rm -rf /tmp/public-repo/apps/api/src/ee
 
           rsync -av --delete \
             --exclude='.git' \
             --exclude='apps/api/src/ee' \
             --exclude='node_modules' \
             --exclude='.env' \
-            --exclude='.env.*' \
+            --exclude='.env.local' \
+            --exclude='.env.*.local' \
             ./ /tmp/public-repo/
+
+          # Fail the job if EE content somehow ended up in the mirror.
+          if [ -d /tmp/public-repo/apps/api/src/ee ]; then
+            echo "ERROR: apps/api/src/ee exists in the public mirror — aborting." >&2
+            exit 1
+          fi
 
           cd /tmp/public-repo
           git add -A
