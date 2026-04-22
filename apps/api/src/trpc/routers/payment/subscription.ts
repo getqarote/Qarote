@@ -167,7 +167,7 @@ export const subscriptionRouter = router({
           billingInterval: interval,
           successUrl: `${config.FRONTEND_URL}/payment/success`,
           cancelUrl: `${config.FRONTEND_URL}/payment/cancelled`,
-          customerEmail: user.email,
+          customerId,
         });
 
         return { url: checkoutSession.url };

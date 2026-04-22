@@ -19,7 +19,7 @@
 @theme {
   --font-heading: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", roboto,
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI",
     "Helvetica Neue", arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
     "Segoe UI Symbol", "Noto Color Emoji";
   --font-mono:

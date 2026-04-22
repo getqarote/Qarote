@@ -15,40 +15,76 @@
     "description": "Gérez vos licences Qarote auto-hébergées",
     "purchaseNew": "Acheter une nouvelle licence",
     "noLicenses": "Vous n'avez pas encore de licences.",
+    "noLicensesHint": "Les licences débloquent les fonctionnalités premium de votre instance auto-hébergée. Vous venez d'acheter ? Il peut s'écouler un moment avant que votre licence apparaisse.",
     "copiedToClipboard": "Clé de licence copiée dans le presse-papiers",
     "copyLicenseKey": "Copier la clé de licence",
+    "copyFailed": "Échec de la copie — veuillez sélectionner et copier manuellement.",
     "licenseKey": "Clé de licence",
     "license": "Licence",
     "expires": "Expire le : {{date}}",
     "noExpiration": "Sans expiration",
-    "loadingLicenses": "Chargement des licences..."
+    "purchasedOn": "Acheté le : {{date}}",
+    "lastValidated": "Dernière validation {{date}}",
+    "loadingLicenses": "Chargement des licences...",
+    "errorLoadingLicenses": "Impossible de charger vos licences.",
+    "retryLoading": "Réessayer",
+    "showFullKey": "Afficher la clé complète",
+    "hideKey": "Masquer la clé",
+    "activationGuide": "Collez cette clé dans votre instance Qarote sous Paramètres → Licence.",
+    "activationDocsLink": "Voir le guide d'activation →",
+    "expiredOn": "Cette licence a expiré le {{date}}.",
+    "expiredNoDate": "Cette licence n'est plus active.",
+    "renewLicense": "Renouveler",
+    "purchaseSuccess": "Votre licence est prête",
+    "purchaseSuccessSubtitle": "Copiez la clé ci-dessous pour activer votre instance Qarote."
   },
   "licensePurchase": {
     "title": "Acheter une licence",
-    "description": "Choisissez un niveau de licence pour votre déploiement Qarote auto-hébergé",
-    "annualLicensing": "Licence annuelle pour les déploiements auto-hébergés (validité de 365 jours avec renouvellement automatique)",
-    "processing": "Traitement en cours...",
-    "purchaseLicense": "Acheter la licence",
-    "purchaseFailed": "Échec de l'achat",
+    "annualLicensing": "Licence annuelle · Validité 365 jours · Déploiements auto-hébergés",
+    "purchaseFailed": "Échec de l'achat. Vous n'avez pas été débité.",
     "perYear": "/an",
+    "redirectingToStripe": "Redirection vers Stripe...",
+    "purchasePlanLabel": "Acheter la licence {{name}} — {{price}}/an",
+    "tryAgain": "Réessayer",
+    "or": "ou",
+    "contactSupport": "contacter le support",
+    "stripeHandoff": "Redirigé vers Stripe pour un paiement sécurisé · Clé de licence livrée par e-mail",
+    "enterpriseContact": "Conditions personnalisées ou questions ?",
+    "badges": {
+      "selected": "Sélectionné",
+      "soon": "Bientôt"
+    },
+    "categories": {
+      "coreFeatures": "Fonctionnalités principales",
+      "security": "Sécurité et compatibilité",
+      "support": "Support"
+    },
+    "features": {
+      "servers": "Serveurs RabbitMQ",
+      "workspaces": "Espaces de travail",
+      "teamMembers": "Membres de l'équipe",
+      "advancedAnalytics": "Analytique avancée",
+      "queueManagement": "Gestion des files, échanges, VHost et utilisateurs",
+      "alertsWebhooks": "Alertes et webhooks",
+      "topologyVisualization": "Visualisation de la topologie",
+      "roleBasedAccess": "Contrôle d'accès par rôle",
+      "ssoSamlOidc": "SSO, SAML et OIDC",
+      "soc2": "Conformité SOC 2",
+      "rabbitmqVersions": "Support des versions RabbitMQ",
+      "communitySupport": "Support communautaire",
+      "prioritySupport": "Support prioritaire"
+    },
+    "limits": {
+      "upTo3": "Jusqu'à 3",
+      "unlimited": "Illimité",
+      "rabbitmqVersionsValue": "Toutes versions 3.x et 4.x"
+    },
     "plans": {
       "developer": {
-        "name": "Développeur",
-        "features": {
-          "servers": "Jusqu'à 5 serveurs",
-          "queueManagement": "Gestion des files d'attente",
-          "basicAlerts": "Alertes de base",
-          "emailSupport": "Support par e-mail"
-        }
+        "name": "Développeur"
       },
       "enterprise": {
-        "name": "Entreprise",
-        "features": {
-          "unlimitedServers": "Serveurs illimités",
-          "advancedMonitoring": "Surveillance avancée",
-          "prioritySupport": "Support prioritaire",
-          "customIntegrations": "Intégrations personnalisées"
-        }
+        "name": "Entreprise"
       }
     }
   },

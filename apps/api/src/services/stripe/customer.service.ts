@@ -233,6 +233,7 @@ export class StripeCustomerService {
     billingInterval,
     successUrl,
     cancelUrl,
+    customerId,
     customerEmail,
     trialDays,
   }: CreateCheckoutSessionParams) {
@@ -268,6 +269,8 @@ export class StripeCustomerService {
             quantity: 1,
           },
         ],
+        billing_address_collection: "required",
+        tax_id_collection: { enabled: true },
         success_url: successUrl,
         cancel_url: cancelUrl,
         metadata: {
@@ -300,8 +303,10 @@ export class StripeCustomerService {
         }),
       };
 
-      // Add customer email if provided
-      if (customerEmail) {
+      if (customerId) {
+        sessionParams.customer = customerId;
+        sessionParams.customer_update = { address: "auto", name: "auto" };
+      } else if (customerEmail) {
         sessionParams.customer_email = customerEmail;
       }
 
