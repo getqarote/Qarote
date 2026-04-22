@@ -1,4 +1,3 @@
-import { alertsRouter } from "../ee/routers/alerts/index";
 import { authRouter } from "./routers/auth/index";
 import { discordRouter } from "./routers/discord";
 import { feedbackRouter } from "./routers/feedback";
@@ -15,15 +14,15 @@ import { workspaceRouter } from "./routers/workspace/index";
 import { router } from "./trpc";
 
 /**
- * Root router
- * Combine all routers here
+ * CE root router — Community Edition routes only.
+ * EE routes (alerts, topology, data export) are composed in
+ * src/ee/trpc/router.ts which the server bootstrap imports instead.
  */
 export const appRouter = router({
   auth: authRouter,
   user: userRouter,
   workspace: workspaceRouter,
   organization: organizationRouter,
-  alerts: alertsRouter,
   feedback: feedbackRouter,
   license: licenseRouter,
   payment: paymentRouter,
@@ -36,6 +35,7 @@ export const appRouter = router({
 });
 
 /**
- * Export AppRouter type for frontend type inference
+ * Export AppRouter type. In production the server uses the EE router
+ * (src/ee/trpc/router.ts) which extends this type with EE routes.
  */
 export type AppRouter = typeof appRouter;

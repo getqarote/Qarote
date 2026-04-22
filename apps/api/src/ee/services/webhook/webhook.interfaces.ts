@@ -1,4 +1,4 @@
-import { RabbitMQAlert } from "@/ee/services/alerts/alert.interfaces";
+import type { RabbitMQAlert } from "@/ee/services/alerts/alert.interfaces";
 
 export interface WebhookPayload {
   version: string;

@@ -31,12 +31,12 @@ import { config, serverConfig } from "@/config";
 import { isCloudMode } from "@/config/deployment";
 
 import { createContext } from "@/trpc/context";
-import { appRouter } from "@/trpc/router";
 
 import { standardRateLimiter } from "./middlewares/rateLimiter";
 
 import healthcheckController from "@/controllers/healthcheck.controller";
 import webhookController from "@/controllers/payment/webhook.controller";
+import { appRouter } from "@/ee/trpc/router";
 
 const app = new Hono();
 

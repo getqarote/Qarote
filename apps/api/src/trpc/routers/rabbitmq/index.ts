@@ -1,7 +1,5 @@
 import { router } from "@/trpc/trpc";
 
-import { alertsRouter } from "../../../ee/routers/rabbitmq/alerts";
-import { topologyRouter } from "../../../ee/routers/rabbitmq/topology";
 import { definitionsRouter } from "./definitions";
 import { infrastructureRouter } from "./infrastructure";
 import { memoryRouter } from "./memory";
@@ -13,6 +11,9 @@ import { queuesRouter } from "./queues";
 import { serverRouter } from "./server";
 import { usersRouter } from "./users";
 import { vhostRouter } from "./vhost";
+
+import { alertsRouter } from "@/ee/routers/rabbitmq/alerts";
+import { topologyRouter } from "@/ee/routers/rabbitmq/topology";
 
 /**
  * RabbitMQ router

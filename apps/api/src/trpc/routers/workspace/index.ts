@@ -1,9 +1,10 @@
 import { router } from "@/trpc/trpc";
 
-import { dataRouter } from "../../../ee/routers/workspace/data";
 import { coreRouter } from "./core";
 import { invitationRouter } from "./invitation";
 import { managementRouter } from "./management";
+
+import { dataRouter } from "@/ee/routers/workspace/data";
 
 /**
  * Workspace router

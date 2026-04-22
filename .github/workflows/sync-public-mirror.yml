@@ -36,14 +36,16 @@ jobs:
           git config --global user.email "ci@qarote.io"
           git config --global user.name "Qarote CI"
 
-          # Explicitly remove the EE directory from the mirror so --exclude
-          # on the source side cannot silently retain stale EE content that
-          # was accidentally pushed there in a previous run.
+          # Explicitly remove EE directory and the private sync workflow so
+          # --exclude on the source side cannot retain them if they ever
+          # land in the mirror through a previous run or manual push.
           rm -rf public-repo/apps/api/src/ee
+          rm -f  public-repo/.github/workflows/sync-public-mirror.yml
 
           rsync -av --delete \
             --exclude='.git' \
             --exclude='apps/api/src/ee' \
+            --exclude='.github/workflows/sync-public-mirror.yml' \
             --exclude='node_modules' \
             --exclude='.env' \
             --exclude='.env.local' \
@@ -53,6 +55,13 @@ jobs:
           # Fail the job if EE content somehow ended up in the mirror.
           if [ -d public-repo/apps/api/src/ee ]; then
             echo "ERROR: apps/api/src/ee exists in the public mirror — aborting." >&2
+            exit 1
+          fi
+
+          # Fail the job if any CE file still uses a relative ../ee/ import,
+          # which indicates a boundary violation that must be fixed before shipping.
+          if grep -rE 'from\s+['"'"'"][^'"'"'"]*\.\./.*ee/' public-repo/apps/api/src/ 2>/dev/null; then
+            echo "ERROR: relative ../ee/ imports found in CE tree — fix before pushing to mirror." >&2
             exit 1
           fi
 
