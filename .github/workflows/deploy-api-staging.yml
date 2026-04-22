@@ -90,6 +90,7 @@ jobs:
       - name: 📝 Configure Environment Variables
         run: |
           ssh dokku@${{ vars.DOKKU_HOST }} config:set ${{ env.APP_NAME }} \
+            NODE_OPTIONS="--max-old-space-size=1536" \
             DEPLOYMENT_MODE=${{ vars.DEPLOYMENT_MODE }} \
             DOMAIN_BACKEND=${{ vars.DOMAIN_BACKEND }} \
             DOMAIN_FRONTEND=${{ vars.DOMAIN_FRONTEND }} \
