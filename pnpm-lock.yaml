@@ -52,10 +52,10 @@ importers:
         version: 1.5.4(@better-auth/core@1.5.4(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.3.2(zod@4.3.6))(jose@6.1.3)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(better-auth@1.5.4(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3))(drizzle-orm@0.45.1(@electric-sql/pglite@0.3.15)(@opentelemetry/api@1.9.0)(@prisma/client@7.4.2(prisma@7.4.2(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3))(@types/pg@8.18.0)(kysely@0.28.11)(mysql2@3.15.3)(pg@8.19.0)(postgres@3.4.7)(prisma@7.4.2(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(sqlite3@5.1.7))(mongodb@6.16.0(@aws-sdk/credential-providers@3.817.0)(gcp-metadata@8.1.2)(socks@2.8.7))(mysql2@3.15.3)(pg@8.19.0)(prisma@7.4.2(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@24.11.0)(jiti@2.6.1)(lightningcss@1.32.0)(tsx@4.21.0)(yaml@2.8.2)))(better-call@1.3.2(zod@4.3.6))
       '@hono/node-server':
         specifier: ^2.0.0
-        version: 2.0.0(hono@4.12.12)
+        version: 2.0.0(hono@4.12.14)
       '@hono/trpc-server':
         specifier: ^0.4.2
-        version: 0.4.2(@trpc/server@11.12.0(typescript@5.9.3))(hono@4.12.12)
+        version: 0.4.2(@trpc/server@11.12.0(typescript@5.9.3))(hono@4.12.14)
       '@notionhq/client':
         specifier: ^5.9.0
         version: 5.9.0
@@ -102,11 +102,11 @@ importers:
         specifier: ^17.3.1
         version: 17.3.1
       hono:
-        specifier: ^4.12.12
-        version: 4.12.12
+        specifier: ^4.12.14
+        version: 4.12.14
       hono-rate-limiter:
         specifier: ^0.5.3
-        version: 0.5.3(hono@4.12.12)(unstorage@1.17.5)
+        version: 0.5.3(hono@4.12.14)(unstorage@1.17.5)
       jose:
         specifier: ^6.1.3
         version: 6.1.3
@@ -6349,8 +6349,8 @@ packages:
     resolution: {integrity: sha512-U7tt8JsyrxSRKspfhtLET79pU8K+tInj5QZXs1jSugO1Vq5dFj3kmZsRldo29mTBfcjDRVRXrEZ6LS63Cog9ZA==}
     engines: {node: '>=16.9.0'}
 
-  hono@4.12.12:
-    resolution: {integrity: sha512-p1JfQMKaceuCbpJKAPKVqyqviZdS0eUxH9v82oWo1kb9xjQ5wA6iP3FNVAPDFlz5/p7d45lO+BpSk1tuSZMF4Q==}
+  hono@4.12.14:
+    resolution: {integrity: sha512-am5zfg3yu6sqn5yjKBNqhnTX7Cv+m00ox+7jbaKkrLMRJ4rAdldd1xPd/JzbBWspqaQv6RSTrgFN95EsfhC+7w==}
     engines: {node: '>=16.9.0'}
 
   hookified@1.15.1:
@@ -10931,14 +10931,14 @@ snapshots:
     dependencies:
       hono: 4.11.4
 
-  '@hono/node-server@2.0.0(hono@4.12.12)':
+  '@hono/node-server@2.0.0(hono@4.12.14)':
     dependencies:
-      hono: 4.12.12
+      hono: 4.12.14
 
-  '@hono/trpc-server@0.4.2(@trpc/server@11.12.0(typescript@5.9.3))(hono@4.12.12)':
+  '@hono/trpc-server@0.4.2(@trpc/server@11.12.0(typescript@5.9.3))(hono@4.12.14)':
     dependencies:
       '@trpc/server': 11.12.0(typescript@5.9.3)
-      hono: 4.12.12
+      hono: 4.12.14
 
   '@hookform/resolvers@5.2.2(react-hook-form@7.71.1(react@19.2.4))':
     dependencies:
@@ -15624,15 +15624,15 @@ snapshots:
     dependencies:
       hermes-estree: 0.25.1
 
-  hono-rate-limiter@0.5.3(hono@4.12.12)(unstorage@1.17.5):
+  hono-rate-limiter@0.5.3(hono@4.12.14)(unstorage@1.17.5):
     dependencies:
-      hono: 4.12.12
+      hono: 4.12.14
     optionalDependencies:
       unstorage: 1.17.5
 
   hono@4.11.4: {}
 
-  hono@4.12.12: {}
+  hono@4.12.14: {}
 
   hookified@1.15.1: {}
 
