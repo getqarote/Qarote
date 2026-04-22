@@ -71,3 +71,6 @@ docs/SEO_STRATEGY.md
 # License files
 qarote-license-*.json
 license.json
+
+# Local scripts
+scripts/sync-prod-db.sh
