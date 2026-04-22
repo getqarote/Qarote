@@ -49,6 +49,8 @@ const config: KnipConfig = {
     "apps/app/src/hooks/ui/useWorkspaceInvites.ts",
     // In-progress nodes components — not yet wired into the page tree
     "apps/app/src/components/nodes/PortsAndContexts.tsx",
+    // ChurnStatistics removed from Nodes page — preserved for relocation to the main dashboard
+    "apps/app/src/components/nodes/ChurnStatistics.tsx",
     // Threshold tone helpers — small library API of related helpers; some
     // exports (getUsageBgTone, getClusterHealthTone, getClusterHealthBgClasses)
     // are reserved for upcoming work and not yet referenced
