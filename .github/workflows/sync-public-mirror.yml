@@ -57,5 +57,9 @@ jobs:
 
           cd /tmp/public-repo
           git add -A
-          git diff --staged --quiet && echo "Nothing to sync." || \
-            git commit -m "chore: sync CE mirror $(date +'%Y-%m-%d %H:%M UTC')" && git push
+          if git diff --staged --quiet; then
+            echo "Nothing to sync."
+          else
+            git commit -m "chore: sync CE mirror $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push origin HEAD
+          fi
