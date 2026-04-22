@@ -28,13 +28,13 @@
     "deleted": "已删除"
   },
   "ports": {
-    "listeningPorts": "Listening ports",
-    "webContexts": "Web contexts",
-    "protocol": "Protocol",
-    "boundTo": "Bound to",
-    "port": "Port",
-    "context": "Context",
+    "listeningPorts": "监听端口",
+    "webContexts": "Web 上下文",
+    "protocol": "协议",
+    "boundTo": "绑定到",
+    "port": "端口",
+    "context": "上下文",
     "ssl": "SSL",
-    "path": "Path"
+    "path": "路径"
   }
 }

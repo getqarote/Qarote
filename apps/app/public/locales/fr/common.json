@@ -98,7 +98,7 @@
     "message": "Page introuvable",
     "returnHome": "Retour à l'accueil"
   },
-  "updating": "Updating…",
-  "updatedAgo": "Updated {{seconds}}s ago",
-  "justUpdated": "Just updated"
+  "updating": "Mise à jour…",
+  "updatedAgo": "Mis à jour il y a {{seconds}}s",
+  "justUpdated": "À l'instant"
 }

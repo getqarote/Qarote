@@ -28,13 +28,13 @@
     "deleted": "Supprimées"
   },
   "ports": {
-    "listeningPorts": "Listening ports",
-    "webContexts": "Web contexts",
-    "protocol": "Protocol",
-    "boundTo": "Bound to",
+    "listeningPorts": "Ports d'écoute",
+    "webContexts": "Contextes web",
+    "protocol": "Protocole",
+    "boundTo": "Lié à",
     "port": "Port",
-    "context": "Context",
+    "context": "Contexte",
     "ssl": "SSL",
-    "path": "Path"
+    "path": "Chemin"
   }
 }

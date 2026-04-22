@@ -98,7 +98,7 @@
     "message": "Página no encontrada",
     "returnHome": "Volver al inicio"
   },
-  "updating": "Updating…",
-  "updatedAgo": "Updated {{seconds}}s ago",
-  "justUpdated": "Just updated"
+  "updating": "Actualizando…",
+  "updatedAgo": "Actualizado hace {{seconds}}s",
+  "justUpdated": "Recién actualizado"
 }
