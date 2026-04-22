@@ -18,6 +18,10 @@
   "cancelEdit": "Cancelar",
   "clusterNameUpdated": "Nombre del clúster actualizado",
   "clusterNameError": "Error al actualizar el nombre del clúster",
+  "ports": {
+    "show": "Mostrar puertos y contextos",
+    "hide": "Ocultar puertos y contextos"
+  },
   "churnStatistics": {
     "connectionOperations": "Operaciones de conexión",
     "channelOperations": "Operaciones de canal",
@@ -40,7 +44,7 @@
     "yes": "Sí",
     "no": "No"
   },
-  "status": {
+  "statusLabels": {
     "healthy": "En buen estado",
     "error": "Error",
     "critical": "Crítico",

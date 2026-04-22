@@ -18,6 +18,10 @@
   "cancelEdit": "Annuler",
   "clusterNameUpdated": "Nom du cluster mis à jour",
   "clusterNameError": "Échec de la mise à jour du nom du cluster",
+  "ports": {
+    "show": "Afficher les ports et contextes",
+    "hide": "Masquer les ports et contextes"
+  },
   "churnStatistics": {
     "connectionOperations": "Opérations de connexion",
     "channelOperations": "Opérations de canal",
@@ -40,7 +44,7 @@
     "yes": "Oui",
     "no": "Non"
   },
-  "status": {
+  "statusLabels": {
     "healthy": "En bonne santé",
     "error": "Erreur",
     "critical": "Critique",

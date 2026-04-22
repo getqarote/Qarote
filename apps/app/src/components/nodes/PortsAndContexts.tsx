@@ -1,7 +1,5 @@
 import { useTranslation } from "react-i18next";
 
-import { RabbitMQNode } from "@/lib/api";
-
 interface Listener {
   node: string;
   protocol: string;
@@ -13,24 +11,22 @@ interface Context {
   node: string;
   description: string;
   path: string;
-  port: number;
-  ssl: boolean;
+  port: string;
+  ssl_opts: unknown[];
 }
 
 interface PortsAndContextsProps {
-  nodes: RabbitMQNode[];
+  listeners: Listener[];
+  contexts: Context[];
+  isLoading?: boolean;
+  fetchFailed?: boolean;
 }
 
-export function PortsAndContexts({ nodes }: PortsAndContextsProps) {
+export function PortsAndContexts({
+  listeners,
+  contexts,
+}: PortsAndContextsProps) {
   const { t } = useTranslation("nodes");
-
-  const listeners: Listener[] = nodes.flatMap(
-    (node) => (node.listeners as Listener[] | undefined) ?? []
-  );
-
-  const contexts: Context[] = nodes.flatMap(
-    (node) => (node.contexts as Context[] | undefined) ?? []
-  );
 
   if (listeners.length === 0 && contexts.length === 0) return null;
 
@@ -162,7 +158,7 @@ export function PortsAndContexts({ nodes }: PortsAndContextsProps) {
                       {ctx.port}
                     </span>
                     <span className="w-16 text-center text-xs" role="cell">
-                      {ctx.ssl
+                      {ctx.ssl_opts?.length
                         ? t("portsAndContexts.yes")
                         : t("portsAndContexts.no")}
                     </span>

@@ -18,6 +18,10 @@
   "cancelEdit": "取消",
   "clusterNameUpdated": "集群名称已更新",
   "clusterNameError": "更新集群名称失败",
+  "ports": {
+    "show": "显示端口与上下文",
+    "hide": "隐藏端口与上下文"
+  },
   "churnStatistics": {
     "connectionOperations": "连接操作",
     "channelOperations": "信道操作",
@@ -40,7 +44,7 @@
     "yes": "是",
     "no": "否"
   },
-  "status": {
+  "statusLabels": {
     "healthy": "健康",
     "error": "错误",
     "critical": "严重",

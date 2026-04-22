@@ -248,13 +248,13 @@ function NodeRow({
                 className={`w-3 h-3 ${status.discriminant !== "healthy" ? "mr-1" : ""}`}
                 aria-label={
                   status.discriminant === "healthy"
-                    ? t("status.healthy")
+                    ? t("statusLabels.healthy")
                     : undefined
                 }
                 aria-hidden={status.discriminant !== "healthy"}
               />
               {status.discriminant !== "healthy" &&
-                t(`status.${status.discriminant}`)}
+                t(`statusLabels.${status.discriminant}`)}
             </Badge>
           </div>
 

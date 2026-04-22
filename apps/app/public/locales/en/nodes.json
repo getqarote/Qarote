@@ -18,6 +18,10 @@
   "cancelEdit": "Cancel",
   "clusterNameUpdated": "Cluster name updated",
   "clusterNameError": "Failed to update cluster name",
+  "ports": {
+    "show": "Show ports & contexts",
+    "hide": "Hide ports & contexts"
+  },
   "churnStatistics": {
     "connectionOperations": "Connection operations",
     "channelOperations": "Channel operations",
@@ -40,7 +44,7 @@
     "yes": "Yes",
     "no": "No"
   },
-  "status": {
+  "statusLabels": {
     "healthy": "Healthy",
     "error": "Error",
     "critical": "Critical",
