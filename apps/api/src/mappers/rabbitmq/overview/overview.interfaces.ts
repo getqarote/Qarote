@@ -23,7 +23,7 @@ export interface OverviewContext {
   ip?: string;
   port: string;
   protocol?: string;
-  ssl_opts: unknown[];
+  ssl: boolean;
 }
 
 /**

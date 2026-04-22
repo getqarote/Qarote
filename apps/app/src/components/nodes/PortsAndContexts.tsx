@@ -12,7 +12,7 @@ interface Context {
   description: string;
   path: string;
   port: string;
-  ssl_opts: unknown[];
+  ssl: boolean;
 }
 
 interface PortsAndContextsProps {
@@ -158,7 +158,7 @@ export function PortsAndContexts({
                       {ctx.port}
                     </span>
                     <span className="w-16 text-center text-xs" role="cell">
-                      {ctx.ssl_opts?.length
+                      {ctx.ssl
                         ? t("portsAndContexts.yes")
                         : t("portsAndContexts.no")}
                     </span>

@@ -13,10 +13,10 @@ import {
 } from "lucide-react";
 
 import { RabbitMQNode } from "@/lib/api";
+import { MEMORY_CRITICAL_PCT, MEMORY_WARN_PCT } from "@/lib/health-tones";
 
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
@@ -36,9 +36,6 @@ import { isRabbitMQAuthError } from "@/types/apiErrors";
 
 type SortField = "name" | "memUsed" | "diskFree" | "uptime" | "connections";
 type SortDir = "asc" | "desc";
-
-const MEMORY_CRITICAL_PCT = 90;
-const MEMORY_WARN_PCT = 75;
 
 interface EnhancedNodesTableProps {
   serverId: string;
@@ -322,25 +319,9 @@ function NodeDetailsPanel({
   memoryUsage: number;
 }) {
   const { t } = useTranslation("nodes");
-  const [showAll, setShowAll] = useState(
-    () => getNodeStatus(node).discriminant !== "healthy"
-  );
-
   return (
     <TooltipProvider>
       <div className="border-t border-border bg-muted/20">
-        {/* Summary / Full details toggle */}
-        <div className="flex justify-end px-5 pt-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-xs h-7"
-            onClick={() => setShowAll((v) => !v)}
-          >
-            {showAll ? t("details.summary") : t("details.fullDetails")}
-          </Button>
-        </div>
-
         {/* Primary metrics band — 5 equal sections */}
         <div className="grid grid-cols-5 divide-x divide-border">
           {/* Health */}
@@ -425,9 +406,9 @@ function NodeDetailsPanel({
                 }
                 mono
                 tone={
-                  memoryUsage > 90
+                  memoryUsage >= MEMORY_CRITICAL_PCT
                     ? "destructive"
-                    : memoryUsage > 75
+                    : memoryUsage >= MEMORY_WARN_PCT
                       ? "warning"
                       : undefined
                 }
@@ -579,32 +560,6 @@ function NodeDetailsPanel({
             </dl>
           </div>
         </div>
-
-        {/* Full details section — hidden in summary mode */}
-        {showAll && (
-          <div className="grid grid-cols-5 divide-x divide-border border-t border-border/60">
-            {/* Extended health */}
-            <div className="px-5 py-4">
-              <dl className="space-y-2">
-                <ExpandedRow
-                  label={t("details.rows.draining")}
-                  value={
-                    node.being_drained
-                      ? t("details.values.yes")
-                      : t("details.values.no")
-                  }
-                  tone={node.being_drained ? "warning" : undefined}
-                />
-              </dl>
-            </div>
-
-            {/* Extended memory — placeholder columns */}
-            <div className="px-5 py-4" />
-            <div className="px-5 py-4" />
-            <div className="px-5 py-4" />
-            <div className="px-5 py-4" />
-          </div>
-        )}
 
         {/* Internal store — secondary diagnostic strip */}
         <div className="px-5 py-3 border-t border-border/60 flex flex-wrap gap-x-6 gap-y-1.5">

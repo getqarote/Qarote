@@ -32,7 +32,7 @@ export class OverviewMapper {
         ip: c.ip,
         port: c.port,
         protocol: c.protocol,
-        ssl_opts: c.ssl_opts,
+        ssl: (c.ssl_opts ?? []).length > 0,
       })),
       churnRates: overview.churn_rates
         ? {
