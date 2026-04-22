@@ -37,19 +37,19 @@ vi.mock("@/core/prisma", () => ({
   },
 }));
 
-vi.mock("@/services/email/notification-email.service", () => ({
+vi.mock("@/ee/services/email/notification-email.service", () => ({
   NotificationEmailService: {
     sendAlertNotificationEmail: vi.fn(),
   },
 }));
 
-vi.mock("@/services/slack/slack.service", () => ({
+vi.mock("@/ee/services/slack/slack.service", () => ({
   SlackService: {
     sendAlertNotifications: vi.fn(),
   },
 }));
 
-vi.mock("@/services/webhook/webhook.service", () => ({
+vi.mock("@/ee/services/webhook/webhook.service", () => ({
   WebhookService: {
     sendAlertNotification: vi.fn(),
   },
@@ -74,12 +74,12 @@ vi.mock("@/config/features", () => ({
 import { isFeatureEnabled } from "@/core/feature-flags";
 import { prisma } from "@/core/prisma";
 
-import { NotificationEmailService } from "@/services/email/notification-email.service";
-import { SlackService } from "@/services/slack/slack.service";
-import { WebhookService } from "@/services/webhook/webhook.service";
-
 // Import the service last so it picks up the mocked dependencies
 import { alertNotificationService } from "../alert.notification";
+
+import { NotificationEmailService } from "@/ee/services/email/notification-email.service";
+import { SlackService } from "@/ee/services/slack/slack.service";
+import { WebhookService } from "@/ee/services/webhook/webhook.service";
 
 // ---------------------------------------------------------------------------
 // Helpers

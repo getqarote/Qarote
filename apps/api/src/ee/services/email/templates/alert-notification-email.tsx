@@ -11,10 +11,8 @@ import {
 } from "@react-email/components";
 import type { JSX } from "react";
 
-import { RabbitMQAlert } from "@/services/alerts/alert.interfaces";
-
-import { EmailFooter } from "../shared/email-footer";
-import { EmailHeader } from "../shared/email-header";
+import { EmailFooter } from "@/services/email/shared/email-footer";
+import { EmailHeader } from "@/services/email/shared/email-header";
 import {
   baseStyles,
   buttonStyles,
@@ -25,8 +23,9 @@ import {
   sectionStyles,
   textStyles,
   utilityStyles,
-} from "../shared/styles";
+} from "@/services/email/shared/styles";
 
+import { RabbitMQAlert } from "@/ee/services/alerts/alert.interfaces";
 import { tEmail } from "@/i18n";
 
 interface AlertNotificationEmailProps {

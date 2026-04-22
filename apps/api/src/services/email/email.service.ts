@@ -4,7 +4,8 @@
 import { AuthEmailService } from "./auth-email.service";
 import { BillingEmailService } from "./billing-email.service";
 import { LicenseEmailService } from "./license-email.service";
-import { NotificationEmailService } from "./notification-email.service";
+
+import { NotificationEmailService } from "@/ee/services/email/notification-email.service";
 
 /**
  * Main EmailService class that provides all email functionality

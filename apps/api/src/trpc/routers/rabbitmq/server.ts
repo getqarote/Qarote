@@ -3,7 +3,6 @@ import { TRPCError } from "@trpc/server";
 import { prisma } from "@/core/prisma";
 import { RabbitMQClient } from "@/core/rabbitmq";
 
-import { seedDefaultAlertRules } from "@/services/alerts/alert.default-rules";
 import { EncryptionService } from "@/services/encryption.service";
 import {
   extractMajorMinorVersion,
@@ -29,6 +28,7 @@ import {
   workspaceProcedure,
 } from "@/trpc/trpc";
 
+import { seedDefaultAlertRules } from "@/ee/services/alerts/alert.default-rules";
 import { UserPlan, UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 

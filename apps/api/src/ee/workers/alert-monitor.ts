@@ -1,9 +1,8 @@
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
-import { backfillDefaultAlertRules } from "@/services/alerts/alert.default-rules";
-
-import { rabbitMQAlertsCronService } from "@/cron/rabbitmq-alerts.cron";
+import { rabbitMQAlertsCronService } from "@/ee/cron/rabbitmq-alerts.cron";
+import { backfillDefaultAlertRules } from "@/ee/services/alerts/alert.default-rules";
 
 /**
  * Alert Monitor Worker Process

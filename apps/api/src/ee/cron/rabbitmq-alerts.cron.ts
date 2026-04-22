@@ -1,10 +1,9 @@
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
-import { alertService } from "@/services/alerts/alert.service";
-
 import { alertConfig } from "@/config";
 
+import { alertService } from "@/ee/services/alerts/alert.service";
 import type { AlertRule } from "@/generated/prisma/client";
 
 /**

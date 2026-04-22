@@ -16,9 +16,11 @@ import {
   QueueMapper,
 } from "@/mappers/rabbitmq";
 
+import {
+  createRabbitMQClient,
+  verifyServerAccess,
+} from "@/trpc/routers/rabbitmq/shared";
 import { router, workspaceProcedure } from "@/trpc/trpc";
-
-import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
 import { te } from "@/i18n";
 
@@ -44,14 +46,14 @@ export const topologyRouter = router({
         const [exchanges, queues, bindings, consumers] = await Promise.all([
           client.getExchanges(vhost),
           client.getQueues(vhost),
-          client.getBindings(vhost).catch((err) => {
+          client.getBindings(vhost).catch((err: unknown) => {
             ctx.logger.warn(
               { error: err, serverId, workspaceId, vhost },
               "Failed to fetch bindings for topology, continuing without"
             );
             return [];
           }),
-          client.getConsumers().catch((err) => {
+          client.getConsumers().catch((err: unknown) => {
             ctx.logger.warn(
               { error: err, serverId, workspaceId, vhost },
               "Failed to fetch consumers for topology, continuing without"

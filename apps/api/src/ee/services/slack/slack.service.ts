@@ -1,9 +1,9 @@
 import { logger } from "@/core/logger";
 import { retryWithBackoffAndTimeout } from "@/core/retry";
 
-import { RabbitMQAlert } from "@/services/alerts/alert.interfaces";
-
 import { SlackMessage, SlackResult } from "./slack.interfaces";
+
+import { RabbitMQAlert } from "@/ee/services/alerts/alert.interfaces";
 
 /**
  * Slack service for sending alert notifications to Slack channels via incoming webhooks

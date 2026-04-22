@@ -24,20 +24,20 @@ vi.mock("@/trpc/routers/rabbitmq/shared", () => ({
   createRabbitMQClient: vi.fn(),
 }));
 
-vi.mock("@/services/alerts/alert.analyzer", () => ({
+vi.mock("@/ee/services/alerts/alert.analyzer", () => ({
   analyzeNodeHealth: vi.fn(() => []),
   analyzeQueueHealth: vi.fn(() => []),
 }));
 
-vi.mock("@/services/alerts/alert.notification", () => ({
+vi.mock("@/ee/services/alerts/alert.notification", () => ({
   alertNotificationService: { trackAndNotifyNewAlerts: vi.fn() },
 }));
 
-vi.mock("@/services/alerts/alert.rule-adapter", () => ({
+vi.mock("@/ee/services/alerts/alert.rule-adapter", () => ({
   loadThresholdsForServer: vi.fn(),
 }));
 
-vi.mock("@/services/alerts/alert.health", () => ({
+vi.mock("@/ee/services/alerts/alert.health", () => ({
   alertHealthService: {
     getClusterHealthSummary: vi.fn(),
     getHealthCheck: vi.fn(),

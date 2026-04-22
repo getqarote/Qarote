@@ -2,15 +2,15 @@ import { isFeatureEnabled } from "@/core/feature-flags";
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
-import { NotificationEmailService } from "@/services/email/notification-email.service";
-import { SlackService } from "@/services/slack/slack.service";
-import { WebhookService } from "@/services/webhook/webhook.service";
-
 import { emailConfig } from "@/config";
 import { FEATURES } from "@/config/features";
 
 import { generateAlertFingerprint } from "./alert.fingerprint";
 import { RabbitMQAlert } from "./alert.interfaces";
+
+import { NotificationEmailService } from "@/ee/services/email/notification-email.service";
+import { SlackService } from "@/ee/services/slack/slack.service";
+import { WebhookService } from "@/ee/services/webhook/webhook.service";
 
 /**
  * Alert Tracking and Notification System

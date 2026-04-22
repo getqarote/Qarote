@@ -1,16 +1,19 @@
 import React from "react";
 
-import { RabbitMQAlert } from "@/services/alerts/alert.interfaces";
 import { DeploymentService } from "@/services/deployment/deployment.service";
+import {
+  CoreEmailService,
+  EmailResult,
+} from "@/services/email/core-email.service";
+import PaymentActionRequiredEmail from "@/services/email/templates/payment-action-required-email";
+import PaymentConfirmationEmail from "@/services/email/templates/payment-confirmation-email";
+import TrialEndingEmail from "@/services/email/templates/trial-ending-email";
+import UpcomingInvoiceEmail from "@/services/email/templates/upcoming-invoice-email";
+import UpdateAvailableEmail from "@/services/email/templates/update-available-email";
 
-import { CoreEmailService, EmailResult } from "./core-email.service";
 import AlertNotificationEmail from "./templates/alert-notification-email";
-import PaymentActionRequiredEmail from "./templates/payment-action-required-email";
-import PaymentConfirmationEmail from "./templates/payment-confirmation-email";
-import TrialEndingEmail from "./templates/trial-ending-email";
-import UpcomingInvoiceEmail from "./templates/upcoming-invoice-email";
-import UpdateAvailableEmail from "./templates/update-available-email";
 
+import { RabbitMQAlert } from "@/ee/services/alerts/alert.interfaces";
 import { UserPlan } from "@/generated/prisma/client";
 import { tEmail } from "@/i18n";
 

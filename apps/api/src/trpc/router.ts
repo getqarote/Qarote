@@ -1,4 +1,4 @@
-import { alertsRouter } from "./routers/alerts/index";
+import { alertsRouter } from "../ee/routers/alerts/index";
 import { authRouter } from "./routers/auth/index";
 import { discordRouter } from "./routers/discord";
 import { feedbackRouter } from "./routers/feedback";

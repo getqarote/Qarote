@@ -18,7 +18,7 @@ if (process.argv[2] === "setup") {
 if (process.argv[2] === "worker") {
   // Run the alert monitor as a standalone process.
   // alert-monitor.js self-starts and registers its own signal handlers.
-  await import("./workers/alert-monitor.js");
+  await import("./ee/workers/alert-monitor.js");
   // Keep process alive until signal handlers trigger shutdown
   await new Promise(() => {}); // Never resolves
 }

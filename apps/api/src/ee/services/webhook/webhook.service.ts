@@ -2,9 +2,9 @@ import { createHmac } from "node:crypto";
 
 import { logger } from "@/core/logger";
 
-import { RabbitMQAlert } from "@/services/alerts/alert.interfaces";
-
 import { WebhookPayload, WebhookResult } from "./webhook.interfaces";
+
+import { RabbitMQAlert } from "@/ee/services/alerts/alert.interfaces";
 
 /**
  * Webhook service for sending alert notifications to user-defined webhook endpoints

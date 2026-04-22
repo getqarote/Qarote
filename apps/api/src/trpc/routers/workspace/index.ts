@@ -1,7 +1,7 @@
 import { router } from "@/trpc/trpc";
 
+import { dataRouter } from "../../../ee/routers/workspace/data";
 import { coreRouter } from "./core";
-import { dataRouter } from "./data";
 import { invitationRouter } from "./invitation";
 import { managementRouter } from "./management";
 

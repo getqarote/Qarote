@@ -3,8 +3,6 @@ import { TRPCError } from "@trpc/server";
 import { prisma } from "@/core/prisma";
 import { abortableSleep } from "@/core/utils";
 
-import { loadThresholdsForServer } from "@/services/alerts/alert.rule-adapter";
-import { alertService } from "@/services/alerts/alert.service";
 import { getOrgPlan } from "@/services/plan/plan.service";
 
 import {
@@ -13,10 +11,11 @@ import {
 } from "@/schemas/alerts";
 import { ServerWorkspaceInputSchema } from "@/schemas/rabbitmq";
 
+import { verifyServerAccess } from "@/trpc/routers/rabbitmq/shared";
 import { router, workspaceProcedure } from "@/trpc/trpc";
 
-import { verifyServerAccess } from "./shared";
-
+import { loadThresholdsForServer } from "@/ee/services/alerts/alert.rule-adapter";
+import { alertService } from "@/ee/services/alerts/alert.service";
 import { Prisma, UserPlan } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 

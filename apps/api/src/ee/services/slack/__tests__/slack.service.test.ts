@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { RabbitMQAlert } from "@/services/alerts/alert.interfaces";
+import { SlackService } from "../slack.service";
+
+import type { RabbitMQAlert } from "@/ee/services/alerts/alert.interfaces";
 import {
   AlertCategory,
   AlertSeverity,
-} from "@/services/alerts/alert.interfaces";
-
-import { SlackService } from "../slack.service";
+} from "@/ee/services/alerts/alert.interfaces";
 
 vi.mock("@/core/logger", () => ({
   logger: {

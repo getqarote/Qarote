@@ -2,14 +2,14 @@ import crypto from "node:crypto";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { RabbitMQAlert } from "@/services/alerts/alert.interfaces";
+import type { WebhookPayload } from "../webhook.interfaces";
+import { WebhookService } from "../webhook.service";
+
+import type { RabbitMQAlert } from "@/ee/services/alerts/alert.interfaces";
 import {
   AlertCategory,
   AlertSeverity,
-} from "@/services/alerts/alert.interfaces";
-
-import type { WebhookPayload } from "../webhook.interfaces";
-import { WebhookService } from "../webhook.service";
+} from "@/ee/services/alerts/alert.interfaces";
 
 vi.mock("@/core/logger", () => ({
   logger: {
