@@ -34,7 +34,12 @@ const config: KnipConfig = {
     "apps/api/src/core/rabbitmq/ResponseValidator.ts",
     // Ignore API type exports used by frontend apps
     "apps/api/src/trpc/types.ts",
+    // CE router files — not imported in the private build but are the entry
+    // points for the public CE mirror. Ignored here to keep knip quiet.
     "apps/api/src/trpc/router.ts",
+    "apps/api/src/trpc/routers/rabbitmq/index.ts",
+    "apps/api/src/trpc/routers/workspace/index.ts",
+    "apps/api/src/trpc/routers/workspace/data.ce.ts",
     // Ignore trpc.ts — orgScopedProcedure exported for progressive adoption
     "apps/api/src/trpc/trpc.ts",
     // Ignore API services used in tRPC type inference
