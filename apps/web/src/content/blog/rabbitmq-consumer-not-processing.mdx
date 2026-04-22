@@ -39,6 +39,7 @@ Set prefetch to a multiple of your concurrent processing capacity. If each worke
 A connected consumer is not the same as a processing consumer. If your consumer is waiting on a database query, external HTTP call, or file operation that never returns, it's alive but doing nothing.
 
 Look for these signs:
+
 - `Unacked` count equals prefetch count and doesn't change over time
 - Consumer utilisation is `1.0` but throughput is near zero
 - Your app logs show a request that started but never logged completion

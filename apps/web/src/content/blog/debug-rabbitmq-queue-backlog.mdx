@@ -126,11 +126,11 @@ When I open the queue detail in Qarote during a backlog incident, I can usually 
 
 ## Quick reference
 
-| Symptom | Likely cause | First check |
-|---|---|---|
-| `Consumers = 0` | Consumer process crashed | Pod / process status |
-| `Unacked` high, `Ready` low | Prefetch too low or consumer blocking | Processing time + prefetch setting |
-| `Consumer utilisation ≈ 1.0` | Consumers saturated | Add more consumer instances |
-| Red alarm banner | Memory or disk limit hit | `rabbitmqctl status` |
-| DLQ growing at same rate | Consumers rejecting messages | Inspect DLQ payloads |
-| Channels blocked | Flow control active | Slow down publishers or speed up consumers |
+| Symptom                      | Likely cause                          | First check                                |
+| ---------------------------- | ------------------------------------- | ------------------------------------------ |
+| `Consumers = 0`              | Consumer process crashed              | Pod / process status                       |
+| `Unacked` high, `Ready` low  | Prefetch too low or consumer blocking | Processing time + prefetch setting         |
+| `Consumer utilisation ≈ 1.0` | Consumers saturated                   | Add more consumer instances                |
+| Red alarm banner             | Memory or disk limit hit              | `rabbitmqctl status`                       |
+| DLQ growing at same rate     | Consumers rejecting messages          | Inspect DLQ payloads                       |
+| Channels blocked             | Flow control active                   | Slow down publishers or speed up consumers |
