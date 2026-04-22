@@ -137,7 +137,7 @@ const policyFormSchema = z.object({
     } catch {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Must be a valid JSON object",
+        message: "errors.json.invalid",
       });
       return;
     }
@@ -148,14 +148,14 @@ const policyFormSchema = z.object({
     ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Must be a valid JSON object",
+        message: "errors.json.notObject",
       });
       return;
     }
-    if (Object.keys(parsed).length === 0) {
+    if (Object.keys(parsed as object).length === 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Policy definition must contain at least one key",
+        message: "errors.json.empty",
       });
     }
   }),
@@ -413,7 +413,7 @@ export function PolicyForm({
               <FormField
                 control={form.control}
                 name="definitionJson"
-                render={({ field }) => (
+                render={({ field, fieldState }) => (
                   <FormItem>
                     <div className="flex items-center justify-between">
                       <FormLabel>{t("definitionLabel")}</FormLabel>
@@ -464,7 +464,11 @@ export function PolicyForm({
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage>
+                      {fieldState.error?.message
+                        ? t(fieldState.error.message)
+                        : undefined}
+                    </FormMessage>
                   </FormItem>
                 )}
               />

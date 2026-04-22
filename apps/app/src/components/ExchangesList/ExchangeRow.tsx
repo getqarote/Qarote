@@ -13,6 +13,7 @@ import {
 import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
 import { PixelTrash } from "@/components/ui/pixel-trash";
 
+import { ExchangeFeatureBadges } from "./ExchangeFeatureBadges";
 import { getExchangeTypeBadgeClass } from "./exchangeTypeUi";
 import type { ExchangeBinding, ExchangeListItem } from "./types";
 
@@ -71,11 +72,9 @@ export function ExchangeRow({
             >
               {exchange.type}
             </Badge>
-            {exchange.durable && (
-              <span className="hidden xl:inline text-xs text-muted-foreground">
-                {t("durable")}
-              </span>
-            )}
+            <div className="flex items-center gap-1">
+              <ExchangeFeatureBadges exchange={exchange} />
+            </div>
             {exchange.policy && (
               <Badge
                 variant="outline"

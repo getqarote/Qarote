@@ -28,6 +28,7 @@ export const ServerUrlInput = ({
   const [parseStatus, setParseStatus] = useState<
     "idle" | "parsing" | "success" | "error"
   >("idle");
+  const [hasCredentials, setHasCredentials] = useState(false);
 
   const isParsing = parseStatus === "parsing";
 
@@ -45,6 +46,7 @@ export const ServerUrlInput = ({
 
       if (parsed) {
         applyParsedUrlToForm(parsed, form);
+        setHasCredentials(!!form.getValues("password"));
         setParseStatus("success");
         onParseSuccess?.();
       } else {
@@ -63,6 +65,7 @@ export const ServerUrlInput = ({
   const handleClearUrl = () => {
     setUrl("");
     setParseStatus("idle");
+    setHasCredentials(false);
   };
 
   return (
@@ -101,15 +104,21 @@ export const ServerUrlInput = ({
           )}
         </div>
       </div>
-      {parseStatus === "idle" && (
-        <p className="text-sm text-muted-foreground">{t("serverUrlHelp")}</p>
-      )}
-      {parseStatus === "success" && (
-        <p className="text-sm text-success">{t("urlParsedSuccess")}</p>
-      )}
-      {parseStatus === "error" && (
-        <p className="text-sm text-destructive">{t("urlParseError")}</p>
-      )}
+      <div role="status" aria-live="polite">
+        {parseStatus === "idle" && (
+          <p className="text-sm text-muted-foreground">{t("serverUrlHelp")}</p>
+        )}
+        {parseStatus === "success" && (
+          <p
+            className={`text-sm ${hasCredentials ? "text-success" : "text-muted-foreground"}`}
+          >
+            {hasCredentials ? t("urlParsedSuccess") : t("urlParsedNoCreds")}
+          </p>
+        )}
+        {parseStatus === "error" && (
+          <p className="text-sm text-destructive">{t("urlParseError")}</p>
+        )}
+      </div>
     </div>
   );
 };

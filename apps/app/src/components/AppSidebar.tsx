@@ -24,6 +24,7 @@ import { PixelNetwork } from "@/components/ui/pixel-network";
 import { PixelServer } from "@/components/ui/pixel-server";
 import { PixelSettings } from "@/components/ui/pixel-settings";
 import { PixelUser } from "@/components/ui/pixel-user";
+import { PixelZap } from "@/components/ui/pixel-zap";
 import {
   Select,
   SelectContent,
@@ -68,6 +69,7 @@ function ServerStatusDot({ serverId }: { serverId: string }) {
 const menuItems = [
   { titleKey: "sidebar:dashboard", url: "/", icon: PixelChart },
   { titleKey: "sidebar:queues", url: "/queues", icon: PixelMessage },
+  { titleKey: "sidebar:channels", url: "/channels", icon: PixelZap },
   { titleKey: "sidebar:connections", url: "/connections", icon: PixelClock },
   { titleKey: "sidebar:nodes", url: "/nodes", icon: PixelServer },
   { titleKey: "sidebar:exchanges", url: "/exchanges", icon: PixelActivity },

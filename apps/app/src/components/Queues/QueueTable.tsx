@@ -14,6 +14,7 @@ import { Queue } from "@/lib/api";
 
 import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
 import { QueueStatusBadge } from "@/components/Queues/queue-status-badge";
+import { QueueFeatureBadges } from "@/components/Queues/QueueFeatureBadges";
 import { Badge } from "@/components/ui/badge";
 import {
   Collapsible,
@@ -262,6 +263,9 @@ function QueueRow({
               )}
             </div>
             <QueueStatusBadge state={queue.state} />
+            <div className="flex items-center gap-1">
+              <QueueFeatureBadges queue={queue} />
+            </div>
             {queue.policy && (
               <Badge
                 variant="outline"

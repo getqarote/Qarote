@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
@@ -78,6 +78,12 @@ export function AddQueueForm({
   const [preset, setPreset] = useState<QueuePresetId>("classic");
   const [rows, setRows] = useState<ArgRow[]>([]);
   const [queueType, setQueueType] = useState<RabbitMQQueueType>("default");
+  // Harden: track pending type switch requiring confirmation when args exist
+  const [pendingTypeSwitch, setPendingTypeSwitch] =
+    useState<RabbitMQQueueType | null>(null);
+  // Clarify: how many args were cleared on last type switch (shown in locked notice)
+  const [clearedArgsCount, setClearedArgsCount] = useState(0);
+  const prevQueueTypeRef = useRef<RabbitMQQueueType>("default");
 
   const createQueueMutation = useCreateQueue();
   const { toast } = useToast();
@@ -124,13 +130,51 @@ export function AddQueueForm({
     setRows(rowsFromPreset(id));
   };
 
-  const handleQueueTypeChange = (type: RabbitMQQueueType) => {
+  /** Apply a type switch and its side-effects (call only when safe to do so). */
+  const commitTypeChange = (type: RabbitMQQueueType) => {
     setQueueType(type);
-    if (type === "quorum") {
+    setPendingTypeSwitch(null);
+    if (type === "quorum" || type === "stream") {
       form.setValue("durable", true);
       form.setValue("autoDelete", false);
       form.setValue("exclusive", false);
+      // Capture count before clearing so the locked notice can display it.
+      setClearedArgsCount(rows.length);
+      setPreset("classic");
+      setRows([]);
+    } else {
+      setClearedArgsCount(0);
     }
+  };
+
+  const handleQueueTypeChange = (type: RabbitMQQueueType) => {
+    // Harden: if switching to a locked type and the user has configured
+    // arguments, pause and ask for confirmation before discarding them.
+    if ((type === "quorum" || type === "stream") && rows.length > 0) {
+      // Only capture the prior type the first time so cancelTypeSwitch
+      // always reverts to the original type, not a chained intermediate.
+      if (!pendingTypeSwitch) {
+        prevQueueTypeRef.current = queueType;
+      }
+      setQueueType(type); // update the selector immediately so it feels responsive
+      setPendingTypeSwitch(type);
+      return;
+    }
+    commitTypeChange(type);
+  };
+
+  /** User confirmed they're OK discarding incompatible arguments. */
+  const confirmTypeSwitch = () => {
+    if (!pendingTypeSwitch) return;
+    const type = pendingTypeSwitch;
+    setPendingTypeSwitch(null);
+    commitTypeChange(type);
+  };
+
+  /** User changed their mind — revert the selector to the previous type. */
+  const cancelTypeSwitch = () => {
+    setQueueType(prevQueueTypeRef.current);
+    setPendingTypeSwitch(null);
   };
 
   const resetAll = () => {
@@ -146,6 +190,8 @@ export function AddQueueForm({
     setPreset("classic");
     setMode("quick");
     setQueueType("default");
+    setPendingTypeSwitch(null);
+    setClearedArgsCount(0);
   };
 
   const onSubmit = (data: AddQueueFormData) => {
@@ -165,6 +211,9 @@ export function AddQueueForm({
       });
       return;
     }
+
+    // Guard: type-switch confirmation is pending — do not submit yet.
+    if (pendingTypeSwitch) return;
 
     // Build final arguments object from the structured builder rows.
     const finalArguments: Record<string, unknown> = {};
@@ -311,7 +360,75 @@ export function AddQueueForm({
               />
 
               {mode === "quick" && (
-                <QueueTypePreset value={preset} onChange={applyPreset} />
+                <div
+                  key={
+                    queueType === "quorum" || queueType === "stream"
+                      ? "locked"
+                      : "preset"
+                  }
+                  className="animate-in fade-in duration-150"
+                >
+                  {queueType === "quorum" || queueType === "stream" ? (
+                    pendingTypeSwitch ? (
+                      // Harden: confirm before discarding existing arguments
+                      <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
+                        <p className="text-sm font-medium text-foreground">
+                          {t("presetSectionTitle")}
+                        </p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {t("presetSwitchWarning", {
+                            count: rows.length,
+                            type:
+                              queueType === "quorum"
+                                ? t("rabbitTypeQuorum")
+                                : t("rabbitTypeStream"),
+                          })}
+                        </p>
+                        <div className="flex gap-4 pt-0.5">
+                          <button
+                            type="button"
+                            onClick={confirmTypeSwitch}
+                            className="text-xs font-medium text-foreground hover:underline underline-offset-2"
+                          >
+                            {t("presetSwitchConfirm")}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={cancelTypeSwitch}
+                            className="text-xs text-muted-foreground hover:text-foreground"
+                          >
+                            {t("presetSwitchCancel")}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      // Clarify: explain why presets are unavailable
+                      <div className="rounded-lg border border-dashed border-border p-3 space-y-1">
+                        <p className="text-sm font-medium text-foreground">
+                          {t("presetSectionTitle")}
+                        </p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {t("presetLockedDesc", {
+                            type:
+                              queueType === "quorum"
+                                ? t("rabbitTypeQuorum")
+                                : t("rabbitTypeStream"),
+                          })}
+                          {clearedArgsCount > 0 && (
+                            <>
+                              {" "}
+                              {t("presetLockedCleared", {
+                                count: clearedArgsCount,
+                              })}
+                            </>
+                          )}
+                        </p>
+                      </div>
+                    )
+                  ) : (
+                    <QueueTypePreset value={preset} onChange={applyPreset} />
+                  )}
+                </div>
               )}
 
               <ExchangeBindingField form={form} exchanges={exchanges} />
@@ -349,7 +466,7 @@ export function AddQueueForm({
           <Button
             type="submit"
             onClick={form.handleSubmit(onSubmit)}
-            disabled={createQueueMutation.isPending}
+            disabled={createQueueMutation.isPending || !!pendingTypeSwitch}
             className="btn-primary"
           >
             {createQueueMutation.isPending ? (

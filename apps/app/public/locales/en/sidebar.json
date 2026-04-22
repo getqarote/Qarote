@@ -1,6 +1,7 @@
 {
   "dashboard": "Dashboard",
   "queues": "Queues",
+  "channels": "Channels",
   "connections": "Connections",
   "nodes": "Nodes",
   "exchanges": "Exchanges",

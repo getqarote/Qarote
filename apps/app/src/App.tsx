@@ -30,6 +30,7 @@ import i18n from "@/i18n";
 const Index = lazy(() => import("./pages/Index"));
 const Queues = lazy(() => import("./pages/Queues"));
 const QueueDetail = lazy(() => import("./pages/QueueDetail"));
+const Channels = lazy(() => import("./pages/Channels"));
 const Connections = lazy(() => import("./pages/Connections"));
 const Exchanges = lazy(() => import("./pages/Exchanges"));
 const Topology = lazy(() => import("./pages/Topology"));
@@ -237,6 +238,16 @@ const AppCore = () => (
                               <ProtectedRoute>
                                 <Layout>
                                   <QueueDetail />
+                                </Layout>
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/channels"
+                            element={
+                              <ProtectedRoute>
+                                <Layout>
+                                  <Channels />
                                 </Layout>
                               </ProtectedRoute>
                             }

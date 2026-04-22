@@ -1,0 +1,30 @@
+---
+interface Props {
+  backHref: string;
+  backText: string;
+}
+
+const { backHref, backText } = Astro.props;
+---
+
+<nav class="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm">
+  <div class="flex items-center justify-between h-14 px-4 sm:px-6 max-w-4xl mx-auto">
+    <a href="/" class="flex items-center gap-1.5 shrink-0">
+      <img src="/images/new_icon.svg" alt="" width={22} height={22} class="w-[22px] h-[22px]" aria-hidden="true" />
+      <span class="font-display font-normal text-[1.1rem] leading-none">Qarote</span>
+    </a>
+
+    <div class="flex items-center gap-4">
+      <a
+        href={backHref}
+        class="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        {backText}
+      </a>
+      <slot />
+    </div>
+  </div>
+</nav>

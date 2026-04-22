@@ -8,6 +8,7 @@ const i18n = createI18nInstance({
     "sidebar",
     "dashboard",
     "queues",
+    "channels",
     "connections",
     "nodes",
     "exchanges",

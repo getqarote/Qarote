@@ -1,6 +1,7 @@
 {
   "dashboard": "Tableau de bord",
   "queues": "Files d'attente",
+  "channels": "Canaux",
   "connections": "Connexions",
   "nodes": "Nœuds",
   "exchanges": "Échanges",

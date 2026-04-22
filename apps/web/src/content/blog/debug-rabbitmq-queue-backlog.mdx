@@ -1,0 +1,136 @@
+---
+title: "How I Debug a RabbitMQ Queue Backlog in 5 Minutes"
+description: "Your queue depth is climbing. Consumers look healthy. Logs say nothing. Here's the exact checklist I run every time a RabbitMQ queue stops draining."
+publishedAt: "2026-04-21"
+tags: ["rabbitmq", "debugging", "queues", "operations"]
+readingTimeMin: 6
+---
+
+Your queue depth is climbing. Your consumers appear healthy. Nothing obvious in the logs. The on-call engineer is staring at you.
+
+Here's the checklist I run every time a RabbitMQ queue stops draining — in order, fastest checks first.
+
+---
+
+## Step 1: Are there any consumers at all?
+
+Open the management UI (or Qarote) and look at the **Consumers** column for the stuck queue.
+
+If it reads `0`, you don't have a mystery — you have a missing consumer. Common causes:
+
+- A deployment crashed consumer pods and they didn't restart
+- A network partition isolated the consumer node
+- The consumer hit an uncaught exception and exited silently
+- Auto-scaling scaled to zero
+
+**Fix:** restart your consumer processes and confirm they reconnect. Check your process supervisor, Kubernetes deployment, or systemd unit.
+
+---
+
+## Step 2: Are messages being delivered but never acked?
+
+A non-zero consumer count doesn't mean messages are actually being processed. Check the **Unacknowledged** count alongside **Ready**.
+
+If `Unacked` is high and `Ready` is near zero, your consumers are receiving messages but not acknowledging them. This usually means:
+
+- **Prefetch count is too low.** If `prefetch_count = 1` and processing takes 10 seconds, each consumer handles only 6 msg/min. Multiply by your consumer count — if that's less than your publish rate, the queue grows forever.
+- **Consumers are blocking.** A downstream DB call, HTTP request, or lock is hanging. Messages are held in-flight but never completed.
+- **A bug is causing silent ack failures.** The message is being processed but the ack never fires — usually a missing `try/finally` or an exception thrown before the ack line.
+
+**Fix for prefetch:** increase `prefetch_count` to match your expected processing time and throughput. A rough formula: `prefetch = (target_throughput_per_consumer) × (avg_processing_time_seconds)`.
+
+```
+# Example: you want 50 msg/s per consumer, avg processing = 200ms
+prefetch = 50 × 0.2 = 10
+```
+
+**Fix for blocking consumers:** add timeouts to all external calls. Log before and after each downstream operation so you can see where time is going.
+
+---
+
+## Step 3: Check consumer utilisation
+
+RabbitMQ tracks **consumer utilisation** — the fraction of time a consumer is actually busy vs. waiting for the next message. You can see it in the management API:
+
+```bash
+curl -u guest:guest \
+  http://localhost:15672/api/queues/%2F/my-queue \
+  | jq '.consumer_utilisation'
+```
+
+A value close to `1.0` means consumers are saturated. A value close to `0` with messages in the queue means something else is wrong (usually unacked messages blocking delivery, see Step 2).
+
+---
+
+## Step 4: Check for memory and disk alarms
+
+RabbitMQ will stop accepting publishes and pause consumers when it hits resource limits. Run:
+
+```bash
+rabbitmqctl status | grep -A5 alarms
+```
+
+Or look at the **Overview** page in the management UI. If you see a red banner for `memory_alarm` or `disk_free_alarm`, that's your problem.
+
+**Common triggers:**
+
+- A large message or many small messages accumulating in RAM (queue not yet paged to disk)
+- Disk running low — RabbitMQ pages messages to disk, and if disk is full, it stops
+- `vm_memory_high_watermark` set too low for your workload
+
+**Fix:** increase `vm_memory_high_watermark` in `rabbitmq.conf`, free disk space, or scale your broker nodes.
+
+---
+
+## Step 5: Are messages being dead-lettered?
+
+If your queue has a `x-dead-letter-exchange` configured, rejected or expired messages go to a dead-letter queue (DLQ). If the DLQ is filling up, it means:
+
+- Consumers are calling `basic.nack` / `basic.reject` with `requeue=false`
+- Messages are expiring (TTL hit before a consumer picks them up)
+
+Check the DLQ depth. If it's growing at the same rate your main queue isn't draining, your consumers are processing messages but rejecting them — often due to a validation bug or a downstream service returning errors.
+
+**Fix:** inspect the messages in the DLQ. Read the first few payloads and look for a pattern. Fix the upstream publisher or the consumer's rejection logic.
+
+---
+
+## Step 6: Are you hitting channel-level flow control?
+
+High publish rates can trigger channel-level flow control even before a memory alarm fires. Look in the RabbitMQ logs for:
+
+```
+connection <x.x.x.x:y>, channel N: flow control
+```
+
+Or query the API:
+
+```bash
+curl -u guest:guest http://localhost:15672/api/channels \
+  | jq '.[] | select(.flow_blocked == true) | .name'
+```
+
+If you see channels blocked, the broker is telling publishers to slow down. This doesn't prevent draining, but it can mask the real issue — a slow consumer is letting the queue fill until the broker starts pushing back.
+
+---
+
+## Putting it together in one view
+
+Running through six `rabbitmqctl` commands and reading JSON from the API is manageable once. At 2am during an incident it's not.
+
+[Qarote](/) shows consumer count, unacked messages, consumer utilisation, DLQ depth, and active alarms on a single screen — updated in real time. The free, self-hosted MIT edition covers all of this. No per-host pricing, no data leaving your network.
+
+When I open the queue detail in Qarote during a backlog incident, I can usually rule out five of the six steps above in under a minute, leaving just the actual problem to investigate.
+
+---
+
+## Quick reference
+
+| Symptom | Likely cause | First check |
+|---|---|---|
+| `Consumers = 0` | Consumer process crashed | Pod / process status |
+| `Unacked` high, `Ready` low | Prefetch too low or consumer blocking | Processing time + prefetch setting |
+| `Consumer utilisation ≈ 1.0` | Consumers saturated | Add more consumer instances |
+| Red alarm banner | Memory or disk limit hit | `rabbitmqctl status` |
+| DLQ growing at same rate | Consumers rejecting messages | Inspect DLQ payloads |
+| Channels blocked | Flow control active | Slow down publishers or speed up consumers |

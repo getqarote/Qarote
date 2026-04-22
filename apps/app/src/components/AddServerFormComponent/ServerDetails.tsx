@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
@@ -27,6 +27,8 @@ interface ServerDetailsProps {
   hideNameField?: boolean;
   /** Hide the virtual host field (shown in step 2 for add mode). */
   hideVhostField?: boolean;
+  /** When true, programmatically expand the accordion (e.g. after URL parse or validation failure). */
+  forceExpanded?: boolean;
 }
 
 export const ServerDetails = ({
@@ -34,9 +36,14 @@ export const ServerDetails = ({
   alwaysExpanded = false,
   hideNameField = false,
   hideVhostField = false,
+  forceExpanded = false,
 }: ServerDetailsProps) => {
   const { t } = useTranslation("dashboard");
   const [expanded, setExpanded] = useState(alwaysExpanded);
+
+  useEffect(() => {
+    if (forceExpanded) setExpanded(true);
+  }, [forceExpanded]);
   const [showPassword, setShowPassword] = useState(false);
 
   const isOpen = alwaysExpanded || expanded;
@@ -229,7 +236,7 @@ export const ServerDetails = ({
                   <div className="relative">
                     <Input
                       type={showPassword ? "text" : "password"}
-                      autoComplete="new-password"
+                      autoComplete="off"
                       {...field}
                     />
                     <Button
@@ -270,13 +277,18 @@ export const ServerDetails = ({
         onClick={() => setExpanded((prev) => !prev)}
         className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
         aria-expanded={isOpen}
+        aria-controls="server-details-fields"
       >
         <PixelChevronDown
           className={`h-3 w-auto shrink-0 transition-transform ${isOpen ? "rotate-0" : "-rotate-90"}`}
         />
         {isOpen ? t("manualSetupHide") : t("manualSetupShow")}
       </button>
-      {isOpen && <div className="pt-1">{fields}</div>}
+      {isOpen && (
+        <div id="server-details-fields" className="pt-1">
+          {fields}
+        </div>
+      )}
     </div>
   );
 };
