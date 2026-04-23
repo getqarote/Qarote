@@ -1,0 +1,232 @@
+---
+title: "How to Set Up RabbitMQ Alerts That Actually Fire When You Need Them"
+description: "Set up RabbitMQ alerts that catch real problems early. Queue depth, dead consumers, DLQ spikes — the signals that matter and the thresholds to use."
+publishedAt: "2026-04-23"
+tags: ["rabbitmq", "monitoring", "alerts", "operations"]
+readingTimeMin: 9
+---
+
+You find out about the outage in Slack. A customer message: "hey, are you guys having issues?" You check the dashboard. Queue depth: 847,000 messages. Consumers: 0. The broker has been degraded for 40 minutes. Your alerting never fired.
+
+Or the opposite: alert storms so relentless — queue depth crossing 500 messages at 2 AM every Tuesday because of a scheduled batch job — that the on-call rotation trained itself to dismiss them before reading. Then the real incident happened, and nobody noticed.
+
+Both failure modes come from the same root problem: alerts configured by copying a threshold from a blog post, wired to a metric that lags reality by minutes, targeting the wrong thing entirely. This post is about fixing that. I'll cover the five metrics that actually matter, how to pick thresholds you can defend, and how to wire it all up — whether you're going the Prometheus route or want something that already understands RabbitMQ semantics.
+
+## Why Most RabbitMQ Alert Setups Fail
+
+The default RabbitMQ management UI shows you queue depth. That's what everyone reaches for first. But raw queue depth is a lagging indicator — it tells you you're already in trouble, not that trouble is approaching. And it produces false positives constantly: a healthy queue that bursts during peak load looks identical to a queue draining toward a full-disk event.
+
+Three patterns kill most alerting setups:
+
+**Wrong metric.** Queue depth alone, without rate-of-change context, is noise. A queue holding 10,000 messages that's draining at 2,000/sec is fine. The same queue growing at 500/sec is an incident in progress.
+
+**Static thresholds not tied to baseline.** Alerting at 1,000 messages on a queue that normally carries 5,000 is meaningless. Alerting at 1,000 on a queue that normally carries 50 is a 5-alarm fire.
+
+**Metrics that lag by minutes.** The RabbitMQ management HTTP API is polled, not push-based. If your monitoring scrapes every 60 seconds and your queue can fill in 30 seconds of consumer downtime, you'll consistently be one scrape behind where it matters.
+
+The fix is picking a small set of high-signal metrics, setting thresholds grounded in your actual traffic patterns, and — critically — alerting on leading indicators, not just lagging ones.
+
+## The 5 Metrics That Actually Matter
+
+### 1. Queue Depth: Absolute Value + Rate of Growth
+
+Absolute queue depth (`rabbitmq_queue_messages`) tells you how bad things are right now. Rate of growth tells you where you're headed. You need both.
+
+```yaml
+# Absolute depth threshold
+- alert: RabbitMQQueueDepthHigh
+  expr: rabbitmq_queue_messages{queue!~".*dlq.*"} > 10000
+  for: 5m
+  labels:
+    severity: warning
+  annotations:
+    summary: "Queue {{ $labels.queue }} has {{ $value }} messages"
+
+# Rate of growth — fills before depth becomes critical
+- alert: RabbitMQQueueGrowingFast
+  expr: rate(rabbitmq_queue_messages[5m]) > 100
+  for: 3m
+  labels:
+    severity: warning
+  annotations:
+    summary: "Queue {{ $labels.queue }} growing at {{ $value }}/sec"
+```
+
+The growth-rate alert fires before the depth alert becomes critical. That's the point — you want lead time.
+
+**Threshold reasoning:** Set the absolute depth threshold at roughly 2–3× your expected peak depth at normal traffic. Set the growth-rate threshold based on your observed drain rate: if consumers process 200 messages/sec and you're growing at 100/sec, you're trending toward saturation in minutes. See the [queue backlog debug guide](/blog/debug-rabbitmq-queue-backlog/) for how to diagnose what's driving the growth.
+
+### 2. Unacked Message Count (Consumer Health Proxy)
+
+`rabbitmq_queue_messages_unacked` is one of the most underused signals in RabbitMQ monitoring. When consumers receive messages but aren't acking them, it means they're stuck — processing something too slowly, blocked on a downstream dependency, or in a tight retry loop.
+
+A rising unacked count with a stable queue depth is a particularly dangerous pattern: it looks fine on the depth chart but your consumers are effectively frozen.
+
+```yaml
+- alert: RabbitMQUnackedMessagesHigh
+  expr: rabbitmq_queue_messages_unacked > 500
+  for: 5m
+  labels:
+    severity: warning
+  annotations:
+    summary: "{{ $value }} unacked messages on queue {{ $labels.queue }}"
+```
+
+**Threshold reasoning:** Set this relative to your `prefetch_count` setting. If each consumer has `prefetch_count` of 10 and you have 5 consumers, you'd expect at most ~50 in-flight messages at any time. Alerting at 5× that gives you signal without noise. If you're seeing this alert fire, the [consumer not processing guide](/blog/rabbitmq-consumer-not-processing/) covers the most common root causes.
+
+### 3. Consumer Count Dropping to Zero
+
+This one is non-negotiable. A queue with zero consumers and any messages is an outage in progress — or about to be. Treat this as a page-level alert, not a Slack notification.
+
+```yaml
+- alert: RabbitMQNoConsumers
+  expr: |
+    rabbitmq_queue_consumers == 0
+    and
+    rabbitmq_queue_messages > 0
+  for: 1m
+  labels:
+    severity: critical
+  annotations:
+    summary: "Queue {{ $labels.queue }} has no consumers and {{ $value }} messages"
+```
+
+The `for: 1m` gives a brief grace window for rolling restarts, where consumers momentarily drop to zero as old pods terminate before new ones connect. Any longer than a minute and you want to know immediately.
+
+**Threshold reasoning:** There is no threshold to tune here. Zero consumers on a non-empty queue is always wrong. The only tuning is the `for` window, which should match your deployment rollout duration.
+
+### 4. Memory Alarm (Node-Level)
+
+RabbitMQ will throttle publishers and block connections when a node approaches its memory high watermark. By the time `rabbitmq_node_mem_alarm` fires, you're already degraded — but it's still worth alerting on as an unambiguous signal requiring immediate action.
+
+```yaml
+# Fire immediately when alarm is active
+- alert: RabbitMQMemoryAlarm
+  expr: rabbitmq_node_mem_alarm == 1
+  for: 0m
+  labels:
+    severity: critical
+  annotations:
+    summary: "RabbitMQ node {{ $labels.node }} memory alarm active"
+
+# Early warning before the alarm fires
+- alert: RabbitMQMemoryUsageHigh
+  expr: rabbitmq_node_mem_used_bytes / rabbitmq_node_mem_limit > 0.75
+  for: 5m
+  labels:
+    severity: warning
+  annotations:
+    summary: "Node {{ $labels.node }} at {{ $value | humanizePercentage }} of memory limit"
+```
+
+**Threshold reasoning:** 75% of the memory high watermark gives you an early warning. The default watermark is 40% of total RAM, so this alert fires at roughly 30% of total node RAM — well before RabbitMQ starts throttling. For a full diagnosis guide when this fires, see [RabbitMQ Memory Alarm: How to Diagnose and Fix It](/blog/rabbitmq-memory-alarm/).
+
+### 5. Dead-Letter Queue Growth
+
+DLQs are the silent killers. Messages pile up there without causing visible symptoms in the main queues, and teams discover them weeks later during a post-mortem. A growing DLQ means messages are failing — due to processing errors, TTL expiry, or routing misconfigurations.
+
+```yaml
+- alert: RabbitMQDLQGrowing
+  expr: |
+    rate(rabbitmq_queue_messages_published_total{
+      queue=~".*dlq.*|.*dead.*|.*failed.*"
+    }[10m]) > 0
+  for: 10m
+  labels:
+    severity: warning
+  annotations:
+    summary: "DLQ {{ $labels.queue }} receiving messages at {{ $value }}/sec"
+```
+
+**Threshold reasoning:** Any sustained DLQ growth rate above zero is worth a warning. The 10-minute window filters out transient retries from occasional processing blips. If your application intentionally routes to a DLQ as part of normal flow, adjust the queue name filter to exclude those queues.
+
+## How to Wire This Up
+
+### Option 1: Prometheus + Alertmanager (DIY, full control)
+
+First, enable the Prometheus plugin on your RabbitMQ nodes:
+
+```bash
+rabbitmq-plugins enable rabbitmq_prometheus
+```
+
+This exposes metrics at `http://<node>:15692/metrics`. Add it to your Prometheus scrape config:
+
+```yaml
+scrape_configs:
+  - job_name: rabbitmq
+    static_configs:
+      - targets:
+          - rabbitmq-node-1:15692
+    scrape_interval: 15s
+```
+
+Keep the scrape interval at 15 seconds or lower. At 60 seconds you'll miss fast-filling queues entirely. Drop the alerting rules from the sections above into a file and reference it from `prometheus.yml`:
+
+```yaml
+rule_files:
+  - "rabbitmq_alerts.yml"
+```
+
+Configure Alertmanager routing to separate critical (page) from warning (Slack):
+
+```yaml
+route:
+  group_by: ["alertname", "queue"]
+  receiver: slack-default
+  routes:
+    - match:
+        severity: critical
+      receiver: pagerduty-oncall
+
+receivers:
+  - name: slack-default
+    slack_configs:
+      - channel: "#alerts"
+        send_resolved: true
+  - name: pagerduty-oncall
+    pagerduty_configs:
+      - routing_key: <your-key>
+```
+
+This setup is powerful and fully customizable. It also requires you to maintain Prometheus, Alertmanager, and keep your scrape targets updated as your cluster topology changes. If you're already running Prometheus for the rest of your infra, this is the natural path — see how it [compares to Grafana + Prometheus](/compare/grafana-prometheus/) for RabbitMQ-specific monitoring.
+
+### Option 2: Generic APM tools (Datadog, Grafana Cloud)
+
+Generic APM platforms can scrape the Prometheus endpoint, but they don't understand RabbitMQ semantics out of the box. You'll spend time mapping metric names, building dashboards from scratch, and configuring alert rules that the platform wasn't designed for. The cost also scales with data volume in ways that surprise teams. See [Datadog vs. Qarote](/compare/datadog/) for a full breakdown.
+
+### Option 3: Qarote (purpose-built, self-hosted)
+
+> **No Prometheus setup required.** Qarote connects directly to RabbitMQ's management API and ships with pre-built alert rules for all five signals above — queue depth (with rate-of-change), unacked count, consumer drop to zero, memory watermark percentage, and DLQ growth. You configure thresholds per-queue in the UI and set notification destinations (Slack, webhook). [See how alerting works →](/features/)
+
+It's the right trade-off if your team's bottleneck is ops overhead rather than Prometheus expertise. The two approaches aren't mutually exclusive — if you're already running Prometheus for the rest of your infra, use that. If you're not, Qarote saves you the stack.
+
+## Tuning for Alert Fatigue
+
+Getting alerts firing is step one. Keeping them actionable over time is where most teams fall short.
+
+**Watch for recurrent false positives over the first two weeks.** If an alert fires reliably on Tuesday evenings during your batch job, either exclude that window, raise the threshold, or add a label filter to exclude the batch queue from the rule.
+
+**Separate warning from critical ruthlessly.** Warnings go to Slack and are okay to miss occasionally. Critical alerts page someone. If your Slack channel is so noisy that people mute it, you've miscategorized warnings as critical.
+
+**Set `for` windows based on recovery time, not severity.** A queue that takes 10 minutes to drain under normal conditions shouldn't alert after 1 minute of elevation — that's noise. Set the `for` window to roughly half the expected recovery time.
+
+**Review thresholds when your traffic patterns change.** If you scale your consumer fleet by 3×, your unacked-message thresholds should change. Treat alert thresholds as configuration that needs a review whenever you make significant infrastructure changes.
+
+## When to Page vs. Slack
+
+My rule: page if the situation requires human action within 15 minutes to prevent data loss or user-visible impact.
+
+| Signal | Action |
+|---|---|
+| Consumer count drops to 0 | **Page immediately** |
+| Memory alarm fires | **Page immediately** |
+| Queue depth growing faster than drain rate (sustained) | **Page** (after grace period) |
+| DLQ growth detected | **Slack** (investigate next business day unless accelerating) |
+| Unacked count elevated but not climbing | **Slack** |
+
+The key word is "sustained." Every critical alert should have a `for` window. Point-in-time spikes that self-resolve in under two minutes shouldn't wake anyone up.
+
+---
+
+**tl;dr:** Most RabbitMQ alert setups fail because they use lagging metrics, static thresholds that ignore baseline traffic, and treat all alerts with equal severity. The five signals that give you real lead time are: queue depth with rate-of-change, unacked message count, consumer count (page immediately at zero), node memory watermark percentage, and DLQ growth rate. Set scrape intervals at 15 seconds or below, derive thresholds from your actual traffic patterns, and review alert history monthly to kill false positives before they kill your team's trust in the system.
