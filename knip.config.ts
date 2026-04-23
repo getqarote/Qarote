@@ -24,6 +24,8 @@ const config: KnipConfig = {
     },
   },
   ignore: [
+    // Ignore worktree scratch directories (temporary agent worktrees)
+    ".claire/**",
     // Ignore E2E test package (has its own dependency management)
     "apps/e2e/**",
     // Ignore UI component directories (as requested)
