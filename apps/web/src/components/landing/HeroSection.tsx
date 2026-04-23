@@ -101,7 +101,7 @@ const HeroSection = () => {
           ) : (
             <div className="relative w-full aspect-video overflow-hidden">
               <iframe
-                src="https://www.youtube.com/embed/g9Coi3niYIY?autoplay=1"
+                src="https://www.youtube.com/embed/8wYPovo6VrA?autoplay=1"
                 title="Qarote Video"
                 className="w-full h-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
