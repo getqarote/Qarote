@@ -12,7 +12,19 @@ export default defineConfig({
     mdx({
       shikiConfig: { theme: "min-light" },
     }),
-    sitemap(),
+    sitemap({
+      // Exclude docs — managed separately via dedicated doc tooling.
+      filter: (page) => !page.includes("/docs/"),
+      i18n: {
+        defaultLocale: "en",
+        locales: {
+          en: "en-US",
+          fr: "fr-FR",
+          es: "es-ES",
+          zh: "zh-CN",
+        },
+      },
+    }),
   ],
   i18n: {
     defaultLocale: "en",

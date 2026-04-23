@@ -1,0 +1,144 @@
+---
+title: "为什么你的RabbitMQ消费者没有处理消息"
+description: "消费者已连接，队列有消息，但什么都没动。这里是六个最常见的原因——以及如何在五分钟内逐一修复。"
+publishedAt: "2026-04-21"
+tags: ["rabbitmq", "debugging", "consumers", "operations"]
+readingTimeMin: 5
+---
+
+你已确认消费者在运行。队列有消息。但什么都没动。
+
+这是RabbitMQ最令人沮丧的故障模式之一，因为从外面看一切都很正常。下面是对真正原因的结构化分析。
+
+---
+
+## 1. Prefetch count阻塞了消息投递
+
+RabbitMQ的`basic.qos` prefetch设置控制消费者同时可持有多少条未确认消息。如果你的消费者设置了`prefetch_count = 1`且被一个慢操作卡住，在第一条消息被确认之前RabbitMQ不会发送下一条。
+
+在管理界面检查**Unacknowledged**计数。如果它恰好等于你的prefetch限制，那就是瓶颈所在。
+
+**解决方案：**
+
+```python
+# Python (pika)
+channel.basic_qos(prefetch_count=10)
+```
+
+```javascript
+// Node.js (amqplib)
+await channel.prefetch(10);
+```
+
+将prefetch设置为并发处理能力的倍数。如果每个Worker可以并行处理5个操作，`prefetch_count = 5`可以让它保持充分利用。
+
+---
+
+## 2. 消费者已连接但阻塞在I/O上
+
+连接中的消费者不等于正在处理的消费者。如果你的消费者在等待一个永远不返回的数据库查询、外部HTTP调用或文件操作，它还活着，但什么都没做。
+
+寻找以下迹象：
+
+- `Unacked`计数等于prefetch count且随时间不变
+- 消费者利用率为`1.0`但吞吐量接近零
+- 应用日志显示一个已开始但从未记录完成的请求
+
+**解决方案：** 为消费者发出的每个下游调用添加明确的超时。
+
+```python
+import requests
+response = requests.get(url, timeout=5)  # 永远不要省略超时
+```
+
+如果无法为正在使用的库添加超时，请将调用包装在有截止时间的线程或异步任务中。
+
+---
+
+## 3. 消息被nack后静默地重新入队
+
+如果你的消费者调用`basic.nack`或`basic.reject`且`requeue=true`，消息会直接回到队列头部——然后你的消费者立即再次接收它。如果这个失败是确定性的（格式错误的Payload、永久不可用的依赖），就会形成无限循环。
+
+检查**消息速率**面板：如果投递速率高但确认速率为零，你就陷入了nack循环。
+
+**解决方案：** 对于非瞬态故障，使用`requeue=false`拒绝，让消息进入死信队列：
+
+```python
+channel.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+```
+
+然后检查你的DLQ，了解消息被拒绝的原因。
+
+---
+
+## 4. 消费者连接受到流控
+
+当内存使用率变高时，RabbitMQ可以应用通道级流控。在这种状态下，Broker停止向现有消费者投递消息。消费者进程运行正常——只是没有收到任何消息。
+
+检查流控：
+
+```bash
+curl -u guest:guest http://localhost:15672/api/channels \
+  | jq '.[] | select(.flow_blocked == true) | .name'
+```
+
+或在`/var/log/rabbitmq/rabbit@<hostname>.log`中查找`flow control`条目。
+
+**解决方案：** 排查Broker上的内存压力。常见原因：一个队列积累了数百万条消息、一条特别大的消息，或`vm_memory_high_watermark`设置太低。释放内存或提高水位线。
+
+---
+
+## 5. 通道或连接被静默关闭
+
+某些AMQP客户端库会吞掉通道错误而不是将其暴露出来。你的消费者进程在运行，但底层通道在协议错误（不可路由的消息、编解码错误、权限问题）后被关闭，而且没有人重新连接。
+
+在RabbitMQ日志中查找`channel.close`或`connection.close`事件：
+
+```bash
+tail -n 100 /var/log/rabbitmq/rabbit@$(hostname).log | grep -E "closing|channel|error"
+```
+
+**解决方案：** 在消费者中实现重连循环。监听通道/连接关闭事件并重新建立连接：
+
+```javascript
+connection.on("error", (err) => {
+  console.error("连接错误", err);
+  setTimeout(connect, 5000);
+});
+```
+
+大多数生产级RabbitMQ客户端应将连接视为临时的。
+
+---
+
+## 6. 错误的队列绑定——消费者在另一个队列上
+
+这听起来很明显，但发生的频率比你想象的要高，尤其是在Staging环境中：发布者路由到`orders.created`，但消费者订阅了`order.created`（少了`s`）。两个队列都存在，一个在增长，消费者处于空闲状态。
+
+在管理界面或Qarote中验证确切的队列名称和绑定键。按深度排序队列——正在增长的那个才是消息真正所在的地方。
+
+---
+
+## 一眼看清所有问题
+
+手动遍历管理API——通道、流控、nack速率、消费者利用率——偶尔一次还算可行。凌晨3点发生故障时就不行了。
+
+[Qarote](/)在单个界面上实时显示消费者数量、未确认速率、利用率和DLQ深度。免费的MIT版本覆盖所有这些指标。无按主机计费，无数据离开你的网络。
+
+---
+
+## 决策树
+
+```
+消费者已连接？
+  └─ 否  → 重启消费者进程
+  └─ 是  → Unacked = prefetch限制？
+             └─ 是 → 消费者阻塞在I/O上或prefetch太低
+             └─ 否 → 投递速率高，确认速率~0？
+                      └─ 是 → Nack + requeue循环
+                      └─ 否 → 流控激活？
+                                └─ 是 → Broker内存压力
+                                └─ 否 → 通道被静默关闭？
+                                          └─ 是 → 添加重连逻辑
+                                          └─ 否 → 检查队列名称/绑定
+```

@@ -1,0 +1,138 @@
+---
+import { getCollection } from "astro:content";
+import { SUPPORTED_LOCALES } from "@qarote/i18n";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import BlogNav from "../../../components/BlogNav.astro";
+
+export async function getStaticPaths() {
+  const nonEnglishLocales = SUPPORTED_LOCALES.filter((l) => l !== "en");
+  return nonEnglishLocales.map((locale) => ({ params: { locale } }));
+}
+
+const { locale } = Astro.params as { locale: string };
+
+const allPosts = await getCollection("blog");
+// Posts for this locale live in content/blog/<locale>/
+const posts = allPosts
+  .filter((p) => p.id.startsWith(`${locale}/`))
+  .sort(
+    (a, b) =>
+      new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime()
+  );
+
+const dateStr = (iso: string) =>
+  new Date(iso).toLocaleDateString(locale, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+const labels: Record<string, { blog: string; heading: string; description: string; readMin: string }> = {
+  fr: {
+    blog: "Blog",
+    heading: "Guides RabbitMQ & opérations",
+    description: "Techniques de débogage pratiques, modèles de performance et retours d'expérience en production par l'équipe Qarote.",
+    readMin: "min de lecture",
+  },
+  es: {
+    blog: "Blog",
+    heading: "Guías RabbitMQ y operaciones",
+    description: "Técnicas de depuración prácticas, patrones de rendimiento e historias de producción del equipo de Qarote.",
+    readMin: "min de lectura",
+  },
+  zh: {
+    blog: "博客",
+    heading: "RabbitMQ 指南与运维",
+    description: "来自Qarote团队的实用调试技巧、性能优化模式以及生产实战经验分享。",
+    readMin: "分钟阅读",
+  },
+};
+
+const t = labels[locale] ?? labels["fr"];
+
+const seoTitles: Record<string, string> = {
+  fr: "Blog — Guides RabbitMQ & Opérations",
+  es: "Blog — Guías RabbitMQ y Operaciones",
+  zh: "博客 — RabbitMQ 指南与运维",
+};
+
+const seoDescriptions: Record<string, string> = {
+  fr: "Techniques pratiques pour déboguer RabbitMQ, optimiser le débit des consommateurs et gérer les files de messages en production.",
+  es: "Guías prácticas para depurar RabbitMQ, optimizar el rendimiento de los consumidores y gestionar colas de mensajes en producción.",
+  zh: "调试RabbitMQ、优化消费者吞吐量以及在生产环境中管理消息队列的实用指南。",
+};
+---
+
+<BaseLayout
+  title={seoTitles[locale] ?? seoTitles["fr"]}
+  description={seoDescriptions[locale] ?? seoDescriptions["fr"]}
+  locale={locale}
+  canonicalPath="/blog/"
+>
+  <BlogNav backHref={`/${locale}/`} backText={locale === "fr" ? "Retour au site" : locale === "es" ? "Volver al sitio" : "返回网站"} />
+
+  <!-- Header -->
+  <header class="max-w-4xl mx-auto px-4 sm:px-6 pt-14 pb-10">
+    <p class="text-xs font-semibold uppercase tracking-widest text-primary mb-3">{t.blog}</p>
+    <h1 class="font-display text-3xl sm:text-4xl font-semibold text-foreground tracking-tight mb-3">
+      {t.heading}
+    </h1>
+    <p class="text-base text-muted-foreground max-w-xl">
+      {t.description}
+    </p>
+  </header>
+
+  <!-- Post list -->
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 pb-20">
+    {posts.length === 0 ? (
+      <p class="text-muted-foreground text-sm">
+        {locale === "fr" ? "Aucun article pour l'instant." : locale === "es" ? "Sin artículos aún." : "暂无文章。"}
+      </p>
+    ) : (
+      <ul class="divide-y divide-border list-none">
+        {posts.map((post) => {
+          // Strip locale prefix from post.id to get the slug
+          const slug = post.id.slice(locale.length + 1);
+          return (
+            <li class="py-8 first:pt-0">
+              <article>
+                {post.data.tags && post.data.tags.length > 0 && (
+                  <div class="flex flex-wrap gap-2 mb-3">
+                    {post.data.tags.map((tag: string) => (
+                      <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <h2 class="font-display text-xl font-semibold text-foreground leading-snug mb-2">
+                  <a
+                    href={`/${locale}/blog/${slug}/`}
+                    class="hover:text-primary transition-colors no-underline"
+                  >
+                    {post.data.title}
+                  </a>
+                </h2>
+
+                <p class="text-sm text-muted-foreground leading-relaxed mb-4 max-w-2xl">
+                  {post.data.description}
+                </p>
+
+                <div class="flex items-center gap-3 text-xs text-muted-foreground">
+                  <time datetime={post.data.publishedAt}>{dateStr(post.data.publishedAt)}</time>
+                  {post.data.readingTimeMin && (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <span>{post.data.readingTimeMin} {t.readMin}</span>
+                    </>
+                  )}
+                </div>
+              </article>
+            </li>
+          );
+        })}
+      </ul>
+    )}
+  </main>
+</BaseLayout>

@@ -1,9 +1,9 @@
 {
   "hero": {
-    "titleBefore": "Le moyen le plus simple de monitorer vos serveurs ",
+    "titleBefore": "Monitoring ",
     "titleHighlight": "RabbitMQ",
-    "titleAfter": "",
-    "subtitle": "Qarote fournit une interface claire et intuitive pour surveiller, analyser et gérer vos serveurs RabbitMQ sans effort.",
+    "titleAfter": " complet en 2 minutes.",
+    "subtitle": "Sans Prometheus. Sans Grafana. Entrez votre URL — monitoring complet des files en moins de 2 minutes.",
     "noCreditCard": "Gratuit et open source • Essayez les fonctions Pro pendant 14 jours"
   },
   "cta": {
@@ -128,6 +128,6 @@
   },
   "seo": {
     "title": "Qarote - Tableau de bord de monitoring RabbitMQ",
-    "description": "Surveillez vos files RabbitMQ, suivez les performances et gérez votre broker de messages avec Qarote. Monitoring gratuit avec alertes et support multi-serveurs."
+    "description": "Monitoring RabbitMQ en 2 minutes — sans Prometheus, sans Grafana. Connectez votre URL et c'est tout. Gratuit, open source, auto-hébergeable."
   }
 }

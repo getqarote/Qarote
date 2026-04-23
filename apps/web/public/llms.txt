@@ -1,6 +1,6 @@
 # Qarote
 
-> Qarote is a modern RabbitMQ monitoring and management dashboard for developers and DevOps teams. It provides a clean, intuitive interface to monitor queues, track performance, manage exchanges, and set up alerts across multiple RabbitMQ servers. Qarote replaces the default RabbitMQ Management Plugin with a faster, more powerful experience.
+> Qarote is a purpose-built RabbitMQ monitoring and management dashboard for developers and DevOps teams. It connects to any RabbitMQ server in under two minutes via the Management HTTP API — no Prometheus exporter, no Grafana dashboards, no configuration required. Qarote replaces both the default RabbitMQ Management Plugin and general-purpose monitoring stacks with a fast, team-friendly interface for queue monitoring, alerting, and management.
 
 ## Product Overview
 
