@@ -20,6 +20,7 @@ jobs:
     name: Analyze
     runs-on: ubuntu-latest
     if: github.actor != 'dependabot[bot]'
+    continue-on-error: true # GHAS required for private repos — fails gracefully on EE, works on public mirror
     permissions:
       actions: read
       contents: read
