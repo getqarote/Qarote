@@ -126,11 +126,11 @@ Quand j'ouvre le détail d'une file dans Qarote lors d'un incident de saturation
 
 ## Référence rapide
 
-| Symptôme | Cause probable | Premier contrôle |
-| --- | --- | --- |
-| `Consumers = 0` | Processus consommateur planté | Statut du pod / processus |
-| `Unacked` élevé, `Ready` bas | Prefetch trop faible ou consommateur bloqué | Temps de traitement + paramètre prefetch |
-| `Consumer utilisation ≈ 1,0` | Consommateurs saturés | Ajouter des instances consommatrices |
-| Bannière d'alarme rouge | Limite mémoire ou disque atteinte | `rabbitmqctl status` |
-| DLQ croissant au même rythme | Consommateurs rejetant les messages | Inspecter les payloads de la DLQ |
-| Canaux bloqués | Contrôle de flux actif | Ralentir les éditeurs ou accélérer les consommateurs |
+| Symptôme                     | Cause probable                              | Premier contrôle                                     |
+| ---------------------------- | ------------------------------------------- | ---------------------------------------------------- |
+| `Consumers = 0`              | Processus consommateur planté               | Statut du pod / processus                            |
+| `Unacked` élevé, `Ready` bas | Prefetch trop faible ou consommateur bloqué | Temps de traitement + paramètre prefetch             |
+| `Consumer utilisation ≈ 1,0` | Consommateurs saturés                       | Ajouter des instances consommatrices                 |
+| Bannière d'alarme rouge      | Limite mémoire ou disque atteinte           | `rabbitmqctl status`                                 |
+| DLQ croissant au même rythme | Consommateurs rejetant les messages         | Inspecter les payloads de la DLQ                     |
+| Canaux bloqués               | Contrôle de flux actif                      | Ralentir les éditeurs ou accélérer les consommateurs |

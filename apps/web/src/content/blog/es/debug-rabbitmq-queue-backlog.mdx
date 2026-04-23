@@ -126,11 +126,11 @@ Cuando abro el detalle de una cola en Qarote durante un incidente de acumulamien
 
 ## Referencia rápida
 
-| Síntoma | Causa probable | Primera comprobación |
-| --- | --- | --- |
-| `Consumers = 0` | Proceso consumidor crasheado | Estado del pod / proceso |
+| Síntoma                      | Causa probable                                 | Primera comprobación                                |
+| ---------------------------- | ---------------------------------------------- | --------------------------------------------------- |
+| `Consumers = 0`              | Proceso consumidor crasheado                   | Estado del pod / proceso                            |
 | `Unacked` alto, `Ready` bajo | Prefetch demasiado bajo o consumidor bloqueado | Tiempo de procesamiento + configuración de prefetch |
-| `Consumer utilisation ≈ 1,0` | Consumidores saturados | Añadir más instancias consumidoras |
-| Banner de alarma rojo | Límite de memoria o disco alcanzado | `rabbitmqctl status` |
-| DLQ creciendo al mismo ritmo | Consumidores rechazando mensajes | Inspeccionar payloads de la DLQ |
-| Canales bloqueados | Control de flujo activo | Ralentizar publicadores o acelerar consumidores |
+| `Consumer utilisation ≈ 1,0` | Consumidores saturados                         | Añadir más instancias consumidoras                  |
+| Banner de alarma rojo        | Límite de memoria o disco alcanzado            | `rabbitmqctl status`                                |
+| DLQ creciendo al mismo ritmo | Consumidores rechazando mensajes               | Inspeccionar payloads de la DLQ                     |
+| Canales bloqueados           | Control de flujo activo                        | Ralentizar publicadores o acelerar consumidores     |

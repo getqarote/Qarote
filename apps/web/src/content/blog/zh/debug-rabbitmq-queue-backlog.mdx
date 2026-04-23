@@ -126,11 +126,11 @@ curl -u guest:guest http://localhost:15672/api/channels \
 
 ## 快速参考
 
-| 症状 | 可能原因 | 首先检查 |
-| --- | --- | --- |
-| `Consumers = 0` | 消费者进程崩溃 | Pod / 进程状态 |
-| `Unacked`高，`Ready`低 | Prefetch太低或消费者阻塞 | 处理时间 + prefetch设置 |
-| `Consumer utilisation ≈ 1.0` | 消费者已饱和 | 增加更多消费者实例 |
-| 红色告警横幅 | 达到内存或磁盘限制 | `rabbitmqctl status` |
-| DLQ以相同速率增长 | 消费者在拒绝消息 | 检查DLQ中的Payload |
-| 通道被阻塞 | 流控激活 | 降低发布者速率或提升消费者速度 |
+| 症状                         | 可能原因                 | 首先检查                       |
+| ---------------------------- | ------------------------ | ------------------------------ |
+| `Consumers = 0`              | 消费者进程崩溃           | Pod / 进程状态                 |
+| `Unacked`高，`Ready`低       | Prefetch太低或消费者阻塞 | 处理时间 + prefetch设置        |
+| `Consumer utilisation ≈ 1.0` | 消费者已饱和             | 增加更多消费者实例             |
+| 红色告警横幅                 | 达到内存或磁盘限制       | `rabbitmqctl status`           |
+| DLQ以相同速率增长            | 消费者在拒绝消息         | 检查DLQ中的Payload             |
+| 通道被阻塞                   | 流控激活                 | 降低发布者速率或提升消费者速度 |
