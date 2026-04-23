@@ -42,4 +42,4 @@ User-agent: cohere-ai
 Disallow: /
 
 # Sitemap location
-Sitemap: https://qarote.io/sitemap.xml
+Sitemap: https://qarote.io/sitemap-index.xml
