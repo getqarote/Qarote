@@ -6,8 +6,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub Stars](https://img.shields.io/github/stars/getqarote/Qarote?style=flat)](https://github.com/getqarote/Qarote/stargazers)
+[![Status](https://img.shields.io/badge/status-operational-brightgreen)](https://status.qarote.io)
 
-[Features](#features) · [Quick Start](#quick-start) · [Editions](#editions) · [Documentation](#documentation) · [Contributing](#contributing)
+[Features](#features) · [Quick Start](#quick-start) · [Editions](#editions) · [Documentation](#documentation) · [Contributing](#contributing) · [Status](https://status.qarote.io)
 
 [![Animated demo showing Qarote's dashboard monitoring RabbitMQ queues, exchanges, and system metrics](assets/demo.gif)](https://youtu.be/8wYPovo6VrA)
 

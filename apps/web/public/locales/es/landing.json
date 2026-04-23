@@ -116,6 +116,7 @@
     "about": "Acerca de",
     "privacyPolicy": "Política de privacidad",
     "termsOfService": "Términos de servicio",
+    "status": "Estado",
     "contact": "Contacto",
     "vsDatadog": "Qarote vs Datadog",
     "vsGrafana": "Qarote vs Grafana + Prometheus"

@@ -44,6 +44,14 @@ const FooterLinks = ({ locale = "en" }: { locale?: string }) => {
       >
         {t("footer.termsOfService")}
       </a>
+      <a
+        href="https://status.qarote.io"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+      >
+        {t("footer.status", "Status")}
+      </a>
       <button
         type="button"
         onClick={() => {
