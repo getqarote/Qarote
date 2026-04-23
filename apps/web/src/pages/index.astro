@@ -1,4 +1,5 @@
 ---
+import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import LandingIsland from "../components/LandingIsland";
 import { loadTranslations, loadAllTranslations, t } from "../lib/i18n-static";
@@ -8,6 +9,19 @@ const landing = loadTranslations("en", "landing");
 const faq = loadTranslations("en", "faq");
 const resources = loadAllTranslations("en");
 const faqSchema = buildFaqSchema(faq);
+
+const allPosts = await getCollection("blog");
+const blogPosts = allPosts
+  .sort((a, b) => new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime())
+  .slice(0, 3)
+  .map((post) => ({
+    slug: post.id,
+    title: post.data.title,
+    description: post.data.description,
+    publishedAt: post.data.publishedAt,
+    tags: post.data.tags,
+    readingTimeMin: post.data.readingTimeMin,
+  }));
 ---
 
 <BaseLayout
@@ -18,5 +32,5 @@ const faqSchema = buildFaqSchema(faq);
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   </Fragment>
-  <LandingIsland resources={resources} client:load />
+  <LandingIsland resources={resources} blogPosts={blogPosts} client:load />
 </BaseLayout>
