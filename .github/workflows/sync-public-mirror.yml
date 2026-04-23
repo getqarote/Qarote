@@ -58,10 +58,14 @@ jobs:
             exit 1
           fi
 
-          # Fail the job if any CE file still contains an EE import — either
-          # a relative ../ee/ path or the @/ee/ path alias. Both indicate a
-          # boundary violation that must be resolved (stub/registry) before shipping.
-          if grep -rE 'from\s+['"'"'"](@/ee/|[^'"'"'"]*\.\./.*ee/)' public-repo/apps/api/src/ 2>/dev/null; then
+          # Fail the job if any CE file still references EE code in any import form:
+          #   from '…'       — named/default import
+          #   import '…'     — side-effect import (e.g. import "@/ee/bootstrap")
+          #   import('…')    — dynamic import
+          #   require('…')   — CommonJS require
+          # Matches both the @/ee/ alias and relative ../ee/ path variants.
+          if grep -rE '(from|import\(|require\()\s*['"'"'"](@/ee/|[^'"'"'"]*\.\./.*ee/)' \
+               public-repo/apps/api/src/ 2>/dev/null; then
             echo "ERROR: EE imports (@/ee/ or ../ee/) found in CE tree — fix before pushing to mirror." >&2
             exit 1
           fi
