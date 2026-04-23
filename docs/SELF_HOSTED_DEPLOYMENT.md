@@ -45,7 +45,7 @@ Qarote self-hosted provides core RabbitMQ monitoring out of the box. Premium fea
 
 Requirements depend on your deployment method:
 
-- **Binary:** PostgreSQL 15+ (no Docker, Node.js, or web server needed)
+- **Binary:** PostgreSQL 17+ (no Docker, Node.js, or web server needed)
 - **Docker Compose:** Docker and Docker Compose (PostgreSQL is included)
 - **Dokku:** Dokku installed on your server
 - Minimum 2GB RAM, 10GB disk space
@@ -62,7 +62,7 @@ Qarote is available as a single binary that embeds both the API and frontend. No
 > ```
 >
 > **Install PostgreSQL** if you don't have it:
-> - **macOS:** `brew install postgresql@15`
+> - **macOS:** `brew install postgresql@17`
 > - **Ubuntu/Debian:** `sudo apt install postgresql`
 > - **Windows (WSL2):** `sudo apt install postgresql`
 

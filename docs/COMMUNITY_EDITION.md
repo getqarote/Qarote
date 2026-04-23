@@ -136,7 +136,7 @@ If you prefer Docker Compose or need more control over the deployment, you can u
 #### Prerequisites
 
 - Docker and Docker Compose
-- PostgreSQL 15+ (or use the included PostgreSQL container)
+- PostgreSQL 17+ (or use the included PostgreSQL container)
 
 #### Quick Start
 
