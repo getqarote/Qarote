@@ -1,0 +1,136 @@
+---
+title: "Comment déboguer une file d'attente RabbitMQ saturée en 5 minutes"
+description: "La profondeur de votre file augmente. Les consommateurs semblent en bonne santé. Les logs ne disent rien. Voici la checklist exacte que j'applique à chaque fois qu'une file RabbitMQ cesse de se vider."
+publishedAt: "2026-04-21"
+tags: ["rabbitmq", "debugging", "queues", "operations"]
+readingTimeMin: 6
+---
+
+La profondeur de votre file augmente. Vos consommateurs semblent en bonne santé. Rien d'évident dans les logs. L'ingénieur d'astreinte vous fixe du regard.
+
+Voici la checklist que j'applique à chaque fois qu'une file RabbitMQ cesse de se vider — dans l'ordre, les vérifications les plus rapides en premier.
+
+---
+
+## Étape 1 : Y a-t-il des consommateurs ?
+
+Ouvrez l'interface de gestion (ou Qarote) et regardez la colonne **Consumers** de la file bloquée.
+
+Si elle affiche `0`, vous n'avez pas de mystère — il vous manque un consommateur. Causes courantes :
+
+- Un déploiement a fait planter des pods consommateurs qui n'ont pas redémarré
+- Une partition réseau a isolé le nœud consommateur
+- Le consommateur a levé une exception non interceptée et s'est arrêté silencieusement
+- L'auto-scaling a réduit l'échelle à zéro
+
+**Correction :** redémarrez vos processus consommateurs et confirmez qu'ils se reconnectent. Vérifiez votre superviseur de processus, votre déploiement Kubernetes ou votre unité systemd.
+
+---
+
+## Étape 2 : Les messages sont-ils livrés mais jamais acquittés ?
+
+Un nombre de consommateurs non nul ne signifie pas que les messages sont réellement traités. Vérifiez le compteur **Unacknowledged** à côté de **Ready**.
+
+Si `Unacked` est élevé et `Ready` proche de zéro, vos consommateurs reçoivent des messages mais ne les acquittent pas. Cela signifie généralement :
+
+- **Le prefetch count est trop faible.** Si `prefetch_count = 1` et que le traitement prend 10 secondes, chaque consommateur ne gère que 6 msg/min. Multipliez par votre nombre de consommateurs — si c'est inférieur à votre taux de publication, la file grossit indéfiniment.
+- **Les consommateurs sont bloqués.** Un appel à une base de données, une requête HTTP ou un verrou est suspendu. Les messages sont en vol mais ne se terminent jamais.
+- **Un bug provoque des échecs d'acquittement silencieux.** Le message est traité mais l'acquittement ne s'envoie jamais — généralement un `try/finally` manquant ou une exception levée avant la ligne d'acquittement.
+
+**Correction pour le prefetch :** augmentez `prefetch_count` pour correspondre à votre temps de traitement et débit attendus. Formule approximative : `prefetch = (débit_cible_par_consommateur) × (temps_de_traitement_moyen_en_secondes)`.
+
+```
+# Exemple : 50 msg/s par consommateur, traitement moyen = 200ms
+prefetch = 50 × 0,2 = 10
+```
+
+**Correction pour les consommateurs bloqués :** ajoutez des délais d'attente à tous les appels externes. Journalisez avant et après chaque opération aval pour voir où le temps est perdu.
+
+---
+
+## Étape 3 : Vérifiez l'utilisation des consommateurs
+
+RabbitMQ suit l'**utilisation des consommateurs** — la fraction du temps pendant laquelle un consommateur est réellement occupé par rapport à l'attente du prochain message. Vous pouvez la consulter via l'API de gestion :
+
+```bash
+curl -u guest:guest \
+  http://localhost:15672/api/queues/%2F/my-queue \
+  | jq '.consumer_utilisation'
+```
+
+Une valeur proche de `1,0` signifie que les consommateurs sont saturés. Une valeur proche de `0` avec des messages dans la file signifie qu'autre chose ne va pas (généralement des messages non acquittés bloquant la livraison, voir Étape 2).
+
+---
+
+## Étape 4 : Vérifiez les alarmes mémoire et disque
+
+RabbitMQ arrête d'accepter les publications et met les consommateurs en pause lorsqu'il atteint les limites de ressources. Exécutez :
+
+```bash
+rabbitmqctl status | grep -A5 alarms
+```
+
+Ou regardez la page **Overview** dans l'interface de gestion. Si vous voyez une bannière rouge pour `memory_alarm` ou `disk_free_alarm`, c'est votre problème.
+
+**Déclencheurs courants :**
+
+- Un message volumineux ou de nombreux petits messages s'accumulent en RAM (file non encore paginée sur le disque)
+- Le disque est presque plein — RabbitMQ pagine les messages sur le disque et s'il est saturé, il s'arrête
+- `vm_memory_high_watermark` réglé trop bas pour votre charge de travail
+
+**Correction :** augmentez `vm_memory_high_watermark` dans `rabbitmq.conf`, libérez de l'espace disque ou faites évoluer vos nœuds de broker.
+
+---
+
+## Étape 5 : Les messages sont-ils envoyés en dead-letter ?
+
+Si votre file dispose d'un `x-dead-letter-exchange` configuré, les messages rejetés ou expirés vont dans une dead-letter queue (DLQ). Si la DLQ se remplit, cela signifie :
+
+- Les consommateurs appellent `basic.nack` / `basic.reject` avec `requeue=false`
+- Les messages expirent (TTL atteint avant qu'un consommateur les récupère)
+
+Vérifiez la profondeur de la DLQ. Si elle croît au même rythme que votre file principale ne se vide pas, vos consommateurs traitent les messages mais les rejettent — souvent à cause d'un bug de validation ou d'un service aval renvoyant des erreurs.
+
+**Correction :** inspectez les messages dans la DLQ. Lisez les premiers payloads et cherchez un schéma commun. Corrigez la logique de publication ou celle de rejet du consommateur.
+
+---
+
+## Étape 6 : Avez-vous atteint le contrôle de flux au niveau des canaux ?
+
+Des taux de publication élevés peuvent déclencher le contrôle de flux au niveau des canaux avant même qu'une alarme mémoire ne se produise. Cherchez dans les logs RabbitMQ :
+
+```
+connection <x.x.x.x:y>, channel N: flow control
+```
+
+Ou interrogez l'API :
+
+```bash
+curl -u guest:guest http://localhost:15672/api/channels \
+  | jq '.[] | select(.flow_blocked == true) | .name'
+```
+
+Si vous voyez des canaux bloqués, le broker demande aux éditeurs de ralentir. Cela ne bloque pas le vidage, mais peut masquer le vrai problème — un consommateur lent laisse la file se remplir jusqu'à ce que le broker commence à refouler du trafic.
+
+---
+
+## Vue d'ensemble en un seul écran
+
+Passer en revue six commandes `rabbitmqctl` et lire du JSON depuis l'API est gérable une fois. À 2h du matin pendant un incident, non.
+
+[Qarote](/) affiche le nombre de consommateurs, les messages non acquittés, l'utilisation des consommateurs, la profondeur de la DLQ et les alarmes actives sur un seul écran — en temps réel. L'édition MIT gratuite et auto-hébergée couvre tout cela. Sans tarification par hôte, sans données qui quittent votre réseau.
+
+Quand j'ouvre le détail d'une file dans Qarote lors d'un incident de saturation, je peux généralement écarter cinq des six étapes ci-dessus en moins d'une minute, ne laissant que le vrai problème à investiguer.
+
+---
+
+## Référence rapide
+
+| Symptôme | Cause probable | Premier contrôle |
+| --- | --- | --- |
+| `Consumers = 0` | Processus consommateur planté | Statut du pod / processus |
+| `Unacked` élevé, `Ready` bas | Prefetch trop faible ou consommateur bloqué | Temps de traitement + paramètre prefetch |
+| `Consumer utilisation ≈ 1,0` | Consommateurs saturés | Ajouter des instances consommatrices |
+| Bannière d'alarme rouge | Limite mémoire ou disque atteinte | `rabbitmqctl status` |
+| DLQ croissant au même rythme | Consommateurs rejetant les messages | Inspecter les payloads de la DLQ |
+| Canaux bloqués | Contrôle de flux actif | Ralentir les éditeurs ou accélérer les consommateurs |

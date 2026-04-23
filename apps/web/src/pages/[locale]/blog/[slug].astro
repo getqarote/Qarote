@@ -1,0 +1,46 @@
+---
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import { SUPPORTED_LOCALES } from "@qarote/i18n";
+import BlogLayout from "../../../layouts/BlogLayout.astro";
+
+export async function getStaticPaths() {
+  const allPosts = await getCollection("blog");
+  const nonEnglishLocales = SUPPORTED_LOCALES.filter((l) => l !== "en");
+
+  return allPosts
+    .filter((post) => nonEnglishLocales.some((l) => post.id.startsWith(`${l}/`)))
+    .map((post) => {
+      // post.id looks like "fr/some-slug" or "es/some-slug"
+      const separatorIdx = post.id.indexOf("/");
+      const locale = post.id.slice(0, separatorIdx);
+      const slug = post.id.slice(separatorIdx + 1);
+      return {
+        params: { locale, slug },
+        props: { post, locale, slug },
+      };
+    });
+}
+
+interface Props {
+  post: CollectionEntry<"blog">;
+  locale: string;
+  slug: string;
+}
+
+const { post, locale, slug } = Astro.props as Props;
+const { Content, headings } = await render(post);
+---
+
+<BlogLayout
+  title={post.data.title}
+  description={post.data.description}
+  publishedAt={post.data.publishedAt}
+  updatedAt={post.data.updatedAt}
+  tags={post.data.tags}
+  readingTimeMin={post.data.readingTimeMin}
+  headings={headings}
+  slug={slug}
+  locale={locale}
+>
+  <Content />
+</BlogLayout>

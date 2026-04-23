@@ -12,14 +12,24 @@ interface Props {
   readingTimeMin?: number;
   headings?: MarkdownHeading[];
   slug: string;
+  locale?: string;
 }
 
-const { title, description, publishedAt, updatedAt, tags, readingTimeMin, headings, slug } = Astro.props;
+const { title, description, publishedAt, updatedAt, tags, readingTimeMin, headings, slug, locale = "en" } = Astro.props;
 
 const dateStr = (iso: string) =>
-  new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  new Date(iso).toLocaleDateString(locale, { year: "numeric", month: "long", day: "numeric" });
 
-const articleUrl = `https://qarote.io/blog/${slug}/`;
+const baseUrl = "https://qarote.io";
+// Always pass the English-canonical path to BaseLayout.
+// BaseLayout constructs the actual canonical as `${baseUrl}/${locale}${canonicalPath}`
+// for non-English locales, and also auto-generates hreflang alternates for all locales.
+const canonicalBlogPath = `/blog/${slug}/`;
+// Full article URL for JSON-LD (locale-aware)
+const articleUrl =
+  locale === "en"
+    ? `${baseUrl}/blog/${slug}/`
+    : `${baseUrl}/${locale}/blog/${slug}/`;
 
 const articleSchema = {
   "@context": "https://schema.org",
@@ -54,7 +64,8 @@ const articleSchema = {
 <BaseLayout
   title={title}
   description={description}
-  canonicalPath={`/blog/${slug}/`}
+  locale={locale}
+  canonicalPath={canonicalBlogPath}
 >
   <slot name="head" slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />

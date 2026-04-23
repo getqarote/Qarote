@@ -1,0 +1,136 @@
+---
+title: "Cómo depuro un acumulamiento en colas de RabbitMQ en 5 minutos"
+description: "La profundidad de tu cola está aumentando. Los consumidores parecen saludables. Los logs no dicen nada. Este es el checklist exacto que sigo cada vez que una cola de RabbitMQ deja de vaciarse."
+publishedAt: "2026-04-21"
+tags: ["rabbitmq", "debugging", "queues", "operations"]
+readingTimeMin: 6
+---
+
+La profundidad de tu cola está aumentando. Tus consumidores parecen saludables. Nada obvio en los logs. El ingeniero de guardia te está mirando.
+
+Este es el checklist que sigo cada vez que una cola de RabbitMQ deja de vaciarse — en orden, las comprobaciones más rápidas primero.
+
+---
+
+## Paso 1: ¿Hay algún consumidor?
+
+Abre la interfaz de gestión (o Qarote) y mira la columna **Consumers** de la cola bloqueada.
+
+Si muestra `0`, no tienes un misterio — te falta un consumidor. Causas comunes:
+
+- Un despliegue crasheó los pods consumidores y no se reiniciaron
+- Una partición de red aisló el nodo consumidor
+- El consumidor tuvo una excepción no capturada y salió silenciosamente
+- El auto-scaling redujo la escala a cero
+
+**Solución:** reinicia tus procesos consumidores y confirma que se reconectan. Comprueba tu supervisor de procesos, el despliegue de Kubernetes o la unidad de systemd.
+
+---
+
+## Paso 2: ¿Se están entregando mensajes pero nunca se confirman?
+
+Un número de consumidores distinto de cero no significa que los mensajes se estén procesando realmente. Comprueba el contador **Unacknowledged** junto a **Ready**.
+
+Si `Unacked` es alto y `Ready` está cerca de cero, tus consumidores reciben mensajes pero no los confirman. Esto suele significar:
+
+- **El prefetch count es demasiado bajo.** Si `prefetch_count = 1` y el procesamiento tarda 10 segundos, cada consumidor gestiona solo 6 msg/min. Multiplica por tu número de consumidores — si es menor que tu tasa de publicación, la cola crece indefinidamente.
+- **Los consumidores están bloqueados.** Una llamada a base de datos, una petición HTTP o un bloqueo está colgado. Los mensajes están en vuelo pero nunca terminan.
+- **Un bug está causando fallos silenciosos de confirmación.** El mensaje se procesa pero el ack nunca se envía — normalmente un `try/finally` ausente o una excepción lanzada antes de la línea de confirmación.
+
+**Solución para el prefetch:** aumenta `prefetch_count` para que coincida con tu tiempo de procesamiento y rendimiento esperados. Fórmula aproximada: `prefetch = (rendimiento_objetivo_por_consumidor) × (tiempo_de_procesamiento_medio_en_segundos)`.
+
+```
+# Ejemplo: quieres 50 msg/s por consumidor, procesamiento medio = 200ms
+prefetch = 50 × 0,2 = 10
+```
+
+**Solución para consumidores bloqueados:** añade timeouts a todas las llamadas externas. Registra antes y después de cada operación descendente para ver dónde se pierde el tiempo.
+
+---
+
+## Paso 3: Comprueba la utilización de los consumidores
+
+RabbitMQ rastrea la **utilización de los consumidores** — la fracción de tiempo que un consumidor está realmente ocupado frente a esperar el siguiente mensaje. Puedes verlo en la API de gestión:
+
+```bash
+curl -u guest:guest \
+  http://localhost:15672/api/queues/%2F/my-queue \
+  | jq '.consumer_utilisation'
+```
+
+Un valor cercano a `1,0` significa que los consumidores están saturados. Un valor cercano a `0` con mensajes en la cola significa que algo más está mal (normalmente mensajes no confirmados bloqueando la entrega, ver Paso 2).
+
+---
+
+## Paso 4: Comprueba las alarmas de memoria y disco
+
+RabbitMQ deja de aceptar publicaciones y pausa los consumidores cuando alcanza los límites de recursos. Ejecuta:
+
+```bash
+rabbitmqctl status | grep -A5 alarms
+```
+
+O mira la página **Overview** en la interfaz de gestión. Si ves un banner rojo para `memory_alarm` o `disk_free_alarm`, ese es tu problema.
+
+**Causas frecuentes:**
+
+- Un mensaje grande o muchos mensajes pequeños acumulándose en RAM (la cola aún no se ha paginado al disco)
+- El disco casi lleno — RabbitMQ pagina mensajes al disco y si está lleno, se detiene
+- `vm_memory_high_watermark` configurado demasiado bajo para tu carga de trabajo
+
+**Solución:** aumenta `vm_memory_high_watermark` en `rabbitmq.conf`, libera espacio en disco o escala tus nodos broker.
+
+---
+
+## Paso 5: ¿Se están enviando mensajes a dead-letter?
+
+Si tu cola tiene configurado un `x-dead-letter-exchange`, los mensajes rechazados o expirados van a una dead-letter queue (DLQ). Si la DLQ se está llenando, significa:
+
+- Los consumidores están llamando a `basic.nack` / `basic.reject` con `requeue=false`
+- Los mensajes están expirando (TTL alcanzado antes de que un consumidor los recoja)
+
+Comprueba la profundidad de la DLQ. Si crece al mismo ritmo que tu cola principal no se vacía, tus consumidores están procesando mensajes pero rechazándolos — a menudo por un bug de validación o un servicio descendente devolviendo errores.
+
+**Solución:** inspecciona los mensajes en la DLQ. Lee los primeros payloads y busca un patrón. Corrige la lógica del publicador o la de rechazo del consumidor.
+
+---
+
+## Paso 6: ¿Estás alcanzando el control de flujo a nivel de canal?
+
+Las altas tasas de publicación pueden activar el control de flujo a nivel de canal incluso antes de que se dispare una alarma de memoria. Busca en los logs de RabbitMQ:
+
+```
+connection <x.x.x.x:y>, channel N: flow control
+```
+
+O consulta la API:
+
+```bash
+curl -u guest:guest http://localhost:15672/api/channels \
+  | jq '.[] | select(.flow_blocked == true) | .name'
+```
+
+Si ves canales bloqueados, el broker está pidiendo a los publicadores que reduzcan la velocidad. Esto no impide el vaciado, pero puede enmascarar el problema real — un consumidor lento deja que la cola se llene hasta que el broker empieza a rechazar tráfico.
+
+---
+
+## Vista completa en una sola pantalla
+
+Revisar seis comandos `rabbitmqctl` y leer JSON de la API es manejable una vez. A las 2am durante un incidente, no lo es.
+
+[Qarote](/) muestra el número de consumidores, mensajes no confirmados, utilización de consumidores, profundidad de DLQ y alarmas activas en una sola pantalla — actualizada en tiempo real. La edición MIT gratuita y auto-alojada cubre todo esto. Sin precios por host, sin datos saliendo de tu red.
+
+Cuando abro el detalle de una cola en Qarote durante un incidente de acumulamiento, normalmente puedo descartar cinco de los seis pasos anteriores en menos de un minuto, dejando solo el problema real para investigar.
+
+---
+
+## Referencia rápida
+
+| Síntoma | Causa probable | Primera comprobación |
+| --- | --- | --- |
+| `Consumers = 0` | Proceso consumidor crasheado | Estado del pod / proceso |
+| `Unacked` alto, `Ready` bajo | Prefetch demasiado bajo o consumidor bloqueado | Tiempo de procesamiento + configuración de prefetch |
+| `Consumer utilisation ≈ 1,0` | Consumidores saturados | Añadir más instancias consumidoras |
+| Banner de alarma rojo | Límite de memoria o disco alcanzado | `rabbitmqctl status` |
+| DLQ creciendo al mismo ritmo | Consumidores rechazando mensajes | Inspeccionar payloads de la DLQ |
+| Canales bloqueados | Control de flujo activo | Ralentizar publicadores o acelerar consumidores |

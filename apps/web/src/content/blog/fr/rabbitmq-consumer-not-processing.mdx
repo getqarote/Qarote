@@ -1,0 +1,144 @@
+---
+title: "Pourquoi votre consommateur RabbitMQ ne traite pas les messages"
+description: "Le consommateur est connecté, la file a des messages, rien ne bouge. Voici les six causes les plus fréquentes — et comment corriger chacune en moins de cinq minutes."
+publishedAt: "2026-04-21"
+tags: ["rabbitmq", "debugging", "consumers", "operations"]
+readingTimeMin: 5
+---
+
+Vous avez confirmé que le consommateur tourne. La file a des messages. Rien ne bouge.
+
+C'est l'un des modes de panne RabbitMQ les plus frustrants, car tout semble sain vu de l'extérieur. Voici une analyse structurée des vraies causes.
+
+---
+
+## 1. Le prefetch count bloque la livraison
+
+Le paramètre `basic.qos` de RabbitMQ contrôle le nombre de messages non acquittés qu'un consommateur peut détenir simultanément. Si votre consommateur a `prefetch_count = 1` et est bloqué sur une opération lente, RabbitMQ n'envoie pas le message suivant tant que le premier n'est pas acquitté.
+
+Vérifiez le compteur **Unacknowledged** dans l'interface de gestion. S'il correspond exactement à votre limite de prefetch, c'est votre goulot d'étranglement.
+
+**Correction :**
+
+```python
+# Python (pika)
+channel.basic_qos(prefetch_count=10)
+```
+
+```javascript
+// Node.js (amqplib)
+await channel.prefetch(10);
+```
+
+Réglez le prefetch à un multiple de votre capacité de traitement concurrente. Si chaque worker peut gérer 5 opérations en parallèle, `prefetch_count = 5` lui permet de rester pleinement utilisé.
+
+---
+
+## 2. Le consommateur est connecté mais bloqué en I/O
+
+Un consommateur connecté n'est pas un consommateur qui traite. Si votre consommateur attend une requête de base de données, un appel HTTP externe ou une opération fichier qui ne revient jamais, il est vivant mais ne fait rien.
+
+Signes à rechercher :
+
+- Le compteur `Unacked` est égal au prefetch count et ne change pas dans le temps
+- L'utilisation des consommateurs est à `1,0` mais le débit est proche de zéro
+- Vos logs applicatifs montrent une requête démarrée qui n'a jamais journalisé sa fin
+
+**Correction :** ajoutez des délais d'attente explicites à chaque appel aval de votre consommateur.
+
+```python
+import requests
+response = requests.get(url, timeout=5)  # Ne jamais omettre le timeout
+```
+
+Si vous ne pouvez pas ajouter de timeout à la bibliothèque utilisée, encapsulez l'appel dans un thread ou une tâche asynchrone avec une échéance.
+
+---
+
+## 3. Les messages sont nackés et remis en file silencieusement
+
+Si votre consommateur appelle `basic.nack` ou `basic.reject` avec `requeue=true`, le message revient directement au début de la file — et votre consommateur le reprend immédiatement. Si l'échec est déterministe (payload invalide, dépendance définitivement indisponible), cela crée une boucle infinie.
+
+Vérifiez le panneau **message rate** : si le taux de livraison est élevé mais le taux d'acquittement est zéro, vous êtes dans une boucle de nack.
+
+**Correction :** pour les échecs non transitoires, rejetez avec `requeue=false` afin que le message soit envoyé en dead-letter :
+
+```python
+channel.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+```
+
+Inspectez ensuite votre DLQ pour comprendre pourquoi les messages sont rejetés.
+
+---
+
+## 4. La connexion du consommateur est soumise au contrôle de flux
+
+RabbitMQ peut appliquer un contrôle de flux au niveau du canal lorsque l'utilisation mémoire devient élevée. Dans cet état, le broker cesse de livrer des messages même aux consommateurs existants. Le processus consommateur fonctionne parfaitement — il ne reçoit tout simplement rien.
+
+Vérifiez le contrôle de flux :
+
+```bash
+curl -u guest:guest http://localhost:15672/api/channels \
+  | jq '.[] | select(.flow_blocked == true) | .name'
+```
+
+Ou recherchez des entrées `flow control` dans `/var/log/rabbitmq/rabbit@<hostname>.log`.
+
+**Correction :** analysez la pression mémoire sur le broker. Causes courantes : une file accumulant des millions de messages, un message individuel volumineux, ou `vm_memory_high_watermark` réglé trop bas. Libérez de la mémoire ou augmentez le watermark.
+
+---
+
+## 5. Le canal ou la connexion a été fermé silencieusement
+
+Certaines bibliothèques clientes AMQP avalent les erreurs de canal plutôt que de les remonter. Votre processus consommateur tourne, mais le canal sous-jacent a été fermé après une erreur de protocole (message non routable, erreur de codec, problème de permission) et personne ne s'est reconnecté.
+
+Cherchez des événements `channel.close` ou `connection.close` dans les logs RabbitMQ :
+
+```bash
+tail -n 100 /var/log/rabbitmq/rabbit@$(hostname).log | grep -E "closing|channel|error"
+```
+
+**Correction :** implémentez une boucle de reconnexion dans votre consommateur. Écoutez les événements de fermeture de canal/connexion et rétablissez la connexion :
+
+```javascript
+connection.on("error", (err) => {
+  console.error("Erreur de connexion", err);
+  setTimeout(connect, 5000);
+});
+```
+
+Les connexions RabbitMQ en production doivent être traitées comme éphémères.
+
+---
+
+## 6. Mauvaise liaison de file — le consommateur est sur une autre file
+
+Cela semble évident mais arrive plus souvent que vous ne le pensez, notamment dans les environnements de staging : l'éditeur route vers `orders.created` mais le consommateur est abonné à `order.created` (sans le `s`). Les deux files existent, l'une grossit, le consommateur est inactif.
+
+Vérifiez le nom exact de la file et la clé de liaison dans l'interface de gestion ou Qarote. Triez les files par profondeur — celle qui grossit indique où arrivent réellement les messages.
+
+---
+
+## Vérifier tout cela en un coup d'œil
+
+Parcourir l'API de gestion manuellement — canaux, flow, taux de nack, utilisation des consommateurs — est faisable une fois. Lors d'un incident à 3h du matin, non.
+
+[Qarote](/) affiche le nombre de consommateurs, le taux de non-acquittement, l'utilisation et la profondeur de la DLQ sur un seul écran en temps réel. L'édition MIT gratuite couvre toutes ces métriques. Sans tarification par hôte, sans données qui quittent votre réseau.
+
+---
+
+## Arbre de décision
+
+```
+Consommateur connecté ?
+  └─ Non  → Redémarrer le processus consommateur
+  └─ Oui  → Unacked = limite prefetch ?
+             └─ Oui → Consommateur bloqué en I/O ou prefetch trop faible
+             └─ Non → Taux de livraison élevé, taux d'acquittement ~0 ?
+                       └─ Oui → Boucle nack + requeue
+                       └─ Non → Contrôle de flux actif ?
+                                 └─ Oui → Pression mémoire sur le broker
+                                 └─ Non → Canal fermé silencieusement ?
+                                           └─ Oui → Ajouter logique de reconnexion
+                                           └─ Non → Vérifier le nom / la liaison de la file
+```
