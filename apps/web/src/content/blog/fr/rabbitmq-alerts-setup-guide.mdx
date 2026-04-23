@@ -217,13 +217,13 @@ Faire sonner les alertes, c'est l'étape 1. Les garder actionnables dans le temp
 
 Ma règle : on appelle si la situation exige une action humaine dans les 15 minutes pour éviter une perte de données ou un impact visible par l'utilisateur.
 
-| Signal | Action |
-|---|---|
-| Le nombre de consumers tombe à 0 | **Appeler immédiatement** |
-| L'alarme mémoire se déclenche | **Appeler immédiatement** |
-| La profondeur de queue croît plus vite que le taux de vidange (de façon soutenue) | **Appeler** (après fenêtre de grâce) |
-| Croissance de DLQ détectée | **Slack** (investiguer le prochain jour ouvré, sauf si ça accélère) |
-| Nombre de messages unacked élevé mais stable | **Slack** |
+| Signal                                                                            | Action                                                              |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Le nombre de consumers tombe à 0                                                  | **Appeler immédiatement**                                           |
+| L'alarme mémoire se déclenche                                                     | **Appeler immédiatement**                                           |
+| La profondeur de queue croît plus vite que le taux de vidange (de façon soutenue) | **Appeler** (après fenêtre de grâce)                                |
+| Croissance de DLQ détectée                                                        | **Slack** (investiguer le prochain jour ouvré, sauf si ça accélère) |
+| Nombre de messages unacked élevé mais stable                                      | **Slack**                                                           |
 
 Le mot clé est « soutenu ». Toute alerte critical doit avoir une fenêtre `for`. Les pics ponctuels qui se résolvent en moins de deux minutes ne doivent réveiller personne.
 

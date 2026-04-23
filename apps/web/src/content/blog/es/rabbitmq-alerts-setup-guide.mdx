@@ -217,13 +217,13 @@ Conseguir que las alertas se disparen es el primer paso. Mantenerlas accionables
 
 Mi regla: pagina si la situación requiere acción humana en menos de 15 minutos para prevenir pérdida de datos o impacto visible para el usuario.
 
-| Señal | Acción |
-|---|---|
-| El contador de consumers cae a 0 | **Paginar inmediatamente** |
-| La alarma de memoria se dispara | **Paginar inmediatamente** |
-| Queue depth creciendo más rápido que la tasa de drenado (sostenido) | **Paginar** (tras periodo de gracia) |
-| Crecimiento de DLQ detectado | **Slack** (investigar en el próximo día laborable salvo que acelere) |
-| Contador de unacked elevado pero sin subir | **Slack** |
+| Señal                                                               | Acción                                                               |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| El contador de consumers cae a 0                                    | **Paginar inmediatamente**                                           |
+| La alarma de memoria se dispara                                     | **Paginar inmediatamente**                                           |
+| Queue depth creciendo más rápido que la tasa de drenado (sostenido) | **Paginar** (tras periodo de gracia)                                 |
+| Crecimiento de DLQ detectado                                        | **Slack** (investigar en el próximo día laborable salvo que acelere) |
+| Contador de unacked elevado pero sin subir                          | **Slack**                                                            |
 
 La palabra clave es "sostenido". Cada alerta crítica debería tener una ventana `for`. Los picos puntuales que se resuelven solos en menos de dos minutos no deberían despertar a nadie.
 

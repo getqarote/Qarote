@@ -217,13 +217,13 @@ Getting alerts firing is step one. Keeping them actionable over time is where mo
 
 My rule: page if the situation requires human action within 15 minutes to prevent data loss or user-visible impact.
 
-| Signal | Action |
-|---|---|
-| Consumer count drops to 0 | **Page immediately** |
-| Memory alarm fires | **Page immediately** |
-| Queue depth growing faster than drain rate (sustained) | **Page** (after grace period) |
-| DLQ growth detected | **Slack** (investigate next business day unless accelerating) |
-| Unacked count elevated but not climbing | **Slack** |
+| Signal                                                 | Action                                                        |
+| ------------------------------------------------------ | ------------------------------------------------------------- |
+| Consumer count drops to 0                              | **Page immediately**                                          |
+| Memory alarm fires                                     | **Page immediately**                                          |
+| Queue depth growing faster than drain rate (sustained) | **Page** (after grace period)                                 |
+| DLQ growth detected                                    | **Slack** (investigate next business day unless accelerating) |
+| Unacked count elevated but not climbing                | **Slack**                                                     |
 
 The key word is "sustained." Every critical alert should have a `for` window. Point-in-time spikes that self-resolve in under two minutes shouldn't wake anyone up.
 
