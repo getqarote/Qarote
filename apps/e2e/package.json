@@ -13,7 +13,8 @@
     "test:smoke": "playwright test --grep @smoke",
     "test:ui": "playwright test --ui",
     "test:codegen": "playwright codegen http://localhost:8080",
-    "report": "playwright show-report"
+    "report": "playwright show-report",
+    "record-demo": "node --experimental-strip-types scripts/record-demo.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",
