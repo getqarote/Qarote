@@ -1,4 +1,5 @@
 ---
+import { getCollection } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { CompareGrafanaIsland } from "../../components/CompareIsland";
 import { loadTranslations, loadAllTranslations, t } from "../../lib/i18n-static";
@@ -6,6 +7,20 @@ import { buildFaqSchema } from "../../lib/schema";
 
 const compare = loadTranslations("en", "compare-grafana");
 const resources = { ...loadAllTranslations("en"), "compare-grafana": compare };
+
+const allPosts = await getCollection("blog");
+const blogPosts = allPosts
+  .filter((p) => !p.id.includes("/"))
+  .sort((a, b) => new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime())
+  .slice(0, 3)
+  .map((p) => ({
+    slug: p.id,
+    title: p.data.title,
+    description: p.data.description,
+    publishedAt: p.data.publishedAt,
+    tags: p.data.tags,
+    readingTimeMin: p.data.readingTimeMin,
+  }));
 
 const grafanaSchema = {
   "@context": "https://schema.org",
@@ -42,5 +57,5 @@ const faqSchema = buildFaqSchema(compare);
     <script type="application/ld+json" set:html={JSON.stringify(grafanaSchema)} />
     <script type="application/ld+json" set:html={JSON.stringify(prometheusSchema)} />
   </Fragment>
-  <CompareGrafanaIsland locale="en" resources={resources} client:load />
+  <CompareGrafanaIsland locale="en" resources={resources} blogPosts={blogPosts} client:load />
 </BaseLayout>

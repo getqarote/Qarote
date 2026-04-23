@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { SupportedLocale } from "@qarote/i18n";
 
 import { IslandProvider } from "@/components/IslandProvider";
+import { type BlogPostPreview } from "@/components/landing/BlogSection";
 import FinalCtaSection from "@/components/landing/FinalCtaSection";
 import FooterSection from "@/components/landing/FooterSection";
 import StickyNav from "@/components/StickyNav";
@@ -23,6 +24,7 @@ interface TableRow {
 interface IslandProps {
   locale?: SupportedLocale;
   resources?: Record<string, Record<string, unknown>>;
+  blogPosts?: BlogPostPreview[];
 }
 
 // ---------------------------------------------------------------------------
@@ -426,6 +428,51 @@ function FaqSection({ ns }: { ns: string }) {
 // CompareLayout — shared layout for all comparison pages
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Blog preview strip
+// ---------------------------------------------------------------------------
+
+function BlogPreviewSection({ posts }: { posts: BlogPostPreview[] }) {
+  if (posts.length === 0) return null;
+
+  return (
+    <div className="border border-border overflow-hidden mb-8">
+      <div className="px-6 py-3 bg-muted/30 border-b border-border">
+        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          From the blog
+        </span>
+      </div>
+      <div className="divide-y divide-border">
+        {posts.map((post) => (
+          <a
+            key={post.slug}
+            href={`/blog/${post.slug}/`}
+            className="flex items-start justify-between gap-6 p-6 hover:bg-muted/20 transition-colors group no-underline"
+          >
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors leading-snug mb-1">
+                {post.title}
+              </p>
+              <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                {post.description}
+              </p>
+            </div>
+            {post.readingTimeMin && (
+              <span className="shrink-0 text-xs text-muted-foreground whitespace-nowrap">
+                {post.readingTimeMin} min read
+              </span>
+            )}
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// CompareLayout — shared layout for all comparison pages
+// ---------------------------------------------------------------------------
+
 interface CompareLayoutProps {
   locale: SupportedLocale;
   resources: Record<string, Record<string, unknown>> | undefined;
@@ -433,6 +480,7 @@ interface CompareLayoutProps {
   rows: TableRow[];
   sectionKeys: string[];
   crossLink: CrossLinkConfig;
+  blogPosts: BlogPostPreview[];
 }
 
 function CompareLayout({
@@ -442,6 +490,7 @@ function CompareLayout({
   rows,
   sectionKeys,
   crossLink,
+  blogPosts,
 }: CompareLayoutProps) {
   return (
     <IslandProvider locale={locale} resources={resources}>
@@ -453,6 +502,7 @@ function CompareLayout({
           <ComparisonTable ns={ns} rows={rows} />
           <NarrativeSections ns={ns} sectionKeys={sectionKeys} />
           <CrossLinkSection ns={ns} crossLink={crossLink} locale={locale} />
+          <BlogPreviewSection posts={blogPosts} />
           <FaqSection ns={ns} />
         </main>
         <FinalCtaSection />
@@ -470,6 +520,7 @@ function CompareLayout({
 export function CompareDatadogIsland({
   locale = "en",
   resources,
+  blogPosts = [],
 }: IslandProps) {
   return (
     <CompareLayout
@@ -482,6 +533,7 @@ export function CompareDatadogIsland({
         linkKey: "crossLink.grafana",
         linkHref: "/compare/grafana-prometheus/",
       }}
+      blogPosts={blogPosts}
     />
   );
 }
@@ -489,6 +541,7 @@ export function CompareDatadogIsland({
 export function CompareGrafanaIsland({
   locale = "en",
   resources,
+  blogPosts = [],
 }: IslandProps) {
   return (
     <CompareLayout
@@ -501,6 +554,7 @@ export function CompareGrafanaIsland({
         linkKey: "crossLink.datadog",
         linkHref: "/compare/datadog/",
       }}
+      blogPosts={blogPosts}
     />
   );
 }
