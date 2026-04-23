@@ -1,0 +1,229 @@
+---
+title: "RabbitMQ Quorum Queues: When to Migrate and How to Do It Safely"
+description: "Classic queues are deprecated in RabbitMQ 3.12+. Here's what quorum queues actually change, which workloads should migrate now, and how to do it without downtime."
+publishedAt: "2026-04-25"
+tags: ["rabbitmq", "operations", "architecture", "quorum-queues"]
+readingTimeMin: 8
+---
+
+RabbitMQ 3.12 deprecated classic mirrored queues. RabbitMQ 3.13 deprecated classic queues outright. If you are running classic queues in production today, you are running on borrowed time — and the clock runs faster on every minor upgrade you apply.
+
+But migrating blindly causes incidents. The `requeue=true` behavior changes. Publisher confirms become load-bearing. Consumer timeout is enforced more strictly. Teams that skip these details end up with post-migration incidents that look nothing like the queue failures they expected.
+
+This post covers the mental model, what actually changes (in detail), which workloads should migrate now versus later, and a zero-downtime migration procedure that works in real production environments.
+
+> Migrating to quorum queues changes how you monitor too — Raft leader elections, log sizes, and stricter consumer timeouts all need visibility. [See how Qarote monitors quorum queues →](/features/)
+
+## What Quorum Queues Actually Are
+
+I am not going to explain the Raft consensus algorithm. You do not need it to operate quorum queues safely. What you do need is the correct mental model for how they differ from classic queues.
+
+### Classic queues: what you have now
+
+A classic queue lives on a single leader node. Optionally, you configure an HA policy to mirror it to other nodes. That mirroring is synchronous — every publish to a mirrored queue blocks until all mirrors have written the message. This is head-of-line blocking by design, and it is why classic mirrored queues degrade under load spikes.
+
+When the leader node fails, RabbitMQ promotes one of the mirrors. This does not happen automatically by default in all configurations — depending on your HA policy and `ha-promote-on-failure` setting, you may need manual intervention. Messages not yet replicated to a mirror at the moment of failure are lost.
+
+### Quorum queues: what you are moving to
+
+A quorum queue uses Raft consensus. The queue has a leader and a configurable number of followers. When a publisher sends a message, the leader proposes it to the followers. The message is confirmed to the publisher once a majority of members (quorum) have written it to disk. Not in memory — to disk.
+
+When the leader fails, the remaining members elect a new leader automatically. No manual intervention, no HA policy, no `ha-promote-on-failure` tuning. If you have 3 nodes and 1 fails, the queue keeps operating. If 2 fail simultaneously, the queue suspends (no majority) until a member comes back.
+
+Replication is built into the queue type. There is no mirroring configuration to maintain.
+
+### Key operator implications
+
+**Quorum queues require at least 3 nodes for real HA.** A 1-node cluster can declare quorum queues, but if that node fails, the queue is unavailable. You get durability (data is on disk), not availability (the queue can serve traffic). Do not confuse the two.
+
+**Quorum queues always write to disk.** There is no in-memory mode, no transient messages, no lazy mode toggle. Everything goes to disk before the confirm is sent. This is a feature, not a limitation — it means [quorum queues consume significantly less RAM than classic queues](/blog/rabbitmq-memory-alarm/) holding the same number of messages, because nothing is paged in from memory.
+
+**Consumer flow control is explicit.** Quorum queues enforce a maximum number of outstanding unacknowledged messages per consumer via `x-max-in-flight` (default: 256). If your consumers hold more than that many unacked messages, the queue stops delivering to them until they catch up. This can surprise consumers that were running with a high prefetch count.
+
+**Consumer timeout is enforced.** By default, a consumer that holds a message unacked for more than 30 minutes will be disconnected by the broker. Classic queues did not enforce this by default. Plan accordingly.
+
+## When You Must Migrate Now
+
+Stop evaluating and act if any of these are true:
+
+**You are on RabbitMQ 3.12+ with mirrored classic queues.** Classic mirrored queues are deprecated in 3.12 and will be removed in a future release. You are not getting security patches forever. The removal is coming.
+
+**You are on RabbitMQ 3.13+.** Classic queues themselves are deprecated. You will see deprecation warnings in logs today. You will hit removal in a future upgrade. The migration debt accumulates with every month you wait.
+
+**Your workload cannot afford message loss on node failure.** If you are running classic queues without mirroring — which is common in setups that "just work" — you are accepting message loss every time a node restarts or crashes. Quorum queues eliminate this.
+
+**You need automatic leader failover.** If your on-call runbook includes "SSH to the standby node and run `rabbitmqctl forget_cluster_node`" as a step in queue recovery, that is manual work that quorum queues make unnecessary.
+
+## When Classic Queues Are Still Acceptable (For Now)
+
+Be honest about these rather than migrating everything reflexively:
+
+**Single-node development and test environments.** There is no HA benefit from quorum queues on a single node. Use them anyway to match production behavior, but do not treat it as urgent.
+
+**Truly transient, non-critical messages.** If you are publishing fire-and-forget events where loss is explicitly acceptable by design — think analytics events with a separate durable store — and you are on 3.12 without mirroring configured, classic queues still function. But have a migration plan.
+
+**Very high-throughput, write-latency-sensitive workloads where Raft consensus overhead is measurable.** This is real but rare. Raft adds a round-trip of disk I/O and network acknowledgment per message before the confirm returns. At low to moderate message rates this is not perceptible. At hundreds of thousands of small messages per second on the same broker, benchmark before migrating in production. The overhead is deterministic and predictable — unlike classic queue mirroring under load — but it exists.
+
+Even in these cases, the answer is not "never migrate." The answer is "migrate with measured validation, not assumption."
+
+## What Actually Changes When You Switch
+
+This is the section that prevents post-migration incidents. Read it completely.
+
+### What stays the same
+
+The AMQP protocol does not change. `basic.publish`, `basic.consume`, `basic.ack`, `basic.nack` — all the same wire-level calls your client library makes. You do not need to update your application code for basic publish/subscribe. Exchange bindings, routing keys, vhost configuration — all carry over identically. The Management UI shows quorum queues alongside classic queues with no difference in the main queue listing.
+
+### What changes — read every item here
+
+**Queue declaration requires `x-queue-type: quorum`.** You cannot convert a classic queue to a quorum queue in place. This is a hard constraint. The queue type is set at declaration time and cannot be changed without deleting and recreating the queue. Any migration strategy that assumes in-place conversion will fail.
+
+**Lazy mode is irrelevant.** Quorum queues always persist to disk. If you have `x-queue-mode: lazy` in your declarations or policies, it is silently ignored. This is fine — the behavior you wanted from lazy mode is already the default. You can remove those arguments from your declarations.
+
+**`x-ha-policy` is ignored.** Remove it from your queue declarations and any HA policies you have defined. Quorum queues handle replication internally. Leaving HA policy arguments in place will not cause errors but it will mislead anyone reading your configuration.
+
+**`basic.nack` with `requeue=true` sends the message to the back of the queue, not the front.** This is the number one cause of post-migration production incidents. Classic queues requeue to the front — the message is immediately re-delivered to a consumer. Quorum queues requeue to the back — the message goes behind every other message already in the queue. If your poison message handling relies on repeated nack/requeue cycling to detect and route failures, the behavior changes materially. Review your [dead letter queue](/blog/rabbitmq-dead-letter-queue/) and error handling logic before migrating any queue that uses nack with requeue.
+
+**`x-max-priority` is not supported.** Quorum queues do not implement priority queues. If you have declared queues with `x-max-priority`, you cannot migrate those queues to quorum type without removing priority semantics from your design. There is no workaround — this is a fundamental architectural difference.
+
+**Publisher confirms are not optional anymore.** Classic queues without mirroring would return a confirm immediately on enqueue into memory. Quorum queues wait for the Raft majority to acknowledge the write before confirming. If you publish without confirms enabled, you get no durability guarantee — the message can be in-flight in the Raft log when the leader fails. Enable publisher confirms on every producer writing to quorum queues.
+
+**Consumer prefetch interacts with `x-max-in-flight`.** Quorum queues enforce a per-consumer maximum of unacknowledged messages. The default is 256. If you have consumers with a prefetch count higher than 256, revisit that value before migrating — otherwise the queue silently stops delivering to those consumers mid-flight. See [debugging queue backlogs](/blog/debug-rabbitmq-queue-backlog/) if you run into stalled consumers after migration.
+
+**Consumer timeout disconnects long-running consumers.** The default is 30 minutes. A consumer that holds an unacked message for longer than this will be forcibly disconnected by the broker. If your processing jobs can legitimately run longer than 30 minutes on a single message, you have two options: configure a longer timeout via `consumer_timeout` in `rabbitmq.conf`, or acknowledge the message early and track job state externally.
+
+## Migration Strategy: Zero-Downtime Approach
+
+In-place conversion is not possible. The zero-downtime approach is a parallel queue deployment with a drain-and-cutover window. Here is the procedure, step by step.
+
+### Step 1: Audit your current queues
+
+Identify which queues are classic type and prioritize them by risk (mirrored first, then non-mirrored, then non-durable).
+
+```bash
+rabbitmqctl list_queues name type durable messages | grep classic
+```
+
+For a more structured view across all vhosts:
+
+```bash
+rabbitmqctl list_queues --vhost "/" name type durable messages consumers
+```
+
+Run this against each vhost in your cluster. Export the output — you need a complete inventory before you touch anything.
+
+### Step 2: Create the new quorum queue
+
+For each queue you are migrating, declare a new quorum queue. Use a `.v2` suffix or a staging vhost during the transition so you can run both in parallel.
+
+```bash
+rabbitmqadmin declare queue name=my-queue.v2 \
+  durable=true \
+  arguments='{"x-queue-type":"quorum"}'
+```
+
+If you need to set the replication factor explicitly (default is `min(3, cluster_size)`):
+
+```bash
+rabbitmqadmin declare queue name=my-queue.v2 \
+  durable=true \
+  arguments='{"x-queue-type":"quorum","x-quorum-initial-group-size":3}'
+```
+
+Bind it to the same exchange with the same routing key as the original queue, alongside the original binding. Both queues receive messages during the transition.
+
+```bash
+rabbitmqadmin declare binding source=my-exchange \
+  destination=my-queue.v2 \
+  routing_key=my.routing.key
+```
+
+### Step 3: Shift publishers
+
+Deploy updated publishers that write to the new queue name (`my-queue.v2`). Old publishers continue writing to the original. The goal here is to stop new messages from entering the old queue.
+
+In most codebases, the queue name is a configuration value. Change it in your config or environment variable and deploy. No code changes are needed — the AMQP calls are identical.
+
+### Step 4: Deploy consumers that drain both queues
+
+Update your consumers to read from both `my-queue` (old) and `my-queue.v2` (new). Consumers can subscribe to multiple queues in a single connection. The old queue drains as existing messages are processed; the new queue serves new messages.
+
+Keep both consumers running until `messages` on the old queue drops to zero and stays there. Watch the consumer count on the old queue — when it hits zero messages and you have no publishers writing to it, it is safe to proceed.
+
+```bash
+watch -n 5 'rabbitmqctl list_queues name messages consumers | grep my-queue'
+```
+
+### Step 5: Cutover and cleanup
+
+Once the old queue is empty with no active publishers:
+
+1. Remove the old exchange binding.
+2. Delete the old classic queue.
+3. Rename the new queue (or update all client references to use the new name).
+
+If you used a `.v2` suffix, update your consumer configuration to drop the suffix, or declare the final quorum queue under the original name from the start and use the suffix only for the parallel period.
+
+```bash
+rabbitmqadmin delete queue name=my-queue
+```
+
+If you prefer to declare the final queue under the original name directly, skip the suffix and instead perform the cutover atomically: delete the old queue only after all publishers have been updated and all consumers have confirmed the new queue is receiving traffic.
+
+### Policy-based declaration (for simpler setups)
+
+If you control all publishers and consumers and can deploy atomically — all publishers stop, old queue drains, new queue declared, all consumers restart — you can use a policy to ensure any newly declared queue with a matching name gets created as a quorum queue automatically.
+
+```bash
+rabbitmqctl set_policy quorum-policy "^my-queue$" \
+  '{"queue-type":"quorum"}' \
+  --apply-to queues
+```
+
+Important: this policy applies to newly declared queues that match the pattern. It does not convert an existing classic queue. If you apply this policy while `my-queue` already exists as a classic queue, the policy is ignored for that queue. You must delete the classic queue and redeclare it for the policy to take effect.
+
+## What to Monitor After Migration
+
+The monitoring surface changes after you switch. Classic queue metrics focused on memory and mirror lag. Quorum queue metrics focus on Raft health and disk I/O. Update your dashboards and alerts before you consider the migration complete.
+
+**Quorum queue leader elections.** The `rabbitmq_quorum_queue_votes` metric in Prometheus tracks leadership changes. A queue that elects a new leader frequently is signaling an unhealthy member — either that node is restarting, lagging on Raft replication, or experiencing I/O pressure. Occasional elections after deliberate node restarts are expected. Frequent elections at rest are not.
+
+**Raft log size per queue.** The Raft log grows when followers lag behind the leader. If a follower is slow to apply log entries, the leader must retain older entries for it. A growing Raft log means one of your nodes is struggling. Check disk I/O and network latency on that node.
+
+**Per-queue disk usage.** Quorum queues write everything to disk — every message, every acknowledgment, every leadership change. Set disk space alerts with meaningful headroom. A queue with a large backlog will fill disk faster than the same queue on classic with lazy mode off. See [setting up RabbitMQ alerts that actually fire](/blog/rabbitmq-alerts-setup-guide/) for alert configuration that works in practice.
+
+**`messages_unacknowledged` per queue.** Consumer timeout is enforced strictly. If you see `messages_unacknowledged` climbing and not dropping, consumers are holding messages too long. This will eventually trigger disconnections, which causes the messages to be requeued and increases the unacked count further — a failure loop. Catch this early.
+
+**Disk I/O on each node.** Classic queues with lazy mode off held messages in memory and paged to disk under pressure. Quorum queues write everything to disk on every publish. Your I/O profile changes. Baseline it after migration and set alerts on sustained high iowait.
+
+> Qarote surfaces Raft leader elections and per-queue disk usage in the queue detail panel — without you building a separate Prometheus dashboard from scratch. [See the monitoring features →](/features/)
+
+## Common Migration Mistakes
+
+These come up in incident postmortems. Avoid them.
+
+**Trying to convert in place.** There is no `rabbitmqctl convert_queue` command. There is no policy that transforms an existing classic queue into a quorum queue. The only path forward is declare new, drain old, delete old. Engineers who discover this mid-migration under time pressure make worse decisions than engineers who planned for it.
+
+**Publishing without confirms to quorum queues.** Quorum queues give you a durability guarantee only after the Raft majority has acknowledged the write. If your publisher does not wait for a confirm before considering a message delivered, you have no guarantee — a leader election between publish and Raft commit will lose that message. Enable publisher confirms. Handle confirm timeouts. This is non-negotiable.
+
+**Not adjusting consumer prefetch.** Quorum queues enforce `x-max-in-flight` at 256 by default. If your consumers declare a prefetch of 1000, the queue will stop delivering after 256 unacked messages per consumer, regardless of what the consumer requested. The consumer appears stalled; the queue shows messages ready to deliver; nothing moves. See [debugging a queue backlog](/blog/debug-rabbitmq-queue-backlog/) — the symptoms look identical to a slow consumer, but the fix is a prefetch adjustment.
+
+**Running quorum queues on a 1-node cluster and expecting HA.** Quorum queues on a single node give you durable storage. The queue survives a clean restart. It does not survive a node going offline — there is no other member to elect as leader. If your deployment is a single node for cost reasons, that is a legitimate choice, but understand that you have durability without availability. You have not gained HA.
+
+**Not testing `requeue=true` behavior before migrating.** This is the most common source of post-migration incidents. I said it earlier and I am saying it again: messages go to the back of the queue on nack/requeue, not the front. If you have any consumer that relies on repeated requeue to handle retries — no separate retry queue, no dead letter exchange, just nack and try again — that consumer's behavior changes after migration. A message that was being retried immediately now waits behind every other message. Test your error paths explicitly in staging before you cut over production.
+
+**Leaving `x-ha-policy` in declarations.** It is silently ignored but it misleads future operators into thinking mirroring is configured. Clean it up.
+
+## tl;dr
+
+**When to migrate:** Now, if you are on 3.12+ with mirrored classic queues. Now if you are on 3.13+. Now if message loss on node failure is unacceptable. Later (with a plan) if you are on a single-node dev setup or have explicitly transient, loss-tolerant workloads.
+
+**What changes:** Queue type must be set at declaration — no in-place conversion. `requeue=true` sends messages to the back of the queue, not the front (audit your nack logic). `x-max-priority` is not supported. Publisher confirms are load-bearing. Consumer timeout is enforced at 30 minutes by default. HA policy arguments are ignored.
+
+**What stays the same:** AMQP protocol, client library calls, exchange bindings, routing keys, Management UI. No application code changes required for basic publish/subscribe.
+
+**How to do it without downtime:** Declare the new quorum queue in parallel, bind it to the same exchange, shift publishers to the new queue, run consumers against both queues during the drain window, delete the old queue once it is empty.
+
+**After migration:** Watch for frequent Raft leader elections — a queue that elects a new leader repeatedly has an unhealthy member node. Set disk space alerts before you need them. Baseline your I/O profile.
+
+After migration, the most important new signal to watch is quorum queue leader elections — a queue that elects a new leader frequently is a queue with an unhealthy member node. Qarote surfaces this in the queue detail panel so you can catch degraded nodes before they become failed nodes. [See how it works →](/features/)

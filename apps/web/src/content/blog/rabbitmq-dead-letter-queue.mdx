@@ -1,0 +1,324 @@
+---
+title: "RabbitMQ Dead Letter Queue: Design, Monitor, and Process Failed Messages"
+description: "DLQs silently accumulate failed messages until someone notices weeks later. Here's how to set them up correctly, monitor growth, and build a reprocessing strategy."
+publishedAt: "2026-04-25"
+tags: ["rabbitmq", "operations", "architecture", "debugging"]
+readingTimeMin: 9
+---
+
+The post-mortem timeline reads the same way every time. A bug in the order processor was deployed on the 14th. Consumers started rejecting malformed events. The DLQ grew from zero to 47,000 messages over 18 days. Nobody noticed until a customer noticed.
+
+Dead letter queues are where failed messages go — and where they silently accumulate when nobody's watching. There's no alarm on the main queue. Throughput looks normal. Your consumers are running. The DLQ depth isn't in anyone's dashboard. Three weeks later, you're explaining to a post-mortem why 47,000 order events were never processed.
+
+This post covers how DLQs actually work, how to set them up without the common traps, and how to build a reprocessing strategy that doesn't make things worse.
+
+> **Qarote monitors DLQ depth and growth rate per queue — including an alert when any dead letter queue starts receiving messages.** [See how DLQ monitoring works →](/features/)
+
+---
+
+## What a dead letter queue actually is
+
+A dead letter queue is not a special RabbitMQ construct. It's a regular queue bound to a regular exchange. The only thing that makes it a DLQ is that you've pointed another queue's `x-dead-letter-exchange` argument at that exchange. That's it.
+
+When a message is "dead-lettered," RabbitMQ routes it to the configured dead letter exchange (DLX) using either the original routing key or a key you specify with `x-dead-letter-routing-key`. From there, the DLX routes it to whatever queue is bound with a matching key — which you've set up as your DLQ.
+
+Three things cause a message to be dead-lettered:
+
+**1. `basic.nack` or `basic.reject` with `requeue=false`.** Your consumer explicitly told RabbitMQ it can't handle this message and doesn't want it requeued. This is the controlled path — you're supposed to do this when a message is unprocessable.
+
+**2. Message TTL expired.** The message sat in the queue past the `x-message-ttl` limit set on the queue (or the `expiration` field in the message itself). It was alive too long without being consumed.
+
+**3. Queue length limit exceeded.** The queue hit its `x-max-length` or `x-max-length-bytes` cap. RabbitMQ ejects the oldest message from the head of the queue to make room for new ones.
+
+When a message is dead-lettered, RabbitMQ adds `x-death` headers to it. These are critical for debugging:
+
+```json
+{
+  "x-death": [
+    {
+      "count": 1,
+      "reason": "rejected",
+      "queue": "my-queue",
+      "time": "2026-04-14T09:23:11Z",
+      "exchange": "my-exchange",
+      "routing-keys": ["my-queue"]
+    }
+  ],
+  "x-first-death-reason": "rejected",
+  "x-first-death-queue": "my-queue",
+  "x-first-death-exchange": "my-exchange"
+}
+```
+
+`x-first-death-reason` tells you why the message died. `x-death[0].count` tells you how many times it's been dead-lettered — a count above 1 usually means something upstream is reprocessing and re-rejecting the same message.
+
+---
+
+## How to set up a DLQ correctly
+
+The setup has four steps: create the dead letter exchange, create the DLQ, bind the DLQ to the DLX, then declare the main queue with the DLX argument.
+
+```bash
+# 1. Create the dead letter exchange
+rabbitmqadmin declare exchange name=my-dlx type=direct
+
+# 2. Create the DLQ
+rabbitmqadmin declare queue name=my-queue.dlq
+
+# 3. Bind the DLQ to the DLX with the routing key you'll use
+rabbitmqadmin declare binding \
+  source=my-dlx \
+  destination=my-queue.dlq \
+  routing_key=my-queue
+
+# 4. Declare the main queue pointing at the DLX
+rabbitmqadmin declare queue name=my-queue \
+  arguments='{"x-dead-letter-exchange":"my-dlx","x-dead-letter-routing-key":"my-queue"}'
+```
+
+The same in Python with pika:
+
+```python
+import pika
+
+connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
+channel = connection.channel()
+
+# Dead letter exchange
+channel.exchange_declare(exchange="my-dlx", exchange_type="direct")
+
+# DLQ
+channel.queue_declare(queue="my-queue.dlq")
+channel.queue_bind(queue="my-queue.dlq", exchange="my-dlx", routing_key="my-queue")
+
+# Main queue with DLX configured
+channel.queue_declare(
+    queue="my-queue",
+    arguments={
+        "x-dead-letter-exchange": "my-dlx",
+        "x-dead-letter-routing-key": "my-queue",
+    },
+)
+```
+
+**For queues that already exist in production**, you can't change arguments on a declared queue without deleting and re-declaring it. Use a policy instead — no queue recreation required:
+
+```bash
+rabbitmqctl set_policy dlx-policy "^my-queue$" \
+  '{"dead-letter-exchange":"my-dlx"}' \
+  --apply-to queues
+```
+
+Policies are the preferred approach for existing queues. They're applied by the broker, survive restarts, and don't require changing your application code.
+
+---
+
+## The 3 reasons messages end up in the DLQ
+
+Each death reason tells you something different about what went wrong. Don't treat all DLQ messages the same.
+
+### Rejected (`x-first-death-reason: rejected`)
+
+Your consumer called `basic.nack` or `basic.reject` with `requeue=false`. This is either intentional (consumer correctly identified an unprocessable message) or a bug (uncaught exception falling through to a catch block that nacks everything).
+
+Check `x-death[0].count`. If it's 1, the message was rejected once and landed here cleanly. If it's greater than 1 — especially if it's incrementing — you have a loop. Even with `requeue=false`, a retry layer above the consumer can requeue the message back to the original queue, where the consumer rejects it again, incrementing the count on the DLQ message each time. Five or more means you have a poison message with an active retry loop feeding it. Stop the loop before reprocessing anything.
+
+See [RabbitMQ Consumer Not Processing Messages](/blog/rabbitmq-consumer-not-processing/) for how to identify and break nack loops.
+
+### TTL expired (`x-first-death-reason: expired`)
+
+The message sat in the queue past the `x-message-ttl` limit without being consumed. Cross-reference the expiry timestamp in `x-death[0].time` with your consumer outage window. In most cases this happens when:
+
+- Consumers went down during a deploy and messages piled up past their TTL
+- A traffic spike overwhelmed consumer capacity and messages waited too long
+- The TTL is aggressively short and normal processing latency occasionally exceeds it
+
+The third case is easy to miss. A 30-second TTL on a queue where processing occasionally takes 45 seconds will produce a steady, low-volume DLQ stream that nobody notices for months.
+
+### Queue length limit (`x-first-death-reason: maxlen`)
+
+Your queue hit `x-max-length` or `x-max-length-bytes` and RabbitMQ evicted the message from the head of the queue. This almost always points to a downstream outage or severe consumer slowdown that caused the backlog to grow until it hit the policy ceiling.
+
+The important thing here: `x-max-length` ejects from the **head** of the queue — the oldest messages go first. If you're reprocessing these, you're reprocessing your oldest events. Verify that reprocessing old events is safe before you dump them back into the main queue.
+
+For how to diagnose what drove the queue depth up in the first place, see [How to Debug a RabbitMQ Queue Backlog](/blog/debug-rabbitmq-queue-backlog/). For `x-max-length-bytes` policies and their interaction with memory pressure, see [RabbitMQ Memory Alarm: How to Diagnose and Fix It](/blog/rabbitmq-memory-alarm/).
+
+---
+
+## How to inspect DLQ messages
+
+Before you do anything with a DLQ, read what's in it. The management HTTP API lets you peek at messages without consuming them:
+
+```bash
+curl -u guest:guest -X POST \
+  http://localhost:15672/api/queues/%2F/my-queue.dlq/get \
+  -H 'content-type: application/json' \
+  -d '{"count":5,"ackmode":"ack_requeue_true","encoding":"auto"}' \
+  | jq '.[] | {
+      payload: .payload,
+      death_reason: .properties.headers["x-first-death-reason"],
+      death_queue: .properties.headers["x-first-death-queue"],
+      death_count: (.properties.headers["x-death"] | length),
+      routing_key: .routing_key
+    }'
+```
+
+`ack_requeue_true` means the messages are acknowledged and immediately requeued — you're peeking, not consuming. The messages stay in the DLQ.
+
+Look for these patterns in what you get back:
+
+**All same routing key.** Routing or binding configuration bug. The messages aren't a processing failure — they were routed somewhere they couldn't be handled from the start.
+
+**All same payload shape or schema.** Schema change in the producer introduced a field your consumer doesn't know how to handle. Every message with the new shape fails. Messages from before the deployment are fine.
+
+**`death_count` above 1 and climbing.** Active poison message loop. Your retry infrastructure is feeding these messages back to a consumer that keeps rejecting them. Fix the loop first.
+
+**Mixed reasons and mixed shapes.** Likely multiple independent failures landing in the same DLQ. Sort by `x-first-death-reason` first, then investigate each category separately.
+
+---
+
+## Monitoring DLQ growth
+
+Any sustained growth in a DLQ is a signal. A DLQ that accumulated 10,000 messages three days ago and stopped is less urgent than a DLQ that started growing 10 minutes ago at 50 messages per second. Rate tells you whether there's an active problem. Absolute count tells you how much damage has already been done.
+
+Wire up a Prometheus alert on growth rate, not just depth:
+
+```yaml
+- alert: RabbitMQDLQGrowing
+  expr: |
+    rate(rabbitmq_queue_messages_published_total{
+      queue=~".*dlq.*|.*dead.*|.*failed.*"
+    }[5m]) > 0
+  for: 5m
+  labels:
+    severity: warning
+  annotations:
+    summary: "DLQ {{ $labels.queue }} receiving messages at {{ $value }}/sec"
+    description: "Check x-first-death-reason in DLQ messages to identify the failure mode"
+
+- alert: RabbitMQDLQDepthCritical
+  expr: |
+    rabbitmq_queue_messages{
+      queue=~".*dlq.*|.*dead.*|.*failed.*"
+    } > 1000
+  for: 10m
+  labels:
+    severity: warning
+  annotations:
+    summary: "DLQ {{ $labels.queue }} has {{ $value }} messages"
+```
+
+The growth-rate alert is the important one. A DLQ with zero messages that suddenly starts receiving at any rate means something just broke. You want to know in 5 minutes, not after 10,000 messages pile up.
+
+Keep scrape intervals at 15 seconds or lower. At 60-second intervals you'll miss fast-filling queues. See [How to Set Up RabbitMQ Alerts That Actually Fire](/blog/rabbitmq-alerts-setup-guide/) for the full alerting setup — including where DLQ growth fits in the severity hierarchy relative to consumer outages and memory alarms.
+
+---
+
+## Reprocessing strategies
+
+There are three approaches. They're not equally safe.
+
+### 1. Shovel plugin (easiest, riskiest)
+
+The Shovel plugin can move messages from your DLQ back to the original queue or exchange with a one-line command:
+
+```bash
+rabbitmqctl set_parameter shovel my-reprocess \
+  '{"src-protocol":"amqp091",
+    "src-uri":"amqp://guest:guest@localhost",
+    "src-queue":"my-queue.dlq",
+    "dest-protocol":"amqp091",
+    "dest-uri":"amqp://guest:guest@localhost",
+    "dest-exchange":"my-exchange",
+    "dest-exchange-key":"my-queue"}'
+```
+
+This will bulk-move messages back to the main queue at whatever rate the broker can manage. The risk: if you haven't fixed the root cause, every message goes straight back to the DLQ. You've done nothing except increment `x-death[0].count` on every message and made the situation harder to debug. Don't use the shovel until you've confirmed the fix is deployed and the consumer is handling the message shape correctly.
+
+### 2. Consumer-based reprocessing (recommended)
+
+Write a dedicated consumer that reads from the DLQ, applies whatever fix is needed, and publishes corrected messages to the original exchange. This is more work but gives you control:
+
+```python
+import pika
+import json
+
+connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
+channel = connection.channel()
+channel.basic_qos(prefetch_count=1)
+
+def reprocess(ch, method, properties, body):
+    try:
+        data = json.loads(body)
+        death_reason = properties.headers.get("x-first-death-reason")
+        death_count = len(properties.headers.get("x-death", []))
+
+        # Skip known poison messages
+        if death_count > 5:
+            print(f"Skipping poison message: {data}")
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+            return
+
+        # Apply your fix here — schema migration, field normalization, etc.
+        fixed_data = migrate_schema(data)
+
+        # Publish to original exchange
+        ch.basic_publish(
+            exchange="my-exchange",
+            routing_key="my-queue",
+            body=json.dumps(fixed_data),
+        )
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+
+    except Exception as e:
+        print(f"Reprocessing failed: {e}")
+        # Nack without requeue — don't create a new DLQ loop
+        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+
+channel.basic_consume(queue="my-queue.dlq", on_message_callback=reprocess)
+channel.start_consuming()
+```
+
+Run this with `prefetch_count=1` so you process messages one at a time and can observe results before continuing. Log every message — you want a full audit trail of what you reprocessed and what you dropped.
+
+### 3. Selective requeue (for poison messages)
+
+When your DLQ contains a mix of healthy messages and known poison messages (say, events with a malformed ID that will always fail), you need to split them. Read messages one by one using the management API `ack_requeue_false` mode — which consumes them for real — filter in your code, and only republish the healthy ones:
+
+```bash
+# Consume one real message at a time (not requeued)
+curl -u guest:guest -X POST \
+  http://localhost:15672/api/queues/%2F/my-queue.dlq/get \
+  -H 'content-type: application/json' \
+  -d '{"count":1,"ackmode":"ack_requeue_false","encoding":"auto"}'
+```
+
+Parse the payload, decide if it's processable, then either republish it to the main exchange or discard it. Slow and manual, but it's the right approach when you can't classify messages automatically and the cost of reprocessing a poison message is high.
+
+**The rule:** never blindly dump a DLQ back to the main queue. Understand why the messages are there before you move a single one. The consumer-based approach gives you that control at the cost of writing more code. That trade-off is worth it in production.
+
+---
+
+## Common DLQ design mistakes
+
+These aren't hypothetical. They're patterns that show up in incident retrospectives.
+
+**No DLQ configured at all.** If `x-dead-letter-exchange` isn't set and a consumer nacks with `requeue=false`, the message is silently dropped. No error. No log. Gone. Always configure a DLQ for any queue where message loss is unacceptable — which is most queues.
+
+**DLQ has no consumer.** Messages arrive, nobody reads them, the queue grows indefinitely. A DLQ without a consumer is a drain, not a recovery mechanism. Either run a monitoring consumer that alerts and logs, or set up Qarote to watch the depth. At minimum, know when messages arrive.
+
+**DLQ uses the same exchange as the main queue.** If your DLQ dead-letters (because the DLQ itself has `x-dead-letter-exchange` set to the same DLX), a rejected DLQ message routes back to the DLQ. Infinite loop. The DLQ should use a separate exchange, or have no `x-dead-letter-exchange` set at all — let dead DLQ messages just sit there or get dropped.
+
+**No alert on DLQ growth.** Covered above but worth stating bluntly: the default state of a DLQ is invisible. If you don't add an alert, you will discover it in a post-mortem.
+
+**No TTL on the DLQ itself.** If your DLQ has no `x-message-ttl` and no consumer that regularly drains it, it grows without bound. Set a TTL appropriate to your retention requirements — 7 days for most use cases — so old failed messages don't accumulate indefinitely. Just remember that TTL expiry on a DLQ message, when that DLQ also has a DLX configured, creates another dead-letter event. Keep the DLQ's DLX empty or unset.
+
+---
+
+## tl;dr
+
+Dead letter queues are regular queues bound to a dead letter exchange. Configure them with `x-dead-letter-exchange` on your main queue — either at declaration time or via a policy. Messages end up there for three reasons: nack with `requeue=false` (consumer rejected), TTL expiry (sat too long), or queue length limit exceeded (evicted from head). Each reason tells you something different about what broke. Before reprocessing anything, read the `x-death` headers to understand what you're dealing with. Use consumer-based reprocessing rather than the shovel for anything in production — it gives you control over what gets retried and what gets dropped. Alert on DLQ growth rate, not just depth: a queue that started receiving messages 10 minutes ago is more urgent than one that stopped growing three days ago.
+
+The hardest part of DLQ management isn't setting it up — it's knowing when messages start arriving. Qarote alerts on DLQ growth rate so you find out when a consumer starts rejecting messages, not three weeks later in a post-mortem.
+
+[See how DLQ monitoring works in Qarote →](/features/)

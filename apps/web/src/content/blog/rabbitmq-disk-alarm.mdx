@@ -1,0 +1,271 @@
+---
+title: "RabbitMQ Disk Alarm: How to Diagnose and Recover"
+description: "RabbitMQ disk alarm blocking publishers? Here's how to find what's consuming disk space, clear the alarm without data loss, and prevent it from recurring."
+publishedAt: "2026-04-25"
+tags: ["rabbitmq", "debugging", "monitoring", "operations"]
+readingTimeMin: 7
+---
+
+It is 3am. PagerDuty fires. Your publishers have stopped sending. The logs show `resource alarm set on node rabbit@prod-1` and everything downstream is backing up. Consumers are still draining, but nothing new is going in. The culprit is `disk_free_alarm` — RabbitMQ has decided there is not enough free disk space to safely accept more messages, and it has put every publishing connection into flow control until the situation changes.
+
+This post covers how to confirm the alarm, find what is eating your disk, clear it safely, and make sure it does not fire again.
+
+> **See it before it bites.** Qarote shows disk free space and alarm state in real time across every node in your cluster — including a leading-indicator alert before `disk_free_alarm` flips to true. [See the node health dashboard →](/features/)
+
+## What the Disk Alarm Actually Means
+
+RabbitMQ monitors free disk space on the volume where its data directory lives (usually `/var/lib/rabbitmq`). It compares the current free space against a configurable threshold called `disk_free_limit`. The moment free space drops below that threshold, the broker raises `disk_free_alarm` cluster-wide and blocks all incoming publishes.
+
+The default `disk_free_limit` is **50 MB**. That is not a typo. Fifty megabytes. On any production system handling meaningful load, this threshold is dangerously low — a single burst of persistent messages can push you under it in seconds. RabbitMQ's own documentation recommends setting this to at least the size of your available RAM, and most production teams should be using an absolute value like `{absolute, "5GB"}` or a relative fraction like `0.1` of total disk.
+
+The alarm exists for a good reason: RabbitMQ writes persistent message bodies to disk and also uses Erlang's mnesia database to store cluster metadata, queue definitions, bindings, and user records. If disk fills completely, mnesia writes can corrupt, and recovering from a corrupted mnesia database is significantly more painful than recovering from a disk alarm.
+
+Confirm the alarm is active:
+
+```bash
+rabbitmqctl status | grep -A5 alarms
+```
+
+Or against the HTTP API:
+
+```bash
+curl -s -u guest:guest http://localhost:15672/api/nodes | \
+  jq '.[].disk_free_alarm'
+```
+
+If either returns `true` (or shows `{resource_alarm,disk_free}`), the alarm is live.
+
+## How to Check Current Disk Usage
+
+There are three angles worth checking immediately. Do not skip any of them — it is common for the actual cause to be in the one place you did not look.
+
+### RabbitMQ's own disk report
+
+```bash
+rabbitmqctl status | grep -A5 disk
+```
+
+This tells you what RabbitMQ thinks the free space is and what the current limit is set to. The `disk_free` value is the current free bytes as RabbitMQ sees them.
+
+### What is actually consuming disk
+
+```bash
+du -sh /var/lib/rabbitmq/mnesia/*
+```
+
+This breaks down by subdirectory. You will typically see:
+
+- `rabbit@<hostname>` — the main node data directory, containing queue message stores, mnesia tables, and message indices. This grows with persistent message backlogs.
+- `rabbit@<hostname>-plugins-expand` — extracted plugin code. Usually static.
+- `rabbit@<hostname>.pid` — tiny.
+
+On a busy cluster, the `rabbit@<hostname>` directory is almost always the one that matters. Inside it, `msg_stores/vhosts/` holds persisted message bodies, and `schema.DAT`, `*.DCD`, and `*.DCL` files are mnesia table data and transaction logs.
+
+### The current threshold
+
+```bash
+rabbitmqctl environment | grep disk_free_limit
+```
+
+Whatever value comes back — note it. If it is `50000000` (50 MB), that is the default and it almost certainly needs to change. If it is a large absolute value that is close to or larger than what your disk actually has free, that explains the alarm even if disk usage looks normal.
+
+## The 5 Most Common Root Causes
+
+### 1. Persistent message accumulation
+
+Queues declared with `durable: true` and messages published with `delivery_mode: 2` are written to disk immediately. A backlog of persistent messages in a queue that is lagging behind its consumers will grow on disk proportionally to message volume and size.
+
+Find the queues eating the most disk:
+
+```bash
+rabbitmqctl list_queues name messages message_bytes_persistent | \
+  sort -k3 -n -r | head -10
+```
+
+The `message_bytes_persistent` column shows how many bytes of persistent message data each queue is holding. If one queue is holding tens of gigabytes of messages, you have found your primary cause. The immediate fix is to accelerate draining — scale consumers, fix whatever is making them slow — and the structural fix is to set a `max-length-bytes` policy so a lagging queue cannot consume unbounded disk:
+
+```bash
+rabbitmqctl set_policy max-size "^your-queue-name$" \
+  '{"max-length-bytes": 1073741824}' --apply-to queues
+```
+
+For a deeper walkthrough on diagnosing why a queue is backing up in the first place, see [debug RabbitMQ queue backlog](/blog/debug-rabbitmq-queue-backlog/).
+
+### 2. Large message bodies on disk
+
+Even with a healthy consumer rate, a queue receiving individual messages with multi-megabyte payloads will accumulate disk usage fast. A single message of 10 MB held persistently counts against disk exactly the same as 10,000 messages of 1 KB each.
+
+Check per-queue persistent message sizes:
+
+```bash
+curl -s -u guest:guest http://localhost:15672/api/queues | \
+  jq '.[] | {name: .name, messages: .messages, message_bytes_persistent: .message_bytes_persistent}' | \
+  jq 'select(.message_bytes_persistent > 0)'
+```
+
+If `message_bytes_persistent` is high relative to the message count, average message size is large. Long-term, push large payloads to object storage and route references through RabbitMQ. Short-term, enforce `max-length-bytes` on the affected queues.
+
+### 3. Management plugin stats database
+
+The Management plugin maintains a statistics database — backed by Erlang ETS tables — that gets written to disk periodically as part of checkpoint operations. On clusters with high queue and connection counts and long retention windows, this database can reach several gigabytes.
+
+Check the retention settings currently in effect:
+
+```bash
+rabbitmqctl environment | grep management
+```
+
+Reduce retention in `rabbitmq.conf` to reclaim this space over time:
+
+```ini
+management.rates_mode = basic
+management.sample_retention_policies.global.minute  = 5
+management.sample_retention_policies.global.hour    = 60
+management.sample_retention_policies.global.day     = 1200
+```
+
+After changing these values, restart the management plugin to flush the in-memory cache (the on-disk portion will reduce gradually as new stats are written at the lower retention):
+
+```bash
+rabbitmq-plugins disable rabbitmq_management
+rabbitmq-plugins enable rabbitmq_management
+```
+
+### 4. Mnesia transaction logs
+
+Erlang's mnesia database uses a write-ahead log system. Transaction log files (`*.DCL`) accumulate between compaction cycles, and compaction is not always triggered automatically under all conditions. On a cluster that has seen many queue declarations, deletions, and policy changes over its lifetime, these logs can stack up.
+
+The transaction logs live in the node data directory:
+
+```bash
+ls -lh /var/lib/rabbitmq/mnesia/rabbit@$(hostname)/
+```
+
+Look for `*.DCL` files (transaction logs) alongside `*.DCD` files (compacted tables). If there are many DCL files, compaction is overdue.
+
+Trigger a manual compaction across all mnesia tables:
+
+```bash
+rabbitmqctl eval 'lists:foreach(fun(T) -> mnesia:dump_tables([T]) end, mnesia:system_info(local_tables)).'
+```
+
+This forces each table to be compacted to its DCD form and the corresponding DCL transaction log to be cleared. Run it during low-traffic periods — it will produce some disk I/O load.
+
+### 5. The threshold is set too high relative to the disk
+
+This one catches people off guard. If `disk_free_limit` is configured as `{relative, 1.0}` — meaning it must equal total available RAM — and you have 64 GB of RAM on a server with a 100 GB data disk, RabbitMQ will alarm whenever free disk drops below 64 GB. On a 100 GB disk, that means the alarm fires if more than 36 GB is ever in use. The disk is nowhere near full. The threshold is just wrong for the hardware.
+
+Check what relative means in absolute terms on your node:
+
+```bash
+# Check RAM
+free -h
+
+# Check disk free limit
+rabbitmqctl environment | grep disk_free_limit
+
+# Check current free disk
+rabbitmqctl status | grep disk_free
+```
+
+If the alarm is firing but `df -h` shows the disk is only 30–40% full, the relative threshold is the problem. Switch to an absolute value that makes sense for your deployment — `{absolute, "5GB"}` is a reasonable production default for most setups:
+
+```ini
+# rabbitmq.conf
+disk_free_limit.absolute = 5GB
+```
+
+## How to Clear the Alarm Without Data Loss
+
+A few things not to do: do not restart RabbitMQ hoping it will clear the alarm. If disk is still below threshold after restart, the alarm will come right back — and a restart adds unnecessary risk during an already degraded state. Do not delete files from `/var/lib/rabbitmq/mnesia/` directly. Those are live database files. Deleting them destroys your cluster's metadata — queue definitions, bindings, policies, user accounts — and recovery requires restoring from backup or rebuilding the cluster definition.
+
+Safe options, in order of preference:
+
+**Delete old RabbitMQ log files.** These accumulate in `/var/log/rabbitmq/` and are rotated but not always purged. Logs older than a week are safe to delete:
+
+```bash
+find /var/log/rabbitmq -name "*.log.*" -mtime +7 -delete
+```
+
+Check how much you recovered:
+
+```bash
+df -h /var/lib/rabbitmq
+```
+
+**Restart the management plugin to clear its stats cache.** This flushes the in-memory ETS stats database and can reclaim significant disk space if the checkpoint files are large:
+
+```bash
+rabbitmq-plugins disable rabbitmq_management
+rabbitmq-plugins enable rabbitmq_management
+```
+
+**Drain lagging queues.** If persistent message accumulation is the root cause, the only real fix is to drain the messages. Increase consumer concurrency, restart stuck consumers, or — as a last resort on a non-critical queue — purge:
+
+```bash
+rabbitmqctl purge_queue your-queue-name
+```
+
+Do not purge without confirming the queue's content is safe to discard.
+
+**Add disk.** If the server is genuinely running out of space and the data on it is legitimate, expand the disk. On cloud instances, this is usually a few minutes of work and avoids all the risk of deleting data.
+
+**Temporarily lower the threshold for immediate relief.** This does not free any disk — it just convinces RabbitMQ to resume publishes. Use it to buy time while you address the underlying cause, not as a permanent fix:
+
+```bash
+# Takes effect immediately, no restart required
+rabbitmqctl set_disk_free_limit '{absolute, "500MB"}'
+```
+
+Persist the real threshold in `rabbitmq.conf` once the incident is resolved.
+
+## Preventing Recurrence
+
+The disk alarm is a lagging indicator. By the time it fires, publishers are already blocked. The leading indicators to watch are:
+
+**Alert on the ratio before the alarm fires.** The signal to act on is `disk_free_bytes / disk_free_limit`. When that ratio drops below 3, you have less than 3x the minimum threshold left. That is the right time to investigate — not when it drops below 1 and the alarm fires.
+
+If you have the Prometheus plugin enabled:
+
+```bash
+rabbitmq-plugins enable rabbitmq_prometheus
+# Scrape at: http://localhost:15692/metrics
+```
+
+The relevant metrics are `rabbitmq_node_disk_free_bytes` and `rabbitmq_node_disk_free_limit`. Alert when:
+
+```
+rabbitmq_node_disk_free_bytes / rabbitmq_node_disk_free_limit < 3
+```
+
+**Set a realistic `disk_free_limit` in `rabbitmq.conf`.**
+
+```ini
+disk_free_limit.absolute = 5GB
+```
+
+For most production deployments handling persistent messages, 5 GB gives RabbitMQ real headroom to write without thrashing. If your data volume is much larger, scale this up accordingly — some teams use `{relative, 0.1}` to tie it to disk size.
+
+**Set `x-max-length-bytes` policies on persistent queues.** This is the single most effective prevention mechanism. It caps how much disk any one queue can consume, which means a slow consumer cannot cause a disk alarm by itself:
+
+```bash
+rabbitmqctl set_policy max-size ".*" \
+  '{"max-length-bytes": 5368709120}' \
+  --apply-to queues --priority 0
+```
+
+Adjust the byte limit to fit your per-queue budget.
+
+**Reduce Management plugin retention.** If you do not need 24 hours of per-second statistics, do not keep them. The default retention settings are more aggressive than most teams need.
+
+**Alert on disk before you alert on the alarm itself.** See [how to set up RabbitMQ alerts that actually fire](/blog/rabbitmq-alerts-setup-guide/) for a full guide on wiring these metrics into alerting that gives you lead time instead of a wake-up call.
+
+The disk alarm and the [memory alarm](/blog/rabbitmq-memory-alarm/) are the two most disruptive alarms RabbitMQ can raise. Both follow the same pattern: they are lagging indicators of a resource that was allowed to trend in the wrong direction without anyone noticing. The fix for both is the same: monitor the ratio early, set sane limits, and constrain the consumers of the resource (queues, connections, plugins) before they become a crisis.
+
+---
+
+Qarote's node panel shows `disk_free_bytes / disk_free_limit` ratio trending over time, so you can see a disk alarm developing 30 minutes before it fires rather than 30 seconds after. If you are running RabbitMQ in production and relying on the default management plugin to catch this, you are going to miss it. [See what the node health dashboard looks like →](/features/)
+
+---
+
+**tl;dr:** RabbitMQ raises `disk_free_alarm` when free disk drops below `disk_free_limit` (default: 50 MB — dangerously low for production). The most common causes are persistent message backlog, a relative threshold that is misconfigured for the hardware, Management plugin stats accumulation, and mnesia transaction log buildup. To clear the alarm safely: delete old log files, restart the management plugin, drain or purge lagging queues, and temporarily lower the threshold with `rabbitmqctl set_disk_free_limit`. To prevent recurrence: set `disk_free_limit.absolute = 5GB` in `rabbitmq.conf`, add `x-max-length-bytes` policies on persistent queues, and alert on the `disk_free / disk_free_limit` ratio before it hits 1.
