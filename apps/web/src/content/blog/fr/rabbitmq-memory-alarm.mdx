@@ -1,0 +1,227 @@
+---
+title: "Alarme mémoire RabbitMQ déclenchée : comment la diagnostiquer et la résoudre"
+description: "L'alarme mémoire de RabbitMQ bloque vos publishers ? Apprenez à diagnostiquer la cause, à la corriger immédiatement et à éviter qu'elle ne se déclenche à nouveau en production."
+publishedAt: "2026-04-23"
+tags: ["rabbitmq", "debugging", "monitoring", "operations"]
+readingTimeMin: 8
+---
+
+L'alarme se déclenche et vos publishers s'arrêtent net. Le flow control s'enclenche, les messages s'accumulent plus vite qu'ils ne sont consommés, et votre équipe d'astreinte est réveillée. Avant de commencer à redémarrer des nœuds en espérant que ça s'arrange, voici une méthode structurée pour identifier la véritable cause de l'alarme mémoire et la corriger sans aggraver les choses.
+
+## Ce que signifie réellement l'alarme mémoire
+
+RabbitMQ définit un seuil de haute limite — `vm_memory_high_watermark` — exprimé en fraction de la RAM système totale. La valeur par défaut est `0.4`, ce qui signifie que RabbitMQ bloquera toutes les connexions de publication dès que l'allocateur mémoire d'Erlang signale une utilisation supérieure à 40 % de la mémoire disponible.
+
+Il ne s'agit pas d'un crash. C'est un mécanisme de contre-pression délibéré. Le broker est toujours actif et les consommateurs peuvent encore vider les messages, mais les publishers reçoivent un blocage de flux de crédit `resource-alarm` jusqu'à ce que la mémoire descende sous le seuil. Le problème est que ce seuil n'est souvent jamais atteint spontanément, parce que la cause racine est toujours présente.
+
+Vous pouvez confirmer que l'alarme est active en deux secondes :
+
+```bash
+rabbitmqctl status | grep -A5 "alarms"
+```
+
+Ou via l'API HTTP :
+
+```bash
+curl -s -u guest:guest http://localhost:15672/api/nodes | \
+  jq '.[].mem_alarm'
+```
+
+Si cela retourne `true`, l'alarme est active. Voyons maintenant pourquoi.
+
+## Comment vérifier l'utilisation mémoire actuelle
+
+### Via rabbitmqctl
+
+```bash
+rabbitmqctl status | grep -A10 "memory"
+```
+
+La sortie décompose la mémoire par catégorie : `connection_readers`, `connection_writers`, `queue_procs`, `plugins`, `binary`, `code`, `atom`, et d'autres. Les chiffres `binary` et `queue_procs` sont généralement le premier endroit où regarder — des pics à ces niveaux pointent directement vers des messages volumineux ou des files d'attente surchargées.
+
+### Via l'API Management
+
+```bash
+curl -s -u guest:guest http://localhost:15672/api/nodes/<node-name> | \
+  jq '{mem_used: .mem_used, mem_limit: .mem_limit, mem_alarm: .mem_alarm}'
+```
+
+Le ratio `mem_used` / `mem_limit` indique à quel point vous êtes proche de la limite en ce moment. Si `mem_used` se situe à 95 % de `mem_limit`, vous marchez sur le fil et l'alarme se redéclenchera dès que la charge reprendra.
+
+> **Évitez les allers-retours en SSH.** Le panneau mémoire des nœuds de Qarote affiche ce ratio en temps réel sur chaque nœud de votre cluster — y compris l'état de l'alarme — et vous permet de configurer des alertes de seuil avant que `mem_alarm` ne passe à `true`. [Voir le tableau de bord mémoire →](/features/)
+
+### Le watermark lui-même
+
+```bash
+rabbitmqctl environment | grep vm_memory_high_watermark
+```
+
+Notez la valeur actuelle. Si elle a été augmentée manuellement lors d'un incident précédent et n'a jamais été ramenée à sa valeur d'origine, c'est un contexte important à prendre en compte.
+
+## Les 6 causes racines les plus fréquentes
+
+### 1. Accumulation de messages volumineux en mémoire
+
+RabbitMQ conserve les corps des messages dans un tas binaire. Lorsque les messages individuels sont volumineux — pensez aux payloads de plusieurs centaines de Ko — et qu'ils s'accumulent sans être délivrés, le segment mémoire `binary` gonfle rapidement.
+
+Vérifiez la taille moyenne des messages par file d'attente :
+
+```bash
+curl -s -u guest:guest http://localhost:15672/api/queues | \
+  jq '.[] | {name: .name, messages: .messages, message_bytes_ram: .message_bytes_ram}'
+```
+
+Si `message_bytes_ram` est très élevé sur une file d'attente dont les [consommateurs ont du retard](/blog/rabbitmq-consumer-not-processing/), vous avez trouvé le coupable. La solution est d'accélérer le vidage — augmenter le nombre de consommateurs, corriger ce qui les ralentit — et à plus long terme, appliquer une politique `max-length-bytes` sur les files d'attente recevant des payloads volumineux.
+
+```bash
+rabbitmqctl set_policy max-size "^your-queue-name$" \
+  '{"max-length-bytes": 52428800}' --apply-to queues
+```
+
+### 2. Mode Lazy non configuré
+
+Les files d'attente classiques conservent les messages en mémoire par défaut et ne les écrivent sur disque que sous pression. Si vous n'avez pas activé le mode lazy, un backlog de messages même modérément volumineux consommera rapidement de la RAM.
+
+Vérifiez quelles files d'attente ne sont pas en mode lazy :
+
+```bash
+curl -s -u guest:guest http://localhost:15672/api/queues | \
+  jq '.[] | select(.arguments["x-queue-mode"] != "lazy") | .name'
+```
+
+Sur RabbitMQ 3.12+, l'équivalent est `x-queue-type: quorum` — les quorum queues stockent les messages sur disque par défaut, ce qui rend ce problème largement inexistant si vous avez déjà migré. Pour les files d'attente classiques encore en production, activez le mode lazy :
+
+```bash
+rabbitmqctl set_policy lazy-all ".*" '{"queue-mode":"lazy"}' \
+  --apply-to queues --priority 0
+```
+
+Ou définissez-le au moment de la déclaration avec l'argument `x-queue-mode: lazy`.
+
+### 3. Accumulation de messages non acquittés
+
+Un consommateur qui récupère des messages mais ne les acquitte jamais conserve ces messages en RAM indéfiniment. C'est l'une des causes les plus sournoises, car la profondeur de la file d'attente semble normale mais le compteur `messages_unacknowledged` augmente en arrière-plan.
+
+```bash
+curl -s -u guest:guest http://localhost:15672/api/queues | \
+  jq '.[] | {name: .name, unacked: .messages_unacknowledged}' | \
+  jq 'select(.unacked > 0)'
+```
+
+Un nombre élevé de messages non acquittés sans changement du taux de livraison signifie généralement qu'un consommateur est bloqué dans une boucle, lève des exceptions avant d'acquitter, ou s'est simplement crashé avec des messages en cours de traitement. Corrigez le code du consommateur, puis définissez un prefetch count pour limiter le nombre de messages qu'un seul consommateur peut détenir à la fois :
+
+```bash
+# Dans la configuration de votre consommateur (AMQP 0-9-1)
+channel.basic_qos(prefetch_count=50)
+```
+
+Combiner un faible prefetch avec un `consumer_timeout` (RabbitMQ 3.8.15+) permettra de nacker automatiquement les messages retenus trop longtemps :
+
+```ini
+# rabbitmq.conf
+consumer_timeout = 1800000
+```
+
+### 4. Trop de connexions et de canaux
+
+Chaque connexion et canal AMQP consomme de la mémoire pour son propre processus, ses buffers et ses lecteurs/écrivains. Une application qui laisse fuir des connexions — en les ouvrant sans les fermer — consommera silencieusement de la RAM sur plusieurs heures.
+
+```bash
+rabbitmqctl list_connections name client_properties state memory | \
+  sort -k4 -n -r | head -20
+```
+
+Recherchez des connexions avec des chiffres mémoire individuels anormalement élevés, ou un nombre total de connexions bien supérieur à ce que la topologie de votre application devrait produire. Les fuites de canaux sont encore plus courantes :
+
+```bash
+rabbitmqctl list_channels connection channel_max messages_unacknowledged | \
+  sort -k3 -n -r | head -20
+```
+
+La correction se fait au niveau de l'application — assurez-vous que les connexions et les canaux sont fermés explicitement dans des blocs finally ou via des gestionnaires de contexte. Côté broker, définissez une limite de connexions comme garde-fou temporaire :
+
+```ini
+# rabbitmq.conf
+connection_max = 1024
+```
+
+### 5. Surcharge mémoire des plugins
+
+Le plugin Management met en cache les statistiques historiques dans des tables ETS. Si vous stockez des statistiques à haute granularité sur un cluster chargé, ce cache peut atteindre plusieurs gigaoctets.
+
+Vérifiez la mémoire consommée par le plugin Management :
+
+```bash
+rabbitmqctl status | grep -A3 "mgmt_db"
+```
+
+Réduisez la fenêtre de rétention des statistiques dans `rabbitmq.conf` :
+
+```ini
+management.rates_mode = basic
+management.sample_retention_policies.global.minute  = 5
+management.sample_retention_policies.global.hour    = 60
+management.sample_retention_policies.global.day     = 1200
+```
+
+Redémarrez le plugin management après ces modifications :
+
+```bash
+rabbitmq-plugins disable rabbitmq_management
+rabbitmq-plugins enable rabbitmq_management
+```
+
+### 6. Le watermark est trop bas pour votre matériel
+
+Parfois, le vrai problème est que le watermark a été configuré de manière conservative il y a des années et que le broker tourne désormais sur une machine avec beaucoup plus de RAM. Un watermark de `0.4` sur une VM de 4 Go vous donne 1,6 Go de marge. Sur un serveur bare metal de 128 Go, la même fraction signifie que l'alarme se déclenche à 51 Go alors que le système dispose encore de 77 Go libres.
+
+Vérifiez votre limite effective actuelle :
+
+```bash
+rabbitmqctl status | grep mem_limit
+```
+
+Si la limite semble disproportionnellement faible par rapport à la RAM disponible, augmentez le watermark :
+
+```bash
+# Changement à chaud — prend effet immédiatement, sans redémarrage
+rabbitmqctl set_vm_memory_high_watermark 0.6
+```
+
+Persistez-le dans `rabbitmq.conf` pour survivre aux redémarrages :
+
+```ini
+vm_memory_high_watermark.relative = 0.6
+```
+
+Ne montez pas au-dessus de `0.7` sans avoir testé sous charge — laisser une marge trop faible pour l'OS et Erlang lui-même est la façon de transformer une alarme mémoire en kill OOM.
+
+## Comment éviter que ça ne se reproduise
+
+L'alarme mémoire est un indicateur à retardement. Au moment où elle se déclenche, vous êtes déjà en flow control, vos SLA sont en danger et vos options sont réactives. Les indicateurs avancés à surveiller sont :
+
+- `messages_unacknowledged` par file d'attente — alerter à 10–20 % de votre débit attendu
+- `message_bytes_ram` par file d'attente — alerter lorsque le budget défini par file est dépassé
+- Ratio `mem_used / mem_limit` par nœud — **alerter à 70 % avant que l'alarme se déclenche à 100 %**
+- Dérive du nombre de connexions — alerter si le total de connexions dépasse de plus de 20 % la ligne de base
+
+Vous pouvez récupérer toutes ces métriques depuis l'API Management ou les intégrer dans Prometheus via le plugin `rabbitmq_prometheus` :
+
+```bash
+rabbitmq-plugins enable rabbitmq_prometheus
+# Endpoint de scrape : http://localhost:15692/metrics
+```
+
+Au-delà des outils, les étapes de prévention structurelle :
+
+1. Migrer les files d'attente classiques vers des quorum queues — elles écrivent sur disque par défaut
+2. Définir des politiques `x-max-length` ou `x-max-length-bytes` sur toutes les files d'attente susceptibles de recevoir des pics
+3. Appliquer des limites de prefetch dans chaque consommateur
+4. Auditer les connexions et canaux mensuellement — les fuites de connexions sont lentes et insidieuses
+5. Revoir les paramètres de rétention du plugin Management sur les clusters avec plus de quelques centaines de files d'attente
+
+Si vous souhaitez être notifié avant que l'alarme ne se déclenche plutôt qu'après, [configurez des alertes RabbitMQ qui vous donnent réellement de l'avance](/blog/rabbitmq-alerts-setup-guide/).
+
+---
+
+**En résumé :** L'alarme mémoire se déclenche lorsque la mémoire Erlang dépasse `vm_memory_high_watermark` (par défaut 0,4 × RAM). Exécutez `rabbitmqctl status | grep -A10 memory` et vérifiez `messages_unacknowledged` et `message_bytes_ram` par file d'attente pour trouver le coupable. Les causes les plus fréquentes sont l'accumulation de messages non acquittés (à corriger avec des limites de prefetch), le mode lazy non activé sur les files d'attente classiques, les fuites de connexions/canaux, le cache de statistiques du plugin Management, et un watermark trop bas par rapport au matériel réel. Corrigez la cause racine — augmenter le watermark sans traiter la fuite ne fait que retarder la prochaine alarme.

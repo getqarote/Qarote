@@ -1,0 +1,232 @@
+---
+title: "如何配置真正能在关键时刻触发的RabbitMQ告警"
+description: "配置能提前捕获真实问题的RabbitMQ告警。Queue深度、consumer失联、DLQ激增——这些才是真正重要的信号，以及应该设置的阈值。"
+publishedAt: "2026-04-23"
+tags: ["rabbitmq", "monitoring", "alerts", "operations"]
+readingTimeMin: 9
+---
+
+你从Slack里得知了这次故障。一条客户消息："嘿，你们那边出问题了吗？"你打开dashboard一看，Queue深度：847,000条消息。Consumer数量：0。Broker已经降级运行了40分钟。你的告警系统从未响过。
+
+或者是另一种情况：告警风暴汹涌而至，毫不留情——每逢周二凌晨2点，因为定时批处理任务，queue深度超过500条就告警——值班团队早已习惯性地在读都没读的情况下直接忽略。然后，真正的故障发生了，没有人注意到。
+
+两种失败模式根源相同：告警阈值从某篇博客文章里照抄过来，接的是落后于实际情况几分钟的指标，监控的根本是错误的东西。这篇文章就是来解决这个问题的。我将介绍五个真正重要的指标、如何选择站得住脚的阈值，以及如何把整套系统搭起来——无论你走Prometheus路线，还是想要一个开箱即懂RabbitMQ语义的工具。
+
+## 为什么大多数RabbitMQ告警配置都会失败
+
+RabbitMQ的默认管理UI会给你展示queue深度。这也是每个人第一个伸手去拿的指标。但原始queue深度是一个滞后指标——它告诉你已经出了问题，而不是问题正在逼近。而且它会持续产生误报：一个在峰值负载下突发的健康queue，看起来和一个正在朝磁盘写满方向溃散的queue毫无区别。
+
+三种模式杀死了大多数告警体系：
+
+**监控了错误的指标。** 单靠queue深度，没有变化率的背景，只是噪音。一个持有10,000条消息、每秒消费2,000条的queue没有问题。同一个queue每秒增长500条，则是一场正在进行的故障。
+
+**静态阈值不与基线挂钩。** 对一个正常情况下承载5,000条消息的queue在1,000条时告警毫无意义。对一个正常情况下只有50条的queue在1,000条时告警，则是五级警报。
+
+**指标落后几分钟。** RabbitMQ管理HTTP API是轮询式的，不是推送式的。如果你的监控每60秒scrape一次，而你的queue在consumer停机30秒内就能填满，那你始终比关键时刻落后一个scrape周期。
+
+解决方案是挑选一小组高信噪比的指标，基于你实际的流量模式设置阈值，并且——最关键的——对领先指标告警，而不只是对滞后指标告警。
+
+## 5个真正重要的指标
+
+### 1. Queue深度：绝对值 + 增长速率
+
+绝对queue深度（`rabbitmq_queue_messages`）告诉你当下有多糟糕。增长速率告诉你将去向何方。两者缺一不可。
+
+```yaml
+# Absolute depth threshold
+- alert: RabbitMQQueueDepthHigh
+  expr: rabbitmq_queue_messages{queue!~".*dlq.*"} > 10000
+  for: 5m
+  labels:
+    severity: warning
+  annotations:
+    summary: "Queue {{ $labels.queue }} has {{ $value }} messages"
+
+# Rate of growth — fills before depth becomes critical
+- alert: RabbitMQQueueGrowingFast
+  expr: rate(rabbitmq_queue_messages[5m]) > 100
+  for: 3m
+  labels:
+    severity: warning
+  annotations:
+    summary: "Queue {{ $labels.queue }} growing at {{ $value }}/sec"
+```
+
+增长速率告警会在深度告警变得紧迫之前就触发。这正是关键所在——你需要的是提前量。
+
+**阈值设定思路：** 将绝对深度阈值设置在正常流量下预期峰值深度的约2–3倍。将增长速率阈值基于你实测的消费速率：如果consumer每秒处理200条，而queue正以每秒100条的速度增长，你将在几分钟内趋近饱和。关于如何诊断增长的驱动因素，参阅[queue积压调试指南](/blog/debug-rabbitmq-queue-backlog/)。
+
+### 2. 未确认消息数（Consumer健康代理指标）
+
+`rabbitmq_queue_messages_unacked`是RabbitMQ监控中最被忽视的信号之一。当consumer收到消息却不ack时，意味着它们卡住了——处理某条消息过慢、被下游依赖阻塞，或者陷入紧密的重试循环。
+
+未确认消息数上升而queue深度稳定，是一种特别危险的模式：在深度图上看起来一切正常，但你的consumer实际上已经冻结。
+
+```yaml
+- alert: RabbitMQUnackedMessagesHigh
+  expr: rabbitmq_queue_messages_unacked > 500
+  for: 5m
+  labels:
+    severity: warning
+  annotations:
+    summary: "{{ $value }} unacked messages on queue {{ $labels.queue }}"
+```
+
+**阈值设定思路：** 相对于你的`prefetch_count`设置来定。如果每个consumer的`prefetch_count`为10，有5个consumer，则你预期任意时刻最多约50条消息在途。告警阈值设置为5倍可以给出信号而不产生噪音。如果这个告警频繁触发，[consumer未处理消息指南](/blog/rabbitmq-consumer-not-processing/)涵盖了最常见的根因。
+
+### 3. Consumer数量降至零
+
+这一条没有商量余地。一个有消息却没有consumer的queue，要么是正在发生的故障，要么是即将到来的故障。将此设为页面级告警，而不是Slack通知。
+
+```yaml
+- alert: RabbitMQNoConsumers
+  expr: |
+    rabbitmq_queue_consumers == 0
+    and
+    rabbitmq_queue_messages > 0
+  for: 1m
+  labels:
+    severity: critical
+  annotations:
+    summary: "Queue {{ $labels.queue }} has no consumers and {{ $value }} messages"
+```
+
+`for: 1m`给了一个短暂的宽限期，用于滚动重启的场景——旧Pod终止到新Pod连接这段时间内，consumer数量会短暂降至零。超过一分钟，你就需要立刻知道。
+
+**阈值设定思路：** 这里没有阈值可调。非空queue上零consumer永远是错的。唯一需要调整的是`for`窗口，应与你的部署滚动时长匹配。
+
+### 4. 内存告警（节点级别）
+
+当节点接近内存高watermark时，RabbitMQ会对发布者限流并阻塞连接。当`rabbitmq_node_mem_alarm`触发时，你已经处于降级状态——但仍然值得告警，因为这是需要立即处置的明确信号。
+
+```yaml
+# Fire immediately when alarm is active
+- alert: RabbitMQMemoryAlarm
+  expr: rabbitmq_node_mem_alarm == 1
+  for: 0m
+  labels:
+    severity: critical
+  annotations:
+    summary: "RabbitMQ node {{ $labels.node }} memory alarm active"
+
+# Early warning before the alarm fires
+- alert: RabbitMQMemoryUsageHigh
+  expr: rabbitmq_node_mem_used_bytes / rabbitmq_node_mem_limit > 0.75
+  for: 5m
+  labels:
+    severity: warning
+  annotations:
+    summary: "Node {{ $labels.node }} at {{ $value | humanizePercentage }} of memory limit"
+```
+
+**阈值设定思路：** 内存高watermark的75%给你提供了早期预警。默认watermark是总RAM的40%，因此这个告警在约总节点RAM的30%时触发——远在RabbitMQ开始限流之前。当这个告警触发时的完整诊断指南，参阅[RabbitMQ内存告警：如何诊断和修复](/blog/rabbitmq-memory-alarm/)。
+
+### 5. Dead-Letter Queue增长
+
+DLQ是沉默的杀手。消息在那里堆积，不会在主queue上产生任何可见的症状，团队往往在几周后的事后复盘中才发现它们。DLQ持续增长意味着消息正在失败——由于处理错误、TTL过期或路由配置错误。
+
+```yaml
+- alert: RabbitMQDLQGrowing
+  expr: |
+    rate(rabbitmq_queue_messages_published_total{
+      queue=~".*dlq.*|.*dead.*|.*failed.*"
+    }[10m]) > 0
+  for: 10m
+  labels:
+    severity: warning
+  annotations:
+    summary: "DLQ {{ $labels.queue }} receiving messages at {{ $value }}/sec"
+```
+
+**阈值设定思路：** 任何持续的DLQ增长速率超过零都值得发出告警。10分钟的窗口能过滤掉偶发处理抖动产生的短暂重试。如果你的应用在正常流程中就会路由消息到DLQ，调整queue名称过滤器以排除这些queue。
+
+## 如何把它搭起来
+
+### 方案一：Prometheus + Alertmanager（自建，完全可控）
+
+首先，在你的RabbitMQ节点上启用Prometheus plugin：
+
+```bash
+rabbitmq-plugins enable rabbitmq_prometheus
+```
+
+这会在`http://<node>:15692/metrics`暴露指标。将其添加到Prometheus的scrape配置：
+
+```yaml
+scrape_configs:
+  - job_name: rabbitmq
+    static_configs:
+      - targets:
+          - rabbitmq-node-1:15692
+    scrape_interval: 15s
+```
+
+将scrape interval保持在15秒或更低。设为60秒，你会完全错过填充速度快的queue。将上面各节中的告警规则写入一个文件，并在`prometheus.yml`中引用：
+
+```yaml
+rule_files:
+  - "rabbitmq_alerts.yml"
+```
+
+配置Alertmanager路由，将critical（呼人）与warning（Slack通知）分开：
+
+```yaml
+route:
+  group_by: ["alertname", "queue"]
+  receiver: slack-default
+  routes:
+    - match:
+        severity: critical
+      receiver: pagerduty-oncall
+
+receivers:
+  - name: slack-default
+    slack_configs:
+      - channel: "#alerts"
+        send_resolved: true
+  - name: pagerduty-oncall
+    pagerduty_configs:
+      - routing_key: <your-key>
+```
+
+这套方案功能强大，完全可定制。但也需要你自己维护Prometheus、Alertmanager，并在cluster拓扑变化时持续更新scrape目标。如果你已经在其余基础设施上跑着Prometheus，这是最自然的路径——参阅它与Grafana + Prometheus在RabbitMQ专项监控上的[对比](/compare/grafana-prometheus/)。
+
+### 方案二：通用APM工具（Datadog、Grafana Cloud）
+
+通用APM平台可以scrape Prometheus endpoint，但它们并不开箱即懂RabbitMQ的语义。你需要花时间映射指标名称、从零搭建dashboard，以及配置平台并非为此而设计的告警规则。数据量规模扩大时，成本也会以出人意料的方式增长。完整分析参阅[Datadog vs. Qarote](/compare/datadog/)。
+
+### 方案三：Qarote（专为RabbitMQ而生，可自托管）
+
+> **无需搭建Prometheus。** Qarote直接连接RabbitMQ的Management API，内置上述五个信号的告警规则——带变化率的queue深度、未确认消息数、consumer降至零（立即呼人）、内存watermark百分比，以及DLQ增长。在UI中按queue配置阈值，并设置通知目标（Slack、webhook）。[了解告警功能 →](/features/)
+
+如果你团队的瓶颈在于运维开销而非Prometheus专业知识，这是正确的权衡。两种方案并不互斥——如果你已经在其余基础设施上跑着Prometheus，就用那套。如果没有，Qarote可以省去你搭建整套技术栈的麻烦。
+
+## 调整以避免告警疲劳
+
+让告警开始触发是第一步。随着时间推移保持告警的可操作性，才是大多数团队掉链子的地方。
+
+**在最初两周内留意反复出现的误报。** 如果某个告警可靠地在每周二晚上批处理任务期间触发，要么排除那个时间窗口，要么提高阈值，或者添加标签过滤器将批处理queue从规则中排除。
+
+**毫不留情地区分warning和critical。** Warning发到Slack，偶尔错过没关系。Critical告警呼醒某个人。如果你的Slack频道嘈杂到人们把它静音，说明你把warning错误地归类成了critical。
+
+**基于恢复时间而非严重程度设置`for`窗口。** 一个在正常条件下需要10分钟才能消化完的queue，不应该在升高1分钟后就告警——那是噪音。将`for`窗口设置为预期恢复时间的约一半。
+
+**流量模式变化时重新审视阈值。** 如果你将consumer集群扩容了3倍，未确认消息阈值也应该随之调整。将告警阈值视为配置项——每次做出重大基础设施变更时都需要复审。
+
+## 什么时候呼人，什么时候发Slack
+
+我的原则：如果这个情况需要在15分钟内有人介入以防止数据丢失或用户可见的影响，就呼人。
+
+| 信号 | 动作 |
+|---|---|
+| Consumer数量降至0 | **立即呼人** |
+| 内存告警触发 | **立即呼人** |
+| Queue深度增长持续超过消费速率 | **呼人**（宽限期后） |
+| 检测到DLQ增长 | **Slack**（除非加速，否则下个工作日排查） |
+| 未确认消息数升高但未持续攀升 | **Slack** |
+
+关键词是"持续"。每一个critical告警都应该有`for`窗口。在两分钟内自动恢复的瞬时尖峰，不应该惊醒任何人。
+
+---
+
+**tl;dr：** 大多数RabbitMQ告警配置失败，是因为使用了滞后指标、忽视基线流量的静态阈值，以及将所有告警一视同仁。能给你真正提前量的五个信号是：带变化率的queue深度、未确认消息数、consumer数量（降至零立即呼人）、节点内存watermark百分比，以及DLQ增长速率。将scrape interval设置在15秒或以下，从实际流量模式中推导阈值，每月回顾告警历史，在误报损耗团队对系统的信任之前将其消灭。
