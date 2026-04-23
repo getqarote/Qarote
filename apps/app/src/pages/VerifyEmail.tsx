@@ -9,15 +9,11 @@ import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
 
+import { AuthPageHeader } from "@/components/auth/AuthPageHeader";
+import { AuthPageWrapper } from "@/components/auth/AuthPageWrapper";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
@@ -158,17 +154,15 @@ export default function VerifyEmail() {
 
   if (verificationState.loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-muted">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 w-12 h-12 bg-info-muted rounded-full flex items-center justify-center">
-              <RefreshCw className="h-6 w-6 text-info animate-spin" />
-            </div>
-            <CardTitle>{t("verifyingEmail")}</CardTitle>
-            <CardDescription>{t("verifyingEmailDescription")}</CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
+      <AuthPageWrapper>
+        <AuthPageHeader
+          Icon={({ className }) => (
+            <RefreshCw className={`${className} animate-spin`} />
+          )}
+          title={t("verifyingEmail")}
+          description={t("verifyingEmailDescription")}
+        />
+      </AuthPageWrapper>
     );
   }
 
@@ -179,111 +173,98 @@ export default function VerifyEmail() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div
-            className={`mx-auto mb-4 w-12 h-12 rounded-full flex items-center justify-center ${
-              result.success ? "bg-success-muted" : "bg-destructive/10"
-            }`}
-          >
-            {result.success ? (
-              <CheckCircle className="h-6 w-6 text-success" />
-            ) : (
-              <XCircle className="h-6 w-6 text-destructive" />
-            )}
-          </div>
-          <CardTitle>
-            {result.success ? t("emailVerified") : t("verificationFailed")}
-          </CardTitle>
-          <CardDescription>
-            {result.success
-              ? result.type === "EMAIL_CHANGE"
-                ? t("emailChangeVerified")
-                : t("emailVerifiedSuccess")
-              : result.error}
-          </CardDescription>
-        </CardHeader>
+    <AuthPageWrapper>
+      <AuthPageHeader
+        Icon={result.success ? CheckCircle : XCircle}
+        title={result.success ? t("emailVerified") : t("verificationFailed")}
+        description={
+          result.success
+            ? result.type === "EMAIL_CHANGE"
+              ? t("emailChangeVerified")
+              : t("emailVerifiedSuccess")
+            : result.error
+        }
+        variant={result.success ? "success" : "destructive"}
+      />
 
-        <CardContent className="space-y-4">
-          {result.success ? (
-            <>
-              <Alert className="border-success/30 bg-success-muted">
-                <CheckCircle className="h-4 w-4 text-success" />
-                <AlertDescription className="text-success">
-                  {result.message || t("emailVerificationComplete")}
-                  {result.type === "SIGNUP" && t("signupVerifiedExtra")}
-                </AlertDescription>
-              </Alert>
+      <CardContent className="space-y-4">
+        {result.success ? (
+          <>
+            <Alert className="border-success/30 bg-success-muted">
+              <CheckCircle className="h-4 w-4 text-success" />
+              <AlertDescription className="text-success">
+                {result.message || t("emailVerificationComplete")}
+                {result.type === "SIGNUP" && t("signupVerifiedExtra")}
+              </AlertDescription>
+            </Alert>
 
-              <div className="space-y-2">
+            <div className="space-y-2">
+              <Button
+                onClick={
+                  isAuthenticated ? handleGoToDashboard : handleGoToSignIn
+                }
+                className="w-full bg-primary hover:bg-primary/90"
+              >
+                {isAuthenticated ? t("goToDashboard") : t("signInToContinue")}
+              </Button>
+              <p className="text-sm text-muted-foreground text-center">
+                {t("redirectingAutomatically")}
+              </p>
+            </div>
+          </>
+        ) : (
+          <>
+            <Alert className="border-destructive/30 bg-destructive/10">
+              <XCircle className="h-4 w-4 text-destructive" />
+              <AlertDescription className="text-destructive">
+                {result.error}
+              </AlertDescription>
+            </Alert>
+
+            <div className="space-y-2">
+              {token && (
                 <Button
-                  onClick={
-                    isAuthenticated ? handleGoToDashboard : handleGoToSignIn
-                  }
-                  className="w-full bg-primary hover:bg-primary/90"
-                >
-                  {isAuthenticated ? t("goToDashboard") : t("signInToContinue")}
-                </Button>
-                <p className="text-sm text-muted-foreground text-center">
-                  {t("redirectingAutomatically")}
-                </p>
-              </div>
-            </>
-          ) : (
-            <>
-              <Alert className="border-destructive/30 bg-destructive/10">
-                <XCircle className="h-4 w-4 text-destructive" />
-                <AlertDescription className="text-destructive">
-                  {result.error}
-                </AlertDescription>
-              </Alert>
-
-              <div className="space-y-2">
-                {token && (
-                  <Button
-                    onClick={() => window.location.reload()}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    {t("tryAgain")}
-                  </Button>
-                )}
-
-                <Button
-                  onClick={handleResendVerification}
+                  onClick={() => window.location.reload()}
                   variant="outline"
                   className="w-full"
                 >
-                  <Mail className="h-4 w-4 mr-2" />
-                  {t("resendVerificationEmail")}
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  {t("tryAgain")}
                 </Button>
+              )}
 
-                {!isAuthenticated && (
-                  <Button
-                    onClick={handleGoToSignIn}
-                    variant="ghost"
-                    className="w-full"
-                  >
-                    {t("backToSignIn")}
-                  </Button>
-                )}
+              <Button
+                onClick={handleResendVerification}
+                variant="outline"
+                className="w-full"
+              >
+                <Mail className="h-4 w-4 mr-2" />
+                {t("resendVerificationEmail")}
+              </Button>
 
-                {isAuthenticated && (
-                  <Button
-                    onClick={handleGoToDashboard}
-                    variant="ghost"
-                    className="w-full"
-                  >
-                    {t("goToDashboard")}
-                  </Button>
-                )}
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+              {!isAuthenticated && (
+                <Button
+                  onClick={handleGoToSignIn}
+                  variant="ghost"
+                  className="w-full"
+                >
+                  {t("backToSignIn")}
+                </Button>
+              )}
+
+              {isAuthenticated && (
+                <Button
+                  onClick={handleGoToDashboard}
+                  variant="ghost"
+                  className="w-full"
+                >
+                  {t("goToDashboard")}
+                </Button>
+              )}
+            </div>
+          </>
+        )}
+      </CardContent>
+    </AuthPageWrapper>
   );
 }
