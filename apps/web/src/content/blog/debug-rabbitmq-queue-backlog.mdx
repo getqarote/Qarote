@@ -1,126 +1,16 @@
 ---
-title: "How I Debug a RabbitMQ Queue Backlog in 5 Minutes"
-description: "Your queue depth is climbing. Consumers look healthy. Logs say nothing. Here's the exact checklist I run every time a RabbitMQ queue stops draining."
+title: "RabbitMQ Queue Backlog: Debug It in 5 Minutes [Checklist]"
+description: "Queue depth growing, consumers idle? Run this 6-step checklist to diagnose any RabbitMQ queue backlog fast — from consumer count to flow control."
 publishedAt: "2026-04-21"
 tags: ["rabbitmq", "debugging", "queues", "operations"]
-readingTimeMin: 6
+readingTimeMin: 7
 ---
 
-Your queue depth is climbing. Your consumers appear healthy. Nothing obvious in the logs. The on-call engineer is staring at you.
+Your queue depth is climbing. Consumers show active. Logs are silent. The on-call silence is getting louder.
 
-Here's the checklist I run every time a RabbitMQ queue stops draining — in order, fastest checks first.
+Most guides list what to check — this one tells you what to check **first**, because at 2am, order matters. Most backlogs resolve at Step 1 or 2. Steps 3–6 cover the 10% of cases where the obvious causes are already ruled out. Run them in sequence.
 
----
-
-## Step 1: Are there any consumers at all?
-
-Open the management UI (or Qarote) and look at the **Consumers** column for the stuck queue.
-
-If it reads `0`, you don't have a mystery — you have a missing consumer. Common causes:
-
-- A deployment crashed consumer pods and they didn't restart
-- A network partition isolated the consumer node
-- The consumer hit an uncaught exception and exited silently
-- Auto-scaling scaled to zero
-
-**Fix:** restart your consumer processes and confirm they reconnect. Check your process supervisor, Kubernetes deployment, or systemd unit.
-
----
-
-## Step 2: Are messages being delivered but never acked?
-
-A non-zero consumer count doesn't mean messages are actually being processed. Check the **Unacknowledged** count alongside **Ready**.
-
-If `Unacked` is high and `Ready` is near zero, your consumers are receiving messages but not acknowledging them. This usually means:
-
-- **Prefetch count is too low.** If `prefetch_count = 1` and processing takes 10 seconds, each consumer handles only 6 msg/min. Multiply by your consumer count — if that's less than your publish rate, the queue grows forever.
-- **Consumers are blocking.** A downstream DB call, HTTP request, or lock is hanging. Messages are held in-flight but never completed.
-- **A bug is causing silent ack failures.** The message is being processed but the ack never fires — usually a missing `try/finally` or an exception thrown before the ack line.
-
-**Fix for prefetch:** increase `prefetch_count` to match your expected processing time and throughput. A rough formula: `prefetch = (target_throughput_per_consumer) × (avg_processing_time_seconds)`.
-
-```
-# Example: you want 50 msg/s per consumer, avg processing = 200ms
-prefetch = 50 × 0.2 = 10
-```
-
-**Fix for blocking consumers:** add timeouts to all external calls. Log before and after each downstream operation so you can see where time is going.
-
----
-
-## Step 3: Check consumer utilisation
-
-RabbitMQ tracks **consumer utilisation** — the fraction of time a consumer is actually busy vs. waiting for the next message. You can see it in the management API:
-
-```bash
-curl -u guest:guest \
-  http://localhost:15672/api/queues/%2F/my-queue \
-  | jq '.consumer_utilisation'
-```
-
-A value close to `1.0` means consumers are saturated. A value close to `0` with messages in the queue means something else is wrong (usually unacked messages blocking delivery, see Step 2).
-
----
-
-## Step 4: Check for memory and disk alarms
-
-RabbitMQ will stop accepting publishes and pause consumers when it hits resource limits. Run:
-
-```bash
-rabbitmqctl status | grep -A5 alarms
-```
-
-Or look at the **Overview** page in the management UI. If you see a red banner for `memory_alarm` or `disk_free_alarm`, that's your problem.
-
-**Common triggers:**
-
-- A large message or many small messages accumulating in RAM (queue not yet paged to disk)
-- Disk running low — RabbitMQ pages messages to disk, and if disk is full, it stops
-- `vm_memory_high_watermark` set too low for your workload
-
-**Fix:** increase `vm_memory_high_watermark` in `rabbitmq.conf`, free disk space, or scale your broker nodes.
-
----
-
-## Step 5: Are messages being dead-lettered?
-
-If your queue has a `x-dead-letter-exchange` configured, rejected or expired messages go to a dead-letter queue (DLQ). If the DLQ is filling up, it means:
-
-- Consumers are calling `basic.nack` / `basic.reject` with `requeue=false`
-- Messages are expiring (TTL hit before a consumer picks them up)
-
-Check the DLQ depth. If it's growing at the same rate your main queue isn't draining, your consumers are processing messages but rejecting them — often due to a validation bug or a downstream service returning errors.
-
-**Fix:** inspect the messages in the DLQ. Read the first few payloads and look for a pattern. Fix the upstream publisher or the consumer's rejection logic.
-
----
-
-## Step 6: Are you hitting channel-level flow control?
-
-High publish rates can trigger channel-level flow control even before a memory alarm fires. Look in the RabbitMQ logs for:
-
-```
-connection <x.x.x.x:y>, channel N: flow control
-```
-
-Or query the API:
-
-```bash
-curl -u guest:guest http://localhost:15672/api/channels \
-  | jq '.[] | select(.flow_blocked == true) | .name'
-```
-
-If you see channels blocked, the broker is telling publishers to slow down. This doesn't prevent draining, but it can mask the real issue — a slow consumer is letting the queue fill until the broker starts pushing back.
-
----
-
-## Putting it together in one view
-
-Running through six `rabbitmqctl` commands and reading JSON from the API is manageable once. At 2am during an incident it's not.
-
-[Qarote](/) shows consumer count, unacked messages, consumer utilisation, DLQ depth, and active alarms on a single screen — updated in real time. The free, self-hosted MIT edition covers all of this. No per-host pricing, no data leaving your network.
-
-When I open the queue detail in Qarote during a backlog incident, I can usually rule out five of the six steps above in under a minute, leaving just the actual problem to investigate.
+> **Want a live view instead of six separate CLI commands?** Qarote shows consumer count, unacked messages, consumer utilisation, DLQ depth, and active alarms on one screen — updated in real time. [See what it shows during a backlog →](/features/)
 
 ---
 
@@ -134,3 +24,174 @@ When I open the queue detail in Qarote during a backlog incident, I can usually 
 | Red alarm banner             | Memory or disk limit hit              | `rabbitmqctl status`                       |
 | DLQ growing at same rate     | Consumers rejecting messages          | Inspect DLQ payloads                       |
 | Channels blocked             | Flow control active                   | Slow down publishers or speed up consumers |
+
+---
+
+## Step 1: Check RabbitMQ consumer count (zero consumers = instant diagnosis)
+
+Open the management plugin UI (or Qarote) and look at the **Consumers** column for the stuck queue.
+
+If it reads `0`, you don't have a mystery — you have a missing consumer. Common causes:
+
+- A deployment crashed consumer pods and they didn't restart
+- A network partition isolated the consumer node
+- The consumer hit an uncaught exception and exited silently
+- Auto-scaling scaled to zero
+
+**Fix:** restart your consumer processes and confirm they reconnect. Check your process supervisor, Kubernetes deployment, or systemd unit.
+
+**Important:** reconnection does not mean re-subscription. After restarting, verify the consumer is visible on the target queue specifically — not just that the process is up. A consumer connecting to the wrong vhost or a misspelled queue name produces zero errors and zero throughput. Confirm the count incremented:
+
+```bash
+curl -u guest:guest http://localhost:15672/api/queues/%2F/my-queue | jq '.consumers'
+```
+
+---
+
+## Step 2: High unacknowledged messages — prefetch limit or consumer blocking
+
+A non-zero consumer count doesn't mean messages are actually being processed. Check the **Unacknowledged** count alongside **Ready**.
+
+If `Unacked` is high and `Ready` is near zero, your consumers are receiving messages but not acknowledging them. This usually means:
+
+- **Prefetch count is too low.** If `prefetch_count = 1` and processing takes 10 seconds, each consumer handles only 6 msg/min. Multiply by your consumer count — if that's less than your publish rate, the queue grows forever.
+- **Consumers are blocking.** A downstream DB call, HTTP request, or lock is hanging. Messages are held in-flight but never completed.
+- **A bug is causing silent ack failures.** The message is being processed but the ack never fires — usually a missing `try/finally` or an exception thrown before the ack line.
+
+**Fix for prefetch:** increase `prefetch_count` to match your expected processing time and throughput. Worked example: your SLA requires 500 msg/min and average processing time is 2 seconds. One consumer can handle `60 / 2 = 30` msg/min. With 4 consumers: `500 / 4 = 125` msg/min target per consumer, so `prefetch = 125 / 30 ≈ 5`.
+
+```
+# General formula
+prefetch_per_consumer = (target_msg_per_min / num_consumers) / (60 / avg_processing_seconds)
+```
+
+**Fix for blocking consumers:** add explicit timeouts to every downstream call. Log before and after each operation so you can see where time is accumulating.
+
+For a deeper breakdown of why consumers stop processing messages, see [Why Your RabbitMQ Consumer Isn't Processing Messages](/blog/rabbitmq-consumer-not-processing/).
+
+---
+
+## Step 3: Check consumer utilisation
+
+RabbitMQ tracks **consumer utilisation** — the fraction of time a consumer is actually busy vs. waiting for the next message. You can see it in the management plugin API:
+
+```bash
+curl -u guest:guest \
+  http://localhost:15672/api/queues/%2F/my-queue \
+  | jq '.consumer_utilisation'
+```
+
+Interpret the value:
+
+- **Near `1.0`, backlog growing:** consumers are fully saturated — add instances or increase prefetch.
+- **Near `0.0`, backlog growing:** messages are not being delivered at all — check binding keys, vhost, and flow control (Steps 4 and 6).
+- **Between `0.3` and `0.7`, backlog growing:** consumers are receiving work but processing is slower than publish rate — profile your handler for blocking calls or resource contention.
+
+---
+
+## Step 4: RabbitMQ memory alarm or disk alarm pausing consumers
+
+RabbitMQ will stop accepting publishes and pause delivery when it hits resource limits. Run:
+
+```bash
+rabbitmqctl status | grep -A5 alarms
+```
+
+Or look at the **Overview** page in the management plugin UI. If you see a red banner for `memory_alarm` or `disk_free_alarm`, that's your problem. The default memory threshold is 40% of available RAM; the default disk-free threshold is 50 MB — both are almost certainly wrong for your setup.
+
+**If a memory alarm fires:**
+
+Identify which queues are consuming memory:
+
+```bash
+rabbitmqctl list_queues name memory | sort -k2 -n -r | head -10
+```
+
+The largest queues are almost always holding unacked messages in RAM. Reducing prefetch or adding consumers will drain them without a restart. To raise the threshold temporarily (buys time, not a fix):
+
+```bash
+rabbitmqctl set_vm_memory_high_watermark 0.6
+```
+
+**If a disk alarm fires:**
+
+Identify what is consuming disk:
+
+```bash
+du -sh /var/lib/rabbitmq/mnesia/*
+```
+
+Persistent messages accumulate here. If disk is genuinely full, free space before anything else — restarting the broker will not help. See the full diagnosis in [RabbitMQ Memory Alarm: How to Diagnose and Fix It](/blog/rabbitmq-memory-alarm/).
+
+---
+
+## Step 5: Dead letter queue growing — consumers rejecting messages
+
+If your queue has a `x-dead-letter-exchange` configured, rejected or expired messages go to a dead-letter queue (DLQ). If the DLQ is filling up, it means:
+
+- Consumers are calling `basic.nack` / `basic.reject` with `requeue=false`
+- Messages are expiring (TTL hit before a consumer picks them up)
+
+Check the DLQ depth. If it's growing at the same rate your main queue isn't draining, your consumers are processing messages but rejecting them.
+
+To read the first message without consuming it:
+
+```bash
+curl -u guest:guest -X POST \
+  http://localhost:15672/api/queues/%2F/my-dlq/get \
+  -H 'content-type: application/json' \
+  -d '{"count":1,"ackmode":"ack_requeue_true","encoding":"auto"}'
+```
+
+**Common DLQ patterns to look for:**
+
+- All messages share the same `content-type` — likely a schema version your consumer no longer understands.
+- `x-death` count > 5 — messages are being nacked and requeued repeatedly before hitting max-retries. This is a poison message loop.
+- `x-first-death-reason` is `expired` — your `x-message-ttl` is set too low, not a consumer bug at all.
+
+---
+
+## Step 6: Channel-level flow control active
+
+High publish rates can trigger channel-level flow control as a backpressure mechanism before a memory alarm fires. Flow control is RabbitMQ telling publishers to slow down — it doesn't prevent draining, but a slow consumer letting the queue fill until the broker pushes back is exactly the scenario that causes it.
+
+Look in the RabbitMQ logs for:
+
+```
+connection <x.x.x.x:y>, channel N: flow control
+```
+
+Or query the AMQP channels API:
+
+```bash
+curl -u guest:guest http://localhost:15672/api/channels \
+  | jq '.[] | select(.flow_blocked == true) | .name'
+```
+
+If you see channels blocked, the fix is upstream — slow down publishers or scale consumers so the queue drains faster than it fills.
+
+---
+
+## Putting it together in one view
+
+Running through six CLI commands and reading JSON from the management plugin API is manageable once. At 2am during an incident, it's not.
+
+[Qarote](/) surfaces consumer count, unacked depth, utilisation, DLQ growth rate, and active alarms on a single queue detail view — with historical trending so you can see whether the backlog is accelerating or stabilising. That distinction is the one number the default management plugin UI cannot show you. When I open the queue detail in Qarote during a backlog incident, I can usually rule out five of the six steps above in a single glance, leaving just the actual root cause to investigate.
+
+Unlike per-host billing models, Qarote runs entirely on your infrastructure with [no per-server fees and no data leaving your network](/compare/datadog/).
+
+If you want to be notified before the next backlog develops rather than diagnosed after, see [How to Set Up RabbitMQ Alerts That Actually Fire](/blog/rabbitmq-alerts-setup-guide/).
+
+**Diagnose your next backlog in under a minute.** Qarote is free, self-hosted, and connects in 60 seconds. [Get started — no credit card, no data leaving your network.](/)
+
+---
+
+## When this checklist is not enough
+
+If you have worked through all six steps and the queue is still stuck:
+
+- **Check for a cluster partition.** If you are running a cluster, a network partition may have split it into two independent halves. `rabbitmqctl cluster_status` will show nodes in `partitions` if this is the case — quorum queues require a majority of nodes before delivery resumes.
+- **Check queue type.** A classic queue and a quorum queue with the same name behave differently under consumer failures. Verify with `rabbitmqctl list_queues name type`.
+- **Check for a stuck Erlang process.** `rabbitmqctl eval 'erlang:processes().'` returns all live processes. If you are here, open a support ticket or file an issue against your RabbitMQ version — this is broker-level territory.
+
+Persistent backlogs that survive a consumer restart and don't respond to prefetch changes are almost always cluster-level issues, not application bugs.
