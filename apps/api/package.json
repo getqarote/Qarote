@@ -97,7 +97,7 @@
     "resend": "^6.9.3",
     "semver": "^7.7.2",
     "stripe": "^20.4.0",
-    "uuid": "^13.0.0",
+    "uuid": "^14.0.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
