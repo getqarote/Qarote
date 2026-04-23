@@ -1,0 +1,211 @@
+{
+  "section": {
+    "title": "Suscripción",
+    "subtitle": "Gestiona la suscripción y facturación de tu organización",
+    "noInfo": "No hay información de facturación disponible.",
+    "billingTitle": "Facturación"
+  },
+  "header": {
+    "title": "Facturación y uso",
+    "subtitle": "Gestiona tu suscripción y métodos de pago",
+    "backAriaLabel": "Volver a la suscripción"
+  },
+  "errors": {
+    "loadTitle": "No se pudo cargar la información de facturación",
+    "loadDescription": "Por favor, inténtalo más tarde o contacta con soporte."
+  },
+  "recentPayments": {
+    "title": "Pagos recientes",
+    "subtitle": "Tus últimas transacciones",
+    "defaultDescription": "Pago de suscripción"
+  },
+  "paymentStatus": {
+    "succeeded": "Completado",
+    "failed": "Fallido",
+    "canceled": "Cancelado",
+    "pending": "Pendiente",
+    "requiresAction": "Acción requerida"
+  },
+  "plans": {
+    "chooseYourPlan": "Elige tu plan",
+    "subtitle": "Escala tu monitoreo de RabbitMQ con planes diseñados para equipos de todos los tamaños.",
+    "pricingTitle": "Precios simples y transparentes",
+    "currentPlan": "Plan actual",
+    "mostPopular": "Más popular",
+    "startFree": "Comenzar gratis",
+    "getStarted": "Comenzar",
+    "save20": "Ahorra 20%",
+    "backToPlans": "Volver a los planes",
+    "pricing": {
+      "free": "Gratuito"
+    },
+    "limits": {
+      "unlimited": "Ilimitado",
+      "upTo": "Hasta {{count}}"
+    },
+    "highlights": {
+      "liveMonitoring": "Monitoreo en vivo",
+      "liveMonitoringDesc": "Monitorea tus servidores RabbitMQ con precisión de segundos",
+      "smartAnalytics": "Análisis inteligente",
+      "smartAnalyticsDesc": "Información y consejos de optimización de memoria",
+      "enterpriseSecurity": "Seguridad empresarial",
+      "enterpriseSecurityDesc": "Cumplimiento SOC 2 con cifrado de nivel empresarial",
+      "support247": "Soporte 24/7",
+      "support247Desc": "Soporte experto cuando más lo necesitas"
+    },
+    "billingToggle": {
+      "monthly": "Mensual",
+      "yearly": "Anual",
+      "billedYearly": "Facturación anual",
+      "billedMonthly": "Facturación mensual",
+      "label": "Alternar período de facturación"
+    },
+    "period": {
+      "month": "mes",
+      "year": "año"
+    },
+    "features": {
+      "coreFeatures": "Funciones principales",
+      "rabbitMQServers": "Servidores RabbitMQ",
+      "rabbitMQVersionSupport": "Compatibilidad con versiones de RabbitMQ",
+      "soon": "Próximamente",
+      "workspaces": "Espacios de trabajo",
+      "teamMembers": "Miembros del equipo",
+      "advancedAnalytics": "Análisis avanzados",
+      "queueManagement": "Gestión de Queue, Exchange, VHost y usuarios",
+      "alertsWebhooks": "Alertas y webhooks",
+      "topologyVisualization": "Visualización de topología",
+      "roleBasedAccess": "Acceso basado en roles",
+      "securityCompatibility": "Seguridad y compatibilidad",
+      "ssoSamlOidc": "SSO, SAML y OIDC",
+      "soc2Compliance": "Cumplimiento SOC 2",
+      "support": "Soporte",
+      "communitySupport": "Soporte comunitario",
+      "prioritySupport": "Soporte prioritario",
+      "ltsVersions": "Versiones LTS 3.x y 4.x",
+      "allVersions": "Todas las versiones 3.x y 4.x"
+    }
+  },
+  "paymentSuccess": {
+    "title": "¡Pago exitoso!",
+    "description": "Tu pago ha sido procesado exitosamente.",
+    "planActivated": "Plan {{plan}} activado",
+    "welcomeMessage": "¡Bienvenido a tu nuevo plan! Disfruta de todas las funciones.",
+    "exploreDashboard": "Explorar el panel",
+    "manageSubscription": "Administrar suscripción",
+    "needHelp": "¿Necesitas ayuda? Contacta a nuestro equipo de soporte."
+  },
+  "paymentCancelled": {
+    "title": "Pago cancelado",
+    "description": "Tu pago fue cancelado. No se realizaron cargos.",
+    "tryAgain": "Intentar de nuevo",
+    "processing": "Procesando...",
+    "backToDashboard": "Volver al panel"
+  },
+  "upgradeModal": {
+    "licenseRequired": "Licencia requerida",
+    "licenseDescription": "Para usar {{feature}}, activa una clave de licencia en la página de Licencia.",
+    "activateLicense": "Activar licencia",
+    "purchase": "Comprar",
+    "loadingPlans": "Cargando planes...",
+    "upgradeYourPlan": "Mejora tu plan",
+    "upgradeDescription": "Para usar {{feature}}, necesitas mejorar desde el plan {{plan}}. Esta mejora se aplicará a todos tus espacios de trabajo.",
+    "upgradeFailed": "Error al iniciar el proceso de mejora. Inténtalo de nuevo.",
+    "mostPopular": "Más popular",
+    "perMonth": "/mes",
+    "unlimitedQueues": "Colas ilimitadas",
+    "unlimitedServers": "Servidores ilimitados",
+    "servers": "{{count}} servidores",
+    "teamMembers": "{{count}} miembros del equipo",
+    "unlimitedTeamMembers": "Miembros del equipo ilimitados",
+    "messageSending": "Envío de mensajes y gestión de colas",
+    "advancedMetrics": "Métricas y análisis avanzados",
+    "prioritySupport": "Soporte prioritario",
+    "advancedAlerts": "Alertas y notificaciones avanzadas",
+    "processing": "Procesando...",
+    "upgradeTo": "Mejorar a {{plan}}"
+  },
+  "trial": {
+    "badge": "Prueba",
+    "endsOn": "La prueba termina",
+    "noPaymentMethod": "Sin método de pago",
+    "addPaymentMethod": "Agregar método de pago",
+    "trialActive": "Tu prueba está activa",
+    "addPaymentToKeep": "Agrega un método de pago antes del {{date}} para mantener tu plan cuando termine la prueba.",
+    "trialActiveWithPayment": "Tu prueba está activa hasta el {{date}}. Tu suscripción comenzará automáticamente cuando termine la prueba.",
+    "cancelTrial": "Cancelar prueba",
+    "trialCanceled": "Prueba cancelada",
+    "trialEndsOnDate": "Tu prueba terminará el {{date}}. Serás degradado al plan Gratuito.",
+    "started": "Prueba iniciada",
+    "endsDate": "La prueba termina el {{date}}",
+    "daysRemaining": "{{count}} days remaining",
+    "daysRemaining_one": "{{count}} día restante en la prueba",
+    "daysRemaining_other": "{{count}} días restantes en la prueba",
+    "daysLeft": "{{count}} days left",
+    "daysLeft_one": "{{count}} día restante",
+    "daysLeft_other": "{{count}} días restantes"
+  },
+  "currentPlan": {
+    "noSubscription": "No se requiere suscripción",
+    "billingInterval": "Facturación {{interval}}",
+    "perInterval": "por {{interval}}",
+    "currentPeriod": "Período actual",
+    "nextBilling": "Próxima facturación",
+    "paymentMethod": "Método de pago",
+    "planName": "Plan {{plan}}",
+    "activeSubscription": "Tu suscripción activa",
+    "changePaymentMethod": "Cambiar método de pago",
+    "toDate": "hasta el {{date}}",
+    "canceling": "Cancelando",
+    "addPaymentMethodCta": "Añadir método de pago"
+  },
+  "status": {
+    "active": "Activo"
+  },
+  "subscriptionManagement": {
+    "title": "Gestión de suscripción",
+    "description": "Gestiona tu plan, ciclo de facturación y configuración de suscripción para todos tus espacios de trabajo",
+    "renewPlan": "Renovar plan {{plan}}",
+    "reactivate": "Reactivar",
+    "cancelSubscription": "Cancelar suscripción",
+    "endsSoon": "Termina pronto",
+    "endsOn": "Termina el {{date}}",
+    "readyToComeBack": "¿Listo para volver?",
+    "renewDescription": "Tu plan {{plan}} fue cancelado, pero puedes reiniciarlo en cualquier momento con las mismas funcionalidades."
+  },
+  "error": {
+    "workspaceIdRequired": "Se requiere el ID del espacio de trabajo",
+    "failedToOpenBillingPortal": "Error al abrir el portal de facturación."
+  },
+  "plansSummary": {
+    "whatsIncluded": "Incluido:",
+    "planFeatures": "Características del plan:",
+    "addQueues": "Agregar colas",
+    "addExchanges": "Agregar intercambios",
+    "addVHosts": "Agregar VHosts",
+    "addUsers": "Agregar usuarios",
+    "prioritySupport": "Prioritario",
+    "communitySupport": "Comunitario",
+    "support": "Soporte",
+    "unlockPremium": "Desbloquear funciones premium",
+    "unlockPremiumDesc": "Activa una licencia para desbloquear alertas, integraciones con Slack y webhook, y más",
+    "activateLicense": "Activar licencia",
+    "purchase": "Comprar",
+    "readyToGrow": "¿Listo para crecer? Actualiza a {{plan}}",
+    "unlockMore": "Desbloquea más funciones y límites más altos",
+    "youllGet": "Obtendrás:",
+    "processing": "Procesando...",
+    "upgradeNow": "Actualizar ahora",
+    "billingUsage": "Facturación y uso",
+    "manageSubscription": "Administra tu suscripción",
+    "manage": "Administrar",
+    "comparePlans": "Comparar planes",
+    "seeAllOptions": "Ver todas las opciones disponibles",
+    "compare": "Comparar",
+    "license": "Licencia",
+    "manageLicense": "Activar o administrar tu licencia",
+    "preferSelfHost": "¿Prefieres el auto-alojamiento?",
+    "preferSelfHostDesc": "Despliega Qarote en tu propia infraestructura con una clave de licencia.",
+    "learnMore": "Más información"
+  }
+}

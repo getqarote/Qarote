@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Qarote Customer Portal - License Management</title>
+    <meta
+      name="description"
+      content="Manage your Qarote licenses, purchase new licenses, and download self-hosted packages."
+    />
+    <link rel="icon" type="image/svg+xml" href="images/new_icon.svg" />
+
+    <!-- Bricolage Grotesque — heading/display font for page and section titles -->
+    <!-- Fragment Mono — monospace font for metric numbers, IDs, code -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Fragment+Mono&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Google Tag Manager (production only) -->
+    <script>
+      (function () {
+        if ("%VITE_ENVIRONMENT%" !== "production") return;
+        var w = window,
+          d = document,
+          l = "dataLayer",
+          i = "GTM-52CRNTFK";
+        w[l] = w[l] || [];
+        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+        var f = d.getElementsByTagName("script")[0],
+          j = d.createElement("script");
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i;
+        f.parentNode.insertBefore(j, f);
+      })();
+    </script>
+    <!-- End Google Tag Manager -->
+  </head>
+  <body>
+    <!-- Google Tag Manager (noscript) - production only -->
+    <script>
+      if ("%VITE_ENVIRONMENT%" === "production") {
+        document.write(
+          '<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-52CRNTFK" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>'
+        );
+      }
+    </script>
+    <!-- End Google Tag Manager (noscript) -->
+
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

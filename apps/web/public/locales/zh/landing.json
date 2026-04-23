@@ -1,0 +1,133 @@
+{
+  "hero": {
+    "titleBefore": "监控 ",
+    "titleHighlight": "RabbitMQ",
+    "titleAfter": " 服务器的最简单方式",
+    "subtitle": "Qarote 提供简洁直观的界面，让你轻松监控、分析和管理 RabbitMQ 服务器。",
+    "noCreditCard": "免费开源 • 专业版功能 14 天试用"
+  },
+  "cta": {
+    "getStartedForFree": "免费开始使用",
+    "howItWorks": "工作原理",
+    "startMonitoringForFree": "免费开始监控",
+    "selfHostedSolution": "私有化部署方案",
+    "contactUs": "联系我们",
+    "tryLiveDemo": "体验在线演示",
+    "seeItInAction": "亲自体验 —",
+    "tryTheLiveDemo": "试试在线演示",
+    "opensInNewTab": "（在新标签页中打开）"
+  },
+  "comparison": {
+    "title": "管理 RabbitMQ 服务器",
+    "titleLine2": "不必如此痛苦",
+    "traditional": {
+      "title": "传统管理界面",
+      "point1": "过时的界面拖慢你的效率",
+      "point2": "无法跨服务器和环境统一查看",
+      "point3": "没有可靠、可操作的告警",
+      "point4": "到处都是自行搭建的仪表盘和脚本"
+    },
+    "qarote": {
+      "title": "Qarote",
+      "point1": "简洁现代的界面，为速度和清晰度而生",
+      "point2": "所有服务器和环境的统一仪表盘",
+      "point3": "智能且可操作的告警，提前发现问题",
+      "point4": "零配置监控，无需脚本，无需维护"
+    },
+    "compareWith": "对比 Qarote 与：",
+    "messagesPerSec": "消息/秒",
+    "activeQueues": "活跃队列",
+    "allSystemsOperational": "所有系统运行正常"
+  },
+  "features": {
+    "title": "你真正关心的一切。",
+    "titleLine2": "集中监控于一处。",
+    "liveQueueMonitoring": {
+      "title": "实时队列监控",
+      "description": "实时监控队列深度、消息速率和消费者数量。追踪消息堆积情况和处理性能。"
+    },
+    "smartAlertingSystem": {
+      "title": "智能告警系统",
+      "description": "针对队列积压、内存使用和性能问题的智能告警。可自定义阈值，按严重级别发送通知。"
+    },
+    "queueManagement": {
+      "title": "队列管理",
+      "description": "一键暂停、恢复和删除队列。通过直观的界面创建交换器、绑定队列和管理路由键。"
+    },
+    "performanceAnalytics": {
+      "title": "性能分析",
+      "description": "内存使用、磁盘空间、文件描述符和消息吞吐量的详细指标。通过精美的图表可视化趋势。"
+    },
+    "multiServerSupport": {
+      "title": "多服务器支持",
+      "description": "连接多个 RabbitMQ 集群，并在它们之间无缝切换。支持不同的环境和配置。"
+    },
+    "messagePublishing": {
+      "title": "消息发布",
+      "description": "通过直接向队列和交换器发布消息来测试和调试你的应用。非常适合开发和故障排查。"
+    }
+  },
+  "enterprise": {
+    "title": "企业级私有化部署方案",
+    "description": "适用于需要本地部署、完整数据控制和企业级功能的组织。在你自己的基础设施中部署 Qarote，完整访问高级功能。",
+    "unlimitedServers": "无限服务器",
+    "unlimitedServersDesc": "监控你所需的任意数量的 RabbitMQ 服务器",
+    "advancedSecurity": "高级安全",
+    "advancedSecurityDesc": "完全掌控你的数据和部署"
+  },
+  "connection": {
+    "title": "轻松连接你的 RabbitMQ 服务器",
+    "subtitle": "无需改变你的 RabbitMQ 服务器的运行方式，Qarote 专为这个消息代理而设计。",
+    "step1": {
+      "title": "注册账户",
+      "description": "几秒钟即可创建账户。无需信用卡。立即开始监控你的 RabbitMQ 基础设施。",
+      "createAccount": "创建你的 Qarote 账户",
+      "transformMonitoring": "改变你监控 RabbitMQ 的方式。",
+      "continueWithEmail": "使用邮箱继续",
+      "or": "或",
+      "continueWithGoogle": "使用 Google 继续"
+    },
+    "step2": {
+      "title": "添加你的服务器",
+      "description": "通过简单的连接接入你的 RabbitMQ 服务器。支持多个环境和集群。",
+      "productionServer": "生产服务器",
+      "stagingServer": "预发布服务器",
+      "developmentServer": "开发服务器",
+      "nodes": "3 个节点"
+    },
+    "step3": {
+      "title": "监控与协作",
+      "description": "实时洞察你的队列、交换器和消息流。与团队一起监控并设置告警。",
+      "messagesPerSec": "消息/秒",
+      "queues": "队列",
+      "queueDepths": "队列深度",
+      "allSystemsOperational": "所有系统运行正常"
+    }
+  },
+  "finalCta": {
+    "title": "准备好监控你的 RabbitMQ 服务器了吗？",
+    "subtitle": "今天就免费开始监控你的 RabbitMQ 服务器。",
+    "noCreditCard": "无需信用卡",
+    "openSource": "Open source",
+    "selfHostable": "Self-hostable",
+    "freeForever": "Free forever (self-hosted)"
+  },
+  "footer": {
+    "about": "关于我们",
+    "privacyPolicy": "隐私政策",
+    "termsOfService": "服务条款",
+    "contact": "联系我们",
+    "vsDatadog": "Qarote vs Datadog",
+    "vsGrafana": "Qarote vs Grafana + Prometheus"
+  },
+  "faqSection": {
+    "title": "常见问题",
+    "subtitle": "关于 Qarote 你需要了解的一切",
+    "stillHaveQuestions": "还有其他问题？",
+    "stillHaveQuestionsDesc": "找不到你想要的答案？请联系我们友好的团队。"
+  },
+  "seo": {
+    "title": "Qarote - RabbitMQ 监控仪表盘",
+    "description": "使用 Qarote 监控 RabbitMQ 队列、跟踪性能并管理消息代理。免费核心监控，支持告警、多服务器和团队工作区。"
+  }
+}

@@ -1,0 +1,211 @@
+{
+  "section": {
+    "title": "订阅",
+    "subtitle": "管理组织的订阅和账单",
+    "noInfo": "没有可用的组织账单信息。",
+    "billingTitle": "账单"
+  },
+  "header": {
+    "title": "账单与用量",
+    "subtitle": "管理您的订阅和支付详情",
+    "backAriaLabel": "返回订阅"
+  },
+  "errors": {
+    "loadTitle": "无法加载账单信息",
+    "loadDescription": "请稍后重试或联系支持团队。"
+  },
+  "recentPayments": {
+    "title": "最近付款",
+    "subtitle": "您最近的交易记录",
+    "defaultDescription": "订阅付款"
+  },
+  "paymentStatus": {
+    "succeeded": "成功",
+    "failed": "失败",
+    "canceled": "已取消",
+    "pending": "处理中",
+    "requiresAction": "需要操作"
+  },
+  "plans": {
+    "chooseYourPlan": "选择您的方案",
+    "subtitle": "通过专为各种规模团队设计的方案扩展您的 RabbitMQ 监控能力。",
+    "pricingTitle": "简单透明的定价",
+    "currentPlan": "当前方案",
+    "mostPopular": "最受欢迎",
+    "startFree": "免费开始",
+    "getStarted": "开始使用",
+    "save20": "节省 20%",
+    "backToPlans": "返回套餐",
+    "pricing": {
+      "free": "免费"
+    },
+    "limits": {
+      "unlimited": "无限",
+      "upTo": "最多 {{count}}"
+    },
+    "highlights": {
+      "liveMonitoring": "实时监控",
+      "liveMonitoringDesc": "以秒级精度监控您的 RabbitMQ 服务器",
+      "smartAnalytics": "智能分析",
+      "smartAnalyticsDesc": "洞察与内存优化建议",
+      "enterpriseSecurity": "企业级安全",
+      "enterpriseSecurityDesc": "SOC 2 合规，企业级加密",
+      "support247": "全天候支持",
+      "support247Desc": "在您最需要时提供专家支持"
+    },
+    "billingToggle": {
+      "monthly": "按月",
+      "yearly": "按年",
+      "billedYearly": "按年计费",
+      "billedMonthly": "按月计费",
+      "label": "切换计费周期"
+    },
+    "period": {
+      "month": "月",
+      "year": "年"
+    },
+    "features": {
+      "coreFeatures": "核心功能",
+      "rabbitMQServers": "RabbitMQ 服务器",
+      "rabbitMQVersionSupport": "RabbitMQ 版本支持",
+      "soon": "即将推出",
+      "workspaces": "工作区",
+      "teamMembers": "团队成员",
+      "advancedAnalytics": "高级分析",
+      "queueManagement": "Queue、Exchange、VHost 和用户管理",
+      "alertsWebhooks": "告警和 Webhooks",
+      "topologyVisualization": "拓扑可视化",
+      "roleBasedAccess": "基于角色的访问",
+      "securityCompatibility": "安全与兼容性",
+      "ssoSamlOidc": "SSO、SAML 和 OIDC",
+      "soc2Compliance": "SOC 2 合规",
+      "support": "支持",
+      "communitySupport": "社区支持",
+      "prioritySupport": "优先支持",
+      "ltsVersions": "LTS 版本 3.x 和 4.x",
+      "allVersions": "所有 3.x 和 4.x 版本"
+    }
+  },
+  "paymentSuccess": {
+    "title": "支付成功！",
+    "description": "您的付款已成功处理。",
+    "planActivated": "{{plan}} 方案已激活",
+    "welcomeMessage": "欢迎使用您的新方案！享受所有功能。",
+    "exploreDashboard": "浏览仪表盘",
+    "manageSubscription": "管理订阅",
+    "needHelp": "需要帮助？联系我们的支持团队。"
+  },
+  "paymentCancelled": {
+    "title": "支付已取消",
+    "description": "您的付款已取消，未产生任何费用。",
+    "tryAgain": "重试",
+    "processing": "处理中...",
+    "backToDashboard": "返回仪表盘"
+  },
+  "upgradeModal": {
+    "licenseRequired": "需要许可证",
+    "licenseDescription": "要使用{{feature}}，请在许可证页面激活许可证密钥。",
+    "activateLicense": "激活许可证",
+    "purchase": "购买",
+    "loadingPlans": "正在加载方案...",
+    "upgradeYourPlan": "升级您的方案",
+    "upgradeDescription": "要使用{{feature}}，您需要从{{plan}}方案升级。此升级将应用于您的所有工作区。",
+    "upgradeFailed": "升级过程启动失败，请重试。",
+    "mostPopular": "最受欢迎",
+    "perMonth": "/月",
+    "unlimitedQueues": "无限队列",
+    "unlimitedServers": "无限服务器",
+    "servers": "{{count}} 个服务器",
+    "teamMembers": "{{count}} 个团队成员",
+    "unlimitedTeamMembers": "无限团队成员",
+    "messageSending": "消息发送和队列管理",
+    "advancedMetrics": "高级指标和分析",
+    "prioritySupport": "优先支持",
+    "advancedAlerts": "高级告警和通知",
+    "processing": "处理中...",
+    "upgradeTo": "升级到{{plan}}"
+  },
+  "trial": {
+    "badge": "试用",
+    "endsOn": "试用结束",
+    "noPaymentMethod": "无支付方式",
+    "addPaymentMethod": "添加支付方式",
+    "trialActive": "您的试用期正在进行中",
+    "addPaymentToKeep": "请在 {{date}} 之前添加支付方式，以便在试用结束后保留您的方案。",
+    "trialActiveWithPayment": "您的试用期有效至 {{date}}。试用结束后，您的订阅将自动开始。",
+    "cancelTrial": "取消试用",
+    "trialCanceled": "试用已取消",
+    "trialEndsOnDate": "您的试用将于 {{date}} 结束。届时将降级为免费方案。",
+    "started": "试用已开始",
+    "endsDate": "试用将于 {{date}} 结束",
+    "daysRemaining": "{{count}} days remaining",
+    "daysRemaining_one": "试用还剩 {{count}} 天",
+    "daysRemaining_other": "试用还剩 {{count}} 天",
+    "daysLeft": "{{count}} days left",
+    "daysLeft_one": "还剩 {{count}} 天",
+    "daysLeft_other": "还剩 {{count}} 天"
+  },
+  "currentPlan": {
+    "noSubscription": "无需订阅",
+    "billingInterval": "{{interval}}计费",
+    "perInterval": "每{{interval}}",
+    "currentPeriod": "当前期间",
+    "nextBilling": "下次计费",
+    "paymentMethod": "支付方式",
+    "planName": "{{plan}}方案",
+    "activeSubscription": "您的活跃订阅",
+    "changePaymentMethod": "更改支付方式",
+    "toDate": "至 {{date}}",
+    "canceling": "取消中",
+    "addPaymentMethodCta": "添加支付方式"
+  },
+  "status": {
+    "active": "活跃"
+  },
+  "subscriptionManagement": {
+    "title": "订阅管理",
+    "description": "管理您所有工作区的方案、计费周期和订阅设置",
+    "renewPlan": "续订 {{plan}} 方案",
+    "reactivate": "重新激活",
+    "cancelSubscription": "取消订阅",
+    "endsSoon": "即将到期",
+    "endsOn": "{{date}} 到期",
+    "readyToComeBack": "准备回来了吗？",
+    "renewDescription": "您的 {{plan}} 方案已取消，但您可以随时以相同功能重新启动。"
+  },
+  "error": {
+    "workspaceIdRequired": "需要工作区 ID",
+    "failedToOpenBillingPortal": "无法打开账单门户。"
+  },
+  "plansSummary": {
+    "whatsIncluded": "包含内容：",
+    "planFeatures": "计划功能：",
+    "addQueues": "添加队列",
+    "addExchanges": "添加交换器",
+    "addVHosts": "添加虚拟主机",
+    "addUsers": "添加用户",
+    "prioritySupport": "优先",
+    "communitySupport": "社区",
+    "support": "支持",
+    "unlockPremium": "解锁高级功能",
+    "unlockPremiumDesc": "激活许可证以解锁告警、Slack 和 Webhook 集成等功能",
+    "activateLicense": "激活许可证",
+    "purchase": "购买",
+    "readyToGrow": "准备升级？升级到 {{plan}}",
+    "unlockMore": "解锁更多功能和更高的限制",
+    "youllGet": "您将获得：",
+    "processing": "处理中...",
+    "upgradeNow": "立即升级",
+    "billingUsage": "账单和使用情况",
+    "manageSubscription": "管理您的订阅",
+    "manage": "管理",
+    "comparePlans": "比较计划",
+    "seeAllOptions": "查看所有可用选项",
+    "compare": "比较",
+    "license": "许可证",
+    "manageLicense": "激活或管理您的许可证",
+    "preferSelfHost": "更喜欢自托管？",
+    "preferSelfHostDesc": "使用许可证密钥在您自己的基础设施上部署 Qarote。",
+    "learnMore": "了解更多"
+  }
+}

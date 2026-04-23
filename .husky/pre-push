@@ -1,0 +1,39 @@
+echo "🔍 Running type checks before push..."
+
+# Get the remote branch name (default to main)
+remote_branch=${1:-main}
+
+# Collect packages that need type-checking (using actual package names)
+packages_to_check=""
+if git diff --name-only $remote_branch...HEAD | grep -q "^apps/api/"; then
+  packages_to_check="$packages_to_check qarote-api"
+fi
+
+if git diff --name-only $remote_branch...HEAD | grep -q "^apps/app/"; then
+  packages_to_check="$packages_to_check qarote-app"
+fi
+
+if git diff --name-only $remote_branch...HEAD | grep -q "^apps/web/"; then
+  packages_to_check="$packages_to_check qarote-web"
+fi
+
+if git diff --name-only $remote_branch...HEAD | grep -q "^apps/portal/"; then
+  packages_to_check="$packages_to_check qarote-portal"
+fi
+
+# Run type-check for all changed packages using Turborepo
+if [ -n "$packages_to_check" ]; then
+  echo "📦 Checking types for changed packages..."
+  # Trim leading space and run type-check for each package
+  for package in $(echo "$packages_to_check" | xargs); do
+    pnpm turbo run type-check --filter="$package" || exit 1
+  done
+  echo "✅ All type checks passed!"
+  
+  # Run knip to check for unused code (runs at root level, checks entire workspace)
+  echo "🔍 Running knip (unused code check)..."
+  pnpm run knip || exit 1
+  echo "✅ Knip check passed!"
+else
+  echo "✅ No app files changed, skipping type checks"
+fi

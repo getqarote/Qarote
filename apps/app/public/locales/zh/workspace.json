@@ -1,0 +1,74 @@
+{
+  "create": {
+    "title": "创建您的工作区",
+    "description": "欢迎使用 Qarote！让我们先创建您的第一个工作区。工作区帮助您组织 RabbitMQ 服务器并与团队协作。",
+    "cardTitle": "新建工作区",
+    "workspaceName": "工作区名称 *",
+    "workspaceNamePlaceholder": "我的工作区",
+    "tagsLabel": "标签（可选）",
+    "tagsPlaceholder": "添加标签以组织您的工作区",
+    "tagsHint": "使用 \"production\"、\"development\" 或 \"testing\" 等标签来组织您的工作区",
+    "submit": "创建工作区",
+    "creating": "正在创建工作区...",
+    "inviteMembers": "邀请成员",
+    "optional": "可选",
+    "invitePlaceholder": "输入邮箱地址并按回车添加",
+    "inviteHintWithLimit": "您当前的计划最多可邀请 {{count}} 名成员",
+    "upgradeToInvite": "升级到 Developer 或 Enterprise 计划以邀请团队成员。",
+    "invalidEmail": "请输入有效的邮箱地址",
+    "role": "角色",
+    "selectRole": "选择角色",
+    "roleMember": "成员",
+    "roleAdmin": "管理员"
+  },
+  "createForm": {
+    "title": "创建新工作区",
+    "description": "创建一个新的工作区来组织您的 RabbitMQ 服务器并与团队协作。",
+    "workspaceName": "工作区名称",
+    "workspaceNamePlaceholder": "我的工作区",
+    "tags": "标签",
+    "optional": "可选",
+    "tagsPlaceholder": "添加标签以组织您的工作区",
+    "tagsHint": "使用 \"production\"、\"development\" 或 \"testing\" 等标签",
+    "inviteMembers": "邀请成员",
+    "invitePlaceholder": "输入邮箱地址并按回车添加",
+    "inviteHintWithLimit": "您当前的计划最多可邀请 {{count}} 名成员",
+    "upgradeToInvite": "升级到 Developer 或 Enterprise 计划以邀请团队成员。",
+    "role": "角色",
+    "selectRole": "选择角色",
+    "roleMember": "成员",
+    "roleAdmin": "管理员",
+    "cancel": "取消",
+    "creating": "创建中...",
+    "submit": "创建工作区"
+  },
+  "inviteLinks": {
+    "title": "分享邀请链接",
+    "description": "邮件服务未配置。请手动将这些链接分享给您的团队成员。",
+    "done": "完成",
+    "copyFailed": "复制链接失败",
+    "localhostWarningTitle": "邀请链接包含 localhost",
+    "localhostWarningDescription": "您的服务器地址 (FRONTEND_URL) 设置为 localhost。此链接已调整为使用您当前的浏览器地址，但您应该在 .env 文件中将 FRONTEND_URL 更新为服务器的网络地址（例如：http://192.168.1.50:8080），然后重启 Qarote。"
+  },
+  "invites": {
+    "invalidEmail": "请输入有效的邮箱地址",
+    "workspaceCreated": "工作区创建成功！",
+    "workspaceCreatedSendingInvites": "工作区已创建！正在发送邀请...",
+    "invitationSent": "邀请已发送至 {{email}}",
+    "invitationCreated": "已为 {{email}} 创建邀请",
+    "invitationFailed": "邀请 {{email}} 失败：{{error}}"
+  },
+  "success": {
+    "title": "工作区创建成功！",
+    "redirecting": "正在跳转到您的仪表盘..."
+  },
+  "error": {
+    "createFailed": "创建工作区失败，请重试。",
+    "unknown": "发生未知错误"
+  },
+  "toast": {
+    "workspaceCreated": "工作区创建成功！",
+    "workspaceCreateFailed": "创建工作区失败：{{error}}"
+  },
+  "loading": "加载中..."
+}

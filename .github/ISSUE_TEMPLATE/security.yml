@@ -1,0 +1,60 @@
+name: 🔒 Security Vulnerability
+description: Report a security vulnerability (DO NOT use for general security questions)
+title: "[Security]: "
+labels: ["security"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **⚠️ IMPORTANT: Security vulnerabilities should be reported privately, not through public GitHub issues.**
+
+        Please email security@qarote.io with details about the vulnerability.
+
+        **Do NOT create a public issue for security vulnerabilities.**
+
+        This template is for general security-related questions or discussions only.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      description: What type of security issue is this?
+      options:
+        - General Security Question
+        - Security Best Practices Discussion
+        - Documentation Request
+        - Other (non-vulnerability)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe your security question or concern
+      placeholder: Please describe your security-related question or concern
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Provide relevant context
+      placeholder: Any additional context that would be helpful
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Reporting Security Vulnerabilities
+
+        If you have discovered a security vulnerability, please **DO NOT** create a public issue.
+
+        Instead, please email **security@qarote.io** with:
+        - A detailed description of the vulnerability
+        - Steps to reproduce (if applicable)
+        - Potential impact
+        - Suggested fix (if you have one)
+
+        We take security seriously and will respond promptly to all security reports.
+

@@ -1,0 +1,118 @@
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+
+import { ExternalLink } from "lucide-react";
+
+import AuthButtons from "@/components/AuthButtons";
+import { Button } from "@/components/ui/button";
+
+const HeroSection = () => {
+  const { t } = useTranslation("landing");
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+
+  // Listen for play-video custom events from StickyNav island
+  useEffect(() => {
+    const handler = () => setIsVideoPlaying(true);
+    document.addEventListener("play-video", handler);
+    return () => document.removeEventListener("play-video", handler);
+  }, []);
+
+  return (
+    <header
+      id="home"
+      className="relative overflow-visible text-foreground pb-16 bg-background"
+    >
+      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 md:pt-28 pb-3.5">
+        <div className="w-full text-center">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-6 leading-tight max-w-4xl mx-auto px-2 font-normal">
+            {t("hero.titleBefore")}
+            <span className="text-primary">{t("hero.titleHighlight")}</span>
+            {t("hero.titleAfter")}
+          </h1>
+
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-12 leading-relaxed max-w-3xl mx-auto px-2">
+            {t("hero.subtitle")}
+          </p>
+
+          <div className="mb-12">
+            <AuthButtons describedById="hero-no-credit-card" />
+            <p
+              id="hero-no-credit-card"
+              className="text-xs sm:text-sm text-muted-foreground mt-3 px-4"
+            >
+              {t("hero.noCreditCard")}
+            </p>
+            <div className="flex justify-center mt-5 px-4">
+              <Button asChild variant="pillGhost" size="pillMd">
+                <a
+                  href="https://demo.qarote.io/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t("cta.tryLiveDemo")}
+                  <ExternalLink
+                    className="h-4 w-4 opacity-70"
+                    aria-hidden="true"
+                  />
+                  <span className="sr-only">{t("cta.opensInNewTab")}</span>
+                </a>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* YouTube Video */}
+      <div id="video" className="relative pb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {!isVideoPlaying ? (
+            <button
+              type="button"
+              className="relative w-full aspect-video overflow-hidden group cursor-pointer"
+              onClick={() => setIsVideoPlaying(true)}
+            >
+              <picture>
+                <source srcSet="/images/dashboard.webp" type="image/webp" />
+                <img
+                  src="/images/dashboard.png"
+                  alt="Qarote Dashboard Interface"
+                  className="w-full h-full object-contain bg-card"
+                  width={3024}
+                  height={1706}
+                  fetchPriority="high"
+                />
+              </picture>
+              <div className="absolute inset-0 flex items-center justify-center bg-zinc-950/15 group-hover:bg-zinc-950/20 transition-colors">
+                <div
+                  aria-hidden="true"
+                  className="w-20 h-20 md:w-24 md:h-24 bg-background flex items-center justify-center transition-all group-hover:scale-110 shadow-soft rounded-full"
+                >
+                  <img
+                    src="/images/play.svg"
+                    alt=""
+                    aria-hidden="true"
+                    className="w-10 h-10 md:w-12 md:h-12 object-contain block ml-2 image-crisp"
+                    width={48}
+                    height={48}
+                  />
+                </div>
+              </div>
+            </button>
+          ) : (
+            <div className="relative w-full aspect-video overflow-hidden">
+              <iframe
+                src="https://www.youtube.com/embed/g9Coi3niYIY?autoplay=1"
+                title="Qarote Video"
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default HeroSection;

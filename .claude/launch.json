@@ -1,0 +1,41 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev",
+      "runtimeExecutable": "/bin/zsh",
+      "runtimeArgs": [
+        "-c",
+        "source ~/.nvm/nvm.sh && nvm use && pnpm --filter qarote-app run dev"
+      ],
+      "port": 8080,
+      "autoPort": true
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "/bin/zsh",
+      "runtimeArgs": [
+        "-c",
+        "source ~/.nvm/nvm.sh && nvm use && pnpm --filter @qarote/i18n build && pnpm --filter ./apps/web dev"
+      ],
+      "port": 8082,
+      "autoPort": true
+    },
+    {
+      "name": "portal",
+      "runtimeExecutable": "/bin/zsh",
+      "runtimeArgs": [
+        "-c",
+        "source ~/.nvm/nvm.sh && nvm use && pnpm --filter @qarote/i18n build && pnpm --filter ./apps/portal dev"
+      ],
+      "port": 8081,
+      "autoPort": true
+    },
+    {
+      "name": "mockup",
+      "runtimeExecutable": "/bin/zsh",
+      "runtimeArgs": ["-c", "python3 -m http.server 9090 --directory /tmp"],
+      "port": 9090
+    }
+  ]
+}

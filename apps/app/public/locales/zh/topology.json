@@ -1,0 +1,33 @@
+{
+  "pageTitle": "拓扑",
+  "pageSubtitle": "交换机、队列和绑定的可视化地图",
+  "noServerTitle": "拓扑",
+  "noServerDescription": "添加 RabbitMQ 服务器以查看其拓扑。",
+  "noServerSelected": "未选择服务器",
+  "selectServerPrompt": "从侧边栏选择一个服务器以查看其拓扑。",
+  "loadingTopology": "正在加载拓扑...",
+  "failedToLoad": "加载拓扑失败",
+  "noTopologyData": "无拓扑数据",
+  "noTopologyDataDesc": "未找到所选服务器和虚拟主机的交换机或队列。",
+  "stats": {
+    "exchanges": "exchanges",
+    "exchanges_one": "交换机",
+    "exchanges_other": "交换机",
+    "queues": "queues",
+    "queues_one": "队列",
+    "queues_other": "队列",
+    "bindings": "bindings",
+    "bindings_one": "绑定",
+    "bindings_other": "绑定"
+  },
+  "filters": {
+    "defaultExchange": "默认交换机",
+    "filterPanel": "筛选"
+  },
+  "filter": {
+    "search": "搜索...",
+    "exchanges": "交换机",
+    "queues": "队列",
+    "noMatch": "无结果"
+  }
+}

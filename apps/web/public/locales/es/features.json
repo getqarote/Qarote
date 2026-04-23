@@ -1,0 +1,96 @@
+{
+  "seo": {
+    "title": "Funciones de monitoreo RabbitMQ: colas en vivo, alertas, analíticas",
+    "description": "Explora las funciones de monitoreo RabbitMQ de Qarote: seguimiento de colas en tiempo real, alertas inteligentes, analíticas de rendimiento, soporte multi-servidor y gestión de colas en un solo panel."
+  },
+  "hero": {
+    "title": "Todo lo que necesitas para monitorear RabbitMQ",
+    "subtitle": "Un solo panel para todos tus servidores RabbitMQ. Reemplaza el management plugin, más simple que Prometheus + Grafana.",
+    "pills": {
+      "liveMonitoring": "Tiempo real",
+      "alerting": "Alertas",
+      "analytics": "Analíticas",
+      "queueManagement": "Gestión de colas",
+      "multiServer": "Multi-servidor",
+      "devExperience": "Experiencia dev"
+    }
+  },
+  "coreFeature": "FUNCIÓN PRINCIPAL",
+  "liveMonitoring": {
+    "title": "Monitoreo de colas en tiempo real",
+    "description": "Profundidad de colas, tasas de mensajes y conteo de consumidores de un vistazo. Indicadores visuales destacan estados saludables, de advertencia y críticos.",
+    "metric1Value": "< 1s",
+    "metric1Label": "Actualización",
+    "metric2Value": "3",
+    "metric2Label": "Estados de salud",
+    "metric3Value": "0",
+    "metric3Label": "Config necesaria",
+    "point1": "Tasas de mensajes: publicación, entrega, confirmación por segundo",
+    "point2": "Utilización de consumidores y seguimiento de edad de colas",
+    "point3": "Retroalimentación visual instantánea sobre la salud de las colas"
+  },
+  "insightsSection": {
+    "title": "Insights que previenen caídas"
+  },
+  "alerting": {
+    "title": "Sistema de alertas inteligente",
+    "badge": "Plan Developer+",
+    "description": "Umbrales configurables por cola y por servidor. Recibe notificaciones antes de que los problemas se conviertan en caídas.",
+    "point1": "Canales de notificación: email, Slack, webhooks",
+    "point2": "Historial de alertas y flujo de reconocimiento",
+    "point3": "Configuración de umbrales por cola y por servidor"
+  },
+  "analytics": {
+    "title": "Analíticas de rendimiento",
+    "description": "Gráficos históricos para el rendimiento de mensajes, profundidad de colas y recursos de nodos. Detecta tendencias y planifica la capacidad con confianza.",
+    "point1": "Rangos de tiempo personalizables: 1 hora a 30 días",
+    "point2": "Seguimiento de memoria, disco, descriptores de archivos y CPU",
+    "point3": "Detección de tendencias para planificación de capacidad"
+  },
+  "queueManagement": {
+    "title": "Gestión de colas",
+    "description": "Purga, elimina y crea colas desde la interfaz. Inspecciona bindings, visualiza la topología y publica mensajes de prueba sin tocar la línea de comandos.",
+    "point1": "Inspección de bindings y vista de topología",
+    "point2": "Publicación de mensajes para pruebas y depuración",
+    "point3": "Gestión de exchanges y claves de enrutamiento"
+  },
+  "multiServer": {
+    "title": "Soporte multi-servidor",
+    "badge": "Dev: 3 | Enterprise: ilimitado",
+    "description": "Conecta múltiples instancias de RabbitMQ de diferentes entornos. Una vista unificada para staging, producción y desarrollo.",
+    "point1": "Conexiones cifradas TLS",
+    "point2": "Panel unificado para todos los entornos",
+    "point3": "Cambia entre servidores sin problemas"
+  },
+  "builtForDevs": {
+    "title": "Hecho para desarrolladores",
+    "description": "Sin configuración YAML. Sin Prometheus ni Grafana que mantener. Conecta tu servidor RabbitMQ en 60 segundos con una cadena de conexión.",
+    "point1": "Opción auto-alojada o en la nube",
+    "point2": "Edición Community de código abierto en GitHub",
+    "point3": "Sin infraestructura que mantener"
+  },
+  "comparison": {
+    "title": "Gestionar servidores RabbitMQ no tiene que ser doloroso",
+    "traditional": {
+      "title": "Interfaces de gestión tradicionales",
+      "point1": "Una interfaz obsoleta que te ralentiza",
+      "point2": "Sin vista unificada entre servidores o entornos",
+      "point3": "Sin alertas fiables y accionables",
+      "point4": "Dashboards y scripts DIY por todas partes"
+    },
+    "qarote": {
+      "title": "Qarote",
+      "point1": "Una interfaz moderna, rápida y clara",
+      "point2": "Un panel unificado para todos tus servidores y entornos",
+      "point3": "Alertas inteligentes que detectan problemas temprano",
+      "point4": "Monitoreo sin configuración, sin scripts, sin mantenimiento"
+    },
+    "messagesPerSec": "Mensajes/seg",
+    "activeQueues": "Colas activas",
+    "allSystemsOperational": "Todos los sistemas operacionales"
+  },
+  "cta": {
+    "title": "¿Listo para monitorear tus servidores RabbitMQ?",
+    "subtitle": "Comienza con el plan Community gratuito. Sin tarjeta de crédito."
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "workflow_version": "1.2.0",
+  "timestamps": {
+    "started": "2026-01-30T22:00:00.000Z",
+    "last_updated": "2026-01-30T22:01:00.000Z"
+  },
+  "mode": "initial_scan",
+  "scan_level": "deep",
+  "project_root": "/Users/brice/Code/Personal/Active/Qarote",
+  "output_folder": "/Users/brice/Code/Personal/Active/Qarote/docs",
+  "completed_steps": [
+    {
+      "step": "step_1",
+      "status": "completed",
+      "timestamp": "2026-01-30T22:01:00.000Z",
+      "summary": "Classified as monorepo with 4 parts (api, app, web, portal)"
+    },
+    {
+      "step": "step_2",
+      "status": "completed",
+      "timestamp": "2026-01-30T22:02:00.000Z",
+      "summary": "Found 10 existing docs"
+    },
+    {
+      "step": "step_3",
+      "status": "completed",
+      "timestamp": "2026-01-30T22:03:00.000Z",
+      "summary": "Tech stack: Hono.js/tRPC on Node.js 24, React 18/Vite"
+    },
+    {
+      "step": "step_4",
+      "status": "completed",
+      "timestamp": "2026-01-30T22:05:00.000Z",
+      "summary": "Conditional analysis complete, 6 files written"
+    },
+    {
+      "step": "step_7",
+      "status": "completed",
+      "timestamp": "2026-01-30T22:06:00.000Z",
+      "summary": "Integration architecture documented"
+    },
+    {
+      "step": "step_8",
+      "status": "completed",
+      "timestamp": "2026-01-30T22:08:00.000Z",
+      "summary": "Architecture docs written for 4 parts"
+    },
+    {
+      "step": "step_9",
+      "status": "completed",
+      "timestamp": "2026-01-30T22:10:00.000Z",
+      "summary": "All supporting docs written"
+    },
+    {
+      "step": "step_10",
+      "status": "completed",
+      "timestamp": "2026-01-30T22:11:00.000Z",
+      "summary": "Master index generated"
+    }
+  ],
+  "current_step": "completed",
+  "workflow_status": "completed",
+  "completion_timestamp": "2026-01-30T22:12:00.000Z",
+  "findings": {
+    "project_classification": {
+      "repository_type": "monorepo",
+      "parts_count": 4,
+      "primary_tech": "TypeScript, React, Hono.js, tRPC, PostgreSQL"
+    }
+  },
+  "project_types": [
+    {
+      "part_id": "api",
+      "project_type_id": "backend",
+      "display_name": "API Backend"
+    },
+    {
+      "part_id": "app",
+      "project_type_id": "web",
+      "display_name": "App Dashboard"
+    },
+    {
+      "part_id": "web",
+      "project_type_id": "web",
+      "display_name": "Landing Page"
+    },
+    {
+      "part_id": "portal",
+      "project_type_id": "web",
+      "display_name": "Customer Portal"
+    }
+  ],
+  "outputs_generated": [
+    "project-scan-report.json",
+    "api-contracts-api.md",
+    "data-models-api.md",
+    "state-management-app.md",
+    "component-inventory-app.md",
+    "component-inventory-web.md",
+    "component-inventory-portal.md",
+    "integration-architecture.md",
+    "architecture-api.md",
+    "architecture-app.md",
+    "architecture-web.md",
+    "architecture-portal.md",
+    "project-overview.md",
+    "source-tree-analysis.md",
+    "development-guide.md",
+    "deployment-guide.md",
+    "index.md"
+  ],
+  "resume_instructions": "Workflow completed successfully. To regenerate documentation, run /bmad-bmm-document-project again.",
+  "summary": {
+    "total_files_generated": 16,
+    "total_documentation_size": "~136 KB",
+    "project_parts_documented": 4,
+    "architecture_files": 4,
+    "contract_files": 1,
+    "data_model_files": 1,
+    "state_management_files": 1,
+    "component_inventory_files": 3,
+    "guide_files": 2,
+    "overview_files": 2,
+    "index_files": 1
+  }
+}

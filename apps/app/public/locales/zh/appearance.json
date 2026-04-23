@@ -1,0 +1,12 @@
+{
+  "title": "外观",
+  "subtitle": "自定义仪表板的外观和感觉。",
+  "themeTitle": "主题",
+  "themeDescription": "选择您偏好的配色方案。",
+  "themeSystemHint": "跟随系统会使用操作系统设置。",
+  "light": "浅色",
+  "dark": "深色",
+  "system": "跟随系统",
+  "languageTitle": "语言",
+  "languageDescription": "选择您偏好的语言。"
+}

@@ -1,0 +1,12 @@
+{
+  "title": "Apparence",
+  "subtitle": "Personnalisez l'apparence du tableau de bord.",
+  "themeTitle": "Thème",
+  "themeDescription": "Sélectionnez votre schéma de couleurs préféré.",
+  "themeSystemHint": "Système suit le réglage de votre OS.",
+  "light": "Clair",
+  "dark": "Sombre",
+  "system": "Système",
+  "languageTitle": "Langue",
+  "languageDescription": "Sélectionnez votre langue préférée."
+}

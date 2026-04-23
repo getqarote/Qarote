@@ -1,0 +1,122 @@
+{
+  "pageTitle": "Nœuds",
+  "pageSubtitle": "Vue détaillée des nœuds du cluster et de leurs métriques",
+  "noServerTitle": "Nœuds",
+  "noServerDescription": "Ajoutez une connexion à un serveur RabbitMQ pour afficher les nœuds du cluster et leurs métriques.",
+  "selectServerPrompt": "Veuillez sélectionner un serveur RabbitMQ pour afficher ses nœuds",
+  "nodeName": "Nœud",
+  "status": "Statut",
+  "memory": "Mémoire",
+  "diskFree": "Disque libre",
+  "uptime": "Disponibilité",
+  "connections": "Connexions",
+  "noNodesFound": "Aucun nœud trouvé",
+  "permissionErrorTitle": "Informations sur les nœuds indisponibles",
+  "clusterName": "Nom du cluster",
+  "editClusterName": "Modifier le nom du cluster",
+  "saveClusterName": "Enregistrer",
+  "cancelEdit": "Annuler",
+  "clusterNameUpdated": "Nom du cluster mis à jour",
+  "clusterNameError": "Échec de la mise à jour du nom du cluster",
+  "overview": {
+    "node": "nœud",
+    "nodes": "nœuds",
+    "memoryLabel": "mémoire",
+    "diskFreeLabel": "Go de disque libre",
+    "socketsLabel": "sockets",
+    "socketsTooltip": "Nombre de sockets au niveau OS sur tous les nœuds actifs. Inclut les connexions AMQP et les sockets internes de RabbitMQ."
+  },
+  "ports": {
+    "show": "Afficher les ports et contextes",
+    "hide": "Masquer les ports et contextes"
+  },
+  "churnStatistics": {
+    "connectionOperations": "Opérations de connexion",
+    "channelOperations": "Opérations de canal",
+    "queueOperations": "Opérations de file d'attente",
+    "created": "Créées",
+    "closed": "Fermées",
+    "declared": "Déclarées",
+    "deleted": "Supprimées"
+  },
+  "portsAndContexts": {
+    "listeners": "Écouteurs",
+    "contexts": "Contextes",
+    "node": "Nœud",
+    "protocol": "Protocole",
+    "ipAddress": "Adresse IP",
+    "port": "Port",
+    "description": "Description",
+    "path": "Chemin",
+    "ssl": "SSL",
+    "yes": "Oui",
+    "no": "Non"
+  },
+  "statusLabels": {
+    "healthy": "En bonne santé",
+    "error": "Erreur",
+    "critical": "Critique",
+    "warning": "Avertissement",
+    "draining": "Vidange"
+  },
+  "details": {
+    "summary": "Résumé",
+    "fullDetails": "Détails complets",
+    "sections": {
+      "health": "Santé",
+      "memory": "Mémoire",
+      "connections": "Connexions",
+      "diskIO": "E/S disque",
+      "system": "Système",
+      "internalStore": "Stockage interne"
+    },
+    "rows": {
+      "running": "En cours",
+      "draining": "Vidange",
+      "memAlarm": "Alarme mémoire",
+      "diskAlarm": "Alarme disque",
+      "partitions": "Partitions",
+      "usage": "Utilisation",
+      "diskFree": "Disque libre",
+      "used": "Utilisé",
+      "limit": "Limite",
+      "sockets": "Sockets",
+      "created": "Créées",
+      "closed": "Fermées",
+      "channels": "Canaux",
+      "netTick": "Net tick",
+      "readRate": "Débit lecture",
+      "writeRate": "Débit écriture",
+      "avgRead": "Moy. lecture",
+      "avgWrite": "Moy. écriture",
+      "type": "Type",
+      "processors": "Processeurs",
+      "osPid": "PID OS",
+      "runQueue": "File d'exécution",
+      "processes": "Processus",
+      "plugins": "Plugins"
+    },
+    "values": {
+      "yes": "Oui",
+      "no": "Non",
+      "active": "Active",
+      "none": "Aucune"
+    },
+    "tooltips": {
+      "draining": "Ce nœud est en cours de suppression progressive. Les nouvelles connexions sont redirigées vers d'autres nœuds.",
+      "memAlarm": "L'utilisation de la mémoire a dépassé le seuil. Les confirmations de publication sont bloquées jusqu'à la baisse de la mémoire.",
+      "diskAlarm": "L'espace disque libre est tombé sous le seuil. La publication est bloquée jusqu'à libération d'espace.",
+      "partitions": "Partition réseau détectée. Les nœuds ne peuvent pas communiquer — condition split-brain nécessitant une attention immédiate.",
+      "netTick": "Intervalle de battement Erlang. Si un nœud manque 4 ticks consécutifs, il est considéré comme injoignable.",
+      "runQueue": "Processus Erlang en attente de planification. Des valeurs supérieures à 1 indiquent une contention CPU."
+    },
+    "inlineMetrics": {
+      "mnesiaRam": "RAM Mnesia",
+      "mnesiaDisk": "Disque Mnesia",
+      "msgReads": "Lectures msg",
+      "msgWrites": "Écritures msg",
+      "queueIdxR": "Index file L",
+      "queueIdxW": "Index file E"
+    }
+  }
+}

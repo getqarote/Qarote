@@ -1,0 +1,52 @@
+---
+title: "Introduction"
+description: "Get started with Qarote — the open-source RabbitMQ monitoring dashboard. Learn what Qarote does, what it requires, and how it connects to your broker."
+section: "Getting started"
+---
+
+# Introduction
+
+Qarote is an open-source RabbitMQ monitoring and management dashboard. It gives you a clean, modern alternative to the built-in Management Plugin — with real-time metrics, better visualizations, and premium features like alerting, workspaces, and SSO available as you scale.
+
+## What Qarote can do
+
+- Monitor queue depths, message rates, and consumer counts in real time
+- Inspect exchange bindings and routing topologies
+- Spy on live queue traffic without consuming messages from real consumers
+- Set up threshold alerts (message depth, consumer count, dead-letter growth)
+- Manage multiple RabbitMQ servers from a single dashboard
+- Invite team members to shared workspaces with role-based access
+
+## How it connects to RabbitMQ
+
+Qarote uses two protocols to talk to your broker:
+
+### Management HTTP API
+
+Used for most operations: reading queue/exchange/binding metadata, publishing test messages, purging queues, and fetching metrics history. This requires the `rabbitmq_management` plugin to be enabled.
+
+### AMQP
+
+Used for features that need a live connection to the broker, such as [spying on live queues](/docs/queues/spy-on-live-queues/). Qarote opens a direct AMQP connection and closes it when the feature is no longer in use.
+
+## Requirements
+
+Before installing Qarote, make sure you have:
+
+- **RabbitMQ 3.8 or later** with the Management Plugin enabled:
+  ```sh
+  rabbitmq-plugins enable rabbitmq_management
+  ```
+- A RabbitMQ user with the `monitoring` or `administrator` tag
+- A server to host Qarote (Linux, Docker, or a platform like Dokku)
+- PostgreSQL 14+ for Qarote's own data (connections, users, alerts)
+
+<Callout type="tip" title="Community Edition is free">
+  Qarote's core monitoring features are free forever under the MIT license. No
+  credit card required. Premium features (workspaces, alerting, SSO) are
+  unlocked via a license key.
+</Callout>
+
+## Self-hosted by design
+
+Qarote runs entirely in your own infrastructure. Your RabbitMQ credentials, message contents, and cluster metrics never leave your network. See [Security and privacy](/docs/security-and-privacy/) for a full breakdown of how data flows through Qarote.

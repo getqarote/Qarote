@@ -1,0 +1,33 @@
+{
+  "pageTitle": "Topology",
+  "pageSubtitle": "Visual map of exchanges, queues, and bindings",
+  "noServerTitle": "Topology",
+  "noServerDescription": "Add a RabbitMQ server to view its topology.",
+  "noServerSelected": "No server selected",
+  "selectServerPrompt": "Select a server from the sidebar to view its topology.",
+  "loadingTopology": "Loading topology...",
+  "failedToLoad": "Failed to load topology",
+  "noTopologyData": "No topology data",
+  "noTopologyDataDesc": "No exchanges or queues found for the selected server and virtual host.",
+  "stats": {
+    "exchanges": "exchanges",
+    "exchanges_one": "exchange",
+    "exchanges_other": "exchanges",
+    "queues": "queues",
+    "queues_one": "queue",
+    "queues_other": "queues",
+    "bindings": "bindings",
+    "bindings_one": "binding",
+    "bindings_other": "bindings"
+  },
+  "filters": {
+    "defaultExchange": "Default exchange",
+    "filterPanel": "Filter"
+  },
+  "filter": {
+    "search": "Search...",
+    "exchanges": "Exchanges",
+    "queues": "Queues",
+    "noMatch": "No results"
+  }
+}

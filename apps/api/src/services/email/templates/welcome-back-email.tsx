@@ -1,0 +1,182 @@
+import {
+  Body,
+  Container,
+  Head,
+  Heading,
+  Html,
+  Link,
+  Section,
+  Text,
+} from "@react-email/components";
+
+import { getPlanFeatures } from "@/services/plan/plan.service";
+
+import { EmailFooter } from "../shared/email-footer";
+import { EmailHeader } from "../shared/email-header";
+import {
+  baseStyles,
+  buttonStyles,
+  contentStyles,
+  sectionStyles,
+  textStyles,
+} from "../shared/styles";
+
+import { UserPlan } from "@/generated/prisma/client";
+import { tEmail } from "@/i18n";
+
+interface WelcomeBackEmailProps {
+  userName: string;
+  workspaceName: string;
+  plan: UserPlan;
+  billingInterval: "monthly" | "yearly";
+  previousCancelDate?: string;
+  frontendUrl: string;
+  locale?: string;
+}
+
+export const WelcomeBackEmail = ({
+  workspaceName,
+  plan,
+  billingInterval,
+  previousCancelDate,
+  frontendUrl,
+  locale = "en",
+}: WelcomeBackEmailProps) => {
+  const planDisplayName = plan.charAt(0) + plan.slice(1).toLowerCase();
+
+  return (
+    <Html>
+      <Head />
+      <Body style={baseStyles.main}>
+        <Container style={baseStyles.container}>
+          <EmailHeader frontendUrl={frontendUrl} />
+
+          {/* Main Content */}
+          <Section style={sectionStyles.featuresSection}>
+            <Heading style={contentStyles.title}>
+              {tEmail(locale, "welcomeBack.title")}
+            </Heading>
+            <Text style={contentStyles.paragraph}>
+              We noticed you've renewed your subscription for{" "}
+              <strong>{workspaceName}</strong>
+              {previousCancelDate && (
+                <>
+                  {" "}
+                  after your previous cancellation on{" "}
+                  {new Date(previousCancelDate).toLocaleDateString("en-US", {
+                    timeZone: "UTC",
+                  })}
+                </>
+              )}
+              . We're excited to continue supporting your RabbitMQ monitoring
+              needs!
+            </Text>
+
+            <Section style={sectionStyles.highlightSection}>
+              <Text style={styles.highlightText}>
+                🙏 Thank you for giving us another chance!
+              </Text>
+              <Text style={styles.highlightSubtext}>
+                Your feedback and loyalty mean the world to us. We've been
+                working hard to improve Qarote based on user feedback like
+                yours.
+              </Text>
+            </Section>
+          </Section>
+
+          {/* Plan Info */}
+          <Section style={styles.planSection}>
+            <Heading as="h3" style={contentStyles.heading}>
+              Your {planDisplayName} Plan Features
+            </Heading>
+            <Text style={contentStyles.paragraph}>
+              <strong>Billing:</strong>{" "}
+              {billingInterval === "yearly" ? "Annual" : "Monthly"} subscription
+            </Text>
+
+            {getPlanFeatures(plan).featureDescriptions.map((feature, index) => (
+              <Text key={index} style={styles.featureItem}>
+                ✓ {feature}
+              </Text>
+            ))}
+          </Section>
+
+          {/* CTA Button */}
+          <Section style={buttonStyles.buttonSection}>
+            <Link href={frontendUrl} style={buttonStyles.primaryButton}>
+              {tEmail(locale, "welcomeBack.viewDashboard")}
+            </Link>
+          </Section>
+
+          {/* What's New */}
+          <Section style={sectionStyles.featuresSection}>
+            <Text style={contentStyles.paragraph}>
+              <strong>Need help getting started again?</strong>
+            </Text>
+            <Text style={contentStyles.paragraph}>
+              Our team is here to help! check out our{" "}
+              <Link href={`${frontendUrl}/help`} style={textStyles.link}>
+                {tEmail(locale, "common.supportTeam")}
+              </Link>{" "}
+            </Text>
+
+            <EmailFooter locale={locale} frontendUrl={frontendUrl} />
+          </Section>
+        </Container>
+      </Body>
+    </Html>
+  );
+};
+
+// Custom styles for this template
+const styles = {
+  welcomeHeader: {
+    textAlign: "center" as const,
+    padding: "30px 20px",
+    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    color: "white",
+    borderRadius: "8px",
+    marginBottom: "30px",
+  },
+
+  welcomeTitle: {
+    fontSize: "28px",
+    fontWeight: "bold",
+    margin: "0 0 10px 0",
+    color: "white",
+  },
+
+  welcomeSubtitle: {
+    fontSize: "16px",
+    margin: "0",
+    opacity: "0.9",
+    color: "white",
+  },
+
+  highlightText: {
+    margin: "0",
+    fontWeight: "bold",
+    color: "#059669",
+  },
+
+  highlightSubtext: {
+    margin: "10px 0 0 0",
+    color: "#065f46",
+  },
+
+  planSection: {
+    background: "white",
+    padding: "20px",
+    borderRadius: "8px",
+    borderLeft: "4px solid #667eea",
+    margin: "20px 0",
+  },
+
+  featureItem: {
+    margin: "8px 0",
+    borderBottom: "1px solid #eee",
+    paddingBottom: "8px",
+    fontSize: "15px",
+    color: "#374151",
+  },
+} as const;

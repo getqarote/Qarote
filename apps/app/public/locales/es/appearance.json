@@ -1,0 +1,12 @@
+{
+  "title": "Apariencia",
+  "subtitle": "Personaliza el aspecto del panel de control.",
+  "themeTitle": "Tema",
+  "themeDescription": "Selecciona tu esquema de colores preferido.",
+  "themeSystemHint": "Sistema sigue la configuración del sistema operativo.",
+  "light": "Claro",
+  "dark": "Oscuro",
+  "system": "Sistema",
+  "languageTitle": "Idioma",
+  "languageDescription": "Selecciona tu idioma preferido."
+}

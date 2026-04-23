@@ -1,0 +1,149 @@
+import { TRPCError } from "@trpc/server";
+
+import {
+  getOrgPlan,
+  getOverLimitWarningMessage,
+  getUpgradeRecommendationForOverLimit,
+} from "@/services/plan/plan.service";
+
+import {
+  ServerWorkspaceInputSchema,
+  SetClusterNameSchema,
+} from "@/schemas/rabbitmq";
+
+import { OverviewMapper } from "@/mappers/rabbitmq";
+
+import { authorize, router, workspaceProcedure } from "@/trpc/trpc";
+
+import { createRabbitMQClient, verifyServerAccess } from "./shared";
+
+import { UserPlan, UserRole } from "@/generated/prisma/client";
+import { te } from "@/i18n";
+
+/**
+ * Overview router
+ * Handles RabbitMQ overview operations
+ */
+export const overviewRouter = router({
+  /**
+   * Get overview for a specific server (ALL USERS)
+   */
+  getOverview: workspaceProcedure
+    .input(ServerWorkspaceInputSchema)
+    .query(async ({ input, ctx }) => {
+      const { serverId, workspaceId } = input;
+
+      try {
+        // Verify the server belongs to the user's workspace and get over-limit info
+        const server = await verifyServerAccess(serverId, workspaceId, true);
+
+        if (!server) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
+          });
+        }
+
+        const client = await createRabbitMQClient(serverId, workspaceId);
+        const overview = await client.getOverview();
+
+        // Map overview to API response format (only include fields used by web)
+        const mappedOverview = OverviewMapper.toApiResponse(overview);
+
+        // Prepare response with properly typed over-limit warning information
+        const response: {
+          overview: typeof mappedOverview;
+          warning?: {
+            isOverLimit: boolean;
+            message: string;
+            currentQueueCount: number;
+            queueCountAtConnect: number | null;
+            upgradeRecommendation: string;
+            recommendedPlan: string | null;
+            warningShown: boolean;
+          };
+        } = {
+          overview: mappedOverview,
+        };
+
+        // Add warning information if server is over the queue limit
+        // Note: We still need the original overview for queue_totals calculation
+        if (server.isOverQueueLimit && server.workspace && ctx.user) {
+          const orgInfo = await ctx.resolveOrg();
+          const userPlan = orgInfo?.organizationId
+            ? await getOrgPlan(orgInfo.organizationId)
+            : UserPlan.FREE;
+          const warningMessage = getOverLimitWarningMessage(
+            userPlan,
+            overview.queue_totals?.messages || 0
+          );
+
+          const upgradeRecommendation =
+            getUpgradeRecommendationForOverLimit(userPlan);
+
+          response.warning = {
+            isOverLimit: true,
+            message: warningMessage,
+            currentQueueCount: overview.queue_totals?.messages || 0,
+            queueCountAtConnect: server.queueCountAtConnect,
+            upgradeRecommendation: upgradeRecommendation.message,
+            recommendedPlan: upgradeRecommendation.recommendedPlan,
+            warningShown: server.overLimitWarningShown,
+          };
+        }
+
+        return response;
+      } catch (error) {
+        ctx.logger.error(
+          { error, serverId },
+          `Error fetching overview for server ${serverId}`
+        );
+
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: te(ctx.locale, "rabbitmq.failedToFetchOverview"),
+        });
+      }
+    }),
+
+  setClusterName: authorize([UserRole.ADMIN])
+    .input(SetClusterNameSchema)
+    .mutation(async ({ input, ctx }) => {
+      const { serverId, workspaceId, name } = input;
+
+      try {
+        const server = await verifyServerAccess(serverId, workspaceId);
+        if (!server) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
+          });
+        }
+
+        const client = await createRabbitMQClient(serverId, workspaceId);
+        await client.setClusterName(name);
+
+        ctx.logger.info(
+          { serverId, name },
+          `Cluster name updated to "${name}" by user ${ctx.user.id}`
+        );
+
+        return { success: true };
+      } catch (error) {
+        ctx.logger.error({ error, serverId }, "Error setting cluster name");
+
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: te(ctx.locale, "rabbitmq.failedToSetClusterName"),
+        });
+      }
+    }),
+});

@@ -1,0 +1,23 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import AboutIsland from "../components/AboutIsland";
+import { loadTranslations, loadAllTranslations, t } from "../lib/i18n-static";
+import { buildAboutSchema } from "../lib/about-schema";
+
+const about = loadTranslations("en", "about");
+const resources = loadAllTranslations("en");
+const personSchemas = buildAboutSchema(about);
+---
+
+<BaseLayout
+  title={t(about, "seo.title")}
+  description={t(about, "seo.description")}
+  canonicalPath="/about/"
+>
+  <Fragment slot="head">
+    {personSchemas.map((schema) => (
+      <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+    ))}
+  </Fragment>
+  <AboutIsland resources={resources} client:load />
+</BaseLayout>

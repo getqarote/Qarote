@@ -1,0 +1,30 @@
+{
+  "q1": {
+    "question": "Qu'est-ce que Qarote ?",
+    "answer": "Qarote est un tableau de bord de monitoring RabbitMQ qui remplace le plugin de gestion par défaut par un monitoring en temps réel des files, échanges et nœuds. Il se connecte de manière sécurisée via l'API HTTP de gestion sur TLS et fonctionne aussi bien avec les services cloud (CloudAMQP, Amazon MQ) qu'avec les instances auto-hébergées. Le tier de monitoring de base est gratuit et sans limite de durée — les plans payants ajoutent le support multi-serveurs, les alertes et la collaboration en équipe."
+  },
+  "q2": {
+    "question": "À qui s'adresse Qarote ?",
+    "answer": "Qarote est conçu pour les développeurs, ingénieurs DevOps et SRE qui utilisent RabbitMQ et veulent une meilleure visibilité sans la complexité de Prometheus et Grafana. Que vous gériez une seule instance ou des dizaines de clusters à travers vos environnements, Qarote vous aide à détecter les retards de files avant qu'ils ne causent des pannes et à résoudre les problèmes de routage plus rapidement. Démarrer prend moins de deux minutes."
+  },
+  "q3": {
+    "question": "Qarote est-il sécurisé ?",
+    "answer": "Oui. Toutes les connexions à vos serveurs RabbitMQ utilisent le chiffrement TLS. Qarote ne lit que les métriques exposées par l'API HTTP de gestion — il ne stocke jamais le contenu des messages ni les identifiants. Pour les équipes ayant des exigences strictes de conformité, Qarote peut être entièrement auto-hébergé sur votre propre infrastructure, garantissant que les données de monitoring ne quittent jamais votre réseau. Les déploiements auto-hébergés utilisent une validation de licence hors ligne sans connexion internet requise après activation."
+  },
+  "q4": {
+    "question": "Comment Qarote se compare-t-il à Prometheus et Grafana ?",
+    "answer": "Ils répondent à des besoins différents et se complètent bien. Configurer Prometheus et Grafana pour RabbitMQ implique d'installer des exportateurs, de configurer les cibles de scrape, de créer des tableaux de bord à partir de zéro et d'écrire des requêtes PromQL — puis de maintenir le tout à mesure que les versions évoluent. Qarote offre un monitoring RabbitMQ sans configuration : connectez votre serveur et commencez immédiatement, avec des tableaux de bord pré-construits, des contrôles de gestion de files et des alertes incluses. Pour les équipes utilisant déjà Prometheus, Qarote apporte des insights plus approfondis spécifiques à RabbitMQ en complément de votre stack existant."
+  },
+  "q5": {
+    "question": "Puis-je auto-héberger Qarote ?",
+    "answer": "Oui. Vous pouvez déployer Qarote sur votre propre infrastructure via Docker, Docker Compose, Dokku ou un binaire autonome — l'installation complète prend moins de cinq minutes. L'édition Community est gratuite et open source sous licence MIT. Les plans payants auto-hébergés débloquent le support multi-serveurs, les alertes et les fonctionnalités d'équipe. La validation de licence fonctionne entièrement hors ligne sans connexion internet requise après activation, adapté aux environnements air-gapped."
+  },
+  "q6": {
+    "question": "Quelles versions de RabbitMQ Qarote supporte-t-il ?",
+    "answer": "Qarote supporte RabbitMQ 3.x et 4.x, y compris toutes les versions LTS et les plus récentes. Il se connecte via l'API HTTP de gestion standard — aucun plugin, exportateur ou agent supplémentaire requis sur vos serveurs. Qarote est testé avec les déploiements mono-nœud et en cluster, ainsi qu'avec les services managés comme CloudAMQP et Amazon MQ."
+  },
+  "q7": {
+    "question": "Qarote fonctionne-t-il avec les clusters RabbitMQ ?",
+    "answer": "Oui. Qarote supporte pleinement les clusters avec découverte automatique des nœuds — sans configuration supplémentaire. Il affiche les métriques individuelles des nœuds et les agrégats du cluster dans une vue unifiée. Vous pouvez suivre la santé de chaque nœud, surveiller la distribution des files entre les nœuds et recevoir des alertes lorsque des nœuds deviennent indisponibles ou dépassent les seuils de ressources."
+  }
+}

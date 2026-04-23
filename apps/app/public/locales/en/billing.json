@@ -1,0 +1,211 @@
+{
+  "section": {
+    "title": "Subscription",
+    "subtitle": "Manage your organization's subscription and billing",
+    "noInfo": "No organization billing information available.",
+    "billingTitle": "Billing"
+  },
+  "header": {
+    "title": "Billing & usage",
+    "subtitle": "Manage your subscription and payment details",
+    "backAriaLabel": "Back to subscription"
+  },
+  "errors": {
+    "loadTitle": "Unable to load billing information",
+    "loadDescription": "Please try again later or contact support."
+  },
+  "recentPayments": {
+    "title": "Recent payments",
+    "subtitle": "Your latest transactions",
+    "defaultDescription": "Subscription payment"
+  },
+  "paymentStatus": {
+    "succeeded": "Succeeded",
+    "failed": "Failed",
+    "canceled": "Canceled",
+    "pending": "Pending",
+    "requiresAction": "Action required"
+  },
+  "plans": {
+    "chooseYourPlan": "Choose Your Plan",
+    "subtitle": "Scale your RabbitMQ monitoring with plans designed for teams of all sizes.",
+    "pricingTitle": "Simple, transparent pricing",
+    "currentPlan": "Current Plan",
+    "mostPopular": "Most popular",
+    "startFree": "Start free",
+    "getStarted": "Get started",
+    "save20": "Save 20%",
+    "backToPlans": "Back to Plans",
+    "pricing": {
+      "free": "Free"
+    },
+    "limits": {
+      "unlimited": "Unlimited",
+      "upTo": "Up to {{count}}"
+    },
+    "highlights": {
+      "liveMonitoring": "Live Monitoring",
+      "liveMonitoringDesc": "Monitor your RabbitMQ servers with per-second precision",
+      "smartAnalytics": "Smart Analytics",
+      "smartAnalyticsDesc": "Insights and memory optimization tips",
+      "enterpriseSecurity": "Enterprise Security",
+      "enterpriseSecurityDesc": "SOC 2 compliant with enterprise-grade encryption",
+      "support247": "24/7 Support",
+      "support247Desc": "Expert support when you need it most"
+    },
+    "billingToggle": {
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "billedYearly": "Billed yearly",
+      "billedMonthly": "Billed monthly",
+      "label": "Toggle billing period"
+    },
+    "period": {
+      "month": "month",
+      "year": "year"
+    },
+    "features": {
+      "coreFeatures": "Core Features",
+      "rabbitMQServers": "RabbitMQ Servers",
+      "rabbitMQVersionSupport": "RabbitMQ version support",
+      "soon": "Soon",
+      "workspaces": "Workspaces",
+      "teamMembers": "Team Members",
+      "advancedAnalytics": "Advanced analytics",
+      "queueManagement": "Queue, Exchange, VHost & User management",
+      "alertsWebhooks": "Alerts & webhooks",
+      "topologyVisualization": "Topology visualization",
+      "roleBasedAccess": "Role-based access",
+      "securityCompatibility": "Security & Compatibility",
+      "ssoSamlOidc": "SSO, SAML & OIDC",
+      "soc2Compliance": "SOC 2 compliance",
+      "support": "Support",
+      "communitySupport": "Community support",
+      "prioritySupport": "Priority support",
+      "ltsVersions": "LTS versions 3.x and 4.x",
+      "allVersions": "All versions 3.x and 4.x"
+    }
+  },
+  "paymentSuccess": {
+    "title": "Payment Successful!",
+    "description": "Your payment has been processed successfully.",
+    "planActivated": "{{plan}} plan activated",
+    "welcomeMessage": "Welcome to your new plan! Enjoy all the features.",
+    "exploreDashboard": "Explore dashboard",
+    "manageSubscription": "Manage subscription",
+    "needHelp": "Need help? Contact our support team."
+  },
+  "paymentCancelled": {
+    "title": "Payment Cancelled",
+    "description": "Your payment was cancelled. No charges were made.",
+    "tryAgain": "Try again",
+    "processing": "Processing...",
+    "backToDashboard": "Back to Dashboard"
+  },
+  "upgradeModal": {
+    "licenseRequired": "License Required",
+    "licenseDescription": "To use {{feature}}, activate a license key on the License page.",
+    "activateLicense": "Activate license",
+    "purchase": "Purchase",
+    "loadingPlans": "Loading plans...",
+    "upgradeYourPlan": "Upgrade Your Plan",
+    "upgradeDescription": "To use {{feature}}, you need to upgrade from the {{plan}} plan. This upgrade will apply to all your workspaces.",
+    "upgradeFailed": "Failed to start upgrade process. Please try again.",
+    "mostPopular": "Most Popular",
+    "perMonth": "/month",
+    "unlimitedQueues": "Unlimited queues",
+    "unlimitedServers": "Unlimited servers",
+    "servers": "{{count}} servers",
+    "teamMembers": "{{count}} team members",
+    "unlimitedTeamMembers": "Unlimited team members",
+    "messageSending": "Message sending & queue management",
+    "advancedMetrics": "Advanced metrics & analytics",
+    "prioritySupport": "Priority support",
+    "advancedAlerts": "Advanced alerts & notifications",
+    "processing": "Processing...",
+    "upgradeTo": "Upgrade to {{plan}}"
+  },
+  "trial": {
+    "badge": "Trial",
+    "endsOn": "Trial ends",
+    "noPaymentMethod": "No payment method",
+    "addPaymentMethod": "Add payment method",
+    "trialActive": "Your trial is active",
+    "addPaymentToKeep": "Add a payment method before {{date}} to keep your plan when the trial ends.",
+    "trialActiveWithPayment": "Your trial is active until {{date}}. Your subscription will start automatically when the trial ends.",
+    "cancelTrial": "Cancel Trial",
+    "trialCanceled": "Trial canceled",
+    "trialEndsOnDate": "Your trial will end on {{date}}. You will be downgraded to the Free plan.",
+    "started": "Trial started",
+    "endsDate": "Trial ends {{date}}",
+    "daysRemaining": "{{count}} days remaining",
+    "daysRemaining_one": "{{count}} day remaining in trial",
+    "daysRemaining_other": "{{count}} days remaining in trial",
+    "daysLeft": "{{count}} days left",
+    "daysLeft_one": "{{count}} day left",
+    "daysLeft_other": "{{count}} days left"
+  },
+  "currentPlan": {
+    "noSubscription": "No subscription required",
+    "billingInterval": "{{interval}} billing",
+    "perInterval": "per {{interval}}",
+    "currentPeriod": "Current Period",
+    "nextBilling": "Next Billing",
+    "paymentMethod": "Payment Method",
+    "planName": "{{plan}} Plan",
+    "activeSubscription": "Your active subscription",
+    "changePaymentMethod": "Change payment method",
+    "toDate": "to {{date}}",
+    "canceling": "Canceling",
+    "addPaymentMethodCta": "Add payment method"
+  },
+  "status": {
+    "active": "Active"
+  },
+  "subscriptionManagement": {
+    "title": "Subscription Management",
+    "description": "Manage your plan, billing cycle, and subscription settings for all your workspaces",
+    "renewPlan": "Renew {{plan}} Plan",
+    "reactivate": "Reactivate",
+    "cancelSubscription": "Cancel subscription",
+    "endsSoon": "Ends soon",
+    "endsOn": "Ends {{date}}",
+    "readyToComeBack": "Ready to come back?",
+    "renewDescription": "Your {{plan}} plan was canceled, but you can restart it anytime with all the same features."
+  },
+  "error": {
+    "workspaceIdRequired": "Workspace ID is required",
+    "failedToOpenBillingPortal": "Failed to open billing portal."
+  },
+  "plansSummary": {
+    "whatsIncluded": "What's included:",
+    "planFeatures": "Plan Features:",
+    "addQueues": "Add Queues",
+    "addExchanges": "Add Exchanges",
+    "addVHosts": "Add VHosts",
+    "addUsers": "Add Users",
+    "prioritySupport": "Priority",
+    "communitySupport": "Community",
+    "support": "Support",
+    "unlockPremium": "Unlock premium features",
+    "unlockPremiumDesc": "Activate a license to unlock alerting, Slack & webhook integrations, and more",
+    "activateLicense": "Activate license",
+    "purchase": "Purchase",
+    "readyToGrow": "Ready to grow? Upgrade to {{plan}}",
+    "unlockMore": "Unlock more features and higher limits",
+    "youllGet": "You'll get:",
+    "processing": "Processing...",
+    "upgradeNow": "Upgrade now",
+    "billingUsage": "Billing & Usage",
+    "manageSubscription": "View recent payments, manage subscription, and cancellation",
+    "manage": "Manage",
+    "comparePlans": "Compare plans",
+    "seeAllOptions": "See all available options",
+    "compare": "Compare",
+    "license": "License",
+    "manageLicense": "Activate or manage your license",
+    "preferSelfHost": "Prefer to self-host?",
+    "preferSelfHostDesc": "Deploy Qarote on your own infrastructure with a license key.",
+    "learnMore": "Learn more"
+  }
+}

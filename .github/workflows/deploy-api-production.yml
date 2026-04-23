@@ -1,0 +1,189 @@
+name: Deploy Backend to Production
+
+env:
+  APP_NAME: qarote
+  # Dummy URL for prisma generate (postinstall) — no actual DB connection is made
+  DATABASE_URL: postgresql://localhost:5432/dummy
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_production:
+        description: 'Type "DEPLOY" to confirm production deployment'
+        required: true
+        default: ""
+
+jobs:
+  quality-checks:
+    name: Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v6
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "pnpm"
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🔍 Check package version consistency
+        run: pnpm run syncpack:check
+
+      - name: 🔍 Type Check
+        run: pnpm turbo run type-check --filter=qarote-api
+
+      - name: 🔍 Knip (unused code check)
+        run: pnpm run knip
+
+      - name: 🧹 Lint
+        working-directory: apps/api
+        run: pnpm run lint
+
+      - name: 💅 Format Check
+        working-directory: apps/api
+        run: pnpm run format
+
+      - name: 🧪 Run Tests
+        working-directory: apps/api
+        run: pnpm run test:run
+
+  deploy-backend:
+    name: Deploy Backend to Production
+    runs-on: ubuntu-latest
+    environment: production
+    needs: quality-checks
+    if: github.event.inputs.confirm_production == 'DEPLOY'
+
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: 🔑 Validate Dokku SSH key
+        run: |
+          if [ -z "${{ secrets.DOKKU_SSH_PRIVATE_KEY }}" ]; then
+            echo "❌ Error: DOKKU_SSH_PRIVATE_KEY is empty or not set" >&2
+            exit 1
+          fi
+          echo "✓ Dokku SSH key is present"
+
+      - name: 🔑 Setup SSH
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
+
+      - name: 🏗️ Add SSH known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ vars.DOKKU_HOST_APP1 }} >> ~/.ssh/known_hosts
+
+      - name: 🏗️ Ensure app exists
+        run: |
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} apps:exists ${{ env.APP_NAME }}
+
+      - name: 🔍 Verify GitHub Variables (non-sensitive)
+        run: |
+          echo "📋 Verifying GitHub Variables that will be set:"
+          echo "DEPLOYMENT_MODE: ${{ vars.DEPLOYMENT_MODE }}"
+          echo "DOMAIN_BACKEND: ${{ vars.DOMAIN_BACKEND }}"
+          echo "DOMAIN_FRONTEND: ${{ vars.DOMAIN_FRONTEND }}"
+          echo "CORS_ORIGIN: ${{ vars.CORS_ORIGIN }}"
+          echo "FRONTEND_URL: ${{ vars.FRONTEND_URL }}"
+          echo "FROM_EMAIL: ${{ vars.FROM_EMAIL }}"
+          echo "LOG_LEVEL: ${{ vars.LOG_LEVEL }}"
+          echo "NODE_ENV: ${{ vars.NODE_ENV }}"
+          echo "PORT: ${{ vars.PORT }}"
+          echo "HOST: ${{ vars.HOST }}"
+          echo "SENTRY_DSN: ${{ vars.SENTRY_DSN }}"
+          echo "SENTRY_ENABLED: ${{ vars.SENTRY_ENABLED }}"
+          echo "STRIPE_DEVELOPER_MONTHLY_PRICE_ID: ${{ vars.STRIPE_DEVELOPER_MONTHLY_PRICE_ID }}"
+          echo "STRIPE_DEVELOPER_YEARLY_PRICE_ID: ${{ vars.STRIPE_DEVELOPER_YEARLY_PRICE_ID }}"
+          echo "STRIPE_ENTERPRISE_MONTHLY_PRICE_ID: ${{ vars.STRIPE_ENTERPRISE_MONTHLY_PRICE_ID }}"
+          echo "STRIPE_ENTERPRISE_YEARLY_PRICE_ID: ${{ vars.STRIPE_ENTERPRISE_YEARLY_PRICE_ID }}"
+          echo "NOTION_DATABASE_ID: ${{ vars.NOTION_DATABASE_ID }}"
+          echo "NOTION_SYNC_ENABLED: ${{ vars.NOTION_SYNC_ENABLED }}"
+          echo "ENABLE_NOTION: ${{ vars.ENABLE_NOTION }}"
+          echo "API_URL: ${{ vars.API_URL }}"
+          echo ""
+          echo "⚠️  If any values above are incorrect, update them in GitHub Repository Settings > Secrets and variables > Actions > Variables tab"
+
+      # Configure all environment variables
+      - name: 📝 Configure Environment Variables
+        run: |
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} config:set ${{ env.APP_NAME }} \
+            DEPLOYMENT_MODE=${{ vars.DEPLOYMENT_MODE }} \
+            DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            DOMAIN_BACKEND=${{ vars.DOMAIN_BACKEND }} \
+            DOMAIN_FRONTEND=${{ vars.DOMAIN_FRONTEND }} \
+            PORT=${{ vars.PORT }} \
+            HOST=${{ vars.HOST }} \
+            NODE_ENV=${{ vars.NODE_ENV }} \
+            ENVIRONMENT=production \
+            LOG_LEVEL=${{ vars.LOG_LEVEL }} \
+            JWT_SECRET=${{ secrets.JWT_SECRET }} \
+            ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }} \
+            CORS_ORIGIN=${{ vars.CORS_ORIGIN }} \
+            FRONTEND_URL=${{ vars.FRONTEND_URL }} \
+            PORTAL_FRONTEND_URL=${{ vars.PORTAL_FRONTEND_URL }} \
+            RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} \
+            STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }} \
+            STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }} \
+            STRIPE_DEVELOPER_MONTHLY_PRICE_ID=${{ vars.STRIPE_DEVELOPER_MONTHLY_PRICE_ID }} \
+            STRIPE_DEVELOPER_YEARLY_PRICE_ID=${{ vars.STRIPE_DEVELOPER_YEARLY_PRICE_ID }} \
+            STRIPE_ENTERPRISE_MONTHLY_PRICE_ID=${{ vars.STRIPE_ENTERPRISE_MONTHLY_PRICE_ID }} \
+            STRIPE_ENTERPRISE_YEARLY_PRICE_ID=${{ vars.STRIPE_ENTERPRISE_YEARLY_PRICE_ID }} \
+            SENTRY_DSN=${{ vars.SENTRY_DSN }} \
+            SENTRY_ENABLED=${{ vars.SENTRY_ENABLED }} \
+            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
+            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
+            NOTION_API_KEY=${{ secrets.NOTION_API_KEY }} \
+            NOTION_DATABASE_ID=${{ vars.NOTION_DATABASE_ID }} \
+            NOTION_SYNC_ENABLED=${{ vars.NOTION_SYNC_ENABLED }} \
+            ENABLE_NOTION=${{ vars.ENABLE_NOTION }} \
+            API_URL=${{ vars.API_URL }} \
+            DATABASE_POOL_SIZE=${{ vars.DATABASE_POOL_SIZE }}
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} "config:set --no-restart ${{ env.APP_NAME }} FROM_EMAIL='${{ vars.FROM_EMAIL }}'"
+
+      - name: 🔍 Debug Dokku Environment
+        run: |
+          echo "Checking environment variables in Dokku..."
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} config:show ${{ env.APP_NAME }}
+
+      # Deploy the application
+      - name: 🐳 Deploy to Dokku
+        uses: dokku/github-action@master
+        with:
+          git_remote_url: "ssh://dokku@${{ vars.DOKKU_HOST_APP1 }}:22/${{ env.APP_NAME }}"
+          ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
+          git_push_flags: "--force"
+
+      - name: 🔍 Debug Dokku Environment
+        run: |
+          echo "Checking environment variables in Dokku..."
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} config:show ${{ env.APP_NAME }}
+          echo "-----------------------------------------------"
+          echo "Checking if app is running..."
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:report ${{ env.APP_NAME }}
+
+      - name: 🩺 Verify health endpoints
+        run: |
+          echo "Waiting for deployment to stabilize..."
+          sleep 30
+          echo "Testing health endpoint..."
+          curl -sSf "https://${{ vars.DOMAIN_BACKEND }}/health" || echo "Health check not yet available, deployment may still be in progress"
+
+      - name: ✅ Deployment complete
+        run: |
+          echo "🎉 Deployment to production completed successfully!"
+          echo "🔍 Backend URL: https://${{ vars.DOMAIN_BACKEND }}"
+          echo "🔍 Health check: https://${{ vars.DOMAIN_BACKEND }}/health"
+          echo "📝 Commit: ${{ github.sha }}"

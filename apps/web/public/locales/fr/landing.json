@@ -1,0 +1,133 @@
+{
+  "hero": {
+    "titleBefore": "Le moyen le plus simple de monitorer vos serveurs ",
+    "titleHighlight": "RabbitMQ",
+    "titleAfter": "",
+    "subtitle": "Qarote fournit une interface claire et intuitive pour surveiller, analyser et gérer vos serveurs RabbitMQ sans effort.",
+    "noCreditCard": "Gratuit et open source • Essayez les fonctions Pro pendant 14 jours"
+  },
+  "cta": {
+    "getStartedForFree": "Commencer gratuitement",
+    "howItWorks": "Comment ça marche",
+    "startMonitoringForFree": "Commencer le monitoring gratuitement",
+    "selfHostedSolution": "Solution auto-hébergée",
+    "contactUs": "Nous contacter",
+    "tryLiveDemo": "Essayer la démo en ligne",
+    "seeItInAction": "Voyez par vous-même —",
+    "tryTheLiveDemo": "essayez la démo en ligne",
+    "opensInNewTab": "(s'ouvre dans un nouvel onglet)"
+  },
+  "comparison": {
+    "title": "Gérer des serveurs RabbitMQ",
+    "titleLine2": "ne devrait pas être aussi pénible",
+    "traditional": {
+      "title": "Interfaces de gestion traditionnelles",
+      "point1": "Une interface obsolète qui vous ralentit",
+      "point2": "Aucune vue unifiée entre serveurs et environnements",
+      "point3": "Pas d'alertes fiables et exploitables",
+      "point4": "Des tableaux de bord et scripts bricolés de toutes parts"
+    },
+    "qarote": {
+      "title": "Qarote",
+      "point1": "Une interface moderne, claire et conçue pour la rapidité",
+      "point2": "Un tableau de bord unifié pour tous vos serveurs et environnements",
+      "point3": "Des alertes intelligentes et exploitables qui détectent les problèmes en amont",
+      "point4": "Un monitoring clé en main, sans scripts ni maintenance"
+    },
+    "compareWith": "Comparer Qarote avec :",
+    "messagesPerSec": "Messages/sec",
+    "activeQueues": "Files actives",
+    "allSystemsOperational": "Tous les systèmes sont opérationnels"
+  },
+  "features": {
+    "title": "Tout ce qui compte vraiment.",
+    "titleLine2": "Supervisé au même endroit.",
+    "liveQueueMonitoring": {
+      "title": "Monitoring des files en temps réel",
+      "description": "Surveillez la profondeur des files, le débit de messages et le nombre de consommateurs en temps réel. Suivez l'accumulation des messages et les performances de traitement."
+    },
+    "smartAlertingSystem": {
+      "title": "Système d'alertes intelligent",
+      "description": "Des alertes intelligentes pour les retards de files, l'utilisation mémoire et les problèmes de performance. Des seuils personnalisables avec des notifications par niveau de sévérité."
+    },
+    "queueManagement": {
+      "title": "Gestion des files d'attente",
+      "description": "Mettez en pause, reprenez et supprimez des files en un clic. Créez des échanges, liez des files et gérez les clés de routage via une interface intuitive."
+    },
+    "performanceAnalytics": {
+      "title": "Analyse des performances",
+      "description": "Des métriques détaillées sur l'utilisation mémoire, l'espace disque, les descripteurs de fichiers et le débit de messages. Visualisez les tendances avec de superbes graphiques."
+    },
+    "multiServerSupport": {
+      "title": "Support multi-serveurs",
+      "description": "Connectez-vous à plusieurs clusters RabbitMQ et passez de l'un à l'autre en toute fluidité. Support de différents environnements et configurations."
+    },
+    "messagePublishing": {
+      "title": "Publication de messages",
+      "description": "Testez et déboguez vos applications en publiant des messages directement dans les files et les échanges. Idéal pour le développement et le dépannage."
+    }
+  },
+  "enterprise": {
+    "title": "Solution entreprise auto-hébergée",
+    "description": "Pour les organisations nécessitant un déploiement sur site, un contrôle total des données et des fonctionnalités de niveau entreprise. Déployez Qarote dans votre propre infrastructure avec un accès complet aux fonctionnalités avancées.",
+    "unlimitedServers": "Serveurs illimités",
+    "unlimitedServersDesc": "Surveillez autant de serveurs RabbitMQ que nécessaire",
+    "advancedSecurity": "Sécurité avancée",
+    "advancedSecurityDesc": "Contrôle total de vos données et de votre déploiement"
+  },
+  "connection": {
+    "title": "Connectez facilement vos serveurs RabbitMQ",
+    "subtitle": "Ne changez rien à la façon dont vos serveurs RabbitMQ fonctionnent, Qarote est spécialement conçu pour ce broker de messages.",
+    "step1": {
+      "title": "Inscrivez-vous",
+      "description": "Créez votre compte en quelques secondes. Aucune carte de crédit requise. Commencez à surveiller votre infrastructure RabbitMQ immédiatement.",
+      "createAccount": "Créez votre compte Qarote",
+      "transformMonitoring": "Transformez votre façon de surveiller RabbitMQ.",
+      "continueWithEmail": "Continuer avec un e-mail",
+      "or": "ou",
+      "continueWithGoogle": "Continuer avec Google"
+    },
+    "step2": {
+      "title": "Ajoutez vos serveurs",
+      "description": "Connectez vos serveurs RabbitMQ avec une simple connexion. Support de multiples environnements et clusters.",
+      "productionServer": "Serveur de production",
+      "stagingServer": "Serveur de pré-production",
+      "developmentServer": "Serveur de développement",
+      "nodes": "3 nœuds"
+    },
+    "step3": {
+      "title": "Surveillez et collaborez",
+      "description": "Obtenez des informations en temps réel sur vos files, échanges et flux de messages. Surveillez avec votre équipe et configurez des alertes.",
+      "messagesPerSec": "Messages/sec",
+      "queues": "Files",
+      "queueDepths": "Profondeur des files",
+      "allSystemsOperational": "Tous les systèmes sont opérationnels"
+    }
+  },
+  "finalCta": {
+    "title": "Prêt à monitorer vos serveurs RabbitMQ ?",
+    "subtitle": "Commencez à surveiller vos serveurs RabbitMQ gratuitement dès aujourd'hui.",
+    "noCreditCard": "Aucune carte de crédit requise",
+    "openSource": "Open source",
+    "selfHostable": "Self-hostable",
+    "freeForever": "Free forever (self-hosted)"
+  },
+  "footer": {
+    "about": "À propos",
+    "privacyPolicy": "Politique de confidentialité",
+    "termsOfService": "Conditions d'utilisation",
+    "contact": "Contact",
+    "vsDatadog": "Qarote vs Datadog",
+    "vsGrafana": "Qarote vs Grafana + Prometheus"
+  },
+  "faqSection": {
+    "title": "Questions fréquentes",
+    "subtitle": "Tout ce que vous devez savoir sur Qarote",
+    "stillHaveQuestions": "Vous avez encore des questions ?",
+    "stillHaveQuestionsDesc": "Vous ne trouvez pas la réponse que vous cherchez ? N'hésitez pas à contacter notre équipe."
+  },
+  "seo": {
+    "title": "Qarote - Tableau de bord de monitoring RabbitMQ",
+    "description": "Surveillez vos files RabbitMQ, suivez les performances et gérez votre broker de messages avec Qarote. Monitoring gratuit avec alertes et support multi-serveurs."
+  }
+}

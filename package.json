@@ -1,0 +1,112 @@
+{
+  "name": "qarote",
+  "description": "RabbitMQ Dashboard Monitoring Tool",
+  "private": true,
+  "author": "La  Griffe",
+  "license": "MIT",
+  "keywords": [
+    "rabbitmq",
+    "dashboard",
+    "monitoring"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LaGriffe/rabbit-dash-board.git"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "heroku-prebuild": "if ! command -v corepack > /dev/null 2>&1; then npm install --global corepack@latest || true; fi && (corepack enable pnpm || corepack enable || true)",
+    "dev": "turbo run dev",
+    "build": "turbo run build --filter=qarote-api",
+    "build:api": "turbo run build --filter=qarote-api",
+    "build:app": "turbo run build --filter=qarote-app",
+    "build:web": "turbo run build --filter=qarote-web",
+    "build:portal": "turbo run build --filter=qarote-portal",
+    "build:community": "turbo run build --filter=qarote-api --filter=qarote-app",
+    "build:enterprise": "turbo run build --filter=qarote-api --filter=qarote-app",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "format": "turbo run format",
+    "dev:app": "turbo run dev --filter=qarote-app",
+    "dev:api": "turbo run dev --filter=qarote-api",
+    "dev:api:alert": "turbo run dev:alert --filter=qarote-api",
+    "dev:web": "turbo run dev --filter=qarote-web",
+    "dev:portal": "turbo run dev --filter=qarote-portal",
+    "prepare": "husky || true",
+    "syncpack:check": "syncpack list-mismatches",
+    "syncpack:fix": "syncpack fix-mismatches",
+    "act:list": "act -l",
+    "act:test:api": "act -j quality-checks -W .github/workflows/deploy-api-staging.yml",
+    "act:test:api:deploy": "act -j deploy-backend -W .github/workflows/deploy-api-staging.yml --env APP_NAME=qarote-staging",
+    "test:corepack": "bash scripts/test-corepack-buildpack.sh",
+    "test:dokku-build": "bash scripts/test-dokku-build.sh",
+    "act:test:api:prod": "act workflow_dispatch -W .github/workflows/deploy-api-production.yml --input confirm_production=DEPLOY",
+    "act:test:frontend": "act -j quality-checks -W .github/workflows/deploy-frontend-staging.yml",
+    "act:test:frontend:prod": "act workflow_dispatch -W .github/workflows/deploy-frontend-production.yml --input confirm_production=DEPLOY",
+    "act:test:landing": "act -j quality-checks -W .github/workflows/deploy-landing-staging.yml",
+    "act:test:landing:prod": "act workflow_dispatch -W .github/workflows/deploy-landing-production.yml --input confirm_production=DEPLOY",
+    "act:test:portal": "act -j quality-checks -W .github/workflows/deploy-portal-staging.yml",
+    "act:test:portal:prod": "act workflow_dispatch -W .github/workflows/deploy-portal-production.yml --input confirm_production=DEPLOY",
+    "act:test:worker": "act -j quality-checks -W .github/workflows/deploy-worker-staging.yml",
+    "act:test:worker:prod": "act workflow_dispatch -W .github/workflows/deploy-worker-production.yml --input confirm_production=DEPLOY",
+    "test:smtp": "pnpm --filter=qarote-api test:smtp",
+    "test:smtp:ethereal": "pnpm --filter=qarote-api test:smtp:ethereal",
+    "update:selfhosted": "bash scripts/update.sh",
+    "knip": "knip --no-config-hints",
+    "knip:fix": "knip --fix",
+    "validate:i18n": "node scripts/validate-i18n-keys.mjs",
+    "test:e2e": "pnpm --filter=qarote-e2e test",
+    "test:e2e:selfhosted": "pnpm --filter=qarote-e2e test:selfhosted",
+    "test:e2e:cloud": "pnpm --filter=qarote-e2e test:cloud",
+    "test:e2e:selfhosted-licensed": "pnpm --filter=qarote-e2e test:selfhosted-licensed",
+    "release": "release-it",
+    "release:dry": "release-it --dry-run"
+  },
+  "lint-staged": {
+    "apps/api/**/*.{ts,tsx}": [
+      "bash -c 'cd apps/api && pnpm exec eslint --fix \"$@\"' _",
+      "bash -c 'cd apps/api && pnpm exec prettier --write \"$@\"' _"
+    ],
+    "apps/app/**/*.{ts,tsx,js,jsx}": [
+      "bash -c 'cd apps/app && pnpm exec eslint --fix --max-warnings=-1 \"$@\"' _",
+      "bash -c 'cd apps/app && pnpm exec prettier --write \"$@\"' _"
+    ],
+    "apps/web/**/*.{ts,tsx,js,jsx}": [
+      "bash -c 'cd apps/web && pnpm exec eslint --fix --max-warnings=-1 \"$@\"' _",
+      "bash -c 'cd apps/web && pnpm exec prettier --write \"$@\"' _"
+    ],
+    "apps/portal/**/*.{ts,tsx,js,jsx}": [
+      "bash -c 'cd apps/portal && pnpm exec eslint --fix --max-warnings=-1 \"$@\"' _",
+      "bash -c 'cd apps/portal && pnpm exec prettier --write \"$@\"' _"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.4.1",
+    "@commitlint/config-conventional": "^20.4.1",
+    "@release-it/bumper": "^7.0.5",
+    "@release-it/conventional-changelog": "^10.0.5",
+    "husky": "^9.1.7",
+    "knip": "^5.85.0",
+    "lint-staged": "^16.3.2",
+    "release-it": "^19.2.4",
+    "syncpack": "^13.0.4",
+    "turbo": "^2.8.13",
+    "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "vite": "7.2.7",
+    "next": "16.0.10",
+    "@react-email/preview-server": {
+      "next": "16.0.10"
+    }
+  },
+  "pnpm": {
+    "overrides": {
+      "esbuild@<=0.24.2": ">=0.25.0"
+    }
+  }
+}

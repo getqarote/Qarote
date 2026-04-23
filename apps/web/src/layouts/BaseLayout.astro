@@ -1,0 +1,288 @@
+---
+import { SUPPORTED_LOCALES } from "@qarote/i18n";
+
+import "../styles/index.css";
+
+interface Props {
+  title: string;
+  description: string;
+  locale?: string;
+  canonicalPath?: string;
+  image?: string;
+}
+
+const {
+  title,
+  description,
+  locale = "en",
+  canonicalPath = "/",
+  image = "https://qarote.io/images/qarote_card.jpg",
+} = Astro.props;
+
+const baseUrl = "https://qarote.io";
+const canonicalUrl =
+  locale === "en"
+    ? `${baseUrl}${canonicalPath}`
+    : `${baseUrl}/${locale}${canonicalPath}`;
+const fullTitle = title.includes("Qarote") ? title : `${title} | Qarote`;
+const ogLocaleMap: Record<string, string> = {
+  en: "en_US",
+  fr: "fr_FR",
+  es: "es_ES",
+  zh: "zh_CN",
+};
+const ogLocale = ogLocaleMap[locale] ?? "en_US";
+
+// BreadcrumbList schema
+const breadcrumbs = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: `${baseUrl}/`,
+    },
+    ...(canonicalPath !== "/"
+      ? [
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: title.replace(/ \| Qarote$|- Modern RabbitMQ.*$| [—–].*$|:.*$/, ""),
+            item: canonicalUrl,
+          },
+        ]
+      : []),
+  ],
+};
+
+// SoftwareApplication schema
+const softwareApp = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "@id": `${baseUrl}/#software`,
+  name: "Qarote",
+  url: `${baseUrl}/`,
+  description:
+    "Modern RabbitMQ monitoring and management dashboard for developers. Monitor queues, track performance, and manage your message broker with a clean UI. Cleaner than Management Plugin, simpler than Prometheus.",
+  applicationCategory: "DeveloperApplication",
+  operatingSystem: "Any",
+  author: { "@id": `${baseUrl}/#organization` },
+  offers: [
+    {
+      "@type": "Offer",
+      name: "Community",
+      price: "0",
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+      description: "Free forever. 1 server, 1 workspace, 1 member.",
+    },
+    {
+      "@type": "Offer",
+      name: "Developer",
+      price: "29",
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+      priceSpecification: {
+        "@type": "UnitPriceSpecification",
+        price: "29",
+        priceCurrency: "USD",
+        billingDuration: "P1M",
+      },
+    },
+    {
+      "@type": "Offer",
+      name: "Enterprise",
+      price: "99",
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+      priceSpecification: {
+        "@type": "UnitPriceSpecification",
+        price: "99",
+        priceCurrency: "USD",
+        billingDuration: "P1M",
+      },
+    },
+  ],
+  screenshot: `${baseUrl}/images/qarote_card.jpg`,
+  datePublished: "2025-06-05",
+  dateModified: new Date().toISOString().split("T")[0],
+};
+
+// Organization schema
+const organization = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": `${baseUrl}/#organization`,
+  name: "Qarote",
+  url: `${baseUrl}/`,
+  logo: {
+    "@type": "ImageObject",
+    url: `${baseUrl}/images/new_icon.png`,
+    width: 512,
+    height: 512,
+  },
+  sameAs: [
+    "https://github.com/getqarote/Qarote",
+    "https://x.com/Qarote",
+    "https://www.youtube.com/@Qarote",
+    "https://www.linkedin.com/company/qarote/",
+    "https://discord.gg/GwHRbGwyUG",
+  ],
+};
+
+// WebSite schema
+const website = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": `${baseUrl}/#website`,
+  name: "Qarote",
+  url: `${baseUrl}/`,
+  description: "Modern RabbitMQ monitoring and management dashboard",
+  publisher: { "@id": `${baseUrl}/#organization` },
+};
+
+// WebPage schema
+const webpage = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "@id": `${canonicalUrl}#webpage`,
+  url: canonicalUrl,
+  name: fullTitle,
+  description,
+  isPartOf: { "@id": `${baseUrl}/#website` },
+  about: { "@id": `${baseUrl}/#software` },
+  publisher: { "@id": `${baseUrl}/#organization` },
+  inLanguage: locale,
+  dateModified: new Date().toISOString().split("T")[0],
+};
+
+const isProd = import.meta.env.PROD;
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Preconnect to critical third-party origins -->
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+    <!-- Preload LCP hero image (homepage only) -->
+    {canonicalPath === "/" && (
+      <link rel="preload" as="image" type="image/webp" href="/images/dashboard.webp" />
+    )}
+
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content="Qarote Team" />
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow" />
+
+    <!-- Favicon and App Manifest -->
+    <link rel="icon" type="image/svg+xml" href="/images/new_icon.svg" />
+    <link rel="icon" type="image/png" sizes="256x256" href="/favicon-256.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+    <link rel="apple-touch-icon" href="/favicon-256.png" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={image} />
+    <meta property="og:image:secure_url" content={image} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:alt" content={title} />
+    <meta property="og:site_name" content="Qarote" />
+    <meta property="og:locale" content={ogLocale} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@Qarote" />
+    <meta name="twitter:creator" content="@Qarote" />
+    <meta name="twitter:url" content={canonicalUrl} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={image} />
+
+    <!-- Theme Color for Mobile Browsers -->
+    <meta name="theme-color" content="#e97120" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Hreflang -->
+    {
+      SUPPORTED_LOCALES.map((l) => (
+        <link
+          rel="alternate"
+          hreflang={l}
+          href={
+            l === "en"
+              ? `${baseUrl}${canonicalPath}`
+              : `${baseUrl}/${l}${canonicalPath}`
+          }
+        />
+      ))
+    }
+    <link rel="alternate" hreflang="x-default" href={`${baseUrl}${canonicalPath}`} />
+
+    <!-- Structured Data / JSON-LD -->
+    <script type="application/ld+json" set:html={JSON.stringify(softwareApp)} />
+    <script type="application/ld+json" set:html={JSON.stringify(organization)} />
+    <script type="application/ld+json" set:html={JSON.stringify(website)} />
+    <script type="application/ld+json" set:html={JSON.stringify(webpage)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbs)} />
+
+    <!-- Page-specific head content -->
+    <slot name="head" />
+
+    <!-- Google Tag Manager (production only) -->
+    {
+      isProd && (
+        <script is:inline>
+          (function () {
+            var w = window,
+              d = document,
+              l = "dataLayer",
+              i = "GTM-52CRNTFK";
+            w[l] = w[l] || [];
+            w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+            var f = d.getElementsByTagName("script")[0],
+              j = d.createElement("script");
+            j.async = true;
+            j.src = "https://www.googletagmanager.com/gtm.js?id=" + i;
+            f.parentNode.insertBefore(j, f);
+          })();
+        </script>
+      )
+    }
+  </head>
+  <body>
+    {
+      isProd && (
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-52CRNTFK"
+            height="0"
+            width="0"
+            style="display:none;visibility:hidden"
+          />
+        </noscript>
+      )
+    }
+    <slot />
+  </body>
+</html>

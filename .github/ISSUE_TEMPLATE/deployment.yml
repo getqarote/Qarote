@@ -1,0 +1,115 @@
+name: ⚙️ Deployment/Configuration Issue
+description: Issues related to deployment, configuration, or setup
+title: "[Deployment]: "
+labels: ["configuration", "deployment", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a deployment or configuration issue! Please fill out the form below.
+
+  - type: dropdown
+    id: edition
+    attributes:
+      label: Edition
+      description: Which edition are you using?
+      options:
+        - Community Edition (Open Source)
+        - Enterprise Edition (Licensed)
+        - Cloud/SaaS
+    validations:
+      required: true
+
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Deployment Method
+      description: How are you trying to deploy Qarote?
+      options:
+        - Dokku
+        - Docker Compose
+        - Kubernetes
+        - Manual/Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue
+    attributes:
+      label: Issue Description
+      description: Describe the deployment or configuration issue you're experiencing
+      placeholder: What problem are you encountering?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Steps you took that led to this issue
+      placeholder: |
+        1. Ran command '...'
+        2. Set environment variable '...'
+        3. Tried to start service '...'
+        4. Encountered error '...'
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Your deployment environment details
+      placeholder: |
+        - OS: [e.g. Ubuntu 22.04, macOS 14.0]
+        - Deployment method: [Dokku, Docker Compose, etc.]
+        - Node.js version: [e.g. 24.0.0]
+        - Qarote version: [e.g. 1.0.0]
+        - PostgreSQL version: [e.g. 15.0]
+        - Docker version (if applicable): [e.g. 24.0.0]
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration
+      description: Relevant configuration files or environment variables (remove sensitive data!)
+      placeholder: |
+        Paste relevant configuration here (docker-compose.yml, .env, etc.)
+        **Important**: Remove any secrets, passwords, or API keys!
+      render: yaml
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs/Error Messages
+      description: Relevant logs or error messages
+      placeholder: Paste logs or error messages here
+      render: shell
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should happen?
+      placeholder: Describe what you expected to happen
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other context about the problem
+      placeholder: Additional information that might be helpful
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      options:
+        - label: I have removed all sensitive information (passwords, API keys, etc.) from my configuration
+          required: true
+        - label: I have searched existing issues to ensure this hasn't been reported
+          required: true
+        - label: I have checked the [deployment documentation](https://github.com/your-org/qarote/tree/main/docs)
+          required: false

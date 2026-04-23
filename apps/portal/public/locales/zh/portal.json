@@ -1,0 +1,107 @@
+{
+  "layout": {
+    "title": "Qarote 门户",
+    "licenses": "许可证",
+    "account": "账户",
+
+    "logout": "退出登录"
+  },
+  "footer": {
+    "privacyPolicy": "隐私政策",
+    "termsOfService": "服务条款"
+  },
+  "licenseManagement": {
+    "title": "我的许可证",
+    "description": "管理您的 Qarote 自托管许可证",
+    "purchaseNew": "购买新许可证",
+    "noLicenses": "您还没有任何许可证。",
+    "noLicensesHint": "许可证可解锁自托管实例中的高级功能。刚刚购买？可能需要片刻时间才会显示。",
+    "copiedToClipboard": "许可证密钥已复制到剪贴板",
+    "copyLicenseKey": "复制许可证密钥",
+    "copyFailed": "复制失败，请手动选中并复制。",
+    "licenseKey": "许可证密钥",
+    "license": "许可证",
+    "expires": "到期日期：{{date}}",
+    "noExpiration": "永不过期",
+    "purchasedOn": "购买日期：{{date}}",
+    "lastValidated": "上次验证：{{date}}",
+    "licenseOfTier": "{{tier}}许可证",
+    "loadingLicenses": "正在加载许可证...",
+    "errorLoadingLicenses": "无法加载您的许可证。",
+    "retryLoading": "重试",
+    "showFullKey": "显示完整密钥",
+    "hideKey": "隐藏密钥",
+    "activationGuide": "请将此密钥粘贴到您的 Qarote 实例的「设置 → 许可证」中。",
+    "activationDocsLink": "查看激活指南 →",
+    "expiredOn": "此许可证已于 {{date}} 到期。",
+    "expiredNoDate": "此许可证已失效。",
+    "renewLicense": "续费",
+    "purchaseSuccess": "您的许可证已就绪",
+    "purchaseSuccessSubtitle": "复制以下密钥以激活您的 Qarote 实例。",
+    "tier": {
+      "developer": "开发者版",
+      "enterprise": "企业版",
+      "free": "免费版"
+    },
+    "status": {
+      "active": "已激活",
+      "inactive": "未激活"
+    }
+  },
+  "licensePurchase": {
+    "title": "购买许可证",
+    "annualLicensing": "年度许可 · 365 天有效期 · 自托管部署",
+    "purchaseFailed": "购买发起失败，未产生任何费用。",
+    "perYear": "/年",
+    "redirectingToStripe": "正在跳转至 Stripe...",
+    "purchasePlanLabel": "购买{{name}}许可证 — {{price}}/年",
+    "tryAgain": "重试",
+    "or": "或",
+    "contactSupport": "联系支持",
+    "stripeHandoff": "将跳转至 Stripe 完成安全支付 · 许可证密钥将通过邮件发送",
+    "enterpriseContact": "需要自定义条款或有疑问？",
+    "badges": {
+      "selected": "已选择",
+      "soon": "即将推出"
+    },
+    "categories": {
+      "coreFeatures": "核心功能",
+      "security": "安全与兼容性",
+      "support": "支持"
+    },
+    "features": {
+      "servers": "RabbitMQ 服务器",
+      "workspaces": "工作空间",
+      "teamMembers": "团队成员",
+      "advancedAnalytics": "高级分析",
+      "queueManagement": "队列、交换机、虚拟主机与用户管理",
+      "alertsWebhooks": "告警与 Webhook",
+      "topologyVisualization": "拓扑可视化",
+      "roleBasedAccess": "基于角色的访问控制",
+      "ssoSamlOidc": "SSO、SAML 与 OIDC",
+      "soc2": "SOC 2 合规",
+      "rabbitmqVersions": "RabbitMQ 版本支持",
+      "communitySupport": "社区支持",
+      "prioritySupport": "优先支持"
+    },
+    "limits": {
+      "upTo3": "最多 3 个",
+      "unlimited": "无限制",
+      "rabbitmqVersionsValue": "全部 3.x 和 4.x 版本"
+    },
+    "plans": {
+      "developer": {
+        "name": "开发者版"
+      },
+      "enterprise": {
+        "name": "企业版"
+      }
+    }
+  },
+  "codeBlock": {
+    "copied": "已复制",
+    "copy": "复制"
+  },
+  "signupVerifiedExtra": " 您现在可以购买和管理您的许可证。",
+  "goToLicenses": "前往许可证"
+}

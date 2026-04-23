@@ -1,0 +1,175 @@
+import React, { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate, useSearchParams } from "react-router";
+
+import { CheckCircle, CreditCard } from "lucide-react";
+
+import { trackPurchase } from "@/lib/ga";
+import { logger } from "@/lib/logger";
+import { trpc } from "@/lib/trpc/client";
+
+import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
+
+import { useUser } from "@/hooks/ui/useUser";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
+
+const PaymentSuccess: React.FC = () => {
+  const { t } = useTranslation("billing");
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { refetchPlan, planData } = useUser();
+  const { workspace } = useWorkspace();
+  const queryClient = useQueryClient();
+  const utils = trpc.useUtils();
+
+  useEffect(() => {
+    // Refresh workspace data to get updated plan
+    const refreshData = async () => {
+      try {
+        await Promise.all([
+          refetchPlan(),
+          queryClient.invalidateQueries({ queryKey: ["plans"] }),
+          queryClient.invalidateQueries({ queryKey: ["workspace"] }),
+        ]);
+        logger.info("Workspace data refreshed after successful payment");
+      } catch (error) {
+        logger.error("Failed to refresh workspace data:", error);
+      }
+    };
+
+    refreshData();
+  }, [refetchPlan, queryClient]);
+
+  const sessionId = searchParams.get("session_id");
+  const purchaseTrackedRef = useRef(false);
+
+  // Log session ID for debugging but don't display it
+  useEffect(() => {
+    if (sessionId) {
+      logger.info("Payment completed successfully", { sessionId });
+    }
+  }, [sessionId]);
+
+  // Track purchase event with Google Analytics
+  useEffect(() => {
+    const handlePurchaseTracking = async () => {
+      if (!sessionId || purchaseTrackedRef.current) return;
+
+      // Wait for workspace to be available before proceeding
+      if (!workspace?.id) {
+        return;
+      }
+
+      // Mark as tracked immediately to prevent duplicate calls
+      purchaseTrackedRef.current = true;
+
+      try {
+        // Get payment history to find the latest payment
+        const paymentHistory =
+          await utils.payment.history.getPaymentHistory.fetch({
+            limit: 1,
+            offset: 0,
+          });
+
+        if (paymentHistory.payments && paymentHistory.payments.length > 0) {
+          const latestPayment = paymentHistory.payments[0];
+
+          // Track purchase event
+          trackPurchase({
+            transaction_id: sessionId,
+            value: latestPayment.amount / 100, // Convert from cents to currency unit
+            currency: "USD", // Default currency, payment history doesn't include currency
+          });
+
+          logger.info("Purchase event tracked", {
+            transaction_id: sessionId,
+            value: latestPayment.amount / 100,
+            currency: "USD",
+          });
+        } else {
+          // Fallback: use sessionId as transaction_id with default values
+          trackPurchase({
+            transaction_id: sessionId,
+            value: 0, // Will need to be updated if payment details are not available
+            currency: "EUR",
+          });
+
+          logger.warn("Purchase event tracked with fallback values", {
+            transaction_id: sessionId,
+          });
+        }
+      } catch (error) {
+        logger.error("Failed to track purchase event:", error);
+        // Still track with sessionId as fallback
+        trackPurchase({
+          transaction_id: sessionId,
+          value: 0,
+          currency: "EUR",
+        });
+      }
+    };
+
+    if (sessionId) {
+      handlePurchaseTracking();
+    }
+  }, [sessionId, workspace?.id, utils]);
+
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="bg-card border border-border rounded-lg shadow-sm max-w-md w-full p-8 text-center">
+        <div className="mb-6">
+          <CheckCircle className="w-16 h-16 text-success mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-foreground mb-2">
+            {t("paymentSuccess.title")}
+          </h1>
+          <p className="text-muted-foreground">
+            {t("paymentSuccess.description")}
+          </p>
+        </div>
+
+        {/* Show plan information instead of session ID */}
+        {planData && (
+          <div className="mb-6 p-4 bg-success-muted border border-success/30 rounded-lg">
+            <div className="flex items-center justify-center mb-2">
+              <CreditCard className="w-5 h-5 text-success mr-2" />
+              <span className="font-medium text-success">
+                {t("paymentSuccess.planActivated", {
+                  plan: planData.user.plan,
+                })}
+              </span>
+            </div>
+            <p className="text-sm text-success">
+              {t("paymentSuccess.welcomeMessage")}
+            </p>
+          </div>
+        )}
+
+        <div className="space-y-3">
+          <button
+            onClick={() => navigate("/")}
+            className="btn-primary w-full flex items-center justify-center"
+          >
+            {t("paymentSuccess.exploreDashboard")}
+            <PixelChevronRight className="h-3 shrink-0 ml-2" />
+          </button>
+
+          <button
+            onClick={() => navigate("/settings/subscription/billing")}
+            className="w-full bg-muted hover:bg-border text-foreground py-2 px-4 rounded-lg font-medium transition-colors"
+          >
+            {t("paymentSuccess.manageSubscription")}
+          </button>
+        </div>
+
+        <div className="mt-6 pt-4 border-t border-border">
+          <p className="text-xs text-muted-foreground">
+            {t("paymentSuccess.needHelp")}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PaymentSuccess;

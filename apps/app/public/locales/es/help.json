@@ -1,0 +1,89 @@
+{
+  "title": "Ayuda y soporte",
+  "subtitle": "Encuentra respuestas a preguntas frecuentes, envía comentarios u obtén ayuda con el panel de RabbitMQ.",
+  "quickLinksTitle": "Enlaces rápidos",
+  "quickLinks": {
+    "dashboard": {
+      "title": "Panel y servidores",
+      "description": "Ver resumen y administrar tus conexiones de servidor RabbitMQ"
+    },
+    "queueManagement": {
+      "title": "Administración de colas",
+      "description": "Ver y administrar tus colas de RabbitMQ"
+    },
+    "rabbitMQDocs": {
+      "title": "Documentación de RabbitMQ",
+      "description": "Documentación oficial y guías de RabbitMQ"
+    }
+  },
+  "contact": {
+    "title": "Contactar soporte",
+    "description": "¿Necesitas ayuda personalizada? Comunícate con nuestro equipo de soporte.",
+    "generalSupport": "Soporte general",
+    "copyEmailAria": "Copiar el correo de soporte",
+    "responseTime": "Generalmente respondemos dentro de las 24 horas en días hábiles. ¿No puedes abrir tu cliente de correo? Usa el botón de copiar para obtener nuestra dirección de correo electrónico."
+  },
+  "toast": {
+    "emailCopied": "¡Correo copiado!",
+    "emailCopiedDescription": "support@qarote.io se ha copiado a tu portapapeles.",
+    "copyFailed": "Error al copiar",
+    "copyFailedDescription": "Por favor copia manualmente: support@qarote.io"
+  },
+  "chat": {
+    "title": "Chat en vivo",
+    "description": "¿Prefieres ayuda en tiempo real? Inicia una conversación con nuestro equipo.",
+    "startChat": "Iniciar una conversación",
+    "unavailable": "El chat no está disponible actualmente. Inténtelo de nuevo más tarde o contáctenos por correo electrónico."
+  },
+  "community": {
+    "title": "Soporte comunitario",
+    "description": "Únete a nuestra comunidad de Discord para obtener ayuda de otros usuarios y del equipo."
+  },
+  "faqTitle": "Preguntas frecuentes",
+  "faqSearchHint": "Busca por pregunta o palabra clave.",
+  "faqSearchPlaceholder": "Buscar en FAQs",
+  "faqNoResultsTitle": "No se encontraron resultados",
+  "faqNoResultsDesc": "Prueba con otra búsqueda o contacta soporte con las opciones de la izquierda.",
+  "faqs": {
+    "connectServer": {
+      "question": "¿Cómo me conecto a mi servidor RabbitMQ?",
+      "answer": "Desde la barra lateral, haz clic en el selector de servidor o el icono de engranaje, luego 'Agregar servidor'. Ingresa el host, puerto y credenciales de la API Management de RabbitMQ. Haz clic en 'Probar conexión' para verificar antes de guardar. Qarote se conecta a través de la API HTTP Management (puerto predeterminado 15672 o 443 para TLS)."
+    },
+    "credentialsSecurity": {
+      "question": "¿Mi contraseña de RabbitMQ se almacena de forma segura?",
+      "answer": "Sí. Las credenciales de tu servidor están cifradas en reposo con cifrado AES-256. Nunca se exponen en la interfaz después de la configuración inicial y solo se utilizan del lado del servidor para comunicarse con tu API Management de RabbitMQ a través de HTTPS."
+    },
+    "readOnly": {
+      "question": "¿Qarote modifica mi servidor RabbitMQ?",
+      "answer": "Qarote es principalmente una herramienta de monitoreo de solo lectura. Utiliza la API Management de RabbitMQ para obtener métricas, colas, conexiones y datos de nodos. Las acciones en colas como purgar o eliminar son acciones explícitas del usuario que requieren confirmación — Qarote nunca modifica tu servidor automáticamente."
+    },
+    "compatibility": {
+      "question": "¿Puedo usar Qarote con Amazon MQ, CloudAMQP o autoalojado?",
+      "answer": "Sí. Qarote funciona con cualquier instancia de RabbitMQ que exponga la API Management, incluyendo Amazon MQ para RabbitMQ, CloudAMQP, Bitnami, Docker e instalaciones bare-metal. Solo asegúrate de que el plugin Management esté habilitado y el puerto API sea accesible."
+    },
+    "multipleServers": {
+      "question": "¿Puedo monitorear múltiples servidores en diferentes entornos?",
+      "answer": "Sí. Puedes agregar múltiples servidores (dev, staging, producción) a tu espacio de trabajo y cambiar entre ellos desde la barra lateral. Cada servidor tiene sus propias configuraciones de conexión y selector de virtual host."
+    },
+    "refreshRate": {
+      "question": "¿Con qué frecuencia se actualizan los datos del panel?",
+      "answer": "Las tarjetas de métricas se actualizan cada 10-30 segundos según el tipo de datos. El gráfico de mensajes en cola se actualiza cada 5 segundos. El intervalo de actualización se muestra en cada tarjeta. Los datos se obtienen directamente de su servidor RabbitMQ y se almacenan brevemente en caché entre los ciclos de actualización para mejorar el rendimiento."
+    },
+    "availability": {
+      "question": "¿Qué pasa si Qarote se cae?",
+      "answer": "Nada. Qarote es un observador pasivo — lee datos de tus servidores RabbitMQ pero no está en la ruta de mensajes. Si Qarote no está disponible, tus clusters de RabbitMQ continúan operando normalmente. Solo pierdes temporalmente la visibilidad del panel y las notificaciones de alertas."
+    },
+    "setupAlerts": {
+      "question": "¿Cómo configuro las alertas?",
+      "answer": "Ve a la página de Alertas y haz clic en 'Crear regla de alerta'. Elige un tipo de métrica (profundidad de cola, memoria, disco, etc.), establece un umbral y nivel de severidad. Serás notificado a través de tus canales configurados (email, navegador, webhook o Slack) cuando se supere el umbral."
+    },
+    "teamMembers": {
+      "question": "¿Cómo agrego miembros del equipo a mi espacio de trabajo?",
+      "answer": "Ve a Configuración > Organización y haz clic en 'Invitar'. Ingresa el email de tu compañero — recibirá una invitación para unirse a tu espacio de trabajo. Puedes asignar roles (Miembro o Admin) para controlar los niveles de acceso."
+    },
+    "plans": {
+      "question": "¿Cuál es la diferencia entre los planes gratuito y de pago?",
+      "answer": "El plan gratuito incluye 1 servidor y monitoreo básico. Los planes de pago desbloquean múltiples servidores, alertas avanzadas, integraciones webhook/Slack, colaboración en equipo y soporte prioritario. Consulta Configuración > Suscripción para los detalles de tu plan actual y opciones de actualización."
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "title": "Appearance",
+  "subtitle": "Customize how the dashboard looks and feels.",
+  "themeTitle": "Theme",
+  "themeDescription": "Select your preferred color scheme.",
+  "themeSystemHint": "System follows your OS setting.",
+  "light": "Light",
+  "dark": "Dark",
+  "system": "System",
+  "languageTitle": "Language",
+  "languageDescription": "Select your preferred language."
+}

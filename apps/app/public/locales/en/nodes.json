@@ -1,0 +1,122 @@
+{
+  "pageTitle": "Nodes",
+  "pageSubtitle": "Detailed view of cluster nodes and their metrics",
+  "noServerTitle": "Nodes",
+  "noServerDescription": "Add a RabbitMQ server connection to view cluster nodes and their metrics.",
+  "selectServerPrompt": "Please select a RabbitMQ server to view its nodes",
+  "nodeName": "Node",
+  "status": "Status",
+  "memory": "Memory",
+  "diskFree": "Disk Free",
+  "uptime": "Uptime",
+  "connections": "Connections",
+  "noNodesFound": "No nodes found",
+  "permissionErrorTitle": "Node Information Unavailable",
+  "clusterName": "Cluster name",
+  "editClusterName": "Edit cluster name",
+  "saveClusterName": "Save",
+  "cancelEdit": "Cancel",
+  "clusterNameUpdated": "Cluster name updated",
+  "clusterNameError": "Failed to update cluster name",
+  "overview": {
+    "node": "node",
+    "nodes": "nodes",
+    "memoryLabel": "memory",
+    "diskFreeLabel": "GB disk free",
+    "socketsLabel": "sockets",
+    "socketsTooltip": "OS-level socket count across all running nodes. Includes AMQP connections and internal RabbitMQ sockets."
+  },
+  "ports": {
+    "show": "Show ports & contexts",
+    "hide": "Hide ports & contexts"
+  },
+  "churnStatistics": {
+    "connectionOperations": "Connection operations",
+    "channelOperations": "Channel operations",
+    "queueOperations": "Queue operations",
+    "created": "Created",
+    "closed": "Closed",
+    "declared": "Declared",
+    "deleted": "Deleted"
+  },
+  "portsAndContexts": {
+    "listeners": "Listeners",
+    "contexts": "Contexts",
+    "node": "Node",
+    "protocol": "Protocol",
+    "ipAddress": "IP address",
+    "port": "Port",
+    "description": "Description",
+    "path": "Path",
+    "ssl": "SSL",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "statusLabels": {
+    "healthy": "Healthy",
+    "error": "Error",
+    "critical": "Critical",
+    "warning": "Warning",
+    "draining": "Draining"
+  },
+  "details": {
+    "summary": "Summary",
+    "fullDetails": "Full details",
+    "sections": {
+      "health": "Health",
+      "memory": "Memory",
+      "connections": "Connections",
+      "diskIO": "Disk I/O",
+      "system": "System",
+      "internalStore": "Internal store"
+    },
+    "rows": {
+      "running": "Running",
+      "draining": "Draining",
+      "memAlarm": "Mem alarm",
+      "diskAlarm": "Disk alarm",
+      "partitions": "Partitions",
+      "usage": "Usage",
+      "diskFree": "Disk free",
+      "used": "Used",
+      "limit": "Limit",
+      "sockets": "Sockets",
+      "created": "Created",
+      "closed": "Closed",
+      "channels": "Channels",
+      "netTick": "Net tick",
+      "readRate": "Read rate",
+      "writeRate": "Write rate",
+      "avgRead": "Avg read",
+      "avgWrite": "Avg write",
+      "type": "Type",
+      "processors": "Processors",
+      "osPid": "OS PID",
+      "runQueue": "Run queue",
+      "processes": "Processes",
+      "plugins": "Plugins"
+    },
+    "values": {
+      "yes": "Yes",
+      "no": "No",
+      "active": "Active",
+      "none": "None"
+    },
+    "tooltips": {
+      "draining": "This node is being gracefully removed. New connections are redirected to other nodes.",
+      "memAlarm": "Memory usage exceeded the watermark. Publisher confirms are blocked until memory drops.",
+      "diskAlarm": "Free disk space dropped below the watermark. Publishing is blocked until space is freed.",
+      "partitions": "Network partition detected. Nodes cannot communicate — a split-brain condition requiring immediate attention.",
+      "netTick": "Erlang heartbeat interval. If a node misses 4 consecutive ticks, it is considered unreachable.",
+      "runQueue": "Erlang processes waiting to be scheduled. Values above 1 indicate CPU contention."
+    },
+    "inlineMetrics": {
+      "mnesiaRam": "Mnesia RAM",
+      "mnesiaDisk": "Mnesia disk",
+      "msgReads": "Msg reads",
+      "msgWrites": "Msg writes",
+      "queueIdxR": "Queue idx R",
+      "queueIdxW": "Queue idx W"
+    }
+  }
+}

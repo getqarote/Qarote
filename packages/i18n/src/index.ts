@@ -1,0 +1,11 @@
+export {
+  DEFAULT_LOCALE,
+  FALLBACK_LOCALE,
+  isRTL,
+  LOCALE_FLAGS,
+  LOCALE_LABELS,
+  LOCALE_STORAGE_KEY,
+  RTL_LOCALES,
+  SUPPORTED_LOCALES,
+  type SupportedLocale,
+} from "./config.js";

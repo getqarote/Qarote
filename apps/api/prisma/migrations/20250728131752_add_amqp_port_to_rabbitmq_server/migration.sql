@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "RabbitMQServer" ADD COLUMN     "amqpPort" INTEGER NOT NULL DEFAULT 5672;

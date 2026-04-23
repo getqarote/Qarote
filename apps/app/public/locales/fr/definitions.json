@@ -1,0 +1,31 @@
+{
+  "pageTitle": "Définitions",
+  "pageSubtitle": "Exportez et importez les définitions du broker pour la sauvegarde ou la migration",
+  "noServerTitle": "Définitions",
+  "noServerDescription": "Ajoutez une connexion à un serveur RabbitMQ pour exporter ou importer les définitions du broker.",
+  "selectServerPrompt": "Veuillez sélectionner un serveur RabbitMQ pour gérer ses définitions de broker",
+  "allVhosts": "Tous les hôtes virtuels",
+  "export": {
+    "title": "Exporter les définitions",
+    "description": "Téléchargez la configuration du broker sous forme de fichier JSON. Vous pouvez limiter l'export à un hôte virtuel spécifique.",
+    "filenameLabel": "Nom du fichier",
+    "filenamePlaceholder": "rabbit_definitions_AAAA-MM-JJ",
+    "vhostLabel": "Hôte virtuel",
+    "downloadButton": "Télécharger les définitions du broker",
+    "downloading": "Téléchargement..."
+  },
+  "import": {
+    "title": "Importer les définitions",
+    "description": "Importez un fichier JSON de définitions pour restaurer ou migrer la configuration. Les définitions existantes sont conservées ; les nouvelles entrées sont ajoutées et les conflits sont ignorés.",
+    "fileLabel": "Fichier de définitions",
+    "vhostLabel": "Hôte virtuel",
+    "uploadButton": "Importer les définitions du broker",
+    "uploading": "Importation...",
+    "confirmTitle": "Importer les définitions du broker ?",
+    "confirmDescription": "Les définitions importées seront fusionnées dans votre broker. Les exchanges, files d'attente, liaisons, utilisateurs et politiques existants sont conservés ; seules les nouvelles entrées sont ajoutées et les conflits sont ignorés.",
+    "confirmButton": "Oui, écraser",
+    "successMessage": "Définitions importées avec succès.",
+    "errorMessage": "Échec de l'importation des définitions. Veuillez vérifier le fichier et réessayer.",
+    "parseError": "Fichier JSON invalide. Veuillez sélectionner un fichier de définitions de broker valide."
+  }
+}

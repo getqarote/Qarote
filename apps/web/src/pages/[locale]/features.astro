@@ -1,0 +1,21 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import FeaturesIsland from "../../components/FeaturesIsland";
+import { loadTranslations, loadAllTranslations, t } from "../../lib/i18n-static";
+import { getLocaleStaticPaths } from "../../lib/locales";
+
+export const getStaticPaths = getLocaleStaticPaths;
+
+const { locale } = Astro.params;
+const features = loadTranslations(locale, "features");
+const resources = loadAllTranslations(locale);
+---
+
+<BaseLayout
+  title={t(features, "seo.title")}
+  description={t(features, "seo.description")}
+  locale={locale}
+  canonicalPath="/features/"
+>
+  <FeaturesIsland locale={locale} resources={resources} client:load />
+</BaseLayout>

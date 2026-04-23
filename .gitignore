@@ -1,0 +1,76 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Lock files (we use pnpm)
+package-lock.json
+npm-shrinkwrap.json
+yarn.lock
+bun.lockb
+
+# Environment files (ignore actual .env files, but keep .example files)
+.env
+.env.*
+!.env.*.example
+
+node_modules
+dist
+
+# Turborepo
+.turbo
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# BMad Method files
+_bmad/
+_bmad-output/
+.bmad/
+bmad-config.json
+.bmad-method/
+**/bmad-*.md
+**/BMAD-*.md
+
+# Development Documentation
+docs/architecture
+docs/development
+
+# Infrastructure
+infrastructure/
+# infrastructure/terraform/.terraform/
+# infrastructure/terraform/.terraform.lock.hcl
+# infrastructure/terraform/terraform.tfstate
+# infrastructure/terraform/terraform.tfstate.backup
+# infrastructure/terraform/terraform.tfvars
+# infrastructure/terraform/*.tfplan
+# infrastructure/ansible/inventory.ini
+# infrastructure/ansible/server_ip.txt
+# infrastructure/ansible/*.retry
+
+# Claude worktrees
+.claude/worktrees/
+
+# Local agent / skills tooling (impeccable, etc.)
+.claude/skills/
+.impeccable.md
+skills-lock.json
+
+# Local-only docs
+docs/SEO_STRATEGY.md
+
+# License files
+qarote-license-*.json
+license.json
+
+# Local scripts
+scripts/sync-prod-db.sh

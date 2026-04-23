@@ -1,0 +1,107 @@
+{
+  "layout": {
+    "title": "Portal de Qarote",
+    "licenses": "Licencias",
+    "account": "Cuenta",
+
+    "logout": "Cerrar sesión"
+  },
+  "footer": {
+    "privacyPolicy": "Política de privacidad",
+    "termsOfService": "Términos de servicio"
+  },
+  "licenseManagement": {
+    "title": "Mis licencias",
+    "description": "Administre sus licencias de Qarote autoalojado",
+    "purchaseNew": "Comprar nueva licencia",
+    "noLicenses": "Aún no tiene ninguna licencia.",
+    "noLicensesHint": "Las licencias desbloquean las funciones premium de su instancia autoalojada. ¿Acaba de comprar? Puede tardar un momento en aparecer.",
+    "copiedToClipboard": "Clave de licencia copiada al portapapeles",
+    "copyLicenseKey": "Copiar clave de licencia",
+    "copyFailed": "Error al copiar — seleccione y copie manualmente.",
+    "licenseKey": "Clave de licencia",
+    "license": "Licencia",
+    "expires": "Expira: {{date}}",
+    "noExpiration": "Sin expiración",
+    "purchasedOn": "Comprado: {{date}}",
+    "lastValidated": "Última validación: {{date}}",
+    "licenseOfTier": "Licencia {{tier}}",
+    "loadingLicenses": "Cargando licencias...",
+    "errorLoadingLicenses": "No se pudieron cargar sus licencias.",
+    "retryLoading": "Intentar de nuevo",
+    "showFullKey": "Mostrar clave completa",
+    "hideKey": "Ocultar clave",
+    "activationGuide": "Pegue esta clave en su instancia Qarote en Configuración → Licencia.",
+    "activationDocsLink": "Ver guía de activación →",
+    "expiredOn": "Esta licencia expiró el {{date}}.",
+    "expiredNoDate": "Esta licencia ya no está activa.",
+    "renewLicense": "Renovar",
+    "purchaseSuccess": "Su licencia está lista",
+    "purchaseSuccessSubtitle": "Copie la clave a continuación para activar su instancia Qarote.",
+    "tier": {
+      "developer": "Desarrollador",
+      "enterprise": "Empresa",
+      "free": "Gratuito"
+    },
+    "status": {
+      "active": "Activo",
+      "inactive": "Inactivo"
+    }
+  },
+  "licensePurchase": {
+    "title": "Comprar licencia",
+    "annualLicensing": "Licencia anual · Validez 365 días · Implementaciones autoalojadas",
+    "purchaseFailed": "No se pudo iniciar la compra. No se realizó ningún cargo.",
+    "perYear": "/año",
+    "redirectingToStripe": "Redirigiendo a Stripe...",
+    "purchasePlanLabel": "Comprar licencia {{name}} — {{price}}/año",
+    "tryAgain": "Intentar de nuevo",
+    "or": "o",
+    "contactSupport": "contactar soporte",
+    "stripeHandoff": "Redirigido a Stripe para pago seguro · Clave de licencia entregada por correo",
+    "enterpriseContact": "¿Términos personalizados o preguntas?",
+    "badges": {
+      "selected": "Seleccionado",
+      "soon": "Próximamente"
+    },
+    "categories": {
+      "coreFeatures": "Características principales",
+      "security": "Seguridad y compatibilidad",
+      "support": "Soporte"
+    },
+    "features": {
+      "servers": "Servidores RabbitMQ",
+      "workspaces": "Espacios de trabajo",
+      "teamMembers": "Miembros del equipo",
+      "advancedAnalytics": "Análisis avanzado",
+      "queueManagement": "Gestión de colas, intercambios, VHost y usuarios",
+      "alertsWebhooks": "Alertas y webhooks",
+      "topologyVisualization": "Visualización de topología",
+      "roleBasedAccess": "Control de acceso por roles",
+      "ssoSamlOidc": "SSO, SAML y OIDC",
+      "soc2": "Cumplimiento SOC 2",
+      "rabbitmqVersions": "Soporte de versiones RabbitMQ",
+      "communitySupport": "Soporte comunitario",
+      "prioritySupport": "Soporte prioritario"
+    },
+    "limits": {
+      "upTo3": "Hasta 3",
+      "unlimited": "Ilimitado",
+      "rabbitmqVersionsValue": "Todas las versiones 3.x y 4.x"
+    },
+    "plans": {
+      "developer": {
+        "name": "Desarrollador"
+      },
+      "enterprise": {
+        "name": "Empresa"
+      }
+    }
+  },
+  "codeBlock": {
+    "copied": "Copiado",
+    "copy": "Copiar"
+  },
+  "signupVerifiedExtra": " Ahora puede comprar y administrar sus licencias.",
+  "goToLicenses": "Ir a licencias"
+}

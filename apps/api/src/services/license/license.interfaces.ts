@@ -1,0 +1,82 @@
+/**
+ * License Type Definitions
+ * Centralized interface definitions for license-related types
+ */
+
+import { UserPlan } from "@/generated/prisma/client";
+
+/**
+ * JWT license payload — the new compact format
+ * Signed with RS256 via jose, verified offline with baked-in public key
+ */
+export interface LicenseJwtPayload {
+  sub: string; // licenseId
+  tier: UserPlan;
+  features: string[];
+  iss: "qarote";
+  iat: number; // issued at (unix seconds)
+  exp: number; // expires at (unix seconds)
+}
+
+/**
+ * Options for generating a new license
+ */
+export interface GenerateLicenseOptions {
+  tier: UserPlan;
+  customerEmail: string;
+  workspaceId?: string;
+  expiresAt: Date;
+  stripeCustomerId?: string;
+  stripePaymentId?: string;
+  stripeSubscriptionId?: string; // For annual subscriptions with auto-renewal
+}
+
+/**
+ * Options for validating a license
+ */
+export interface ValidateLicenseOptions {
+  licenseKey: string;
+}
+
+/**
+ * Validated license information returned from license validation
+ */
+interface ValidatedLicense {
+  id: string;
+  tier: UserPlan;
+  expiresAt: Date;
+  isActive: boolean;
+  customerEmail: string;
+  workspaceId: string | null;
+}
+
+/**
+ * License validation response
+ */
+export interface LicenseValidationResponse {
+  valid: boolean;
+  license?: ValidatedLicense;
+  message?: string;
+}
+
+/**
+ * Result of renewing a license
+ */
+export interface RenewLicenseResult {
+  license: {
+    id: string;
+    licenseKey: string;
+    tier: UserPlan;
+    customerEmail: string;
+    expiresAt: Date;
+    isActive: boolean;
+    workspaceId: string | null;
+    stripeCustomerId: string | null;
+    stripePaymentId: string | null;
+    stripeSubscriptionId: string | null;
+    currentVersion: number;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+  newVersion: number;
+}

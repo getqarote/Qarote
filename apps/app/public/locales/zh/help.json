@@ -1,0 +1,89 @@
+{
+  "title": "帮助与支持",
+  "subtitle": "查找常见问题的答案、提交反馈或获取 RabbitMQ 仪表盘的帮助。",
+  "quickLinksTitle": "快速链接",
+  "quickLinks": {
+    "dashboard": {
+      "title": "仪表盘与服务器",
+      "description": "查看概览并管理您的 RabbitMQ 服务器连接"
+    },
+    "queueManagement": {
+      "title": "队列管理",
+      "description": "查看和管理您的 RabbitMQ 队列"
+    },
+    "rabbitMQDocs": {
+      "title": "RabbitMQ 文档",
+      "description": "RabbitMQ 官方文档和指南"
+    }
+  },
+  "contact": {
+    "title": "联系支持",
+    "description": "需要个性化帮助？请联系我们的支持团队。",
+    "generalSupport": "常规支持",
+    "copyEmailAria": "复制支持邮箱地址",
+    "responseTime": "我们通常在工作日 24 小时内回复。无法打开邮件客户端？使用复制按钮获取我们的邮箱地址。"
+  },
+  "toast": {
+    "emailCopied": "邮箱已复制！",
+    "emailCopiedDescription": "support@qarote.io 已复制到剪贴板。",
+    "copyFailed": "复制失败",
+    "copyFailedDescription": "请手动复制：support@qarote.io"
+  },
+  "chat": {
+    "title": "在线聊天",
+    "description": "需要实时帮助？与我们的团队开始对话。",
+    "startChat": "开始对话",
+    "unavailable": "聊天目前不可用。请稍后再试或通过邮件联系我们。"
+  },
+  "community": {
+    "title": "社区支持",
+    "description": "加入我们的 Discord 社区，从其他用户和团队获取帮助。"
+  },
+  "faqTitle": "常见问题",
+  "faqSearchHint": "按问题或关键字搜索。",
+  "faqSearchPlaceholder": "搜索常见问题",
+  "faqNoResultsTitle": "未找到结果",
+  "faqNoResultsDesc": "尝试更换搜索词，或使用左侧选项联系支持。",
+  "faqs": {
+    "connectServer": {
+      "question": "如何连接到我的 RabbitMQ 服务器？",
+      "answer": "在侧边栏中，点击服务器选择器或齿轮图标，然后选择「添加服务器」。输入 RabbitMQ Management API 的主机、端口和凭据。点击「测试连接」在保存前进行验证。Qarote 通过 HTTP Management API 连接（默认端口 15672 或 TLS 使用 443）。"
+    },
+    "credentialsSecurity": {
+      "question": "我的 RabbitMQ 密码是否安全存储？",
+      "answer": "是的。您的服务器凭据使用 AES-256 加密进行静态加密。初始设置后永远不会在界面中暴露，仅在服务端通过 HTTPS 与您的 RabbitMQ Management API 通信时使用。"
+    },
+    "readOnly": {
+      "question": "Qarote 是否会修改我的 RabbitMQ 服务器？",
+      "answer": "Qarote 主要是只读监控工具。它使用 RabbitMQ Management API 获取指标、队列、连接和节点数据。清除或删除队列等操作是需要确认的显式用户操作 — Qarote 绝不会自动修改您的服务器。"
+    },
+    "compatibility": {
+      "question": "可以配合 Amazon MQ、CloudAMQP 或自托管使用 Qarote 吗？",
+      "answer": "可以。Qarote 支持任何暴露 Management API 的 RabbitMQ 实例，包括 Amazon MQ for RabbitMQ、CloudAMQP、Bitnami、Docker 和裸机安装。只需确保 Management 插件已启用且 API 端口可访问。"
+    },
+    "multipleServers": {
+      "question": "可以监控不同环境的多台服务器吗？",
+      "answer": "可以。您可以将多台服务器（开发、预发布、生产）添加到工作区，并从侧边栏在它们之间切换。每台服务器有独立的连接设置和虚拟主机选择器。"
+    },
+    "refreshRate": {
+      "question": "仪表盘多久刷新一次数据？",
+      "answer": "指标卡片根据数据类型每 10-30 秒刷新一次。队列消息图表每 5 秒更新一次。每张卡片上都显示刷新间隔。数据直接从您的 RabbitMQ 服务器获取，并在刷新周期之间短暂缓存以提高性能。"
+    },
+    "availability": {
+      "question": "如果 Qarote 宕机会怎样？",
+      "answer": "什么都不会发生。Qarote 是被动观察者 — 它从您的 RabbitMQ 服务器读取数据，但不在消息路径中。如果 Qarote 不可用，您的 RabbitMQ 集群将继续正常运行。您只是暂时失去仪表盘可见性和告警通知。"
+    },
+    "setupAlerts": {
+      "question": "如何设置告警？",
+      "answer": "前往告警页面，点击「创建告警规则」。选择指标类型（队列深度、内存、磁盘等），设置阈值和严重级别。当阈值被突破时，您将通过配置的渠道（邮件、浏览器、Webhook 或 Slack）收到通知。"
+    },
+    "teamMembers": {
+      "question": "如何将团队成员添加到工作区？",
+      "answer": "前往设置 > 组织，点击「邀请」。输入同事的邮箱 — 他们将收到加入您工作区的邀请。您可以分配角色（成员或管理员）来控制访问级别。"
+    },
+    "plans": {
+      "question": "免费计划和付费计划有什么区别？",
+      "answer": "免费计划包含 1 台服务器和基本监控。付费计划解锁多台服务器、高级告警、Webhook/Slack 集成、团队协作和优先支持。查看设置 > 订阅了解当前计划详情和升级选项。"
+    }
+  }
+}

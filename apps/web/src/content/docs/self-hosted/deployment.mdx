@@ -1,0 +1,459 @@
+---
+title: "Deploying Qarote"
+description: "Step-by-step instructions for deploying Qarote self-hosted using the standalone binary, Docker Compose, or Dokku."
+section: "Self-Hosted"
+---
+
+# Deploying Qarote
+
+Qarote ships as a self-contained application. Pick the deployment method that fits your environment — all three give you the same dashboard.
+
+| Method                            | Best for                                                                |
+| --------------------------------- | ----------------------------------------------------------------------- |
+| [Binary](#binary)                 | Minimal footprint, existing PostgreSQL, VMs or bare metal               |
+| [Docker Compose](#docker-compose) | Containerised setup, everything bundled including Postgres              |
+| [Dokku](#dokku)                   | Git-push deploys, automatic HTTPS, Heroku-style PaaS on your own server |
+
+All deployments start with the **free tier** (core monitoring). Premium features — workspaces, alerting, integrations — unlock when you activate a license key in **Settings → License**. No restart needed.
+
+## Prerequisites
+
+- **Binary:** PostgreSQL 15+ already running (no Docker or Node.js needed)
+- **Docker Compose:** Docker and Docker Compose installed (PostgreSQL is bundled)
+- **Dokku:** Dokku installed on your server
+- Minimum 2 GB RAM, 10 GB disk space
+
+## Binary
+
+The binary embeds both the API and the frontend. Drop it on any Linux or macOS host that already has PostgreSQL — nothing else required.
+
+### 1. Set up PostgreSQL
+
+If PostgreSQL isn't already running:
+
+```bash
+# macOS
+brew install postgresql@15
+
+# Ubuntu / Debian / WSL2
+sudo apt install postgresql
+```
+
+Create a dedicated database user:
+
+```bash
+sudo -u postgres psql -c "CREATE USER qarote WITH PASSWORD 'your-secure-password';"
+sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"
+
+# Recommended: set idle connection timeouts
+sudo -u postgres psql -c "ALTER SYSTEM SET idle_session_timeout = '30min';"
+sudo -u postgres psql -c "ALTER SYSTEM SET idle_in_transaction_session_timeout = '5min';"
+sudo -u postgres psql -c "SELECT pg_reload_conf();"
+```
+
+Your connection URL will be: `postgresql://qarote:your-secure-password@localhost:5432/qarote`
+
+### 2. Download the binary
+
+```bash
+# Auto-detects your OS and architecture
+PLATFORM="$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/x64/' | sed 's/aarch64/arm64/')"
+curl -L "https://github.com/getqarote/Qarote/releases/latest/download/qarote-${PLATFORM}.tar.gz" | tar xz --strip-components=1
+```
+
+Or download a specific build from [GitHub Releases](https://github.com/getqarote/Qarote/releases):
+
+| Platform            | File                         |
+| ------------------- | ---------------------------- |
+| Linux x64           | `qarote-linux-x64.tar.gz`    |
+| Linux ARM64         | `qarote-linux-arm64.tar.gz`  |
+| macOS Apple Silicon | `qarote-darwin-arm64.tar.gz` |
+| macOS Intel         | `qarote-darwin-x64.tar.gz`   |
+
+<Callout type="tip" title="Windows">
+  Run the binary inside WSL2. Native Windows is not supported.
+</Callout>
+
+### 3. Run the setup wizard
+
+```bash
+./qarote setup
+```
+
+The wizard will:
+
+- Ask for your PostgreSQL URL and verify the connection
+- Create an admin account (written directly to the database — no sign-up flow needed)
+- Let you disable public registration (recommended for private deployments)
+- Generate `JWT_SECRET` and `ENCRYPTION_KEY`
+- Write a `.env` file in the current directory
+
+<Callout type="tip">
+  Say **Yes** to creating an admin account and **No** to public registration.
+  You can invite team members later from inside the app.
+</Callout>
+
+### 4. Start Qarote
+
+```bash
+./qarote
+```
+
+The server starts on `http://localhost:3000`. Database migrations run automatically on first boot. The `migrations/` directory must stay alongside the binary.
+
+To run the alert worker (required for the alerting feature), start it in a separate terminal or as a systemd service:
+
+```bash
+./qarote worker
+```
+
+### Manual setup (without the wizard)
+
+If you prefer flags over the interactive wizard:
+
+```bash
+./qarote \
+  --database-url postgresql://qarote:password@localhost/qarote \
+  --jwt-secret $(openssl rand -hex 64) \
+  --encryption-key $(openssl rand -hex 64)
+```
+
+### CLI reference
+
+| Flag                             | Description                                 |
+| -------------------------------- | ------------------------------------------- |
+| `./qarote setup`                 | Interactive setup wizard (generates `.env`) |
+| `./qarote worker`                | Start the alert worker process              |
+| `--database-url <url>`           | PostgreSQL connection URL                   |
+| `--jwt-secret <secret>`          | JWT signing secret (min 32 chars)           |
+| `--encryption-key <key>`         | Encryption key (min 32 chars)               |
+| `-p`, `--port <port>`            | Server port (default: `3000`)               |
+| `-h`, `--host <host>`            | Server host (default: `localhost`)          |
+| `--enable-email <bool>`          | Enable email features (default: `false`)    |
+| `--smtp-host <host>`             | SMTP server hostname                        |
+| `--smtp-port <port>`             | SMTP server port (default: `587`)           |
+| `--smtp-user <user>`             | SMTP username                               |
+| `--smtp-pass <pass>`             | SMTP password                               |
+| `--smtp-service <name>`          | SMTP service for OAuth2 (e.g. `gmail`)      |
+| `--smtp-oauth-client-id <id>`    | OAuth2 client ID                            |
+| `--smtp-oauth-client-secret <s>` | OAuth2 client secret                        |
+| `--smtp-oauth-refresh-token <t>` | OAuth2 refresh token                        |
+
+### Updating (binary)
+
+```bash
+# Stop the running instance
+kill $(pgrep -f './qarote') 2>/dev/null || true
+
+# Download latest release
+PLATFORM="$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/x64/' | sed 's/aarch64/arm64/')"
+curl -L "https://github.com/getqarote/Qarote/releases/latest/download/qarote-${PLATFORM}.tar.gz" | tar xz --strip-components=1
+
+# Restart — migrations run automatically
+./qarote
+```
+
+Your `.env` file is preserved. To roll back, restore the backup: `mv qarote.backup qarote && ./qarote`
+
+---
+
+## Docker Compose
+
+The Docker Compose setup bundles PostgreSQL, the backend, the alert worker, and the frontend. One command starts everything.
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/getqarote/Qarote.git qarote
+cd qarote
+```
+
+### 2. Generate configuration
+
+```bash
+./setup.sh
+```
+
+This creates a `.env` file with secure random secrets. Alternatively, copy `.env.selfhosted.example` and fill in the values manually.
+
+Key variables:
+
+```bash
+# Security — generate with: openssl rand -hex 64
+JWT_SECRET=...
+ENCRYPTION_KEY=...
+
+# Ports
+POSTGRES_PORT=5432
+BACKEND_PORT=3000
+FRONTEND_PORT=8080
+
+# Frontend API URL (baked at build time — must match BACKEND_PORT)
+VITE_API_URL=http://localhost:3000
+```
+
+### 3. Start services
+
+```bash
+docker compose -f docker-compose.selfhosted.yml up -d
+```
+
+This starts four containers:
+
+| Container             | Purpose                     |
+| --------------------- | --------------------------- |
+| `qarote_postgres`     | PostgreSQL 15 database      |
+| `qarote_backend`      | API server on port 3000     |
+| `qarote_alert_worker` | Alert evaluation worker     |
+| `qarote_frontend`     | React frontend on port 8080 |
+
+### 4. Run database migrations
+
+```bash
+docker exec qarote_backend pnpm run db:migrate
+```
+
+### 5. Open the dashboard
+
+Navigate to [http://localhost:8080](http://localhost:8080) and create your first account.
+
+<Callout type="info" title="Ports">
+  Frontend is served on `FRONTEND_PORT` (default 8080). The backend API is on
+  `BACKEND_PORT` (default 3000). Both are configurable in `.env`.
+</Callout>
+
+### Updating (Docker Compose)
+
+```bash
+git pull origin main
+docker compose -f docker-compose.selfhosted.yml up -d --build
+docker exec qarote_backend pnpm run db:migrate
+```
+
+### Viewing logs
+
+```bash
+docker compose -f docker-compose.selfhosted.yml logs -f
+```
+
+---
+
+## Dokku
+
+Dokku gives you git-push deploys, automatic HTTPS via Let's Encrypt, and managed PostgreSQL — on a server you control.
+
+<Callout type="info" title="Why Dokku?">
+  Dokku is a lightweight self-hosted PaaS. Push your code with `git push dokku
+  main` and it rebuilds and redeploys automatically. The Postgres plugin handles
+  backups and linking. Caddy handles SSL.
+</Callout>
+
+### 1. Install Dokku
+
+Follow the [Dokku installation guide](https://dokku.com/docs/getting-started/installation/) to set up Dokku on your server.
+
+### 2. Create the app and database
+
+```bash
+# On your server (or via SSH)
+ssh dokku@your-server apps:create qarote
+
+sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git postgres
+dokku postgres:create qarote-db
+dokku postgres:link qarote-db qarote
+```
+
+`DATABASE_URL` is set automatically when you link the database.
+
+### 3. Set environment variables
+
+```bash
+dokku config:set qarote \
+  JWT_SECRET=$(openssl rand -hex 64) \
+  ENCRYPTION_KEY=$(openssl rand -hex 64) \
+  TZ=UTC \
+  ENABLE_EMAIL=false
+```
+
+### 4. Deploy
+
+From your local machine:
+
+```bash
+git remote add dokku dokku@your-server:qarote
+git push dokku main
+```
+
+Dokku builds the app from the `Procfile`, runs the `release` phase (migrations), and starts the `web` and `worker` processes.
+
+### 5. Run database migrations
+
+```bash
+dokku run qarote pnpm run db:migrate
+```
+
+### 6. Enable HTTPS (optional but recommended)
+
+```bash
+dokku domains:set qarote your-domain.com
+dokku letsencrypt:enable qarote
+```
+
+### Scale the alert worker
+
+```bash
+dokku ps:scale qarote worker=1
+```
+
+The `worker` process handles alert evaluation. It must be running for alerts to fire.
+
+### Updating (Dokku)
+
+```bash
+# Push latest — triggers rebuild and redeploy automatically
+git push dokku main
+
+# Apply any new migrations
+dokku run qarote pnpm run db:migrate
+```
+
+---
+
+## SMTP configuration
+
+Email features (password reset, invitations) are disabled by default. To enable them, set `ENABLE_EMAIL=true` and provide SMTP credentials.
+
+SMTP can be configured three ways, in priority order:
+
+1. **Admin UI** — Settings → Email Settings (takes effect immediately, no restart)
+2. **Setup wizard** — `./qarote setup` or `./setup.sh`
+3. **Environment variables** / `dokku config:set`
+
+### Common providers
+
+**Gmail (app password)**
+
+```bash
+ENABLE_EMAIL=true
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password  # Not your Google password — generate at myaccount.google.com/apppasswords
+```
+
+**SendGrid**
+
+```bash
+ENABLE_EMAIL=true
+SMTP_HOST=smtp.sendgrid.net
+SMTP_PORT=587
+SMTP_USER=apikey
+SMTP_PASS=your-sendgrid-api-key
+```
+
+**Mailgun**
+
+```bash
+ENABLE_EMAIL=true
+SMTP_HOST=smtp.mailgun.org
+SMTP_PORT=587
+SMTP_USER=postmaster@your-domain.mailgun.org
+SMTP_PASS=your-mailgun-smtp-password
+```
+
+**Amazon SES**
+
+```bash
+ENABLE_EMAIL=true
+SMTP_HOST=email-smtp.us-east-1.amazonaws.com  # replace region as needed
+SMTP_PORT=587
+SMTP_USER=your-ses-smtp-username
+SMTP_PASS=your-ses-smtp-password
+```
+
+<Callout type="tip" title="Use OAuth2 for production">
+  Gmail and Office 365 support OAuth2 authentication, which is more secure than
+  app passwords and doesn't require storing credentials directly. See the
+  [Nodemailer OAuth2 guide](https://nodemailer.com/smtp/oauth2/) for setup
+  instructions.
+</Callout>
+
+### Test your SMTP configuration
+
+```bash
+# Docker Compose
+docker exec qarote_backend pnpm run test:smtp
+docker exec qarote_backend pnpm run test:smtp -- --send admin@yourcompany.com
+
+# Dokku
+dokku run qarote pnpm run test:smtp -- --send admin@yourcompany.com
+```
+
+---
+
+## Troubleshooting
+
+### "Exec format error" (binary only)
+
+You downloaded the wrong architecture binary. Check your platform:
+
+```bash
+uname -m   # x86_64 → use -x64 | aarch64 → use -arm64
+```
+
+Re-download the correct variant — your `.env` is preserved.
+
+<Callout type="tip">
+  Multipass VMs on Apple Silicon are ARM64. Use `linux-arm64`, not `linux-x64`.
+</Callout>
+
+### Database connection refused
+
+- Verify PostgreSQL is running: `systemctl status postgresql` or `docker compose ps postgres`
+- Check the `DATABASE_URL` format: `postgres://user:password@host:port/database`
+- Make sure migrations have been run
+- For Docker Compose, wait for the health check to pass before the backend starts
+
+### Message rate charts are blank
+
+Your RabbitMQ `rates_mode` is set to `basic` (the default), which doesn't retain sample history.
+
+Fix it in `rabbitmq.conf`:
+
+```ini
+management.rates_mode = detailed
+```
+
+Or apply at runtime without restarting:
+
+```bash
+rabbitmqctl eval 'application:set_env(rabbitmq_management, rates_mode, detailed).'
+```
+
+### Services not starting (Docker Compose)
+
+```bash
+docker compose -f docker-compose.selfhosted.yml logs
+```
+
+Common causes: missing `.env` values, port conflicts on 3000/5432/8080, or insufficient disk space.
+
+### License or premium features not activating
+
+- Go to **Settings → License** and re-enter your key
+- Check that the key hasn't expired
+- Check backend logs for validation errors
+- Contact [support@qarote.io](mailto:support@qarote.io) if the issue persists
+
+---
+
+## License activation
+
+Premium features are activated through the UI — no env vars or restarts needed.
+
+1. Purchase a license at the [Customer Portal](https://portal.qarote.io)
+2. Copy your license key (a signed JWT string)
+3. In Qarote, go to **Settings → License**
+4. Paste the key and click **Activate**
+
+Features unlock immediately. Validation is cryptographic and offline — no network call to Qarote's servers.

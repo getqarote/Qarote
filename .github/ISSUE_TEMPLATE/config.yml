@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 💬 Community Support
+    url: https://github.com/your-org/qarote/discussions
+    about: Ask questions and discuss with the community
+  - name: 📧 Enterprise Support
+    url: https://portal.qarote.io
+    about: Enterprise Edition customers - get priority support
+  - name: 🔒 Security Vulnerabilities
+    url: mailto:security@qarote.io
+    about: Report security vulnerabilities privately (DO NOT create a public issue)

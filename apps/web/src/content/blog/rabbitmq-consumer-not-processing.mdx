@@ -1,0 +1,144 @@
+---
+title: "Why Your RabbitMQ Consumer Isn't Processing Messages"
+description: "Consumer is connected, queue has messages, nothing moves. Here are the six most common reasons — and how to fix each one in under five minutes."
+publishedAt: "2026-04-21"
+tags: ["rabbitmq", "debugging", "consumers", "operations"]
+readingTimeMin: 5
+---
+
+You've confirmed the consumer is running. The queue has messages. Nothing is moving.
+
+This is one of the most frustrating RabbitMQ failure modes because everything looks healthy from the outside. Here's a structured breakdown of what actually causes it.
+
+---
+
+## 1. Prefetch count is blocking delivery
+
+RabbitMQ's `basic.qos` prefetch setting controls how many unacknowledged messages a consumer can hold at once. If your consumer has `prefetch_count = 1` and is stuck on a slow operation, RabbitMQ won't send the next message until the first one is acked.
+
+Check the **Unacknowledged** count in the management UI. If it matches your prefetch limit exactly, that's your bottleneck.
+
+**Fix:**
+
+```python
+# Python (pika)
+channel.basic_qos(prefetch_count=10)
+```
+
+```javascript
+// Node.js (amqplib)
+await channel.prefetch(10);
+```
+
+Set prefetch to a multiple of your concurrent processing capacity. If each worker can handle 5 operations in parallel, `prefetch_count = 5` lets it stay fully utilized.
+
+---
+
+## 2. Consumer is connected but blocked on I/O
+
+A connected consumer is not the same as a processing consumer. If your consumer is waiting on a database query, external HTTP call, or file operation that never returns, it's alive but doing nothing.
+
+Look for these signs:
+
+- `Unacked` count equals prefetch count and doesn't change over time
+- Consumer utilisation is `1.0` but throughput is near zero
+- Your app logs show a request that started but never logged completion
+
+**Fix:** Add explicit timeouts to every downstream call your consumer makes.
+
+```python
+import requests
+response = requests.get(url, timeout=5)  # Never omit timeout
+```
+
+If you can't add timeouts to the library you're using, wrap the call in a thread or async task with a deadline.
+
+---
+
+## 3. Messages are being nacked and requeued silently
+
+If your consumer calls `basic.nack` or `basic.reject` with `requeue=true`, the message goes straight back to the front of the queue — and your consumer picks it up again immediately. If the failure is deterministic (a bad payload, a permanently unavailable dependency), this creates an infinite loop.
+
+Check the **message rate** panel: if deliver rate is high but ack rate is zero, you're in a nack loop.
+
+**Fix:** For non-transient failures, reject with `requeue=false` so the message is dead-lettered:
+
+```python
+channel.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+```
+
+Then inspect your DLQ to understand why messages are being rejected.
+
+---
+
+## 4. The consumer's connection is flow-controlled
+
+RabbitMQ can apply channel-level flow control when memory usage gets high. In this state, the broker stops delivering messages even to existing consumers. The consumer process is running fine — it just isn't receiving anything.
+
+Check for flow control:
+
+```bash
+curl -u guest:guest http://localhost:15672/api/channels \
+  | jq '.[] | select(.flow_blocked == true) | .name'
+```
+
+Or look for `flow control` entries in `/var/log/rabbitmq/rabbit@<hostname>.log`.
+
+**Fix:** Investigate memory pressure on the broker. Common causes: a queue accumulating millions of messages, a large individual message, or `vm_memory_high_watermark` set too low. Free up memory or increase the watermark.
+
+---
+
+## 5. Channel or connection was closed silently
+
+Some AMQP client libraries swallow channel errors rather than surfacing them. Your consumer process is running, but the underlying channel was closed after a protocol error (unroutable message, codec error, permission issue), and no one reconnected.
+
+Look for `channel.close` or `connection.close` events in the RabbitMQ logs:
+
+```bash
+tail -n 100 /var/log/rabbitmq/rabbit@$(hostname).log | grep -E "closing|channel|error"
+```
+
+**Fix:** Implement a reconnect loop in your consumer. Listen for channel/connection close events and re-establish:
+
+```javascript
+connection.on("error", (err) => {
+  console.error("Connection error", err);
+  setTimeout(connect, 5000);
+});
+```
+
+Most production RabbitMQ clients should treat connections as ephemeral.
+
+---
+
+## 6. Wrong queue binding — consumer is on a different queue
+
+This sounds obvious but happens more than you'd think, especially in staging environments: the publisher is routing to `orders.created` but the consumer subscribed to `order.created` (missing the `s`). Both queues exist, one is growing, the consumer is idle.
+
+Verify the exact queue name and binding key in the management UI or Qarote. Sort queues by depth — the one growing is where the messages actually are.
+
+---
+
+## Checking all of this at once
+
+Running through the management API manually — channels, flow, nack rates, consumer utilisation — is doable once. During an incident at 3am it's not.
+
+[Qarote](/) shows consumer count, unack rate, utilisation, and DLQ depth on one screen in real time. The free MIT edition covers all of these metrics. No per-host pricing, no data leaving your network.
+
+---
+
+## Decision tree
+
+```
+Consumer connected?
+  └─ No  → Restart consumer process
+  └─ Yes → Unacked = prefetch limit?
+            └─ Yes → Consumer blocked on I/O or prefetch too low
+            └─ No  → Deliver rate high, ack rate ~0?
+                      └─ Yes → Nack + requeue loop
+                      └─ No  → Flow control active?
+                                └─ Yes → Memory pressure on broker
+                                └─ No  → Channel closed silently?
+                                          └─ Yes → Add reconnect logic
+                                          └─ No  → Check queue name/binding
+```

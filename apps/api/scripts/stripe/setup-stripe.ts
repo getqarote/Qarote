@@ -1,0 +1,621 @@
+#!/usr/bin/env tsx
+
+import { execSync } from "node:child_process";
+import { writeFileSync, readFileSync, existsSync } from "node:fs";
+import { join } from "node:path";
+
+const PLAN_CONFIG = {
+  DEVELOPER: {
+    name: "Developer Plan",
+    description: "Ideal for individual developers and small projects",
+    monthly: 3400, // $34.00
+    yearly: 34800, // $348.00/year = $29/month
+  },
+  ENTERPRISE: {
+    name: "Enterprise Plan",
+    description: "Enterprise-grade features for mission-critical systems",
+    monthly: 12400, // $124.00
+    yearly: 118800, // $1,188.00/year = $99/month
+  },
+};
+
+class StripeSetup {
+  private envPath = join(process.cwd(), ".env");
+
+  async run() {
+    const command = process.argv[2] || "create";
+
+    console.log("🚀 Qarote - Stripe Setup\n");
+
+    try {
+      switch (command) {
+        case "create":
+          await this.createAll();
+          break;
+        case "list":
+          await this.listProducts();
+          break;
+        case "clean":
+          await this.cleanUp();
+          break;
+        case "migrate":
+          await this.migratePricing();
+          break;
+        case "verify":
+          await this.verify();
+          break;
+        case "webhook":
+          this.startWebhook();
+          break;
+        case "test":
+          await this.testStripeCli();
+          break;
+        case "mode":
+          this.checkMode();
+          break;
+        default:
+          this.showHelp();
+      }
+    } catch (error) {
+      console.error(
+        "❌ Error:",
+        error instanceof Error ? error.message : error
+      );
+      process.exit(1);
+    }
+  }
+
+  private checkStripeCli() {
+    try {
+      const version = execSync("stripe --version", { encoding: "utf8" });
+      console.log(`✅ Stripe CLI found: ${version.trim()}`);
+    } catch {
+      console.log(
+        "❌ Stripe CLI not found. Install with: brew install stripe/stripe-cli/stripe"
+      );
+      process.exit(1);
+    }
+  }
+
+  private checkLogin() {
+    try {
+      const result = execSync("stripe config --list", { encoding: "utf8" });
+      if (
+        result.includes("test_mode_api_key") ||
+        result.includes("live_mode_api_key")
+      ) {
+        console.log("✅ Logged into Stripe");
+        return true;
+      }
+    } catch {
+      // Not logged in
+    }
+
+    console.log("❌ Not logged into Stripe. Please run:");
+    console.log("   stripe login");
+    console.log("\nThen run this script again.");
+    process.exit(1);
+  }
+
+  private checkMode() {
+    // Load .env file to check for live key
+    this.loadEnvFile();
+
+    const envStripeKey = process.env.STRIPE_SECRET_KEY;
+
+    if (envStripeKey?.startsWith("sk_live_")) {
+      console.log("🚀 Currently in LIVE mode");
+      console.log("   - ⚠️  REAL MONEY WILL BE CHARGED");
+      console.log("   - Use real payment methods");
+      console.log("   - Production environment");
+      console.log(`   - Using env key: ${envStripeKey.substring(0, 20)}...`);
+      return "live";
+    } else if (envStripeKey?.startsWith("sk_test_")) {
+      console.log("🧪 Currently in TEST mode");
+      console.log("   - Safe for development");
+      console.log("   - Use test cards (4242 4242 4242 4242)");
+      console.log("   - No real money charged");
+      console.log(`   - Using env key: ${envStripeKey.substring(0, 20)}...`);
+      return "test";
+    } else {
+      // Fallback to CLI config
+      try {
+        const config = execSync("stripe config --list", { encoding: "utf8" });
+
+        if (config.includes("test_mode_api_key")) {
+          console.log("🧪 Currently in TEST mode (CLI)");
+          console.log("   - Safe for development");
+          console.log("   - Use test cards (4242 4242 4242 4242)");
+          console.log("   - No real money charged");
+          return "test";
+        } else if (config.includes("live_mode_api_key")) {
+          console.log("🚀 Currently in LIVE mode (CLI)");
+          console.log("   - ⚠️  REAL MONEY WILL BE CHARGED");
+          console.log("   - Use real payment methods");
+          console.log("   - Production environment");
+          return "live";
+        } else {
+          console.log("❓ Could not determine mode");
+          console.log("   - Please run 'stripe login' first");
+          return "unknown";
+        }
+      } catch (error) {
+        console.log("❓ Could not determine mode");
+        console.log("   - Stripe CLI may not be configured");
+        return "error";
+      }
+    }
+  }
+
+  private loadEnvFile() {
+    if (existsSync(this.envPath)) {
+      const envContent = readFileSync(this.envPath, "utf8");
+      const envLines = envContent.split("\n");
+
+      for (const line of envLines) {
+        if (line.includes("=") && !line.startsWith("#")) {
+          const [key, ...valueParts] = line.split("=");
+          if (key && valueParts.length > 0) {
+            const value = valueParts.join("=").trim();
+            process.env[key.trim()] = value;
+          }
+        }
+      }
+    }
+  }
+
+  private getStripeCommand(command: string): string {
+    this.loadEnvFile();
+    const envStripeKey = process.env.STRIPE_SECRET_KEY;
+
+    if (
+      envStripeKey?.startsWith("sk_live_") ||
+      envStripeKey?.startsWith("sk_test_")
+    ) {
+      return `STRIPE_API_KEY=${envStripeKey} ${command}`;
+    }
+
+    return command;
+  }
+
+  private async createAll() {
+    console.log("📦 Creating Stripe products and prices...\n");
+
+    this.checkStripeCli();
+    this.checkLogin();
+    this.checkMode();
+    this.checkMode();
+
+    const envUpdates: Record<string, string> = {};
+
+    for (const [planKey, config] of Object.entries(PLAN_CONFIG)) {
+      console.log(`\n🏷️  Creating ${config.name}...`);
+
+      try {
+        // Create product (using env-based API key)
+        console.log(`  🔨 Creating product...`);
+        const productResult = execSync(
+          this.getStripeCommand(
+            `stripe products create --name "${config.name}" --description "${config.description}"`
+          ),
+          { encoding: "utf8" }
+        );
+
+        const productId = this.extractId(productResult);
+        console.log(`  ✅ Product: ${productId}`);
+
+        // Create monthly price (using env-based API key)
+        console.log(`  🔨 Creating monthly price...`);
+        const monthlyResult = execSync(
+          this.getStripeCommand(
+            `stripe prices create --unit-amount ${config.monthly} --currency usd --recurring.interval month --product ${productId}`
+          ),
+          { encoding: "utf8" }
+        );
+
+        const monthlyPriceId = this.extractId(monthlyResult);
+        console.log(
+          `  💰 Monthly: ${monthlyPriceId} ($${config.monthly / 100})`
+        );
+
+        // Create yearly price (using env-based API key)
+        console.log(`  🔨 Creating yearly price...`);
+        const yearlyResult = execSync(
+          this.getStripeCommand(
+            `stripe prices create --unit-amount ${config.yearly} --currency usd --recurring.interval year --product ${productId}`
+          ),
+          { encoding: "utf8" }
+        );
+
+        const yearlyPriceId = this.extractId(yearlyResult);
+        console.log(`  💰 Yearly: ${yearlyPriceId} ($${config.yearly / 100})`);
+
+        // Store for .env
+        envUpdates[`STRIPE_${planKey}_MONTHLY_PRICE_ID`] = monthlyPriceId;
+        envUpdates[`STRIPE_${planKey}_YEARLY_PRICE_ID`] = yearlyPriceId;
+      } catch (error) {
+        console.error(`  ❌ Failed to create ${config.name}:`);
+
+        if (error instanceof Error) {
+          console.error(`     Message: ${error.message}`);
+
+          // Show CLI output if available
+          const execError = error as any;
+          if (execError.stdout) {
+            console.error(`     CLI Output: ${execError.stdout}`);
+          }
+          if (execError.stderr) {
+            console.error(`     CLI Error: ${execError.stderr}`);
+          }
+        }
+
+        console.log(`  💡 You can try creating this manually:`);
+        console.log(`     stripe products create --name "${config.name}"`);
+        console.log(`     Then create prices for that product`);
+      }
+    }
+
+    // Update .env file only if we have updates
+    if (Object.keys(envUpdates).length > 0) {
+      this.updateEnvFile(envUpdates);
+      console.log("\n🎉 Setup completed!");
+    } else {
+      console.log("\n❌ No products were created successfully.");
+      console.log("💡 Try running these commands manually to debug:");
+      console.log('   stripe products create --name "Test Product"');
+      console.log("   stripe prices create --help");
+    }
+
+    console.log("\n📋 Next steps:");
+    console.log("1. Restart your development server");
+    console.log("2. Test the payment flow");
+    console.log("3. Set up webhooks with: npm run stripe:webhook");
+  }
+
+  private async listProducts() {
+    this.checkStripeCli();
+    this.checkLogin();
+
+    console.log("📋 Current Stripe products:\n");
+
+    try {
+      const result = execSync(
+        this.getStripeCommand("stripe products list --limit 20"),
+        {
+          encoding: "utf8",
+        }
+      );
+      console.log(result);
+
+      console.log("\n💰 Current prices:");
+      const pricesResult = execSync(
+        this.getStripeCommand("stripe prices list --limit 20"),
+        {
+          encoding: "utf8",
+        }
+      );
+      console.log(pricesResult);
+    } catch (error) {
+      console.error("Failed to list products:", error);
+    }
+  }
+
+  private async cleanUp() {
+    this.checkStripeCli();
+    this.checkLogin();
+
+    console.log("🧹 Cleaning up Qarote test products...\n");
+
+    try {
+      // List products with metadata
+      const result = execSync(
+        this.getStripeCommand("stripe products list --limit 100"),
+        {
+          encoding: "utf8",
+        }
+      );
+      const products = JSON.parse(result);
+
+      if (products.data) {
+        const testProducts = products.data.filter(
+          (p: any) =>
+            p.metadata?.created_by === "rabbit_hq" ||
+            p.name?.includes("Developer Plan") ||
+            p.name?.includes("Startup Plan") ||
+            p.name?.includes("Business Plan") ||
+            p.name?.includes("Enterprise Plan")
+        );
+
+        if (testProducts.length === 0) {
+          console.log("No test products found to clean up.");
+          return;
+        }
+
+        console.log(`Found ${testProducts.length} products to clean up:`);
+
+        for (const product of testProducts) {
+          console.log(`🗑️  Archiving: ${product.name} (${product.id})`);
+
+          try {
+            execSync(
+              this.getStripeCommand(
+                `stripe products update ${product.id} --active false`
+              ),
+              {
+                stdio: "ignore",
+              }
+            );
+            console.log(`  ✅ Archived ${product.id}`);
+          } catch (error) {
+            console.log(`  ❌ Failed to archive ${product.id}`);
+          }
+        }
+      }
+
+      console.log("\n✅ Cleanup completed!");
+    } catch (error) {
+      console.error("Cleanup failed:", error);
+    }
+  }
+
+  private async migratePricing() {
+    console.log("🔄 Migrating to new pricing structure...\n");
+
+    this.checkStripeCli();
+    this.checkLogin();
+    this.checkMode();
+
+    console.log("Step 1: Listing current products and prices...");
+    await this.listProducts();
+
+    console.log("\nStep 2: Creating new prices with updated structure...");
+    await this.createAll();
+
+    console.log("\nStep 3: Instructions for cleanup:");
+    console.log(
+      "🔍 Review the products above and manually deactivate old prices:"
+    );
+    console.log("  1. Find old price IDs from the list");
+    console.log("  2. Run: stripe prices update price_old_id --active=false");
+    console.log("  3. Update your .env file with the new price IDs");
+    console.log("  4. Test your checkout flow");
+
+    console.log(
+      "\n💡 You can also run 'npm run setup-stripe clean' to remove old products"
+    );
+  }
+
+  private async verify() {
+    console.log("🔍 Verifying Stripe configuration...\n");
+
+    // Check CLI and login
+    this.checkStripeCli();
+    this.checkLogin();
+
+    // Load environment variables
+    this.loadEnvFile();
+
+    // Check environment variables
+    const requiredVars = [
+      "STRIPE_SECRET_KEY",
+      "STRIPE_DEVELOPER_MONTHLY_PRICE_ID",
+      "STRIPE_DEVELOPER_YEARLY_PRICE_ID",
+      "STRIPE_ENTERPRISE_MONTHLY_PRICE_ID",
+      "STRIPE_ENTERPRISE_YEARLY_PRICE_ID",
+    ];
+
+    let allValid = true;
+
+    console.log("📋 Environment variables:");
+    for (const varName of requiredVars) {
+      const value = process.env[varName];
+      if (value) {
+        console.log(`✅ ${varName}: ${value.substring(0, 20)}...`);
+
+        // Verify price IDs exist in Stripe
+        if (varName.includes("PRICE_ID")) {
+          try {
+            execSync(this.getStripeCommand(`stripe prices retrieve ${value}`), {
+              stdio: "ignore",
+            });
+            console.log(`   ✅ Price exists in Stripe`);
+          } catch {
+            console.log(`   ❌ Price not found in Stripe`);
+            allValid = false;
+          }
+        }
+      } else {
+        console.log(`❌ ${varName}: Not set`);
+        allValid = false;
+      }
+    }
+
+    console.log(
+      `\n${allValid ? "✅" : "❌"} Configuration ${allValid ? "valid" : "invalid"}`
+    );
+
+    if (!allValid) {
+      console.log(
+        "\n💡 Run 'npm run setup-stripe create' to fix missing configuration"
+      );
+    }
+  }
+
+  private startWebhook() {
+    console.log("🔗 Starting webhook forwarding...\n");
+    console.log("This will forward Stripe webhooks to your local server.");
+    console.log("Keep this terminal open while developing.\n");
+    console.log(
+      "Copy the webhook signing secret and add it to your .env file:"
+    );
+    console.log("STRIPE_WEBHOOK_SECRET=whsec_xxxxx\n");
+
+    try {
+      execSync(
+        this.getStripeCommand(
+          "stripe listen --forward-to localhost:3000/webhooks/webhook"
+        ),
+        {
+          stdio: "inherit",
+        }
+      );
+    } catch (error) {
+      console.error("Webhook forwarding failed:", error);
+    }
+  }
+
+  private extractId(cliOutput: string): string {
+    // Try different JSON parsing approaches
+    try {
+      const parsed = JSON.parse(cliOutput);
+      if (parsed.id) return parsed.id;
+    } catch {
+      // If not JSON, try to find ID in text output
+      const idMatch = cliOutput.match(/id:\s*([a-zA-Z0-9_]+)/);
+      if (idMatch) return idMatch[1];
+
+      // Try another pattern for ID extraction
+      const quotedIdMatch = cliOutput.match(/"id":\s*"([^"]+)"/);
+      if (quotedIdMatch) return quotedIdMatch[1];
+
+      // Look for prod_ or price_ patterns
+      const prodMatch = cliOutput.match(/(prod_[a-zA-Z0-9]+)/);
+      if (prodMatch) return prodMatch[1];
+
+      const priceMatch = cliOutput.match(/(price_[a-zA-Z0-9]+)/);
+      if (priceMatch) return priceMatch[1];
+    }
+
+    console.error("  ⚠️  Could not extract ID from output:");
+    console.error("     " + cliOutput.substring(0, 200));
+    throw new Error("Could not extract ID from Stripe CLI output");
+  }
+
+  private updateEnvFile(updates: Record<string, string>) {
+    console.log("\n📝 Updating .env file...");
+
+    let envContent = existsSync(this.envPath)
+      ? readFileSync(this.envPath, "utf8")
+      : "";
+
+    for (const [key, value] of Object.entries(updates)) {
+      const regex = new RegExp(`^${key}=.*$`, "m");
+      const newLine = `${key}=${value}`;
+
+      if (regex.test(envContent)) {
+        envContent = envContent.replace(regex, newLine);
+      } else {
+        envContent += envContent.length > 0 ? `\n${newLine}` : newLine;
+      }
+    }
+
+    writeFileSync(this.envPath, envContent.trim() + "\n");
+
+    console.log(
+      `✅ Updated ${Object.keys(updates).length} environment variables`
+    );
+
+    // Show what was updated
+    console.log("\n📋 Added to .env:");
+    for (const [key, value] of Object.entries(updates)) {
+      console.log(`  ${key}=${value}`);
+    }
+  }
+
+  private showHelp() {
+    console.log(`
+🎯 Stripe Setup for Qarote
+
+Usage: npm run setup-stripe [command]
+
+Commands:
+  create    Create all products and prices (default)
+  list      List existing products and prices
+  clean     Archive test products
+  migrate   Migrate from old pricing to new pricing structure
+  verify    Verify current configuration
+  webhook   Start webhook forwarding
+  test      Test Stripe CLI commands
+  mode      Check current mode (test/live)
+  help      Show this help
+
+Examples:
+  npm run setup-stripe migrate     # Migrate to new pricing ($10 Dev, $50 Enterprise)
+  npm run setup-stripe create      # Create everything
+  npm run setup-stripe mode        # Check current mode
+  npm run setup-stripe test        # Test CLI commands first
+  npm run setup-stripe list        # See what exists
+  npm run setup-stripe clean       # Clean up old products
+  npm run setup-stripe webhook     # Start webhook forwarding
+
+New Pricing Structure:
+  Developer: $10/month, $100/year
+  Enterprise: $50/month, $500/year
+
+Prerequisites:
+  - Stripe CLI installed (✅ you have this)
+  - Run 'stripe login' (test) or 'stripe login --live' (production)
+    `);
+  }
+
+  private async testStripeCli() {
+    console.log("🧪 Testing Stripe CLI commands...\n");
+
+    this.checkStripeCli();
+    this.checkLogin();
+
+    try {
+      console.log("1. Testing products list...");
+      const products = execSync("stripe products list --limit 1", {
+        encoding: "utf8",
+      });
+      console.log("✅ Products list works");
+
+      console.log("2. Testing help command...");
+      const help = execSync("stripe products create --help", {
+        encoding: "utf8",
+      });
+      console.log("✅ Help command works");
+
+      console.log("3. Testing simple product creation...");
+      const testProduct = execSync(
+        'stripe products create --name "Test Product" --description "Test description"',
+        { encoding: "utf8" }
+      );
+      console.log("✅ Simple product creation works");
+      console.log("📝 Output:", testProduct);
+
+      const testId = this.extractId(testProduct);
+      console.log("✅ ID extraction works:", testId);
+
+      console.log("4. Testing price creation...");
+      const testPrice = execSync(
+        `stripe prices create --unit-amount 999 --currency usd --recurring.interval month --product ${testId}`,
+        { encoding: "utf8" }
+      );
+      console.log("✅ Price creation works");
+      console.log("📝 Output:", testPrice);
+
+      const priceId = this.extractId(testPrice);
+      console.log("✅ Price ID extraction works:", priceId);
+
+      console.log("\n🎉 All tests passed! The CLI is working correctly.");
+    } catch (error) {
+      console.error("❌ Test failed:", error);
+      if (error instanceof Error) {
+        const execError = error as any;
+        if (execError.stdout) {
+          console.error("CLI Output:", execError.stdout);
+        }
+        if (execError.stderr) {
+          console.error("CLI Error:", execError.stderr);
+        }
+      }
+    }
+  }
+}
+
+// Run the script
+if (require.main === module) {
+  new StripeSetup().run();
+}

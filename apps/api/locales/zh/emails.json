@@ -1,0 +1,195 @@
+{
+  "subjects": {
+    "invitedToWorkspace": "您已被邀请加入 Qarote 上的 {{workspaceName}}",
+    "invitedToOrganization": "您已被邀请加入 Qarote 上的 {{orgName}}",
+    "welcome": "欢迎来到 Qarote，{{name}}！",
+    "verifyEmailSignup": "请验证您的邮箱地址 - Qarote",
+    "verifyEmailChange": "验证您的新邮箱地址 - Qarote",
+    "resetPassword": "重置您的密码 - Qarote",
+    "upgradePlanConfirmed": "欢迎使用 {{plan}} 套餐 — 升级已确认！",
+    "planRenewed": "欢迎回到 Qarote — {{plan}} 套餐已续订！",
+    "trialEndsSoon": "您的 {{plan}} 试用即将结束 — {{usageText}}",
+    "completePayment": "需要操作：请完成 {{workspaceName}} 的付款",
+    "usageReport": "{{workspaceName}} 使用报告及即将到来的账单",
+    "paymentConfirmed": "付款已确认 — {{amount}}",
+    "paymentFailed": "付款失败 — 需要操作",
+    "criticalAlerts": "{{serverName}} 上有 {{criticalCount}} 个严重告警",
+    "warningAlerts": "{{serverName}} 上有 {{warningCount}} 个警告",
+    "updateAvailable": "Qarote {{latestVersion}} 已发布 — 请更新您的实例",
+    "licenseReady": "您的 Qarote 许可证已准备就绪！",
+    "licenseRenewed": "您的 Qarote 许可证已续订",
+    "licenseExpiresSoon": "您的 Qarote 许可证将在 {{daysUntilExpiration}} 天后到期",
+    "licenseExpired": "您的 Qarote 许可证已过期",
+    "licensePaymentFailed": "需要操作：许可证付款失败",
+    "licenseCancelled": "您的 Qarote 许可证已被取消"
+  },
+  "common": {
+    "greeting": "{{name}}，您好！",
+    "greetingGeneric": "您好，",
+    "happyMonitoring": "祝监控愉快！🐰",
+    "signature": "Qarote 团队",
+    "supportTeam": "支持团队",
+    "ifButtonDoesntWork": "如果以上按钮无法使用，您也可以将以下链接复制粘贴到浏览器中：",
+    "automatedNotification": "这是来自 Qarote 的自动通知。",
+    "supportFooter": "需要帮助？回复此邮件或联系我们的"
+  },
+  "verification": {
+    "titleSignup": "请验证您的邮箱地址",
+    "titleEmailChange": "验证您的新邮箱地址",
+    "previewSignup": "验证您的邮箱以开始使用 Qarote",
+    "previewEmailChange": "确认您的新邮箱地址",
+    "bodySignup": "感谢您注册 Qarote！要完成注册并访问您的账户，请点击下方按钮验证您的邮箱地址。",
+    "bodyEmailChange": "您已请求更改 Qarote 上的邮箱地址。要确认此更改，请点击下方按钮验证您的新邮箱地址。",
+    "emailLabel": "邮箱：",
+    "verifyButton": "验证邮箱地址",
+    "expiryWarning": "此验证链接将在 {{expiryHours}} 小时后过期。如果您没有请求此{{requestType}}，可以安全地忽略此邮件。",
+    "requestTypeAccount": "账户注册",
+    "requestTypeEmailChange": "邮箱地址更改",
+    "havingTrouble": "如果您遇到问题，请随时联系我们的"
+  },
+  "welcome": {
+    "title": "欢迎来到 Qarote！",
+    "bodyWithWorkspace": "欢迎来到 Qarote！您的工作区 <strong>{{workspaceName}}</strong> 已在 <strong>{{planName}}</strong> 套餐下成功创建。",
+    "bodyWithoutWorkspace": "欢迎来到 Qarote！您的账户已在 <strong>{{planName}}</strong> 套餐下成功创建。请立即创建您的第一个工作区！",
+    "workspaceExplanation": "工作区帮助您管理 RabbitMQ 服务器、团队成员以及监控数据。您可以立即创建一个！",
+    "canMonitorNow": "您现在可以轻松地监控您的 RabbitMQ 集群并管理消息队列。",
+    "canMonitorAfterWorkspace": "创建工作区后，您就可以轻松地监控您的 RabbitMQ 集群并管理消息队列。",
+    "featuresHeadingWithWorkspace": "您现在可以：",
+    "featuresHeadingWithoutWorkspace": "创建工作区后，您可以：",
+    "featureCreateWorkspace": "🏢 创建您的第一个工作区以开始使用",
+    "featureAddServer": "🚀 添加您的第一个 RabbitMQ 服务器",
+    "featureExploreDashboard": "📊 探索仪表板和各项指标",
+    "featureSetupAlerts": "🔔 为您的队列设置告警",
+    "featureAdvancedAnalytics": "📈 访问高级分析功能",
+    "featureInviteTeam": "👥 邀请团队成员进行协作",
+    "featureMemoryMetrics": "🧠 查看详细的内存指标和优化建议",
+    "featurePrioritySupport": "🎯 获取优先支持和专家建议",
+    "ctaWithWorkspace": "前往仪表板",
+    "ctaWithoutWorkspace": "创建您的工作区",
+    "needHelp": "如果您需要入门帮助，请查看我们的",
+    "trialInfo": "您正在使用 {{planName}} 套餐的 {{trialDays}} 天免费试用。试用将于 {{trialEndDate}} 结束。试用期内无需付款。"
+  },
+  "invitation": {
+    "preview": "{{inviterName}} 邀请您加入 Qarote 上的 {{workspaceName}}",
+    "title": "您已被邀请加入 {{workspaceName}}！",
+    "body": "{{inviterName}}（{{inviterEmail}}）邀请您加入 Qarote 上的 <strong>{{workspaceName}}</strong> 工作区。",
+    "aboutQarote": "Qarote 是一个强大的 RabbitMQ 监控仪表板，帮助团队高效管理消息队列。",
+    "acceptButton": "接受邀请",
+    "expiryWarning": "此邀请将在 7 天后过期。如果您没有收到预期的邀请，可以安全地忽略此邮件。",
+    "havingTrouble": "如果您遇到问题，请随时联系我们的"
+  },
+  "orgInvitation": {
+    "preview": "{{inviterName}} 邀请您加入 Qarote 上的 {{orgName}} 组织",
+    "title": "您已被邀请加入一个组织！",
+    "body": "{{inviterName}}（{{inviterEmail}}）邀请您加入 Qarote 上的 <strong>{{orgName}}</strong> 组织。",
+    "acceptButton": "接受邀请",
+    "havingTrouble": "如果您遇到问题，请随时联系我们的"
+  },
+  "passwordReset": {
+    "title": "重置您的密码",
+    "body": "我们收到了重置您 Qarote 账户密码的请求。请点击下方按钮创建新密码。",
+    "resetButton": "重置密码",
+    "expiryWarning": "此链接将在 {{expiryHours}} 小时后过期。如果您没有请求密码重置，可以安全地忽略此邮件。",
+    "securityNote": "为了安全起见，此密码重置链接仅可使用一次。"
+  },
+  "alertNotification": {
+    "titleCritical": "🔴 严重告警",
+    "titleWarning": "⚠️ 警告",
+    "previewCritical": "在 {{serverName}} 上检测到 {{count}} 个严重告警",
+    "previewWarning": "在 {{serverName}} 上检测到 {{count}} 个警告",
+    "body": "在工作区 <strong>{{workspaceName}}</strong> 的 RabbitMQ 服务器 <strong>{{serverName}}</strong> 上检测到新的告警。",
+    "criticalAttention": "{{count}} 个严重告警需要立即处理",
+    "categoryAlerts": "{{category}} 告警",
+    "virtualHost": "虚拟主机：",
+    "current": "当前值：",
+    "threshold": "阈值：{{value}}",
+    "recommended": "建议值：",
+    "affected": "受影响：",
+    "detected": "检测时间：",
+    "viewAlerts": "在仪表板中查看告警",
+    "managePreferences": "您可以在以下位置管理告警阈值和偏好设置：",
+    "alertsSettings": "告警设置",
+    "automatedNotice": "这是来自 Qarote 的自动通知。您收到此消息是因为在您监控的服务器上检测到了新的告警。"
+  },
+  "paymentConfirmation": {
+    "title": "付款已确认",
+    "body": "您的 <strong>{{amount}}</strong> 付款已成功处理。",
+    "invoiceNumber": "发票编号：",
+    "date": "日期：",
+    "plan": "套餐：",
+    "viewBilling": "查看账单详情"
+  },
+  "paymentActionRequired": {
+    "title": "需要付款操作",
+    "body": "您的 <strong>{{workspaceName}}</strong> 付款需要您的关注。请更新您的付款方式以继续使用 Qarote。",
+    "updatePayment": "更新付款方式",
+    "warning": "如果未完成付款，您的订阅可能会被中断。"
+  },
+  "trialEnding": {
+    "title": "您的试用即将结束",
+    "body": "您的 <strong>{{workspaceName}}</strong> 的 <strong>{{plan}}</strong> 试用即将结束。{{usageText}}",
+    "upgradeCta": "添加支付方式",
+    "keepAccess": "立即升级以保留对所有功能的访问权限。"
+  },
+  "upgradeConfirmation": {
+    "title": "欢迎使用 {{plan}} 套餐！",
+    "body": "您的 <strong>{{plan}}</strong> 套餐升级已确认。感谢您的支持！",
+    "viewDashboard": "前往仪表板"
+  },
+  "welcomeBack": {
+    "title": "欢迎回到 Qarote！",
+    "body": "您的 <strong>{{plan}}</strong> 套餐已续订。欢迎回来！",
+    "viewDashboard": "前往仪表板"
+  },
+  "upcomingInvoice": {
+    "title": "即将到来的账单",
+    "body": "您的 <strong>{{workspaceName}}</strong> 下一张账单即将到期。",
+    "amount": "金额：",
+    "dueDate": "到期日：",
+    "viewBilling": "查看账单详情"
+  },
+  "updateAvailable": {
+    "title": "Qarote 有新版本可用！",
+    "body": "Qarote <strong>{{latestVersion}}</strong> 现已发布。您当前运行的版本为 <strong>{{currentVersion}}</strong>。",
+    "viewChangelog": "查看更新日志",
+    "updateNow": "立即更新"
+  },
+  "licenseDelivery": {
+    "title": "您的 Qarote 许可证已准备就绪！",
+    "body": "您的 Qarote <strong>{{tier}}</strong> 许可证已生成并可以使用。",
+    "licenseKey": "许可证密钥：",
+    "expiresOn": "到期日：",
+    "downloadLicense": "下载许可证",
+    "installInstructions": "安装方法：将许可证文件放置在 Qarote 安装目录中。"
+  },
+  "licenseRenewal": {
+    "title": "您的 Qarote 许可证已续订",
+    "body": "您的 <strong>{{tier}}</strong> 许可证已成功续订。",
+    "newExpiry": "新到期日：",
+    "viewLicense": "查看许可证详情"
+  },
+  "licenseExpirationReminder": {
+    "title": "您的 Qarote 许可证即将到期",
+    "body": "您的 <strong>{{tier}}</strong> 许可证将在 <strong>{{daysUntilExpiration}} 天</strong>后到期。",
+    "renewNow": "立即续订",
+    "warning": "到期后，企业版功能将不再可用。"
+  },
+  "licenseExpired": {
+    "title": "您的 Qarote 许可证已过期",
+    "body": "您的 <strong>{{tier}}</strong> 许可证已过期。企业版功能已不可用。",
+    "renewNow": "续订许可证",
+    "revertNotice": "您的实例已恢复为社区版功能。"
+  },
+  "licensePaymentFailed": {
+    "title": "许可证付款失败",
+    "body": "我们无法处理您的许可证付款。请更新您的付款方式以维持您的许可证。",
+    "updatePayment": "更新付款方式",
+    "warning": "如果付款问题未解决，您的许可证可能会被暂停。"
+  },
+  "licenseCancellation": {
+    "title": "您的 Qarote 许可证已被取消",
+    "body": "您的 <strong>{{tier}}</strong> 许可证已被取消，将保持有效至 <strong>{{endDate}}</strong>。",
+    "reactivate": "重新激活许可证",
+    "notice": "此日期之后，您的实例将恢复为社区版功能。"
+  }
+}

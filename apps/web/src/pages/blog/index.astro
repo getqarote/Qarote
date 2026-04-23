@@ -1,0 +1,79 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import BlogNav from "../../components/BlogNav.astro";
+
+const posts = (await getCollection("blog")).sort(
+  (a, b) => new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime()
+);
+
+const dateStr = (iso: string) =>
+  new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+---
+
+<BaseLayout
+  title="Blog — RabbitMQ Guides & Operations"
+  description="Practical guides for debugging RabbitMQ, optimizing consumer throughput, and running message queues in production."
+  canonicalPath="/blog/"
+>
+  <BlogNav backHref="/" backText="Back to site" />
+
+  <!-- Header -->
+  <header class="max-w-4xl mx-auto px-4 sm:px-6 pt-14 pb-10">
+    <p class="text-xs font-semibold uppercase tracking-widest text-primary mb-3">Blog</p>
+    <h1 class="font-display text-3xl sm:text-4xl font-semibold text-foreground tracking-tight mb-3">
+      RabbitMQ guides & operations
+    </h1>
+    <p class="text-base text-muted-foreground max-w-xl">
+      Practical debugging techniques, performance patterns, and production war stories from the team behind Qarote.
+    </p>
+  </header>
+
+  <!-- Post list -->
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 pb-20">
+    {posts.length === 0 ? (
+      <p class="text-muted-foreground text-sm">No posts yet. Check back soon.</p>
+    ) : (
+      <ul class="divide-y divide-border list-none">
+        {posts.map((post) => (
+          <li class="py-8 first:pt-0">
+            <article>
+              {post.data.tags && post.data.tags.length > 0 && (
+                <div class="flex flex-wrap gap-2 mb-3">
+                  {post.data.tags.map((tag) => (
+                    <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <h2 class="font-display text-xl font-semibold text-foreground leading-snug mb-2">
+                <a
+                  href={`/blog/${post.id}/`}
+                  class="hover:text-primary transition-colors no-underline"
+                >
+                  {post.data.title}
+                </a>
+              </h2>
+
+              <p class="text-sm text-muted-foreground leading-relaxed mb-4 max-w-2xl">
+                {post.data.description}
+              </p>
+
+              <div class="flex items-center gap-3 text-xs text-muted-foreground">
+                <time datetime={post.data.publishedAt}>{dateStr(post.data.publishedAt)}</time>
+                {post.data.readingTimeMin && (
+                  <>
+                    <span aria-hidden="true">·</span>
+                    <span>{post.data.readingTimeMin} min read</span>
+                  </>
+                )}
+              </div>
+            </article>
+          </li>
+        ))}
+      </ul>
+    )}
+  </main>
+</BaseLayout>

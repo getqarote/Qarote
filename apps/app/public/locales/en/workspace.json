@@ -1,0 +1,74 @@
+{
+  "create": {
+    "title": "Create Your Workspace",
+    "description": "Welcome to Qarote! Let's start by creating your first workspace. Workspaces help you organize your RabbitMQ servers and collaborate with your team.",
+    "cardTitle": "New Workspace",
+    "workspaceName": "Workspace Name *",
+    "workspaceNamePlaceholder": "My Workspace",
+    "tagsLabel": "Tags (Optional)",
+    "tagsPlaceholder": "Add tags to organize your workspace",
+    "tagsHint": "Use tags like \"production\", \"development\", or \"testing\" to organize your workspace",
+    "submit": "Create workspace",
+    "creating": "Creating workspace...",
+    "inviteMembers": "Invite Members",
+    "optional": "Optional",
+    "invitePlaceholder": "Type an email and press Enter to add",
+    "inviteHintWithLimit": "You can invite up to {{count}} members on your current plan",
+    "upgradeToInvite": "Upgrade to the Developer or Enterprise plan to invite team members.",
+    "invalidEmail": "Please enter a valid email address",
+    "role": "Role",
+    "selectRole": "Select a role",
+    "roleMember": "Member",
+    "roleAdmin": "Admin"
+  },
+  "createForm": {
+    "title": "Create New Workspace",
+    "description": "Create a new workspace to organize your RabbitMQ servers and collaborate with your team.",
+    "workspaceName": "Workspace Name",
+    "workspaceNamePlaceholder": "My Workspace",
+    "tags": "Tags",
+    "optional": "Optional",
+    "tagsPlaceholder": "Add tags to organize your workspace",
+    "tagsHint": "Use tags like \"production\", \"development\", or \"testing\"",
+    "inviteMembers": "Invite Members",
+    "invitePlaceholder": "Type an email and press Enter to add",
+    "inviteHintWithLimit": "You can invite up to {{count}} members on your current plan",
+    "upgradeToInvite": "Upgrade to the Developer or Enterprise plan to invite team members.",
+    "role": "Role",
+    "selectRole": "Select a role",
+    "roleMember": "Member",
+    "roleAdmin": "Admin",
+    "cancel": "Cancel",
+    "creating": "Creating...",
+    "submit": "Create workspace"
+  },
+  "inviteLinks": {
+    "title": "Share Invitation Links",
+    "description": "Email is not configured. Share these links manually with your team members.",
+    "done": "Done",
+    "copyFailed": "Failed to copy link",
+    "localhostWarningTitle": "Invite link contains localhost",
+    "localhostWarningDescription": "Your server URL (FRONTEND_URL) is set to localhost. This link was adjusted to use your current browser address, but you should update FRONTEND_URL in your .env file to your server's network address (e.g., http://192.168.1.50:8080) and restart Qarote."
+  },
+  "invites": {
+    "invalidEmail": "Please enter a valid email address",
+    "workspaceCreated": "Workspace created successfully!",
+    "workspaceCreatedSendingInvites": "Workspace created! Sending invitations...",
+    "invitationSent": "Invitation sent to {{email}}",
+    "invitationCreated": "Invitation created for {{email}}",
+    "invitationFailed": "Failed to invite {{email}}: {{error}}"
+  },
+  "success": {
+    "title": "Workspace Created Successfully!",
+    "redirecting": "Redirecting you to your dashboard..."
+  },
+  "error": {
+    "createFailed": "Failed to create workspace. Please try again.",
+    "unknown": "An unknown error occurred"
+  },
+  "toast": {
+    "workspaceCreated": "Workspace created successfully!",
+    "workspaceCreateFailed": "Failed to create workspace: {{error}}"
+  },
+  "loading": "Loading..."
+}

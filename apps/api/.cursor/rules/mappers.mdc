@@ -1,0 +1,113 @@
+---
+alwaysApply: true
+---
+
+# RabbitMQ API Response Mappers
+
+## Overview
+
+All RabbitMQ API responses are transformed through mapper classes located in `api/src/mappers/rabbitmq/`. These mappers convert internal RabbitMQ types to lean API response types that only include fields actually used by the web application.
+
+## Purpose
+
+1. **Reduce Payload Size**: Only send fields that the web application actually uses
+2. **Explicit API Contract**: Clear definition of what the web application receives
+3. **Type Safety**: Web application types match API response types exactly
+4. **Performance**: Less data to parse and process
+5. **Maintainability**: Centralized mapping logic
+
+## Mapper Structure
+
+All mappers follow this pattern:
+
+```typescript
+import type { RabbitMQEntity } from "@/types/rabbitmq";
+import type { EntityResponse } from "@/types/api";
+
+export class EntityMapper {
+  /**
+   * Map a single RabbitMQEntity to EntityResponse
+   */
+  static toApiResponse(entity: RabbitMQEntity): EntityResponse {
+    return {
+      // Only include fields used by web application
+      field1: entity.field1,
+      field2: entity.field2,
+      // ...
+    };
+  }
+
+  /**
+   * Map an array of RabbitMQEntity to EntityResponse[]
+   */
+  static toApiResponseArray(entities: RabbitMQEntity[]): EntityResponse[] {
+    return entities.map(this.toApiResponse);
+  }
+}
+```
+
+## Available Mappers
+
+- **QueueMapper**: Maps `RabbitMQQueue` → `QueueResponse`
+- **OverviewMapper**: Maps `RabbitMQOverview` → `OverviewApiResponse`
+- **VHostMapper**: Maps `RabbitMQVHost` → `VHostResponse`
+- **ExchangeMapper**: Maps `RabbitMQExchange` → `ExchangeResponse`
+- **UserMapper**: Maps `RabbitMQUser` → `UserResponse`
+- **BindingMapper**: Maps `RabbitMQBinding` → `BindingResponse`
+- **ConsumerMapper**: Maps `RabbitMQConsumer` → `ConsumerResponse`
+
+## Usage in Controllers
+
+Controllers should use mappers to transform responses before returning them:
+
+```typescript
+import { QueueMapper } from "@/mappers/rabbitmq";
+
+// In controller endpoint
+const queues = await client.getQueues();
+const mappedQueues = QueueMapper.toApiResponseArray(queues);
+return c.json({ queues: mappedQueues });
+```
+
+## Type Definitions
+
+- **Internal Types**: `api/src/types/rabbitmq.ts` - Full RabbitMQ API types
+- **API Response Types**: `api/src/types/api.ts` - Lean types for web application
+- **Web Application Types**: `app/src/lib/api/*` - Must match API response types
+
+## Rules
+
+1. **Only Include Used Fields**: Mappers should only include fields that are actually accessed in web application components
+2. **No `any` Types**: Use proper TypeScript types, even for enriched data
+3. **Handle Optional Fields**: Use optional chaining and nullish coalescing appropriately
+4. **Transform Nested Data**: Extract only needed nested fields (e.g., `message_stats.rate` only)
+5. **Maintain Type Safety**: Ensure mapped types match web application expectations exactly
+
+## Enriched Data
+
+Some mappers handle enriched data (data added by controllers):
+
+```typescript
+// Example: VHostMapper handles enriched vhosts with permissions, limits, stats
+type EnrichedVHost = RabbitMQVHost & {
+  permissions?: VHostPermissions[];
+  limits?: VHostLimits;
+  stats?: ControllerVHostStats;
+};
+```
+
+## When to Create a New Mapper
+
+Create a new mapper when:
+
+- A new RabbitMQ entity type is returned to the web application
+- An existing entity needs different fields for the web application
+- You need to transform or normalize data before sending to web application
+
+## Import Ordering
+
+Mappers should follow the import ordering convention:
+
+1. Types from `@/types/api`
+2. Types from `@/types/rabbitmq`
+3. Other internal types as needed

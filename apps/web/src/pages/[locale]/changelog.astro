@@ -1,0 +1,21 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ChangelogIsland from "../../components/ChangelogIsland";
+import { loadTranslations, loadAllTranslations, t } from "../../lib/i18n-static";
+import { getLocaleStaticPaths } from "../../lib/locales";
+
+export const getStaticPaths = getLocaleStaticPaths;
+
+const { locale } = Astro.params;
+const common = loadTranslations(locale, "common");
+const resources = loadAllTranslations(locale);
+---
+
+<BaseLayout
+  title={`${t(common, "changelog.title")} - Qarote RabbitMQ Dashboard`}
+  description={t(common, "changelog.subtitle")}
+  locale={locale}
+  canonicalPath="/changelog/"
+>
+  <ChangelogIsland locale={locale} resources={resources} client:load />
+</BaseLayout>

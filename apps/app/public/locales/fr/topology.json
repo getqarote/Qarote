@@ -1,0 +1,33 @@
+{
+  "pageTitle": "Topologie",
+  "pageSubtitle": "Carte visuelle des échanges, files d'attente et liaisons",
+  "noServerTitle": "Topologie",
+  "noServerDescription": "Ajoutez un serveur RabbitMQ pour voir sa topologie.",
+  "noServerSelected": "Aucun serveur sélectionné",
+  "selectServerPrompt": "Sélectionnez un serveur dans la barre latérale pour voir sa topologie.",
+  "loadingTopology": "Chargement de la topologie...",
+  "failedToLoad": "Échec du chargement de la topologie",
+  "noTopologyData": "Aucune donnée de topologie",
+  "noTopologyDataDesc": "Aucun échange ou file d'attente trouvé pour le serveur et l'hôte virtuel sélectionnés.",
+  "stats": {
+    "exchanges": "exchanges",
+    "exchanges_one": "échange",
+    "exchanges_other": "échanges",
+    "queues": "queues",
+    "queues_one": "file",
+    "queues_other": "files",
+    "bindings": "bindings",
+    "bindings_one": "liaison",
+    "bindings_other": "liaisons"
+  },
+  "filters": {
+    "defaultExchange": "Échange par défaut",
+    "filterPanel": "Filtrer"
+  },
+  "filter": {
+    "search": "Rechercher...",
+    "exchanges": "Échanges",
+    "queues": "Files",
+    "noMatch": "Aucun résultat"
+  }
+}

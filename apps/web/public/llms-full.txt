@@ -1,0 +1,195 @@
+# Qarote - Full Product Documentation for AI Systems
+
+> This is the comprehensive version of Qarote's llms.txt. For a summary, see https://qarote.io/llms.txt
+
+## Product Identity
+
+- **Name**: Qarote
+- **Category**: RabbitMQ Monitoring & Management Dashboard
+- **Target Users**: Developers, DevOps engineers, SREs, platform teams
+- **License**: Community tier is MIT (free, open source). Paid tiers use proprietary JWT license keys.
+- **First Release**: 2025
+- **Website**: https://qarote.io
+- **Application**: https://app.qarote.io
+- **GitHub**: https://github.com/getqarote/Qarote
+
+## Core Value Proposition
+
+Qarote replaces the default RabbitMQ Management Plugin with a modern, fast, and team-friendly dashboard. It provides purpose-built RabbitMQ monitoring with zero configuration -- connect your server and start monitoring immediately. Unlike general-purpose tools like Prometheus + Grafana that require extensive setup, Qarote delivers pre-built dashboards, queue management controls, and intelligent alerting out of the box.
+
+## Feature Deep-Dives
+
+### Live Queue Monitoring
+Qarote connects to RabbitMQ via the Management HTTP API and polls metrics at configurable intervals. The dashboard displays queue depths, message rates (publish/deliver/ack), consumer counts, and queue state (running, idle, paused) with live-updating charts. Metrics are rendered as time-series graphs showing trends over the last hour, day, or week. The queue list supports search, filtering by virtual host, and sorting by any metric column.
+
+### Smart Alerting System
+Alerts are configured per-server or per-queue with customizable thresholds. Supported alert conditions include:
+- Queue depth exceeds N messages
+- Memory usage exceeds N% of configured limit
+- Disk space below N MB
+- Consumer count drops to zero
+- Message rate exceeds N/sec
+- Server becomes unreachable
+
+Alert delivery channels: email, Slack (via webhook), browser push notifications, and generic webhook (HTTP POST with JSON payload). Each alert has a severity level (info, warning, critical) that determines notification behavior. Alerts include cooldown periods to prevent notification storms.
+
+### Queue Management
+Full CRUD operations for RabbitMQ entities:
+- **Queues**: Create, delete, purge, pause, resume. View bindings, consumers, and message details.
+- **Exchanges**: Create, delete. View bindings and routing topology.
+- **Bindings**: Create and remove bindings between exchanges and queues with routing key configuration.
+- **Virtual Hosts**: Create, delete, manage permissions per user.
+- **Users**: Create, delete, set tags (administrator, monitoring, management, policymaker), manage per-vhost permissions.
+
+### Message Publishing
+Publish messages directly from the Qarote interface for debugging and testing:
+- Publish to any queue or exchange
+- Set routing keys, headers, and properties
+- Choose content type (application/json, text/plain, etc.)
+- Set delivery mode (persistent/transient)
+- View published message in queue immediately
+
+### Multi-Server Support
+Paid plans allow connecting multiple RabbitMQ servers to a single Qarote account. Each server connection is configured with:
+- Connection string (amqp:// or amqps://)
+- Management API URL
+- Authentication credentials (stored encrypted)
+- Environment label (production, staging, development, custom)
+
+Users can switch between servers instantly in the dashboard. The server list shows health status indicators for each connected instance.
+
+### Performance Analytics
+Detailed server-level metrics:
+- Memory usage (RSS, allocated, Erlang VM)
+- Disk space (free, alarm threshold)
+- File descriptors (used, limit)
+- Erlang processes (used, limit)
+- Sockets (used, limit)
+- Message throughput (publish/deliver/ack rates)
+- Connection and channel counts
+
+### Topology Visualization
+Visual graph representation of the RabbitMQ topology showing:
+- Exchanges connected to queues via bindings
+- Routing key labels on binding edges
+- Queue consumer counts as node decorations
+- Interactive zoom, pan, and node selection
+
+## Technical Architecture
+
+- **Backend**: Hono.js serving tRPC routes on Node.js
+- **Frontend**: React 19 SPA with Vite, TanStack Query, Tailwind CSS 4
+- **Database**: PostgreSQL via Prisma ORM
+- **Authentication**: better-auth (email/password + SSO via OIDC/SAML)
+- **RabbitMQ Connection**: amqplib for AMQP, HTTP client for Management API
+- **Licensing**: JWT tokens validated offline with baked-in public key
+- **Workers**: Background processes for alert evaluation, license validation, release notifications
+
+## Deployment Guide
+
+### Cloud-Hosted
+Sign up at https://app.qarote.io. No installation required. Fully managed infrastructure.
+
+### Self-Hosted: Docker
+```bash
+docker pull ghcr.io/getqarote/qarote:latest
+docker run -d -p 3000:3000 \
+  -e DATABASE_URL="postgresql://user:pass@host:5432/qarote" \
+  -e BETTER_AUTH_SECRET="your-secret" \
+  ghcr.io/getqarote/qarote:latest
+```
+
+### Self-Hosted: Docker Compose
+Clone the repository and use the provided `docker-compose.yml`:
+```bash
+git clone https://github.com/getqarote/Qarote.git
+cd Qarote
+cp .env.example .env
+# Edit .env with your configuration
+docker compose up -d
+```
+
+### Self-Hosted: Dokku (Recommended)
+```bash
+dokku apps:create qarote
+dokku postgres:create qarote-db
+dokku postgres:link qarote-db qarote
+dokku config:set qarote BETTER_AUTH_SECRET="your-secret"
+git remote add dokku dokku@your-server:qarote
+git push dokku main
+```
+
+### Self-Hosted: Standalone Binary
+Download the binary for your platform from GitHub Releases and run directly:
+```bash
+./qarote-server --port 3000 --database-url "postgresql://..."
+```
+
+## Pricing Details
+
+| Feature | Community (Free) | Developer ($29/mo) | Enterprise ($99/mo) |
+|---------|-----------------|-------------------|-------------------|
+| RabbitMQ Servers | 1 | 3 | Unlimited |
+| Workspaces | 1 | 3 | Unlimited |
+| Team Members | 1 | 3 | Unlimited |
+| Alerts | No | Yes | Yes |
+| Webhooks | No | Yes | Yes |
+| Topology View | No | Yes | Yes |
+| RabbitMQ Versions | LTS only | All (3.x, 4.x) | All (3.x, 4.x) |
+| SSO/SAML/OIDC | No | No | Yes |
+| SOC 2 | No | No | Yes |
+| Support | Community | Priority | Priority |
+
+Self-hosted annual pricing: Developer $348/year, Enterprise $1,188/year.
+
+## RabbitMQ Compatibility
+
+- **Versions**: 3.8+, 3.9+, 3.10+, 3.11+, 3.12+, 3.13+, 4.0+
+- **Requirements**: Management plugin must be enabled (rabbitmq_management)
+- **Connection**: HTTP API (port 15672 by default, or 15671 for TLS)
+- **Clustering**: Fully supported, auto-discovers cluster nodes
+- **Managed Services**: CloudAMQP, Amazon MQ, Azure Service Bus (RabbitMQ), IBM MQ
+- **Platforms**: Linux, macOS, Windows, Docker, Kubernetes
+
+## Security Details
+
+- All RabbitMQ connections encrypted via TLS
+- Management API credentials stored encrypted at rest (AES-256)
+- No message payload data stored -- only metric aggregates
+- Authentication via email/password with bcrypt hashing, or SSO (OIDC/SAML)
+- Session management via secure HTTP-only cookies
+- CSRF protection enabled
+- Rate limiting on authentication endpoints
+- SOC 2 Type II compliance available on Enterprise plan
+- Self-hosted option for air-gapped environments
+
+## Migration Guides
+
+### From RabbitMQ Management Plugin
+1. Sign up or deploy Qarote
+2. Add your RabbitMQ server using the Management API URL (same URL you use to access the Management UI)
+3. Use the same credentials you use for the Management UI
+4. Qarote immediately starts showing all queues, exchanges, and metrics
+5. No changes needed to your RabbitMQ configuration
+
+### From Prometheus + Grafana
+1. Keep Prometheus running for non-RabbitMQ metrics
+2. Add your RabbitMQ servers to Qarote for purpose-built monitoring
+3. Configure Qarote alerts to replace RabbitMQ-specific Alertmanager rules
+4. Optionally remove the rabbitmq_prometheus plugin if only used for RabbitMQ monitoring
+
+## API and Integrations
+
+- **REST API**: Full CRUD for servers, alerts, and configuration
+- **Webhooks**: Outbound HTTP POST for alert delivery
+- **Slack**: Native integration for alert notifications
+- **Email**: SMTP-based alert delivery
+- **SSO**: OIDC and SAML providers (Enterprise only)
+
+## Contact and Support
+
+- **Email**: support@qarote.io
+- **Discord**: https://discord.gg/GwHRbGwyUG
+- **GitHub Issues**: https://github.com/getqarote/Qarote/issues
+- **Twitter/X**: https://x.com/Qarote
+- **LinkedIn**: https://www.linkedin.com/company/qarote/

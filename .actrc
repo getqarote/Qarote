@@ -1,0 +1,10 @@
+# act configuration file
+# See https://nektosact.com/usage/index.html#configuration-file
+# This file sets default options for running act commands
+
+# Use medium-sized image (good balance of compatibility and size)
+-P ubuntu-latest=catthehacker/ubuntu:act-latest
+
+# Use linux/amd64 architecture for Apple Silicon compatibility  
+--container-architecture linux/amd64
+

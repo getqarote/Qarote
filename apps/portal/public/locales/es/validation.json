@@ -1,0 +1,17 @@
+{
+  "required": "Este campo es obligatorio",
+  "invalidEmail": "Ingrese una dirección de correo electrónico válida",
+  "passwordRequired": "La contraseña es obligatoria",
+  "passwordMinLength": "La contraseña debe tener al menos 8 caracteres",
+  "passwordLowercase": "La contraseña debe contener al menos una letra minúscula",
+  "passwordUppercase": "La contraseña debe contener al menos una letra mayúscula",
+  "passwordNumber": "La contraseña debe contener al menos un número",
+  "passwordSpecial": "La contraseña debe contener al menos un carácter especial",
+  "passwordsDoNotMatch": "Las contraseñas no coinciden",
+  "firstNameRequired": "El nombre es obligatorio",
+  "lastNameRequired": "El apellido es obligatorio",
+  "acceptTermsRequired": "Debe aceptar los Términos de servicio y la Política de privacidad",
+  "invalidUrl": "Ingrese una URL válida",
+  "minLength": "Debe tener al menos {{min}} caracteres",
+  "maxLength": "Debe tener como máximo {{max}} caracteres"
+}

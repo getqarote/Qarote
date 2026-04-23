@@ -1,0 +1,593 @@
+@import "tailwindcss";
+
+@plugin 'tailwindcss-animate';
+
+@custom-variant dark (&:is(.dark *));
+@custom-variant rtl (&:is([dir="rtl"] *));
+
+@utility image-crisp {
+  image-rendering: crisp-edges;
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+  @media (width >= --theme(--breakpoint-sm)) {
+    max-width: none;
+  }
+  @media (width >= 1400px) {
+    max-width: 1400px;
+  }
+}
+
+@font-face {
+  font-family: "Bricolage Grotesque";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url("https://fonts.gstatic.com/s/bricolagegrotesque/v7/3y9U6as8bTXq_nANBjzKo3IeZx8z6up5BeSl5jBNz_19PcbfFA.woff2")
+    format("woff2");
+}
+
+@font-face {
+  font-family: "Fragment Mono";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("https://fonts.gstatic.com/s/fragmentmono/v4/4iCr6K5wfMRRjxp0DA6-2CLnN4RNh4UI_1GsQg.woff2")
+    format("woff2");
+}
+
+@theme {
+  --font-display:
+    "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono:
+    "Fragment Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-feature-icon-bg: hsl(var(--feature-icon-bg));
+  --color-status-success-bg: hsl(var(--status-success-bg));
+  --color-status-success-border: hsl(var(--status-success-border));
+  --color-status-success-text: hsl(var(--status-success-text));
+  --color-status-warning-bg: hsl(var(--status-warning-bg));
+  --color-status-warning-text: hsl(var(--status-warning-text));
+  --color-status-danger-bg: hsl(var(--status-danger-bg));
+  --color-status-danger-text: hsl(var(--status-danger-text));
+
+  --color-sidebar: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 1px);
+  --radius-sm: calc(var(--radius) - 2px);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-slide-in-right: slide-in-right 1s ease-out forwards;
+  --animate-slide-in-left: slide-in-left 1s ease-out forwards;
+  --shadow-soft: 0 4px 6px #00000008;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+  @keyframes slide-in-right {
+    0% {
+      opacity: 0;
+      transform: translateX(100%);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  @keyframes slide-in-left {
+    0% {
+      opacity: 0;
+      transform: translateX(-100%);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  @keyframes fade-out {
+    0% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+@utility page-layout {
+  /* Page Layout Components */
+  @apply flex h-screen bg-background;
+}
+
+@utility title-page {
+  @apply text-3xl font-bold text-foreground;
+}
+
+@utility title-section {
+  @apply text-2xl font-semibold text-foreground mb-4;
+}
+
+@utility main-content {
+  /* Main Content Layout */
+  @apply flex-1 flex flex-col min-h-0;
+}
+
+@utility main-content-scrollable {
+  @apply flex-1 flex flex-col min-h-0 overflow-auto;
+}
+
+@utility content-container {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6;
+}
+
+@utility content-container-large {
+  @apply max-w-7xl mx-auto px-6 py-6 space-y-6;
+}
+
+@utility card-unified {
+  /* Card Components */
+  @apply bg-card border border-border rounded-lg shadow-xs;
+}
+
+@utility card-unified-compact {
+  @apply bg-card border border-border rounded-md shadow-xs p-4;
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 20 14.3% 4.1%;
+    --card: 30 25% 98%; /* rgb(252 250 246) converted to HSL - unified card background */
+    --card-foreground: 20 14.3% 4.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 14.3% 4.1%;
+
+    /* Orange primary theme — synced with app */
+    --primary: 24 82% 52%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 30 25% 94%;
+    --secondary-foreground: 25 45% 17%;
+
+    --muted: 30 25% 94%;
+    --muted-foreground: 25 8% 45%;
+
+    --accent: 30 25% 94%;
+    --accent-foreground: 25 45% 17%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 30 25% 89%;
+    --input: 30 25% 89%;
+    --ring: 25 95% 53%;
+
+    /* Semantic accent surfaces */
+    --feature-icon-bg: 33 100% 93%; /* orange-100 equivalent */
+    --status-success-bg: 138 76% 97%; /* green-50 equivalent */
+    --status-success-border: 142 69% 82%; /* green-200 equivalent */
+    --status-success-text: 142 71% 29%; /* green-700 equivalent */
+    --status-warning-bg: 48 96% 89%; /* yellow-100 equivalent */
+    --status-warning-text: 32 95% 44%; /* yellow-700 equivalent */
+    --status-danger-bg: 0 93% 94%; /* red-100 equivalent */
+    --status-danger-text: 0 72% 51%; /* red-600 equivalent */
+
+    /* Smaller radius */
+    --radius: 0.25rem;
+
+    /* Orange sidebar theme */
+    --sidebar-background: 30 54% 98%;
+    --sidebar-foreground: 25 25% 20%;
+    --sidebar-primary: 25 95% 53%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 30 35% 92%;
+    --sidebar-accent-foreground: 25 45% 17%;
+    --sidebar-border: 30 25% 89%;
+    --sidebar-ring: 25 95% 53%;
+  }
+
+  .dark {
+    --background: 20 14.3% 4.1%;
+    --foreground: 0 0% 95%;
+    --card: 30 25% 98%; /* Same unified card background in dark mode */
+    --card-foreground: 20 14.3% 4.1%; /* Dark text on light card */
+    --popover: 20 14.3% 4.1%;
+    --popover-foreground: 0 0% 95%;
+
+    /* Orange primary theme for dark mode — synced with app */
+    --primary: 24 82% 56%;
+    --primary-foreground: 20 14.3% 4.1%;
+
+    --secondary: 25 14% 12%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 25 14% 12%;
+    --muted-foreground: 25 8% 65%;
+
+    --accent: 25 14% 12%;
+    --accent-foreground: 0 0% 95%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 25 14% 12%;
+    --input: 25 14% 12%;
+    --ring: 25 95% 53%;
+
+    /* Orange sidebar theme for dark mode */
+    --sidebar-background: 25 20% 8%;
+    --sidebar-foreground: 30 25% 85%;
+    --sidebar-primary: 25 95% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 25 15% 15%;
+    --sidebar-accent-foreground: 30 25% 85%;
+    --sidebar-border: 25 14% 12%;
+    --sidebar-ring: 25 95% 53%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+  }
+
+  a:not([aria-disabled="true"]),
+  button:not(:disabled, [aria-disabled="true"]),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
+  a[aria-disabled="true"],
+  button:disabled,
+  button[aria-disabled="true"],
+  [role="button"][aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
+
+/* ─── Docs prose ──────────────────────────────────────────────────────────── */
+/* Strictly follows the landing/features page design system:
+   - font-normal headings (display font, no heavy weight)
+   - text-muted-foreground body text
+   - square borders (no border-radius)
+   - bg-muted/30 for subtle fills
+   - primary accent for bullets and highlights
+*/
+.docs-prose {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.9375rem;
+  line-height: 1.75;
+}
+
+.docs-prose h1 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 400;
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+  color: hsl(var(--foreground));
+}
+
+.docs-prose h2 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.3;
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+  color: hsl(var(--foreground));
+  scroll-margin-top: 5rem;
+  position: relative;
+}
+
+.docs-prose h3 {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 500;
+  line-height: 1.4;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+  color: hsl(var(--foreground));
+  scroll-margin-top: 5rem;
+  position: relative;
+}
+
+.docs-prose p {
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+}
+
+.docs-prose a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: opacity 0.15s;
+}
+.docs-prose a:hover {
+  opacity: 0.75;
+}
+
+.docs-prose strong {
+  font-weight: 500;
+  color: hsl(var(--foreground));
+}
+
+.docs-prose em {
+  font-style: italic;
+}
+
+/* Lists — square primary bullet, matches changelog list style */
+.docs-prose ul {
+  list-style: none;
+  padding-left: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.docs-prose ul > li {
+  position: relative;
+  margin-bottom: 0.4rem;
+}
+
+.docs-prose ul > li::before {
+  content: "";
+  position: absolute;
+  left: -1.25rem;
+  top: 0.6em;
+  width: 0.375rem;
+  height: 0.375rem;
+  background-color: hsl(var(--primary) / 60%);
+}
+
+.docs-prose ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.docs-prose li {
+  margin-bottom: 0.375rem;
+}
+
+.docs-prose li > p {
+  margin-bottom: 0.5rem;
+}
+
+/* Inline code — matches font-mono pattern used in changelog/metrics */
+.docs-prose :not(pre) > code {
+  font-family: var(--font-mono);
+  font-size: 0.84em;
+  background-color: hsl(var(--muted) / 50%);
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+  padding: 0.1em 0.35em;
+}
+
+/* Code blocks — square border, bg-muted/30 matching feature card style */
+.docs-prose pre {
+  background-color: hsl(var(--muted) / 50%) !important;
+  border: 1px solid hsl(var(--border));
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Preserve Shiki token colors — only reset layout properties */
+.docs-prose pre code {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  font-family: var(--font-mono);
+  font-size: inherit;
+}
+
+/* Tables — square borders, matches feature comparison table style */
+.docs-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+  font-size: 0.9375rem;
+  border: 1px solid hsl(var(--border));
+}
+
+.docs-prose thead {
+  background-color: hsl(var(--muted) / 30%);
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.docs-prose th {
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.6rem 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.docs-prose td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid hsl(var(--border));
+  color: hsl(var(--muted-foreground));
+}
+
+.docs-prose tr:last-child td {
+  border-bottom: none;
+}
+
+.docs-prose td:first-child {
+  font-weight: 500;
+  color: hsl(var(--foreground));
+  font-size: 0.9375rem;
+}
+
+/* Anchor links on headings — appear on hover */
+.docs-prose h2 .docs-anchor,
+.docs-prose h3 .docs-anchor {
+  display: inline-block;
+  margin-left: 0.4em;
+  opacity: 0;
+  color: hsl(var(--muted-foreground));
+  text-decoration: none;
+  font-weight: 400;
+  font-size: 0.875em;
+  transition: opacity 0.15s;
+  user-select: none;
+}
+.docs-prose h2:hover .docs-anchor,
+.docs-prose h3:hover .docs-anchor {
+  opacity: 1;
+}
+.docs-prose h2 .docs-anchor:hover,
+.docs-prose h3 .docs-anchor:hover {
+  color: hsl(var(--primary));
+  opacity: 1;
+}
+
+/* Copy button on code blocks */
+.docs-pre-wrapper {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+.docs-pre-wrapper pre {
+  margin-bottom: 0;
+}
+.docs-copy-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  background-color: hsl(var(--muted) / 50%);
+  border: 1px solid hsl(var(--border));
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.15s,
+    color 0.15s;
+  line-height: 1.5;
+}
+.docs-pre-wrapper:hover .docs-copy-btn {
+  opacity: 1;
+}
+.docs-copy-btn:hover {
+  color: hsl(var(--foreground));
+}
+.docs-copy-btn.copied {
+  color: hsl(var(--primary));
+  opacity: 1;
+}
+
+.docs-copy-btn.failed {
+  color: hsl(var(--destructive));
+  opacity: 1;
+}
+
+/* Blockquote */
+.docs-prose blockquote {
+  border-left: 2px solid hsl(var(--primary));
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  color: hsl(var(--muted-foreground));
+}
+
+/* HR */
+.docs-prose hr {
+  border: none;
+  border-top: 1px solid hsl(var(--border));
+  margin: 2rem 0;
+}

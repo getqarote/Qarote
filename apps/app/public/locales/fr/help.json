@@ -1,0 +1,89 @@
+{
+  "title": "Aide et support",
+  "subtitle": "Trouvez des réponses aux questions fréquentes, envoyez vos commentaires ou obtenez de l'aide avec le tableau de bord RabbitMQ.",
+  "quickLinksTitle": "Liens rapides",
+  "quickLinks": {
+    "dashboard": {
+      "title": "Tableau de bord et serveurs",
+      "description": "Consultez la vue d'ensemble et gérez vos connexions aux serveurs RabbitMQ"
+    },
+    "queueManagement": {
+      "title": "Gestion des files d'attente",
+      "description": "Affichez et gérez vos files d'attente RabbitMQ"
+    },
+    "rabbitMQDocs": {
+      "title": "Documentation RabbitMQ",
+      "description": "Documentation officielle et guides RabbitMQ"
+    }
+  },
+  "contact": {
+    "title": "Contacter le support",
+    "description": "Besoin d'aide personnalisée ? Contactez notre équipe de support.",
+    "generalSupport": "Support général",
+    "copyEmailAria": "Copier l'adresse e-mail du support",
+    "responseTime": "Nous répondons généralement sous 24 heures les jours ouvrables. Vous ne pouvez pas ouvrir votre client de messagerie ? Utilisez le bouton de copie pour obtenir notre adresse e-mail."
+  },
+  "toast": {
+    "emailCopied": "E-mail copié !",
+    "emailCopiedDescription": "support@qarote.io a été copié dans votre presse-papiers.",
+    "copyFailed": "Échec de la copie",
+    "copyFailedDescription": "Veuillez copier manuellement : support@qarote.io"
+  },
+  "chat": {
+    "title": "Chat en direct",
+    "description": "Besoin d'aide en temps réel ? Démarrez une conversation avec notre équipe.",
+    "startChat": "Démarrer une conversation",
+    "unavailable": "Le chat est actuellement indisponible. Veuillez réessayer plus tard ou nous contacter par email."
+  },
+  "community": {
+    "title": "Support communautaire",
+    "description": "Rejoignez notre communauté Discord pour obtenir de l'aide des autres utilisateurs et de l'équipe."
+  },
+  "faqTitle": "Questions fréquemment posées",
+  "faqSearchHint": "Recherchez par question ou mot-clé.",
+  "faqSearchPlaceholder": "Rechercher dans les FAQ",
+  "faqNoResultsTitle": "Aucun résultat",
+  "faqNoResultsDesc": "Essayez une autre recherche, ou contactez le support via les options à gauche.",
+  "faqs": {
+    "connectServer": {
+      "question": "Comment me connecter à mon serveur RabbitMQ ?",
+      "answer": "Depuis la barre latérale, cliquez sur le sélecteur de serveur ou l'icône engrenage, puis 'Ajouter un serveur'. Entrez l'hôte, le port et les identifiants de l'API Management RabbitMQ. Cliquez sur 'Tester la connexion' pour vérifier avant d'enregistrer. Qarote se connecte via l'API HTTP Management (port par défaut 15672 ou 443 pour TLS)."
+    },
+    "credentialsSecurity": {
+      "question": "Mon mot de passe RabbitMQ est-il stocké de manière sécurisée ?",
+      "answer": "Oui. Vos identifiants serveur sont chiffrés au repos avec un chiffrement AES-256. Ils ne sont jamais exposés dans l'interface après la configuration initiale et sont uniquement utilisés côté serveur pour communiquer avec votre API Management RabbitMQ via HTTPS."
+    },
+    "readOnly": {
+      "question": "Qarote modifie-t-il mon serveur RabbitMQ ?",
+      "answer": "Qarote est principalement un outil de surveillance en lecture seule. Il utilise l'API Management RabbitMQ pour récupérer les métriques, files d'attente, connexions et données des nœuds. Les actions sur les files (purge, suppression) sont des actions utilisateur explicites nécessitant une confirmation — Qarote ne modifie jamais votre serveur automatiquement."
+    },
+    "compatibility": {
+      "question": "Puis-je utiliser Qarote avec Amazon MQ, CloudAMQP ou en auto-hébergé ?",
+      "answer": "Oui. Qarote fonctionne avec toute instance RabbitMQ qui expose l'API Management, y compris Amazon MQ pour RabbitMQ, CloudAMQP, Bitnami, Docker et les installations bare-metal. Assurez-vous simplement que le plugin Management est activé et que le port API est accessible."
+    },
+    "multipleServers": {
+      "question": "Puis-je surveiller plusieurs serveurs dans différents environnements ?",
+      "answer": "Oui. Vous pouvez ajouter plusieurs serveurs (dev, staging, production) à votre espace de travail et basculer entre eux depuis la barre latérale. Chaque serveur a ses propres paramètres de connexion et sélecteur de virtual host."
+    },
+    "refreshRate": {
+      "question": "À quelle fréquence le tableau de bord actualise-t-il les données ?",
+      "answer": "Les cartes métriques se rafraîchissent toutes les 10 à 30 secondes selon le type de données. Le graphique des messages en file se met à jour toutes les 5 secondes. L'intervalle de rafraîchissement est affiché sur chaque carte. Les données sont récupérées directement depuis votre serveur RabbitMQ et brièvement mises en cache entre les cycles de rafraîchissement pour la performance."
+    },
+    "availability": {
+      "question": "Que se passe-t-il si Qarote tombe en panne ?",
+      "answer": "Rien. Qarote est un observateur passif — il lit les données de vos serveurs RabbitMQ mais n'est pas dans le chemin des messages. Si Qarote est indisponible, vos clusters RabbitMQ continuent de fonctionner normalement. Vous perdez temporairement la visibilité du tableau de bord et les notifications d'alerte."
+    },
+    "setupAlerts": {
+      "question": "Comment configurer les alertes ?",
+      "answer": "Allez sur la page Alertes et cliquez sur 'Créer une règle d'alerte'. Choisissez un type de métrique (profondeur de file, mémoire, disque, etc.), définissez un seuil et un niveau de sévérité. Vous serez notifié via vos canaux configurés (email, navigateur, webhook ou Slack) lorsque le seuil est dépassé."
+    },
+    "teamMembers": {
+      "question": "Comment ajouter des membres à mon espace de travail ?",
+      "answer": "Allez dans Paramètres > Organisation et cliquez sur 'Inviter'. Entrez l'email de votre collègue — il recevra une invitation à rejoindre votre espace de travail. Vous pouvez attribuer des rôles (Membre ou Admin) pour contrôler les niveaux d'accès."
+    },
+    "plans": {
+      "question": "Quelle est la différence entre les plans gratuit et payant ?",
+      "answer": "Le plan gratuit inclut 1 serveur et la surveillance de base. Les plans payants débloquent plusieurs serveurs, les alertes avancées, les intégrations webhook/Slack, la collaboration en équipe et le support prioritaire. Consultez Paramètres > Abonnement pour les détails de votre plan actuel et les options de mise à niveau."
+    }
+  }
+}

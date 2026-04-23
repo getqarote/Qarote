@@ -1,0 +1,107 @@
+{
+  "layout": {
+    "title": "Qarote Portal",
+    "licenses": "Licenses",
+    "account": "Account",
+
+    "logout": "Logout"
+  },
+  "footer": {
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service"
+  },
+  "licenseManagement": {
+    "title": "My Licenses",
+    "description": "Manage your Qarote self-hosted licenses",
+    "purchaseNew": "Purchase New License",
+    "noLicenses": "You don't have any licenses yet.",
+    "noLicensesHint": "Licenses unlock premium features in your self-hosted instance. Just purchased? It may take a moment to appear.",
+    "copiedToClipboard": "License key copied to clipboard",
+    "copyLicenseKey": "Copy license key",
+    "copyFailed": "Failed to copy — please select and copy manually.",
+    "licenseKey": "License Key",
+    "license": "License",
+    "expires": "Expires: {{date}}",
+    "noExpiration": "No expiration",
+    "purchasedOn": "Purchased: {{date}}",
+    "lastValidated": "Last validated: {{date}}",
+    "licenseOfTier": "{{tier}} License",
+    "loadingLicenses": "Loading licenses...",
+    "errorLoadingLicenses": "Couldn't load your licenses.",
+    "retryLoading": "Try again",
+    "showFullKey": "Show full key",
+    "hideKey": "Hide key",
+    "activationGuide": "Paste this key in your Qarote instance under Settings → License.",
+    "activationDocsLink": "View activation guide →",
+    "expiredOn": "This license expired on {{date}}.",
+    "expiredNoDate": "This license is no longer active.",
+    "renewLicense": "Renew",
+    "purchaseSuccess": "Your license is ready",
+    "purchaseSuccessSubtitle": "Copy the key below to activate your Qarote instance.",
+    "tier": {
+      "developer": "Developer",
+      "enterprise": "Enterprise",
+      "free": "Free"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    }
+  },
+  "licensePurchase": {
+    "title": "Purchase License",
+    "annualLicensing": "Annual licensing · 365-day validity · self-hosted deployments",
+    "purchaseFailed": "Failed to initiate purchase. You were not charged.",
+    "perYear": "/year",
+    "redirectingToStripe": "Redirecting to Stripe...",
+    "purchasePlanLabel": "Purchase {{name}} License — {{price}}/yr",
+    "tryAgain": "Try again",
+    "or": "or",
+    "contactSupport": "contact support",
+    "stripeHandoff": "You will be redirected to Stripe for secure payment · License key delivered by email",
+    "enterpriseContact": "Need custom terms or have questions?",
+    "badges": {
+      "selected": "Selected",
+      "soon": "Soon"
+    },
+    "categories": {
+      "coreFeatures": "Core Features",
+      "security": "Security & Compatibility",
+      "support": "Support"
+    },
+    "features": {
+      "servers": "RabbitMQ Servers",
+      "workspaces": "Workspaces",
+      "teamMembers": "Team Members",
+      "advancedAnalytics": "Advanced analytics",
+      "queueManagement": "Queue, Exchange, VHost & User management",
+      "alertsWebhooks": "Alerts & webhooks",
+      "topologyVisualization": "Topology visualization",
+      "roleBasedAccess": "Role-based access",
+      "ssoSamlOidc": "SSO, SAML & OIDC",
+      "soc2": "SOC 2 compliance",
+      "rabbitmqVersions": "RabbitMQ version support",
+      "communitySupport": "Community support",
+      "prioritySupport": "Priority support"
+    },
+    "limits": {
+      "upTo3": "Up to 3",
+      "unlimited": "Unlimited",
+      "rabbitmqVersionsValue": "All versions 3.x and 4.x"
+    },
+    "plans": {
+      "developer": {
+        "name": "Developer"
+      },
+      "enterprise": {
+        "name": "Enterprise"
+      }
+    }
+  },
+  "codeBlock": {
+    "copied": "Copied",
+    "copy": "Copy"
+  },
+  "signupVerifiedExtra": " You can now purchase and manage your licenses.",
+  "goToLicenses": "Go to Licenses"
+}

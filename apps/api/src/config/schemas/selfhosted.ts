@@ -1,0 +1,111 @@
+import { z } from "zod/v4";
+
+import { baseSchema } from "./base.js";
+
+/**
+ * Self-hosted deployment mode schema
+ * Used for all self-hosted deployments (formerly community + enterprise)
+ * Premium features are gated by license activation through the UI, not env vars
+ */
+export const selfhostedSchema = baseSchema.extend({
+  // Deployment Mode
+  DEPLOYMENT_MODE: z.literal("selfhosted"),
+
+  // Registration control
+  ENABLE_REGISTRATION: z.stringbool().optional().default(true),
+
+  // Email Configuration - All optional with sensible defaults
+  ENABLE_EMAIL: z.coerce.boolean().default(false),
+  EMAIL_PROVIDER: z.literal("smtp").default("smtp"),
+  FROM_EMAIL: z
+    .string()
+    .trim()
+    .min(1)
+    .refine((value) => !/[\r\n]/.test(value), {
+      message: "FROM_EMAIL must not contain CR or LF",
+    })
+    .optional()
+    .default("Qarote <noreply@localhost>")
+    .describe("Email sender address - only needed if ENABLE_EMAIL=true"),
+  FRONTEND_URL: z
+    .url()
+    .optional()
+    .default("http://localhost:8080")
+    .describe(
+      "Frontend URL for email links - only needed if ENABLE_EMAIL=true"
+    ),
+  API_URL: z
+    .url()
+    .optional()
+    .default("http://localhost:3000")
+    .describe(
+      "Backend API URL for OAuth callbacks - only needed if SSO_ENABLED=true"
+    ),
+  PORTAL_FRONTEND_URL: z
+    .url()
+    .optional()
+    .describe("Portal frontend URL - only needed if ENABLE_EMAIL=true"),
+
+  // SMTP Configuration - Optional (only email provider for self-hosted)
+  // Basic Authentication (simple):
+  SMTP_HOST: z.string().optional().describe("SMTP server hostname"),
+  SMTP_PORT: z.coerce.number().optional().default(587),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  // OAuth2 Authentication (recommended for production):
+  SMTP_SERVICE: z
+    .string()
+    .optional()
+    .describe(
+      "SMTP service name for OAuth2 (e.g., 'gmail', 'outlook'). See https://nodemailer.com/smtp/oauth2/"
+    ),
+  SMTP_OAUTH_CLIENT_ID: z
+    .string()
+    .optional()
+    .describe("OAuth2 client ID from your email provider"),
+  SMTP_OAUTH_CLIENT_SECRET: z
+    .string()
+    .optional()
+    .describe("OAuth2 client secret from your email provider"),
+  SMTP_OAUTH_REFRESH_TOKEN: z
+    .string()
+    .optional()
+    .describe("OAuth2 refresh token from your email provider"),
+
+  // Stripe Configuration - Not available for self-hosted
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  STRIPE_DEVELOPER_MONTHLY_PRICE_ID: z.string().optional(),
+  STRIPE_DEVELOPER_YEARLY_PRICE_ID: z.string().optional(),
+  STRIPE_ENTERPRISE_MONTHLY_PRICE_ID: z.string().optional(),
+  STRIPE_ENTERPRISE_YEARLY_PRICE_ID: z.string().optional(),
+
+  // Sentry Configuration - Optional
+  SENTRY_DSN: z.string().optional(),
+  SENTRY_ENABLED: z.coerce.boolean().default(false),
+
+  // Google OAuth - Optional for self-hosted
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  ENABLE_OAUTH: z.coerce.boolean().default(false),
+
+  // SSO Configuration (better-auth sso() plugin)
+  SSO_ENABLED: z.coerce.boolean().default(false),
+  SSO_TYPE: z.enum(["oidc", "saml"]).optional().default("oidc"),
+  SSO_OIDC_DISCOVERY_URL: z.url().optional(),
+  SSO_OIDC_CLIENT_ID: z.string().optional(),
+  SSO_OIDC_CLIENT_SECRET: z.string().optional(),
+  SSO_SAML_METADATA_URL: z.url().optional(),
+  SSO_SAML_METADATA_RAW: z.string().optional(),
+  SSO_BUTTON_LABEL: z.string().optional().default("Sign in with SSO"),
+
+  // Admin bootstrap (used once on first boot, then removed from .env)
+  ADMIN_EMAIL: z.email().optional(),
+  ADMIN_PASSWORD: z.string().min(8).optional(),
+
+  // Notion Configuration - Optional
+  NOTION_API_KEY: z.string().optional(),
+  NOTION_DATABASE_ID: z.string().optional(),
+  NOTION_SYNC_ENABLED: z.coerce.boolean().default(false),
+  ENABLE_NOTION: z.coerce.boolean().default(false),
+});

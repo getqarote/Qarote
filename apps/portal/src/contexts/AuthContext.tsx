@@ -1,0 +1,137 @@
+import React, { useCallback, useEffect, useReducer } from "react";
+
+import { authClient } from "@/lib/auth-client";
+import { logger } from "@/lib/logger";
+import { trpc } from "@/lib/trpc/client";
+import { type User } from "@/lib/types";
+
+interface AuthContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (user: User) => void;
+  logout: () => Promise<void>;
+  updateUser: (user: User) => void;
+  refetchUser: () => Promise<void>;
+}
+
+const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
+
+interface AuthProviderProps {
+  children: React.ReactNode;
+}
+
+type AuthState = { user: User | null; isLoading: boolean };
+type AuthAction =
+  | { type: "SET_USER"; user: User }
+  | { type: "CLEAR_USER" }
+  | { type: "LOADED" };
+
+function authReducer(state: AuthState, action: AuthAction): AuthState {
+  switch (action.type) {
+    case "SET_USER":
+      return { user: action.user, isLoading: false };
+    case "CLEAR_USER":
+      return { user: null, isLoading: false };
+    case "LOADED":
+      return { ...state, isLoading: false };
+  }
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [{ user, isLoading }, dispatch] = useReducer(authReducer, {
+    user: null,
+    isLoading: true,
+  });
+
+  const utils = trpc.useUtils();
+
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const session = await authClient.getSession();
+        if (session.data?.user) {
+          try {
+            const response = await utils.user.getProfile.fetch();
+            dispatch({ type: "SET_USER", user: response.profile });
+          } catch {
+            logger.warn("Failed to fetch profile, using basic session data");
+            const baUser = session.data.user;
+            dispatch({
+              type: "SET_USER",
+              user: {
+                id: baUser.id,
+                email: baUser.email,
+                name: baUser.name || "",
+              } as User,
+            });
+          }
+        } else {
+          dispatch({ type: "LOADED" });
+        }
+      } catch (error) {
+        logger.error("Failed to check session:", error);
+        dispatch({ type: "LOADED" });
+      }
+    };
+
+    checkSession();
+  }, [utils]);
+
+  const login = useCallback((newUser: User) => {
+    dispatch({ type: "SET_USER", user: newUser });
+  }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      await authClient.signOut();
+    } catch (error) {
+      logger.error("Failed to sign out:", error);
+    }
+    dispatch({ type: "CLEAR_USER" });
+  }, []);
+
+  const updateUser = useCallback((newUser: User) => {
+    dispatch({ type: "SET_USER", user: newUser });
+  }, []);
+
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      dispatch({ type: "CLEAR_USER" });
+    };
+
+    window.addEventListener("auth:unauthorized", handleUnauthorized);
+    return () => {
+      window.removeEventListener("auth:unauthorized", handleUnauthorized);
+    };
+  }, []);
+
+  const refetchUser = useCallback(async () => {
+    try {
+      const response = await utils.user.getProfile.fetch();
+      dispatch({ type: "SET_USER", user: response.profile });
+    } catch (error) {
+      logger.error("Failed to refetch user data:", error);
+    }
+  }, [utils]);
+
+  const value: AuthContextType = {
+    user,
+    isAuthenticated: !!user,
+    isLoading,
+    login,
+    logout,
+    updateUser,
+    refetchUser,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export const useAuth = () => {
+  const context = React.useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};

@@ -1,0 +1,96 @@
+{
+  "seo": {
+    "title": "RabbitMQ Monitoring Features: Live Queues, Alerts, Analytics",
+    "description": "Explore Qarote's RabbitMQ monitoring features: live queue tracking, smart alerting, performance analytics, multi-server support, and queue management in one dashboard."
+  },
+  "hero": {
+    "title": "Everything you need to monitor RabbitMQ",
+    "subtitle": "One dashboard for all your RabbitMQ servers. Replaces the management plugin, simpler than Prometheus + Grafana.",
+    "pills": {
+      "liveMonitoring": "Live Monitoring",
+      "alerting": "Alerting",
+      "analytics": "Analytics",
+      "queueManagement": "Queue Management",
+      "multiServer": "Multi-Server",
+      "devExperience": "Developer Experience"
+    }
+  },
+  "coreFeature": "CORE FEATURE",
+  "liveMonitoring": {
+    "title": "Live queue monitoring",
+    "description": "Real-time queue depth, message rates, and consumer counts at a glance. Visual indicators highlight healthy, warning, and critical states so you never miss a degradation.",
+    "metric1Value": "< 1s",
+    "metric1Label": "Refresh rate",
+    "metric2Value": "3",
+    "metric2Label": "Health states",
+    "metric3Value": "0",
+    "metric3Label": "Config needed",
+    "point1": "Message rates: publish, deliver, acknowledge per second",
+    "point2": "Consumer utilization and queue age tracking",
+    "point3": "Instant visual feedback for queue health"
+  },
+  "insightsSection": {
+    "title": "Insights that prevent outages"
+  },
+  "alerting": {
+    "title": "Smart alerting system",
+    "badge": "Developer plan+",
+    "description": "Configurable thresholds per queue and per server. Get notified before problems become outages.",
+    "point1": "Notification channels: email, Slack, webhooks",
+    "point2": "Alert history and acknowledgment workflow",
+    "point3": "Per-queue and per-server threshold configuration"
+  },
+  "analytics": {
+    "title": "Performance analytics",
+    "description": "Historical charts for message throughput, queue depth, and node resources. Spot trends and plan capacity with confidence.",
+    "point1": "Customizable time ranges: 1 hour to 30 days",
+    "point2": "Memory, disk, file descriptor, and CPU tracking",
+    "point3": "Trend detection for capacity planning"
+  },
+  "queueManagement": {
+    "title": "Queue management",
+    "description": "Purge, delete, and create queues from the UI. Inspect bindings, view topology, and publish test messages without touching the command line.",
+    "point1": "Binding inspection and topology view",
+    "point2": "Message publishing for testing and debugging",
+    "point3": "Exchange and routing key management"
+  },
+  "multiServer": {
+    "title": "Multi-server support",
+    "badge": "Dev: 3 | Enterprise: unlimited",
+    "description": "Connect multiple RabbitMQ instances from different environments. One unified view across staging, production, and development.",
+    "point1": "TLS encrypted connections",
+    "point2": "Unified dashboard across all environments",
+    "point3": "Switch between servers seamlessly"
+  },
+  "builtForDevs": {
+    "title": "Built for developers",
+    "description": "No YAML configuration. No Prometheus or Grafana to maintain. Connect your RabbitMQ server in 60 seconds with a connection string.",
+    "point1": "Self-hosted or cloud option",
+    "point2": "Open source Community Edition on GitHub",
+    "point3": "No infrastructure to maintain"
+  },
+  "comparison": {
+    "title": "Managing RabbitMQ servers doesn't have to be painful",
+    "traditional": {
+      "title": "Traditional management interfaces",
+      "point1": "An outdated UI that slows you down",
+      "point2": "No unified view across servers or environments",
+      "point3": "No reliable, actionable alerts",
+      "point4": "DIY dashboards and scripts everywhere"
+    },
+    "qarote": {
+      "title": "Qarote",
+      "point1": "A clean, modern UI built for speed and clarity",
+      "point2": "A unified dashboard for all your servers and environments",
+      "point3": "Smart, actionable alerts that catch issues early",
+      "point4": "Zero-setup monitoring, no scripts, no maintenance"
+    },
+    "messagesPerSec": "Messages/sec",
+    "activeQueues": "Active Queues",
+    "allSystemsOperational": "All systems operational"
+  },
+  "cta": {
+    "title": "Ready to monitor your RabbitMQ servers?",
+    "subtitle": "Start with the free Community plan. No credit card required."
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "pageTitle": "Nodos",
+  "pageSubtitle": "Vista detallada de los nodos del clúster y sus métricas",
+  "noServerTitle": "Nodos",
+  "noServerDescription": "Agrega una conexión de servidor RabbitMQ para ver los nodos del clúster y sus métricas.",
+  "selectServerPrompt": "Por favor selecciona un servidor RabbitMQ para ver sus nodos",
+  "nodeName": "Nodo",
+  "status": "Estado",
+  "memory": "Memoria",
+  "diskFree": "Disco libre",
+  "uptime": "Tiempo activo",
+  "connections": "Conexiones",
+  "noNodesFound": "No se encontraron nodos",
+  "permissionErrorTitle": "Información de nodos no disponible",
+  "clusterName": "Nombre del clúster",
+  "editClusterName": "Editar nombre del clúster",
+  "saveClusterName": "Guardar",
+  "cancelEdit": "Cancelar",
+  "clusterNameUpdated": "Nombre del clúster actualizado",
+  "clusterNameError": "Error al actualizar el nombre del clúster",
+  "overview": {
+    "node": "nodo",
+    "nodes": "nodos",
+    "memoryLabel": "memoria",
+    "diskFreeLabel": "GB de disco libre",
+    "socketsLabel": "sockets",
+    "socketsTooltip": "Recuento de sockets a nivel de SO en todos los nodos activos. Incluye conexiones AMQP y sockets internos de RabbitMQ."
+  },
+  "ports": {
+    "show": "Mostrar puertos y contextos",
+    "hide": "Ocultar puertos y contextos"
+  },
+  "churnStatistics": {
+    "connectionOperations": "Operaciones de conexión",
+    "channelOperations": "Operaciones de canal",
+    "queueOperations": "Operaciones de cola",
+    "created": "Creadas",
+    "closed": "Cerradas",
+    "declared": "Declaradas",
+    "deleted": "Eliminadas"
+  },
+  "portsAndContexts": {
+    "listeners": "Oyentes",
+    "contexts": "Contextos",
+    "node": "Nodo",
+    "protocol": "Protocolo",
+    "ipAddress": "Dirección IP",
+    "port": "Puerto",
+    "description": "Descripción",
+    "path": "Ruta",
+    "ssl": "SSL",
+    "yes": "Sí",
+    "no": "No"
+  },
+  "statusLabels": {
+    "healthy": "En buen estado",
+    "error": "Error",
+    "critical": "Crítico",
+    "warning": "Advertencia",
+    "draining": "Vaciando"
+  },
+  "details": {
+    "summary": "Resumen",
+    "fullDetails": "Detalles completos",
+    "sections": {
+      "health": "Salud",
+      "memory": "Memoria",
+      "connections": "Conexiones",
+      "diskIO": "E/S de disco",
+      "system": "Sistema",
+      "internalStore": "Almacén interno"
+    },
+    "rows": {
+      "running": "En ejecución",
+      "draining": "Vaciando",
+      "memAlarm": "Alarma de memoria",
+      "diskAlarm": "Alarma de disco",
+      "partitions": "Particiones",
+      "usage": "Uso",
+      "diskFree": "Disco libre",
+      "used": "Usado",
+      "limit": "Límite",
+      "sockets": "Sockets",
+      "created": "Creadas",
+      "closed": "Cerradas",
+      "channels": "Canales",
+      "netTick": "Net tick",
+      "readRate": "Tasa de lectura",
+      "writeRate": "Tasa de escritura",
+      "avgRead": "Lect. media",
+      "avgWrite": "Escrit. media",
+      "type": "Tipo",
+      "processors": "Procesadores",
+      "osPid": "PID del SO",
+      "runQueue": "Cola de ejecución",
+      "processes": "Procesos",
+      "plugins": "Plugins"
+    },
+    "values": {
+      "yes": "Sí",
+      "no": "No",
+      "active": "Activa",
+      "none": "Ninguna"
+    },
+    "tooltips": {
+      "draining": "Este nodo está siendo eliminado de forma gradual. Las nuevas conexiones se redirigen a otros nodos.",
+      "memAlarm": "El uso de memoria superó el umbral. Las confirmaciones de publicación están bloqueadas hasta que baje la memoria.",
+      "diskAlarm": "El espacio en disco libre cayó por debajo del umbral. La publicación está bloqueada hasta liberar espacio.",
+      "partitions": "Partición de red detectada. Los nodos no pueden comunicarse — condición de cerebro dividido que requiere atención inmediata.",
+      "netTick": "Intervalo de latido de Erlang. Si un nodo pierde 4 ticks consecutivos, se considera inalcanzable.",
+      "runQueue": "Procesos de Erlang esperando ser programados. Valores superiores a 1 indican contención de CPU."
+    },
+    "inlineMetrics": {
+      "mnesiaRam": "RAM de Mnesia",
+      "mnesiaDisk": "Disco de Mnesia",
+      "msgReads": "Lecturas de msj",
+      "msgWrites": "Escrituras de msj",
+      "queueIdxR": "Índice cola L",
+      "queueIdxW": "Índice cola E"
+    }
+  }
+}

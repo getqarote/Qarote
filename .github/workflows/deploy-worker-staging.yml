@@ -1,0 +1,209 @@
+name: Deploy Worker to Staging
+
+env:
+  APP_NAME: qarote-worker-staging
+  BACKEND_APP_NAME: qarote-staging
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/api/**"
+      - "apps/api/app.worker.json"
+      - ".github/workflows/deploy-worker-staging.yml"
+  workflow_dispatch:
+
+jobs:
+  quality-checks:
+    name: Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v6
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "pnpm"
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🔍 Check package version consistency
+        run: pnpm run syncpack:check
+
+      - name: 🔍 Type Check
+        run: pnpm turbo run type-check --filter=qarote-api
+
+      - name: 🔍 Knip (unused code check)
+        run: pnpm run knip
+
+      - name: 🧹 Lint
+        working-directory: apps/api
+        run: pnpm run lint
+
+      - name: 💅 Format Check
+        working-directory: apps/api
+        run: pnpm run format
+
+      - name: 🧪 Run Tests
+        working-directory: apps/api
+        run: pnpm run test:run
+
+  configure-worker-app:
+    name: Configure Worker App
+    runs-on: ubuntu-latest
+    environment: staging
+    needs: quality-checks
+
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v6
+
+      - name: 🔑 Setup SSH
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
+
+      - name: 🏗️ Add SSH known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ vars.DOKKU_HOST_APP1 }} >> ~/.ssh/known_hosts
+
+      - name: 🏗️ Ensure app exists
+        run: |
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} apps:create ${{ env.APP_NAME }} || \
+            echo "App already exists or creation failed"
+
+      - name: 🔗 Link to staging database
+        run: |
+          echo "Removing any stale DATABASE_URL..."
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} config:unset ${{ env.APP_NAME }} DATABASE_URL || \
+            echo "DATABASE_URL not set (this is OK)"
+          echo "Linking worker app to staging database (rabbit-hq-db)..."
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} postgres:link rabbit-hq-db ${{ env.APP_NAME }} || \
+            echo "Database link may already exist (this is OK)"
+          echo "Ensuring DATABASE_URL is set from postgres link..."
+          DATABASE_URL=$(ssh dokku@${{ vars.DOKKU_HOST_APP1 }} config:get ${{ env.APP_NAME }} DOKKU_POSTGRES_AQUA_URL)
+          if [ -n "$DATABASE_URL" ]; then
+            ssh dokku@${{ vars.DOKKU_HOST_APP1 }} config:set ${{ env.APP_NAME }} DATABASE_URL="$DATABASE_URL"
+          fi
+
+      - name: 📝 Configure Environment Variables
+        run: |
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} config:set ${{ env.APP_NAME }} \
+            DEPLOYMENT_MODE=${{ vars.DEPLOYMENT_MODE }} \
+            DOMAIN_BACKEND=${{ vars.DOMAIN_BACKEND }} \
+            DOMAIN_FRONTEND=${{ vars.DOMAIN_FRONTEND }} \
+            PORT=${{ vars.PORT }} \
+            HOST=${{ vars.HOST }} \
+            NODE_ENV=${{ vars.NODE_ENV }} \
+            ENVIRONMENT=staging \
+            LOG_LEVEL=${{ vars.LOG_LEVEL }} \
+            JWT_SECRET=${{ secrets.JWT_SECRET }} \
+            ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }} \
+            CORS_ORIGIN=${{ vars.CORS_ORIGIN }} \
+            FRONTEND_URL=${{ vars.FRONTEND_URL }} \
+            PORTAL_FRONTEND_URL=${{ vars.PORTAL_FRONTEND_URL }} \
+            RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} \
+            STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }} \
+            STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }} \
+            STRIPE_DEVELOPER_MONTHLY_PRICE_ID=${{ vars.STRIPE_DEVELOPER_MONTHLY_PRICE_ID }} \
+            STRIPE_DEVELOPER_YEARLY_PRICE_ID=${{ vars.STRIPE_DEVELOPER_YEARLY_PRICE_ID }} \
+            STRIPE_ENTERPRISE_MONTHLY_PRICE_ID=${{ vars.STRIPE_ENTERPRISE_MONTHLY_PRICE_ID }} \
+            STRIPE_ENTERPRISE_YEARLY_PRICE_ID=${{ vars.STRIPE_ENTERPRISE_YEARLY_PRICE_ID }} \
+            SENTRY_DSN=${{ vars.SENTRY_DSN }} \
+            SENTRY_ENABLED=${{ vars.SENTRY_ENABLED }} \
+            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
+            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
+            NOTION_API_KEY=${{ secrets.NOTION_API_KEY }} \
+            NOTION_DATABASE_ID=${{ vars.NOTION_DATABASE_ID }} \
+            NOTION_SYNC_ENABLED=${{ vars.NOTION_SYNC_ENABLED }} \
+            ENABLE_NOTION=${{ vars.ENABLE_NOTION }} \
+            API_URL=${{ vars.API_URL }} \
+            DATABASE_POOL_SIZE=${{ vars.DATABASE_POOL_SIZE }}
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} "config:set --no-restart ${{ env.APP_NAME }} FROM_EMAIL='${{ vars.FROM_EMAIL }}'"
+
+      - name: 🚫 Configure worker app to use app.worker.json
+        run: |
+          echo "Configuring worker app to use app.worker.json (without predeploy hook)..."
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} app-json:set ${{ env.APP_NAME }} appjson-path app.worker.json
+
+  deploy-worker:
+    name: Deploy Worker to Dokku - Staging
+    runs-on: ubuntu-latest
+    environment: staging
+    needs: [quality-checks, configure-worker-app]
+
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # Full history for proper git operations
+
+      - name: 🔑 Validate Dokku SSH key
+        run: |
+          if [ -z "${{ secrets.DOKKU_SSH_PRIVATE_KEY }}" ]; then
+            echo "❌ Error: DOKKU_SSH_PRIVATE_KEY is empty or not set" >&2
+            exit 1
+          fi
+          echo "✓ Dokku SSH key is present"
+
+      - name: 🔑 Setup SSH
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
+
+      - name: 🏗️ Add SSH known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ vars.DOKKU_HOST_APP1 }} >> ~/.ssh/known_hosts
+
+      # Deploy the application.
+      # The worker is a long-running cron process that never exits, so Dokku streams its
+      # stdout indefinitely during the git push. We cap the step at 5 minutes and treat a
+      # timeout as acceptable; a subsequent verification step confirms the process is up.
+      - name: 🐳 Deploy to Dokku
+        uses: dokku/github-action@master
+        timeout-minutes: 5
+        continue-on-error: true
+        with:
+          git_remote_url: "ssh://dokku@${{ vars.DOKKU_HOST_APP1 }}:22/${{ env.APP_NAME }}"
+          ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
+          git_push_flags: "--force"
+
+      - name: 📈 Scale processes (disable web, enable workers)
+        run: |
+          echo "Scaling processes: web=0, worker=1, license-worker=1, release-notifier=1..."
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:scale ${{ env.APP_NAME }} web=0 worker=1 || true
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:scale ${{ env.APP_NAME }} license-worker=1 || true
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:scale ${{ env.APP_NAME }} release-notifier=1 || true
+
+      - name: 🔍 Verify worker is running
+        run: |
+          echo "Verifying worker process is running..."
+          REPORT=$(ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:report ${{ env.APP_NAME }})
+          echo "$REPORT"
+          if echo "$REPORT" | grep -q "running"; then
+            echo "✅ Worker is running!"
+          else
+            echo "❌ Worker process is not running after deploy!"
+            exit 1
+          fi
+
+      - name: 📋 Show worker logs
+        run: |
+          echo "Recent worker logs:"
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} logs ${{ env.APP_NAME }} -n 20 || true
+
+      - name: ✅ Deployment complete
+        run: |
+          echo "🎉 Worker deployment to staging completed successfully!"
+          echo "📝 Commit: ${{ github.sha }}"
+          echo "🔍 Worker app: ${{ env.APP_NAME }}"
+          echo "💡 View logs: ssh dokku@${{ vars.DOKKU_HOST_APP1 }} logs ${{ env.APP_NAME }}"
