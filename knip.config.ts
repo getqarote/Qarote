@@ -47,6 +47,8 @@ const config: KnipConfig = {
     "apps/web/src/lib/docs-nav.ts",
     // Workspace invites hook — function temporarily unused after removing invite from creation forms
     "apps/app/src/hooks/ui/useWorkspaceInvites.ts",
+    // In-progress landing sections — not yet wired into the page tree
+    "apps/web/src/components/landing/BlogSection.tsx",
     // In-progress nodes components — not yet wired into the page tree
     "apps/app/src/components/nodes/PortsAndContexts.tsx",
     // ChurnStatistics removed from Nodes page — preserved for relocation to the main dashboard
