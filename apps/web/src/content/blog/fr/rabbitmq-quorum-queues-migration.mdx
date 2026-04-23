@@ -1,0 +1,189 @@
+---
+title: "Quorum queues RabbitMQ : quand migrer et comment le faire sans risque"
+description: "Les classic queues sont dépréciées depuis RabbitMQ 3.12+. Voici ce que les quorum queues changent concrètement, quels workloads doivent migrer maintenant, et comment procéder sans interruption de service."
+publishedAt: "2026-04-25"
+tags: ["rabbitmq", "operations", "architecture", "quorum-queues"]
+readingTimeMin: 8
+---
+
+RabbitMQ 3.12 a déprécié les classic mirrored queues. RabbitMQ 3.13 a déprécié les classic queues tout court. Si vous faites tourner des classic queues en production aujourd'hui, vous êtes en sursis — et ce sursis se raccourcit à chaque mise à jour mineure que vous appliquez.
+
+Mais migrer à l'aveugle provoque des incidents. Le comportement de `requeue=true` change. Les publisher confirms deviennent critiques. Le consumer timeout est appliqué plus strictement. Les équipes qui passent sur ces détails trop vite se retrouvent avec des incidents post-migration qui ne ressemblent en rien aux pannes de files d'attente qu'elles attendaient.
+
+Cet article couvre le modèle mental, ce qui change réellement (en détail), quels workloads doivent migrer maintenant ou peuvent attendre, et une procédure de migration sans interruption de service qui fonctionne dans de vrais environnements de production.
+
+> Migrer vers les quorum queues change aussi la façon dont vous les monitorez — les élections de leader Raft, la taille des logs et des consumer timeouts plus stricts nécessitent de la visibilité. [Voir comment Qarote monitore les quorum queues →](/features/)
+
+## Ce que sont réellement les quorum queues
+
+Je ne vais pas expliquer l'algorithme de consensus Raft. Vous n'en avez pas besoin pour opérer des quorum queues en toute sécurité. Ce dont vous avez besoin, c'est du bon modèle mental sur la façon dont elles diffèrent des classic queues.
+
+### Classic queues : ce que vous avez aujourd'hui
+
+Une classic queue vit sur un seul nœud leader. Optionnellement, vous configurez une politique HA pour la répliquer sur d'autres nœuds. Cette réplication est synchrone — chaque publication vers une mirrored queue est bloquée jusqu'à ce que tous les miroirs aient écrit le message. C'est un head-of-line blocking délibéré, et c'est pourquoi les classic mirrored queues se dégradent lors de pics de charge.
+
+Quand le nœud leader tombe, RabbitMQ promeut un des miroirs. Cela ne se produit pas automatiquement par défaut dans toutes les configurations — selon votre politique HA et le paramètre `ha-promote-on-failure`, vous pouvez avoir besoin d'une intervention manuelle. Les messages pas encore répliqués vers un miroir au moment de la panne sont perdus.
+
+### Quorum queues : ce vers quoi vous migrez
+
+Une quorum queue utilise le consensus Raft. La queue possède un leader et un nombre configurable de followers. Quand un publisher envoie un message, le leader le propose aux followers. Le message est confirmé au publisher dès qu'une majorité de membres (le quorum) l'a écrit sur disque. Pas en mémoire — sur disque.
+
+Quand le leader tombe, les membres restants élisent automatiquement un nouveau leader. Pas d'intervention manuelle, pas de politique HA, pas de paramétrage de `ha-promote-on-failure`. Avec 3 nœuds dont 1 tombe, la queue continue de fonctionner. Si 2 tombent simultanément, la queue se suspend (pas de majorité) jusqu'au retour d'un membre.
+
+La réplication est intégrée dans le type de queue. Il n'y a pas de configuration de mirroring à maintenir.
+
+### Implications clés pour l'opérateur
+
+**Les quorum queues nécessitent au moins 3 nœuds pour une vraie HA.** Un cluster à 1 nœud peut déclarer des quorum queues, mais si ce nœud tombe, la queue est indisponible. Vous avez de la durabilité (les données sont sur disque), pas de la disponibilité (la queue peut servir du trafic). Ne confondez pas les deux.
+
+**Les quorum queues écrivent toujours sur disque.** Il n'y a pas de mode in-memory, pas de messages transients, pas de mode lazy. Tout va sur disque avant l'envoi du confirm. C'est une fonctionnalité, pas une limitation — cela signifie que [les quorum queues consomment significativement moins de RAM que les classic queues](/blog/rabbitmq-memory-alarm/) contenant le même nombre de messages, puisque rien n'est paginé depuis la mémoire.
+
+**Le flow control des consommateurs est explicite.** Les quorum queues imposent un nombre maximum de messages non acquittés en attente par consommateur via `x-max-in-flight` (par défaut : 256).
+
+**Le consumer timeout est appliqué.** Par défaut, un consommateur qui retient un message non acquitté pendant plus de 30 minutes sera déconnecté par le broker.
+
+## Quand vous devez migrer maintenant
+
+Arrêtez d'évaluer et agissez si l'une de ces conditions est vraie :
+
+**Vous êtes sur RabbitMQ 3.12+ avec des mirrored classic queues.** Les classic mirrored queues sont dépréciées en 3.12 et seront supprimées dans une prochaine version.
+
+**Vous êtes sur RabbitMQ 3.13+.** Les classic queues elles-mêmes sont dépréciées.
+
+**Votre workload ne peut pas se permettre de perdre des messages lors d'une panne de nœud.**
+
+**Vous avez besoin d'un failover automatique du leader.**
+
+## Quand les classic queues sont encore acceptables (pour l'instant)
+
+**Les environnements de développement et de test à nœud unique.**
+
+**Les messages vraiment transients et non critiques.**
+
+**Les workloads à très haut débit et très sensibles à la latence d'écriture** où le surcoût du consensus Raft est mesurable et significatif.
+
+Même dans ces cas, ayez un plan de migration.
+
+## Ce qui change réellement lors du passage aux quorum queues
+
+### Ce qui reste identique
+
+Le protocole AMQP ne change pas. `basic.publish`, `basic.consume`, `basic.ack`, `basic.nack` — tout pareil. Les bindings d'exchanges, les routing keys, la configuration des vhosts — tout est conservé. L'interface de gestion affiche les quorum queues aux côtés des classic queues sans différence dans la liste principale des queues.
+
+### Ce qui change — lisez chaque point
+
+**La déclaration de queue nécessite `x-queue-type: quorum`.** Vous ne pouvez pas convertir une classic queue en quorum queue sur place. Le type de queue est défini à la déclaration et ne peut pas être modifié sans supprimer et recréer la queue.
+
+**Le mode lazy n'a plus de sens.** Les quorum queues écrivent toujours sur disque. Retirez `x-queue-mode: lazy` de vos déclarations.
+
+**`x-ha-policy` est ignoré.** Retirez-le de vos déclarations de queues et politiques HA.
+
+**`basic.nack` avec `requeue=true` envoie le message en fin de queue, pas en tête.** C'est la première cause d'incidents en production post-migration. Les classic queues remettent en tête de queue — le message est immédiatement re-livré. Les quorum queues remettent en fin de queue. Revoyez votre [dead letter queue](/blog/rabbitmq-dead-letter-queue/) et votre logique de gestion d'erreurs avant de migrer toute queue qui utilise nack avec requeue.
+
+**`x-max-priority` n'est pas supporté.** Les quorum queues n'implémentent pas les priority queues.
+
+**Les publisher confirms ne sont plus optionnels.** Activez les publisher confirms sur chaque producer écrivant vers des quorum queues.
+
+**Le prefetch des consommateurs interagit avec `x-max-in-flight`.** La valeur par défaut est 256. Si des consommateurs ont un prefetch supérieur à 256, revoyez cela avant de migrer. Voir [comment déboguer les backlogs de queues](/blog/debug-rabbitmq-queue-backlog/).
+
+**Le consumer timeout déconnecte les consommateurs à long cycle de traitement.** Par défaut : 30 minutes.
+
+## Stratégie de migration : approche sans interruption de service
+
+### Étape 1 : Auditer vos queues actuelles
+
+```bash
+rabbitmqctl list_queues name type durable messages | grep classic
+```
+
+```bash
+rabbitmqctl list_queues --vhost "/" name type durable messages consumers
+```
+
+### Étape 2 : Créer la nouvelle quorum queue
+
+```bash
+rabbitmqadmin declare queue name=my-queue.v2 \
+  durable=true \
+  arguments='{"x-queue-type":"quorum"}'
+```
+
+```bash
+rabbitmqadmin declare queue name=my-queue.v2 \
+  durable=true \
+  arguments='{"x-queue-type":"quorum","x-quorum-initial-group-size":3}'
+```
+
+```bash
+rabbitmqadmin declare binding source=my-exchange \
+  destination=my-queue.v2 \
+  routing_key=my.routing.key
+```
+
+### Étape 3 : Basculer les publishers
+
+Déployez les publishers mis à jour pour qu'ils écrivent vers le nouveau nom de queue. Les anciens publishers continuent vers l'original.
+
+### Étape 4 : Déployer des consommateurs qui drainent les deux queues
+
+Faites tourner des consommateurs sur `my-queue` et `my-queue.v2` simultanément pendant la fenêtre de drain.
+
+```bash
+watch -n 5 'rabbitmqctl list_queues name messages consumers | grep my-queue'
+```
+
+### Étape 5 : Bascule finale et nettoyage
+
+```bash
+rabbitmqadmin delete queue name=my-queue
+```
+
+### Déclaration par politique (pour les setups plus simples)
+
+```bash
+rabbitmqctl set_policy quorum-policy "^my-queue$" \
+  '{"queue-type":"quorum"}' \
+  --apply-to queues
+```
+
+Important : cela s'applique uniquement aux queues déclarées après l'application de la politique. Cela ne convertit pas les classic queues existantes.
+
+## Ce qu'il faut monitorer après la migration
+
+**Les élections de leader des quorum queues.** Des élections fréquentes signalent un nœud membre défaillant.
+
+**La taille du log Raft par queue.** Un log Raft qui grossit indique qu'un follower prend du retard.
+
+**L'utilisation disque par queue.** Les quorum queues écrivent tout sur disque. Configurez des alertes d'espace disque. Voir [comment configurer des alertes RabbitMQ qui se déclenchent vraiment](/blog/rabbitmq-alerts-setup-guide/).
+
+**`messages_unacknowledged` par queue.** Le consumer timeout est appliqué strictement.
+
+**Les I/O disque sur chaque nœud.** Établissez une baseline après la migration.
+
+> Qarote remonte les élections de leader Raft et l'utilisation disque par queue dans le panneau de détail de la queue. [Voir les fonctionnalités de monitoring →](/features/)
+
+## Les erreurs courantes lors de la migration
+
+**Essayer de convertir sur place.** Il n'existe pas de commande `rabbitmqctl convert_queue`.
+
+**Publier sans confirms vers des quorum queues.** Activez les publisher confirms. Gérez les timeouts de confirm. Ce n'est pas négociable.
+
+**Ne pas ajuster le prefetch des consommateurs.** Les quorum queues imposent `x-max-in-flight` à 256 par défaut.
+
+**Faire tourner des quorum queues sur un cluster à 1 nœud en espérant de la HA.** Vous avez de la durabilité sans disponibilité.
+
+**Ne pas tester le comportement de `requeue=true` avant de migrer.** Les messages vont en fin de queue, pas en tête. Testez explicitement vos chemins d'erreur en staging.
+
+**Laisser `x-ha-policy` dans les déclarations.** Nettoyez-le.
+
+## En résumé
+
+**Quand migrer :** Maintenant si vous êtes sur 3.12+ avec des mirrored classic queues. Maintenant si vous êtes sur 3.13+. Maintenant si la perte de messages est inacceptable.
+
+**Ce qui change :** Pas de conversion sur place. `requeue=true` envoie en fin de queue. `x-max-priority` non supporté. Les publisher confirms sont critiques. Le consumer timeout est appliqué à 30 minutes.
+
+**Ce qui reste identique :** Le protocole AMQP, les appels des bibliothèques clientes, les bindings d'exchanges, l'interface de gestion.
+
+**Comment procéder sans interruption :** Déclarer la nouvelle quorum queue en parallèle, basculer les publishers, drainer les deux queues, supprimer l'ancienne.
+
+Après la migration, surveillez les élections de leader Raft fréquentes — une queue qui élit souvent un nouveau leader a un nœud membre défaillant. Qarote remonte cela dans le panneau de détail de la queue. [Voir comment ça fonctionne →](/features/)

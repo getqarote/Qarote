@@ -1,0 +1,295 @@
+---
+title: "RabbitMQ Dead Letter Queue : conception, surveillance et retraitement des messages échoués"
+description: "Les DLQ accumulent silencieusement les messages échoués jusqu'à ce que quelqu'un s'en aperçoive des semaines plus tard. Voici comment les configurer correctement, surveiller leur croissance et bâtir une stratégie de retraitement fiable."
+publishedAt: "2026-04-25"
+tags: ["rabbitmq", "operations", "architecture", "debugging"]
+readingTimeMin: 9
+---
+
+La chronologie du post-mortem se ressemble à chaque fois. Un bug dans le processeur de commandes a été déployé le 14. Les consommateurs ont commencé à rejeter des événements malformés. La DLQ est passée de zéro à 47 000 messages en 18 jours. Personne ne s'en est rendu compte — jusqu'à ce qu'un client le signale.
+
+Les dead letter queues sont l'endroit où vont les messages échoués — et où ils s'accumulent silencieusement quand personne ne regarde. Aucune alarme ne se déclenche sur la file principale. Le débit semble normal. Vos consommateurs tournent. La profondeur de la DLQ n'est dans le tableau de bord de personne. Trois semaines plus tard, vous expliquez dans un post-mortem pourquoi 47 000 événements de commande n'ont jamais été traités.
+
+Cet article explique comment les DLQ fonctionnent réellement, comment les configurer sans tomber dans les pièges courants, et comment construire une stratégie de retraitement qui n'aggrave pas les choses.
+
+> **Qarote surveille la profondeur et le taux de croissance des DLQ par file — avec une alerte dès qu'une dead letter queue commence à recevoir des messages.** [Découvrir comment fonctionne la surveillance des DLQ →](/features/)
+
+---
+
+## Ce qu'est réellement une dead letter queue
+
+Une dead letter queue n'est pas une construction spéciale de RabbitMQ. C'est une file ordinaire liée à un exchange ordinaire. Ce qui en fait une DLQ, c'est uniquement le fait que vous avez pointé l'argument `x-dead-letter-exchange` d'une autre file vers cet exchange. C'est tout.
+
+Quand un message est "dead-letteré", RabbitMQ le route vers le dead letter exchange (DLX) configuré, en utilisant soit la clé de routage d'origine, soit une clé que vous spécifiez avec `x-dead-letter-routing-key`. À partir de là, le DLX le route vers la file liée avec une clé correspondante — celle que vous avez définie comme DLQ.
+
+Trois raisons causent le dead-lettering d'un message :
+
+**1. `basic.nack` ou `basic.reject` avec `requeue=false`.** Votre consommateur a explicitement signalé à RabbitMQ qu'il ne peut pas traiter ce message et ne veut pas qu'il soit remis en file. C'est le chemin contrôlé — c'est ce que vous êtes censé faire quand un message est intraitables.
+
+**2. TTL du message expiré.** Le message est resté dans la file au-delà de la limite `x-message-ttl` définie sur la file (ou du champ `expiration` dans le message lui-même). Il a vécu trop longtemps sans être consommé.
+
+**3. Limite de longueur de file atteinte.** La file a atteint son plafond `x-max-length` ou `x-max-length-bytes`. RabbitMQ éjecte le message le plus ancien depuis la tête de file pour faire de la place aux nouveaux.
+
+Quand un message est dead-letteré, RabbitMQ lui ajoute des headers `x-death`. Ces headers sont essentiels pour le débogage :
+
+```json
+{
+  "x-death": [
+    {
+      "count": 1,
+      "reason": "rejected",
+      "queue": "my-queue",
+      "time": "2026-04-14T09:23:11Z",
+      "exchange": "my-exchange",
+      "routing-keys": ["my-queue"]
+    }
+  ],
+  "x-first-death-reason": "rejected",
+  "x-first-death-queue": "my-queue",
+  "x-first-death-exchange": "my-exchange"
+}
+```
+
+`x-first-death-reason` indique pourquoi le message est mort. `x-death[0].count` indique combien de fois il a été dead-letteré — un compteur supérieur à 1 signifie généralement que quelque chose en amont retraite et re-rejette le même message.
+
+---
+
+## Comment configurer une DLQ correctement
+
+La configuration se fait en quatre étapes : créer le dead letter exchange, créer la DLQ, lier la DLQ au DLX, puis déclarer la file principale avec l'argument DLX.
+
+```bash
+# 1. Créer le dead letter exchange
+rabbitmqadmin declare exchange name=my-dlx type=direct
+
+# 2. Créer la DLQ
+rabbitmqadmin declare queue name=my-queue.dlq
+
+# 3. Lier la DLQ au DLX avec la clé de routage à utiliser
+rabbitmqadmin declare binding \
+  source=my-dlx \
+  destination=my-queue.dlq \
+  routing_key=my-queue
+
+# 4. Déclarer la file principale en pointant vers le DLX
+rabbitmqadmin declare queue name=my-queue \
+  arguments='{"x-dead-letter-exchange":"my-dlx","x-dead-letter-routing-key":"my-queue"}'
+```
+
+La même chose en Python avec pika :
+
+```python
+import pika
+
+connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
+channel = connection.channel()
+
+# Dead letter exchange
+channel.exchange_declare(exchange="my-dlx", exchange_type="direct")
+
+# DLQ
+channel.queue_declare(queue="my-queue.dlq")
+channel.queue_bind(queue="my-queue.dlq", exchange="my-dlx", routing_key="my-queue")
+
+# File principale avec DLX configuré
+channel.queue_declare(
+    queue="my-queue",
+    arguments={
+        "x-dead-letter-exchange": "my-dlx",
+        "x-dead-letter-routing-key": "my-queue",
+    },
+)
+```
+
+**Pour les files qui existent déjà en production**, vous ne pouvez pas modifier les arguments d'une file déjà déclarée sans la supprimer et la re-déclarer. Utilisez plutôt une policy — aucune recréation de file requise :
+
+```bash
+rabbitmqctl set_policy dlx-policy "^my-queue$" \
+  '{"dead-letter-exchange":"my-dlx"}' \
+  --apply-to queues
+```
+
+Les policies sont l'approche privilégiée pour les files existantes. Elles sont appliquées par le broker, survivent aux redémarrages et ne nécessitent aucune modification de votre code applicatif.
+
+---
+
+## Les 3 raisons pour lesquelles les messages finissent dans la DLQ
+
+Chaque raison de mort vous dit quelque chose de différent sur ce qui s'est passé. Ne traitez pas tous les messages de la DLQ de la même façon.
+
+### Rejeté (`x-first-death-reason: rejected`)
+
+Votre consommateur a appelé `basic.nack` ou `basic.reject` avec `requeue=false`. C'est soit intentionnel (le consommateur a correctement identifié un message intraitables) soit un bug (une exception non capturée qui tombe dans un bloc catch qui nack tout).
+
+Vérifiez `x-death[0].count`. S'il vaut 1, le message a été rejeté une fois et est arrivé ici proprement. S'il est supérieur à 1 — surtout s'il s'incrémente — vous avez une boucle. Même avec `requeue=false`, une couche de retry au-dessus du consommateur peut remettre le message dans la file d'origine, où le consommateur le rejette à nouveau, incrementant le compteur sur le message de la DLQ à chaque fois. Un compteur à cinq ou plus signifie que vous avez un message poison avec une boucle de retry active qui l'alimente. Arrêtez la boucle avant de retraiter quoi que ce soit.
+
+Consultez [Pourquoi votre consommateur RabbitMQ ne traite pas les messages](/blog/rabbitmq-consumer-not-processing/) pour savoir comment identifier et briser les boucles de nack.
+
+### TTL expiré (`x-first-death-reason: expired`)
+
+Le message est resté dans la file au-delà de la limite `x-message-ttl` sans être consommé. Croisez l'horodatage d'expiration dans `x-death[0].time` avec votre fenêtre de panne consommateur. Dans la plupart des cas, cela se produit quand :
+
+- Les consommateurs sont tombés lors d'un déploiement et les messages se sont accumulés au-delà de leur TTL
+- Un pic de trafic a débordé la capacité des consommateurs et les messages ont attendu trop longtemps
+- Le TTL est trop court et la latence de traitement normale le dépasse occasionnellement
+
+Le troisième cas est facile à manquer. Un TTL de 30 secondes sur une file où le traitement prend parfois 45 secondes produira un flux constant et faible volume vers la DLQ que personne ne remarquera pendant des mois.
+
+### Limite de longueur de file (`x-first-death-reason: maxlen`)
+
+Votre file a atteint `x-max-length` ou `x-max-length-bytes` et RabbitMQ a expulsé le message depuis la tête de file. Cela pointe presque toujours vers une panne en aval ou un ralentissement sévère des consommateurs qui a fait croître le backlog jusqu'au plafond de la policy.
+
+Point important : `x-max-length` éjecte depuis la **tête** de file — ce sont les messages les plus anciens qui partent en premier. Si vous les retraitez, vous retraitez vos événements les plus anciens. Vérifiez que retraiter de vieux événements est sans danger avant de les remettre dans la file principale.
+
+Pour savoir comment diagnostiquer ce qui a fait monter la profondeur de file en premier lieu, consultez [Comment déboguer un backlog de file RabbitMQ](/blog/debug-rabbitmq-queue-backlog/). Pour les policies `x-max-length-bytes` et leur interaction avec la pression mémoire, consultez [Alarme mémoire RabbitMQ : comment la diagnostiquer et la corriger](/blog/rabbitmq-memory-alarm/).
+
+---
+
+## Comment inspecter les messages d'une DLQ
+
+Avant de faire quoi que ce soit avec une DLQ, lisez ce qu'elle contient. L'API HTTP de management vous permet d'examiner les messages sans les consommer :
+
+```bash
+curl -u guest:guest -X POST \
+  http://localhost:15672/api/queues/%2F/my-queue.dlq/get \
+  -H 'content-type: application/json' \
+  -d '{"count":5,"ackmode":"ack_requeue_true","encoding":"auto"}' \
+  | jq '.[] | {
+      payload: .payload,
+      death_reason: .properties.headers["x-first-death-reason"],
+      death_queue: .properties.headers["x-first-death-queue"],
+      death_count: (.properties.headers["x-death"] | length),
+      routing_key: .routing_key
+    }'
+```
+
+`ack_requeue_true` signifie que les messages sont acquittés et immédiatement remis en file — vous examinez, vous ne consommez pas. Les messages restent dans la DLQ.
+
+Cherchez ces patterns dans ce que vous obtenez :
+
+**Tous avec la même clé de routage.** Bug de configuration de routage ou de binding.
+
+**Tous avec la même forme de payload ou le même schéma.** Un changement de schéma dans le producteur a introduit un champ que votre consommateur ne sait pas gérer.
+
+**`death_count` supérieur à 1 et qui monte.** Boucle de message poison active.
+
+**Raisons et formes mélangées.** Plusieurs pannes indépendantes. Triez d'abord par `x-first-death-reason`.
+
+---
+
+## Surveiller la croissance de la DLQ
+
+Toute croissance soutenue d'une DLQ est un signal. Configurez une alerte Prometheus sur le taux de croissance, pas seulement sur la profondeur :
+
+```yaml
+- alert: RabbitMQDLQGrowing
+  expr: |
+    rate(rabbitmq_queue_messages_published_total{
+      queue=~".*dlq.*|.*dead.*|.*failed.*"
+    }[5m]) > 0
+  for: 5m
+  labels:
+    severity: warning
+  annotations:
+    summary: "DLQ {{ $labels.queue }} reçoit des messages à {{ $value }}/sec"
+    description: "Vérifiez x-first-death-reason dans les messages de la DLQ pour identifier le mode de panne"
+
+- alert: RabbitMQDLQDepthCritical
+  expr: |
+    rabbitmq_queue_messages{
+      queue=~".*dlq.*|.*dead.*|.*failed.*"
+    } > 1000
+  for: 10m
+  labels:
+    severity: warning
+  annotations:
+    summary: "La DLQ {{ $labels.queue }} contient {{ $value }} messages"
+```
+
+Consultez [Comment configurer des alertes RabbitMQ qui se déclenchent vraiment](/blog/rabbitmq-alerts-setup-guide/) pour la configuration complète des alertes.
+
+---
+
+## Stratégies de retraitement
+
+### 1. Plugin Shovel (le plus simple, le plus risqué)
+
+```bash
+rabbitmqctl set_parameter shovel my-reprocess \
+  '{"src-protocol":"amqp091",
+    "src-uri":"amqp://guest:guest@localhost",
+    "src-queue":"my-queue.dlq",
+    "dest-protocol":"amqp091",
+    "dest-uri":"amqp://guest:guest@localhost",
+    "dest-exchange":"my-exchange",
+    "dest-exchange-key":"my-queue"}'
+```
+
+N'utilisez pas le shovel tant que vous n'avez pas confirmé que le correctif est déployé et que le consommateur gère correctement la forme du message.
+
+### 2. Retraitement par consommateur (recommandé)
+
+```python
+import pika
+import json
+
+connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
+channel = connection.channel()
+channel.basic_qos(prefetch_count=1)
+
+def reprocess(ch, method, properties, body):
+    try:
+        data = json.loads(body)
+        death_count = len(properties.headers.get("x-death", []))
+
+        if death_count > 5:
+            print(f"Skipping poison message: {data}")
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+            return
+
+        fixed_data = migrate_schema(data)
+        ch.basic_publish(exchange="my-exchange", routing_key="my-queue", body=json.dumps(fixed_data))
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+
+    except Exception as e:
+        print(f"Reprocessing failed: {e}")
+        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+
+channel.basic_consume(queue="my-queue.dlq", on_message_callback=reprocess)
+channel.start_consuming()
+```
+
+### 3. Remise en file sélective (pour les messages poison)
+
+```bash
+curl -u guest:guest -X POST \
+  http://localhost:15672/api/queues/%2F/my-queue.dlq/get \
+  -H 'content-type: application/json' \
+  -d '{"count":1,"ackmode":"ack_requeue_false","encoding":"auto"}'
+```
+
+**La règle :** ne jamais déverser aveuglément une DLQ dans la file principale.
+
+---
+
+## Erreurs de conception courantes avec les DLQ
+
+**Aucune DLQ configurée.** Les messages nackés avec `requeue=false` sont silencieusement supprimés.
+
+**La DLQ n'a pas de consommateur.** Les messages arrivent, personne ne les lit, la file grossit indéfiniment.
+
+**La DLQ utilise le même exchange que la file principale.** Crée une boucle de dead-lettering infinie.
+
+**Aucune alerte sur la croissance de la DLQ.**
+
+**Aucun TTL sur la DLQ elle-même.** La DLQ croît sans limite. Attention : l'expiration TTL d'un message de DLQ avec un DLX configuré crée un nouvel événement de dead-lettering — gardez le DLX de la DLQ vide.
+
+---
+
+## En résumé
+
+Les dead letter queues sont des files ordinaires liées à un dead letter exchange. Configurez-les avec `x-dead-letter-exchange` sur votre file principale — à la déclaration ou via une policy. Les messages y arrivent pour trois raisons : nack avec `requeue=false`, expiration du TTL, ou dépassement de la limite de longueur de file. Chaque raison vous dit quelque chose de différent. Avant de retraiter, lisez les headers `x-death`. Utilisez le retraitement par consommateur en production — cela vous donne le contrôle. Alertez sur le taux de croissance de la DLQ, pas seulement sur sa profondeur.
+
+La partie la plus difficile de la gestion des DLQ, ce n'est pas la configuration — c'est de savoir quand les messages commencent à arriver. Qarote alerte sur le taux de croissance des DLQ pour que vous le sachiez au moment où un consommateur commence à rejeter des messages, pas trois semaines plus tard dans un post-mortem.
+
+[Découvrir comment fonctionne la surveillance des DLQ dans Qarote →](/features/)

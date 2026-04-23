@@ -1,0 +1,148 @@
+---
+title: "Colas de quórum en RabbitMQ: cuándo migrar y cómo hacerlo sin riesgos"
+description: "Las colas clásicas están deprecadas en RabbitMQ 3.12+. Aquí encontrarás qué cambian realmente las colas de quórum, qué cargas de trabajo deberían migrar ya, y cómo hacerlo sin tiempo de inactividad."
+publishedAt: "2026-04-25"
+tags: ["rabbitmq", "operations", "architecture", "quorum-queues"]
+readingTimeMin: 8
+---
+
+RabbitMQ 3.12 deprecó las colas clásicas con mirroring. RabbitMQ 3.13 deprecó las colas clásicas por completo. Si hoy tienes colas clásicas en producción, estás viviendo de prestado — y el reloj corre más rápido con cada actualización menor que aplicas.
+
+Pero migrar a ciegas provoca incidentes. El comportamiento de `requeue=true` cambia. Los publisher confirms se vuelven críticos. El timeout de consumidores se aplica con más rigor. Los equipos que pasan por alto estos detalles terminan con incidentes post-migración.
+
+Este artículo cubre el modelo mental, qué cambia realmente, qué cargas de trabajo deberían migrar ahora frente a más adelante, y un procedimiento de migración sin tiempo de inactividad.
+
+> Migrar a colas de quórum también cambia cómo monitorizas — las elecciones de líder Raft, el tamaño del log y los timeouts de consumidores más estrictos necesitan visibilidad. [Descubre cómo Qarote monitoriza las colas de quórum →](/features/)
+
+## Qué son realmente las colas de quórum
+
+### Colas clásicas: lo que tienes ahora
+
+Una cola clásica vive en un único nodo líder. El mirroring es síncrono — cada publicación en una cola con mirroring se bloquea hasta que todos los mirrors han escrito el mensaje. Cuando el nodo líder falla, puede ser necesaria una intervención manual. Los mensajes que aún no se han replicado se pierden.
+
+### Colas de quórum: a dónde vas a moverse
+
+Una cola de quórum usa consenso Raft. El mensaje se confirma una vez que la mayoría de los miembros lo han escrito en disco. Cuando el líder falla, los miembros restantes eligen un nuevo líder de forma automática. Sin intervención manual.
+
+### Implicaciones clave para los operadores
+
+**Las colas de quórum requieren al menos 3 nodos para HA real.** Un clúster de 1 nodo ofrece durabilidad, no disponibilidad.
+
+**Las colas de quórum siempre escriben en disco.** [Las colas de quórum consumen significativamente menos RAM que las colas clásicas](/blog/rabbitmq-memory-alarm/).
+
+**El control de flujo del consumidor es explícito.** Valor por defecto de `x-max-in-flight`: 256.
+
+**El timeout de consumidores se aplica.** Por defecto: 30 minutos.
+
+## Cuándo debes migrar ahora
+
+- RabbitMQ 3.12+ con colas clásicas con mirroring
+- RabbitMQ 3.13+
+- La carga de trabajo no puede permitirse la pérdida de mensajes en un fallo de nodo
+- Necesitas failover automático del líder
+
+## Cuándo las colas clásicas siguen siendo aceptables
+
+- Desarrollo o pruebas en un único nodo
+- Mensajes verdaderamente transitorios y no críticos
+- Cargas de trabajo de muy alto rendimiento sensibles a la latencia de escritura
+
+Incluso en estos casos, ten un plan de migración.
+
+## Qué cambia realmente al hacer el cambio
+
+### Lo que permanece igual
+
+El protocolo AMQP. `basic.publish`, `basic.consume`, `basic.ack`, `basic.nack`. Los bindings de exchanges, las routing keys y la configuración del vhost. La apariencia de la interfaz de gestión.
+
+### Lo que cambia — lee cada punto
+
+**`x-queue-type: quorum` es obligatorio al declarar.** No existe conversión in situ.
+
+**El modo lazy es irrelevante.** Elimina `x-queue-mode: lazy` de las declaraciones.
+
+**`x-ha-policy` se ignora.** Elimínalo.
+
+**`basic.nack` con `requeue=true` envía el mensaje al FINAL de la cola.** Esta es la causa número 1 de incidentes post-migración. Revisa la lógica de tu [cola de mensajes fallidos](/blog/rabbitmq-dead-letter-queue/).
+
+**`x-max-priority` no está soportado.**
+
+**Los publisher confirms no son opcionales.** Actívalos en cada productor.
+
+**El prefetch del consumidor interactúa con `x-max-in-flight` (256 por defecto).** Consulta [cómo depurar acumulaciones en colas](/blog/debug-rabbitmq-queue-backlog/).
+
+**Timeout de consumidores: 30 minutos por defecto.**
+
+## Estrategia de migración: enfoque sin tiempo de inactividad
+
+### Paso 1: Auditoría
+
+```bash
+rabbitmqctl list_queues name type durable messages | grep classic
+rabbitmqctl list_queues --vhost "/" name type durable messages consumers
+```
+
+### Paso 2: Crear la nueva cola de quórum
+
+```bash
+rabbitmqadmin declare queue name=my-queue.v2 durable=true \
+  arguments='{"x-queue-type":"quorum"}'
+rabbitmqadmin declare queue name=my-queue.v2 durable=true \
+  arguments='{"x-queue-type":"quorum","x-quorum-initial-group-size":3}'
+rabbitmqadmin declare binding source=my-exchange destination=my-queue.v2 routing_key=my.routing.key
+```
+
+### Paso 3: Redirigir los publishers
+
+### Paso 4: Drenar ambas colas
+
+```bash
+watch -n 5 'rabbitmqctl list_queues name messages consumers | grep my-queue'
+```
+
+### Paso 5: Cutover
+
+```bash
+rabbitmqadmin delete queue name=my-queue
+```
+
+### Declaración basada en políticas
+
+```bash
+rabbitmqctl set_policy quorum-policy "^my-queue$" '{"queue-type":"quorum"}' --apply-to queues
+```
+
+Se aplica únicamente a las colas recién declaradas — no convierte las colas clásicas existentes.
+
+## Qué monitorizar tras la migración
+
+**Elecciones de líder.** Las elecciones frecuentes son señal de un nodo miembro en mal estado.
+
+**Tamaño del log Raft.** Un log que crece indica que un seguidor está rezagado.
+
+**Uso de disco.** Configura alertas. Consulta [cómo configurar alertas en RabbitMQ](/blog/rabbitmq-alerts-setup-guide/).
+
+**`messages_unacknowledged`.** El timeout de consumidores se aplica con estrictez.
+
+> Qarote muestra las elecciones de líder Raft y el uso de disco por cola. [Ver las funcionalidades de monitorización →](/features/)
+
+## Errores comunes en la migración
+
+- Intentar convertir in situ — imposible
+- Publicar sin confirms en colas de quórum — no es negociable
+- No ajustar el prefetch del consumidor (límite de 256)
+- Correr en 1 nodo esperando HA
+- No probar el comportamiento de `requeue=true` — los mensajes van al final, no al principio
+- Dejar `x-ha-policy` en las declaraciones
+
+## En resumen
+
+**Migra ahora si:** estás en 3.12+ con colas clásicas con mirroring, en 3.13+, o si la pérdida de mensajes es inaceptable.
+
+**Qué cambia:** No hay conversión in situ. `requeue=true` → al final de la cola. Sin colas de prioridad. Publisher confirms son críticos. Timeout de consumidores de 30 minutos.
+
+**Qué permanece:** El protocolo AMQP, las llamadas del cliente, los bindings y la interfaz de gestión.
+
+**Sin tiempo de inactividad:** Declara una cola paralela nueva, redirige los publishers, drena ambas y elimina la antigua.
+
+Tras la migración, vigila las elecciones frecuentes de líder Raft. Qarote las muestra en el panel de detalle de cada cola. [Descubre cómo funciona →](/features/)

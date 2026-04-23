@@ -1,0 +1,146 @@
+---
+title: "RabbitMQ 仲裁队列：何时迁移以及如何安全迁移"
+description: "经典队列在 RabbitMQ 3.12+ 中已被弃用。本文介绍仲裁队列的实际变化、哪些工作负载应立即迁移，以及如何在不停机的情况下完成迁移。"
+publishedAt: "2026-04-25"
+tags: ["rabbitmq", "operations", "architecture", "quorum-queues"]
+readingTimeMin: 8
+---
+
+RabbitMQ 3.12 弃用了经典镜像队列，RabbitMQ 3.13 则彻底弃用了经典队列。如果你今天仍在生产环境中使用经典队列，那你正在借时间用。
+
+盲目迁移会导致故障。`requeue=true` 的行为会发生变化，发布者确认变得至关重要，消费者超时的执行也更为严格。
+
+本文涵盖核心概念模型、实际的变化内容、哪些工作负载应立即迁移，以及零停机迁移方案。
+
+> 迁移到仲裁队列也会改变监控方式 —— Raft 领导者选举、日志大小以及更严格的消费者超时都需要可见性。[查看 Qarote 如何监控仲裁队列 →](/features/)
+
+## 仲裁队列到底是什么
+
+### 经典队列：你现在拥有的
+
+经典队列存活在单个领导节点上，镜像是同步的。当领导节点故障时，可能需要人工介入，尚未复制的消息也会丢失。
+
+### 仲裁队列：你即将迁移到的
+
+仲裁队列使用 Raft 共识协议，消息在多数节点写入磁盘后才被确认。领导节点故障后自动选举，无需人工干预。
+
+### 运维人员需要了解的关键点
+
+**真正实现高可用至少需要 3 个节点。** 单节点只能保证持久性，无法保证可用性。
+
+**始终写入磁盘。** [内存占用远低于经典队列](/blog/rabbitmq-memory-alarm/)。
+
+**`x-max-in-flight` 默认值为 256。**
+
+**消费者超时默认为 30 分钟。**
+
+## 必须立即迁移的情况
+
+- RabbitMQ 3.12+ 且使用了镜像经典队列
+- RabbitMQ 3.13+
+- 节点故障时无法承受消息丢失
+- 需要领导者自动故障转移
+
+## 经典队列仍可接受的情况
+
+- 单节点开发/测试环境
+- 真正短暂的、可容忍丢失的消息
+- 对写延迟极其敏感的高吞吐场景（请先做基准测试）
+
+## 切换时实际发生的变化
+
+### 保持不变的部分
+
+AMQP 协议、`basic.publish`、`basic.consume`、`basic.ack`、`basic.nack`、交换机绑定、路由键、虚拟主机、管理界面。
+
+### 发生变化的部分
+
+**声明时需指定 `x-queue-type: quorum` —— 无法原地转换。**
+
+**懒加载模式不再适用。** 移除 `x-queue-mode: lazy`。
+
+**`x-ha-policy` 将被忽略。** 移除该参数。
+
+**`basic.nack` 配合 `requeue=true` → 消息回到队列尾部，而非队列头部。** 这是迁移后发生故障的第一大原因。请检查[死信队列](/blog/rabbitmq-dead-letter-queue/)逻辑。
+
+**不支持 `x-max-priority`。**
+
+**发布者确认为必选项。**
+
+**消费者预取量与 `x-max-in-flight`（256）的关系。** 参见[队列积压调试](/blog/debug-rabbitmq-queue-backlog/)。
+
+**消费者超时：30 分钟。**
+
+## 迁移策略：零停机
+
+### 第一步：审计现有队列
+
+```bash
+rabbitmqctl list_queues name type durable messages | grep classic
+rabbitmqctl list_queues --vhost "/" name type durable messages consumers
+```
+
+### 第二步：创建新的仲裁队列
+
+```bash
+rabbitmqadmin declare queue name=my-queue.v2 durable=true \
+  arguments='{"x-queue-type":"quorum"}'
+rabbitmqadmin declare queue name=my-queue.v2 durable=true \
+  arguments='{"x-queue-type":"quorum","x-quorum-initial-group-size":3}'
+rabbitmqadmin declare binding source=my-exchange destination=my-queue.v2 routing_key=my.routing.key
+```
+
+### 第三步：切换发布者
+
+### 第四步：排空两个队列
+
+```bash
+watch -n 5 'rabbitmqctl list_queues name messages consumers | grep my-queue'
+```
+
+### 第五步：完成切换
+
+```bash
+rabbitmqadmin delete queue name=my-queue
+```
+
+### 基于策略的声明方式
+
+```bash
+rabbitmqctl set_policy quorum-policy "^my-queue$" '{"queue-type":"quorum"}' --apply-to queues
+```
+
+此策略仅对新声明的队列生效。
+
+## 迁移后需要监控的指标
+
+**领导者选举。** 频繁选举意味着成员节点不健康。
+
+**Raft 日志大小。** 持续增长意味着有跟随者节点落后。
+
+**磁盘使用量。** 设置告警。参见 [RabbitMQ 告警配置](/blog/rabbitmq-alerts-setup-guide/)。
+
+**`messages_unacknowledged`（未确认消息数）。**
+
+> Qarote 会展示 Raft 领导者选举情况和每个队列的磁盘使用量。[查看监控功能 →](/features/)
+
+## 常见迁移错误
+
+- 尝试原地转换 —— 这是不可能的
+- 未启用发布者确认 —— 这是不可妥协的
+- 预取量超过 256 —— 迁移前需先调整
+- 单节点却期望高可用 —— 单节点只提供持久性
+- 未测试 `requeue=true` 的行为 —— 消息会进入队列尾部
+- 声明时保留了 `x-ha-policy`
+
+## 总结
+
+**应立即迁移的情况：** 3.12+ 且使用了镜像经典队列、3.13+、不可接受消息丢失。
+
+**变化：** 无法原地转换；`requeue=true` 将消息送到队列尾部；不支持优先级队列；发布者确认至关重要；严格执行 30 分钟消费者超时。
+
+**不变：** AMQP 协议、客户端调用、绑定关系、管理界面。
+
+**零停机方案：** 并行创建新队列，切换发布者，排空两个队列，删除旧队列。
+
+迁移后请重点关注频繁发生的 Raft 领导者选举。Qarote 会将其可视化呈现。[了解运作方式 →](/features/)

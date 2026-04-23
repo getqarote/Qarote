@@ -1,0 +1,173 @@
+---
+title: "RabbitMQ磁盘告警：如何诊断和恢复"
+description: "RabbitMQ磁盘告警阻塞了你的发布者？本文介绍如何找出磁盘空间的消耗来源、在不丢失数据的情况下清除告警，并防止其再次触发。"
+publishedAt: "2026-04-25"
+tags: ["rabbitmq", "debugging", "monitoring", "operations"]
+readingTimeMin: 7
+---
+
+凌晨3点，PagerDuty告警响起，发布者全部停止发送。日志显示`resource alarm set on node rabbit@prod-1`，所有下游都在堆积。consumer仍在消费，但新消息无法进入。罪魁祸首是`disk_free_alarm`——RabbitMQ判断磁盘空闲空间不足，无法安全接收更多消息，并已将所有发布连接置于flow control状态，直到情况改变。
+
+本文介绍如何确认告警、找出磁盘消耗来源、安全清除告警，以及防止其再次触发。
+
+> **在问题咬你之前先看清楚。** Qarote可跨cluster中每个节点实时显示磁盘可用空间和告警状态，并支持在`disk_free_alarm`翻转为true之前提前告警。[查看节点健康仪表盘 →](/features/)
+
+## 磁盘告警的真正含义
+
+RabbitMQ监控其数据目录所在卷的磁盘空闲空间（通常为`/var/lib/rabbitmq`），并将当前可用空间与一个可配置的阈值`disk_free_limit`进行比较。一旦可用空间低于该阈值，broker就会在整个cluster范围内触发`disk_free_alarm`，并阻止所有新消息的发布。
+
+`disk_free_limit`的默认值是**50 MB**。没有看错，就是五十兆字节。在任何承担实际负载的生产系统上，这个阈值都低得危险——一轮持久化消息的突发写入，就能在数秒内让你跌破它。RabbitMQ官方文档建议将此值设置为至少与可用内存相当，大多数生产团队应使用绝对值`{absolute, "5GB"}`或磁盘总容量的相对比例`0.1`。
+
+这个告警的存在有其充分理由：RabbitMQ会将持久化消息体写入磁盘，同时使用Erlang的mnesia数据库存储cluster元数据、queue定义、binding和用户记录。如果磁盘被完全占满，mnesia的写入可能发生损坏，而从损坏的mnesia数据库中恢复，比处理磁盘告警要痛苦得多。
+
+确认告警是否活跃：
+
+```bash
+rabbitmqctl status | grep -A5 alarms
+```
+
+或通过HTTP API查询：
+
+```bash
+curl -s -u guest:guest http://localhost:15672/api/nodes | \
+  jq '.[].disk_free_alarm'
+```
+
+如果返回`true`（或显示`{resource_alarm,disk_free}`），说明告警正在触发。
+
+## 如何检查当前磁盘使用情况
+
+以下三个角度都值得立即排查，不要跳过任何一个——真正的原因往往藏在你没有看的那个地方。
+
+### RabbitMQ自身的磁盘报告
+
+```bash
+rabbitmqctl status | grep -A5 disk
+```
+
+### 实际消耗磁盘的内容
+
+```bash
+du -sh /var/lib/rabbitmq/mnesia/*
+```
+
+在繁忙的cluster上，`rabbit@<hostname>`目录几乎总是最关键的那个。其中，`msg_stores/vhosts/`存放持久化消息体，`schema.DAT`、`*.DCD`和`*.DCL`文件是mnesia的表数据和事务日志。
+
+### 当前阈值
+
+```bash
+rabbitmqctl environment | grep disk_free_limit
+```
+
+## 五大最常见根因
+
+### 1. 持久化消息积压
+
+```bash
+rabbitmqctl list_queues name messages message_bytes_persistent | \
+  sort -k3 -n -r | head -10
+```
+
+```bash
+rabbitmqctl set_policy max-size "^your-queue-name$" \
+  '{"max-length-bytes": 1073741824}' --apply-to queues
+```
+
+参见[排查RabbitMQ队列积压](/blog/debug-rabbitmq-queue-backlog/)。
+
+### 2. 磁盘上存在大消息体
+
+```bash
+curl -s -u guest:guest http://localhost:15672/api/queues | \
+  jq '.[] | {name: .name, messages: .messages, message_bytes_persistent: .message_bytes_persistent}' | \
+  jq 'select(.message_bytes_persistent > 0)'
+```
+
+### 3. Management插件的统计数据库
+
+```bash
+rabbitmqctl environment | grep management
+```
+
+```ini
+management.rates_mode = basic
+management.sample_retention_policies.global.minute  = 5
+management.sample_retention_policies.global.hour    = 60
+management.sample_retention_policies.global.day     = 1200
+```
+
+```bash
+rabbitmq-plugins disable rabbitmq_management
+rabbitmq-plugins enable rabbitmq_management
+```
+
+### 4. Mnesia事务日志
+
+```bash
+ls -lh /var/lib/rabbitmq/mnesia/rabbit@$(hostname)/
+```
+
+```bash
+rabbitmqctl eval 'lists:foreach(fun(T) -> mnesia:dump_tables([T]) end, mnesia:system_info(local_tables)).'
+```
+
+### 5. 阈值相对于磁盘容量设置过高
+
+```bash
+free -h
+rabbitmqctl environment | grep disk_free_limit
+rabbitmqctl status | grep disk_free
+```
+
+```ini
+# rabbitmq.conf
+disk_free_limit.absolute = 5GB
+```
+
+## 如何在不丢失数据的情况下清除告警
+
+不要重启RabbitMQ，也不要删除`/var/lib/rabbitmq/mnesia/`下的任何文件。
+
+```bash
+find /var/log/rabbitmq -name "*.log.*" -mtime +7 -delete
+df -h /var/lib/rabbitmq
+```
+
+```bash
+rabbitmq-plugins disable rabbitmq_management
+rabbitmq-plugins enable rabbitmq_management
+```
+
+```bash
+rabbitmqctl purge_queue your-queue-name
+```
+
+```bash
+rabbitmqctl set_disk_free_limit '{absolute, "500MB"}'
+```
+
+## 防止告警再次触发
+
+```
+rabbitmq_node_disk_free_bytes / rabbitmq_node_disk_free_limit < 3
+```
+
+```ini
+disk_free_limit.absolute = 5GB
+```
+
+```bash
+rabbitmqctl set_policy max-size ".*" \
+  '{"max-length-bytes": 5368709120}' \
+  --apply-to queues --priority 0
+```
+
+参见[如何设置真正能提前预警的RabbitMQ告警](/blog/rabbitmq-alerts-setup-guide/)。磁盘告警和[内存告警](/blog/rabbitmq-memory-alarm/)都是滞后指标。
+
+---
+
+Qarote的节点面板可显示`disk_free_bytes / disk_free_limit`比值随时间的变化趋势。[查看节点健康仪表盘的实际效果 →](/features/)
+
+---
+
+**tl;dr：** 当可用磁盘低于`disk_free_limit`（默认50 MB）时，RabbitMQ触发`disk_free_alarm`。常见原因包括：持久化消息积压、相对阈值配置不当、Management插件统计数据、mnesia日志。安全清除方式：删除旧日志、重启management插件、排空队列、临时降低阈值。预防措施：设置`disk_free_limit.absolute = 5GB`，添加`x-max-length-bytes`策略，并在比值触达1之前配置告警。

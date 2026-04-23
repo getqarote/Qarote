@@ -1,0 +1,195 @@
+---
+title: "Dead Letter Queue en RabbitMQ: diseño, monitorización y procesamiento de mensajes fallidos"
+description: "Las DLQ acumulan mensajes fallidos en silencio hasta que alguien lo nota semanas después. Aquí te explicamos cómo configurarlas correctamente, monitorizar su crecimiento y construir una estrategia de reprocesamiento."
+publishedAt: "2026-04-25"
+tags: ["rabbitmq", "operations", "architecture", "debugging"]
+readingTimeMin: 9
+---
+
+La línea de tiempo del post-mortem siempre es la misma. Un bug en el procesador de pedidos se desplegó el día 14. Los consumers empezaron a rechazar eventos malformados. La DLQ pasó de cero a 47.000 mensajes en 18 días. Nadie se dio cuenta hasta que un cliente lo notó.
+
+Las dead letter queues son el destino de los mensajes fallidos — y donde se acumulan en silencio cuando nadie los vigila. No hay ninguna alarma en la cola principal. El throughput parece normal. Los consumers siguen ejecutándose. La profundidad de la DLQ no aparece en el dashboard de nadie. Tres semanas después, estás explicando en un post-mortem por qué 47.000 eventos de pedidos nunca se procesaron.
+
+Este artículo explica cómo funcionan realmente las DLQ, cómo configurarlas sin caer en las trampas habituales, y cómo construir una estrategia de reprocesamiento que no empeore las cosas.
+
+> **Qarote monitoriza la profundidad y la tasa de crecimiento de las DLQ por cola — incluyendo una alerta cuando cualquier dead letter queue empieza a recibir mensajes.** [Ver cómo funciona la monitorización de DLQ →](/features/)
+
+---
+
+## Qué es realmente una dead letter queue
+
+Una dead letter queue no es una construcción especial de RabbitMQ. Es una cola normal vinculada a un exchange normal. Lo único que la convierte en una DLQ es que has apuntado el argumento `x-dead-letter-exchange` de otra cola a ese exchange. Eso es todo.
+
+Cuando un mensaje es "dead-lettered", RabbitMQ lo enruta al dead letter exchange (DLX) configurado usando bien la routing key original, bien una clave que especifiques con `x-dead-letter-routing-key`. Desde allí, el DLX lo enruta a la cola que esté vinculada con una clave coincidente — que has configurado como tu DLQ.
+
+Hay tres causas por las que un mensaje acaba en la DLQ:
+
+**1. `basic.nack` o `basic.reject` con `requeue=false`.** Tu consumer le indicó explícitamente a RabbitMQ que no puede procesar este mensaje y no quiere que se vuelva a encolar.
+
+**2. TTL del mensaje expirado.** El mensaje permaneció en la cola más tiempo del límite `x-message-ttl`.
+
+**3. Límite de longitud de cola superado.** La cola alcanzó su límite `x-max-length` o `x-max-length-bytes`.
+
+Cuando un mensaje es dead-lettered, RabbitMQ le añade cabeceras `x-death`:
+
+```json
+{
+  "x-death": [
+    {
+      "count": 1,
+      "reason": "rejected",
+      "queue": "my-queue",
+      "time": "2026-04-14T09:23:11Z",
+      "exchange": "my-exchange",
+      "routing-keys": ["my-queue"]
+    }
+  ],
+  "x-first-death-reason": "rejected",
+  "x-first-death-queue": "my-queue",
+  "x-first-death-exchange": "my-exchange"
+}
+```
+
+---
+
+## Cómo configurar una DLQ correctamente
+
+```bash
+rabbitmqadmin declare exchange name=my-dlx type=direct
+rabbitmqadmin declare queue name=my-queue.dlq
+rabbitmqadmin declare binding source=my-dlx destination=my-queue.dlq routing_key=my-queue
+rabbitmqadmin declare queue name=my-queue \
+  arguments='{"x-dead-letter-exchange":"my-dlx","x-dead-letter-routing-key":"my-queue"}'
+```
+
+```python
+import pika
+connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
+channel = connection.channel()
+channel.exchange_declare(exchange="my-dlx", exchange_type="direct")
+channel.queue_declare(queue="my-queue.dlq")
+channel.queue_bind(queue="my-queue.dlq", exchange="my-dlx", routing_key="my-queue")
+channel.queue_declare(
+    queue="my-queue",
+    arguments={"x-dead-letter-exchange": "my-dlx", "x-dead-letter-routing-key": "my-queue"},
+)
+```
+
+Para colas existentes, usa una policy:
+
+```bash
+rabbitmqctl set_policy dlx-policy "^my-queue$" \
+  '{"dead-letter-exchange":"my-dlx"}' --apply-to queues
+```
+
+---
+
+## Las 3 razones por las que los mensajes acaban en la DLQ
+
+### Rechazado (`x-first-death-reason: rejected`)
+
+Comprueba `x-death[0].count`. Si es mayor que 1, tienes un bucle. Deténlo antes de reprocesar. Ver [RabbitMQ Consumer Not Processing Messages](/blog/rabbitmq-consumer-not-processing/).
+
+### TTL expirado (`x-first-death-reason: expired`)
+
+Cruza el timestamp de expiración con la ventana de interrupción de tu consumer. Un TTL de 30 segundos en una cola donde el procesamiento tarda ocasionalmente 45 segundos genera un flujo constante hacia la DLQ que nadie detecta durante meses.
+
+### Límite de longitud de cola (`x-first-death-reason: maxlen`)
+
+`x-max-length` expulsa desde el **principio** de la cola — los mensajes más antiguos primero. Verifica que reprocesar eventos antiguos es seguro. Ver [How to Debug a RabbitMQ Queue Backlog](/blog/debug-rabbitmq-queue-backlog/) y [RabbitMQ Memory Alarm](/blog/rabbitmq-memory-alarm/).
+
+---
+
+## Cómo inspeccionar los mensajes de una DLQ
+
+```bash
+curl -u guest:guest -X POST \
+  http://localhost:15672/api/queues/%2F/my-queue.dlq/get \
+  -H 'content-type: application/json' \
+  -d '{"count":5,"ackmode":"ack_requeue_true","encoding":"auto"}' \
+  | jq '.[] | {payload: .payload, death_reason: .properties.headers["x-first-death-reason"], death_count: (.properties.headers["x-death"] | length)}'
+```
+
+---
+
+## Monitorizar el crecimiento de la DLQ
+
+```yaml
+- alert: RabbitMQDLQGrowing
+  expr: |
+    rate(rabbitmq_queue_messages_published_total{queue=~".*dlq.*|.*dead.*|.*failed.*"}[5m]) > 0
+  for: 5m
+  labels:
+    severity: warning
+  annotations:
+    summary: "DLQ {{ $labels.queue }} receiving messages at {{ $value }}/sec"
+```
+
+Ver [How to Set Up RabbitMQ Alerts That Actually Fire](/blog/rabbitmq-alerts-setup-guide/).
+
+---
+
+## Estrategias de reprocesamiento
+
+### 1. Plugin Shovel (la más sencilla, la más arriesgada)
+
+```bash
+rabbitmqctl set_parameter shovel my-reprocess \
+  '{"src-protocol":"amqp091","src-uri":"amqp://guest:guest@localhost","src-queue":"my-queue.dlq","dest-protocol":"amqp091","dest-uri":"amqp://guest:guest@localhost","dest-exchange":"my-exchange","dest-exchange-key":"my-queue"}'
+```
+
+### 2. Reprocesamiento basado en consumer (recomendado)
+
+```python
+import pika, json
+connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
+channel = connection.channel()
+channel.basic_qos(prefetch_count=1)
+
+def reprocess(ch, method, properties, body):
+    try:
+        data = json.loads(body)
+        death_count = len(properties.headers.get("x-death", []))
+        if death_count > 5:
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+            return
+        fixed_data = migrate_schema(data)
+        ch.basic_publish(exchange="my-exchange", routing_key="my-queue", body=json.dumps(fixed_data))
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+    except Exception as e:
+        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+
+channel.basic_consume(queue="my-queue.dlq", on_message_callback=reprocess)
+channel.start_consuming()
+```
+
+### 3. Re-encolar de forma selectiva
+
+```bash
+curl -u guest:guest -X POST \
+  http://localhost:15672/api/queues/%2F/my-queue.dlq/get \
+  -H 'content-type: application/json' \
+  -d '{"count":1,"ackmode":"ack_requeue_false","encoding":"auto"}'
+```
+
+Nunca vuelques una DLQ de vuelta a la cola principal sin analizar los mensajes antes.
+
+---
+
+## Errores habituales en el diseño de DLQ
+
+- Sin DLQ configurada — los mensajes con nack se pierden en silencio
+- La DLQ no tiene consumer — crece indefinidamente
+- La DLQ usa el mismo exchange que la cola principal — bucle infinito
+- Sin alerta sobre el crecimiento de la DLQ
+- Sin TTL en la propia DLQ — crece sin límite
+
+---
+
+## Resumen
+
+Configura las DLQ con `x-dead-letter-exchange`. Hay tres motivos de dead-lettering: rechazado, TTL expirado y maxlen. Lee las cabeceras `x-death` antes de reprocesar. Usa reprocesamiento basado en consumer en producción. Alerta sobre la tasa de crecimiento, no solo sobre la profundidad.
+
+La parte más difícil de gestionar una DLQ no es configurarla — es saber cuándo empiezan a llegar mensajes. Qarote alerta sobre la tasa de crecimiento de la DLQ para que te enteres cuando un consumer empieza a rechazar mensajes, no tres semanas después en un post-mortem.
+
+[Ver cómo funciona la monitorización de DLQ en Qarote →](/features/)
