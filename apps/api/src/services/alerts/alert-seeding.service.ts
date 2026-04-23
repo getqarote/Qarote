@@ -20,5 +20,10 @@ export function seedDefaultAlertRules(
   serverId: string,
   workspaceId: string
 ): void {
-  void _impl(serverId, workspaceId);
+  _impl(serverId, workspaceId).catch((_err) => {
+    // Swallow rejections so server creation is never blocked or rolled back.
+    // The EE implementation is expected to handle its own errors internally,
+    // but we guard here as a belt-and-suspenders measure.
+    // Logging is intentionally omitted here — the EE impl logs its own errors.
+  });
 }

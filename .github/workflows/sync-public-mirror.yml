@@ -58,10 +58,11 @@ jobs:
             exit 1
           fi
 
-          # Fail the job if any CE file still uses a relative ../ee/ import,
-          # which indicates a boundary violation that must be fixed before shipping.
-          if grep -rE 'from\s+['"'"'"][^'"'"'"]*\.\./.*ee/' public-repo/apps/api/src/ 2>/dev/null; then
-            echo "ERROR: relative ../ee/ imports found in CE tree — fix before pushing to mirror." >&2
+          # Fail the job if any CE file still contains an EE import — either
+          # a relative ../ee/ path or the @/ee/ path alias. Both indicate a
+          # boundary violation that must be resolved (stub/registry) before shipping.
+          if grep -rE 'from\s+['"'"'"](@/ee/|[^'"'"'"]*\.\./.*ee/)' public-repo/apps/api/src/ 2>/dev/null; then
+            echo "ERROR: EE imports (@/ee/ or ../ee/) found in CE tree — fix before pushing to mirror." >&2
             exit 1
           fi
 

@@ -1,10 +1,12 @@
 /**
- * Type-only exports for frontend consumption
- * This file only exports types and does not import runtime code
+ * Type-only exports for frontend and type-consumer use.
+ *
+ * Rule: TypeScript type consumers (frontend tRPC client, etc.) import AppRouter
+ * from here. Runtime code that needs the actual router (server.ts, tests) must
+ * import directly from "@/ee/trpc/router" — not from this file.
  */
 
-// AppRouter type is derived from the EE router (CE + EE routes).
-// All callers import from here — never directly from ee/trpc/router.
+// Derive AppRouter from the EE router so the type includes all CE + EE routes.
 import type { appRouter } from "../ee/trpc/router";
 
 export type AppRouter = typeof appRouter;
