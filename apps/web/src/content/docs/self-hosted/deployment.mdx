@@ -18,7 +18,7 @@ All deployments start with the **free tier** (core monitoring). Premium features
 
 ## Prerequisites
 
-- **Binary:** PostgreSQL 15+ already running (no Docker or Node.js needed)
+- **Binary:** PostgreSQL 17+ already running (no Docker or Node.js needed)
 - **Docker Compose:** Docker and Docker Compose installed (PostgreSQL is bundled)
 - **Dokku:** Dokku installed on your server
 - Minimum 2 GB RAM, 10 GB disk space
@@ -33,7 +33,7 @@ If PostgreSQL isn't already running:
 
 ```bash
 # macOS
-brew install postgresql@15
+brew install postgresql@17
 
 # Ubuntu / Debian / WSL2
 sudo apt install postgresql
@@ -202,7 +202,7 @@ This starts four containers:
 
 | Container             | Purpose                     |
 | --------------------- | --------------------------- |
-| `qarote_postgres`     | PostgreSQL 15 database      |
+| `qarote_postgres`     | PostgreSQL 17 database      |
 | `qarote_backend`      | API server on port 3000     |
 | `qarote_alert_worker` | Alert evaluation worker     |
 | `qarote_frontend`     | React frontend on port 8080 |
