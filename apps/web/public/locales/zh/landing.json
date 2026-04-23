@@ -1,9 +1,9 @@
 {
   "hero": {
-    "titleBefore": "监控 ",
+    "titleBefore": "2 分钟内完整监控 ",
     "titleHighlight": "RabbitMQ",
-    "titleAfter": " 服务器的最简单方式",
-    "subtitle": "Qarote 提供简洁直观的界面，让你轻松监控、分析和管理 RabbitMQ 服务器。",
+    "titleAfter": "。",
+    "subtitle": "无需 Prometheus，无需 Grafana。输入 URL — 2 分钟内获得完整队列监控。",
     "noCreditCard": "免费开源 • 专业版功能 14 天试用"
   },
   "cta": {
@@ -128,6 +128,6 @@
   },
   "seo": {
     "title": "Qarote - RabbitMQ 监控仪表盘",
-    "description": "使用 Qarote 监控 RabbitMQ 队列、跟踪性能并管理消息代理。免费核心监控，支持告警、多服务器和团队工作区。"
+    "description": "2 分钟完成 RabbitMQ 监控 — 无需 Prometheus，无需 Grafana。输入服务器 URL 即可开始。免费、开源、支持自托管。"
   }
 }
