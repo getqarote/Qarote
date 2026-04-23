@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Send } from "lucide-react";
+import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
 
@@ -36,7 +37,6 @@ import {
   usePublishMessage,
   useQueues,
 } from "@/hooks/queries/useRabbitMQ";
-import { useToast } from "@/hooks/ui/useToast";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { type SendMessageFormData, sendMessageSchema } from "@/schemas";
@@ -72,7 +72,6 @@ export function SendMessageDialog({
 
   const publishMutation = usePublishMessage();
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const { workspace } = useWorkspace();
   const { selectedVHost } = useVHostContext();
 
@@ -193,12 +192,10 @@ export function SendMessageDialog({
           suggestions: (errorData.suggestions || []) as string[],
           details: errorData.details as RoutingError["details"],
         });
-        toast({
-          title: t("sendMessage.notRoutedTitle"),
+        toast.error(t("sendMessage.notRoutedTitle"), {
           description: (errorData.error ||
             errorData.message ||
             t("sendMessage.notRoutedDescription")) as string,
-          variant: "destructive",
         });
         return;
       }
@@ -209,10 +206,8 @@ export function SendMessageDialog({
     if (error.response?.data?.message) {
       errorMessage = error.response.data.message as string;
     }
-    toast({
-      title: t("sendMessage.failedTitle"),
+    toast.error(t("sendMessage.failedTitle"), {
       description: errorMessage,
-      variant: "destructive",
     });
   };
 
@@ -238,14 +233,12 @@ export function SendMessageDialog({
       form.setValue("exchange", "");
       if (queueName) form.setValue("routingKey", queueName);
       setRoutingError(null);
-      toast({
-        title: t("sendMessage.settingsAppliedTitle"),
+      toast(t("sendMessage.settingsAppliedTitle"), {
         description: t("sendMessage.settingsAppliedDefault"),
       });
     } else if (suggestion.includes("routing key") && queues.length > 0) {
       form.setValue("routingKey", queues[0].name);
-      toast({
-        title: t("sendMessage.settingsAppliedTitle"),
+      toast(t("sendMessage.settingsAppliedTitle"), {
         description: t("sendMessage.settingsAppliedRoutingKey", {
           queueName: queues[0].name,
         }),
@@ -258,8 +251,7 @@ export function SendMessageDialog({
       const matchingQueue = queues.find((q) => q.name === currentRoutingKey);
       if (!matchingQueue) {
         form.setValue("routingKey", queues[0].name);
-        toast({
-          title: t("sendMessage.settingsAppliedTitle"),
+        toast(t("sendMessage.settingsAppliedTitle"), {
           description: t("sendMessage.settingsAppliedExisting", {
             queueName: queues[0].name,
           }),
@@ -285,10 +277,8 @@ export function SendMessageDialog({
     if (!data.payload) return;
 
     if (!workspace?.id) {
-      toast({
-        title: t("sendMessage.errorTitle"),
+      toast.error(t("sendMessage.errorTitle"), {
         description: t("sendMessage.workspaceRequired"),
-        variant: "destructive",
       });
       return;
     }
@@ -299,10 +289,8 @@ export function SendMessageDialog({
         parsedHeaders = JSON.parse(data.headers);
       } catch (error) {
         logger.error("Invalid headers JSON:", error);
-        toast({
-          title: t("sendMessage.invalidConfigTitle"),
+        toast.error(t("sendMessage.invalidConfigTitle"), {
           description: t("sendMessage.invalidHeadersJson"),
-          variant: "destructive",
         });
         return;
       }
@@ -359,8 +347,7 @@ export function SendMessageDialog({
             if (resData.routed) {
               setRoutingError(null);
               setOpen(false);
-              toast({
-                title: t("sendMessage.successTitle"),
+              toast(t("sendMessage.successTitle"), {
                 description: t("sendMessage.successQueueDescription", {
                   exchange: resData.exchange || "default",
                   routingKey: resData.routingKey,
@@ -376,11 +363,9 @@ export function SendMessageDialog({
                 suggestions: resData.suggestions || [],
                 details: resData.details,
               });
-              toast({
-                title: t("sendMessage.notRoutedTitle"),
+              toast.error(t("sendMessage.notRoutedTitle"), {
                 description:
                   resData.error || t("sendMessage.notRoutedDescription"),
-                variant: "destructive",
               });
             }
           },
@@ -400,8 +385,7 @@ export function SendMessageDialog({
             if (resData.routed) {
               setRoutingError(null);
               setOpen(false);
-              toast({
-                title: t("sendMessage.successTitle"),
+              toast(t("sendMessage.successTitle"), {
                 description: t("sendMessage.successExchangeDescription", {
                   exchange: resData.exchange,
                   routingKey: resData.routingKey,
@@ -416,11 +400,9 @@ export function SendMessageDialog({
                 suggestions: resData.suggestions || [],
                 details: resData.details,
               });
-              toast({
-                title: t("sendMessage.notRoutedTitle"),
+              toast.error(t("sendMessage.notRoutedTitle"), {
                 description:
                   resData.error || t("sendMessage.notRoutedDescription"),
-                variant: "destructive",
               });
             }
           },
@@ -428,13 +410,11 @@ export function SendMessageDialog({
         }
       );
     } else {
-      toast({
-        title: t("sendMessage.invalidConfigTitle"),
+      toast.error(t("sendMessage.invalidConfigTitle"), {
         description:
           mode === "queue"
             ? t("sendMessage.invalidConfigQueue")
             : t("sendMessage.invalidConfigExchange"),
-        variant: "destructive",
       });
     }
   };

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronDown, Plus } from "lucide-react";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import { Badge } from "@/components/ui/badge";
@@ -38,7 +39,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
 import { useCreateOrUpdatePolicy } from "@/hooks/queries/useRabbitMQ";
-import { useToast } from "@/hooks/ui/useToast";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import type { PolicyListItem } from "./types";
@@ -191,7 +191,6 @@ export function PolicyForm({
   };
 
   const { t } = useTranslation("policies");
-  const { toast } = useToast();
   const { workspace } = useWorkspace();
   const { selectedVHost } = useVHostContext();
   const mutation = useCreateOrUpdatePolicy();
@@ -257,10 +256,8 @@ export function PolicyForm({
 
   const onSubmit = (data: PolicyFormData) => {
     if (!serverId || !workspace?.id) {
-      toast({
-        title: t("common:error"),
+      toast.error(t("common:error"), {
         description: t("workspaceRequired"),
-        variant: "destructive",
       });
       return;
     }
@@ -281,8 +278,7 @@ export function PolicyForm({
       {
         onSuccess: () => {
           setOpen(false);
-          toast({
-            title: isEditing ? t("toast.updated") : t("toast.created"),
+          toast(isEditing ? t("toast.updated") : t("toast.created"), {
             description: isEditing
               ? t("toast.updatedDesc", { name: data.name })
               : t("toast.createdDesc", { name: data.name }),
@@ -290,10 +286,8 @@ export function PolicyForm({
           onSuccess?.();
         },
         onError: (error) => {
-          toast({
-            title: t("toast.saveFailed"),
+          toast.error(t("toast.saveFailed"), {
             description: error.message || t("toast.saveError"),
-            variant: "destructive",
           });
         },
       }

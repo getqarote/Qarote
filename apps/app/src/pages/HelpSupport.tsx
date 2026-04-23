@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { ChevronDown, ChevronRight, Copy } from "lucide-react";
+import { toast } from "sonner";
 
 import { isCloudMode } from "@/lib/featureFlags";
 
@@ -28,8 +29,6 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
-import { useToast } from "@/hooks/ui/useToast";
-
 interface TawkAPI {
   maximize: () => void;
 }
@@ -44,7 +43,6 @@ function HelpSupport() {
   const { t } = useTranslation("help");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [faqQuery, setFaqQuery] = useState("");
-  const { toast } = useToast();
   const { user } = useAuth();
 
   const faqs = useMemo(
@@ -115,15 +113,12 @@ function HelpSupport() {
       }
 
       await navigator.clipboard.writeText("support@qarote.io");
-      toast({
-        title: t("toast.emailCopied"),
+      toast(t("toast.emailCopied"), {
         description: t("toast.emailCopiedDescription"),
       });
     } catch {
-      toast({
-        title: t("toast.copyFailed"),
+      toast.error(t("toast.copyFailed"), {
         description: t("toast.copyFailedDescription"),
-        variant: "destructive",
       });
     }
   };
@@ -202,10 +197,7 @@ function HelpSupport() {
                     if (window.Tawk_API?.maximize) {
                       window.Tawk_API.maximize();
                     } else {
-                      toast({
-                        title: t("chat.unavailable"),
-                        variant: "destructive",
-                      });
+                      toast.error(t("chat.unavailable"));
                     }
                   }}
                   className="w-full bg-primary! text-primary-foreground! hover:bg-primary/90! shadow-sm ring-1 ring-primary/20"

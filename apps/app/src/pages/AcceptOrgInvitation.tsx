@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Building2, CheckCircle2, Loader2, Mail, Shield } from "lucide-react";
+import { toast } from "sonner";
 
 import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
@@ -35,7 +36,6 @@ import {
 } from "@/hooks/queries/useOrgInvitationDetails";
 import { useShowAlternativeAuth } from "@/hooks/queries/useSsoConfig";
 import { useSwitchWorkspace } from "@/hooks/queries/useWorkspaceApi";
-import { useToast } from "@/hooks/ui/useToast";
 
 import {
   type AcceptInvitationFormData,
@@ -155,7 +155,6 @@ const AcceptOrgInvitation = () => {
   const { t } = useTranslation("auth");
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { user: authUser, login } = useAuth();
   const acceptOrgInvitationMutation = useAcceptOrgInvitationPublic();
   const acceptAuthOrgInvitationMutation = useAcceptOrgInvitationAuth();
@@ -262,8 +261,7 @@ const AcceptOrgInvitation = () => {
             };
             login(user);
 
-            toast({
-              title: t("welcomeToQarote"),
+            toast(t("welcomeToQarote"), {
               description: t("orgSuccessfullyJoined", {
                 org: invitation?.organization.name || result.organization.name,
               }),
@@ -275,10 +273,8 @@ const AcceptOrgInvitation = () => {
               "Failed to sign in after accepting org invitation:",
               err
             );
-            toast({
-              title: t("invitationAccepted"),
+            toast(t("invitationAccepted"), {
               description: t("orgSignInToAccess"),
-              variant: "default",
             });
             navigate("/auth/sign-in", { replace: true });
           }

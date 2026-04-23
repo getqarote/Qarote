@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { toast } from "sonner";
+
 import { UserRole } from "@/lib/api";
 import { logger } from "@/lib/logger";
 
@@ -22,7 +24,6 @@ import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
 import { useDeleteExchange, useExchanges } from "@/hooks/queries/useRabbitMQ";
-import { useToast } from "@/hooks/ui/useToast";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { ApiErrorWithCode } from "@/types/apiErrors";
@@ -33,8 +34,6 @@ const Exchanges = () => {
   const isAdmin = user?.role === UserRole.ADMIN;
   const { selectedServerId, hasServers } = useServerContext();
   const { selectedVHost } = useVHostContext();
-  const { toast } = useToast();
-
   const [selectedExchangeType, setSelectedExchangeType] =
     useState<ExchangeTypeFilterValue>("all");
   const [exchangeToDelete, setExchangeToDelete] =
@@ -68,8 +67,7 @@ const Exchanges = () => {
         vhost: encodeURIComponent(exchangeToDelete.vhost || "/"),
       });
 
-      toast({
-        title: t("common:success"),
+      toast(t("common:success"), {
         description: t("deleteSuccess", { exchangeName }),
       });
       setExchangeToDelete(null);
@@ -94,10 +92,8 @@ const Exchanges = () => {
         errorMessage.includes("bindings") ||
         errorMessage.includes("being used");
 
-      toast({
-        title: isInUse ? t("cannotDeleteExchange") : t("common:error"),
+      toast.error(isInUse ? t("cannotDeleteExchange") : t("common:error"), {
         description: errorMessage,
-        variant: "destructive",
       });
     }
   };

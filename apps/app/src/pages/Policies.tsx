@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { toast } from "sonner";
+
 import { UserRole } from "@/lib/api";
 import { logger } from "@/lib/logger";
 
@@ -20,7 +22,6 @@ import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
 import { useDeletePolicy, usePolicies } from "@/hooks/queries/useRabbitMQ";
-import { useToast } from "@/hooks/ui/useToast";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 const Policies = () => {
@@ -29,7 +30,6 @@ const Policies = () => {
   const isAdmin = user?.role === UserRole.ADMIN;
   const { selectedServerId, hasServers } = useServerContext();
   const { selectedVHost } = useVHostContext();
-  const { toast } = useToast();
   const { workspace } = useWorkspace();
 
   const [policyToDelete, setPolicyToDelete] = useState<PolicyListItem | null>(
@@ -58,17 +58,14 @@ const Policies = () => {
         policyName: name,
       });
 
-      toast({
-        title: t("common:success"),
+      toast(t("common:success"), {
         description: t("deleteSuccess", { policyName: name }),
       });
       setPolicyToDelete(null);
     } catch (err) {
       logger.error("Failed to delete policy:", err);
-      toast({
-        title: t("common:error"),
+      toast.error(t("common:error"), {
         description: err instanceof Error ? err.message : t("deleteError"),
-        variant: "destructive",
       });
     }
   };

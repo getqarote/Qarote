@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { Pause, Play } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +17,6 @@ import {
 import { useServerContext } from "@/contexts/ServerContext";
 
 import { usePauseQueue, useResumeQueue } from "@/hooks/queries/useRabbitMQ";
-import { useToast } from "@/hooks/ui/useToast";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 interface PauseQueueDialogProps {
@@ -37,7 +37,6 @@ export function PauseQueueDialog({
   const [open, setOpen] = useState(false);
   const { selectedServerId } = useServerContext();
   const { workspace } = useWorkspace();
-  const { toast } = useToast();
   const pauseQueueMutation = usePauseQueue();
   const resumeQueueMutation = useResumeQueue();
 
@@ -51,19 +50,16 @@ export function PauseQueueDialog({
         queueName,
       });
 
-      toast({
-        title: "Success",
+      toast("Success", {
         description: result.message,
       });
 
       setOpen(false);
       onSuccess?.();
     } catch (error) {
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description:
           error instanceof Error ? error.message : "Failed to pause queue",
-        variant: "destructive",
       });
     }
   };
@@ -78,18 +74,15 @@ export function PauseQueueDialog({
         queueName,
       });
 
-      toast({
-        title: "Success",
+      toast("Success", {
         description: result.message,
       });
 
       if (result.note) {
         // Show additional info about manual consumer reconnection
         setTimeout(() => {
-          toast({
-            title: "Note",
+          toast("Note", {
             description: result.note,
-            variant: "default",
           });
         }, 2000);
       }
@@ -97,11 +90,9 @@ export function PauseQueueDialog({
       setOpen(false);
       onSuccess?.();
     } catch (error) {
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description:
           error instanceof Error ? error.message : "Failed to resume queue",
-        variant: "destructive",
       });
     }
   };

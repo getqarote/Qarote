@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
+import { toast } from "sonner";
+
 import { UserRole } from "@/lib/api";
 import { logger } from "@/lib/logger";
 
@@ -42,7 +44,6 @@ import {
   useQueueConsumers,
   useQueueLiveRates,
 } from "@/hooks/queries/useRabbitMQ";
-import { useToast } from "@/hooks/ui/useToast";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 const QueueDetail = () => {
@@ -53,7 +54,6 @@ const QueueDetail = () => {
   const isAdmin = user?.role === UserRole.ADMIN;
   const { selectedServerId } = useServerContext();
   const { selectedVHost } = useVHostContext();
-  const { toast } = useToast();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
   const [timeRange, setTimeRange] = useState<TimeRange>("1m");
@@ -99,8 +99,7 @@ const QueueDetail = () => {
           : encodeURIComponent("/"),
       });
 
-      toast({
-        title: t("common:success"),
+      toast(t("common:success"), {
         description: t("deleteSuccess", { queueName }),
       });
 
@@ -108,10 +107,8 @@ const QueueDetail = () => {
       navigate("/queues");
     } catch (error) {
       logger.error("Failed to delete queue:", error);
-      toast({
-        title: t("common:error"),
+      toast.error(t("common:error"), {
         description: error instanceof Error ? error.message : t("deleteError"),
-        variant: "destructive",
       });
     }
   };

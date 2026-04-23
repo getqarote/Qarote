@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Bug, Lightbulb, MessageSquare, Zap } from "lucide-react";
+import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
 
@@ -36,7 +37,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
 import { useSubmitFeedback } from "@/hooks/queries/useFeedback";
-import { useToast } from "@/hooks/ui/useToast";
 
 import { type FeedbackFormData, feedbackSchema } from "@/schemas";
 
@@ -49,7 +49,6 @@ interface FeedbackFormProps {
 
 export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { t } = useTranslation("settings");
 
@@ -129,8 +128,7 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
   // Handle success/error
   useEffect(() => {
     if (submitFeedbackMutation.isSuccess) {
-      toast({
-        title: t("feedback.toastSubmitted"),
+      toast(t("feedback.toastSubmitted"), {
         description: t("feedback.toastSubmittedDesc"),
       });
 
@@ -150,10 +148,8 @@ export function FeedbackForm({ onSuccess, className }: FeedbackFormProps) {
     }
     if (submitFeedbackMutation.isError) {
       logger.error("Failed to submit feedback:", submitFeedbackMutation.error);
-      toast({
-        title: t("feedback.toastFailed"),
+      toast.error(t("feedback.toastFailed"), {
         description: t("feedback.toastFailedDesc"),
-        variant: "destructive",
       });
 
       setIsSubmitting(false);

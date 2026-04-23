@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Check, ChevronDown, Pencil, X } from "lucide-react";
+import { toast } from "sonner";
 
 import { EnhancedNodesOverview } from "@/components/nodes/EnhancedNodesOverview";
 import { EnhancedNodesTable } from "@/components/nodes/EnhancedNodesTable";
@@ -22,7 +23,6 @@ import {
   useOverview,
   useSetClusterName,
 } from "@/hooks/queries/useRabbitMQ";
-import { useToast } from "@/hooks/ui/useToast";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import {
@@ -34,7 +34,6 @@ const Nodes = () => {
   const { t } = useTranslation("nodes");
   const { selectedServerId, hasServers } = useServerContext();
   const { workspace } = useWorkspace();
-  const { toast } = useToast();
   const { data: orgData } = useCurrentOrganization();
   const isOrgAdmin = orgData?.role === "OWNER" || orgData?.role === "ADMIN";
 
@@ -86,9 +85,9 @@ const Nodes = () => {
         name: clusterNameValue.trim(),
       });
       setEditingClusterName(false);
-      toast({ title: t("clusterNameUpdated") });
+      toast(t("clusterNameUpdated"));
     } catch {
-      toast({ title: t("clusterNameError"), variant: "destructive" });
+      toast.error(t("clusterNameError"));
     }
   };
 

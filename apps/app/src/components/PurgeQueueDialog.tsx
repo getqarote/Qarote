@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { toast } from "sonner";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,7 +21,6 @@ import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
 import { usePurgeQueue } from "@/hooks/queries/useRabbitMQ";
-import { useToast } from "@/hooks/ui/useToast";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 interface PurgeQueueDialogProps {
@@ -41,7 +42,6 @@ export const PurgeQueueDialog = ({
   const { selectedServerId } = useServerContext();
   const { selectedVHost } = useVHostContext();
   const { workspace } = useWorkspace();
-  const { toast } = useToast();
   const { t } = useTranslation("queues");
 
   const purgeQueueMutation = usePurgeQueue();
@@ -52,21 +52,17 @@ export const PurgeQueueDialog = ({
   // Handle success/error
   useEffect(() => {
     if (purgeQueueMutation.isSuccess) {
-      toast({
-        title: t("purge.successTitle"),
+      toast(t("purge.successTitle"), {
         description: t("purge.successDescription", { queueName }),
-        variant: "default",
       });
 
       setOpen(false);
       onSuccess?.();
     }
     if (purgeQueueMutation.isError) {
-      toast({
-        title: t("purge.errorTitle"),
+      toast.error(t("purge.errorTitle"), {
         description:
           purgeQueueMutation.error?.message || "An unexpected error occurred",
-        variant: "destructive",
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -78,18 +74,14 @@ export const PurgeQueueDialog = ({
 
   const handlePurge = () => {
     if (!selectedServerId) {
-      toast({
-        title: t("toast.error"),
+      toast.error(t("toast.error"), {
         description: t("purge.noServer"),
-        variant: "destructive",
       });
       return;
     }
     if (!workspace?.id) {
-      toast({
-        title: t("toast.error"),
+      toast.error(t("toast.error"), {
         description: t("purge.noWorkspace"),
-        variant: "destructive",
       });
       return;
     }

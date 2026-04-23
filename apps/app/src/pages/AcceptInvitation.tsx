@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Building, Loader2, Mail, Users } from "lucide-react";
+import { toast } from "sonner";
 
 import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
@@ -22,8 +23,6 @@ import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
-
-import { useToast } from "@/hooks/ui/useToast";
 
 import {
   type AcceptInvitationFormData,
@@ -98,7 +97,6 @@ const AcceptInvitation = () => {
   const { t } = useTranslation("auth");
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { login } = useAuth();
   const acceptInvitationMutation = trpc.public.invitation.accept.useMutation();
   const utils = trpc.useUtils();
@@ -176,8 +174,7 @@ const AcceptInvitation = () => {
             };
             login(user);
 
-            toast({
-              title: t("welcomeToQarote"),
+            toast(t("welcomeToQarote"), {
               description: t("successfullyJoinedWorkspace", {
                 workspace: invitation?.workspace.name,
               }),
@@ -186,10 +183,8 @@ const AcceptInvitation = () => {
             navigate("/", { replace: true });
           } catch (err) {
             logger.error("Failed to sign in after accepting invitation:", err);
-            toast({
-              title: t("invitationAccepted"),
+            toast(t("invitationAccepted"), {
               description: t("signInToAccess"),
-              variant: "default",
             });
             navigate("/auth/sign-in", { replace: true });
           }

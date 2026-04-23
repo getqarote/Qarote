@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Download, Upload } from "lucide-react";
+import { toast } from "sonner";
 
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { PageError } from "@/components/PageError";
@@ -40,14 +41,12 @@ import {
   useExportDefinitions,
   useImportDefinitions,
 } from "@/hooks/queries/useDefinitions";
-import { useToast } from "@/hooks/ui/useToast";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 const ALL_VHOSTS_VALUE = "__all__";
 
 const Definitions = () => {
   const { t } = useTranslation("definitions");
-  const { toast } = useToast();
   const { workspace } = useWorkspace();
   const { selectedServerId, hasServers } = useServerContext();
   const { availableVHosts } = useVHostContext();
@@ -113,10 +112,8 @@ const Definitions = () => {
     try {
       definitions = JSON.parse(text);
     } catch {
-      toast({
-        title: t("common:error"),
+      toast.error(t("common:error"), {
         description: t("import.parseError"),
-        variant: "destructive",
       });
       return;
     }

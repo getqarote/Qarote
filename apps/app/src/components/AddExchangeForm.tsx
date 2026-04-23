@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
+import { toast } from "sonner";
 
 import { AdvancedExchangeProperties } from "@/components/AddExchangeFormComponent/AdvancedExchangeProperties";
 import { normalizeArgValue } from "@/components/AddExchangeFormComponent/constants";
@@ -35,7 +36,6 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
 import { useCreateExchange } from "@/hooks/queries/useRabbitMQ";
-import { useToast } from "@/hooks/ui/useToast";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { type AddExchangeFormData, addExchangeSchema } from "@/schemas";
@@ -72,7 +72,6 @@ export function AddExchangeForm({
   };
 
   const createExchangeMutation = useCreateExchange();
-  const { toast } = useToast();
   const { workspace } = useWorkspace();
   const { selectedVHost } = useVHostContext();
   const { t } = useTranslation("exchanges");
@@ -111,18 +110,14 @@ export function AddExchangeForm({
 
   const onSubmit = (data: AddExchangeFormData) => {
     if (!serverId) {
-      toast({
-        title: t("toast.error"),
+      toast.error(t("toast.error"), {
         description: t("toast.noServerSelected"),
-        variant: "destructive",
       });
       return;
     }
     if (!workspace?.id) {
-      toast({
-        title: t("toast.error"),
+      toast.error(t("toast.error"), {
         description: t("toast.workspaceRequired"),
-        variant: "destructive",
       });
       return;
     }
@@ -152,8 +147,7 @@ export function AddExchangeForm({
       {
         onSuccess: () => {
           setOpen(false);
-          toast({
-            title: t("toast.exchangeCreated"),
+          toast(t("toast.exchangeCreated"), {
             description: t("toast.exchangeCreatedDesc", { name: data.name }),
           });
           resetAll();
@@ -178,7 +172,7 @@ export function AddExchangeForm({
             }
           }
 
-          toast({ title, description, variant: "destructive" });
+          toast.error(title, { description });
         },
       }
     );

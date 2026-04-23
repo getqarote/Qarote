@@ -14,7 +14,6 @@ import { PublicRoute } from "@/components/PublicRoute";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { TawkTo } from "@/components/TawkTo";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -121,7 +120,6 @@ const AppCore = () => (
               <ServerProvider>
                 <VHostProvider>
                   <TooltipProvider>
-                    <Toaster />
                     <Sonner />
                     <BrowserRouter>
                       <TawkTo />

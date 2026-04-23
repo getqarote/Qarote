@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
+import { toast } from "sonner";
 
 import { AdvancedQueueProperties } from "@/components/AddQueueFormComponent/AdvancedQueueProperties";
 import { ArgumentsBuilder } from "@/components/AddQueueFormComponent/ArgumentsBuilder";
@@ -44,7 +45,6 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
 import { useCreateQueue, useExchanges } from "@/hooks/queries/useRabbitMQ";
-import { useToast } from "@/hooks/ui/useToast";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { type AddQueueFormData, addQueueSchema } from "@/schemas";
@@ -86,7 +86,6 @@ export function AddQueueForm({
   const prevQueueTypeRef = useRef<RabbitMQQueueType>("default");
 
   const createQueueMutation = useCreateQueue();
-  const { toast } = useToast();
   const { workspace } = useWorkspace();
   const { selectedVHost } = useVHostContext();
   const { t } = useTranslation("queues");
@@ -196,18 +195,14 @@ export function AddQueueForm({
 
   const onSubmit = (data: AddQueueFormData) => {
     if (!serverId) {
-      toast({
-        title: t("toast.error"),
+      toast.error(t("toast.error"), {
         description: t("toast.noServerSelected"),
-        variant: "destructive",
       });
       return;
     }
     if (!workspace?.id) {
-      toast({
-        title: t("toast.error"),
+      toast.error(t("toast.error"), {
         description: t("toast.workspaceRequired"),
-        variant: "destructive",
       });
       return;
     }
@@ -252,8 +247,7 @@ export function AddQueueForm({
       {
         onSuccess: () => {
           setOpen(false);
-          toast({
-            title: t("toast.queueCreated"),
+          toast(t("toast.queueCreated"), {
             description: t("toast.queueCreatedDesc", { name: data.name }),
           });
           resetAll();
@@ -283,7 +277,7 @@ export function AddQueueForm({
             }
           }
 
-          toast({ title, description, variant: "destructive" });
+          toast.error(title, { description });
         },
       }
     );
