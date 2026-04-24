@@ -72,6 +72,7 @@ import {
 } from "@/hooks/queries/useAlerts";
 
 import {
+  ALERT_BOOLEAN_TYPES,
   ALERT_PERCENTAGE_TYPES,
   type AlertRuleFormValues,
   alertRuleSchema,
@@ -84,8 +85,12 @@ const ALERT_TYPE_KEYS: { value: AlertType; key: string }[] = [
   { value: "CONSUMER_COUNT", key: "rules.type.consumerCount" },
   { value: "CONSUMER_UTILIZATION", key: "rules.type.consumerUtilization" },
   { value: "QUEUE_CHURN_RATE", key: "rules.type.queueChurnRate" },
+  { value: "DLQ_MESSAGES", key: "rules.type.dlqMessages" },
+  { value: "NO_CONSUMERS", key: "rules.type.noConsumers" },
   { value: "MEMORY_USAGE", key: "rules.type.memoryUsage" },
+  { value: "MEMORY_ALARM", key: "rules.type.memoryAlarm" },
   { value: "DISK_USAGE", key: "rules.type.diskUsage" },
+  { value: "DISK_ALARM", key: "rules.type.diskAlarm" },
   { value: "FILE_DESCRIPTOR_USAGE", key: "rules.type.fileDescriptorUsage" },
   { value: "CONNECTION_COUNT", key: "rules.type.connectionCount" },
   { value: "CHANNEL_COUNT", key: "rules.type.channelCount" },
@@ -108,12 +113,17 @@ const ALERT_CATEGORIES: { labelKey: string; types: AlertType[] }[] = [
       "CONSUMER_COUNT",
       "CONSUMER_UTILIZATION",
       "QUEUE_CHURN_RATE",
+      "DLQ_MESSAGES",
+      "NO_CONSUMERS",
     ],
   },
-  { labelKey: "rules.category.memory", types: ["MEMORY_USAGE"] },
+  {
+    labelKey: "rules.category.memory",
+    types: ["MEMORY_USAGE", "MEMORY_ALARM"],
+  },
   {
     labelKey: "rules.category.storage",
-    types: ["DISK_USAGE", "FILE_DESCRIPTOR_USAGE"],
+    types: ["DISK_USAGE", "DISK_ALARM", "FILE_DESCRIPTOR_USAGE"],
   },
   {
     labelKey: "rules.category.connections",
@@ -163,10 +173,13 @@ const SEVERITY_BADGE: Record<string, string> = {
 };
 
 function getThresholdHintKey(type: AlertType): string {
+  if ((ALERT_BOOLEAN_TYPES as Set<string>).has(type))
+    return "rules.form.thresholdHintBoolean";
   if ((ALERT_PERCENTAGE_TYPES as Set<string>).has(type))
     return "rules.form.thresholdHintPercent";
   if (type === "MESSAGE_RATE") return "rules.form.thresholdHintMsgRate";
   if (type === "NODE_DOWN") return "rules.form.thresholdHintNodeDown";
+  if (type === "DLQ_MESSAGES") return "rules.form.thresholdHintCount";
   return "rules.form.thresholdHintCount";
 }
 
@@ -186,6 +199,8 @@ function getOperatorSymbol(operator: ComparisonOperator): string {
 }
 
 function formatCondition(rule: AlertRule): string {
+  if ((ALERT_BOOLEAN_TYPES as Set<string>).has(rule.type))
+    return "alarm active";
   const symbol = getOperatorSymbol(rule.operator);
   const isPercent = (ALERT_PERCENTAGE_TYPES as Set<string>).has(rule.type);
   return `${symbol} ${rule.threshold}${isPercent ? "%" : ""}`;
@@ -225,6 +240,7 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   const watchedType = useWatch({ control: form.control, name: "type" });
+  const isBooleanType = (ALERT_BOOLEAN_TYPES as Set<string>).has(watchedType);
 
   const onSubmit = async (data: AlertRuleFormValues) => {
     if (!selectedServerId) {
@@ -370,53 +386,60 @@ function AlertRuleForm({ rule, onClose, onSuccess }: AlertRuleFormProps) {
           )}
         />
 
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="operator"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t("rules.form.operator")}</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  disabled={isDefault}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {OPERATOR_KEYS.map((op) => (
-                      <SelectItem key={op.value} value={op.value}>
-                        {t(op.key)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        {isBooleanType ? (
+          <div className="flex items-start gap-2 rounded-md border border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
+            <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" aria-hidden />
+            <span>{t("rules.form.booleanTypeNote")}</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="operator"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("rules.form.operator")}</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={isDefault}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {OPERATOR_KEYS.map((op) => (
+                        <SelectItem key={op.value} value={op.value}>
+                          {t(op.key)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <FormField
-            control={form.control}
-            name="threshold"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t("rules.form.threshold")}</FormLabel>
-                <FormControl>
-                  <Input type="number" min="0" step="any" {...field} />
-                </FormControl>
-                <FormDescription className="text-xs">
-                  {t(getThresholdHintKey(watchedType))}
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+            <FormField
+              control={form.control}
+              name="threshold"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("rules.form.threshold")}</FormLabel>
+                  <FormControl>
+                    <Input type="number" min="0" step="any" {...field} />
+                  </FormControl>
+                  <FormDescription className="text-xs">
+                    {t(getThresholdHintKey(watchedType))}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        )}
 
         <FormField
           control={form.control}

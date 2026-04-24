@@ -23,6 +23,10 @@ const ALERT_TYPES = [
   "CONNECTION_CHURN_RATE",
   "CHANNEL_CHURN_RATE",
   "QUEUE_CHURN_RATE",
+  "MEMORY_ALARM",
+  "DISK_ALARM",
+  "DLQ_MESSAGES",
+  "NO_CONSUMERS",
 ] as const;
 
 const ALERT_COMPARISON_OPERATORS = [
@@ -42,6 +46,17 @@ export const ALERT_PERCENTAGE_TYPES = new Set([
   "FILE_DESCRIPTOR_USAGE",
   "SOCKET_USAGE",
   "PROCESS_USAGE",
+] as const);
+
+/**
+ * Boolean alert types — the condition is a broker-level binary state (alarm on/off,
+ * consumers present or not). Threshold and operator fields are fixed and hidden in the
+ * form UI; the user can only configure severity.
+ */
+export const ALERT_BOOLEAN_TYPES = new Set([
+  "MEMORY_ALARM",
+  "DISK_ALARM",
+  "NO_CONSUMERS",
 ] as const);
 
 export const alertRuleSchema = z.object({

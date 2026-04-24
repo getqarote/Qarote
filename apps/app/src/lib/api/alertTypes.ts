@@ -25,7 +25,11 @@ export type AlertType =
   | "RUN_QUEUE_LENGTH"
   | "CONNECTION_CHURN_RATE"
   | "CHANNEL_CHURN_RATE"
-  | "QUEUE_CHURN_RATE";
+  | "QUEUE_CHURN_RATE"
+  | "MEMORY_ALARM"
+  | "DISK_ALARM"
+  | "DLQ_MESSAGES"
+  | "NO_CONSUMERS";
 
 export type AlertSeverity = "INFO" | "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 type AlertStatus = "ACTIVE" | "ACKNOWLEDGED" | "RESOLVED";
