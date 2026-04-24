@@ -59,7 +59,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "globals": "^17.4.0",
-    "postcss": "^8.5.8",
+    "postcss": "^8.5.10",
     "prettier": "^3.8.1",
     "tailwindcss": "^4.2.1",
     "typescript": "^5.9.3",
