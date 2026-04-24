@@ -77,8 +77,8 @@ const HeroSection = () => {
                   src="/images/dashboard.png"
                   alt="Qarote Dashboard Interface"
                   className="w-full h-full object-contain bg-card"
-                  width={3024}
-                  height={1706}
+                  width={3420}
+                  height={1894}
                   fetchPriority="high"
                 />
               </picture>
