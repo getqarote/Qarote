@@ -19,16 +19,18 @@ async function recordDemo() {
   await authPage.getByPlaceholder("Enter your email").fill(EMAIL);
   await authPage.getByPlaceholder("Enter your password").fill(PASSWORD);
   await authPage.getByRole("button", { name: "Sign in", exact: true }).click();
-  await authPage.waitForURL("**/", { timeout: 15_000 });
+  await authPage.waitForURL((url) => !url.toString().includes("sign-in"), {
+    timeout: 15_000,
+  });
   const cookies = await authContext.cookies();
   await authContext.close();
 
   // ── Start recording ───────────────────────────────────────────────────────
   const context = await browser.newContext({
-    viewport: { width: 1440, height: 900 },
+    viewport: { width: 1920, height: 1080 },
     recordVideo: {
       dir: OUTPUT_DIR,
-      size: { width: 1440, height: 900 },
+      size: { width: 1920, height: 1080 },
     },
   });
 
@@ -39,6 +41,10 @@ async function recordDemo() {
 
   // ── 1. Open dashboard — wait until fully rendered before acting ──────────
   await page.goto(BASE_URL);
+  // Scale the app to fill the full 1920px viewport (removes side black bars)
+  await page.addStyleTag({
+    content: `html { zoom: 1.3; }`,
+  });
   // Wait for the Add server button to be visible (page fully rendered)
   const addServerCta = page.getByRole("button", { name: "Add server" }).first();
   await addServerCta.waitFor({ state: "visible", timeout: 15_000 });
@@ -83,24 +89,36 @@ async function recordDemo() {
   await testBtn.waitFor({ state: "visible", timeout: 10_000 });
   await testBtn.click();
 
-  // Wait for the test to resolve (success → auto-advances to step 2)
-  await page.waitForTimeout(5000);
+  // Wait for step 2 to appear (connection confirmed banner)
+  await page.getByText("Connection confirmed").waitFor({
+    state: "visible",
+    timeout: 15_000,
+  });
+  await page.waitForTimeout(600);
 
   // ── 7. Step 2 — click "Add server" to confirm ────────────────────────────
   const addServerSubmit = page.getByRole("button", { name: "Add server" });
-  await addServerSubmit.waitFor({ state: "visible", timeout: 15_000 });
+  await addServerSubmit.waitFor({ state: "visible", timeout: 5_000 });
   await addServerSubmit.click();
 
   // ── 8. Wait for dashboard data to load ───────────────────────────────────
   await page.waitForLoadState("domcontentloaded");
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(5000);
 
   // ── 9. Scroll to the bottom of the dashboard ────────────────────────────
+  // First scroll — gets most of the way down as components render
   await page.evaluate(() => {
     const main = document.querySelector("main.main-content-scrollable");
     if (main) main.scrollTo({ top: main.scrollHeight, behavior: "smooth" });
   });
-  await page.waitForTimeout(2500);
+  await page.waitForTimeout(2000);
+  // Second scroll — catches any components that rendered after the first scroll
+  await page.evaluate(() => {
+    const main = document.querySelector("main.main-content-scrollable");
+    if (main) main.scrollTo({ top: main.scrollHeight, behavior: "smooth" });
+  });
+  // Hold at bottom so viewer can see Connected Nodes and Queue Depths
+  await page.waitForTimeout(4000);
 
   // ── Done ──────────────────────────────────────────────────────────────────
   await context.close();
@@ -108,7 +126,7 @@ async function recordDemo() {
 
   console.log(`\nVideo saved to: ${OUTPUT_DIR}`);
   console.log(
-    'Convert to GIF:\n  ffmpeg -i assets/<video>.webm -vf "fps=15,scale=1280:-1:flags=lanczos" assets/demo.gif'
+    'Convert to GIF:\n  rtk ffmpeg -y -ss 2 -i assets/<video>.webm -vf "fps=15,scale=1920:-1:flags=lanczos" assets/demo.gif'
   );
 }
 

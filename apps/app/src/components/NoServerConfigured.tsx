@@ -1,4 +1,6 @@
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router";
 
 import { Server } from "lucide-react";
 
@@ -18,6 +20,19 @@ export function NoServerConfigured({
   description,
 }: NoServerConfiguredProps) {
   const { t } = useTranslation("common");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (searchParams.get("addServer") === "true") {
+      triggerRef.current?.click();
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("addServer");
+        return next;
+      });
+    }
+  }, [searchParams, setSearchParams]);
 
   return (
     <div className="content-container-large">
@@ -37,7 +52,9 @@ export function NoServerConfigured({
             <p className="text-muted-foreground mb-4">{description}</p>
             <AddServerForm
               trigger={
-                <Button className="btn-primary">{t("addServer")}</Button>
+                <Button ref={triggerRef} className="btn-primary">
+                  {t("addServer")}
+                </Button>
               }
             />
           </div>

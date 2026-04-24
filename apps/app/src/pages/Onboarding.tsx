@@ -234,7 +234,7 @@ const Onboarding = () => {
             <ol className="text-left space-y-2">
               {(
                 [
-                  { label: t("successStep1"), href: "/connections" },
+                  { label: t("successStep1"), href: "/?addServer=true" },
                   { label: t("successStep2"), href: "/settings/members" },
                   { label: t("successStep3"), href: "/" },
                 ] as const

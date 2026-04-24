@@ -21,6 +21,12 @@ const FooterLinks = ({ locale = "en" }: { locale?: string }) => {
         {t("footer.about", "About")}
       </a>
       <a
+        href={`${prefix}/blog/`}
+        className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+      >
+        {t("footer.blog", "Blog")}
+      </a>
+      <a
         href={`${prefix}/compare/datadog/`}
         className="text-muted-foreground hover:text-foreground transition-colors text-sm"
       >
