@@ -1,6 +1,6 @@
 {
   "name": "qarote-api",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Hono.js API for RabbitMQ Dashboard",
   "main": "dist/index.js",
   "keywords": [],
