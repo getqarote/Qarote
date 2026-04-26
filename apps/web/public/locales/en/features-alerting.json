@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "RabbitMQ Alerting Without the Prometheus Stack | Qarote",
+    "description": "Queue depth alerts, consumer drop notifications, and broker health warnings in minutes — no Prometheus, no Alertmanager, no PromQL required."
+  },
+  "hero": {
+    "eyebrow": "Features → Alerting",
+    "title": "RabbitMQ Alerting Without the Prometheus Stack.",
+    "subtitle": "Qarote ships built-in alert rules for the failure modes that actually happen: queues filling up, consumers disappearing, brokers going silent. Configure your first alert in under two minutes — no Alertmanager, no PromQL, no YAML."
+  },
+  "alertTypes": {
+    "eyebrow": "Alert types",
+    "heading": "Alert on what matters",
+    "items": [
+      {
+        "icon": "chart.svg",
+        "title": "Queue depth threshold",
+        "description": "Alert when messages in a queue exceed N. A slow consumer or downstream outage can fill a queue in minutes — by the time your broker hits its memory watermark, the backlog is already deep. Catch it at the queue level before it becomes a broker-level incident."
+      },
+      {
+        "icon": "message.svg",
+        "title": "Consumer count drop",
+        "description": "Know immediately when consumers disconnect. A deployment, a crash, or a misconfigured restart policy all produce the same symptom from the broker's perspective: zero consumers on the queue. Distinguish a planned deploy from consumer lag before your queue starts filling."
+      },
+      {
+        "icon": "flag.svg",
+        "title": "Dead-letter queue spike",
+        "description": "Alert when DLQ message count grows. Dead-lettered messages signal that something upstream is producing malformed payloads, or that a schema changed without a coordinated rollout. A DLQ spike that goes unnoticed for hours becomes a replay incident."
+      },
+      {
+        "icon": "server.svg",
+        "title": "Broker unreachable",
+        "description": "Get notified if Qarote loses contact with your RabbitMQ instance. A broker that stops responding to the management API is either overloaded, network-partitioned, or down — all three are production incidents. Works even if the management API itself has stopped responding."
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "Message rate anomaly",
+        "description": "Alert when publish or delivery rates drop below expected baseline. Silent failures in async pipelines are the hardest to catch: no exception is thrown, no log is written, messages just stop flowing. A rate drop alert surfaces the failure before downstream services notice the silence."
+      },
+      {
+        "icon": "error.svg",
+        "title": "Broker alarm triggered",
+        "description": "Surface RabbitMQ's built-in memory and disk alarms as first-class alerts. RabbitMQ blocks all publishers the moment a memory or disk alarm fires — without monitoring, you discover this only when your application starts timing out on publish calls. Get notified the moment an alarm is raised, not after cascading failures begin."
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "How it works",
+    "heading": "From connection to alert in under two minutes",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Connect your broker",
+        "description": "Qarote reads from the RabbitMQ management API. No agent, no sidecar, no Prometheus exporter to deploy — agentless RabbitMQ monitoring without installing anything on your nodes."
+      },
+      {
+        "number": "02",
+        "title": "Set your threshold",
+        "description": "Pick the alert type, set the threshold, choose your notification channel. Works on any queue, vhost pattern, or all queues at once."
+      },
+      {
+        "number": "03",
+        "title": "Get notified where you work",
+        "description": "Alerts fire to Slack, email, or webhook. RabbitMQ Slack alerts and webhook notifications are available on the Developer plan. PagerDuty and OpsGenie are available on Enterprise."
+      }
+    ]
+  },
+  "whyNotPrometheus": {
+    "eyebrow": "Why not the Prometheus stack?",
+    "heading": "Three components to monitor one queue depth metric",
+    "p1": "The Prometheus + Alertmanager + Grafana stack is powerful — and expensive to operate. Getting it working for RabbitMQ means enabling the `rabbitmq_prometheus` plugin, configuring a Prometheus scrape job, writing Alertmanager routing rules, and building Grafana dashboards. That is typically 2–4 hours of initial setup, and three separate services to maintain indefinitely.",
+    "p2": "Qarote gives you the same alert coverage as the Prometheus stack with none of the infrastructure. It connects directly to RabbitMQ's management HTTP API — no exporter, no scrape config, no TSDB. Alert rules ship pre-built for every common RabbitMQ failure mode, and the agentless architecture means there is nothing to install on your RabbitMQ nodes.",
+    "p3": "If you need full-stack observability across dozens of services, reach for Prometheus. If RabbitMQ is what you're monitoring, Qarote gets you there in two minutes with no moving parts to maintain."
+  },
+  "crossLink": {
+    "eyebrow": "See also",
+    "navLabel": "Related links",
+    "compare": "Compare vs Prometheus + Grafana →",
+    "datadog": "Compare vs Datadog →",
+    "pricing": "Pricing",
+    "features": "All features"
+  },
+  "faq": {
+    "heading": "Frequently asked questions",
+    "items": [
+      {
+        "question": "Does Qarote alerting require a paid license?",
+        "answer": "Basic alerting (queue depth, consumer count, broker reachability) is included in the free open-source MIT edition. Advanced alert types and notification channels (Slack, PagerDuty, OpsGenie) require a Developer or Enterprise license."
+      },
+      {
+        "question": "How is Qarote alerting different from RabbitMQ's built-in memory and disk alarms?",
+        "answer": "RabbitMQ's built-in alarms trigger broker-level flow control — they block all publishers when a memory or disk threshold is crossed. They are coarse-grained and binary: the entire broker is alarmed or it isn't. Qarote alerting is queue-level and continuous: you can alert on a specific queue's depth reaching a threshold, a consumer count dropping to zero, or a DLQ spiking — all before the broker itself reaches its alarm state."
+      },
+      {
+        "question": "Does Qarote use Prometheus under the hood?",
+        "answer": "No. Qarote reads directly from the RabbitMQ management HTTP API using standard HTTP polling. There is no Prometheus exporter, no scrape config, and no time-series database required. You do not need to enable the `rabbitmq_prometheus` plugin."
+      },
+      {
+        "question": "How quickly does Qarote detect a threshold breach?",
+        "answer": "Qarote polls your RabbitMQ broker every 15 seconds by default. Alert notifications fire within one polling interval of a threshold being crossed."
+      },
+      {
+        "question": "Can I run Qarote alerting in an air-gapped environment?",
+        "answer": "Yes. Qarote's license validation is entirely offline — no outbound connection required. Alerting works in air-gapped environments as long as Qarote can reach your RabbitMQ management API on your internal network."
+      }
+    ]
+  }
+}

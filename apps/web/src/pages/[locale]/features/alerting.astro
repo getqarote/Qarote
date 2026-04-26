@@ -1,0 +1,31 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { FeaturesAlertingIsland } from "../../../components/FeaturesAlertingIsland";
+import { loadTranslations, loadAllTranslations, t } from "../../../lib/i18n-static";
+import { getLocaleStaticPaths } from "../../../lib/locales";
+import { SUPPORTED_LOCALES, type SupportedLocale } from "@qarote/i18n";
+import { buildFaqSchema } from "../../../lib/schema";
+
+export const getStaticPaths = getLocaleStaticPaths;
+
+const rawLocale = Astro.params.locale;
+if (!rawLocale || !SUPPORTED_LOCALES.includes(rawLocale as SupportedLocale)) {
+  return Astro.redirect("/");
+}
+const locale = rawLocale as SupportedLocale;
+const alerting = loadTranslations(locale, "features-alerting");
+const resources = { ...loadAllTranslations(locale), "features-alerting": alerting };
+const faqSchema = buildFaqSchema(alerting);
+---
+
+<BaseLayout
+  title={t(alerting, "seo.title")}
+  description={t(alerting, "seo.description")}
+  locale={locale}
+  canonicalPath="/features/alerting/"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  </Fragment>
+  <FeaturesAlertingIsland locale={locale} resources={resources} client:load />
+</BaseLayout>

@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "无需 Prometheus 栈的 RabbitMQ 告警 | Qarote",
+    "description": "队列深度告警、消费者断线通知和 broker 健康预警，两分钟内完成配置——无需 Prometheus、无需 Alertmanager、无需 PromQL。"
+  },
+  "hero": {
+    "eyebrow": "功能 → 告警",
+    "title": "无需 Prometheus 栈的 RabbitMQ 告警。",
+    "subtitle": "Qarote 内置针对真实故障场景的告警规则：队列积压、消费者失联、broker 沉默。两分钟内配置第一条告警——无需 Alertmanager、无需 PromQL、无需 YAML。"
+  },
+  "alertTypes": {
+    "eyebrow": "告警类型",
+    "heading": "对关键指标设置告警",
+    "items": [
+      {
+        "icon": "chart.svg",
+        "title": "队列深度阈值",
+        "description": "当队列消息数超过 N 时触发告警。消费者缓慢或下游故障可以在几分钟内填满队列——等到 broker 达到内存水位线时，积压已经很深了。在队列层面及早发现，避免演变为 broker 级别的事故。"
+      },
+      {
+        "icon": "message.svg",
+        "title": "消费者数量骤降",
+        "description": "消费者断线时立即收到通知。部署、崩溃或错误配置的重启策略，从 broker 视角看都产生同一症状：队列上零消费者。在队列开始积压之前，区分计划内部署与消费者 lag。"
+      },
+      {
+        "icon": "flag.svg",
+        "title": "死信队列激增",
+        "description": "当 DLQ 消息数增长时触发告警。死信消息表明上游正在生产格式错误的 payload，或 schema 变更未经协调就发布。DLQ 峰值若数小时未被发现，将演变为一次消息回放事故。"
+      },
+      {
+        "icon": "server.svg",
+        "title": "Broker 不可达",
+        "description": "当 Qarote 与 RabbitMQ 实例失去联系时收到通知。broker 停止响应管理 API，可能是过载、网络分区或宕机——三种情况都是生产事故。即使管理 API 本身已停止响应也能检测到。"
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "消息速率异常",
+        "description": "当发布或投递速率低于预期基线时触发告警。异步管道中的静默故障最难捕获：不抛出异常、不写入日志，消息就是停止流动了。速率下降告警在下游服务察觉到沉默之前就能发现故障。"
+      },
+      {
+        "icon": "error.svg",
+        "title": "Broker 内置告警触发",
+        "description": "将 RabbitMQ 内置的内存和磁盘告警提升为一等告警。RabbitMQ 一旦触发内存或磁盘告警，就会立即阻塞所有发布者——没有监控的话，你只有在应用程序发布调用超时后才会发现。在告警触发时立即收到通知，而不是等到级联故障开始之后。"
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "工作原理",
+    "heading": "从连接到告警，两分钟内完成",
+    "steps": [
+      {
+        "number": "01",
+        "title": "连接您的 broker",
+        "description": "Qarote 直接读取 RabbitMQ 管理 API，无需部署 agent、sidecar 或 Prometheus exporter——无 agent 的 RabbitMQ 监控，无需在您的节点上安装任何东西。"
+      },
+      {
+        "number": "02",
+        "title": "设置阈值",
+        "description": "选择告警类型，设定阈值，选择通知渠道。支持单个队列、vhost 模式匹配或全量队列。"
+      },
+      {
+        "number": "03",
+        "title": "在您常用的工具中接收通知",
+        "description": "告警推送至 Slack、邮件或 Webhook。RabbitMQ Slack 告警和 Webhook 通知在 Developer 计划中提供。PagerDuty 和 OpsGenie 集成在 Enterprise 计划中提供。"
+      }
+    ]
+  },
+  "whyNotPrometheus": {
+    "eyebrow": "为什么不用 Prometheus 栈？",
+    "heading": "监控一个队列深度指标需要三个组件",
+    "p1": "Prometheus + Alertmanager + Grafana 栈功能强大，但运维成本高昂。为 RabbitMQ 配置这套栈意味着：启用 `rabbitmq_prometheus` 插件、配置 Prometheus 抓取任务、编写 Alertmanager 路由规则、构建 Grafana 仪表板。初始搭建通常需要 2–4 小时，之后还需无限期维护三个独立的服务。",
+    "p2": "Qarote 提供与 Prometheus 栈等效的告警覆盖，但无需任何额外基础设施。它直接连接 RabbitMQ 管理 HTTP API——无需 exporter、无需 scrape 配置、无需时序数据库。常见 RabbitMQ 故障模式的告警规则已预置完毕，无 agent 架构意味着无需在您的 RabbitMQ 节点上安装任何东西。",
+    "p3": "如果您需要对数十个服务进行全栈可观测性，Prometheus 是正确选择。如果您监控的对象是 RabbitMQ，Qarote 两分钟内即可上线，且无需维护任何额外组件。"
+  },
+  "crossLink": {
+    "eyebrow": "另请参见",
+    "navLabel": "相关链接",
+    "compare": "与 Prometheus + Grafana 对比 →",
+    "datadog": "与 Datadog 对比 →",
+    "pricing": "定价",
+    "features": "全部功能"
+  },
+  "faq": {
+    "heading": "常见问题",
+    "items": [
+      {
+        "question": "Qarote 告警需要付费许可证吗？",
+        "answer": "基础告警（队列深度、消费者数量、broker 可达性）包含在免费的开源 MIT 版本中。高级告警类型和通知渠道（Slack、PagerDuty、OpsGenie）需要 Developer 或 Enterprise 许可证。"
+      },
+      {
+        "question": "Qarote 告警与 RabbitMQ 内置的内存和磁盘告警有何不同？",
+        "answer": "RabbitMQ 内置告警触发 broker 级别的流量控制——当内存或磁盘阈值被突破时，它会阻塞所有发布者。这种告警粗粒度且二值化：整个 broker 要么处于告警状态，要么不是。Qarote 告警在队列层面持续运行：您可以在特定队列深度达到阈值、消费者数量降至零或 DLQ 激增时触发告警——所有这些都发生在 broker 本身达到告警状态之前。"
+      },
+      {
+        "question": "Qarote 内部使用 Prometheus 吗？",
+        "answer": "不使用。Qarote 通过标准 HTTP 轮询直接读取 RabbitMQ 管理 HTTP API，无需 Prometheus exporter、scrape 配置或时序数据库。您无需启用 `rabbitmq_prometheus` 插件。"
+      },
+      {
+        "question": "Qarote 检测阈值越界的速度有多快？",
+        "answer": "Qarote 默认每 15 秒轮询一次 RabbitMQ broker。阈值被触发后，在下一个轮询间隔内即会发出告警通知。"
+      },
+      {
+        "question": "可以在离线（air-gapped）环境中使用 Qarote 告警吗？",
+        "answer": "可以。Qarote 的许可证验证完全离线进行，无需任何出站连接。只要 Qarote 能在内部网络中访问 RabbitMQ 管理 API，告警即可在离线环境中正常工作。"
+      }
+    ]
+  }
+}

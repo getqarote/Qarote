@@ -1,3 +1,7 @@
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -f ".nvmrc" ] && nvm use --silent
+
 echo "🔍 Running type checks before push..."
 
 # Get the remote branch name (default to main)

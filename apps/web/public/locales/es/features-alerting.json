@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "Alertas de RabbitMQ sin la Stack de Prometheus | Qarote",
+    "description": "Alertas de profundidad de cola, notificaciones de caída de consumidores y avisos de salud del broker en minutos — sin Prometheus, sin Alertmanager, sin PromQL."
+  },
+  "hero": {
+    "eyebrow": "Funcionalidades → Alertas",
+    "title": "Alertas de RabbitMQ sin la Stack de Prometheus.",
+    "subtitle": "Qarote incluye reglas de alerta listas para usar para los fallos que realmente ocurren: colas que se llenan, consumidores que desaparecen, brokers que se quedan en silencio. Configura tu primera alerta en menos de dos minutos — sin Alertmanager, sin PromQL, sin YAML."
+  },
+  "alertTypes": {
+    "eyebrow": "Tipos de alertas",
+    "heading": "Alerta sobre lo que importa",
+    "items": [
+      {
+        "icon": "chart.svg",
+        "title": "Umbral de profundidad de cola",
+        "description": "Alerta cuando los mensajes de una cola superan N. Un consumidor lento o una interrupción aguas abajo puede llenar una cola en minutos — cuando tu broker alcanza su límite de memoria, el acumulado ya es profundo. Detéctalo a nivel de cola antes de que se convierta en un incidente de broker."
+      },
+      {
+        "icon": "message.svg",
+        "title": "Caída del número de consumidores",
+        "description": "Recibe notificación inmediata cuando los consumidores se desconectan. Un despliegue, un crash o una política de reinicio mal configurada producen el mismo síntoma desde la perspectiva del broker: cero consumidores en la cola. Distingue un despliegue planificado del consumer lag antes de que tu cola empiece a llenarse."
+      },
+      {
+        "icon": "flag.svg",
+        "title": "Pico en la dead-letter queue",
+        "description": "Alerta cuando el número de mensajes en la DLQ crece. Los mensajes en dead-letter indican que algo aguas arriba está produciendo payloads malformados, o que un esquema cambió sin un despliegue coordinado. Un pico de DLQ que pasa desapercibido durante horas se convierte en un incidente de replay."
+      },
+      {
+        "icon": "server.svg",
+        "title": "Broker inalcanzable",
+        "description": "Recibe notificación si Qarote pierde contacto con tu instancia de RabbitMQ. Un broker que deja de responder a la API de gestión está sobrecargado, particionado en red o caído — los tres son incidentes de producción. Funciona incluso si la propia API de gestión ha dejado de responder."
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "Anomalía en la tasa de mensajes",
+        "description": "Alerta cuando las tasas de publicación o entrega caen por debajo del umbral esperado. Los fallos silenciosos en pipelines asíncronos son los más difíciles de detectar: no se lanza ninguna excepción, no se escribe ningún log, los mensajes simplemente dejan de fluir. Una alerta de caída de tasa detecta el fallo antes de que los servicios aguas abajo noten el silencio."
+      },
+      {
+        "icon": "error.svg",
+        "title": "Alarma del broker activada",
+        "description": "Convierte las alarmas internas de RabbitMQ (memoria, disco) en alertas de primer nivel. RabbitMQ bloquea a todos los publicadores en el momento en que se activa una alarma de memoria o disco — sin monitorización, lo descubres solo cuando tu aplicación empieza a agotar el tiempo de espera en las llamadas de publicación. Recibe notificación en el momento en que se lanza una alarma, no después de que comiencen los fallos en cascada."
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "Cómo funciona",
+    "heading": "De la conexión a la alerta en menos de dos minutos",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Conecta tu broker",
+        "description": "Qarote lee desde la API de gestión de RabbitMQ. Sin agentes, sin sidecars, sin exportadores de Prometheus que desplegar — monitorización RabbitMQ sin agente, sin instalar nada en tus nodos."
+      },
+      {
+        "number": "02",
+        "title": "Configura tu umbral",
+        "description": "Elige el tipo de alerta, define el umbral, selecciona tu canal de notificación. Funciona en cualquier cola, patrón de vhost o todas las colas a la vez."
+      },
+      {
+        "number": "03",
+        "title": "Recibe notificaciones donde trabajas",
+        "description": "Las alertas llegan a Slack, email o webhook. Las alertas de RabbitMQ en Slack y las notificaciones por webhook están disponibles en el plan Developer. PagerDuty y OpsGenie están disponibles en Enterprise."
+      }
+    ]
+  },
+  "whyNotPrometheus": {
+    "eyebrow": "¿Por qué no la stack de Prometheus?",
+    "heading": "Tres componentes para monitorizar una sola métrica de profundidad",
+    "p1": "La stack Prometheus + Alertmanager + Grafana es poderosa — y costosa de operar. Hacerla funcionar para RabbitMQ implica habilitar el plugin `rabbitmq_prometheus`, configurar un job de scraping de Prometheus, escribir reglas de enrutamiento de Alertmanager y construir dashboards de Grafana. Eso supone típicamente de 2 a 4 horas de configuración inicial y tres servicios separados que mantener indefinidamente.",
+    "p2": "Qarote te ofrece la misma cobertura de alertas que la stack de Prometheus sin ninguna infraestructura adicional. Se conecta directamente a la API HTTP de gestión de RabbitMQ — sin exportador, sin scrape config, sin TSDB. Las reglas de alerta vienen pre-construidas para cada modo de fallo común de RabbitMQ, y la arquitectura sin agente significa que no hay nada que instalar en tus nodos de RabbitMQ.",
+    "p3": "Si necesitas observabilidad completa en decenas de servicios, elige Prometheus. Si RabbitMQ es lo que estás monitorizando, Qarote te lleva allí en dos minutos sin piezas móviles que mantener."
+  },
+  "crossLink": {
+    "eyebrow": "Ver también",
+    "navLabel": "Enlaces relacionados",
+    "compare": "Comparar con Prometheus + Grafana →",
+    "datadog": "Comparar con Datadog →",
+    "pricing": "Precios",
+    "features": "Todas las funcionalidades"
+  },
+  "faq": {
+    "heading": "Preguntas frecuentes",
+    "items": [
+      {
+        "question": "¿Las alertas de Qarote requieren una licencia de pago?",
+        "answer": "Las alertas básicas (profundidad de cola, número de consumidores, disponibilidad del broker) están incluidas en la edición open-source MIT gratuita. Los tipos de alerta avanzados y los canales de notificación (Slack, PagerDuty, OpsGenie) requieren una licencia Developer o Enterprise."
+      },
+      {
+        "question": "¿En qué se diferencian las alertas de Qarote de las alarmas de memoria y disco integradas en RabbitMQ?",
+        "answer": "Las alarmas integradas de RabbitMQ activan el control de flujo a nivel de broker — bloquean a todos los publicadores cuando se supera un umbral de memoria o disco. Son rudimentarias y binarias: el broker entero está en alarma o no lo está. Las alertas de Qarote operan a nivel de cola de forma continua: puedes alertar sobre la profundidad de una cola específica que alcanza un umbral, un número de consumidores que cae a cero o un pico de DLQ — todo ello antes de que el broker mismo alcance su estado de alarma."
+      },
+      {
+        "question": "¿Qarote usa Prometheus internamente?",
+        "answer": "No. Qarote lee directamente desde la API HTTP de gestión de RabbitMQ mediante polling HTTP estándar. No se necesita ningún exportador de Prometheus, scrape config ni base de datos de series temporales. No es necesario habilitar el plugin `rabbitmq_prometheus`."
+      },
+      {
+        "question": "¿Con qué rapidez detecta Qarote una superación de umbral?",
+        "answer": "Qarote consulta tu broker RabbitMQ cada 15 segundos por defecto. Las notificaciones de alerta se envían dentro de un intervalo de polling tras cruzar un umbral."
+      },
+      {
+        "question": "¿Puedo usar las alertas de Qarote en un entorno air-gapped?",
+        "answer": "Sí. La validación de licencia de Qarote es completamente offline — no se requiere ninguna conexión saliente. Las alertas funcionan en entornos air-gapped siempre que Qarote pueda alcanzar la API de gestión de RabbitMQ en tu red interna."
+      }
+    ]
+  }
+}

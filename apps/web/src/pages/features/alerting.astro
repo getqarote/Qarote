@@ -1,0 +1,22 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { FeaturesAlertingIsland } from "../../components/FeaturesAlertingIsland";
+import { loadTranslations, loadAllTranslations, t } from "../../lib/i18n-static";
+import { buildFaqSchema } from "../../lib/schema";
+
+const alerting = loadTranslations("en", "features-alerting");
+const resources = { ...loadAllTranslations("en"), "features-alerting": alerting };
+const faqSchema = buildFaqSchema(alerting);
+---
+
+<BaseLayout
+  title={t(alerting, "seo.title")}
+  description={t(alerting, "seo.description")}
+  locale="en"
+  canonicalPath="/features/alerting/"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  </Fragment>
+  <FeaturesAlertingIsland locale="en" resources={resources} client:load />
+</BaseLayout>
