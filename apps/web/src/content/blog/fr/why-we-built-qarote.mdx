@@ -1,0 +1,98 @@
+---
+title: "Pourquoi nous avons construit Qarote : une guerre des files d'attente"
+description: "Un incident de saturation RabbitMQ est passé inaperçu pendant plus d'une heure faute de visibilité. Voici ce que nous avons construit — et pourquoi."
+publishedAt: "2026-04-25"
+tags: ["rabbitmq", "monitoring", "war-story", "open-source"]
+readingTimeMin: 7
+---
+
+Le message est arrivé à 2 h 47 du matin. Pas une alerte PagerDuty — un message Slack d'un client.
+
+« Hé, vous avez des problèmes en ce moment ? Nos jobs ne sont pas traités depuis une heure. »
+
+Une heure.
+
+J'ai ouvert le plugin de management RabbitMQ. Le graphique de profondeur de file d'attente était une ligne verticale. 847 000 messages. Notre file principale s'était remplie, sans surveillance, pendant soixante-trois minutes. Deux consommateurs étaient connectés. Aucun ne traitait quoi que ce soit.
+
+J'avais quatre onglets ouverts en trente secondes : le plugin de management, Grafana, CloudWatch et un thread Slack où mes collègues essayaient de comprendre la même chose depuis des tableaux de bord différents.
+
+Personne ne savait ce qui s'était passé.
+
+## Ce que les outils montraient
+
+Le plugin de management m'a dit ce que je savais déjà en regardant le graphique : la file était profonde, le taux de messages était zéro, et deux consommateurs étaient listés comme connectés.
+
+Ce qu'il ne pouvait pas me dire :
+
+- Quels consommateurs étaient ces deux-là ? Étaient-ce les workers attendus, ou des connexions zombie d'un déploiement précédent ?
+- Pourquoi étaient-ils connectés mais ne traitaient-ils rien ? Bloqués sur un message ? Crashant silencieusement ? En attente d'un service en aval ?
+- Quand le [backlog de file](/fr/blog/debug-rabbitmq-queue-backlog/) a-t-il commencé ? La fenêtre de rétention par défaut était de 24 heures, mais la résolution du graphique était trop grossière.
+- S'agissait-il d'une file isolée ou d'un effet en cascade ? J'avais quinze files. Le plugin m'en montrait une à la fois.
+
+J'ai basculé sur Grafana. Les métriques Prometheus RabbitMQ que nous avions configurées donnaient des données temporelles pour la profondeur de file et le nombre de consommateurs, mais l'intervalle de scrape était de 60 secondes — les données avaient déjà une minute de retard. Et les tableaux de bord étaient organisés par broker, pas par ce dont j'avais réellement besoin : une liste des files se comportant anormalement à cet instant.
+
+Quarante minutes après le début de l'incident, j'ai finalement isolé la cause : un pool de connexions à la base de données épuisé sous charge. Les consommateurs récupéraient des messages, échouaient silencieusement sur le premier appel DB, nackaient sans journaliser l'erreur, puis replaçaient en file — créant une boucle serrée qui ressemblait, depuis le plugin de management, à « deux consommateurs connectés, débit zéro ».
+
+La correction a pris cinq minutes. Le diagnostic en a pris quarante.
+
+## Le vrai problème
+
+J'ai beaucoup réfléchi à cet incident depuis.
+
+Le problème n'était pas que nous avions de mauvais outils. Le plugin de management est vraiment utile au quotidien. Prometheus + Grafana est une pile de monitoring légitime. Le problème était qu'aucun de ces outils n'était conçu pour répondre à la question que je posais réellement à 3h du matin : **qu'est-ce qui ne va pas, maintenant, et que dois-je faire ?**
+
+Le plugin de management montre l'état. Grafana montre l'historique. Aucun ne montre la causalité.
+
+Pour diagnostiquer correctement un incident RabbitMQ, il faut corréler des informations provenant d'endroits différents : la profondeur de file avec la santé des consommateurs, la santé des consommateurs avec les taux d'acquittement, les taux d'acquittement avec les files spécifiques où les consommateurs sont bloqués. Il faut voir quels consommateurs traitent réellement et lesquels sont connectés-mais-gelés. Il faut voir si le backlog d'une file a commencé à croître en même temps que le nombre de consommateurs a chuté, ou avant — parce que ce sont des incidents différents.
+
+Rien de tout cela n'était surfacé automatiquement. Il fallait tout assembler manuellement, onglet par onglet, pendant un incident.
+
+La pile de monitoring standard pour un déploiement RabbitMQ en production ressemblait à :
+
+- **Plugin de management** — interface web, bien pour l'inspection manuelle
+- **Exporteur Prometheus** — transforme les métriques RabbitMQ en endpoints scrapables
+- **Alertmanager** — route les alertes basées sur les métriques vers Slack ou PagerDuty
+- **Grafana** — tableaux de bord pour l'analyse des tendances
+- **Scripts personnalisés** — généralement Python, généralement pour vérifier la profondeur des DLQ
+
+Cinq outils. Pour un seul broker. Chacun nécessitant configuration, maintenance et quelqu'un sachant quel onglet regarder quand ça tourne mal.
+
+Ce n'est pas une pile de monitoring. C'est de l'archéologie.
+
+## Ce que nous voulions à la place
+
+Après l'incident, j'ai commencé à réfléchir à ce que serait un outil de monitoring RabbitMQ conçu spécifiquement pour répondre à « qu'est-ce qui ne va pas maintenant ? » plutôt que « voici toutes les métriques, bonne chance ».
+
+Quelques éléments semblaient incontournables :
+
+**Le taux de changement, pas seulement la profondeur.** Une file à 50 000 messages croissant à +500/s est un réveil à 3h du matin dans 90 minutes. La même file décroissant à -1 000/s est saine. La profondeur seule est un indicateur en retard. Il faut la vélocité pour savoir si on se dirige vers un incident ou si on s'en remet.
+
+**[La santé des consommateurs](/fr/blog/rabbitmq-consumer-not-processing/) comme signal de première classe.** Pas seulement « combien de consommateurs sont connectés » mais « traitent-ils réellement ? » Un consommateur connecté mais n'acquittant pas est cassé.
+
+**[Les dead-letter queues](/fr/blog/rabbitmq-dead-letter-queue/) comme indicateurs avancés.** Les DLQ, c'est là où les mauvais messages s'accumulent silencieusement. Si votre DLQ grandit, vous avez un bug de consommateur. La plupart des équipes le découvrent des semaines plus tard, lors d'un post-mortem.
+
+**Vue multi-files, multi-broker en un seul endroit.** Pendant un incident, vous n'avez pas le temps de parcourir quinze files individuellement.
+
+**[Alertes sur les indicateurs avancés](/fr/blog/rabbitmq-alerts-setup-guide/), pas seulement les indicateurs en retard.** Une alerte qui se déclenche quand votre file atteint 500 000 messages confirme surtout que vous êtes déjà dans un incident. Une alerte qui se déclenche quand votre file croît plus vite que votre taux de vidange — quand vous avez cinq minutes de marge — est réellement utile.
+
+**Zéro Prometheus requis.** Pas parce que Prometheus est mauvais, mais monter une pile complète Prometheus + Grafana + Alertmanager juste pour surveiller un cluster RabbitMQ est un investissement significatif pour les équipes qui ne l'ont pas déjà.
+
+## Pourquoi nous l'avons construit plutôt que de patcher les outils existants
+
+J'ai sérieusement examiné les options existantes. Il existe des templates de tableaux de bord Grafana pour RabbitMQ. Il existe des plateformes APM SaaS avec des intégrations RabbitMQ. Il existe des produits commerciaux de monitoring RabbitMQ.
+
+Aucun n'était construit à partir du postulat que la chose la plus importante est : **dites-moi ce qui ne va pas, pas seulement ce qui se passe.**
+
+Alors nous avons construit Qarote.
+
+Le noyau est sous licence MIT et auto-hébergeable. Vous le pointez vers une API de management RabbitMQ — pas de plugin Prometheus, pas de YAML, pas d'agents à déployer — et il vous donne un tableau de bord multi-files avec des métriques de taux de changement, des signaux de santé des consommateurs, une surveillance des DLQ et des alertes configurables. Le genre de chose qui m'aurait dit, dans les cinq premières minutes de cet incident, que les consommateurs étaient connectés mais n'acquittaient pas, que la DLQ ne croissait pas, et que le backlog avait commencé à s'accélérer exactement au même moment qu'une pointe d'erreurs de connexion applicative.
+
+Rétention d'historique au-delà de la fenêtre par défaut de 24 heures de RabbitMQ. Alertes sur le taux de changement, pas seulement les seuils absolus. Pas de prérequis d'infrastructure au-delà d'un broker en fonctionnement.
+
+C'est Qarote. Construit parce que nous avons vécu l'incident qu'il est conçu à prévenir.
+
+---
+
+Si vous faites tourner RabbitMQ en production et que vous avez déjà regardé le plugin de management pendant un incident en vous demandant ce qui se passe vraiment, [essayez-le](/). Le niveau gratuit couvre tout ce dont vous avez besoin pour commencer. La configuration prend environ deux minutes.
+
+Si vous voulez l'héberger vous-même, le noyau est [open source sur GitHub](https://github.com/getqarote/qarote).

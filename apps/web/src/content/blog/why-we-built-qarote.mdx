@@ -1,0 +1,120 @@
+---
+title: "Why We Built Qarote: A Queue Saturation War Story"
+description: "We missed a RabbitMQ queue saturation incident for over an hour. That failure led us to build Qarote — here's what we saw, what we needed, and why nothing else fit."
+publishedAt: "2026-04-25"
+author: "Brice Tessier"
+tags: ["rabbitmq", "monitoring", "war-story", "open-source"]
+readingTimeMin: 8
+---
+
+The message came at 2:47am. Not a PagerDuty alert — a Slack message from a customer.
+
+"Hey, are you guys having issues? Our jobs haven't been processing for the past hour."
+
+An hour.
+
+I opened the RabbitMQ management plugin. The queue depth chart was a vertical line. 847,000 messages. At our normal drain rate, that was six hours of backlog. We'd been adding to it for sixty-three of them. Our primary job queue had been filling, unattended, for over an hour. Two consumers were connected. [Neither was processing anything](/blog/rabbitmq-consumer-not-processing/).
+
+I had four tabs open within thirty seconds: the management plugin, Grafana, CloudWatch, and a Slack thread where my colleagues were trying to understand the same thing from different dashboards.
+
+Nobody knew what had happened.
+
+*(I'm Brice, co-founder and CTO of Qarote. This is the incident that led us to build it.)*
+
+## What the RabbitMQ management plugin couldn't tell me
+
+The management plugin told me what I already knew from looking at the chart: the queue was deep, the message rate was zero, and two consumers were listed as connected.
+
+What it couldn't tell me:
+
+- Which consumers were the two listed? Were they the workers I expected, or zombie connections from a previous deployment that hadn't cleaned up?
+- Why were they connected but not processing? Were they stuck on a single message? Were they crashing silently and reconnecting? Were they blocked waiting on a downstream service?
+- When did the backlog start? The default retention window was 24 hours, but the chart resolution was too coarse to pinpoint the moment things went wrong.
+- Was this isolated to one queue or cascading? I had fifteen queues. The plugin showed me one at a time.
+
+I switched to Grafana. The RabbitMQ Prometheus metrics we'd set up gave me time-series data for queue depth and consumer count, but the scrape interval was 60 seconds — meaning I was already seeing data that was a minute stale. And the dashboards were organized by broker, not by what I actually needed: a list of queues that were behaving anomalously right now.
+
+CloudWatch had our application logs. I searched for error patterns across the consumer services. Found nothing obvious in the first pass — which either meant the consumers were healthy and the problem was upstream, or the error was being swallowed somewhere.
+
+Forty minutes into the incident, I finally isolated the cause: a database connection pool had exhausted under load. Consumers were picking up messages, failing silently on the first DB call, nacking without logging the error properly, and then requeueing — creating a tight [queue backlog](/blog/debug-rabbitmq-queue-backlog/) that looked, from the management plugin, like "two consumers connected, zero throughput."
+
+The fix took five minutes. The diagnosis took forty.
+
+## The real problem
+
+I wrote the post-mortem at 5am. The root cause section took two sentences. The "how did we miss this for an hour" section took two pages.
+
+We had every metric in the building. We had zero diagnosis.
+
+The problem wasn't that we had bad tools. The management plugin is genuinely useful for day-to-day visibility. Prometheus + Grafana is a legitimate monitoring stack. The problem was that none of these tools were built to answer the question I was actually asking at 3am: **what is wrong, right now, and what do I do about it?**
+
+The management plugin shows you state. Grafana shows you history. Neither shows you causality.
+
+To diagnose a RabbitMQ incident properly, you need to correlate things that live in different places: queue depth with consumer health, consumer health with message ack rates, ack rates with the specific queues where consumers are stuck. You need to see which consumers are actually processing versus which ones are connected-but-frozen. You need to see whether a queue's backlog started growing at the same time consumer count dropped, or before it — because those are different incidents.
+
+None of that was surfaced automatically. It had to be assembled manually, tab by tab, during an incident, by someone who already knew where to look.
+
+The standard monitoring stack for a production RabbitMQ deployment at that point looked like:
+
+- **Management plugin** — web UI, decent for manual inspection
+- **Prometheus exporter** — turns RabbitMQ metrics into scrapeable endpoints
+- **Alertmanager** — routes metric-based alerts to Slack or PagerDuty
+- **Grafana** — dashboards for trend analysis
+- **Custom scripts** — usually Python, usually checking DLQ depth because none of the above do it well by default
+
+Five tools. For one broker. Each requiring configuration, maintenance, and someone who knows which tab to look at when things go wrong.
+
+That's not a monitoring stack. That's archaeology.
+
+## What a purpose-built RabbitMQ monitoring tool needs
+
+After the incident, I started designing in my head what a tool would look like if the only question it had to answer was: what's wrong right now?
+
+A few things felt non-negotiable:
+
+**Zero Prometheus required.** Not because Prometheus is bad — it's excellent for general infrastructure monitoring. But standing up a full Prometheus + Grafana + Alertmanager stack just to monitor a single RabbitMQ cluster is a significant investment. For teams that aren't already running that stack, the barrier is too high. And even for teams that are, the dashboards aren't built around RabbitMQ semantics — they're built around raw metrics.
+
+**Rate of change, not just depth.** A queue at 50,000 messages growing at +500/sec is a 3am page in 90 minutes. The same queue shrinking at -1,000/sec is healthy. Depth alone is a lagging indicator. You need velocity to know if you're heading toward an incident or recovering from one.
+
+**Consumer health as a first-class signal.** Not just "how many consumers are connected" but "are they actually processing?" A consumer that's connected but not acking is broken. That distinction matters and it's invisible in most monitoring setups.
+
+**[Dead-letter queues](/blog/rabbitmq-dead-letter-queue/) as leading indicators.** DLQs are where bad messages go to pile up silently. If your DLQ is growing, you have a consumer bug. Most teams discover this weeks later, during a post-mortem, when someone finally looks at the DLQ depth chart. By then you've lost the context to diagnose it. Watching DLQ growth rate in real time changes that.
+
+**Multi-queue, multi-broker view in one place.** During an incident you don't have time to tab through fifteen queues individually. You need to see at a glance which queues are anomalous.
+
+**[Alerts that fire on leading indicators](/blog/rabbitmq-alerts-setup-guide/), not just lagging ones.** An alert that fires when your queue hits 500,000 messages is mostly useful for confirming you're already in an incident. An alert that fires when your queue is growing faster than your drain rate — when you have five minutes of lead time — is actually useful.
+
+## Why we built a dedicated RabbitMQ monitoring tool
+
+I looked at the existing options seriously before writing a line of code. There are RabbitMQ Grafana dashboard templates you can import. There are SaaS APM platforms with RabbitMQ integrations. There are commercial RabbitMQ monitoring products. And of course there's the management plugin itself, which many teams use as their primary — and only — RabbitMQ monitoring tool.
+
+The Grafana dashboards are a good start, but they don't solve the causality problem — they show you metrics, not a diagnosis. Datadog and similar APMs can display queue depth charts, but they're priced for general observability and not built around RabbitMQ semantics. The commercial products are either locked to a specific hosting provider or priced at enterprise tiers that don't make sense for smaller deployments.
+
+None of them were built as a **RabbitMQ management plugin alternative** — a replacement for the tab you have open during incidents, not an additional layer on top of your existing stack.
+
+None of them were built from the premise that the most important thing is: **tell me what's wrong, not just what's happening.**
+
+So we built Qarote.
+
+**Qarote is a self-hosted RabbitMQ monitoring tool that connects directly to the management HTTP API — no Prometheus plugin, no YAML, no agents to deploy.** MIT-licensed core, self-hostable in about two minutes with a single Docker command.
+
+Here's what that incident would have looked like with Qarote running:
+
+- **First five minutes:** Consumer connected-but-not-acking flag raised. Qarote polls every 15 seconds by default — no 60-second scrape lag.
+- **First five minutes:** Queue growth rate alarm triggered. The backlog was accelerating, not just deep.
+- **Context immediately available:** DLQ depth flat → not a crash-and-requeue loop → narrow the search to DB or network.
+- **Timeline visible:** Backlog acceleration and application connection error spike at the same timestamp.
+
+That's two minutes of context. It took me forty to assemble manually.
+
+History retention beyond RabbitMQ's default 24-hour window. Alerts that fire on rate-of-change, not just absolute thresholds. No infrastructure prerequisites beyond a running broker.
+
+That's Qarote. Built because we lived the incident it's designed to prevent.
+
+---
+
+If you're running RabbitMQ in production and you've had the experience of staring at the management plugin during an incident not knowing what's actually wrong — I built this for you.
+
+[The free tier is unrestricted for a single broker.](/) Point it at your management API and it starts working. No gatekeeping on the core.
+
+If you want to inspect the code before you run it, [it's open source on GitHub](https://github.com/getqarote/qarote).

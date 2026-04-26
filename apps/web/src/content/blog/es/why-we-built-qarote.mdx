@@ -1,0 +1,98 @@
+---
+title: "Por qué construimos Qarote: una historia de saturación de colas"
+description: "Un incidente de saturación de RabbitMQ pasó desapercibido durante más de una hora por falta de visibilidad. Esto es lo que construimos — y por qué."
+publishedAt: "2026-04-25"
+tags: ["rabbitmq", "monitoring", "war-story", "open-source"]
+readingTimeMin: 7
+---
+
+El mensaje llegó a las 2:47 de la madrugada. No era una alerta de PagerDuty — era un mensaje de Slack de un cliente.
+
+"Oye, ¿tienen problemas ahora mismo? Nuestros trabajos no se han procesado en la última hora."
+
+Una hora.
+
+Abrí el plugin de administración de RabbitMQ. El gráfico de profundidad de cola era una línea vertical. 847.000 mensajes. Nuestra cola principal de trabajos había estado llenándose, sin supervisión, durante sesenta y tres minutos. Dos consumidores estaban conectados. Ninguno procesaba nada.
+
+Tenía cuatro pestañas abiertas en treinta segundos: el plugin de administración, Grafana, CloudWatch y un hilo de Slack donde mis compañeros intentaban entender lo mismo desde diferentes dashboards.
+
+Nadie sabía qué había pasado.
+
+## Lo que mostraban las herramientas
+
+El plugin de administración me dijo lo que ya sabía al ver el gráfico: la cola estaba profunda, la tasa de mensajes era cero y dos consumidores aparecían como conectados.
+
+Lo que no podía decirme:
+
+- ¿Qué consumidores eran esos dos? ¿Eran los workers esperados, o conexiones zombie de un despliegue anterior?
+- ¿Por qué estaban conectados pero sin procesar? ¿Bloqueados en un mensaje? ¿Crashando silenciosamente? ¿Esperando un servicio downstream?
+- ¿Cuándo comenzó el [backlog de cola](/es/blog/debug-rabbitmq-queue-backlog/)? La ventana de retención por defecto era de 24 horas, pero la resolución del gráfico era demasiado gruesa.
+- ¿Era una cola aislada o una cascada? Tenía quince colas. El plugin me mostraba una a la vez.
+
+Cambié a Grafana. Las métricas de Prometheus de RabbitMQ que habíamos configurado daban datos de series temporales para la profundidad de cola y el número de consumidores, pero el intervalo de scrape era de 60 segundos — los datos ya tenían un minuto de retraso. Y los dashboards estaban organizados por broker, no por lo que realmente necesitaba: una lista de colas que se comportaran anómalamente en ese momento.
+
+Cuarenta minutos después del inicio del incidente, finalmente aislé la causa: un pool de conexiones a la base de datos agotado bajo carga. Los consumidores tomaban mensajes, fallaban silenciosamente en la primera llamada a la BD, hacían nack sin registrar el error correctamente y volvían a encolar — creando un bucle ajustado que, desde el plugin de administración, parecía "dos consumidores conectados, rendimiento cero."
+
+La solución tardó cinco minutos. El diagnóstico tardó cuarenta.
+
+## El problema real
+
+He pensado mucho en ese incidente desde entonces.
+
+El problema no era que tuviéramos malas herramientas. El plugin de administración es genuinamente útil para la visibilidad del día a día. Prometheus + Grafana es una pila de monitorización legítima. El problema era que ninguna de estas herramientas estaba diseñada para responder a la pregunta que realmente hacía a las 3 de la madrugada: **¿qué está mal, ahora mismo, y qué hago al respecto?**
+
+El plugin de administración muestra estado. Grafana muestra historial. Ninguno muestra causalidad.
+
+Para diagnosticar correctamente un incidente de RabbitMQ, necesitas correlacionar cosas que viven en lugares diferentes: profundidad de cola con salud de consumidores, salud de consumidores con tasas de ack, tasas de ack con las colas específicas donde los consumidores están atascados. Necesitas ver qué consumidores están procesando realmente versus cuáles están conectados-pero-congelados. Necesitas ver si el backlog de una cola comenzó a crecer al mismo tiempo que cayó el número de consumidores, o antes — porque son incidentes diferentes.
+
+Nada de eso se mostraba automáticamente. Había que ensamblarlo manualmente, pestaña por pestaña, durante un incidente.
+
+La pila de monitorización estándar para un despliegue de RabbitMQ en producción en ese momento era:
+
+- **Plugin de administración** — interfaz web, útil para inspección manual
+- **Exportador de Prometheus** — convierte las métricas de RabbitMQ en endpoints scrapables
+- **Alertmanager** — enruta alertas basadas en métricas a Slack o PagerDuty
+- **Grafana** — dashboards para análisis de tendencias
+- **Scripts personalizados** — normalmente Python, normalmente verificando la profundidad de las DLQ
+
+Cinco herramientas. Para un solo broker. Cada una requiriendo configuración, mantenimiento y alguien que sepa qué pestaña mirar cuando las cosas van mal.
+
+Eso no es una pila de monitorización. Es arqueología.
+
+## Lo que queríamos en su lugar
+
+Después del incidente, empecé a pensar en cómo sería una herramienta de monitorización de RabbitMQ diseñada específicamente para responder "¿qué está mal ahora mismo?" en lugar de "aquí están todas las métricas, buena suerte."
+
+Algunas cosas parecían innegociables:
+
+**Tasa de cambio, no solo profundidad.** Una cola en 50.000 mensajes creciendo a +500/s es un despertador a las 3 de la madrugada en 90 minutos. La misma cola decreciendo a -1.000/s es saludable. La profundidad sola es un indicador rezagado. Necesitas velocidad para saber si te diriges hacia un incidente o te estás recuperando de uno.
+
+**[La salud de los consumidores](/es/blog/rabbitmq-consumer-not-processing/) como señal de primer nivel.** No solo "cuántos consumidores están conectados" sino "¿están procesando realmente?" Un consumidor conectado pero que no hace ack está roto.
+
+**[Las dead-letter queues](/es/blog/rabbitmq-dead-letter-queue/) como indicadores adelantados.** Las DLQ son donde los mensajes malos se acumulan silenciosamente. Si tu DLQ está creciendo, tienes un bug de consumidor. La mayoría de los equipos lo descubren semanas después, durante un post-mortem.
+
+**Vista multi-cola, multi-broker en un solo lugar.** Durante un incidente no tienes tiempo de revisar quince colas individualmente.
+
+**[Alertas sobre indicadores adelantados](/es/blog/rabbitmq-alerts-setup-guide/), no solo rezagados.** Una alerta que se dispara cuando tu cola llega a 500.000 mensajes confirma principalmente que ya estás en un incidente. Una alerta que se dispara cuando tu cola crece más rápido que tu tasa de vaciado — cuando tienes cinco minutos de margen — es realmente útil.
+
+**Cero Prometheus requerido.** No porque Prometheus sea malo, sino porque montar una pila completa Prometheus + Grafana + Alertmanager solo para monitorizar un cluster de RabbitMQ es una inversión significativa para equipos que no la tienen ya.
+
+## Por qué lo construimos en lugar de parchear herramientas existentes
+
+Examiné seriamente las opciones existentes. Hay plantillas de dashboards de Grafana para RabbitMQ. Hay plataformas APM SaaS con integraciones de RabbitMQ. Hay productos comerciales de monitorización de RabbitMQ.
+
+Ninguno estaba construido desde la premisa de que lo más importante es: **dime qué está mal, no solo qué está pasando.**
+
+Así que construimos Qarote.
+
+El núcleo tiene licencia MIT y es auto-hospedable. Lo apuntas a una API de administración de RabbitMQ — sin plugin de Prometheus, sin YAML, sin agentes que desplegar — y te da un dashboard multi-cola con métricas de tasa de cambio, señales de salud de consumidores, monitorización de DLQ y alertas configurables. El tipo de cosa que me habría dicho, en los primeros cinco minutos de ese incidente, que los consumidores estaban conectados pero no hacían ack, que la DLQ no crecía y que el backlog había empezado a acelerarse exactamente al mismo tiempo que un pico en los errores de conexión de la aplicación.
+
+Retención de historial más allá de la ventana predeterminada de 24 horas de RabbitMQ. Alertas sobre tasa de cambio, no solo umbrales absolutos. Sin requisitos de infraestructura más allá de un broker en funcionamiento.
+
+Eso es Qarote. Construido porque vivimos el incidente que está diseñado para prevenir.
+
+---
+
+Si ejecutas RabbitMQ en producción y has tenido la experiencia de mirar el plugin de administración durante un incidente preguntándote qué está mal realmente, [pruébalo](/). El nivel gratuito cubre todo lo que necesitas para empezar. La configuración toma unos dos minutos.
+
+Si quieres ejecutarlo tú mismo, el núcleo es [código abierto en GitHub](https://github.com/getqarote/qarote).
