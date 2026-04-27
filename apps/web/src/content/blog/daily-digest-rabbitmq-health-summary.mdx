@@ -1,0 +1,72 @@
+---
+title: "Daily Digest: Your RabbitMQ Health Summary, Delivered"
+description: "Qarote now sends a daily email summary of your RabbitMQ cluster — queue depths, consumer counts, message rates, and active alerts. No dashboard required."
+publishedAt: "2026-04-26"
+author: "Brice Tessier"
+tags: ["rabbitmq", "monitoring", "new-feature", "digest"]
+readingTimeMin: 5
+---
+
+Most RabbitMQ problems don't announce themselves at 3am with a full-blown incident. They build quietly — a queue trending upward over days, a consumer count that's been one short since the last deployment, a dead-letter queue that nobody's drained in two weeks. By the time something pages, the situation has been deteriorating for a while.
+
+The classic response is to open the dashboard more often. That works, until it doesn't — because "check the dashboard" is not a reliable process. It depends on someone remembering to look, knowing what normal looks like, and having time to interpret what they see.
+
+We built the daily digest to make passive monitoring a default, not a manual practice.
+
+## What it is
+
+Once a day, Qarote sends a structured email summary of your RabbitMQ cluster. Every broker, every queue that's showing unusual behavior, every active alert — assembled into a single snapshot that takes under a minute to read.
+
+It's designed to answer three questions you'd otherwise have to log in to answer:
+
+1. Is anything obviously wrong right now?
+2. Are any queues trending in a direction I should watch?
+3. Have any alerts been open long enough that I should be worried they've been silently ignored?
+
+You don't need to be in an incident to find this useful. That's the point.
+
+## What's in it
+
+**Broker health** — a status line per server: healthy, warning, or critical. If a server has a CRITICAL alert, that's the first thing you see.
+
+**Queue trends** — queues that are rising (depth grew more than 10% in the last 24 hours) or have no active consumers despite carrying messages. These are the early signals that usually precede incidents.
+
+**Message rates** — average publish and consume rates per server, so you can spot asymmetry before it becomes a backlog.
+
+**Active alerts** — sorted by severity. If you have an alert that fired days ago and nobody acknowledged it, it shows up here. CRITICAL first, then HIGH, MEDIUM, LOW.
+
+**Last sent** — each digest records when it was delivered, so you can verify the schedule is working without opening the app.
+
+## How to enable it
+
+Go to **Settings → Daily Digest** and flip the toggle. That's it. The first digest goes out the next morning at 08:00 UTC, sent to your workspace's contact email.
+
+If you're on the Developer or Enterprise plan, you can customize the schedule: daily or weekly, any delivery time, any day of the week. You can also add extra recipients and route the digest to a Slack channel alongside the email.
+
+The settings page also shows you when the next digest will go out, so you're never left wondering whether your configuration took effect.
+
+## Why email
+
+We considered a lot of delivery options. Push notifications, Slack-only, in-app summaries. We kept coming back to email for one reason: it's asynchronous and ambient in the right way. You don't need to open an app to receive it. It lands in your inbox during the morning review, alongside the rest of the day's context. It's easy to forward to teammates. It archives automatically.
+
+Slack is available too (for paid plans), because some teams run their operations entirely through Slack and would never see an email. But email is the default because it's the most reliable channel we have for "someone needs to see this today, but it doesn't need to interrupt anyone right now."
+
+## The test digest
+
+We added a "Send test digest" button on the settings page. Click it and you get an actual digest — assembled from your real broker data — delivered immediately to your inbox. No waiting until tomorrow morning to see what you're going to receive.
+
+If you have a messy cluster, this is also a quick way to get a full health snapshot without navigating the dashboard. Some users have told us they run the test digest as their morning check-in.
+
+## What's next
+
+The digest currently covers broker health, queue trends, and alerts. We're planning to add:
+
+- **DLQ summaries** — dead-letter queue depth changes over the digest period, with per-queue breakdown
+- **Consumer churn** — queues where the consumer count changed since the last digest
+- **Threshold annotations** — flag queues approaching configured alert thresholds, before the alert fires
+
+If there's a signal you'd want in a daily summary that isn't here, [let us know](mailto:hello@qarote.io). Most of the current content came from asking teams what they actually check when they sit down in the morning.
+
+---
+
+Daily digest is available on all plans today. Enable it in **Settings → Daily Digest**.

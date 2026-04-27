@@ -197,7 +197,7 @@ Generic APM platforms can scrape the Prometheus endpoint, but they don't underst
 
 ### Option 3: Qarote (purpose-built, self-hosted)
 
-> **No Prometheus setup required.** Qarote connects directly to RabbitMQ's management API and ships with pre-built alert rules for all five signals above — queue depth (with rate-of-change), unacked count, consumer drop to zero, memory watermark percentage, and DLQ growth. You configure thresholds per-queue in the UI and set notification destinations (Slack, webhook). [See how alerting works →](/features/)
+> **No Prometheus setup required.** Qarote connects directly to RabbitMQ's management API and ships with pre-built alert rules for all five signals above — queue depth (with rate-of-change), unacked count, consumer drop to zero, memory watermark percentage, and DLQ growth. You configure thresholds per-queue in the UI and set notification destinations (Slack, webhook). [See how alerting works →](/features/alerting/)
 
 It's the right trade-off if your team's bottleneck is ops overhead rather than Prometheus expertise. The two approaches aren't mutually exclusive — if you're already running Prometheus for the rest of your infra, use that. If you're not, Qarote saves you the stack.
 

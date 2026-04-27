@@ -10,11 +10,10 @@
   "active": {
     "noneTitle": "No active alerts",
     "noneDesc": "Your RabbitMQ cluster is running smoothly with no alerts.",
-    "upgradeTitleWithCount": "You have {{count}} active alert",
-    "upgradeTitleWithCount_other": "You have {{count}} active alerts",
-    "upgradeSubtitle": "Upgrade to view detailed alert information and configure thresholds.",
-    "upgradeHint": "Developer and Enterprise unlock alert details, rules, and notification channels.",
-    "upgradeCta": "Upgrade now"
+    "upgradeCta": "Upgrade now",
+    "previewHiddenCount": "{{count}} more alert hidden — upgrade to see all",
+    "previewHiddenCount_other": "{{count}} more alerts hidden — upgrade to see all",
+    "previewUpgradeHint": "Upgrade to Developer to get email and Slack notifications for every alert."
   },
   "failedToLoad": "Failed to load alerts data. Please try again.",
   "loadingResolved": "Loading resolved alerts...",

@@ -1,0 +1,9 @@
+{
+  "calculatingResults": "正在计算您的结果…",
+  "seo": {
+    "title": "RabbitMQ 技能评估 — 测试您的知识",
+    "description": "参加免费的 20 题 RabbitMQ 测验。测试您对队列、交换机、消费者和生产模式的掌握程度，获取分数和评级结论。",
+    "resultsTitle": "我的 RabbitMQ 技能评估结果",
+    "resultsDescription": "我在 Qarote 上参加了免费的 RabbitMQ 技能评估。看看您与我相比如何。"
+  }
+}

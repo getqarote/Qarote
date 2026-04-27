@@ -1,0 +1,19 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { loadAllTranslations } from "../../../lib/i18n-static";
+import QuizResultsIsland from "../../../components/QuizResultsIsland";
+
+const resources = loadAllTranslations("en");
+---
+
+<BaseLayout
+  title="RabbitMQ Skills Assessment — Reactive | Qarote"
+  description="Your RabbitMQ monitoring is reactive. See what leading indicators you're missing and how to get ahead of incidents."
+  canonicalPath="/quiz/results/reactive/"
+  image="https://qarote.io/images/og-quiz-reactive.jpg"
+>
+  <Fragment slot="head">
+    <meta name="robots" content="noindex, nofollow" />
+  </Fragment>
+  <QuizResultsIsland tier="reactive" resources={resources} client:load />
+</BaseLayout>

@@ -1,0 +1,53 @@
+{
+  "title": "Resumen diario",
+  "description": "Recibe un resumen diario del estado de tu RabbitMQ por correo.",
+  "enable": "Activar resumen diario",
+  "saveSuccess": "Configuración guardada",
+  "saveError": "Error al guardar la configuración",
+  "loadError": "Error al cargar la configuración del resumen.",
+  "retry": "Reintentar",
+  "frequency": {
+    "label": "Frecuencia",
+    "daily": "Diario",
+    "weekly": "Semanal"
+  },
+  "scheduledTime": "Hora de envío (UTC)",
+  "whenToSend": "Cuándo enviar",
+  "dayOfWeek": "Día de la semana",
+  "days": {
+    "sun": "Dom",
+    "mon": "Lun",
+    "tue": "Mar",
+    "wed": "Mié",
+    "thu": "Jue",
+    "fri": "Vie",
+    "sat": "Sáb"
+  },
+  "recipients": {
+    "label": "Destinatarios adicionales",
+    "add": "Añadir destinatario",
+    "placeholder": "email@ejemplo.com"
+  },
+  "slack": {
+    "label": "Enviar a Slack",
+    "configure": "Configurar Slack →"
+  },
+  "testDigest": {
+    "button": "Enviar resumen de prueba",
+    "sending": "Enviando…",
+    "success": "¡Resumen de prueba enviado!",
+    "error": "Error al enviar el resumen de prueba"
+  },
+  "lastDigest": {
+    "label": "Último resumen",
+    "preview": "Vista previa",
+    "neverSent": "Ningún resumen enviado aún"
+  },
+  "preview": {
+    "title": "Vista previa del resumen"
+  },
+  "digestContains": "Incluye profundidades de cola, recuentos de consumidores, tasas de mensajes y alertas activas en todos tus brokers.",
+  "saveSchedule": "Guardar planificación",
+  "saving": "Guardando…",
+  "nextDigest": "Próximo"
+}

@@ -11,6 +11,7 @@ const I18N_NAMESPACES = [
   "faq",
   "nav",
   "legal",
+  "quiz",
 ] as const;
 
 /**

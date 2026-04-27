@@ -1,0 +1,9 @@
+{
+  "calculatingResults": "Calculating your results…",
+  "seo": {
+    "title": "RabbitMQ Skills Assessment — Test Your Knowledge",
+    "description": "Take the free 20-question RabbitMQ quiz. Test your knowledge of queues, exchanges, consumers, and production patterns. Get a score and tier verdict.",
+    "resultsTitle": "My RabbitMQ Skills Assessment Results",
+    "resultsDescription": "I took the free RabbitMQ Skills Assessment on Qarote. See how you compare."
+  }
+}

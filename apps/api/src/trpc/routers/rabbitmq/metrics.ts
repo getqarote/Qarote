@@ -1,7 +1,11 @@
 import { TRPCError } from "@trpc/server";
+import { z } from "zod/v4";
 
+import { prisma } from "@/core/prisma";
 import { RabbitMQMetricsCalculator } from "@/core/rabbitmq/MetricsCalculator";
 import { abortableSleep } from "@/core/utils";
+
+import { resolveAllowedRange } from "@/services/metrics/resolve-allowed-range";
 
 import {
   GetMetricsSchema,
@@ -385,6 +389,167 @@ export const metricsRouter = router({
 
         await abortableSleep(10000, sig);
       }
+    }),
+
+  /**
+   * Historical snapshots for a specific queue — reads QueueMetricSnapshot.
+   * workspaceId is derived from session context (IDOR prevention — never trusted from input).
+   * rangeHours is clamped server-side for free workspaces via resolveAllowedRange().
+   */
+  getQueueHistory: workspaceProcedure
+    .input(
+      z.object({
+        serverId: z.string(),
+        queueName: z.string(),
+        vhost: z.string(),
+        rangeHours: z.union([
+          z.literal(6),
+          z.literal(24),
+          z.literal(72),
+          z.literal(168),
+        ]),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const { serverId, queueName, vhost, rangeHours } = input;
+      const workspaceId = ctx.workspaceId;
+
+      // Verify server belongs to this workspace (IDOR prevention)
+      const server = await prisma.rabbitMQServer.findFirst({
+        where: { id: serverId, workspaceId },
+        select: { id: true },
+      });
+      if (!server) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
+        });
+      }
+
+      const { hours, wasClamped } = await resolveAllowedRange(
+        workspaceId,
+        rangeHours
+      );
+
+      const since = new Date(Date.now() - hours * 60 * 60 * 1000);
+
+      const snapshots = await prisma.queueMetricSnapshot.findMany({
+        where: {
+          serverId,
+          workspaceId,
+          queueName,
+          vhost,
+          timestamp: { gte: since },
+        },
+        orderBy: { timestamp: "asc" },
+        select: {
+          timestamp: true,
+          messages: true,
+          messagesReady: true,
+          messagesUnack: true,
+          publishRate: true,
+          consumeRate: true,
+          consumerCount: true,
+        },
+      });
+
+      return {
+        snapshots: snapshots.map((s) => ({
+          ...s,
+          messages: s.messages.toString(),
+          messagesReady: s.messagesReady.toString(),
+          messagesUnack: s.messagesUnack.toString(),
+        })),
+        wasClamped,
+        resolvedHours: hours,
+      };
+    }),
+
+  /**
+   * Aggregated historical totals for all queues on a server — for dashboard and Action 5.
+   * Supports an optional centeredAt param for incident-anchored time windows.
+   * workspaceId is derived from session context (IDOR prevention).
+   * rangeHours is clamped server-side for free workspaces.
+   */
+  getServerQueueHistory: workspaceProcedure
+    .input(
+      z.object({
+        serverId: z.string(),
+        rangeHours: z.union([
+          z.literal(6),
+          z.literal(24),
+          z.literal(72),
+          z.literal(168),
+        ]),
+        centeredAt: z.string().datetime().optional(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const { serverId, rangeHours, centeredAt } = input;
+      const workspaceId = ctx.workspaceId;
+
+      // Verify server belongs to this workspace (IDOR prevention)
+      const server = await prisma.rabbitMQServer.findFirst({
+        where: { id: serverId, workspaceId },
+        select: { id: true },
+      });
+      if (!server) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
+        });
+      }
+
+      const { hours, wasClamped } = await resolveAllowedRange(
+        workspaceId,
+        rangeHours
+      );
+
+      let since: Date;
+      let until: Date;
+
+      if (centeredAt) {
+        const center = new Date(centeredAt);
+        const halfMs = (hours * 60 * 60 * 1000) / 2;
+        since = new Date(center.getTime() - halfMs);
+        until = new Date(center.getTime() + halfMs);
+      } else {
+        since = new Date(Date.now() - hours * 60 * 60 * 1000);
+        until = new Date();
+      }
+
+      // Aggregate in Postgres — avoids loading all per-queue rows into Node.js memory.
+      // DATE_TRUNC('minute') groups all queues polled in the same 5-min cycle.
+      const rows = await prisma.$queryRaw<
+        Array<{
+          bucket: Date;
+          totalMessages: bigint;
+          totalReady: bigint;
+          totalUnacked: bigint;
+        }>
+      >`
+        SELECT
+          DATE_TRUNC('minute', timestamp) AS bucket,
+          SUM(messages)        AS "totalMessages",
+          SUM("messagesReady") AS "totalReady",
+          SUM("messagesUnack") AS "totalUnacked"
+        FROM queue_metric_snapshots
+        WHERE "serverId"    = ${serverId}
+          AND "workspaceId" = ${workspaceId}
+          AND timestamp >= ${since}
+          AND timestamp <= ${until}
+        GROUP BY DATE_TRUNC('minute', timestamp)
+        ORDER BY bucket ASC
+      `;
+
+      const snapshots = rows.map((r) => ({
+        timestamp: r.bucket,
+        totalMessages: r.totalMessages.toString(),
+        totalReady: r.totalReady.toString(),
+        totalUnacked: r.totalUnacked.toString(),
+      }));
+
+      return { snapshots, wasClamped, resolvedHours: hours };
     }),
 
   /**

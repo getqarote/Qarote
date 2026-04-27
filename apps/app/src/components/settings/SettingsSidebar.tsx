@@ -74,6 +74,13 @@ const navGroups: NavGroup[] = [
         labelKey: "settings:nav.members",
         adminOnly: true,
       },
+      {
+        key: "digest",
+        path: "/settings/digest",
+        icon: PixelEmail,
+        labelKey: "settings:nav.digest",
+        adminOnly: true,
+      },
     ],
   },
   {

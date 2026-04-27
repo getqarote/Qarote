@@ -149,3 +149,14 @@ export const CHART_DISK_READS = "hsl(var(--chart-disk-reads))"; // dark teal gap
 export const CHART_QUEUED_TOTAL = "hsl(var(--chart-deliver))"; // tableau-blue
 export const CHART_QUEUED_READY = "hsl(var(--chart-ack))"; // tableau-green
 export const CHART_QUEUED_UNACKED = "hsl(var(--chart-publish))"; // tableau-orange
+
+// ============================================================================
+// ConsumerHistoryChart — consumer count over time (1 series)
+// ============================================================================
+//
+// Uses the same tableau-blue as CHART_DELIVER. Blue is perceptually neutral
+// ("informational"), which matches the semantics: consumer count is neither
+// success nor failure on its own. Deliberately distinct from CHART_ACK (green)
+// which would imply "healthy" and from CHART_PUBLISH (orange) which implies
+// "attention needed."
+export const CHART_CONSUMERS = "hsl(var(--chart-deliver))"; // tableau-blue

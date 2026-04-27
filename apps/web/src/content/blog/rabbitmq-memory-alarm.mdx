@@ -222,6 +222,8 @@ Beyond tooling, the structural prevention steps:
 
 If you want to be notified before the alarm fires rather than after, [set up RabbitMQ alerts that actually give you lead time](/blog/rabbitmq-alerts-setup-guide/).
 
+> **Skip the Prometheus stack.** Qarote ships memory watermark alerting as a built-in rule with no scraper to configure. [See how alerting works →](/features/alerting/)
+
 ---
 
 **tl;dr:** The memory alarm fires when Erlang memory crosses `vm_memory_high_watermark` (default 0.4 × RAM). Run `rabbitmqctl status | grep -A10 memory` and check `messages_unacknowledged` and `message_bytes_ram` per queue to find the culprit. The most common causes are unacked message buildup (fix with prefetch limits), lazy mode not enabled on classic queues, connection/channel leaks, Management plugin stats cache, and a watermark that is too low for the actual hardware. Fix the root cause — bumping the watermark without addressing the leak just delays the next alarm.

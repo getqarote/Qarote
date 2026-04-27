@@ -113,7 +113,7 @@ async function persistQueueData(
         serverId,
       };
 
-      const upsertedQueue = await tx.queue.upsert({
+      await tx.queue.upsert({
         where: {
           name_vhost_serverId: {
             name: queue.name,
@@ -123,17 +123,6 @@ async function persistQueueData(
         },
         update: queueData,
         create: queueData,
-      });
-
-      await tx.queueMetric.create({
-        data: {
-          queueId: upsertedQueue.id,
-          messages: BigInt(queue.messages || 0),
-          messagesReady: BigInt(queue.messages_ready || 0),
-          messagesUnack: BigInt(queue.messages_unacknowledged || 0),
-          publishRate: queue.message_stats?.publish_details?.rate || 0,
-          consumeRate: queue.message_stats?.deliver_details?.rate || 0,
-        },
       });
     }
   });
@@ -488,18 +477,6 @@ export const queuesRouter = router({
             data: newQueueData,
           });
 
-          // Add initial metrics record
-          await prisma.queueMetric.create({
-            data: {
-              queueId: queueRecord.id,
-              messages: 0n,
-              messagesReady: 0n,
-              messagesUnack: 0n,
-              publishRate: 0,
-              consumeRate: 0,
-            },
-          });
-
           ctx.logger.info(
             `Queue ${name} stored in database with id ${queueRecord.id}`
           );
@@ -628,13 +605,6 @@ export const queuesRouter = router({
 
         // Only delete from database if we found the queue
         if (existingQueue) {
-          // Delete related metrics first (foreign key constraint)
-          await prisma.queueMetric.deleteMany({
-            where: {
-              queueId: existingQueue.id,
-            },
-          });
-
           // Then delete the queue itself using the unique ID
           await prisma.queue.delete({
             where: {

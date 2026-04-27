@@ -75,6 +75,11 @@ const SMTPSection = lazy(() =>
     default: m.default,
   }))
 );
+const DigestSection = lazy(() =>
+  import("./pages/settings/DigestSection").then((m) => ({
+    default: m.default,
+  }))
+);
 const FeedbackSection = lazy(() =>
   import("./pages/settings/FeedbackSection").then((m) => ({
     default: m.default,
@@ -430,6 +435,7 @@ const AppCore = () => (
                             />
                             <Route path="sso" element={<SSOSection />} />
                             <Route path="smtp" element={<SMTPSection />} />
+                            <Route path="digest" element={<DigestSection />} />
                             <Route
                               path="feedback"
                               element={<FeedbackSection />}

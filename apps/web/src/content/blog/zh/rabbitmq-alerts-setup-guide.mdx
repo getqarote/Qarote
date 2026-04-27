@@ -197,7 +197,7 @@ receivers:
 
 ### 方案三：Qarote（专为RabbitMQ而生，可自托管）
 
-> **无需搭建Prometheus。** Qarote直接连接RabbitMQ的Management API，内置上述五个信号的告警规则——带变化率的queue深度、未确认消息数、consumer降至零（立即呼人）、内存watermark百分比，以及DLQ增长。在UI中按queue配置阈值，并设置通知目标（Slack、webhook）。[了解告警功能 →](/features/)
+> **无需搭建Prometheus。** Qarote直接连接RabbitMQ的Management API，内置上述五个信号的告警规则——带变化率的queue深度、未确认消息数、consumer降至零（立即呼人）、内存watermark百分比，以及DLQ增长。在UI中按queue配置阈值，并设置通知目标（Slack、webhook）。[了解告警功能 →](/zh/features/alerting/)
 
 如果你团队的瓶颈在于运维开销而非Prometheus专业知识，这是正确的权衡。两种方案并不互斥——如果你已经在其余基础设施上跑着Prometheus，就用那套。如果没有，Qarote可以省去你搭建整套技术栈的麻烦。
 

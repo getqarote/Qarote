@@ -1,0 +1,53 @@
+{
+  "title": "Daily Digest",
+  "description": "Receive a daily summary of your RabbitMQ health by email.",
+  "enable": "Enable daily digest",
+  "saveSuccess": "Settings saved",
+  "saveError": "Failed to save settings",
+  "loadError": "Failed to load digest settings.",
+  "retry": "Retry",
+  "frequency": {
+    "label": "Frequency",
+    "daily": "Daily",
+    "weekly": "Weekly"
+  },
+  "scheduledTime": "Delivery time (UTC)",
+  "whenToSend": "When to send",
+  "dayOfWeek": "Day of week",
+  "days": {
+    "sun": "Sun",
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat"
+  },
+  "recipients": {
+    "label": "Additional recipients",
+    "add": "Add recipient",
+    "placeholder": "email@example.com"
+  },
+  "slack": {
+    "label": "Send to Slack",
+    "configure": "Configure Slack →"
+  },
+  "testDigest": {
+    "button": "Send test digest",
+    "sending": "Sending…",
+    "success": "Test digest sent!",
+    "error": "Failed to send test digest"
+  },
+  "lastDigest": {
+    "label": "Last digest",
+    "preview": "Preview",
+    "neverSent": "No digest sent yet"
+  },
+  "preview": {
+    "title": "Digest Preview"
+  },
+  "digestContains": "Includes queue depths, consumer counts, message rates, and any active alerts across all your brokers.",
+  "saveSchedule": "Save schedule",
+  "saving": "Saving…",
+  "nextDigest": "Next"
+}

@@ -1,0 +1,72 @@
+---
+title: "Daily Digest : votre résumé de santé RabbitMQ, livré chaque jour"
+description: "Qarote envoie désormais un résumé email quotidien de votre cluster RabbitMQ — profondeurs de queues, nombre de consumers, débits de messages et alertes actives. Sans avoir à ouvrir le dashboard."
+publishedAt: "2026-04-26"
+author: "Brice Tessier"
+tags: ["rabbitmq", "monitoring", "new-feature", "digest"]
+readingTimeMin: 5
+---
+
+La plupart des problèmes RabbitMQ ne se signalent pas à 3h du matin avec un incident en bonne et due forme. Ils s'installent discrètement — une queue qui monte régulièrement depuis plusieurs jours, un nombre de consumers en déficit depuis le dernier déploiement, une dead-letter queue que personne n'a vidée depuis deux semaines. Quand quelque chose finit par déclencher une alerte, la situation se dégrade depuis un moment.
+
+La réponse classique, c'est d'ouvrir le dashboard plus souvent. Ça marche, jusqu'à ce que ça ne marche plus — parce que "vérifier le dashboard" n'est pas un processus fiable. Ça suppose que quelqu'un pense à regarder, sache à quoi ressemble un état normal, et ait le temps d'interpréter ce qu'il voit.
+
+On a construit le daily digest pour faire du monitoring passif un comportement par défaut, pas une pratique manuelle.
+
+## Ce que c'est
+
+Une fois par jour, Qarote envoie un résumé email structuré de votre cluster RabbitMQ. Chaque broker, chaque queue présentant un comportement inhabituel, chaque alerte active — rassemblés dans un snapshot unique lisible en moins d'une minute.
+
+Il est conçu pour répondre à trois questions auxquelles vous auriez sinon dû vous connecter pour répondre :
+
+1. Est-ce que quelque chose est manifestement cassé en ce moment ?
+2. Des queues évoluent-elles dans une direction qui mérite attention ?
+3. Des alertes sont-elles ouvertes depuis assez longtemps pour craindre qu'elles soient passées à la trappe ?
+
+Pas besoin d'être en plein incident pour trouver ça utile. C'est justement le propos.
+
+## Ce qu'il contient
+
+**Santé des brokers** — une ligne de statut par serveur : healthy, warning ou critical. Si un serveur a une alerte CRITICAL, c'est la première chose que vous voyez.
+
+**Tendances des queues** — les queues en hausse (profondeur ayant augmenté de plus de 10 % dans les dernières 24 heures) ou sans consumer actif malgré des messages en attente. Ce sont les signaux précoces qui précèdent généralement les incidents.
+
+**Débits de messages** — débits moyens de publication et de consommation par serveur, pour repérer une asymétrie avant qu'elle ne devienne un backlog.
+
+**Alertes actives** — triées par sévérité. Si une alerte a été déclenchée il y a plusieurs jours sans que personne ne l'ait acquittée, elle apparaît ici. CRITICAL en premier, puis HIGH, MEDIUM, LOW.
+
+**Dernier envoi** — chaque digest enregistre l'heure à laquelle il a été livré, pour vérifier que le planning fonctionne sans ouvrir l'application.
+
+## Comment l'activer
+
+Allez dans **Paramètres → Daily Digest** et activez l'interrupteur. C'est tout. Le premier digest part le lendemain matin à 08:00 UTC, à l'adresse email de contact de votre workspace.
+
+Sur les plans Developer ou Enterprise, vous pouvez personnaliser le planning : quotidien ou hebdomadaire, n'importe quelle heure de livraison, n'importe quel jour de la semaine. Vous pouvez aussi ajouter des destinataires supplémentaires et router le digest vers un channel Slack en complément de l'email.
+
+La page de paramètres affiche également l'heure du prochain envoi, pour ne jamais vous demander si votre configuration a bien pris effet.
+
+## Pourquoi l'email
+
+On a envisagé beaucoup d'options de diffusion. Notifications push, Slack uniquement, résumés in-app. On revenait toujours à l'email pour une raison : il est asynchrone et ambiant de la bonne façon. Pas besoin d'ouvrir une application pour le recevoir. Il arrive dans votre boîte lors de la revue matinale, avec le reste du contexte de la journée. Il est facile à transférer à des collègues. Il s'archive automatiquement.
+
+Slack est également disponible (sur les plans payants), parce que certaines équipes font tourner toutes leurs opérations via Slack et ne verraient jamais un email. Mais l'email est le défaut parce que c'est le canal le plus fiable qu'on ait pour "quelqu'un doit voir ça aujourd'hui, sans que ça interrompe qui que ce soit maintenant."
+
+## Le digest de test
+
+On a ajouté un bouton "Envoyer un digest de test" sur la page de paramètres. Cliquez dessus et vous recevez un vrai digest — assemblé depuis les données réelles de vos brokers — livré immédiatement dans votre boîte. Sans attendre le lendemain matin pour savoir ce que vous allez recevoir.
+
+Si votre cluster est dans un état peu glorieux, c'est aussi un moyen rapide d'obtenir un snapshot complet de santé sans naviguer dans le dashboard. Certains utilisateurs nous ont dit qu'ils lancent le digest de test comme check-in matinal.
+
+## La suite
+
+Le digest couvre actuellement la santé des brokers, les tendances des queues et les alertes. On prévoit d'ajouter :
+
+- **Résumés DLQ** — évolution de la profondeur des dead-letter queues sur la période du digest, avec détail par queue
+- **Rotation des consumers** — queues dont le nombre de consumers a changé depuis le dernier digest
+- **Annotations de seuil** — signalement des queues approchant des seuils d'alerte configurés, avant que l'alerte ne se déclenche
+
+Si un signal vous manque dans un résumé quotidien, [dites-le-nous](mailto:hello@qarote.io). La majeure partie du contenu actuel vient de ce qu'on a demandé aux équipes ce qu'elles vérifient réellement quand elles s'installent le matin.
+
+---
+
+Le daily digest est disponible sur tous les plans dès aujourd'hui. Activez-le dans **Paramètres → Daily Digest**.

@@ -172,49 +172,62 @@ model Queue {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   server        RabbitMQServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
-  queueMetrics  QueueMetric[]
 
   @@unique([name, vhost, serverId])
 }
 
-model QueueMetric {
-  id            String   @id @default(uuid())
-  queueId       String
-  timestamp     DateTime @default(now())
-  messages      BigInt
-  messagesReady BigInt
-  messagesUnack BigInt
-  publishRate   Float
-  consumeRate   Float
-  queue         Queue    @relation(fields: [queueId], references: [id], onDelete: Cascade)
-
-  @@index([queueId, timestamp])
-}
-
 model RabbitMQServer {
-  id                    String          @id @default(uuid())
+  id                    String                @id @default(uuid())
   name                  String
   host                  String
   port                  Int
   username              String
   password              String
-  vhost                 String          @default("/")
-  createdAt             DateTime        @default(now())
-  updatedAt             DateTime        @updatedAt
-  sslVerifyPeer         Boolean         @default(true)
+  vhost                 String                @default("/")
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  sslVerifyPeer         Boolean               @default(true)
   workspaceId           String?
   version               String?
   versionMajorMinor     String?
-  isOverQueueLimit      Boolean         @default(false)
-  overLimitWarningShown Boolean         @default(false)
+  isOverQueueLimit      Boolean               @default(false)
+  overLimitWarningShown Boolean               @default(false)
   queueCountAtConnect   Int?
-  useHttps              Boolean         @default(false)
+  useHttps              Boolean               @default(false)
   queuePauseStates      Json?
-  amqpPort              Int             @default(5672)
+  amqpPort              Int                   @default(5672)
   alertRules            AlertRule[]
   alerts                Alert[]
   queues                Queue[]
-  workspace             Workspace?      @relation(fields: [workspaceId], references: [id])
+  queueMetricSnapshots  QueueMetricSnapshot[]
+  workspace             Workspace?            @relation(fields: [workspaceId], references: [id])
+}
+
+/// Scheduled time-series snapshots written every 5 min by the metrics poller.
+/// Replaces QueueMetric — independent of user activity, includes consumerCount.
+/// Retention: 7 days enforced by runRetentionCleanup() in queue-metrics.service.ts.
+/// Never written when workspaceId is null (orphaned rows have no consumer).
+/// workspaceId is denormalized (no FK) — server reassignment requires a backfill migration.
+model QueueMetricSnapshot {
+  id            String         @id @default(cuid())
+  serverId      String
+  workspaceId   String
+  queueName     String
+  vhost         String
+  messages      BigInt
+  messagesReady BigInt
+  messagesUnack BigInt
+  publishRate   Float
+  consumeRate   Float
+  consumerCount Int
+  timestamp     DateTime       @default(now())
+  server        RabbitMQServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@index([serverId, queueName, vhost, timestamp])
+  @@index([serverId, timestamp])
+  @@index([timestamp])
+  @@index([workspaceId, serverId, timestamp])
+  @@map("queue_metric_snapshots")
 }
 
 model User {
@@ -334,9 +347,39 @@ model Workspace {
   licenses                      License[]
   slackConfigs                  SlackConfig[]
   webhooks                      Webhook[]
+  digestSettings                WorkspaceDigestSettings?
+  digestLogs                    DigestLog[]
   organization                  Organization              @relation(fields: [organizationId], references: [id])
 
   @@index([organizationId])
+}
+
+model WorkspaceDigestSettings {
+  id            String    @id @default(uuid())
+  workspaceId   String    @unique
+  enabled       Boolean   @default(false)
+  scheduledTime String    @default("08:00")
+  frequency     String    @default("daily")
+  weeklyDay     Int?
+  slackEnabled  Boolean   @default(false)
+  recipients    Json?
+  lastSentAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+model DigestLog {
+  id          String    @id @default(uuid())
+  workspaceId String
+  type        String
+  status      String
+  error       String?
+  sentAt      DateTime  @default(now())
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, sentAt])
+  @@index([sentAt])
 }
 
 model WorkspaceMember {
@@ -754,4 +797,24 @@ model SystemSetting {
   value     String   @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ─── Marketing ───────────────────────────────────────────────────────
+enum QuizLeadTier {
+  reactive
+  proactive
+  production_grade @map("production-grade")
+}
+
+model QuizLead {
+  id        String       @id @default(uuid())
+  email     String       @db.VarChar(255)
+  tier      QuizLeadTier
+  score     Int
+  ipHash    String?      @db.VarChar(64)
+  source    String?      @db.VarChar(64)
+  createdAt DateTime     @default(now())
+
+  @@index([email])
+  @@index([createdAt])
 }

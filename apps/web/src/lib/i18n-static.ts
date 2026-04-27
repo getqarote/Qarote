@@ -10,6 +10,7 @@ const NAMESPACES = [
   "faq",
   "nav",
   "legal",
+  "quiz",
 ];
 
 /**

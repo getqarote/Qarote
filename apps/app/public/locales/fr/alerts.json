@@ -10,11 +10,10 @@
   "active": {
     "noneTitle": "Aucune alerte active",
     "noneDesc": "Votre cluster RabbitMQ fonctionne sans alerte.",
-    "upgradeTitleWithCount": "Vous avez {{count}} alerte active",
-    "upgradeTitleWithCount_other": "Vous avez {{count}} alertes actives",
-    "upgradeSubtitle": "Passez à une offre supérieure pour voir les détails et configurer les seuils.",
-    "upgradeHint": "Developer et Enterprise débloquent les détails, les règles et les canaux de notification.",
-    "upgradeCta": "Mettre à niveau"
+    "upgradeCta": "Mettre à niveau",
+    "previewHiddenCount": "{{count}} alerte masquée — passez à la version Pro pour tout voir",
+    "previewHiddenCount_other": "{{count}} alertes masquées — passez à la version Pro pour tout voir",
+    "previewUpgradeHint": "Passez à Developer pour recevoir des notifications email et Slack pour chaque alerte."
   },
   "failedToLoad": "Échec du chargement des données d'alertes. Veuillez réessayer.",
   "loadingResolved": "Chargement des alertes résolues...",

@@ -36,6 +36,7 @@ import { standardRateLimiter } from "./middlewares/rateLimiter";
 
 import healthcheckController from "@/controllers/healthcheck.controller";
 import webhookController from "@/controllers/payment/webhook.controller";
+import quizController from "@/controllers/quiz.controller";
 import { appRouter } from "@/trpc/router";
 
 const app = new Hono();
@@ -84,6 +85,9 @@ app.use(
     },
   })
 );
+
+// Quiz lead capture (public, unauthenticated)
+app.route("/api/quiz", quizController);
 
 // 1. Health check (most basic)
 app.route("/", healthcheckController);

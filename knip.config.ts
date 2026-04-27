@@ -74,12 +74,24 @@ const config: KnipConfig = {
     "apps/api/src/cron/release-notifier.cron.ts",
     "apps/api/src/workers/license-monitor.ts",
     "apps/api/src/workers/release-notifier.ts",
+    "apps/api/src/ee/cron/daily-digest.cron.ts",
+    "apps/api/src/ee/workers/digest-monitor.ts",
+    // Ignore digest service public API types — used transitively via DigestData
+    "apps/api/src/ee/services/digest/digest.service.ts",
+    "apps/api/src/ee/services/digest/digest-sender.service.ts",
+    // Metrics persistence worker and supporting files (entry point via Procfile)
+    "apps/api/src/ee/workers/metrics-monitor.ts",
+    "apps/api/src/ee/cron/queue-metrics.cron.ts",
+    "apps/api/src/ee/services/metrics/queue-metrics.service.ts",
+    // Server-wide queue history hook — reserved for future overview page
+    "apps/app/src/hooks/queries/useServerQueueHistory.ts",
     // Ignore i18n package exports (used by consuming apps)
     "packages/i18n/src/react.ts",
     "packages/i18n/src/server.ts",
     // Ignore standalone scripts (run via CLI, not imported)
     "scripts/validate-i18n-keys.mjs",
     "scripts/generate-compare-og.mjs",
+    "scripts/generate-quiz-og.mjs",
     // Ignore config files
     "**/vite-env.d.ts",
     // Ignore type definitions

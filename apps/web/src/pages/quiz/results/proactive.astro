@@ -1,0 +1,19 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { loadAllTranslations } from "../../../lib/i18n-static";
+import QuizResultsIsland from "../../../components/QuizResultsIsland";
+
+const resources = loadAllTranslations("en");
+---
+
+<BaseLayout
+  title="RabbitMQ Skills Assessment — Proactive | Qarote"
+  description="Your RabbitMQ monitoring is proactive. Solid fundamentals — see where the gaps are at depth."
+  canonicalPath="/quiz/results/proactive/"
+  image="https://qarote.io/images/og-quiz-proactive.jpg"
+>
+  <Fragment slot="head">
+    <meta name="robots" content="noindex, nofollow" />
+  </Fragment>
+  <QuizResultsIsland tier="proactive" resources={resources} client:load />
+</BaseLayout>

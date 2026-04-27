@@ -23,6 +23,7 @@ const i18n = createI18nInstance({
     "settings",
     "sso",
     "smtp",
+    "digest",
     "topology",
     "onboarding",
     "definitions",

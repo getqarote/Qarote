@@ -10,11 +10,10 @@
   "active": {
     "noneTitle": "暂无活跃告警",
     "noneDesc": "你的 RabbitMQ 集群运行正常，没有告警。",
-    "upgradeTitleWithCount": "你有 {{count}} 条活跃告警",
-    "upgradeTitleWithCount_other": "你有 {{count}} 条活跃告警",
-    "upgradeSubtitle": "升级后可查看告警详情并配置阈值。",
-    "upgradeHint": "Developer 与 Enterprise 解锁告警详情、规则与通知渠道。",
-    "upgradeCta": "立即升级"
+    "upgradeCta": "立即升级",
+    "previewHiddenCount": "还有 {{count}} 条告警被隐藏 — 升级后查看全部",
+    "previewHiddenCount_other": "还有 {{count}} 条告警被隐藏 — 升级后查看全部",
+    "previewUpgradeHint": "升级到 Developer 计划，即可通过邮件和 Slack 接收每条告警通知。"
   },
   "failedToLoad": "加载告警数据失败，请重试。",
   "loadingResolved": "正在加载已解决的告警...",

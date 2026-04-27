@@ -1,10 +1,10 @@
 {
   "hero": {
-    "titleBefore": "Monitoreo ",
-    "titleHighlight": "RabbitMQ",
-    "titleAfter": " completo en 2 minutos.",
-    "subtitle": "Sin Prometheus. Sin Grafana. Ingresa tu URL — monitoreo completo de colas en menos de 2 minutos.",
-    "noCreditCard": "Gratis y open source • Prueba las funciones Pro durante 14 días"
+    "titleBefore": "Tu RabbitMQ está corriendo. ¿Sabes realmente",
+    "titleHighlight": "qué está pasando",
+    "titleAfter": " dentro?",
+    "subtitle": "Sin Prometheus. Sin Grafana. Sin equipo de operaciones. Ingresa tu URL — monitoreo completo de colas en menos de 2 minutos.",
+    "noCreditCard": "Configuración en 2 min · Sin tarjeta · Gratis & open source · Pro 14 días"
   },
   "cta": {
     "getStartedForFree": "Comenzar gratis",
@@ -18,21 +18,21 @@
     "opensInNewTab": "(se abre en una pestaña nueva)"
   },
   "comparison": {
-    "title": "Gestionar servidores RabbitMQ",
-    "titleLine2": "no tiene por qué ser doloroso",
+    "title": "Te enteras de los problemas por tus usuarios,",
+    "titleLine2": "no por tu monitoreo.",
     "traditional": {
-      "title": "Interfaces de gestión tradicionales",
-      "point1": "Una interfaz obsoleta que te ralentiza",
-      "point2": "Sin vista unificada entre servidores o entornos",
-      "point3": "Sin alertas fiables y accionables",
-      "point4": "Dashboards y scripts improvisados por todas partes"
+      "title": "El plugin de gestión integrado de RabbitMQ",
+      "point1": "Te enteras de los problemas por tus usuarios, no por tu monitoreo",
+      "point2": "Estás depurando una cola que se llena a las 11pm — profundidad, sin causa",
+      "point3": "3 servidores, 3 pestañas, ninguna vista única de qué falla",
+      "point4": "Los dashboards de Grafana que tu equipo construyó el año pasado y nadie mantiene"
     },
     "qarote": {
       "title": "Qarote",
-      "point1": "Una interfaz moderna y clara, diseñada para la velocidad",
-      "point2": "Un panel de control unificado para todos tus servidores y entornos",
-      "point3": "Alertas inteligentes y accionables que detectan problemas a tiempo",
-      "point4": "Monitoreo listo para usar, sin scripts ni mantenimiento"
+      "point1": "Las alertas se disparan antes de que tus usuarios lo noten — email, Slack, webhooks",
+      "point2": "Tasa de cambio, salud de consumidores y causa raíz en una sola pantalla",
+      "point3": "Todos tus servidores y entornos en un único dashboard",
+      "point4": "Monitoreo zero-config — conecta en 2 minutos, sin scripts, sin mantenimiento"
     },
     "compareWith": "Comparar Qarote con:",
     "messagesPerSec": "Mensajes/seg",
@@ -42,6 +42,7 @@
   "features": {
     "title": "Todo lo que realmente importa.",
     "titleLine2": "Monitorizado en un solo lugar.",
+    "freeTierNote": "Las funcionalidades básicas son gratuitas para siempre. Las alertas, multi-servidor y análisis avanzados requieren un plan Pro.",
     "liveQueueMonitoring": {
       "title": "Monitoreo de colas en tiempo real",
       "description": "Monitorea la profundidad de las colas, las tasas de mensajes y el número de consumidores con actualizaciones en vivo. Rastrea la acumulación de mensajes y el rendimiento de procesamiento."
@@ -65,6 +66,10 @@
     "messagePublishing": {
       "title": "Publicación de mensajes",
       "description": "Prueba y depura tus aplicaciones publicando mensajes directamente en colas y exchanges. Perfecto para desarrollo y resolución de problemas."
+    },
+    "deadLetterQueueMonitoring": {
+      "title": "Monitoreo de colas DLQ",
+      "description": "Sabe cuándo los mensajes están fallando antes que tus usuarios. La tasa de crecimiento del DLQ es el indicador anticipado que la mayoría de los equipos pasan por alto — visible en tiempo real."
     }
   },
   "enterprise": {
@@ -78,6 +83,7 @@
   "connection": {
     "title": "Conéctate fácilmente con tus servidores RabbitMQ",
     "subtitle": "No cambies la forma en que funcionan tus servidores RabbitMQ, Qarote está especialmente diseñado para este broker de mensajes.",
+    "ecosystemTitle": "Compatible con cualquier cliente RabbitMQ:",
     "step1": {
       "title": "Regístrate",
       "description": "Crea tu cuenta en segundos. No se requiere tarjeta de crédito. Comienza a monitorear tu infraestructura RabbitMQ de inmediato.",
@@ -104,23 +110,47 @@
       "allSystemsOperational": "Todos los sistemas operativos"
     }
   },
+  "audience": {
+    "title": "Pensado para equipos como el tuyo",
+    "card1Title": "Sin monitoring todavía",
+    "card1Description": "Tu equipo usa RabbitMQ. Nadie ha configurado un monitoring serio todavía.",
+    "card1Detail": "Gratis para un servidor. Conectado en 2 minutos.",
+    "card1Cta": "Comenzar gratis",
+    "card2Title": "Ya usas Grafana",
+    "card2Description": "Grafana cubre tu infraestructura. No muestra lo que tus consumidores están haciendo realmente.",
+    "card2Detail": "Visualización de topología, diagnóstico de incidentes, trazado de mensajes — la capa que las métricas de Prometheus no ven.",
+    "card2Cta": "Probar Enterprise gratis"
+  },
   "finalCta": {
     "title": "¿Listo para monitorear tus servidores RabbitMQ?",
     "subtitle": "Comienza a monitorear tus servidores RabbitMQ gratis hoy mismo.",
     "noCreditCard": "No se requiere tarjeta de crédito",
     "openSource": "Open source",
     "selfHostable": "Self-hostable",
-    "freeForever": "Free forever (self-hosted)"
+    "freeForever": "Gratis para siempre (autoalojado)",
+    "freeTierScope": "Plan gratuito: 1 servidor, monitoreo en vivo, gestión de colas — sin límite de tiempo. Alertas y multi-servidor desde $29/mes."
   },
   "footer": {
     "about": "Acerca de",
     "blog": "Blog",
+    "alerting": "Alertas",
     "privacyPolicy": "Política de privacidad",
     "termsOfService": "Términos de servicio",
     "status": "Estado",
     "contact": "Contacto",
     "vsDatadog": "Qarote vs Datadog",
-    "vsGrafana": "Qarote vs Grafana + Prometheus"
+    "vsGrafana": "Qarote vs Grafana + Prometheus",
+    "quiz": "Quiz"
+  },
+  "founderQuote": {
+    "openQuote": "“",
+    "closeQuote": "”",
+    "line1": "La corrección tomó cinco minutos.",
+    "line2": "El diagnóstico tomó cuarenta.",
+    "highlight": "Qarote es la brecha entre esos dos números.",
+    "imgAlt": "Brice Tessier",
+    "name": "Brice Tessier",
+    "role": "CTO de Qarote"
   },
   "faqSection": {
     "title": "Preguntas frecuentes",

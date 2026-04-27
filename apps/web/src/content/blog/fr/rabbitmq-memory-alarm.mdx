@@ -222,6 +222,8 @@ Au-delà des outils, les étapes de prévention structurelle :
 
 Si vous souhaitez être notifié avant que l'alarme ne se déclenche plutôt qu'après, [configurez des alertes RabbitMQ qui vous donnent réellement de l'avance](/blog/rabbitmq-alerts-setup-guide/).
 
+> **Sans Prometheus.** Qarote embarque une règle d'alerte sur le watermark mémoire prête à l'emploi, sans scraper à configurer. [Voir comment fonctionne l'alerting →](/fr/features/alerting/)
+
 ---
 
 **En résumé :** L'alarme mémoire se déclenche lorsque la mémoire Erlang dépasse `vm_memory_high_watermark` (par défaut 0,4 × RAM). Exécutez `rabbitmqctl status | grep -A10 memory` et vérifiez `messages_unacknowledged` et `message_bytes_ram` par file d'attente pour trouver le coupable. Les causes les plus fréquentes sont l'accumulation de messages non acquittés (à corriger avec des limites de prefetch), le mode lazy non activé sur les files d'attente classiques, les fuites de connexions/canaux, le cache de statistiques du plugin Management, et un watermark trop bas par rapport au matériel réel. Corrigez la cause racine — augmenter le watermark sans traiter la fuite ne fait que retarder la prochaine alarme.

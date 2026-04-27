@@ -10,7 +10,8 @@ export type PremiumFeature =
   | "webhook_integration"
   | "data_export"
   | "advanced_alert_rules"
-  | "topology_visualization";
+  | "topology_visualization"
+  | "digest_customization";
 
 /**
  * Get deployment mode from environment.
@@ -70,6 +71,7 @@ const FEATURE_DESCRIPTIONS: Record<PremiumFeature, string> = {
   data_export: "Data Export",
   advanced_alert_rules: "Advanced Alert Rules",
   topology_visualization: "Topology Visualization",
+  digest_customization: "Daily Digest Customization",
 };
 
 /**

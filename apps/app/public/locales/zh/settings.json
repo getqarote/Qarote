@@ -15,6 +15,7 @@
     "sso": "SSO",
     "license": "许可证",
     "smtp": "邮件",
+    "digest": "每日摘要",
     "feedback": "反馈",
     "enterprise": "企业版"
   },

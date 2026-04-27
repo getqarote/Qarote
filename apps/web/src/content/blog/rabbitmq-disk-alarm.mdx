@@ -10,7 +10,7 @@ It is 3am. PagerDuty fires. Your publishers have stopped sending. The logs show 
 
 This post covers how to confirm the alarm, find what is eating your disk, clear it safely, and make sure it does not fire again.
 
-> **See it before it bites.** Qarote shows disk free space and alarm state in real time across every node in your cluster — including a leading-indicator alert before `disk_free_alarm` flips to true. [See the node health dashboard →](/features/)
+> **See it before it bites.** Qarote shows disk free space and alarm state in real time across every node in your cluster — including a leading-indicator alert before `disk_free_alarm` flips to true. [Get alerted before the disk alarm fires →](/features/alerting/)
 
 ## What the Disk Alarm Actually Means
 
@@ -264,7 +264,7 @@ The disk alarm and the [memory alarm](/blog/rabbitmq-memory-alarm/) are the two 
 
 ---
 
-Qarote's node panel shows `disk_free_bytes / disk_free_limit` ratio trending over time, so you can see a disk alarm developing 30 minutes before it fires rather than 30 seconds after. If you are running RabbitMQ in production and relying on the default management plugin to catch this, you are going to miss it. [See what the node health dashboard looks like →](/features/)
+Qarote's node panel shows `disk_free_bytes / disk_free_limit` ratio trending over time, so you can see a disk alarm developing 30 minutes before it fires rather than 30 seconds after. If you are running RabbitMQ in production and relying on the default management plugin to catch this, you are going to miss it. [Get alerted before the disk alarm fires →](/features/alerting/)
 
 ---
 

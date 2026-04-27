@@ -45,36 +45,46 @@ export const ActiveAlertsList = ({
   const navigate = useNavigate();
   const { t } = useTranslation("alerts");
 
-  // Show upgrade notification for free users
+  // Free tier: show top alert by severity + soft upgrade teaser
   if (userPlan === UserPlan.FREE) {
-    return (
-      <div className="text-center py-8">
-        <AlertTriangle className="h-12 w-12 mx-auto text-warning mb-4" />
-        <h3 className="text-lg font-medium mb-2">
-          {summary.total > 0
-            ? t("active.upgradeTitleWithCount", { count: summary.total })
-            : t("active.noneTitle")}
-        </h3>
-        <p className="text-muted-foreground mb-4">
-          {summary.total > 0
-            ? t("active.upgradeSubtitle", {
-                total: summary.total,
-                critical: summary.critical,
-                high: summary.high,
-              })
-            : t("active.noneDesc")}
-        </p>
-        {summary.total > 0 && (
-          <p className="text-sm text-muted-foreground mb-4">
-            {t("active.upgradeHint")}
+    const hiddenCount = Math.max(0, summary.total - alerts.length);
+
+    if (summary.total === 0) {
+      return (
+        <div className="text-center py-8">
+          <div className="text-muted-foreground/70">
+            <HappyRabbit />
+          </div>
+          <h3 className="text-lg font-medium mb-2">{t("active.noneTitle")}</h3>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            {t("active.noneDesc")}
           </p>
+        </div>
+      );
+    }
+
+    return (
+      <div>
+        <div className="divide-y divide-border">
+          {alerts.map((alert) => (
+            <AlertItem key={alert.id} alert={alert} />
+          ))}
+        </div>
+
+        {hiddenCount > 0 && (
+          <div className="border-t border-border px-4 py-5 bg-muted/20 text-center">
+            <AlertTriangle className="h-6 w-6 mx-auto text-warning mb-2" />
+            <p className="text-sm font-medium mb-1">
+              {t("active.previewHiddenCount", { count: hiddenCount })}
+            </p>
+            <p className="text-sm text-muted-foreground mb-3">
+              {t("active.previewUpgradeHint")}
+            </p>
+            <Button onClick={() => navigate(getUpgradePath())} size="sm">
+              {t("active.upgradeCta")}
+            </Button>
+          </div>
         )}
-        <Button
-          onClick={() => navigate(getUpgradePath())}
-          className="btn-primary"
-        >
-          {t("active.upgradeCta")}
-        </Button>
       </div>
     );
   }

@@ -197,7 +197,7 @@ Las plataformas APM genéricas pueden hacer scrape del endpoint de Prometheus, p
 
 ### Opción 3: Qarote (específico para RabbitMQ, self-hosted)
 
-> **Sin configuración de Prometheus.** Qarote se conecta directamente a la Management API de RabbitMQ y viene con reglas de alerta pre-construidas para las cinco señales anteriores — queue depth (con tasa de cambio), contador de unacked, caída de consumers a cero, porcentaje del watermark de memoria y tasa de crecimiento de DLQ. Configuras los thresholds por queue en la interfaz y estableces los destinos de notificación (Slack, webhook). [Ver cómo funciona el sistema de alertas →](/features/)
+> **Sin configuración de Prometheus.** Qarote se conecta directamente a la Management API de RabbitMQ y viene con reglas de alerta pre-construidas para las cinco señales anteriores — queue depth (con tasa de cambio), contador de unacked, caída de consumers a cero, porcentaje del watermark de memoria y tasa de crecimiento de DLQ. Configuras los thresholds por queue en la interfaz y estableces los destinos de notificación (Slack, webhook). [Ver cómo funciona el sistema de alertas →](/es/features/alerting/)
 
 Es la opción adecuada si el cuello de botella de tu equipo es el overhead operativo más que la experiencia con Prometheus. Ambos enfoques no son mutuamente excluyentes — si ya estás corriendo Prometheus para el resto de tu infraestructura, úsalo. Si no, Qarote te ahorra todo el stack.
 

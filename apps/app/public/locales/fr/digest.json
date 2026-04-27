@@ -1,0 +1,53 @@
+{
+  "title": "Digest quotidien",
+  "description": "Recevez un résumé quotidien de la santé de votre RabbitMQ par e-mail.",
+  "enable": "Activer le digest quotidien",
+  "saveSuccess": "Paramètres sauvegardés",
+  "saveError": "Échec de la sauvegarde",
+  "loadError": "Impossible de charger les paramètres du digest.",
+  "retry": "Réessayer",
+  "frequency": {
+    "label": "Fréquence",
+    "daily": "Quotidien",
+    "weekly": "Hebdomadaire"
+  },
+  "scheduledTime": "Heure d'envoi (UTC)",
+  "whenToSend": "Quand envoyer",
+  "dayOfWeek": "Jour de la semaine",
+  "days": {
+    "sun": "Dim",
+    "mon": "Lun",
+    "tue": "Mar",
+    "wed": "Mer",
+    "thu": "Jeu",
+    "fri": "Ven",
+    "sat": "Sam"
+  },
+  "recipients": {
+    "label": "Destinataires supplémentaires",
+    "add": "Ajouter un destinataire",
+    "placeholder": "email@example.com"
+  },
+  "slack": {
+    "label": "Envoyer sur Slack",
+    "configure": "Configurer Slack →"
+  },
+  "testDigest": {
+    "button": "Envoyer un digest de test",
+    "sending": "Envoi…",
+    "success": "Digest de test envoyé !",
+    "error": "Échec de l'envoi du digest de test"
+  },
+  "lastDigest": {
+    "label": "Dernier digest",
+    "preview": "Aperçu",
+    "neverSent": "Aucun digest envoyé"
+  },
+  "preview": {
+    "title": "Aperçu du digest"
+  },
+  "digestContains": "Inclut les profondeurs de files d'attente, le nombre de consommateurs, les taux de messages et les alertes actives sur tous vos brokers.",
+  "saveSchedule": "Enregistrer le planning",
+  "saving": "Enregistrement…",
+  "nextDigest": "Prochain"
+}

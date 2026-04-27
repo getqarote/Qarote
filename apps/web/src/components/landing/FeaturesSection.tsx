@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 
 import {
   Activity,
+  Archive,
   BarChart3,
   MessageSquare,
   Rocket,
@@ -20,7 +21,14 @@ const iconImageMap: Record<string, { src: string; alt: string }> = {
   BarChart3: { src: "/images/chart.svg", alt: "Chart" },
   Settings: { src: "/images/server.svg", alt: "Server" },
   Rocket: { src: "/images/send.svg", alt: "Send" },
+  Archive: { src: "/images/error.svg", alt: "Dead-letter queue" },
 };
+
+const ProBadge = () => (
+  <span className="text-[0.65rem] font-mono font-semibold tracking-wide text-primary border border-primary/40 px-1.5 py-0.5 leading-none">
+    Pro
+  </span>
+);
 
 const FeaturesSection = () => {
   const { t } = useTranslation("landing");
@@ -31,36 +39,49 @@ const FeaturesSection = () => {
       icon: Activity,
       title: t("features.liveQueueMonitoring.title"),
       description: t("features.liveQueueMonitoring.description"),
+      isPro: false,
     },
     {
       iconKey: "Shield",
       icon: Shield,
       title: t("features.smartAlertingSystem.title"),
       description: t("features.smartAlertingSystem.description"),
+      isPro: true,
     },
     {
       iconKey: "MessageSquare",
       icon: MessageSquare,
       title: t("features.queueManagement.title"),
       description: t("features.queueManagement.description"),
+      isPro: false,
     },
     {
       iconKey: "BarChart3",
       icon: BarChart3,
       title: t("features.performanceAnalytics.title"),
       description: t("features.performanceAnalytics.description"),
+      isPro: true,
     },
     {
       iconKey: "Settings",
       icon: Settings,
       title: t("features.multiServerSupport.title"),
       description: t("features.multiServerSupport.description"),
+      isPro: true,
     },
     {
       iconKey: "Rocket",
       icon: Rocket,
       title: t("features.messagePublishing.title"),
       description: t("features.messagePublishing.description"),
+      isPro: false,
+    },
+    {
+      iconKey: "Archive",
+      icon: Archive,
+      title: t("features.deadLetterQueueMonitoring.title"),
+      description: t("features.deadLetterQueueMonitoring.description"),
+      isPro: false,
     },
   ];
 
@@ -77,6 +98,9 @@ const FeaturesSection = () => {
             <br />
             {t("features.titleLine2")}
           </h2>
+          <p className="text-sm text-muted-foreground mt-3 max-w-2xl mx-auto">
+            {t("features.freeTierNote")}
+          </p>
         </div>
 
         {/* Hero feature — full width */}
@@ -93,8 +117,9 @@ const FeaturesSection = () => {
                   className="h-7 w-7 image-crisp"
                 />
               </div>
-              <h3 className="text-2xl lg:text-3xl text-foreground mb-3 font-normal">
+              <h3 className="text-2xl lg:text-3xl text-foreground mb-3 font-normal flex items-center gap-3 flex-wrap">
                 {hero.title}
+                {hero.isPro && <ProBadge />}
               </h3>
               <p className="text-muted-foreground leading-relaxed text-lg">
                 {hero.description}
@@ -189,8 +214,9 @@ const FeaturesSection = () => {
                     <feature.icon className="h-6 w-6 text-primary" />
                   )}
                 </div>
-                <h3 className="text-2xl text-foreground mb-2 font-normal">
+                <h3 className="text-2xl text-foreground mb-2 font-normal flex items-center gap-2 flex-wrap">
                   {feature.title}
+                  {feature.isPro && <ProBadge />}
                 </h3>
                 <p className="text-muted-foreground leading-relaxed">
                   {feature.description}
@@ -200,8 +226,8 @@ const FeaturesSection = () => {
           })}
         </div>
 
-        {/* Compact features — 3 columns, minimal */}
-        <div className="grid md:grid-cols-3 gap-6">
+        {/* Compact features — 2 columns on sm, 4 on lg */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {compact.map((feature) => {
             const imageSrc = iconImageMap[feature.iconKey];
             return (
@@ -224,8 +250,9 @@ const FeaturesSection = () => {
                   )}
                 </div>
                 <div>
-                  <h3 className="text-lg text-foreground mb-1 font-normal">
+                  <h3 className="text-lg text-foreground mb-1 font-normal flex items-center gap-1.5 flex-wrap">
                     {feature.title}
+                    {feature.isPro && <ProBadge />}
                   </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     {feature.description}

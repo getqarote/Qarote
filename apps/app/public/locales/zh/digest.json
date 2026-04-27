@@ -1,0 +1,53 @@
+{
+  "title": "每日摘要",
+  "description": "每天通过电子邮件接收 RabbitMQ 健康状况摘要。",
+  "enable": "启用每日摘要",
+  "saveSuccess": "设置已保存",
+  "saveError": "保存设置失败",
+  "loadError": "加载摘要设置失败。",
+  "retry": "重试",
+  "frequency": {
+    "label": "频率",
+    "daily": "每天",
+    "weekly": "每周"
+  },
+  "scheduledTime": "发送时间（UTC）",
+  "whenToSend": "发送时间",
+  "dayOfWeek": "星期",
+  "days": {
+    "sun": "周日",
+    "mon": "周一",
+    "tue": "周二",
+    "wed": "周三",
+    "thu": "周四",
+    "fri": "周五",
+    "sat": "周六"
+  },
+  "recipients": {
+    "label": "其他收件人",
+    "add": "添加收件人",
+    "placeholder": "email@example.com"
+  },
+  "slack": {
+    "label": "发送到 Slack",
+    "configure": "配置 Slack →"
+  },
+  "testDigest": {
+    "button": "发送测试摘要",
+    "sending": "发送中…",
+    "success": "测试摘要已发送！",
+    "error": "发送测试摘要失败"
+  },
+  "lastDigest": {
+    "label": "上次摘要",
+    "preview": "预览",
+    "neverSent": "尚未发送摘要"
+  },
+  "preview": {
+    "title": "摘要预览"
+  },
+  "digestContains": "包含队列深度、消费者数量、消息速率以及所有 broker 上的活动告警。",
+  "saveSchedule": "保存计划",
+  "saving": "保存中…",
+  "nextDigest": "下次"
+}

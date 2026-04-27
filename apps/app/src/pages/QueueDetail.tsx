@@ -1,12 +1,18 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 
 import { toast } from "sonner";
 
 import { UserRole } from "@/lib/api";
+import { getUpgradePath } from "@/lib/featureFlags";
 import { logger } from "@/lib/logger";
 
+import { ConsumerHistoryChart } from "@/components/ConsumerHistoryChart";
+import {
+  HistoricalRange,
+  HistoricalRangeSelector,
+} from "@/components/HistoricalRangeSelector";
 import { MessagesRatesChart } from "@/components/MessagesRatesChart";
 import { PageShell } from "@/components/PageShell";
 import { ConsumerDetails } from "@/components/QueueDetail/ConsumerDetails";
@@ -20,6 +26,7 @@ import { QueueSpy } from "@/components/QueueDetail/QueueSpy";
 import { QueueStats } from "@/components/QueueDetail/QueueStats";
 import { QueueTiming } from "@/components/QueueDetail/QueueTiming";
 import { QueuedMessagesChart } from "@/components/QueuedMessagesChart";
+import { QueueHistoryChart } from "@/components/QueueHistoryChart";
 import { TimeRange } from "@/components/TimeRangeSelector";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,6 +44,7 @@ import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
+import { useQueueHistory } from "@/hooks/queries/useQueueHistory";
 import {
   useDeleteQueue,
   useQueue,
@@ -44,7 +52,10 @@ import {
   useQueueConsumers,
   useQueueLiveRates,
 } from "@/hooks/queries/useRabbitMQ";
+import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
+
+import { UserPlan } from "@/types/plans";
 
 const QueueDetail = () => {
   const { t } = useTranslation("queues");
@@ -57,7 +68,12 @@ const QueueDetail = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
   const [timeRange, setTimeRange] = useState<TimeRange>("1m");
+  const [histRange, setHistRange] = useState<HistoricalRange>(6);
+  const [activeTab, setActiveTab] = useState("health");
   const [spyEnabled, setSpyEnabled] = useState(false);
+  const { userPlan } = useUser();
+  const isPremium =
+    userPlan === UserPlan.DEVELOPER || userPlan === UserPlan.ENTERPRISE;
 
   const {
     data: queueData,
@@ -76,6 +92,18 @@ const QueueDetail = () => {
 
   const { data: queueLiveRatesData, isLoading: liveRatesLoading } =
     useQueueLiveRates(selectedServerId, queueName, timeRange, selectedVHost);
+
+  const {
+    data: historyData,
+    isLoading: historyLoading,
+    error: historyError,
+  } = useQueueHistory({
+    serverId: selectedServerId,
+    queueName,
+    vhost: selectedVHost || "/",
+    rangeHours: histRange,
+    enabled: activeTab === "history",
+  });
 
   const deleteQueueMutation = useDeleteQueue();
   const { workspace } = useWorkspace();
@@ -187,9 +215,14 @@ const QueueDetail = () => {
             )}
 
             {/* Tabbed content */}
-            <Tabs defaultValue="health" className="space-y-6">
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="space-y-6"
+            >
               <TabsList>
                 <TabsTrigger value="health">{t("tabHealth")}</TabsTrigger>
+                <TabsTrigger value="history">{t("tabHistory")}</TabsTrigger>
                 <TabsTrigger value="configuration">
                   {t("tabConfiguration")}
                 </TabsTrigger>
@@ -228,6 +261,62 @@ const QueueDetail = () => {
                   timeRange={timeRange}
                   onTimeRangeChange={setTimeRange}
                 />
+              </TabsContent>
+
+              {/* History tab — scheduled snapshots, 5-min resolution */}
+              <TabsContent value="history" className="space-y-6 mt-0">
+                <div className="rounded-lg border border-border overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
+                    <h2 className="title-section">
+                      {t("historyMessageDepth")}
+                    </h2>
+                    <div className="flex items-center gap-3">
+                      {historyData?.wasClamped && (
+                        <span className="text-xs text-amber-600 dark:text-amber-400">
+                          {t("historyClampedPrefix", {
+                            hours: historyData.resolvedHours,
+                          })}{" "}
+                          <Link
+                            to={getUpgradePath()}
+                            className="underline hover:no-underline"
+                          >
+                            {t("historyUpgradeLabel")}
+                          </Link>{" "}
+                          {t("historyUpgradeSuffix")}
+                        </span>
+                      )}
+                      <HistoricalRangeSelector
+                        value={histRange}
+                        onValueChange={setHistRange}
+                        isPremium={isPremium}
+                      />
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <QueueHistoryChart
+                      snapshots={historyData?.snapshots}
+                      isLoading={historyLoading}
+                      error={historyError as Error | null}
+                      rangeHours={histRange}
+                    />
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-border overflow-hidden">
+                  <div className="px-4 py-3 bg-muted/30 border-b border-border">
+                    <h2 className="title-section">
+                      {t("historyConsumerCount")}
+                    </h2>
+                  </div>
+                  <div className="p-4">
+                    <ConsumerHistoryChart
+                      snapshots={historyData?.snapshots}
+                      isLoading={historyLoading}
+                      error={historyError as Error | null}
+                      rangeHours={histRange}
+                    />
+                  </div>
+                </div>
               </TabsContent>
 
               {/* Configuration tab */}

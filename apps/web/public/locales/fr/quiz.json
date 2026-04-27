@@ -1,0 +1,9 @@
+{
+  "calculatingResults": "Calcul de vos résultats…",
+  "seo": {
+    "title": "Évaluation RabbitMQ — Testez vos compétences",
+    "description": "Quiz RabbitMQ gratuit en 20 questions. Testez vos connaissances sur les queues, exchanges, consumers et patterns de production. Score et verdict.",
+    "resultsTitle": "Mes résultats à l'évaluation des compétences RabbitMQ",
+    "resultsDescription": "J'ai passé l'évaluation gratuite des compétences RabbitMQ sur Qarote. Voyez comment vous vous comparez."
+  }
+}

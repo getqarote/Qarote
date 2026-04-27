@@ -1,10 +1,10 @@
 {
   "hero": {
-    "titleBefore": "Monitoring ",
-    "titleHighlight": "RabbitMQ",
-    "titleAfter": " complet en 2 minutes.",
-    "subtitle": "Sans Prometheus. Sans Grafana. Entrez votre URL — monitoring complet des files en moins de 2 minutes.",
-    "noCreditCard": "Gratuit et open source • Essayez les fonctions Pro pendant 14 jours"
+    "titleBefore": "Votre RabbitMQ tourne. Savez-vous vraiment",
+    "titleHighlight": "ce qui se passe",
+    "titleAfter": " à l'intérieur ?",
+    "subtitle": "Sans Prometheus. Sans Grafana. Sans ops dédié. Entrez votre URL — monitoring complet des files en moins de 2 minutes.",
+    "noCreditCard": "Configuration en 2 min · Sans CB · Gratuit & open source · Pro pendant 14 jours"
   },
   "cta": {
     "getStartedForFree": "Commencer gratuitement",
@@ -18,21 +18,21 @@
     "opensInNewTab": "(s'ouvre dans un nouvel onglet)"
   },
   "comparison": {
-    "title": "Gérer des serveurs RabbitMQ",
-    "titleLine2": "ne devrait pas être aussi pénible",
+    "title": "Vous apprenez les incidents par vos utilisateurs,",
+    "titleLine2": "pas par votre monitoring.",
     "traditional": {
-      "title": "Interfaces de gestion traditionnelles",
-      "point1": "Une interface obsolète qui vous ralentit",
-      "point2": "Aucune vue unifiée entre serveurs et environnements",
-      "point3": "Pas d'alertes fiables et exploitables",
-      "point4": "Des tableaux de bord et scripts bricolés de toutes parts"
+      "title": "Le plugin de gestion RabbitMQ intégré",
+      "point1": "Vous apprenez les incidents par vos utilisateurs, pas par votre monitoring",
+      "point2": "Vous déboguez une file qui se remplit à 23h — la profondeur, pas la cause",
+      "point3": "3 serveurs, 3 onglets, aucune vue globale de ce qui cloche",
+      "point4": "Les dashboards Grafana construits l'an dernier que personne ne maintient"
     },
     "qarote": {
       "title": "Qarote",
-      "point1": "Une interface moderne, claire et conçue pour la rapidité",
-      "point2": "Un tableau de bord unifié pour tous vos serveurs et environnements",
-      "point3": "Des alertes intelligentes et exploitables qui détectent les problèmes en amont",
-      "point4": "Un monitoring clé en main, sans scripts ni maintenance"
+      "point1": "Les alertes se déclenchent avant que vos utilisateurs le remarquent — email, Slack, webhooks",
+      "point2": "Taux de variation, santé des consommateurs et cause racine sur un seul écran",
+      "point3": "Tous vos serveurs et environnements dans un seul dashboard",
+      "point4": "Monitoring zéro-config — connectez en 2 minutes, sans script, sans maintenance"
     },
     "compareWith": "Comparer Qarote avec :",
     "messagesPerSec": "Messages/sec",
@@ -42,6 +42,7 @@
   "features": {
     "title": "Tout ce qui compte vraiment.",
     "titleLine2": "Supervisé au même endroit.",
+    "freeTierNote": "Les fonctionnalités de base sont gratuites pour toujours. Les alertes, le multi-serveur et l'analyse avancée nécessitent un plan Pro.",
     "liveQueueMonitoring": {
       "title": "Monitoring des files en temps réel",
       "description": "Surveillez la profondeur des files, le débit de messages et le nombre de consommateurs en temps réel. Suivez l'accumulation des messages et les performances de traitement."
@@ -65,6 +66,10 @@
     "messagePublishing": {
       "title": "Publication de messages",
       "description": "Testez et déboguez vos applications en publiant des messages directement dans les files et les échanges. Idéal pour le développement et le dépannage."
+    },
+    "deadLetterQueueMonitoring": {
+      "title": "Surveillance des files DLQ",
+      "description": "Sachez quand vos messages échouent avant vos utilisateurs. Le taux de croissance du DLQ est l'indicateur avancé que la plupart des équipes manquent — visible en temps réel."
     }
   },
   "enterprise": {
@@ -78,6 +83,7 @@
   "connection": {
     "title": "Connectez facilement vos serveurs RabbitMQ",
     "subtitle": "Ne changez rien à la façon dont vos serveurs RabbitMQ fonctionnent, Qarote est spécialement conçu pour ce broker de messages.",
+    "ecosystemTitle": "Compatible avec n'importe quel client RabbitMQ :",
     "step1": {
       "title": "Inscrivez-vous",
       "description": "Créez votre compte en quelques secondes. Aucune carte de crédit requise. Commencez à surveiller votre infrastructure RabbitMQ immédiatement.",
@@ -104,23 +110,47 @@
       "allSystemsOperational": "Tous les systèmes sont opérationnels"
     }
   },
+  "audience": {
+    "title": "Conçu pour des équipes comme la vôtre",
+    "card1Title": "Pas encore de monitoring",
+    "card1Description": "Votre équipe utilise RabbitMQ. Personne n'a encore mis en place un monitoring sérieux.",
+    "card1Detail": "Gratuit pour un serveur. Connecté en 2 minutes.",
+    "card1Cta": "Commencer gratuitement",
+    "card2Title": "Vous utilisez déjà Grafana",
+    "card2Description": "Grafana couvre votre infrastructure. Il ne remonte pas ce que font vraiment vos consommateurs.",
+    "card2Detail": "Visualisation de topologie, diagnostic d'incident, traçage de messages — la couche que les métriques Prometheus ne voient pas.",
+    "card2Cta": "Essayer Enterprise gratuitement"
+  },
   "finalCta": {
     "title": "Prêt à monitorer vos serveurs RabbitMQ ?",
     "subtitle": "Commencez à surveiller vos serveurs RabbitMQ gratuitement dès aujourd'hui.",
     "noCreditCard": "Aucune carte de crédit requise",
     "openSource": "Open source",
     "selfHostable": "Self-hostable",
-    "freeForever": "Free forever (self-hosted)"
+    "freeForever": "Gratuit à vie (auto-hébergé)",
+    "freeTierScope": "Plan gratuit : 1 serveur, monitoring en temps réel, gestion des files — sans limite de durée. Alertes et multi-serveur à partir de 29 $/mois."
   },
   "footer": {
     "about": "À propos",
     "blog": "Blog",
+    "alerting": "Alertes",
     "privacyPolicy": "Politique de confidentialité",
     "termsOfService": "Conditions d'utilisation",
     "status": "Statut",
     "contact": "Contact",
     "vsDatadog": "Qarote vs Datadog",
-    "vsGrafana": "Qarote vs Grafana + Prometheus"
+    "vsGrafana": "Qarote vs Grafana + Prometheus",
+    "quiz": "Quiz"
+  },
+  "founderQuote": {
+    "openQuote": "« ",
+    "closeQuote": " »",
+    "line1": "La correction a pris cinq minutes.",
+    "line2": "Le diagnostic en a pris quarante.",
+    "highlight": "Qarote, c'est l'écart entre ces deux chiffres.",
+    "imgAlt": "Brice Tessier",
+    "name": "Brice Tessier",
+    "role": "CTO de Qarote"
   },
   "faqSection": {
     "title": "Questions fréquentes",

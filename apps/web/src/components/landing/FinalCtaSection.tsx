@@ -62,6 +62,9 @@ const FinalCtaSection = () => {
                 </p>
                 <div className="flex flex-col items-center md:items-start">
                   <AuthButtons align="left" />
+                  <p className="text-xs text-muted-foreground mt-4 max-w-sm text-center md:text-left">
+                    {t("finalCta.freeTierScope")}
+                  </p>
                 </div>
               </div>
             </div>

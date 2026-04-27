@@ -1,0 +1,12 @@
+-- Migration C: drop QueueMetric table.
+-- QueueMetricSnapshot (migration 20260426000000) is the authoritative time-series store.
+-- QueueMetric was written only on dashboard open; all reads have been migrated to QueueMetricSnapshot.
+-- The FK uses onDelete: Cascade, so no orphan rows to clean up.
+--
+-- Rolling-deploy safety: QueueMetric was introduced in the same feature branch
+-- (Action 4) and was never deployed to production independently. There is no
+-- old-code/new-migration overlap window to guard against. Both migrations
+-- (20260426000000 and 20260426000001) must be applied in the same deploy run,
+-- which is the default behaviour of `pnpm db:migrate` / `prisma migrate deploy`.
+-- IF EXISTS ensures a no-op if the table was already absent.
+DROP TABLE IF EXISTS "QueueMetric";

@@ -34,7 +34,24 @@ const Connections = () => {
     useChannels(selectedServerId);
 
   const connections = useMemo(
-    () => (connectionsData?.connections ?? []) as ConnectionListItem[],
+    () =>
+      (connectionsData?.connections ?? []).map(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (c: any): ConnectionListItem => ({
+          name: c.name,
+          state: c.state,
+          user: c.user,
+          vhost: c.vhost,
+          node: c.node,
+          protocol: c.protocol,
+          channelCount: c.channels ?? c.channelCount ?? 0, // RabbitMQ API returns `channels`, not `channelCount`
+          recv_oct: c.recv_oct,
+          send_oct: c.send_oct,
+          recv_cnt: c.recv_cnt,
+          send_cnt: c.send_cnt,
+          channelDetails: c.channelDetails,
+        })
+      ),
     [connectionsData?.connections]
   );
 

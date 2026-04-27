@@ -1,5 +1,14 @@
 import { useTranslation } from "react-i18next";
 
+const ECOSYSTEM_LIBRARIES = [
+  "amqplib (Node.js)",
+  "Celery (Python)",
+  "Spring AMQP (Java)",
+  "php-amqplib (Laravel)",
+  "Bunny (Ruby)",
+  "amqp (Go)",
+];
+
 const ConnectionSection = () => {
   const { t } = useTranslation("landing");
 
@@ -12,9 +21,24 @@ const ConnectionSection = () => {
             <h2 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-6 max-w-4xl leading-[1.2] font-normal">
               {t("connection.title")}
             </h2>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-lg text-muted-foreground mb-8">
               {t("connection.subtitle")}
             </p>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+                {t("connection.ecosystemTitle")}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {ECOSYSTEM_LIBRARIES.map((lib) => (
+                  <span
+                    key={lib}
+                    className="text-xs font-mono text-muted-foreground border border-border px-2 py-1"
+                  >
+                    {lib}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Right side - Steps */}

@@ -7,7 +7,9 @@ import AuthButtons from "@/components/AuthButtons";
 import { Button } from "@/components/ui/button";
 
 const HeroSection = () => {
-  const { t } = useTranslation("landing");
+  const { t, i18n } = useTranslation("landing");
+  const lang = i18n.resolvedLanguage ?? i18n.language ?? "";
+  const needsWordSpacing = !/^(zh|ja|ko)(-|$)/i.test(lang);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
   // Listen for play-video custom events from StickyNav island
@@ -26,6 +28,7 @@ const HeroSection = () => {
         <div className="w-full text-center">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-6 leading-tight max-w-4xl mx-auto px-2 font-normal">
             {t("hero.titleBefore")}
+            {needsWordSpacing ? " " : ""}
             <span className="text-primary">{t("hero.titleHighlight")}</span>
             {t("hero.titleAfter")}
           </h1>

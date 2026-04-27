@@ -222,6 +222,8 @@ rabbitmq-plugins enable rabbitmq_prometheus
 
 如果你希望在告警触发前而非触发后收到通知，[设置能真正提供提前预警的RabbitMQ告警](/blog/rabbitmq-alerts-setup-guide/)。
 
+> **无需Prometheus技术栈。** Qarote内置内存水位线告警规则，无需配置采集器。[了解告警功能 →](/zh/features/alerting/)
+
 ---
 
 **tl;dr：** 当Erlang内存超过`vm_memory_high_watermark`（默认0.4×RAM）时，内存告警触发。运行`rabbitmqctl status | grep -A10 memory`，并检查每个queue的`messages_unacknowledged`和`message_bytes_ram`来定位罪魁祸首。最常见的原因包括：未确认消息堆积（用prefetch限制修复）、classic queue未启用lazy模式、连接/channel泄漏、Management plugin统计缓存，以及水位线对实际硬件设置过低。修复根本原因——在不解决泄漏的情况下调高水位线，只是推迟下一次告警的到来。

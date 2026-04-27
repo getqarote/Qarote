@@ -1,10 +1,10 @@
 {
   "hero": {
-    "titleBefore": "Full ",
-    "titleHighlight": "RabbitMQ",
-    "titleAfter": " monitoring in 2 minutes.",
-    "subtitle": "No Prometheus. No Grafana. Enter your URL — full queue monitoring in under 2 minutes.",
-    "noCreditCard": "Free & open source • Try Pro features for 14 days"
+    "titleBefore": "Your RabbitMQ is running. Do you actually know",
+    "titleHighlight": "what's happening",
+    "titleAfter": " inside it?",
+    "subtitle": "No Prometheus. No Grafana. No dedicated ops person needed. Enter your URL — full queue monitoring in under 2 minutes.",
+    "noCreditCard": "2-minute setup · No credit card · Free & open source · Try Pro features for 14 days"
   },
   "cta": {
     "getStartedForFree": "Get started for free",
@@ -18,21 +18,21 @@
     "opensInNewTab": "(opens in new tab)"
   },
   "comparison": {
-    "title": "Managing RabbitMQ servers",
-    "titleLine2": "doesn't have to be painful",
+    "title": "You find out about issues from your users,",
+    "titleLine2": "not from your monitoring.",
     "traditional": {
-      "title": "Traditional management interfaces",
-      "point1": "An outdated UI that slows you down",
-      "point2": "No unified view across servers or environments",
-      "point3": "No reliable, actionable alerts",
-      "point4": "DIY dashboards and scripts everywhere"
+      "title": "The built-in RabbitMQ Management Plugin",
+      "point1": "You find out about issues from your users, not from your monitoring",
+      "point2": "You're debugging a queue filling up at 11pm — depth, no cause",
+      "point3": "3 servers, 3 tabs, no single view of what's wrong",
+      "point4": "The Grafana dashboards your team built last year that nobody maintains"
     },
     "qarote": {
       "title": "Qarote",
-      "point1": "A clean, modern UI built for speed and clarity",
-      "point2": "A unified dashboard for all your servers and environments",
-      "point3": "Smart, actionable alerts that catch issues early",
-      "point4": "Zero-setup monitoring, no scripts, no maintenance"
+      "point1": "Alerts fire before your users notice — email, Slack, webhooks",
+      "point2": "Rate-of-change, consumer health, and root cause in one screen",
+      "point3": "All your servers and environments in a single dashboard",
+      "point4": "Zero-setup monitoring — connect in 2 minutes, no scripts, no maintenance"
     },
     "compareWith": "Compare Qarote with:",
     "messagesPerSec": "Messages/sec",
@@ -42,6 +42,7 @@
   "features": {
     "title": "All you really care about.",
     "titleLine2": "Monitored in one place.",
+    "freeTierNote": "Core features are free forever. Alerting, multi-server, and advanced analytics require a Pro plan.",
     "liveQueueMonitoring": {
       "title": "Live queue monitoring",
       "description": "Monitor queue depths, message rates, and consumer counts with live updates. Track message accumulation and processing performance."
@@ -65,6 +66,10 @@
     "messagePublishing": {
       "title": "Message publishing",
       "description": "Test and debug your applications by publishing messages directly to queues and exchanges. Perfect for development and troubleshooting."
+    },
+    "deadLetterQueueMonitoring": {
+      "title": "Dead-letter queue monitoring",
+      "description": "Know when messages are failing before your users do. DLQ growth rate is the leading indicator most teams miss — visible in real time."
     }
   },
   "enterprise": {
@@ -78,6 +83,7 @@
   "connection": {
     "title": "Connect easily with your RabbitMQ servers",
     "subtitle": "Don't change the way your RabbitMQ servers work, Qarote is specially made for this message broker.",
+    "ecosystemTitle": "Works with any RabbitMQ client:",
     "step1": {
       "title": "Sign up",
       "description": "Create your account in seconds. No credit card required. Start monitoring your RabbitMQ infrastructure immediately.",
@@ -104,23 +110,47 @@
       "allSystemsOperational": "All systems operational"
     }
   },
+  "audience": {
+    "title": "Built for teams like yours",
+    "card1Title": "No monitoring yet",
+    "card1Description": "Your team runs RabbitMQ. Nobody has set up proper monitoring yet.",
+    "card1Detail": "Free for one server. Connect in 2 minutes.",
+    "card1Cta": "Start free",
+    "card2Title": "Already running Grafana",
+    "card2Description": "Grafana covers your infrastructure. It doesn't surface what your consumers are actually doing.",
+    "card2Detail": "Topology visualization, incident diagnosis, message tracing — the layer Prometheus metrics don't see.",
+    "card2Cta": "Try Enterprise free"
+  },
   "finalCta": {
     "title": "Ready to monitor your RabbitMQ servers?",
     "subtitle": "Start monitoring your RabbitMQ servers for free today.",
     "noCreditCard": "No credit card required",
     "openSource": "Open source",
     "selfHostable": "Self-hostable",
-    "freeForever": "Free forever (self-hosted)"
+    "freeForever": "Free forever (self-hosted)",
+    "freeTierScope": "Free tier: 1 server, live monitoring, queue management — no time limit. Alerting and multi-server from $29/mo."
   },
   "footer": {
     "about": "About",
     "blog": "Blog",
+    "alerting": "Alerting",
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
     "status": "Status",
     "contact": "Contact",
     "vsDatadog": "Qarote vs Datadog",
-    "vsGrafana": "Qarote vs Grafana + Prometheus"
+    "vsGrafana": "Qarote vs Grafana + Prometheus",
+    "quiz": "Quiz"
+  },
+  "founderQuote": {
+    "openQuote": "“",
+    "closeQuote": "”",
+    "line1": "The fix took five minutes.",
+    "line2": "The diagnosis took forty.",
+    "highlight": "Qarote is the gap between those two numbers.",
+    "imgAlt": "Brice Tessier",
+    "name": "Brice Tessier",
+    "role": "CTO of Qarote"
   },
   "faqSection": {
     "title": "Frequently Asked Questions",
@@ -129,7 +159,7 @@
     "stillHaveQuestionsDesc": "Can't find the answer you're looking for? Please chat to our friendly team."
   },
   "seo": {
-    "title": "Qarote - RabbitMQ Monitoring Dashboard",
-    "description": "RabbitMQ monitoring in 2 minutes — no Prometheus, no Grafana. Connect your server URL and you're done. Free, open source, self-hostable."
+    "title": "Qarote — Self-Hosted RabbitMQ Monitoring Dashboard",
+    "description": "The self-hosted RabbitMQ monitoring tool and alerting dashboard for developers. Connect in 2 minutes — no Prometheus, no Grafana. Free & open source."
   }
 }

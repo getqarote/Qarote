@@ -15,6 +15,7 @@
     "sso": "SSO",
     "license": "Licencia",
     "smtp": "Correo",
+    "digest": "Resumen diario",
     "feedback": "Comentarios",
     "enterprise": "Enterprise"
   },

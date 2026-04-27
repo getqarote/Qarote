@@ -133,6 +133,10 @@
       {
         "question": "Is the open-source edition of Qarote really free?",
         "answer": "Yes. The MIT-licensed core of Qarote — live queue monitoring, exchange visibility, consumer tracking, and multi-server support — is free to self-host without any license key. Premium features (workspace sharing, advanced alerting, integrations) require a Developer or Enterprise license."
+      },
+      {
+        "question": "Is there a self-hosted RabbitMQ dashboard I can run without Grafana?",
+        "answer": "Yes — Qarote is an open-source, self-hosted RabbitMQ dashboard that runs as a single binary or Docker container. Unlike Grafana + Prometheus, there's nothing to configure beyond pointing Qarote at your broker's management API URL. Your queue data stays entirely within your infrastructure, and the MIT-licensed community edition is free to self-host with no license key required."
       }
     ]
   }

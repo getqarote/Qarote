@@ -88,7 +88,7 @@ export function ConnectionRow({
           {/* Right: key metrics aligned to sort headers */}
           <div className="flex items-center gap-0">
             <span className="w-28 text-right font-mono tabular-nums text-sm text-foreground">
-              {connection.channelCount.toLocaleString()}
+              {(connection.channelCount ?? 0).toLocaleString()}
             </span>
             <span className="w-28 text-right font-mono tabular-nums text-sm text-foreground">
               {formatBytes(connection.send_oct ?? 0)}

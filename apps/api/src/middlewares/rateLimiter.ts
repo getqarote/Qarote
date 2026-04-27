@@ -31,6 +31,8 @@ const createRateLimiter = (
   });
 };
 
+export { createRateLimiter };
+
 /**
  * Standard rate limiting for API endpoints
  */

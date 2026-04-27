@@ -10,7 +10,7 @@ readingTimeMin: 7
 
 本文介绍如何确认告警、找出磁盘消耗来源、安全清除告警，以及防止其再次触发。
 
-> **在问题咬你之前先看清楚。** Qarote可跨cluster中每个节点实时显示磁盘可用空间和告警状态，并支持在`disk_free_alarm`翻转为true之前提前告警。[查看节点健康仪表盘 →](/features/)
+> **在问题咬你之前先看清楚。** Qarote可跨cluster中每个节点实时显示磁盘可用空间和告警状态，并支持在`disk_free_alarm`翻转为true之前提前告警。[在磁盘告警触发前配置告警 →](/zh/features/alerting/)
 
 ## 磁盘告警的真正含义
 
@@ -166,7 +166,7 @@ rabbitmqctl set_policy max-size ".*" \
 
 ---
 
-Qarote的节点面板可显示`disk_free_bytes / disk_free_limit`比值随时间的变化趋势。[查看节点健康仪表盘的实际效果 →](/features/)
+Qarote的节点面板可显示`disk_free_bytes / disk_free_limit`比值随时间的变化趋势。[在磁盘告警触发前配置告警 →](/zh/features/alerting/)
 
 ---
 

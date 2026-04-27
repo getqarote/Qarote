@@ -1,10 +1,10 @@
 {
   "hero": {
-    "titleBefore": "2 分钟内完整监控 ",
-    "titleHighlight": "RabbitMQ",
-    "titleAfter": "。",
-    "subtitle": "无需 Prometheus，无需 Grafana。输入 URL — 2 分钟内获得完整队列监控。",
-    "noCreditCard": "免费开源 • 专业版功能 14 天试用"
+    "titleBefore": "你的 RabbitMQ 正在运行。你真的知道",
+    "titleHighlight": "里面发生了什么",
+    "titleAfter": "吗？",
+    "subtitle": "无需 Prometheus。无需 Grafana。无需专职运维人员。输入 URL — 2 分钟内完整监控队列。",
+    "noCreditCard": "2 分钟配置 · 无需信用卡 · 免费开源 · Pro 14 天试用"
   },
   "cta": {
     "getStartedForFree": "免费开始使用",
@@ -18,21 +18,21 @@
     "opensInNewTab": "（在新标签页中打开）"
   },
   "comparison": {
-    "title": "管理 RabbitMQ 服务器",
-    "titleLine2": "不必如此痛苦",
+    "title": "你通过用户反馈才发现问题，",
+    "titleLine2": "而不是通过监控。",
     "traditional": {
-      "title": "传统管理界面",
-      "point1": "过时的界面拖慢你的效率",
-      "point2": "无法跨服务器和环境统一查看",
-      "point3": "没有可靠、可操作的告警",
-      "point4": "到处都是自行搭建的仪表盘和脚本"
+      "title": "内置 RabbitMQ 管理插件",
+      "point1": "你通过用户反馈才发现问题，而不是通过监控",
+      "point2": "你在深夜11点调试堆积的队列 — 只知道深度，不知道原因",
+      "point3": "3台服务器，3个标签页，没有统一的故障视图",
+      "point4": "去年团队搭建的 Grafana 仪表盘，现在没人维护"
     },
     "qarote": {
       "title": "Qarote",
-      "point1": "简洁现代的界面，为速度和清晰度而生",
-      "point2": "所有服务器和环境的统一仪表盘",
-      "point3": "智能且可操作的告警，提前发现问题",
-      "point4": "零配置监控，无需脚本，无需维护"
+      "point1": "告警在用户察觉之前触发 — 支持邮件、Slack、Webhook",
+      "point2": "变化率、消费者健康状况和根因，一屏显示",
+      "point3": "所有服务器和环境汇聚在单一仪表盘",
+      "point4": "零配置监控 — 2分钟接入，无脚本，无维护"
     },
     "compareWith": "对比 Qarote 与：",
     "messagesPerSec": "消息/秒",
@@ -42,6 +42,7 @@
   "features": {
     "title": "你真正关心的一切。",
     "titleLine2": "集中监控于一处。",
+    "freeTierNote": "核心功能永久免费。告警、多服务器和高级分析需要专业版。",
     "liveQueueMonitoring": {
       "title": "实时队列监控",
       "description": "实时监控队列深度、消息速率和消费者数量。追踪消息堆积情况和处理性能。"
@@ -65,6 +66,10 @@
     "messagePublishing": {
       "title": "消息发布",
       "description": "通过直接向队列和交换器发布消息来测试和调试你的应用。非常适合开发和故障排查。"
+    },
+    "deadLetterQueueMonitoring": {
+      "title": "死信队列监控",
+      "description": "在用户察觉之前发现消息失败。DLQ 增长率是大多数团队忽视的预警指标 — 实时可见。"
     }
   },
   "enterprise": {
@@ -78,6 +83,7 @@
   "connection": {
     "title": "轻松连接你的 RabbitMQ 服务器",
     "subtitle": "无需改变你的 RabbitMQ 服务器的运行方式，Qarote 专为这个消息代理而设计。",
+    "ecosystemTitle": "兼容任意 RabbitMQ 客户端：",
     "step1": {
       "title": "注册账户",
       "description": "几秒钟即可创建账户。无需信用卡。立即开始监控你的 RabbitMQ 基础设施。",
@@ -104,23 +110,47 @@
       "allSystemsOperational": "所有系统运行正常"
     }
   },
+  "audience": {
+    "title": "专为像你们这样的团队打造",
+    "card1Title": "尚未部署监控",
+    "card1Description": "你们的团队在运行 RabbitMQ，但还没有人建立完善的监控体系。",
+    "card1Detail": "一台服务器免费使用。2 分钟完成连接。",
+    "card1Cta": "免费开始",
+    "card2Title": "已经在使用 Grafana",
+    "card2Description": "Grafana 覆盖了你的基础设施，但它看不到消费者实际上在做什么。",
+    "card2Detail": "拓扑可视化、故障诊断、消息追踪 — Prometheus 指标看不到的那一层。",
+    "card2Cta": "免费试用 Enterprise"
+  },
   "finalCta": {
     "title": "准备好监控你的 RabbitMQ 服务器了吗？",
     "subtitle": "今天就免费开始监控你的 RabbitMQ 服务器。",
     "noCreditCard": "无需信用卡",
     "openSource": "Open source",
     "selfHostable": "Self-hostable",
-    "freeForever": "Free forever (self-hosted)"
+    "freeForever": "永久免费（自托管）",
+    "freeTierScope": "免费版：1台服务器，实时监控，队列管理 — 无时间限制。告警和多服务器从 $29/月起。"
   },
   "footer": {
     "about": "关于我们",
     "blog": "博客",
+    "alerting": "告警",
     "privacyPolicy": "隐私政策",
     "termsOfService": "服务条款",
     "status": "系统状态",
     "contact": "联系我们",
     "vsDatadog": "Qarote vs Datadog",
-    "vsGrafana": "Qarote vs Grafana + Prometheus"
+    "vsGrafana": "Qarote vs Grafana + Prometheus",
+    "quiz": "测验"
+  },
+  "founderQuote": {
+    "openQuote": "「",
+    "closeQuote": "」",
+    "line1": "修复花了五分钟。",
+    "line2": "诊断花了四十分钟。",
+    "highlight": "Qarote 就是这两个数字之间的差距。",
+    "imgAlt": "Brice Tessier",
+    "name": "Brice Tessier",
+    "role": "Qarote 首席技术官"
   },
   "faqSection": {
     "title": "常见问题",

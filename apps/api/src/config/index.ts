@@ -232,10 +232,22 @@ export const notionConfig = {
   enabled: config.ENABLE_NOTION,
 } as const;
 
+export const digestConfig = {
+  defaultScheduledTime: "08:00",
+  enabled: true,
+} as const;
+
 /** @public Used by cron jobs registered at runtime */
 export const alertConfig = {
   checkIntervalMs: config.ALERT_CHECK_INTERVAL_MS,
   concurrency: config.ALERT_CHECK_CONCURRENCY,
+} as const;
+
+/** @public Used by the metrics poller cron job */
+export const metricsConfig = {
+  pollIntervalMs: config.METRICS_POLL_INTERVAL_MS,
+  concurrency: config.METRICS_POLL_CONCURRENCY,
+  perServerTimeoutMs: config.METRICS_PER_SERVER_TIMEOUT_MS,
 } as const;
 
 export const deploymentConfig = {

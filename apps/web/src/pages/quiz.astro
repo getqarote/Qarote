@@ -1,0 +1,42 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { loadTranslations } from "../lib/i18n-static";
+import QuizIsland from "../components/QuizIsland";
+
+const resources = {
+  quiz: loadTranslations("en", "quiz"),
+  common: loadTranslations("en", "common"),
+  nav: loadTranslations("en", "nav"),
+  landing: loadTranslations("en", "landing"),
+};
+
+const quizSchema = {
+  "@context": "https://schema.org",
+  "@type": "Quiz",
+  name: "RabbitMQ Skills Assessment",
+  description:
+    "20-question scored quiz covering RabbitMQ fundamentals, intermediate patterns, and advanced production scenarios.",
+  url: "https://qarote.io/quiz/",
+  provider: { "@id": "https://qarote.io/#organization" },
+  about: { "@type": "SoftwareApplication", name: "RabbitMQ" },
+  numberOfQuestions: 20,
+};
+---
+
+<BaseLayout
+  title="RabbitMQ Skills Assessment — Test Your Knowledge | Qarote"
+  description="Take the free 20-question RabbitMQ quiz. Test your knowledge of queues, exchanges, consumers, and production patterns. Get a score and tier verdict."
+  canonicalPath="/quiz/"
+  image="https://qarote.io/images/og-quiz-default.jpg"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(quizSchema)} />
+  </Fragment>
+  <noscript>
+    <div style="max-width:600px;margin:4rem auto;padding:2rem;text-align:center;font-family:sans-serif">
+      <p>This quiz requires JavaScript to run.</p>
+      <a href="/">← Back to Qarote</a>
+    </div>
+  </noscript>
+  <QuizIsland resources={resources} client:load />
+</BaseLayout>

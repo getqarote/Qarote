@@ -1,0 +1,19 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { loadAllTranslations } from "../../../lib/i18n-static";
+import QuizResultsIsland from "../../../components/QuizResultsIsland";
+
+const resources = loadAllTranslations("en");
+---
+
+<BaseLayout
+  title="RabbitMQ Skills Assessment — Production-Grade | Qarote"
+  description="Your RabbitMQ monitoring is production-grade. You know your brokers — see how Qarote can scale with your team."
+  canonicalPath="/quiz/results/production-grade/"
+  image="https://qarote.io/images/og-quiz-production-grade.jpg"
+>
+  <Fragment slot="head">
+    <meta name="robots" content="noindex, nofollow" />
+  </Fragment>
+  <QuizResultsIsland tier="production-grade" resources={resources} client:load />
+</BaseLayout>
