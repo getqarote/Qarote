@@ -1,10 +1,12 @@
 import { TRPCError } from "@trpc/server";
 
 import { comparePassword, hashPassword } from "@/core/auth";
+import { prisma } from "@/core/prisma";
 import { formatInvitedBy } from "@/core/utils";
 import { ensureWorkspaceMember } from "@/core/workspace-access";
 
 import { getWorkspacePlan } from "@/services/plan/plan.service";
+import { posthog } from "@/services/posthog";
 
 import {
   AcceptInvitationSchema,
@@ -280,6 +282,31 @@ export const invitationRouter = router({
           return user;
         });
 
+        // Invalidate any existing sessions for this user — workspaceId changed.
+        await prisma.session
+          .deleteMany({ where: { userId: result.id } })
+          .catch((err) => {
+            ctx.logger.warn(
+              { err, userId: result.id },
+              "Failed to invalidate sessions after invitation acceptance — stale session may persist up to 5 min"
+            );
+          });
+
+        posthog?.identify({
+          distinctId: result.id,
+          properties: {
+            $set: { email: result.email, workspaceId: invitation.workspaceId },
+          },
+        });
+        posthog?.capture({
+          distinctId: result.id,
+          event: "invitation_accepted",
+          properties: {
+            workspace_id: invitation.workspaceId,
+            invited_role: invitation.role,
+          },
+        });
+
         return {
           user: UserMapper.toApiResponse(result),
           workspace: invitation.workspace
@@ -409,6 +436,37 @@ export const invitationRouter = router({
           });
 
           return user;
+        });
+
+        // New user — no sessions yet, but invalidate defensively in case of
+        // concurrent sign-in between registration and invitation acceptance.
+        await prisma.session
+          .deleteMany({ where: { userId: newUser.id } })
+          .catch((err) => {
+            ctx.logger.warn(
+              { err, userId: newUser.id },
+              "Failed to invalidate sessions after registration invitation acceptance"
+            );
+          });
+
+        posthog?.identify({
+          distinctId: newUser.id,
+          properties: {
+            $set: {
+              email: newUser.email,
+              firstName: newUser.firstName,
+              lastName: newUser.lastName,
+            },
+            $set_once: { first_registered_at: newUser.createdAt },
+          },
+        });
+        posthog?.capture({
+          distinctId: newUser.id,
+          event: "invitation_registration_completed",
+          properties: {
+            workspace_id: invitation.workspaceId,
+            invited_role: invitation.role,
+          },
         });
 
         return {

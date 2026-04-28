@@ -21,6 +21,7 @@ import { PixelKey } from "@/components/ui/pixel-key";
 import { PixelLayers } from "@/components/ui/pixel-layers";
 import { PixelLogout } from "@/components/ui/pixel-logout";
 import { PixelMessage } from "@/components/ui/pixel-message";
+import { PixelMonitor } from "@/components/ui/pixel-monitor";
 import { PixelNetwork } from "@/components/ui/pixel-network";
 import { PixelServer } from "@/components/ui/pixel-server";
 import { PixelSettings } from "@/components/ui/pixel-settings";
@@ -55,6 +56,7 @@ import { useOverview } from "@/hooks/queries/useRabbitMQ";
 import { useServers } from "@/hooks/queries/useServer";
 import { useLogout } from "@/hooks/ui/useAuth";
 import { useUser } from "@/hooks/ui/useUser";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 function ServerStatusDot({ serverId }: { serverId: string }) {
   const { data, isLoading, isError } = useOverview(serverId);
@@ -90,6 +92,12 @@ const menuItems = [
   },
   { titleKey: "sidebar:alerts", url: "/alerts", icon: PixelFlag },
   { titleKey: "sidebar:diagnosis", url: "/diagnosis", icon: PixelAlert },
+  {
+    titleKey: "sidebar:tracing",
+    url: "/tracing",
+    icon: PixelMonitor,
+    premiumFeature: "message_tracing" as const,
+  },
   {
     titleKey: "sidebar:definitions",
     url: "/definitions",
@@ -132,6 +140,7 @@ export function AppSidebar() {
   } = useVHostContext();
   const { user } = useAuth();
   const { canAddServer } = useUser();
+  const { hasFeature } = useFeatureFlags();
   const logoutMutation = useLogout();
   const { data: serversData } = useServers();
   const servers = serversData?.servers || [];
@@ -385,6 +394,10 @@ export function AppSidebar() {
                 .filter((item) => {
                   // Filter admin-only items for non-admin users
                   if (item.adminOnly && user?.role !== UserRole.ADMIN) {
+                    return false;
+                  }
+                  // Filter premium-feature items for users without the feature
+                  if (item.premiumFeature && !hasFeature(item.premiumFeature)) {
                     return false;
                   }
                   return true;

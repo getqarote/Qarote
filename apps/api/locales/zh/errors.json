@@ -200,7 +200,10 @@
     "onlyOwnerCanUpdateAlertSettings": "只有工作区所有者才能更新告警设置",
     "failedToUpdateAlertSettings": "更新告警设置失败",
     "failedToFetchDefinitions": "获取Broker定义失败",
-    "failedToImportDefinitions": "导入Broker定义失败"
+    "failedToImportDefinitions": "导入Broker定义失败",
+    "failedToUpdateTracingState": "更新 RabbitMQ Broker 追踪状态失败。请检查服务器连接。",
+    "tracingQueryStartBeforeEnd": "开始时间必须早于结束时间。",
+    "tracingQueryWindowExceeded": "时间范围不能超过 7 天。"
   },
   "alerts": {
     "failedToGetRules": "获取告警规则失败",

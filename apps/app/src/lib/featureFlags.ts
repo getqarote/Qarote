@@ -12,7 +12,8 @@ export type PremiumFeature =
   | "advanced_alert_rules"
   | "topology_visualization"
   | "digest_customization"
-  | "incident_diagnosis";
+  | "incident_diagnosis"
+  | "message_tracing";
 
 /**
  * Get deployment mode from environment.
@@ -74,6 +75,7 @@ const FEATURE_DESCRIPTIONS: Record<PremiumFeature, string> = {
   topology_visualization: "Topology Visualization",
   digest_customization: "Daily Digest Customization",
   incident_diagnosis: "Incident Diagnosis Engine",
+  message_tracing: "Message Tracing",
 };
 
 /**

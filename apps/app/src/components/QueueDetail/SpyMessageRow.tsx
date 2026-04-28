@@ -1,12 +1,10 @@
-import { memo, type MouseEvent, useEffect, useRef, useState } from "react";
+import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Check, ChevronDown, ChevronRight, Copy } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
-import { copyToClipboard } from "@/lib/clipboard";
-
+import { PayloadViewer } from "@/components/tracing/PayloadViewer";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
@@ -27,14 +25,6 @@ function formatTimestamp(isoTimestamp: string): string {
   return `${hh}:${mm}:${ss}.${ms}`;
 }
 
-function formatPayload(payload: string): string {
-  try {
-    return JSON.stringify(JSON.parse(payload), null, 2);
-  } catch {
-    return payload;
-  }
-}
-
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -49,34 +39,6 @@ export const SpyMessageRow = memo(function SpyMessageRow({
   message,
 }: SpyMessageRowProps) {
   const { t } = useTranslation("queues");
-  const [copied, setCopied] = useState(false);
-  // Track the "copied" timeout so we can clear it on unmount. Without this,
-  // a row removed by ring-buffer eviction within 2s of Copy would trigger
-  // a setState-on-unmounted-component warning.
-  const copiedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (copiedTimeoutRef.current !== null) {
-        clearTimeout(copiedTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  const handleCopy = async (e: MouseEvent) => {
-    e.stopPropagation();
-    const success = await copyToClipboard(message.payload);
-    if (success) {
-      setCopied(true);
-      if (copiedTimeoutRef.current !== null) {
-        clearTimeout(copiedTimeoutRef.current);
-      }
-      copiedTimeoutRef.current = setTimeout(() => {
-        setCopied(false);
-        copiedTimeoutRef.current = null;
-      }, 2000);
-    }
-  };
 
   const truncatedPayload =
     message.payload.length > 80
@@ -127,44 +89,13 @@ export const SpyMessageRow = memo(function SpyMessageRow({
 
       <CollapsibleContent>
         <div className="px-3 py-3 bg-muted/30 border-b border-border/50 space-y-3">
-          {/* Payload */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-medium text-muted-foreground uppercase">
-                {t("spyPayload")}
-              </span>
-              <div className="flex items-center gap-2">
-                {message.truncated && (
-                  <Badge variant="outline" className="text-xs">
-                    {t("spyTruncated")}
-                  </Badge>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 px-2 text-xs"
-                  onClick={handleCopy}
-                >
-                  {copied ? (
-                    <>
-                      <Check className="w-3 h-3 mr-1" />
-                      {t("spyCopied")}
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3 h-3 mr-1" />
-                      {t("spyCopyPayload")}
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-            <pre className="text-xs font-mono bg-muted text-muted-foreground p-3 rounded-md overflow-x-auto max-h-64 overflow-y-auto whitespace-pre-wrap break-all">
-              {message.isBinary
-                ? message.payload
-                : formatPayload(message.payload)}
-            </pre>
-          </div>
+          {/* Payload — rendered by shared PayloadViewer */}
+          <PayloadViewer
+            payload={message.payload}
+            isBinary={message.isBinary}
+            truncated={message.truncated}
+            payloadBytes={message.payloadBytes}
+          />
 
           {/* Headers */}
           {Object.keys(message.headers).length > 0 && (

@@ -114,6 +114,7 @@ const SSOCallback = lazy(() => import("./pages/SSOCallback"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Definitions = lazy(() => import("./pages/Definitions"));
 const Diagnosis = lazy(() => import("./pages/Diagnosis"));
+const Tracing = lazy(() => import("./pages/Tracing"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const AppCore = () => (
@@ -372,6 +373,16 @@ const AppCore = () => (
                               <ProtectedRoute>
                                 <Layout>
                                   <Diagnosis />
+                                </Layout>
+                              </ProtectedRoute>
+                            }
+                          />
+                          <Route
+                            path="/tracing"
+                            element={
+                              <ProtectedRoute>
+                                <Layout>
+                                  <Tracing />
                                 </Layout>
                               </ProtectedRoute>
                             }

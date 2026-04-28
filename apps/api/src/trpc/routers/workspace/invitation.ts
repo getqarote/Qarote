@@ -10,6 +10,7 @@ import {
   getWorkspacePlan,
   validateUserInvitation,
 } from "@/services/plan/plan.service";
+import { posthog } from "@/services/posthog";
 
 import { inviteUserSchema } from "@/schemas/invitation";
 import {
@@ -280,6 +281,16 @@ export const invitationRouter = router({
             // Don't fail the request if email sending fails
           }
         }
+
+        posthog?.capture({
+          distinctId: user.id,
+          event: "workspace_invitation_sent",
+          properties: {
+            workspace_id: workspaceId,
+            invited_role: role,
+            email_sent: emailSent,
+          },
+        });
 
         return {
           message: "Invitation sent successfully",

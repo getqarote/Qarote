@@ -200,7 +200,10 @@
     "onlyOwnerCanUpdateAlertSettings": "Seuls les propriétaires de l'espace de travail peuvent modifier les paramètres d'alerte",
     "failedToUpdateAlertSettings": "Échec de la mise à jour des paramètres d'alerte",
     "failedToFetchDefinitions": "Échec de la récupération des définitions du broker",
-    "failedToImportDefinitions": "Échec de l'importation des définitions du broker"
+    "failedToImportDefinitions": "Échec de l'importation des définitions du broker",
+    "failedToUpdateTracingState": "Échec de la mise à jour de l'état de traçage du broker RabbitMQ. Vérifiez la connectivité au serveur.",
+    "tracingQueryStartBeforeEnd": "L'heure de début doit être avant l'heure de fin.",
+    "tracingQueryWindowExceeded": "La plage temporelle ne peut pas dépasser 7 jours."
   },
   "alerts": {
     "failedToGetRules": "Échec de la récupération des règles d'alerte",

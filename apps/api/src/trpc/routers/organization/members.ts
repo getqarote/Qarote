@@ -15,6 +15,7 @@ import {
   getOrgPlan,
   validateUserInvitation,
 } from "@/services/plan/plan.service";
+import { posthog } from "@/services/posthog";
 
 import {
   AcceptOrgInvitationSchema,
@@ -273,6 +274,17 @@ export const membersRouter = router({
         },
         "Organization invitation created"
       );
+
+      posthog?.capture({
+        distinctId: ctx.user.id,
+        event: "org_member_invited",
+        properties: {
+          organization_id: organizationId,
+          invited_role: input.role,
+          workspace_assignments_count: assignments.length,
+          email_sent: emailSent,
+        },
+      });
 
       return {
         invitation: {

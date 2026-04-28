@@ -199,7 +199,10 @@
     "onlyOwnerCanUpdateAlertSettings": "Only workspace owners can update alert settings",
     "failedToUpdateAlertSettings": "Failed to update alert settings",
     "failedToFetchDefinitions": "Failed to fetch broker definitions",
-    "failedToImportDefinitions": "Failed to import broker definitions"
+    "failedToImportDefinitions": "Failed to import broker definitions",
+    "failedToUpdateTracingState": "Failed to update RabbitMQ broker tracing state. Check server connectivity.",
+    "tracingQueryStartBeforeEnd": "Start time must be before end time.",
+    "tracingQueryWindowExceeded": "Time range cannot exceed 7 days."
   },
   "alerts": {
     "failedToGetRules": "Failed to get alert rules",

@@ -7,6 +7,11 @@ datasource db {
   provider = "postgresql"
 }
 
+enum TraceDirection {
+  publish
+  deliver
+}
+
 model Alert {
   id             String          @id @default(uuid())
   title          String
@@ -196,10 +201,13 @@ model RabbitMQServer {
   useHttps              Boolean               @default(false)
   queuePauseStates      Json?
   amqpPort              Int                   @default(5672)
+  traceEnabled          Boolean               @default(false)
+  payloadCaptureEnabled Boolean               @default(false)
   alertRules            AlertRule[]
   alerts                Alert[]
   queues                Queue[]
   queueMetricSnapshots  QueueMetricSnapshot[]
+  messageTraceEvents    MessageTraceEvent[]
   workspace             Workspace?            @relation(fields: [workspaceId], references: [id])
 }
 
@@ -337,6 +345,8 @@ model Workspace {
   notificationServerIds         Json?
   unackedWarnThreshold          Int                       @default(100)
   vhostThresholds               Json?
+  /// Message tracing retention window in hours. Default 24h, max 168h (7 days).
+  traceRetentionHours           Int                       @default(24)
   alerts                        Alert[]
   alertRules                    AlertRule[]
   feedback                      Feedback[]
@@ -352,6 +362,40 @@ model Workspace {
   organization                  Organization              @relation(fields: [organizationId], references: [id])
 
   @@index([organizationId])
+}
+
+/// Metadata-only trace events from the RabbitMQ Firehose exchange (amq.rabbitmq.trace).
+/// Payload is NOT stored here in v1 — see payloadCaptureEnabled on RabbitMQServer.
+/// timestamp is populated from the Firehose AMQP header, not from insertion time.
+/// Retention: configurable per workspace (traceRetentionHours), default 24h.
+model MessageTraceEvent {
+  id           String         @id @default(uuid()) /// typically supplied by firehose.service.ts via crypto.randomUUID(); default is a safety net
+  /// Monotonically increasing insertion-order column used for cursor pagination
+  /// and live-tail polling. UUID v4 ids are random and cannot be used for
+  /// stable "id > lastId" ordering — a later insert can sort before an earlier
+  /// one under string comparison.
+  cursorId     BigInt         @unique @default(autoincrement())
+  serverId     String
+  vhost        String
+  exchange     String
+  routingKey   String
+  queueName    String?
+  payloadBytes Int
+  contentType  String?
+  messageId    String?
+  direction    TraceDirection
+  timestamp    DateTime
+
+  server RabbitMQServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@index([serverId, cursorId])
+  @@index([serverId, direction, cursorId])
+  @@index([serverId, vhost, routingKey, cursorId])
+  @@index([serverId, timestamp])
+  @@index([serverId, direction, timestamp])
+  @@index([serverId, vhost, queueName, timestamp])
+  @@index([serverId, vhost, exchange, timestamp])
+  @@index([timestamp])
 }
 
 model WorkspaceDigestSettings {

@@ -28,6 +28,7 @@ const i18n = createI18nInstance({
     "onboarding",
     "definitions",
     "diagnosis",
+    "tracing",
   ],
   defaultNamespace: "common",
   loadPath: "/locales/{{lng}}/{{ns}}.json",
