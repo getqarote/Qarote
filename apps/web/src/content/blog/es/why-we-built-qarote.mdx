@@ -3,7 +3,7 @@ title: "Por qué construimos Qarote: una historia de saturación de colas"
 description: "Un incidente de saturación de RabbitMQ pasó desapercibido durante más de una hora por falta de visibilidad. Esto es lo que construimos — y por qué."
 publishedAt: "2026-04-25"
 tags: ["rabbitmq", "monitoring", "war-story", "open-source"]
-readingTimeMin: 8
+readingTimeMin: 7
 ---
 
 El mensaje llegó a las 2:47 de la madrugada. No era una alerta de PagerDuty — era un mensaje de Slack de un cliente.
@@ -24,11 +24,10 @@ El plugin de administración me dijo lo que ya sabía al ver el gráfico: la col
 
 Lo que no podía decirme:
 
-- **¿Qué consumidores eran esos dos?** ¿Eran los workers esperados, o conexiones zombie de un despliegue anterior?
-- **¿Por qué estaban conectados pero sin procesar?** ¿Bloqueados en un mensaje? ¿Crashando silenciosamente? ¿Esperando un servicio downstream?
-- **¿Cuándo comenzó el [backlog de cola](/es/blog/debug-rabbitmq-queue-backlog/)?** La resolución del gráfico era demasiado gruesa para identificar el momento exacto en que las cosas salieron mal — no podía saber si la acumulación empezó diez minutos atrás o dos horas atrás.
-- **¿Era una cola aislada o una cascada?** Tenía quince colas. El plugin me mostraba una a la vez.
-- **¿Cómo eran los mensajes?** Era imposible inspeccionar un solo mensaje sin escribir un consumidor desechable — lo que significaba que no podía confirmar si los mensajes en sí estaban malformados o si el problema venía de los consumidores.
+- ¿Qué consumidores eran esos dos? ¿Eran los workers esperados, o conexiones zombie de un despliegue anterior?
+- ¿Por qué estaban conectados pero sin procesar? ¿Bloqueados en un mensaje? ¿Crashando silenciosamente? ¿Esperando un servicio downstream?
+- ¿Cuándo comenzó el [backlog de cola](/es/blog/debug-rabbitmq-queue-backlog/)? La ventana de retención por defecto era de 24 horas, pero la resolución del gráfico era demasiado gruesa.
+- ¿Era una cola aislada o una cascada? Tenía quince colas. El plugin me mostraba una a la vez.
 
 Cambié a Grafana. Las métricas de Prometheus de RabbitMQ que habíamos configurado daban datos de series temporales para la profundidad de cola y el número de consumidores, pero el intervalo de scrape era de 60 segundos — los datos ya tenían un minuto de retraso. Y los dashboards estaban organizados por broker, no por lo que realmente necesitaba: una lista de colas que se comportaran anómalamente en ese momento.
 
@@ -68,17 +67,13 @@ Algunas cosas parecían innegociables:
 
 **Tasa de cambio, no solo profundidad.** Una cola en 50.000 mensajes creciendo a +500/s es un despertador a las 3 de la madrugada en 90 minutos. La misma cola decreciendo a -1.000/s es saludable. La profundidad sola es un indicador rezagado. Necesitas velocidad para saber si te diriges hacia un incidente o te estás recuperando de uno.
 
-**[La salud de los consumidores](/es/blog/rabbitmq-consumer-not-processing/) como señal de primer nivel.** No solo "cuántos consumidores están conectados" sino "¿están procesando realmente?" Un consumidor conectado pero que no hace ack está roto. Esa distinción es invisible en la mayoría de las configuraciones de monitorización.
+**[La salud de los consumidores](/es/blog/rabbitmq-consumer-not-processing/) como señal de primer nivel.** No solo "cuántos consumidores están conectados" sino "¿están procesando realmente?" Un consumidor conectado pero que no hace ack está roto.
 
-**Un historial de cola que realmente sirva después del incidente.** La retención nativa de RabbitMQ es corta y poco precisa. Lo que necesitaba esa noche era un gráfico de profundidad con resolución de 5 minutos y 7 días de retención — algo que mostrara *exactamente* cuándo empezó el backlog, no solo que actualmente era grande. Esa precisión cambia cómo se acota un incidente: ¿fuga lenta o caída repentina?
+**[Las dead-letter queues](/es/blog/rabbitmq-dead-letter-queue/) como indicadores adelantados.** Las DLQ son donde los mensajes malos se acumulan silenciosamente. Si tu DLQ está creciendo, tienes un bug de consumidor. La mayoría de los equipos lo descubren semanas después, durante un post-mortem.
 
-**La capacidad de inspeccionar mensajes sin consumirlos.** Esa noche no podía confirmar si los mensajes eran válidos sin escribir un consumidor desechable. Necesitaba poder inspeccionar la cola — leer cabeceras, verificar la estructura del payload — sin consumir un solo mensaje. Esa capacidad por sí sola habría reducido 15 minutos del diagnóstico.
-
-**Correlación automática de incidentes, no navegación manual entre pestañas.** El diagnóstico de cuarenta minutos no fue cuarenta minutos de reflexión intensa. Fue cuarenta minutos ensamblando contexto que ya existía en tres herramientas diferentes. Una herramienta que correlaciona picos de backlog, caídas de consumidores y cambios en la tasa de mensajes en una sola línea de tiempo no hace magia — hace automáticamente la parte mecánica del diagnóstico de incidentes.
+**Vista multi-cola, multi-broker en un solo lugar.** Durante un incidente no tienes tiempo de revisar quince colas individualmente.
 
 **[Alertas sobre indicadores adelantados](/es/blog/rabbitmq-alerts-setup-guide/), no solo rezagados.** Una alerta que se dispara cuando tu cola llega a 500.000 mensajes confirma principalmente que ya estás en un incidente. Una alerta que se dispara cuando tu cola crece más rápido que tu tasa de vaciado — cuando tienes cinco minutos de margen — es realmente útil.
-
-**Un resumen de salud diario entregado en tu bandeja de entrada.** No porque quiera revisar dashboards cada mañana, sino porque las pequeñas acumulaciones hay que detectarlas antes de que se conviertan en llamadas a las 3 de la madrugada. Un digest diario con tendencias de profundidad de cola, estado de consumidores y anomalías de las últimas 24 horas significa que nunca entras a un incidente sin contexto.
 
 **Cero Prometheus requerido.** No porque Prometheus sea malo, sino porque montar una pila completa Prometheus + Grafana + Alertmanager solo para monitorizar un cluster de RabbitMQ es una inversión significativa para equipos que no la tienen ya.
 
@@ -90,21 +85,11 @@ Ninguno estaba construido desde la premisa de que lo más importante es: **dime 
 
 Así que construimos Qarote.
 
-**Qarote es una herramienta de monitorización de RabbitMQ auto-hospedada que se conecta directamente a la API HTTP de administración — sin plugin de Prometheus, sin YAML, sin agentes que desplegar.** Núcleo con licencia MIT, auto-hospedable en dos minutos con un solo comando Docker.
+El núcleo tiene licencia MIT y es auto-hospedable. Lo apuntas a una API de administración de RabbitMQ — sin plugin de Prometheus, sin YAML, sin agentes que desplegar — y te da un dashboard multi-cola con métricas de tasa de cambio, señales de salud de consumidores, monitorización de DLQ y alertas configurables. El tipo de cosa que me habría dicho, en los primeros cinco minutos de ese incidente, que los consumidores estaban conectados pero no hacían ack, que la DLQ no crecía y que el backlog había empezado a acelerarse exactamente al mismo tiempo que un pico en los errores de conexión de la aplicación.
 
-Esto es lo que habría pasado en ese incidente con Qarote funcionando:
+Retención de historial más allá de la ventana predeterminada de 24 horas de RabbitMQ. Alertas sobre tasa de cambio, no solo umbrales absolutos. Sin requisitos de infraestructura más allá de un broker en funcionamiento.
 
-- **Minuto 1:** Bandera de consumidor-conectado-pero-sin-ack levantada. Qarote interroga cada 15 segundos — sin retraso de 60 segundos.
-- **Minuto 1:** Alerta de tasa de crecimiento de cola disparada. El backlog se aceleraba, no solo era profundo.
-- **Minuto 2:** El [Motor de Diagnóstico de Incidentes](/features/incident-diagnosis/) correlacionó el pico de backlog, la caída de la tasa de ack de los consumidores y el pico de errores de la aplicación — misma ventana de 4 minutos, automáticamente. Sin cambiar de pestaña.
-- **Minuto 5:** [Message Spy](/features/message-spy/) confirmó que los mensajes en la cola bloqueada eran estructuralmente válidos — payload intacto, cabeceras correctas. Los mensajes no eran el problema. Los consumidores sí.
-- **Minuto 5:** Acotado a BD o red. Corrección desplegada en el minuto 10.
-
-Diez minutos, no cuarenta.
-
-Y a la mañana siguiente, el [Daily Digest](/features/digest/) habría incluido el incidente en el resumen de anomalías de las 24 horas — todo el equipo habría estado informado antes de abrir Slack, sin que nadie tuviera que escribir un email de retrospectiva.
-
-Si esa misma cola hubiera estado acumulándose lentamente durante días antes del incidente — una fuga lenta en lugar de una caída repentina — el [Historial de Colas](/features/metrics/) lo habría mostrado: snapshots cada 5 minutos retenidos 7 días, graficables junto al número de consumidores y la tasa de publicación.
+Eso es Qarote. Construido porque vivimos el incidente que está diseñado para prevenir.
 
 ---
 

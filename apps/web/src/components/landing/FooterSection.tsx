@@ -13,7 +13,7 @@ const navLinkClass =
   "relative text-muted-foreground hover:text-foreground transition-colors text-sm after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-200 hover:after:scale-x-100 pb-px";
 
 const legalLinkClass =
-  "relative text-muted-foreground hover:text-foreground transition-colors text-sm after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-200 hover:after:scale-x-100 pb-px";
+  "text-muted-foreground hover:text-foreground transition-colors text-sm";
 
 const SocialIcons = () => (
   <div className="flex items-center gap-3">
@@ -107,9 +107,6 @@ const FooterSection = ({ currentLocale = "en" }: FooterSectionProps) => {
             <a href={`${prefix}/about/`} className={navLinkClass}>
               {t("footer.about", "About")}
             </a>
-            <a href={`${prefix}/pricing/`} className={navLinkClass}>
-              {t("footer.pricing", "Pricing")}
-            </a>
             <a href={`${prefix}/blog/`} className={navLinkClass}>
               {t("footer.blog", "Blog")}
             </a>
@@ -127,15 +124,6 @@ const FooterSection = ({ currentLocale = "en" }: FooterSectionProps) => {
               className={navLinkClass}
             >
               {t("footer.vsGrafana")}
-            </a>
-            <a href={`${prefix}/compare/cloudamqp/`} className={navLinkClass}>
-              {t("footer.vsCloudAMQP")}
-            </a>
-            <a href={`${prefix}/compare/new-relic/`} className={navLinkClass}>
-              {t("footer.vsNewRelic")}
-            </a>
-            <a href={`${prefix}/security/`} className={legalLinkClass}>
-              {t("footer.security", "Security")}
             </a>
             <a href={`${prefix}/privacy-policy/`} className={legalLinkClass}>
               {t("footer.privacyPolicy")}
@@ -197,9 +185,6 @@ const FooterSection = ({ currentLocale = "en" }: FooterSectionProps) => {
               <a href={`${prefix}/about/`} className={navLinkClass}>
                 {t("footer.about", "About")}
               </a>
-              <a href={`${prefix}/pricing/`} className={navLinkClass}>
-                {t("footer.pricing", "Pricing")}
-              </a>
               <a href={`${prefix}/blog/`} className={navLinkClass}>
                 {t("footer.blog", "Blog")}
               </a>
@@ -218,21 +203,12 @@ const FooterSection = ({ currentLocale = "en" }: FooterSectionProps) => {
               >
                 {t("footer.vsGrafana")}
               </a>
-              <a href={`${prefix}/compare/cloudamqp/`} className={navLinkClass}>
-                {t("footer.vsCloudAMQP")}
-              </a>
-              <a href={`${prefix}/compare/new-relic/`} className={navLinkClass}>
-                {t("footer.vsNewRelic")}
-              </a>
             </nav>
           </div>
 
           {/* Row 2: legal links + social + language */}
           <div className="flex items-center justify-between border-t border-border/50 pt-5">
             <div className="flex items-center gap-6">
-              <a href={`${prefix}/security/`} className={legalLinkClass}>
-                {t("footer.security", "Security")}
-              </a>
               <a href={`${prefix}/privacy-policy/`} className={legalLinkClass}>
                 {t("footer.privacyPolicy")}
               </a>

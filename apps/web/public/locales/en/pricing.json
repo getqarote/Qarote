@@ -20,10 +20,7 @@
   "freeTrial": "Free trial",
   "contactSales": "Contact sales",
   "soon": "Soon",
-  "limited": "Limited",
-  "intelligenceDiagnostics": "Intelligence & Diagnostics",
   "securityCompatibility": "Security & compatibility",
-  "viewSecurity": "View our security practices",
   "plans": {
     "starter": {
       "name": "Community",
@@ -99,17 +96,7 @@
     "workspace_unlimited": "Unlimited workspaces",
     "member_upTo1": "1 team member",
     "member_upTo3": "3 team members",
-    "member_unlimited": "Unlimited team members",
-    "dailyDigest": "Daily Digest",
-    "dailyDigestDesc": "Daily health summary for your queues, alerts, and anomalies",
-    "messageSpy": "Message Spy",
-    "messageSpyDesc": "Inspect live message content inside queues without consuming them",
-    "metricsPersistence": "Queue History",
-    "metricsPersistenceDesc": "5-minute snapshots retained for 7 days — review queue depths, rates, and consumer counts at any point in the past week",
-    "incidentDiagnosis": "Incident Diagnosis Engine",
-    "incidentDiagnosisDesc": "Automated root cause analysis to pinpoint failures fast",
-    "messageTracing": "Message Tracing (Firehose)",
-    "messageTracingDesc": "Full message-level tracing via RabbitMQ's firehose exchange"
+    "member_unlimited": "Unlimited team members"
   },
   "limits": {
     "upTo1": "Up to 1",

@@ -12,11 +12,7 @@
       "analytics": "Analytiques",
       "queueManagement": "Gestion des files",
       "multiServer": "Multi-serveurs",
-      "queueHistory": "Historique des files",
-      "messageSpy": "Message Spy",
-      "dailyDigest": "Digest quotidien",
-      "incidentDiagnosis": "Diagnostic d'incident",
-      "messageTracing": "Traçage de messages"
+      "devExperience": "Expérience dev"
     }
   },
   "coreFeature": "FONCTIONNALITÉ CLÉ",
@@ -92,68 +88,6 @@
     "messagesPerSec": "Messages/sec",
     "activeQueues": "Files actives",
     "allSystemsOperational": "Tous les systèmes opérationnels"
-  },
-  "queueIntelligence": {
-    "title": "Une intelligence des files qui va en profondeur"
-  },
-  "messageVisibility": {
-    "title": "Inspectez n'importe quel message sans toucher à la file"
-  },
-  "messagePipeline": {
-    "title": "Visibilité totale sur le flux de messages"
-  },
-  "queueHistory": {
-    "description": "7 jours de profondeur de file, comptages de consommateurs et taux de messages capturés toutes les 5 minutes. Visualisez n'importe quelle file sur n'importe quelle fenêtre de temps — voyez exactement quand elle a commencé à se remplir et quand elle s'est vidée."
-  },
-  "messageSpy": {
-    "description": "Parcourez les en-têtes et charges utiles des messages directement dans n'importe quelle file — en lecture seule, non destructif, sûr pour la production. Pas de consommateur AMQP. Pas de scripts jetables. Les messages restent exactement où ils sont."
-  },
-  "dailyDigest": {
-    "description": "Un résumé matinal de la santé de votre broker par email : tendances de profondeur de file, croissance des DLQ et anomalies des dernières 24 heures. Une conscience asynchrone sans tableau de bord ouvert."
-  },
-  "incidentDiagnosis": {
-    "description": "Analyse automatisée des causes racines pour les incidents RabbitMQ. Corrèle les pics de profondeur de file, les chutes de consommateurs et les changements de débit en une seule chronologie lisible — pour savoir ce qui s'est passé et dans quel ordre."
-  },
-  "messageTracing": {
-    "description": "Traçage complet des messages sur votre broker via le Firehose RabbitMQ. Chaque publication, chaque livraison, chaque acquittement — capturé en temps réel avec la clé de routage, l'exchange et la taille de la charge utile."
-  },
-  "comingSoon": {
-    "eyebrow": "Plus de fonctionnalités",
-    "heading": "Cinq outils supplémentaires, un seul tableau de bord",
-    "subtitle": "Chaque lien mène à une page dédiée avec la documentation complète, les cas d'usage et les FAQ.",
-    "learnMore": "En savoir plus",
-    "items": [
-      {
-        "icon": "chart.svg",
-        "title": "Historique des files",
-        "description": "7 jours de profondeur de file, comptages de consommateurs et taux de messages capturés toutes les 5 minutes. Pour les rétrospectives d'incidents et la planification de capacité.",
-        "href": "/features/metrics/"
-      },
-      {
-        "icon": "message.svg",
-        "title": "Message Spy",
-        "description": "Inspectez les en-têtes et les charges utiles des messages dans n'importe quelle file — en lecture seule, non destructif, sûr pour la production.",
-        "href": "/features/message-spy/"
-      },
-      {
-        "icon": "email.svg",
-        "title": "Digest quotidien",
-        "description": "Un résumé matinal de la santé de votre broker : tendances de profondeur de file, croissance des DLQ et anomalies des dernières 24 heures.",
-        "href": "/features/digest/"
-      },
-      {
-        "icon": "flag.svg",
-        "title": "Moteur de diagnostic d'incident",
-        "description": "Analyse automatisée des causes racines pour les incidents RabbitMQ. Corrèle les pics de profondeur, les chutes de consommateurs et les changements de débit en une seule chronologie.",
-        "href": "/features/incident-diagnosis/"
-      },
-      {
-        "icon": "real-time.svg",
-        "title": "Traçage de messages (Firehose)",
-        "description": "Traçage complet des messages sur votre broker via le Firehose RabbitMQ. Chaque message, chaque route, chaque consommateur — en temps réel avec filtrage et recherche.",
-        "href": "/features/message-tracing/"
-      }
-    ]
   },
   "cta": {
     "title": "Prêt à monitorer vos serveurs RabbitMQ ?",

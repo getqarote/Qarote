@@ -53,22 +53,6 @@ const ComparisonSection = () => {
                 {t("footer.vsGrafana")}
               </a>
             </li>
-            <li>
-              <a
-                href="/compare/cloudamqp/"
-                className="text-primary hover:underline"
-              >
-                {t("footer.vsCloudAMQP")}
-              </a>
-            </li>
-            <li>
-              <a
-                href="/compare/new-relic/"
-                className="text-primary hover:underline"
-              >
-                {t("footer.vsNewRelic")}
-              </a>
-            </li>
           </ul>
         </nav>
 

@@ -107,7 +107,7 @@ const sectionFirstSlug = sectionData?.pages[0]?.slug ?? "getting-started";
         )}
 
         <!-- Content -->
-        <article class="docs-prose docs-content-enter">
+        <article class="docs-prose">
           <slot />
         </article>
 
@@ -242,25 +242,4 @@ const sectionFirstSlug = sectionData?.pages[0]?.slug ?? "getting-started";
     });
   }
 </script>
-
-<style>
-  @media (prefers-reduced-motion: no-preference) {
-    @keyframes docs-fade-up {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .docs-content-enter {
-      animation: docs-fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) 60ms both;
-    }
-    /* Copy button: scale pulse on Copied! state */
-    .docs-copy-btn.copied {
-      animation: docs-copy-pulse 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    @keyframes docs-copy-pulse {
-      0%   { transform: scale(1); }
-      50%  { transform: scale(1.08); }
-      100% { transform: scale(1); }
-    }
-  }
-</style>
 </BaseLayout>

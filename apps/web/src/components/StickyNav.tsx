@@ -21,7 +21,10 @@ const StickyNav = ({ currentPage }: { currentPage?: string }) => {
   const locale = i18n.language || "en";
   const localePrefix = locale === "en" ? "" : `/${locale}`;
 
-  const sections = [{ id: "video", label: t("howItWorks") }];
+  const sections = [
+    { id: "video", label: t("howItWorks") },
+    { id: "pricing", label: t("pricing") },
+  ];
 
   useEffect(() => {
     const sectionIds = sections.map((s) => s.id);
@@ -100,15 +103,6 @@ const StickyNav = ({ currentPage }: { currentPage?: string }) => {
                 {section.label}
               </button>
             ))}
-            <a
-              href={`${localePrefix}/pricing/`}
-              className={`px-4 py-2 text-base font-medium transition-colors ${currentPage === "pricing" ? "text-primary" : "text-foreground hover:text-primary"}`}
-              {...(currentPage === "pricing"
-                ? { "aria-current": "page" as const }
-                : {})}
-            >
-              {t("pricing")}
-            </a>
             <a
               href={`${localePrefix}/features/`}
               className={`px-4 py-2 text-base font-medium transition-colors ${currentPage === "features" ? "text-primary" : "text-foreground hover:text-primary"}`}
@@ -215,15 +209,6 @@ const StickyNav = ({ currentPage }: { currentPage?: string }) => {
                 {section.label}
               </button>
             ))}
-            <a
-              href={`${localePrefix}/pricing/`}
-              className={`px-4 py-3 text-base font-medium hover:bg-muted rounded-md transition-colors ${currentPage === "pricing" ? "text-primary" : "text-foreground hover:text-primary"}`}
-              {...(currentPage === "pricing"
-                ? { "aria-current": "page" as const }
-                : {})}
-            >
-              {t("pricing")}
-            </a>
             <a
               href={`${localePrefix}/features/`}
               className={`px-4 py-3 text-base font-medium hover:bg-muted rounded-md transition-colors ${currentPage === "features" ? "text-primary" : "text-foreground hover:text-primary"}`}

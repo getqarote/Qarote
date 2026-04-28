@@ -3,8 +3,8 @@
     "titleBefore": "Your RabbitMQ is running. Do you actually know",
     "titleHighlight": "what's happening",
     "titleAfter": " inside it?",
-    "subtitle": "The RabbitMQ monitoring layer your management plugin was never built to be. Queue history, consumer health alerts, and incident diagnosis — connected in under 2 minutes. No Prometheus. No YAML.",
-    "noCreditCard": "2-minute setup · No credit card · Free tier, no time limit · Developer+ from $29/mo"
+    "subtitle": "No Prometheus. No Grafana. No dedicated ops person needed. Enter your URL — full queue monitoring in under 2 minutes.",
+    "noCreditCard": "2-minute setup · No credit card · Free & open source · Try Pro features for 14 days"
   },
   "cta": {
     "getStartedForFree": "Get started for free",
@@ -40,52 +40,36 @@
     "allSystemsOperational": "All systems operational"
   },
   "features": {
-    "title": "The intelligence layer your",
-    "titleLine2": "management plugin doesn't have.",
-    "freeTierNote": "Live monitoring and queue management are free, no time limit. Developer+ adds alerting, 7-day Queue History, Message Spy, and Incident Diagnosis — from $29/mo.",
+    "title": "All you really care about.",
+    "titleLine2": "Monitored in one place.",
+    "freeTierNote": "Core features are free forever. Alerting, multi-server, and advanced analytics require a Pro plan.",
     "liveQueueMonitoring": {
       "title": "Live queue monitoring",
-      "description": "Queue depths, message rates, and consumer counts — updated every second. Spot a stuck consumer or filling queue the moment it happens, not 60 seconds later."
+      "description": "Monitor queue depths, message rates, and consumer counts with live updates. Track message accumulation and processing performance."
     },
     "smartAlertingSystem": {
       "title": "Smart alerting system",
-      "description": "Get paged before your users do. Set thresholds on queue depth, growth rate, or consumer count — alerts fire via email, Slack, or webhook the moment something's wrong, not after someone files a ticket."
+      "description": "Intelligent alerts for queue backlogs, memory usage, and performance issues. Customizable thresholds with severity-based notifications."
     },
     "queueManagement": {
       "title": "Queue management",
-      "description": "Drain, purge, or reroute queues without touching the CLI. Create exchanges, bind queues, and manage routing keys — all from the same dashboard where you spotted the problem."
+      "description": "Pause, resume, and delete queues with one click. Create exchanges, bind queues, and manage routing keys through an intuitive interface."
     },
     "performanceAnalytics": {
       "title": "Performance analytics",
-      "description": "Historical charts for memory, disk, and message throughput. Spot a slow broker resource leak before it becomes a 3am page."
+      "description": "Detailed metrics on memory usage, disk space, file descriptors, and message throughput. Visualize trends with beautiful charts and graphs."
     },
     "multiServerSupport": {
       "title": "Multi-server support",
-      "description": "Production, staging, and dev in one dashboard. No more three-tab incident response — all your RabbitMQ servers, one place."
+      "description": "Connect to multiple RabbitMQ clusters and switch between them seamlessly. Support for different environments and configurations."
     },
     "messagePublishing": {
       "title": "Message publishing",
-      "description": "Publish test messages directly to any queue or exchange without writing code. Reproduce bugs, validate routing, and debug message flow from the same dashboard."
+      "description": "Test and debug your applications by publishing messages directly to queues and exchanges. Perfect for development and troubleshooting."
     },
-    "dailyDigest": {
-      "title": "Daily Digest",
-      "description": "A morning health summary delivered to your inbox — queue depth trends, consumer anomalies, and the past 24 hours in one read. Know what built up overnight before you open a dashboard."
-    },
-    "messageSpy": {
-      "title": "Message Spy",
-      "description": "Browse headers and payloads directly inside any queue — read-only, non-destructive, production-safe. The management plugin can't show you message contents without consuming them. Message Spy does."
-    },
-    "metricsPersistence": {
-      "title": "Queue History",
-      "description": "5-minute snapshots, 7 days retained. The management plugin forgets what happened the moment you close the tab — Queue History doesn't. See exactly when a queue started filling, even if nobody was watching."
-    },
-    "incidentDiagnosis": {
-      "title": "Incident Diagnosis Engine",
-      "description": "The management plugin shows state. Incident Diagnosis shows cause. Correlates queue backlog spikes, consumer drops, and publish rate changes into one readable timeline — 40 minutes of tab-switching, done automatically."
-    },
-    "messageTracing": {
-      "title": "Message Tracing (Firehose)",
-      "description": "Follow every message from publish to delivery — or failure. Full broker-level tracing in real time, with routing key, exchange, and payload size. Find out exactly where a message disappeared."
+    "deadLetterQueueMonitoring": {
+      "title": "Dead-letter queue monitoring",
+      "description": "Know when messages are failing before your users do. DLQ growth rate is the leading indicator most teams miss — visible in real time."
     }
   },
   "enterprise": {
@@ -97,29 +81,29 @@
     "advancedSecurityDesc": "Complete control over your data and deployment"
   },
   "connection": {
-    "title": "Up and running in three steps",
-    "subtitle": "No agents, no Prometheus exporters, no YAML. Qarote connects directly to the RabbitMQ management API.",
+    "title": "Connect easily with your RabbitMQ servers",
+    "subtitle": "Don't change the way your RabbitMQ servers work, Qarote is specially made for this message broker.",
     "ecosystemTitle": "Works with any RabbitMQ client:",
     "step1": {
       "title": "Sign up",
-      "description": "Create your account in seconds. No credit card required. Free tier has no time limit.",
+      "description": "Create your account in seconds. No credit card required. Start monitoring your RabbitMQ infrastructure immediately.",
       "createAccount": "Create your Qarote account",
-      "transformMonitoring": "Add the intelligence layer your RabbitMQ deserves.",
+      "transformMonitoring": "Transform the way you monitor RabbitMQ.",
       "continueWithEmail": "Continue with Email",
       "or": "or",
       "continueWithGoogle": "Continue with Google"
     },
     "step2": {
       "title": "Add your servers",
-      "description": "Paste your RabbitMQ management URL. Production, staging, and dev — all in one place.",
+      "description": "Connect your RabbitMQ servers with a simple connection. Support for multiple environments and clusters.",
       "productionServer": "Production Server",
       "stagingServer": "Staging Server",
       "developmentServer": "Development Server",
       "nodes": "3 nodes"
     },
     "step3": {
-      "title": "Get full visibility",
-      "description": "Real-time queue depth, consumer health, and rate-of-change visible instantly. Set up alerts and Daily Digest for your whole team.",
+      "title": "Monitor and collaborate",
+      "description": "Get real-time insights into your queues, exchanges, and message flow. Monitor with your team and set up alerts.",
       "messagesPerSec": "Messages/sec",
       "queues": "Queues",
       "queueDepths": "Queue Depths",
@@ -138,8 +122,8 @@
     "card2Cta": "Try Enterprise free"
   },
   "finalCta": {
-    "title": "Your next incident is already building. You just can't see it yet.",
-    "subtitle": "Connect your RabbitMQ server in 2 minutes. Queue History, consumer health alerts, and Incident Diagnosis — free to try, no credit card.",
+    "title": "Ready to monitor your RabbitMQ servers?",
+    "subtitle": "Start monitoring your RabbitMQ servers for free today.",
     "noCreditCard": "No credit card required",
     "openSource": "Open source",
     "selfHostable": "Self-hostable",
@@ -156,11 +140,7 @@
     "contact": "Contact",
     "vsDatadog": "Qarote vs Datadog",
     "vsGrafana": "Qarote vs Grafana + Prometheus",
-    "quiz": "Quiz",
-    "security": "Security",
-    "pricing": "Pricing",
-    "vsCloudAMQP": "Qarote vs CloudAMQP",
-    "vsNewRelic": "Qarote vs New Relic"
+    "quiz": "Quiz"
   },
   "founderQuote": {
     "openQuote": "“",
@@ -179,7 +159,7 @@
     "stillHaveQuestionsDesc": "Can't find the answer you're looking for? Please chat to our friendly team."
   },
   "seo": {
-    "title": "Qarote — RabbitMQ Monitoring, Alerting & Queue History",
-    "description": "Self-hosted RabbitMQ monitoring with live queue depth, consumer health alerting, 7-day Queue History, and Incident Diagnosis. No Prometheus, no Grafana. Free tier, connect in 2 minutes."
+    "title": "Qarote — Self-Hosted RabbitMQ Monitoring Dashboard",
+    "description": "The self-hosted RabbitMQ monitoring tool and alerting dashboard for developers. Connect in 2 minutes — no Prometheus, no Grafana. Free & open source."
   }
 }

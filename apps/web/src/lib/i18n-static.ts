@@ -11,7 +11,6 @@ const NAMESPACES = [
   "nav",
   "legal",
   "quiz",
-  "security",
 ];
 
 /**

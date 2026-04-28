@@ -7,17 +7,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { logger } from "@/lib/logger";
 
+import { AuthPageHeader } from "@/components/auth/AuthPageHeader";
 import { AuthPageWrapper } from "@/components/auth/AuthPageWrapper";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import { SSOLoginButton } from "@/components/auth/SSOLoginButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -28,6 +24,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
+import { PixelLogin } from "@/components/ui/pixel-login";
 
 import { usePublicConfig } from "@/hooks/queries/usePublicConfig";
 import { useShowAlternativeAuth } from "@/hooks/queries/useSsoConfig";
@@ -36,12 +33,15 @@ import { useLogin } from "@/hooks/ui/useAuth";
 import { type SignInFormData, signInSchema } from "@/schemas";
 
 /**
- * Sign-in page. Matches the signup page's typographic header treatment:
- * Fragment Mono orange eyebrow → Bricolage Grotesque heading, no icon badge.
+ * Sign-in page. Adopts the shared `AuthPageWrapper` so the auth flow
+ * matches the quiet dashboard aesthetic (no glassmorphism, no
+ * `text-white` hero against a dark background, no marketing-loud
+ * drop shadows). The design context explicitly calls out
+ * glassmorphism as anti-reference #1 — SignIn used to break that.
  *
- * Delight layer:
- * - Staggered entrance animation (respects prefers-reduced-motion)
- * - Submit button reveals a → arrow on hover
+ * Structure: `AuthPageHeader` for the icon badge + title + subtitle,
+ * then `CardContent` for the form, alternative auth buttons,
+ * forgot-password link, and legal links.
  */
 const SignIn = () => {
   const { t } = useTranslation("auth");
@@ -101,52 +101,17 @@ const SignIn = () => {
 
   return (
     <AuthPageWrapper>
-      {/* ── Entrance animation ────────────────────────────────────── */}
-      <style>{`
-        @keyframes si-field-in {
-          from { opacity: 0; transform: translateY(6px); }
-          to   { opacity: 1; transform: translateY(0);   }
-        }
-        .si-in {
-          animation: si-field-in 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .si-in { animation: none !important; }
-        }
-      `}</style>
+      <AuthPageHeader
+        Icon={PixelLogin}
+        title={t("welcomeBack")}
+        description={t("enterCredentials")}
+      />
 
-      {/* ── Header — no icon badge ────────────────────────────────── */}
-      <CardHeader className="px-8 pt-8 pb-2 space-y-0">
-        <p
-          className="si-in text-[10px] tracking-[0.18em] uppercase text-primary font-medium mb-3 select-none"
-          style={{ fontFamily: "var(--font-mono)", animationDelay: "0ms" }}
-        >
-          Qarote
-        </p>
-        <CardTitle
-          className="si-in text-[1.65rem] font-bold tracking-tight leading-[1.15]"
-          style={{
-            fontFamily: "var(--font-heading)",
-            fontOpticalSizing: "auto",
-            animationDelay: "40ms",
-          }}
-        >
-          {t("welcomeBack")}
-        </CardTitle>
-        <CardDescription
-          className="si-in text-sm leading-relaxed mt-2"
-          style={{ animationDelay: "80ms" }}
-        >
-          {t("enterCredentials")}
-        </CardDescription>
-      </CardHeader>
-
-      {/* ── Body ─────────────────────────────────────────────────── */}
-      <CardContent className="px-8 pb-8 pt-5">
+      <CardContent className="space-y-4">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {loginMutation.isError && (
-              <Alert variant="destructive" className="si-in">
+              <Alert variant="destructive">
                 <AlertDescription>
                   <SignInErrorMessage
                     error={loginMutation.error}
@@ -156,83 +121,63 @@ const SignIn = () => {
               </Alert>
             )}
 
-            {/* ── Email ── */}
-            <div className="si-in" style={{ animationDelay: "120ms" }}>
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("emailAddress")}</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder={t("enterEmail")}
-                        disabled={loginMutation.isPending}
-                        autoComplete="username"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("emailAddress")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder={t("enterEmail")}
+                      disabled={loginMutation.isPending}
+                      autoComplete="username"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-            {/* ── Password + forgot link ── */}
-            <div className="si-in" style={{ animationDelay: "160ms" }}>
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center justify-between">
-                      <FormLabel>{t("password")}</FormLabel>
-                      <Link
-                        to="/forgot-password"
-                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                      >
-                        {t("forgotPassword")}
-                      </Link>
-                    </div>
-                    <FormControl>
-                      <PasswordInput
-                        placeholder={t("enterPassword")}
-                        disabled={loginMutation.isPending}
-                        autoComplete="current-password"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* ── Submit ── */}
-            <div className="si-in pt-1" style={{ animationDelay: "200ms" }}>
-              <Button
-                type="submit"
-                className="w-full btn-primary h-11 group"
-                disabled={loginMutation.isPending}
-              >
-                <span className="flex items-center justify-center gap-1.5">
-                  {loginMutation.isPending ? t("signingIn") : t("signIn")}
-                  {!loginMutation.isPending && (
-                    <span
-                      className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
-                      aria-hidden="true"
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex items-center justify-between">
+                    <FormLabel>{t("password")}</FormLabel>
+                    <Link
+                      to="/forgot-password"
+                      className="text-sm text-muted-foreground hover:text-primary transition-colors"
                     >
-                      →
-                    </span>
-                  )}
-                </span>
-              </Button>
-            </div>
+                      {t("forgotPassword")}
+                    </Link>
+                  </div>
+                  <FormControl>
+                    <PasswordInput
+                      placeholder={t("enterPassword")}
+                      disabled={loginMutation.isPending}
+                      autoComplete="current-password"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button
+              type="submit"
+              className="w-full btn-primary"
+              disabled={loginMutation.isPending}
+            >
+              {loginMutation.isPending ? t("signingIn") : t("signIn")}
+            </Button>
           </form>
         </Form>
 
-        {/* ── Alternative auth ── */}
         {showAlternativeAuth && (
           <>
             <div className="relative my-6">
@@ -260,9 +205,8 @@ const SignIn = () => {
           </>
         )}
 
-        {/* ── Create account link ── */}
         {publicConfig?.registrationEnabled === true && (
-          <p className="pt-4 text-center text-sm text-muted-foreground">
+          <div className="pt-2 text-center text-sm text-muted-foreground">
             {t("or")}{" "}
             <Link
               to="/auth/sign-up"
@@ -270,10 +214,9 @@ const SignIn = () => {
             >
               {t("createAccount")}
             </Link>
-          </p>
+          </div>
         )}
 
-        {/* ── Legal links ── */}
         <div className="pt-4 flex justify-center gap-4 text-sm text-muted-foreground">
           <Link
             to="/terms-of-service"

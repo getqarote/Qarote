@@ -3,8 +3,8 @@
     "titleBefore": "Tu RabbitMQ está corriendo. ¿Sabes realmente",
     "titleHighlight": "qué está pasando",
     "titleAfter": " dentro?",
-    "subtitle": "La capa de inteligencia que tu plugin de gestión de RabbitMQ nunca fue diseñado para ser. Historial de colas, alertas de salud de consumidores y diagnóstico de incidentes — conectado en menos de 2 minutos. Sin Prometheus. Sin YAML.",
-    "noCreditCard": "Configuración en 2 min · Sin tarjeta · Plan gratuito, sin límite de tiempo · Developer+ desde $29/mes"
+    "subtitle": "Sin Prometheus. Sin Grafana. Sin equipo de operaciones. Ingresa tu URL — monitoreo completo de colas en menos de 2 minutos.",
+    "noCreditCard": "Configuración en 2 min · Sin tarjeta · Gratis & open source · Pro 14 días"
   },
   "cta": {
     "getStartedForFree": "Comenzar gratis",
@@ -40,52 +40,36 @@
     "allSystemsOperational": "Todos los sistemas operativos"
   },
   "features": {
-    "title": "La capa de inteligencia que tu",
-    "titleLine2": "plugin de gestión no tiene.",
-    "freeTierNote": "El monitoreo en tiempo real y la gestión de colas son gratuitos, sin límite de tiempo. Developer+ añade alertas, 7 días de Historial de colas, Message Spy y Diagnóstico de incidentes — desde $29/mes.",
+    "title": "Todo lo que realmente importa.",
+    "titleLine2": "Monitorizado en un solo lugar.",
+    "freeTierNote": "Las funcionalidades básicas son gratuitas para siempre. Las alertas, multi-servidor y análisis avanzados requieren un plan Pro.",
     "liveQueueMonitoring": {
       "title": "Monitoreo de colas en tiempo real",
-      "description": "Profundidad de colas, tasas de mensajes y conteo de consumidores — actualizados cada segundo. Detecta un consumidor bloqueado o una cola que se llena en el momento en que sucede, no 60 segundos después."
+      "description": "Monitorea la profundidad de las colas, las tasas de mensajes y el número de consumidores con actualizaciones en vivo. Rastrea la acumulación de mensajes y el rendimiento de procesamiento."
     },
     "smartAlertingSystem": {
       "title": "Sistema de alertas inteligente",
-      "description": "Recibe la alerta antes que tus usuarios. Define umbrales sobre profundidad de cola, tasa de crecimiento o conteo de consumidores — las alertas se disparan por email, Slack o webhook en el momento en que algo falla, no cuando alguien abre un ticket."
+      "description": "Alertas inteligentes para acumulación en colas, uso de memoria y problemas de rendimiento. Umbrales personalizables con notificaciones basadas en severidad."
     },
     "queueManagement": {
       "title": "Gestión de colas",
-      "description": "Vacía, purga o redirige colas sin tocar el CLI. Crea exchanges, vincula colas y gestiona claves de enrutamiento — todo desde el mismo dashboard donde detectaste el problema."
+      "description": "Pausa, reanuda y elimina colas con un solo clic. Crea exchanges, vincula colas y gestiona claves de enrutamiento a través de una interfaz intuitiva."
     },
     "performanceAnalytics": {
       "title": "Análisis de rendimiento",
-      "description": "Gráficos históricos de memoria, disco y rendimiento de mensajes. Detecta una fuga de recursos del broker antes de que se convierta en una alerta a las 3am."
+      "description": "Métricas detalladas sobre uso de memoria, espacio en disco, descriptores de archivos y rendimiento de mensajes. Visualiza tendencias con gráficos elegantes."
     },
     "multiServerSupport": {
       "title": "Soporte multi-servidor",
-      "description": "Producción, staging y dev en un solo dashboard. Sin más respuesta a incidentes en tres pestañas — todos tus servidores RabbitMQ, en un solo lugar."
+      "description": "Conéctate a múltiples clusters de RabbitMQ y cambia entre ellos de forma fluida. Soporte para diferentes entornos y configuraciones."
     },
     "messagePublishing": {
       "title": "Publicación de mensajes",
-      "description": "Publica mensajes de prueba directamente en cualquier cola o exchange sin escribir código. Reproduce bugs, valida el enrutamiento y depura el flujo de mensajes desde el mismo dashboard."
+      "description": "Prueba y depura tus aplicaciones publicando mensajes directamente en colas y exchanges. Perfecto para desarrollo y resolución de problemas."
     },
-    "dailyDigest": {
-      "title": "Resumen diario",
-      "description": "Un resumen de salud matutino enviado a tu bandeja de entrada — tendencias de profundidad de colas, anomalías de consumidores, y las últimas 24 horas en una sola lectura. Sabe qué se acumuló durante la noche antes de abrir un dashboard."
-    },
-    "messageSpy": {
-      "title": "Espía de mensajes",
-      "description": "Explora cabeceras y contenido directamente dentro de cualquier cola — solo lectura, no destructivo, seguro en producción. El plugin de gestión no puede mostrarte el contenido de los mensajes sin consumirlos. Message Spy sí puede."
-    },
-    "metricsPersistence": {
-      "title": "Historial de colas",
-      "description": "Snapshots de 5 minutos, retenidos 7 días. El plugin de gestión olvida lo que pasó en el momento en que cierras la pestaña — el Historial de colas no. Ve exactamente cuándo una cola empezó a llenarse, aunque nadie estuviera mirando."
-    },
-    "incidentDiagnosis": {
-      "title": "Motor de diagnóstico de incidentes",
-      "description": "El plugin de gestión muestra el estado. El Diagnóstico de incidentes muestra la causa. Correlaciona picos de backlog, caídas de consumidores y cambios en la tasa de publicación en una línea de tiempo legible — 40 minutos cambiando pestañas, hechos automáticamente."
-    },
-    "messageTracing": {
-      "title": "Trazado de mensajes (Firehose)",
-      "description": "Sigue cada mensaje desde la publicación hasta la entrega — o el fallo. Trazado completo a nivel de broker en tiempo real, con clave de enrutamiento, exchange y tamaño del payload. Descubre exactamente dónde desapareció un mensaje."
+    "deadLetterQueueMonitoring": {
+      "title": "Monitoreo de colas DLQ",
+      "description": "Sabe cuándo los mensajes están fallando antes que tus usuarios. La tasa de crecimiento del DLQ es el indicador anticipado que la mayoría de los equipos pasan por alto — visible en tiempo real."
     }
   },
   "enterprise": {
@@ -97,29 +81,29 @@
     "advancedSecurityDesc": "Control total sobre tus datos y despliegue"
   },
   "connection": {
-    "title": "En marcha en tres pasos",
-    "subtitle": "Sin agentes, sin exportadores de Prometheus, sin YAML. Qarote se conecta directamente a la API de gestión de RabbitMQ.",
+    "title": "Conéctate fácilmente con tus servidores RabbitMQ",
+    "subtitle": "No cambies la forma en que funcionan tus servidores RabbitMQ, Qarote está especialmente diseñado para este broker de mensajes.",
     "ecosystemTitle": "Compatible con cualquier cliente RabbitMQ:",
     "step1": {
       "title": "Regístrate",
-      "description": "Crea tu cuenta en segundos. No se requiere tarjeta de crédito. El plan gratuito no tiene límite de tiempo.",
+      "description": "Crea tu cuenta en segundos. No se requiere tarjeta de crédito. Comienza a monitorear tu infraestructura RabbitMQ de inmediato.",
       "createAccount": "Crea tu cuenta de Qarote",
-      "transformMonitoring": "Añade la capa de inteligencia que tu RabbitMQ merece.",
+      "transformMonitoring": "Transforma la forma en que monitoreas RabbitMQ.",
       "continueWithEmail": "Continuar con correo electrónico",
       "or": "o",
       "continueWithGoogle": "Continuar con Google"
     },
     "step2": {
       "title": "Añade tus servidores",
-      "description": "Pega la URL de gestión de tu RabbitMQ. Producción, staging y dev — todo en un solo lugar.",
+      "description": "Conecta tus servidores RabbitMQ con una simple conexión. Soporte para múltiples entornos y clusters.",
       "productionServer": "Servidor de producción",
       "stagingServer": "Servidor de pre-producción",
       "developmentServer": "Servidor de desarrollo",
       "nodes": "3 nodos"
     },
     "step3": {
-      "title": "Obtén visibilidad completa",
-      "description": "Profundidad de colas en tiempo real, salud de consumidores y tasa de cambio visibles al instante. Configura alertas y el Resumen diario para todo tu equipo.",
+      "title": "Monitorea y colabora",
+      "description": "Obtén información en tiempo real sobre tus colas, exchanges y flujo de mensajes. Monitorea con tu equipo y configura alertas.",
       "messagesPerSec": "Mensajes/seg",
       "queues": "Colas",
       "queueDepths": "Profundidad de colas",
@@ -138,8 +122,8 @@
     "card2Cta": "Probar Enterprise gratis"
   },
   "finalCta": {
-    "title": "Tu próximo incidente ya está formándose. Solo que aún no puedes verlo.",
-    "subtitle": "Conecta tu servidor RabbitMQ en 2 minutos. Historial de colas, alertas de salud de consumidores y Diagnóstico de incidentes — gratis para probar, sin tarjeta de crédito.",
+    "title": "¿Listo para monitorear tus servidores RabbitMQ?",
+    "subtitle": "Comienza a monitorear tus servidores RabbitMQ gratis hoy mismo.",
     "noCreditCard": "No se requiere tarjeta de crédito",
     "openSource": "Open source",
     "selfHostable": "Self-hostable",
@@ -156,11 +140,7 @@
     "contact": "Contacto",
     "vsDatadog": "Qarote vs Datadog",
     "vsGrafana": "Qarote vs Grafana + Prometheus",
-    "quiz": "Quiz",
-    "security": "Seguridad",
-    "pricing": "Precios",
-    "vsCloudAMQP": "Qarote vs CloudAMQP",
-    "vsNewRelic": "Qarote vs New Relic"
+    "quiz": "Quiz"
   },
   "founderQuote": {
     "openQuote": "“",
@@ -179,7 +159,7 @@
     "stillHaveQuestionsDesc": "¿No encuentras la respuesta que buscas? Contacta con nuestro amable equipo."
   },
   "seo": {
-    "title": "Qarote — Monitoreo RabbitMQ, Alertas e Historial de colas",
-    "description": "Monitoreo RabbitMQ autoalojado con profundidad de cola en vivo, alertas de salud de consumidores, 7 días de Historial de colas y Diagnóstico de incidentes. Sin Prometheus, sin Grafana. Plan gratuito, conecta en 2 minutos."
+    "title": "Qarote - Panel de monitoreo de RabbitMQ",
+    "description": "Monitoreo RabbitMQ en 2 minutos — sin Prometheus, sin Grafana. Conecta tu URL y listo. Gratis, open source, auto-alojable."
   }
 }

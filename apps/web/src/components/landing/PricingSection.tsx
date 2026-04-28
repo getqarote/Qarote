@@ -109,13 +109,8 @@ const PricingSection = () => {
         communitySupport: true,
         prioritySupport: false,
         emailAlerts: false,
-        topologyVisualization: false as false | boolean,
-        roleBasedAccess: "soon" as false | "soon" | boolean,
-        dailyDigest: "limited" as false | "limited" | true,
-        messageSpy: "limited" as false | "limited" | true,
-        metricsPersistence: "limited" as false | "limited" | true,
-        incidentDiagnosis: "limited" as false | "limited" | true,
-        messageTracing: "limited" as false | "limited" | true,
+        topologyVisualization: false as false | "soon",
+        roleBasedAccess: "soon" as false | "soon",
       },
     },
     {
@@ -140,12 +135,7 @@ const PricingSection = () => {
         prioritySupport: true,
         emailAlerts: true,
         topologyVisualization: true,
-        roleBasedAccess: "soon" as false | "soon" | boolean,
-        dailyDigest: true as false | "limited" | true,
-        messageSpy: true as false | "limited" | true,
-        metricsPersistence: true as false | "limited" | true,
-        incidentDiagnosis: true as false | "limited" | true,
-        messageTracing: true as false | "limited" | true,
+        roleBasedAccess: "soon" as false | "soon",
       },
     },
     {
@@ -169,12 +159,7 @@ const PricingSection = () => {
         prioritySupport: true,
         emailAlerts: true,
         topologyVisualization: true,
-        roleBasedAccess: "soon" as false | "soon" | boolean,
-        dailyDigest: true as false | "limited" | true,
-        messageSpy: true as false | "limited" | true,
-        metricsPersistence: true as false | "limited" | true,
-        incidentDiagnosis: true as false | "limited" | true,
-        messageTracing: true as false | "limited" | true,
+        roleBasedAccess: "soon" as false | "soon",
       },
     },
   ];
@@ -277,7 +262,7 @@ const PricingSection = () => {
               return (
                 <div
                   key={plan.id}
-                  className="relative flex h-full flex-col border border-border overflow-hidden transition-colors duration-200 hover:border-primary/30"
+                  className="relative flex h-full flex-col border border-border overflow-hidden"
                 >
                   {/* Plan header strip */}
                   <div className="px-6 py-3 bg-muted/30 border-b border-border flex items-center justify-between">
@@ -409,6 +394,12 @@ const PricingSection = () => {
                               <span className="text-sm text-foreground">
                                 {tPricing("featureNames.topologyVisualization")}
                               </span>
+                              {plan.features.topologyVisualization ===
+                                "soon" && (
+                                <span className="font-medium px-1 border border-border text-muted-foreground text-[0.65rem]">
+                                  {tPricing("soon")}
+                                </span>
+                              )}
                             </FeatureItem>
                           )}
                           {plan.features.roleBasedAccess && (
@@ -423,46 +414,6 @@ const PricingSection = () => {
                               )}
                             </FeatureItem>
                           )}
-                        </ul>
-                      </div>
-
-                      <div>
-                        <h4 className="font-semibold text-foreground mb-3 text-xs sm:text-sm uppercase tracking-wide whitespace-nowrap">
-                          {tPricing("intelligenceDiagnostics")}
-                        </h4>
-                        <ul className="space-y-2">
-                          {(
-                            [
-                              ["dailyDigest", "featureNames.dailyDigest"],
-                              ["messageSpy", "featureNames.messageSpy"],
-                              [
-                                "metricsPersistence",
-                                "featureNames.metricsPersistence",
-                              ],
-                              [
-                                "incidentDiagnosis",
-                                "featureNames.incidentDiagnosis",
-                              ],
-                              ["messageTracing", "featureNames.messageTracing"],
-                            ] as const
-                          ).map(([key, nameKey]) => {
-                            const val = plan.features[
-                              key as keyof typeof plan.features
-                            ] as false | "limited" | true;
-                            if (!val) return null;
-                            return (
-                              <FeatureItem key={key}>
-                                <span className="text-sm text-foreground">
-                                  {tPricing(nameKey)}
-                                </span>
-                                {val === "limited" && (
-                                  <span className="font-medium px-1 border border-border text-muted-foreground text-[0.65rem]">
-                                    {tPricing("limited")}
-                                  </span>
-                                )}
-                              </FeatureItem>
-                            );
-                          })}
                         </ul>
                       </div>
 
@@ -508,22 +459,6 @@ const PricingSection = () => {
                             </FeatureItem>
                           )}
                         </ul>
-                        <a
-                          href="/security/"
-                          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors duration-150 mt-3"
-                        >
-                          {tPricing("viewSecurity")}
-                          <svg
-                            className="w-3 h-3"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                            aria-hidden="true"
-                          >
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                          </svg>
-                        </a>
                       </div>
 
                       <div className="mt-auto space-y-4">

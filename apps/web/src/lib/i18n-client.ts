@@ -12,7 +12,6 @@ const I18N_NAMESPACES = [
   "nav",
   "legal",
   "quiz",
-  "security",
 ] as const;
 
 /**
@@ -27,14 +26,13 @@ export function getI18n(
   resources?: Record<string, Record<string, unknown>>
 ) {
   if (i18n.isInitialized) {
-    // Always overwrite resource bundles from Astro build-time props.
-    // The hasResourceBundle guard caused SSR failures: the namespace was
-    // registered (declared in ns) but had no data, so hasResourceBundle
-    // returned true and addResourceBundle was skipped, leaving the namespace
-    // empty and causing t().map crashes for array-valued keys.
+    // If resources were passed and we already have an instance,
+    // add any missing resource bundles
     if (resources) {
       for (const [ns, bundle] of Object.entries(resources)) {
-        i18n.addResourceBundle(locale, ns, bundle, true, true);
+        if (!i18n.hasResourceBundle(locale, ns)) {
+          i18n.addResourceBundle(locale, ns, bundle);
+        }
       }
     }
     if (i18n.language !== locale) {

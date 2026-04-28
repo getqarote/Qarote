@@ -12,11 +12,7 @@
       "analytics": "Analíticas",
       "queueManagement": "Gestión de colas",
       "multiServer": "Multi-servidor",
-      "queueHistory": "Historial de colas",
-      "messageSpy": "Message Spy",
-      "dailyDigest": "Resumen diario",
-      "incidentDiagnosis": "Diagnóstico de incidentes",
-      "messageTracing": "Rastreo de mensajes"
+      "devExperience": "Experiencia dev"
     }
   },
   "coreFeature": "FUNCIÓN PRINCIPAL",
@@ -92,68 +88,6 @@
     "messagesPerSec": "Mensajes/seg",
     "activeQueues": "Colas activas",
     "allSystemsOperational": "Todos los sistemas operacionales"
-  },
-  "queueIntelligence": {
-    "title": "Inteligencia de colas que va a fondo"
-  },
-  "messageVisibility": {
-    "title": "Inspecciona cualquier mensaje sin tocar la cola"
-  },
-  "messagePipeline": {
-    "title": "Visibilidad total sobre el flujo de mensajes"
-  },
-  "queueHistory": {
-    "description": "7 días de profundidad de cola, conteos de consumidores y tasas de mensajes capturados cada 5 minutos. Grafica cualquier cola en cualquier ventana de tiempo — ve exactamente cuándo empezó a llenarse y cuándo se vació, aunque no estuvieras mirando."
-  },
-  "messageSpy": {
-    "description": "Navega cabeceras y payloads de mensajes directamente en cualquier cola — solo lectura, no destructivo, seguro para producción. Sin consumidor AMQP. Sin scripts desechables. Los mensajes permanecen exactamente donde están."
-  },
-  "dailyDigest": {
-    "description": "Un resumen matutino de la salud de tu broker por email: tendencias de profundidad de cola, crecimiento de DLQ y anomalías de las últimas 24 horas. Conciencia asíncrona sin necesidad de tener un panel abierto."
-  },
-  "incidentDiagnosis": {
-    "description": "Análisis automatizado de causa raíz para incidentes de RabbitMQ. Correlaciona picos de profundidad de cola, caídas de consumidores y cambios de rendimiento en una línea de tiempo legible — para saber qué pasó y en qué orden."
-  },
-  "messageTracing": {
-    "description": "Rastreo completo de mensajes en todo el broker usando el Firehose de RabbitMQ. Cada publicación, cada entrega, cada confirmación — capturado en tiempo real con clave de enrutamiento, exchange y tamaño del payload."
-  },
-  "comingSoon": {
-    "eyebrow": "Más funciones",
-    "heading": "Cinco herramientas más, un solo panel",
-    "subtitle": "Cada enlace lleva a una página dedicada con documentación completa, casos de uso y preguntas frecuentes.",
-    "learnMore": "Saber más",
-    "items": [
-      {
-        "icon": "chart.svg",
-        "title": "Historial de colas",
-        "description": "7 días de profundidad de cola, conteos de consumidores y tasas de mensajes capturados cada 5 minutos. Para retrospectivas de incidentes y planificación de capacidad.",
-        "href": "/features/metrics/"
-      },
-      {
-        "icon": "message.svg",
-        "title": "Message Spy",
-        "description": "Inspecciona cabeceras y payloads de mensajes dentro de cualquier cola — solo lectura, no destructivo, seguro para producción.",
-        "href": "/features/message-spy/"
-      },
-      {
-        "icon": "email.svg",
-        "title": "Resumen diario",
-        "description": "Un resumen matutino de la salud de tu broker: tendencias de profundidad de cola, crecimiento de DLQ y anomalías de las últimas 24 horas.",
-        "href": "/features/digest/"
-      },
-      {
-        "icon": "flag.svg",
-        "title": "Motor de diagnóstico de incidentes",
-        "description": "Análisis automatizado de causa raíz para incidentes de RabbitMQ. Correlaciona picos de profundidad, caídas de consumidores y cambios de rendimiento en una línea de tiempo legible.",
-        "href": "/features/incident-diagnosis/"
-      },
-      {
-        "icon": "real-time.svg",
-        "title": "Rastreo de mensajes (Firehose)",
-        "description": "Rastreo completo de mensajes en todo el broker usando el Firehose de RabbitMQ. Cada mensaje, cada ruta, cada consumidor — en tiempo real con filtrado y búsqueda.",
-        "href": "/features/message-tracing/"
-      }
-    ]
   },
   "cta": {
     "title": "¿Listo para monitorear tus servidores RabbitMQ?",

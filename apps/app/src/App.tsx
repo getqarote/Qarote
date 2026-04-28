@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 
@@ -100,12 +100,8 @@ const Plans = lazy(() => import("./pages/Plans"));
 const Billing = lazy(() => import("./pages/Billing"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const PaymentCancelled = lazy(() => import("./pages/PaymentCancelled"));
-function ExternalRedirect({ to }: { to: string }) {
-  useEffect(() => {
-    window.location.replace(to);
-  }, [to]);
-  return null;
-}
+const TermsOfService = lazy(() => import("./pages/public/TermsOfService"));
+const PrivacyPolicy = lazy(() => import("./pages/public/PrivacyPolicy"));
 const HelpSupport = lazy(() => import("./pages/HelpSupport"));
 const SignIn = lazy(() => import("./pages/SignIn"));
 const SignUp = lazy(() => import("./pages/SignUp"));
@@ -163,15 +159,11 @@ const AppCore = () => (
                           />
                           <Route
                             path="/terms-of-service"
-                            element={
-                              <ExternalRedirect to="https://qarote.io/terms-of-service/" />
-                            }
+                            element={<TermsOfService />}
                           />
                           <Route
                             path="/privacy-policy"
-                            element={
-                              <ExternalRedirect to="https://qarote.io/privacy-policy/" />
-                            }
+                            element={<PrivacyPolicy />}
                           />
                           <Route
                             path="/forgot-password"

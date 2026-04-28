@@ -1,4 +1,3 @@
-import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SupportedLocale } from "@qarote/i18n";
@@ -35,64 +34,11 @@ interface FaqItem {
 const NS = "features-alerting";
 
 // ---------------------------------------------------------------------------
-// Animation helpers
-// ---------------------------------------------------------------------------
-
-function useReducedMotion() {
-  const [reduce, setReduce] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduce(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setReduce(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-  return reduce;
-}
-
-function useScrollEntry<T extends Element>(
-  threshold = 0.12
-): [React.RefObject<T>, boolean] {
-  const ref = useRef<T>(null);
-  const [entered, setEntered] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setEntered(true);
-          observer.disconnect();
-        }
-      },
-      { threshold }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [threshold]);
-  return [ref, entered];
-}
-
-// ---------------------------------------------------------------------------
 // Hero
 // ---------------------------------------------------------------------------
 
 function Hero() {
   const { t } = useTranslation(NS);
-  const reduceMotion = useReducedMotion();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    requestAnimationFrame(() => requestAnimationFrame(() => setMounted(true)));
-  }, []);
-
-  const enter = (delay = 0): CSSProperties =>
-    reduceMotion
-      ? {}
-      : {
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? "translateY(0)" : "translateY(14px)",
-          transition: `opacity 0.55s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.55s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
-        };
 
   return (
     <div className="border border-border overflow-hidden mb-8">
@@ -102,21 +48,13 @@ function Hero() {
         </span>
       </div>
       <div className="p-8 text-center">
-        <h1
-          className="text-3xl sm:text-4xl lg:text-5xl font-normal text-foreground mb-6"
-          style={enter(0)}
-        >
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-normal text-foreground mb-6">
           {t("hero.title")}
         </h1>
-        <p
-          className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-8"
-          style={enter(80)}
-        >
+        <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-8">
           {t("hero.subtitle")}
         </p>
-        <div style={enter(160)}>
-          <AuthButtons align="center" />
-        </div>
+        <AuthButtons align="center" />
       </div>
     </div>
   );
@@ -128,22 +66,11 @@ function Hero() {
 
 function AlertTypesSection() {
   const { t } = useTranslation(NS);
-  const reduceMotion = useReducedMotion();
-  const [gridRef, gridEntered] = useScrollEntry<HTMLDivElement>(0.05);
 
   const items = ((): AlertTypeItem[] => {
     const raw = t("alertTypes.items", { returnObjects: true });
     return Array.isArray(raw) ? (raw as AlertTypeItem[]) : [];
   })();
-
-  const itemStyle = (i: number): CSSProperties =>
-    reduceMotion
-      ? {}
-      : {
-          opacity: gridEntered ? 1 : 0,
-          transform: gridEntered ? "translateY(0)" : "translateY(12px)",
-          transition: `opacity 0.45s cubic-bezier(0.16,1,0.3,1) ${i * 50}ms, transform 0.45s cubic-bezier(0.16,1,0.3,1) ${i * 50}ms`,
-        };
 
   return (
     <div className="border border-border overflow-hidden mb-8">
@@ -156,15 +83,11 @@ function AlertTypesSection() {
         <h2 className="text-2xl sm:text-3xl font-normal text-foreground mb-8">
           {t("alertTypes.heading")}
         </h2>
-        <div
-          ref={gridRef}
-          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch"
-        >
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
           {items.map((item, i) => (
             <div
               key={i}
               className="flex items-start gap-4 border border-border p-5"
-              style={itemStyle(i)}
             >
               <div className="shrink-0 w-9 h-9 flex items-center justify-center bg-feature-icon-bg">
                 <img
