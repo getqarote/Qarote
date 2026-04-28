@@ -1,0 +1,107 @@
+{
+  "seo": {
+    "title": "RabbitMQ Daily Health Digest | Qarote",
+    "description": "Scheduled email reports summarising queue health, consumer counts, throughput trends, and DLQ accumulation — delivered to your inbox every morning."
+  },
+  "hero": {
+    "eyebrow": "Features → Daily Digest",
+    "title": "Your RabbitMQ health report, delivered every morning.",
+    "subtitle": "Qarote compiles queue depth trends, consumer counts, dead-letter accumulation, and message throughput into a single digest email. Know what happened overnight before you open your laptop."
+  },
+  "digestSections": {
+    "eyebrow": "What's included",
+    "heading": "Everything in one report",
+    "items": [
+      {
+        "icon": "chart.svg",
+        "title": "Queue depth summary",
+        "description": "The top queues by message count at report time, plus peak depth over the past 24 hours. Spot queues that filled overnight and drained before morning — the kind of silent near-miss that logs never capture."
+      },
+      {
+        "icon": "message.svg",
+        "title": "Consumer health",
+        "description": "Consumer count per queue at report time, flagging any queue that spent time with zero consumers. A queue that loses consumers for 10 minutes at 3am is an incident waiting to happen — the digest surfaces it before it repeats."
+      },
+      {
+        "icon": "flag.svg",
+        "title": "Dead-letter accumulation",
+        "description": "DLQ message counts and growth rate over the past 24 hours. Dead-lettered messages indicate failed processing — a DLQ that quietly grew to 50,000 messages overnight is a backlog you want to know about before it becomes a replay incident."
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "Throughput trends",
+        "description": "Publish and delivery rates charted over 24 hours. Throughput that dropped to zero at 2am and recovered by 4am shows up clearly in the digest — giving you the timeline for an incident you didn't even know happened."
+      },
+      {
+        "icon": "server.svg",
+        "title": "Broker health snapshot",
+        "description": "Memory usage, disk usage, and any active alarms across all connected brokers. A broker that hit its memory watermark briefly overnight and recovered is visible in the digest — before it happens again and takes your publishers down."
+      },
+      {
+        "icon": "send.svg",
+        "title": "Top offenders",
+        "description": "The queues with the highest depth, highest DLQ growth, and most consumer churn over the reporting window. Prioritised so the first section of the digest is always actionable — no scrolling through 200 healthy queues to find the two that need attention."
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "How it works",
+    "heading": "Set it up once, receive it every morning",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Connect your broker",
+        "description": "Qarote collects queue metrics, consumer counts, and broker health data continuously via the RabbitMQ management API. No additional configuration is needed beyond your initial connection."
+      },
+      {
+        "number": "02",
+        "title": "Configure your schedule",
+        "description": "Choose your delivery time and time zone. Daily digests run in the morning by default. Add recipients — the digest goes to the whole team, not just the person who set it up."
+      },
+      {
+        "number": "03",
+        "title": "Receive your briefing",
+        "description": "A structured email arrives with your RabbitMQ health summary. Issues are surfaced first. Healthy queues are summarised. You spend two minutes reading it, not twenty minutes checking dashboards."
+      }
+    ]
+  },
+  "whyDigest": {
+    "eyebrow": "Why a digest?",
+    "heading": "Dashboards require intent. The digest requires nothing.",
+    "p1": "A dashboard is reactive: you open it when you suspect a problem. The digest is proactive: it arrives whether or not you thought to check. Teams that run the digest consistently find incidents that would have gone undetected for hours — the kind that happen overnight, recover partially, and leave the queue in a degraded state by morning.",
+    "p2": "The RabbitMQ management plugin retains metrics for roughly 8 hours. If something happened at 2am and you check the dashboard at 10am, the evidence is gone. The digest captures the 24-hour window and delivers it to you regardless of when you open your laptop.",
+    "p3": "On-call rotations create coverage gaps. The digest fills them — every person on the team gets the same view of infrastructure health every morning, regardless of who was on call, who got paged, and what got resolved without a post-mortem."
+  },
+  "crossLink": {
+    "eyebrow": "See also",
+    "navLabel": "Related links",
+    "alerting": "Real-time alerting →",
+    "pricing": "Pricing",
+    "features": "All features"
+  },
+  "faq": {
+    "heading": "Frequently asked questions",
+    "items": [
+      {
+        "question": "Does the daily digest require a paid plan?",
+        "answer": "The digest is a Developer and Enterprise plan feature. It requires historical metric data, which is part of Qarote's metrics persistence layer — available on paid plans. The free Community edition includes the real-time dashboard but not scheduled reporting."
+      },
+      {
+        "question": "Can I change the delivery schedule?",
+        "answer": "Yes. You can configure the delivery time and time zone per workspace. Weekly digests are also available on Enterprise."
+      },
+      {
+        "question": "Who receives the digest?",
+        "answer": "You configure the recipient list per workspace. Any team member with access to the workspace can be added as a recipient — useful for distributing visibility to engineers who don't log into the dashboard daily."
+      },
+      {
+        "question": "What time zone does the digest use?",
+        "answer": "The digest uses the time zone configured in your workspace settings. Queue health data is always shown in UTC timestamps; the delivery schedule uses your local time zone."
+      },
+      {
+        "question": "Can I customise which queues appear in the digest?",
+        "answer": "Yes. You can filter by vhost or queue name pattern to focus the digest on queues that matter to your team. Queues excluded from monitoring are excluded from the digest automatically."
+      }
+    ]
+  }
+}

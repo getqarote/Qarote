@@ -1,0 +1,44 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { CompareNewRelicIsland } from "../../../components/CompareIsland";
+import { loadTranslations, loadAllTranslations, t } from "../../../lib/i18n-static";
+import { getLocaleStaticPaths } from "../../../lib/locales";
+import { SUPPORTED_LOCALES, type SupportedLocale } from "@qarote/i18n";
+import { buildFaqSchema } from "../../../lib/schema";
+
+export const getStaticPaths = getLocaleStaticPaths;
+
+const rawLocale = Astro.params.locale;
+if (!rawLocale || !SUPPORTED_LOCALES.includes(rawLocale as SupportedLocale)) {
+  return Astro.redirect("/");
+}
+const locale = rawLocale as SupportedLocale;
+const compare = loadTranslations(locale, "compare-new-relic");
+const resources = { ...loadAllTranslations(locale), "compare-new-relic": compare };
+
+const newRelicSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "New Relic",
+  url: "https://newrelic.com/",
+  applicationCategory: "DeveloperApplication",
+  description: "Cloud-based full-stack observability platform for APM, infrastructure, logs, and more.",
+  sameAs: "https://www.wikidata.org/wiki/Q1543937",
+};
+
+const faqSchema = buildFaqSchema(compare);
+---
+
+<BaseLayout
+  title={t(compare, "seo.title")}
+  description={t(compare, "seo.description")}
+  locale={locale}
+  canonicalPath="/compare/new-relic/"
+  image="https://qarote.io/images/qarote_card.jpg"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(newRelicSchema)} />
+  </Fragment>
+  <CompareNewRelicIsland locale={locale} resources={resources} client:load />
+</BaseLayout>

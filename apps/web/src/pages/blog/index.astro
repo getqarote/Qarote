@@ -22,7 +22,7 @@ const dateStr = (iso: string) =>
   <BlogNav backHref="/" backText="Back to site" />
 
   <!-- Header -->
-  <header class="max-w-4xl mx-auto px-4 sm:px-6 pt-14 pb-10">
+  <header class="max-w-4xl mx-auto px-4 sm:px-6 pt-14 pb-10 blog-header-enter">
     <p class="text-xs font-semibold uppercase tracking-widest text-primary mb-3">Blog</p>
     <h1 class="font-display text-3xl sm:text-4xl font-semibold text-foreground tracking-tight mb-3">
       RabbitMQ guides & operations
@@ -33,7 +33,7 @@ const dateStr = (iso: string) =>
   </header>
 
   <!-- Post list -->
-  <main class="max-w-4xl mx-auto px-4 sm:px-6 pb-20">
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 pb-20 blog-list-enter">
     {posts.length === 0 ? (
       <p class="text-muted-foreground text-sm">No posts yet. Check back soon.</p>
     ) : (
@@ -79,4 +79,15 @@ const dateStr = (iso: string) =>
       </ul>
     )}
   </main>
+
+<style>
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes blog-fade-up {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .blog-header-enter { animation: blog-fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .blog-list-enter   { animation: blog-fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) 80ms both; }
+  }
+</style>
 </BaseLayout>

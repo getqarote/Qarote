@@ -47,18 +47,21 @@ function TermsOfServiceContent() {
     <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Page header */}
       <div className="border border-border overflow-hidden mb-8">
-        <div className="px-6 py-3 bg-muted/30 border-b border-border">
+        <div className="px-6 py-3 bg-muted/30 border-b border-border flex items-center justify-between">
           <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Legal
           </span>
+          <span
+            className="text-xs text-muted-foreground/50"
+            style={{ fontFamily: "var(--font-mono)" }}
+          >
+            {t("termsOfService.lastUpdated")}
+          </span>
         </div>
         <div className="p-8">
-          <h1 className="text-4xl font-normal text-foreground mb-4">
+          <h1 className="text-4xl font-normal text-foreground">
             {t("termsOfService.title")}
           </h1>
-          <p className="text-muted-foreground">
-            {t("termsOfService.lastUpdated")}
-          </p>
         </div>
       </div>
 
@@ -75,10 +78,10 @@ function TermsOfServiceContent() {
               <li key={s.id}>
                 <a
                   href={`#${s.id}`}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  className="group flex items-baseline gap-2 text-muted-foreground hover:text-foreground transition-colors duration-150"
                 >
-                  <span className="font-mono text-xs text-primary mr-2">
-                    {i + 1}.
+                  <span className="font-mono text-xs text-primary/50 shrink-0 transition-colors duration-150 group-hover:text-primary">
+                    {String(i + 1).padStart(2, "0")}
                   </span>
                   {t(`termsOfService.sections.${s.key}.title`)}
                 </a>

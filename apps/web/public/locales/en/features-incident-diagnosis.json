@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "RabbitMQ Incident Diagnosis Engine | Qarote",
+    "description": "Automatically surface root causes for RabbitMQ incidents. Qarote analyses metric history to identify consumer drops, queue spikes, DLQ accumulation, and broker pressure — no manual log trawling."
+  },
+  "hero": {
+    "eyebrow": "Features → Incident Diagnosis",
+    "title": "Root cause analysis for RabbitMQ incidents — automatically.",
+    "subtitle": "When something goes wrong, Qarote analyses your metric history and surfaces ranked diagnoses: what failed, when it started, and what likely caused it. No manual graph comparison, no log trawling, no guesswork."
+  },
+  "diagnosisTypes": {
+    "eyebrow": "What it diagnoses",
+    "heading": "The failure patterns that actually happen",
+    "items": [
+      {
+        "icon": "message.svg",
+        "title": "Consumer drop → queue spike",
+        "description": "The most common RabbitMQ incident pattern: consumers disconnect, the queue starts filling, and by the time anyone notices the backlog is already deep. Qarote correlates the consumer count drop with the queue depth rise to confirm causality and surface when the consumer loss first occurred."
+      },
+      {
+        "icon": "error.svg",
+        "title": "DLQ accumulation from schema mismatch",
+        "description": "Dead-lettered messages that accumulate steadily — rather than in bursts — typically indicate a schema change or poison message that consumers cannot deserialise. Qarote identifies the DLQ growth pattern and cross-references it against publish rate changes to distinguish a bad deploy from a transient consumer crash."
+      },
+      {
+        "icon": "server.svg",
+        "title": "Broker memory pressure",
+        "description": "As broker memory climbs toward the watermark, RabbitMQ begins throttling publishers before it triggers a full block. Qarote detects the memory pressure trajectory and correlates it with slowing publish rates to give you a pre-alarm warning — before the broker stops accepting connections."
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "Message rate anomaly (silent failure)",
+        "description": "Silent failures in async pipelines leave no exception and no log — messages just stop flowing. Qarote detects publish or delivery rates that fall below expected baseline and flags them as likely silent failures, giving you a starting point for investigation before downstream services notice the silence."
+      },
+      {
+        "icon": "chart.svg",
+        "title": "Cascading queue backlog",
+        "description": "A slow consumer on one queue can starve downstream queues if processing depends on it. Qarote identifies fan-out or pipeline dependencies where a depth spike in one queue is temporally correlated with backlog growth in others, surfacing the root queue rather than the symptom queues."
+      },
+      {
+        "icon": "flag.svg",
+        "title": "Broker alarm triggered",
+        "description": "RabbitMQ blocks all publishers the moment a memory or disk alarm fires. Qarote surfaces broker alarms as a first-class diagnosis event, correlates them with the metric changes that preceded them, and ranks them at the top of the diagnosis list when they are the most likely cause of an incident."
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "How it works",
+    "heading": "Analysis runs on demand or after an alert fires",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Metric history collected continuously",
+        "description": "Qarote polls your RabbitMQ management API every 15 seconds and retains metric history. Queue depths, consumer counts, message rates, memory usage, and broker alarms are all stored so that diagnosis has the full timeline to work with."
+      },
+      {
+        "number": "02",
+        "title": "Trigger diagnosis manually or on alert",
+        "description": "Run a diagnosis from the queue or broker detail view at any time. You can also configure alerts to trigger an automatic diagnosis when they fire — so by the time you read the notification, the root-cause analysis is already waiting for you."
+      },
+      {
+        "number": "03",
+        "title": "Ranked causal diagnoses returned in seconds",
+        "description": "Qarote analyses the metric history window, matches it against known failure patterns, and returns a ranked list of diagnoses with confidence scores, affected queues, and the timeline of when each causal event occurred."
+      }
+    ]
+  },
+  "whyDiagnosis": {
+    "eyebrow": "Why automated diagnosis?",
+    "heading": "MTTR is dominated by the time spent finding the cause, not fixing it",
+    "p1": "Most RabbitMQ incidents are not complicated — but correlating consumer counts, queue depths, message rates, memory pressure, and broker alarms across multiple graphs is slow and error-prone under pressure. The failure pattern is almost always one of a small set of known root causes. The bottleneck is recognising which one it is quickly enough to act.",
+    "p2": "Qarote's diagnosis engine encodes those failure patterns directly. Rather than asking you to hold five metric timelines in your head and spot the correlation, it does the correlation for you and surfaces the most likely cause with the evidence that supports it. A diagnosis that takes 20 minutes of manual graph comparison takes seconds with the engine.",
+    "p3": "Incident diagnosis is a Developer and Enterprise EE feature. It requires metric history persistence, which is included in both paid plans. The engine runs entirely within your infrastructure — no telemetry is sent to Qarote's servers, and diagnosis works in air-gapped environments."
+  },
+  "crossLink": {
+    "eyebrow": "See also",
+    "navLabel": "Related links",
+    "metrics": "Metrics Persistence →",
+    "alerting": "Real-time alerting",
+    "pricing": "Pricing",
+    "features": "All features"
+  },
+  "faq": {
+    "heading": "Frequently asked questions",
+    "items": [
+      {
+        "question": "Which plans include incident diagnosis?",
+        "answer": "Incident diagnosis is a Developer and Enterprise EE feature. It is not available in the free MIT community edition. Both paid plans include metric history persistence, which is required for the diagnosis engine to have a timeline to analyse."
+      },
+      {
+        "question": "How accurate are the diagnoses?",
+        "answer": "Diagnoses are ranked by confidence based on how strongly the observed metric pattern matches a known failure signature. High-confidence diagnoses (consumer drop correlating tightly with queue spike, for example) are reliable. Lower-confidence results are surfaced as possibilities with supporting evidence rather than definitive conclusions — the engine shows its reasoning so you can evaluate it."
+      },
+      {
+        "question": "How do I trigger a diagnosis?",
+        "answer": "You can trigger a diagnosis manually from any queue or broker detail view in the Qarote dashboard. You can also configure alert rules to run an automatic diagnosis when they fire, so the root-cause analysis is ready before you finish reading the alert notification."
+      },
+      {
+        "question": "Does incident diagnosis work in air-gapped environments?",
+        "answer": "Yes. Diagnosis runs entirely within your Qarote instance using the metric history stored in your local database. No data is sent to Qarote's servers. License validation is also entirely offline, so the feature works without any outbound internet access."
+      },
+      {
+        "question": "How much metric history does the diagnosis engine use?",
+        "answer": "By default the engine analyses the 4-hour window preceding the diagnosis trigger. For slow-building issues like gradual memory pressure or DLQ accumulation, you can extend the lookback window to 24 hours in the diagnosis settings. Longer windows require more metric history to be retained, which you can configure per-broker."
+      }
+    ]
+  }
+}

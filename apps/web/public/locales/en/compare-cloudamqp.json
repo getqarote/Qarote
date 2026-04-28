@@ -1,0 +1,143 @@
+{
+  "seo": {
+    "title": "Qarote vs CloudAMQP: RabbitMQ Monitoring Comparison",
+    "description": "Qarote vs CloudAMQP for RabbitMQ monitoring. Qarote works with any RabbitMQ broker — self-hosted or cloud. CloudAMQP's dashboard only works if they host your broker. Honest comparison."
+  },
+  "hero": {
+    "eyebrow": "Comparison",
+    "title": "Qarote vs CloudAMQP",
+    "subtitle": "CloudAMQP is a managed RabbitMQ hosting service — not a standalone monitoring tool. Its dashboard only works if CloudAMQP hosts your broker. Qarote is a dedicated RabbitMQ monitoring dashboard that works with any RabbitMQ instance: self-hosted, any cloud, any cluster."
+  },
+  "verdict": {
+    "heading": "Quick verdict",
+    "competitor": {
+      "label": "Choose CloudAMQP if…",
+      "points": [
+        "You want a fully managed RabbitMQ broker and are happy to have CloudAMQP host it for you",
+        "You are running a small workload and the free Little Lemur tier meets your message volume and connection limits",
+        "You do not need to monitor self-hosted or externally hosted RabbitMQ instances"
+      ]
+    },
+    "qarote": {
+      "label": "Choose Qarote if…",
+      "points": [
+        "You self-host RabbitMQ and need a proper monitoring dashboard for it",
+        "You run multiple RabbitMQ servers or clusters and want a single unified view",
+        "You need real alerting on queue depth, consumer count, or dead-letter queues — not just basic graphs"
+      ]
+    }
+  },
+  "table": {
+    "heading": "Feature comparison",
+    "competitorLabel": "CloudAMQP",
+    "qaroteLabel": "Qarote",
+    "featureLabel": "Feature",
+    "caption": "Qarote vs CloudAMQP Feature Comparison",
+    "asOf": "Pricing as of April 2026. CloudAMQP Bunny plan pricing applied.",
+    "rows": {
+      "brokerLockIn": {
+        "feature": "Works with any RabbitMQ broker",
+        "competitor": "No — dashboard only works if CloudAMQP hosts your broker",
+        "qarote": "Yes — connects to any RabbitMQ instance via management API"
+      },
+      "rabbitmqNative": {
+        "feature": "RabbitMQ-native monitoring",
+        "competitor": "RabbitMQ Management Plugin with extra graphs — tied to CloudAMQP infrastructure",
+        "qarote": "Native — built exclusively for RabbitMQ"
+      },
+      "alerting": {
+        "feature": "Queue depth alerting",
+        "competitor": "Basic — limited or unavailable on lower-tier plans; no Slack or PagerDuty below paid tiers",
+        "qarote": "Yes — built-in alert templates for queue depth, consumer count, and DLQ"
+      },
+      "selfHosted": {
+        "feature": "Self-hosted option",
+        "competitor": "No — fully managed SaaS, closed source",
+        "qarote": "Yes — single binary or Docker, runs entirely on your infrastructure"
+      },
+      "multiCluster": {
+        "feature": "Multi-cluster / multi-server view",
+        "competitor": "No — each CloudAMQP instance has its own separate dashboard",
+        "qarote": "Yes — monitor multiple RabbitMQ servers from one dashboard"
+      },
+      "pricingModel": {
+        "feature": "Pricing model",
+        "competitor": "Per instance (~$19–$299+/month per broker); pricing scales with each new instance",
+        "qarote": "Flat annual license per team — $348/yr (Developer) or $1,188/yr (Enterprise); MIT core is free"
+      },
+      "dataPrivacy": {
+        "feature": "Queue data stays on your network",
+        "competitor": "No — your messages and queue metrics flow through CloudAMQP's infrastructure",
+        "qarote": "Yes — all monitoring data stays on your network"
+      },
+      "setupTime": {
+        "feature": "Monitoring setup time",
+        "competitor": "Instant if using CloudAMQP as your broker — not applicable otherwise",
+        "qarote": "60 seconds — paste your RabbitMQ connection string, done"
+      },
+      "openSource": {
+        "feature": "Open-source core",
+        "competitor": "No — closed source",
+        "qarote": "Yes — MIT licensed"
+      },
+      "ownBroker": {
+        "feature": "Monitor self-hosted RabbitMQ",
+        "competitor": "No — CloudAMQP dashboard cannot connect to externally hosted brokers",
+        "qarote": "Yes — connect to any RabbitMQ server you control"
+      }
+    }
+  },
+  "sections": {
+    "eyebrow": "Deep dive",
+    "lockIn": {
+      "heading": "CloudAMQP's dashboard is tied to CloudAMQP's broker",
+      "p1": "CloudAMQP is a managed RabbitMQ hosting service. The monitoring dashboard it provides is the standard RabbitMQ Management Plugin, surfaced through their platform with some supplementary graphs. It is not a standalone monitoring product — it only works because CloudAMQP controls the broker.",
+      "p2": "If you self-host RabbitMQ on your own servers, on AWS, on GCP, or anywhere else you operate the infrastructure, CloudAMQP's dashboard is simply not available to you. You would need to either migrate your broker to CloudAMQP or find a separate monitoring solution.",
+      "p3": "Qarote connects to any RabbitMQ instance using the standard management API. It does not care where your broker runs — on-premises, in a private cloud, across multiple regions. You paste a connection string and your queues appear."
+    },
+    "monitoring": {
+      "heading": "Monitoring depth: purpose-built vs. bundled plugin",
+      "p1": "CloudAMQP's monitoring interface is built on top of the RabbitMQ Management Plugin — the same plugin that ships with every RabbitMQ installation. It adds some extra graphs and historical data retention, but the underlying model is the same general-purpose management UI that comes out of the box.",
+      "p2": "Qarote was designed from the ground up around how teams actually monitor message queues: queue depth trends, consumer lag, dead-letter queue accumulation, vhost isolation, and per-connection breakdowns. Alert templates are built around these RabbitMQ-specific failure modes — not generic threshold monitors adapted from a general observability platform.",
+      "p3": "For teams where RabbitMQ is a critical infrastructure component, the difference between a purpose-built monitoring tool and a bundled management plugin becomes apparent quickly under production conditions."
+    },
+    "multiCluster": {
+      "heading": "One dashboard for all your RabbitMQ servers",
+      "p1": "CloudAMQP gives each hosted instance its own isolated dashboard. If you run multiple RabbitMQ instances — for different environments, different services, or different regions — you navigate between separate CloudAMQP dashboards. There is no unified multi-cluster view.",
+      "p2": "Qarote monitors multiple RabbitMQ servers from a single dashboard. Add connections for your production cluster, staging environment, and any additional servers. Queue metrics, consumer counts, and alerts are visible across all of them without switching contexts."
+    },
+    "pricing": {
+      "heading": "Per-instance pricing vs. flat-rate per team",
+      "p1": "CloudAMQP pricing is per instance per month: the free Little Lemur plan is limited to 1 vhost, 5 connections, and 1 million messages per month. Paid plans start around $19/month and scale up to $299+/month per broker instance. Each additional RabbitMQ instance you want to host adds another line item.",
+      "p2": "Qarote's Developer plan is $348/year ($29/month flat) for a team. Enterprise is $1,188/year. Both are flat-rate: adding more RabbitMQ servers to monitor does not increase the price. The MIT open-source core is free to self-host indefinitely.",
+      "p3": "The models serve different purposes: CloudAMQP's pricing reflects the cost of hosting and operating your broker. Qarote's pricing is for monitoring infrastructure you already run. If you host your own RabbitMQ, you are not paying for a broker — only for visibility into it."
+    }
+  },
+  "crossLink": {
+    "text": "Also comparing:",
+    "datadog": "Qarote vs Datadog →",
+    "pricing": "Pricing",
+    "features": "Features"
+  },
+  "faq": {
+    "heading": "Frequently asked questions",
+    "items": [
+      {
+        "question": "Can I use CloudAMQP to monitor my self-hosted RabbitMQ?",
+        "answer": "No. CloudAMQP's monitoring dashboard is tied to their managed hosting service. It cannot connect to a RabbitMQ broker that CloudAMQP does not host. If you run your own RabbitMQ server, you need a standalone monitoring tool like Qarote."
+      },
+      {
+        "question": "What is the difference between CloudAMQP and Qarote?",
+        "answer": "CloudAMQP is a managed RabbitMQ hosting service — it runs your broker for you. Qarote is a monitoring dashboard — it connects to RabbitMQ brokers you already operate and gives you visibility into queue depth, consumer health, alerting, and multi-server views. They solve different problems. If you self-host RabbitMQ, Qarote is relevant; CloudAMQP is not a monitoring alternative."
+      },
+      {
+        "question": "Does Qarote work with RabbitMQ hosted on AWS, GCP, or Azure?",
+        "answer": "Yes. Qarote connects to any RabbitMQ instance using the standard management API and AMQP protocol. It works with self-hosted RabbitMQ on any cloud provider, in any data center, or on-premises — as long as you can reach the management API endpoint from where Qarote is deployed."
+      },
+      {
+        "question": "Is the open-source edition of Qarote really free?",
+        "answer": "Yes. The MIT-licensed core of Qarote — live queue monitoring, exchange visibility, consumer tracking, and multi-server support — is free to self-host without a license key. Premium features such as workspace sharing, advanced alerting integrations, and team management require a Developer or Enterprise license."
+      }
+    ]
+  }
+}

@@ -4,6 +4,7 @@ import { hashPassword } from "@/core/auth";
 
 import { EmailVerificationService } from "@/services/email/email-verification.service";
 import { notionService } from "@/services/integrations/notion.service";
+import { posthog } from "@/services/posthog";
 import { trackSignUpError } from "@/services/sentry";
 import { StripeCustomerService } from "@/services/stripe/customer.service";
 
@@ -32,8 +33,16 @@ export const registrationRouter = router({
   register: rateLimitedPublicProcedure
     .input(RegisterUserSchema)
     .mutation(async ({ input, ctx }) => {
-      const { email, password, firstName, lastName, acceptTerms, sourceApp } =
-        input;
+      const {
+        email,
+        password,
+        firstName,
+        lastName,
+        acceptTerms,
+        sourceApp,
+        referralSource,
+        discoveryQuery,
+      } = input;
 
       // Check if public registration is enabled
       if (!registrationConfig.enabled) {
@@ -84,6 +93,8 @@ export const registrationRouter = router({
                 emailVerified: true,
                 emailVerifiedAt: new Date(),
               }),
+              ...(referralSource && { referralSource }),
+              ...(discoveryQuery && { discoveryQuery }),
             },
             select: {
               id: true,
@@ -158,6 +169,30 @@ export const registrationRouter = router({
             );
             // Don't fail registration if email sending fails
           }
+        }
+
+        // Track registration in PostHog (non-blocking)
+        if (posthog) {
+          posthog.identify({
+            distinctId: user.id,
+            properties: {
+              email: user.email,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              ...(referralSource && { referralSource }),
+              ...(discoveryQuery && { discoveryQuery }),
+            },
+          });
+          posthog.capture({
+            distinctId: user.id,
+            event: "user_registered",
+            properties: {
+              email: user.email,
+              sourceApp,
+              ...(referralSource && { referral_source: referralSource }),
+              ...(discoveryQuery && { discovery_query: discoveryQuery }),
+            },
+          });
         }
 
         // Update user in Notion (non-blocking)

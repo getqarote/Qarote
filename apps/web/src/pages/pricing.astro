@@ -1,0 +1,15 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PricingIsland from "../components/PricingIsland";
+import { loadAllTranslations } from "../lib/i18n-static";
+
+const resources = loadAllTranslations("en");
+---
+
+<BaseLayout
+  title="Pricing — Qarote RabbitMQ Monitoring"
+  description="Free community edition, or unlock advanced monitoring with Developer ($29/mo) and Enterprise plans. Self-host for free, forever."
+  canonicalPath="/pricing/"
+>
+  <PricingIsland resources={resources} client:load />
+</BaseLayout>

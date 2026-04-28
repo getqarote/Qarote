@@ -1,0 +1,87 @@
+{
+  "seo": {
+    "title": "Sécurité — Qarote Supervision RabbitMQ",
+    "description": "Comment Qarote protège vos identifiants RabbitMQ, gère vos données et sécurise votre infrastructure de supervision. L'option auto-hébergée signifie que vos données ne quittent jamais votre réseau."
+  },
+  "hero": {
+    "eyebrow": "Sécurité",
+    "title": "Conçu pour les équipes qui ne peuvent pas se permettre une faille.",
+    "subtitle": "Vous connectez Qarote à votre broker de messages. Voici exactement ce que nous faisons avec cet accès — et ce que nous ne faisons pas."
+  },
+  "pillars": {
+    "eyebrow": "Comment nous vous protégeons",
+    "heading": "La sécurité par conception",
+    "items": [
+      {
+        "title": "Identifiants chiffrés au repos",
+        "description": "Les identifiants de connexion RabbitMQ sont chiffrés avec AES-256 avant d'être écrits sur le disque. Vos mots de passe ne sont jamais stockés en clair."
+      },
+      {
+        "title": "TLS 1.2+ en transit",
+        "description": "Tout le trafic entre votre navigateur et l'API de Qarote est chiffré avec TLS 1.2 ou supérieur. Les connexions à votre broker via TLS sont également supportées et recommandées."
+      },
+      {
+        "title": "Les payloads de messages ne quittent jamais votre broker",
+        "description": "Qarote lit les profondeurs de file, les taux de messages et le nombre de consommateurs pour alimenter les alertes et les graphiques de tendances — ces métriques sont conservées 7 jours. Le contenu réel de vos messages n'est jamais accédé, lu ni stocké."
+      },
+      {
+        "title": "Isolation des espaces de travail",
+        "description": "Chaque espace de travail est entièrement isolé. Les utilisateurs n'accèdent qu'aux brokers et données de leur propre espace. L'accès croisé entre tenants est architecturalement impossible."
+      },
+      {
+        "title": "Contrôle d'accès basé sur les rôles",
+        "description": "Attribuez des rôles admin ou lecture seule par membre d'espace de travail. Limitez qui peut modifier les connexions, configurer les alertes ou accéder aux détails sensibles du broker."
+      },
+      {
+        "title": "Gestion des sessions",
+        "description": "Les sessions sont de courte durée et invalidées à la déconnexion. Nous supportons le SSO via OIDC et SAML pour les équipes entreprise avec gestion d'identité centralisée."
+      }
+    ]
+  },
+  "toc": {
+    "heading": "Sommaire"
+  },
+  "selfHosted": {
+    "eyebrow": "Option auto-hébergée",
+    "heading": "Votre réseau. Vos règles.",
+    "body": "Qarote peut être déployé entièrement sur votre propre infrastructure — bare metal, Docker ou Kubernetes. En mode auto-hébergé, aucune télémétrie, aucun identifiant et aucune donnée de supervision ne quittent votre réseau. Vous bénéficiez du produit complet sans aucune dépendance au cloud de Qarote.",
+    "cta": "Lire le guide de déploiement",
+    "features": [
+      "Docker & Kubernetes",
+      "Aucune télémétrie",
+      "Support air-gapped",
+      "Cœur sous licence MIT"
+    ]
+  },
+  "disclosure": {
+    "eyebrow": "Divulgation responsable",
+    "heading": "Vous avez trouvé une vulnérabilité ?",
+    "body": "Nous prenons les signalements de sécurité très au sérieux. Si vous découvrez une vulnérabilité dans Qarote, envoyez-nous un e-mail à security@qarote.io. Nous accuserons réception de votre signalement dans les 48 heures et vous tiendrons informé de l'avancement. Nous n'engageons pas de poursuites judiciaires contre les chercheurs en sécurité de bonne foi.",
+    "email": "security@qarote.io"
+  },
+  "faq": {
+    "heading": "Questions de sécurité",
+    "items": [
+      {
+        "question": "Stockez-vous mon mot de passe RabbitMQ ?",
+        "answer": "Oui, mais uniquement si vous utilisez l'édition cloud et avez besoin que Qarote interroge votre broker en votre nom. Les mots de passe sont chiffrés avec AES-256 au repos. En mode auto-hébergé, les identifiants restent sur votre propre serveur."
+      },
+      {
+        "question": "Qarote lit-il le contenu de mes messages ?",
+        "answer": "Non. Qarote accède à l'API de gestion RabbitMQ pour lire la profondeur des files, les taux de messages et l'état des nœuds. Il ne consomme ni n'inspecte le contenu des messages."
+      },
+      {
+        "question": "Mon broker doit-il être exposé à internet pour utiliser Qarote ?",
+        "answer": "Non. Vous pouvez exécuter l'agent Qarote à l'intérieur de votre réseau privé. Il se connecte en sortie vers l'API de Qarote — le port de gestion de votre broker n'a pas besoin d'être accessible publiquement."
+      },
+      {
+        "question": "Avez-vous la certification SOC 2 ?",
+        "answer": "Nous travaillons à l'obtention du SOC 2 Type II. En attendant, notre édition auto-hébergée est le bon choix pour les équipes ayant des exigences de conformité strictes — vous contrôlez toute la pile."
+      },
+      {
+        "question": "Puis-je utiliser mon propre fournisseur SSO ?",
+        "answer": "Oui. L'édition Enterprise supporte le SSO basé sur OIDC et SAML, vous permettant d'intégrer Qarote à votre fournisseur d'identité existant (Okta, Azure AD, Google Workspace, etc.)."
+      }
+    ]
+  }
+}

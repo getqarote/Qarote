@@ -1,0 +1,31 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { FeaturesLiveMonitoringIsland } from "../../../components/FeaturesLiveMonitoringIsland";
+import { loadTranslations, loadAllTranslations, t } from "../../../lib/i18n-static";
+import { getLocaleStaticPaths } from "../../../lib/locales";
+import { SUPPORTED_LOCALES, type SupportedLocale } from "@qarote/i18n";
+import { buildFaqSchema } from "../../../lib/schema";
+
+export const getStaticPaths = getLocaleStaticPaths;
+
+const rawLocale = Astro.params.locale;
+if (!rawLocale || !SUPPORTED_LOCALES.includes(rawLocale as SupportedLocale)) {
+  return Astro.redirect("/");
+}
+const locale = rawLocale as SupportedLocale;
+const liveMonitoring = loadTranslations(locale, "features-live-monitoring");
+const resources = { ...loadAllTranslations(locale), "features-live-monitoring": liveMonitoring };
+const faqSchema = buildFaqSchema(liveMonitoring);
+---
+
+<BaseLayout
+  title={t(liveMonitoring, "seo.title")}
+  description={t(liveMonitoring, "seo.description")}
+  locale={locale}
+  canonicalPath="/features/live-monitoring/"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  </Fragment>
+  <FeaturesLiveMonitoringIsland locale={locale} resources={resources} client:load />
+</BaseLayout>

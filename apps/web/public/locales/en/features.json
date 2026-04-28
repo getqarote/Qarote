@@ -12,7 +12,11 @@
       "analytics": "Analytics",
       "queueManagement": "Queue Management",
       "multiServer": "Multi-Server",
-      "devExperience": "Developer Experience"
+      "queueHistory": "Queue History",
+      "messageSpy": "Message Spy",
+      "dailyDigest": "Daily Digest",
+      "incidentDiagnosis": "Incident Diagnosis",
+      "messageTracing": "Message Tracing"
     }
   },
   "coreFeature": "CORE FEATURE",
@@ -34,7 +38,7 @@
   },
   "alerting": {
     "title": "Smart alerting system",
-    "badge": "Developer plan+",
+    "badge": "Developer+",
     "description": "Configurable thresholds per queue and per server. Get notified before problems become outages.",
     "point1": "Notification channels: email, Slack, webhooks",
     "point2": "Alert history and acknowledgment workflow",
@@ -88,6 +92,68 @@
     "messagesPerSec": "Messages/sec",
     "activeQueues": "Active Queues",
     "allSystemsOperational": "All systems operational"
+  },
+  "queueIntelligence": {
+    "title": "Queue intelligence that goes deep"
+  },
+  "messageVisibility": {
+    "title": "Inspect any message without touching the queue"
+  },
+  "messagePipeline": {
+    "title": "Full visibility into message flow"
+  },
+  "queueHistory": {
+    "description": "7 days of queue depth, consumer counts, and message rates captured every 5 minutes. Graph any queue over any time window — see exactly when it started filling and when it drained, even if you weren't watching."
+  },
+  "messageSpy": {
+    "description": "Browse message headers and payloads directly inside any queue — read-only, non-destructive, safe for production. No AMQP consumer. No throwaway scripts. The messages stay exactly where they are."
+  },
+  "dailyDigest": {
+    "description": "A morning email summary of your broker's health: queue depth trends, DLQ growth, and anomalies from the past 24 hours. Async awareness without a dashboard open."
+  },
+  "incidentDiagnosis": {
+    "description": "Automated root cause analysis for RabbitMQ incidents. Correlates queue depth spikes, consumer drops, and throughput changes into a single readable timeline — so you know what happened and in what order."
+  },
+  "messageTracing": {
+    "description": "Full message tracing across your broker using the RabbitMQ Firehose. Every publish, every deliver, every acknowledge — captured in real time with routing key, exchange, and payload size."
+  },
+  "comingSoon": {
+    "eyebrow": "More features",
+    "heading": "Five more tools in one dashboard",
+    "subtitle": "Each links to a dedicated page with full documentation, use cases, and FAQs.",
+    "learnMore": "Learn more",
+    "items": [
+      {
+        "icon": "chart.svg",
+        "title": "Queue History",
+        "description": "7 days of queue depth, consumer counts, and message rates captured every 5 minutes. For incident retrospectives and capacity planning — no Prometheus required.",
+        "href": "/features/metrics/"
+      },
+      {
+        "icon": "message.svg",
+        "title": "Message Spy",
+        "description": "Inspect message headers and payloads inside any queue — read-only, non-destructive, safe for production. No throwaway consumer scripts.",
+        "href": "/features/message-spy/"
+      },
+      {
+        "icon": "email.svg",
+        "title": "Daily Digest",
+        "description": "A morning email summary of your broker's health: queue depth trends, DLQ growth, and anomalies from the past 24 hours. Async awareness without a dashboard open.",
+        "href": "/features/digest/"
+      },
+      {
+        "icon": "flag.svg",
+        "title": "Incident Diagnosis Engine",
+        "description": "Automated root cause analysis for RabbitMQ incidents. Correlates queue depth spikes, consumer drops, and throughput changes into a single readable timeline.",
+        "href": "/features/incident-diagnosis/"
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "Message Tracing (Firehose)",
+        "description": "Full message tracing across your broker using the RabbitMQ Firehose. Every message, every route, every consumer — in real time with filtering and search.",
+        "href": "/features/message-tracing/"
+      }
+    ]
   },
   "cta": {
     "title": "Ready to monitor your RabbitMQ servers?",

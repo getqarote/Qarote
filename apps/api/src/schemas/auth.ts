@@ -10,6 +10,8 @@ export const RegisterUserSchema = z.object({
     message: "You must accept the terms of service to register",
   }),
   sourceApp: z.enum(["app", "portal"]).optional().default("app"),
+  referralSource: z.string().max(500).optional(),
+  discoveryQuery: z.string().max(500).optional(),
 });
 
 // Schema for password reset request

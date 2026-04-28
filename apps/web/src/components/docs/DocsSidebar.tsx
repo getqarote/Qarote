@@ -33,7 +33,7 @@ const SidebarNav = ({ currentSlug, onNavigate }: SidebarNavProps) => (
                   className={`flex items-center px-3 py-1.5 text-sm transition-colors ${
                     isActive
                       ? "rounded-md bg-primary/10 text-primary font-medium"
-                      : "rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      : "rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 hover:translate-x-0.5 transition-transform duration-150"
                   }`}
                 >
                   {page.title}

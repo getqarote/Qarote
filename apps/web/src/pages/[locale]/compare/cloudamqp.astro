@@ -1,0 +1,43 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { CompareCloudAMQPIsland } from "../../../components/CompareIsland";
+import { loadTranslations, loadAllTranslations, t } from "../../../lib/i18n-static";
+import { getLocaleStaticPaths } from "../../../lib/locales";
+import { SUPPORTED_LOCALES, type SupportedLocale } from "@qarote/i18n";
+import { buildFaqSchema } from "../../../lib/schema";
+
+export const getStaticPaths = getLocaleStaticPaths;
+
+const rawLocale = Astro.params.locale;
+if (!rawLocale || !SUPPORTED_LOCALES.includes(rawLocale as SupportedLocale)) {
+  return Astro.redirect("/");
+}
+const locale = rawLocale as SupportedLocale;
+const compare = loadTranslations(locale, "compare-cloudamqp");
+const resources = { ...loadAllTranslations(locale), "compare-cloudamqp": compare };
+
+const cloudamqpSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "CloudAMQP",
+  url: "https://www.cloudamqp.com/",
+  applicationCategory: "DeveloperApplication",
+  description: "Managed RabbitMQ hosting service with a built-in monitoring dashboard.",
+};
+
+const faqSchema = buildFaqSchema(compare);
+---
+
+<BaseLayout
+  title={t(compare, "seo.title")}
+  description={t(compare, "seo.description")}
+  locale={locale}
+  canonicalPath="/compare/cloudamqp/"
+  image="https://qarote.io/images/qarote_card.jpg"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(cloudamqpSchema)} />
+  </Fragment>
+  <CompareCloudAMQPIsland locale={locale} resources={resources} client:load />
+</BaseLayout>

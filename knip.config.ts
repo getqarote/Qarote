@@ -104,6 +104,8 @@ const config: KnipConfig = {
     ".claire/**",
     // In-progress blog section component — not yet wired into the landing page
     "apps/web/src/components/landing/BlogSection.tsx",
+    // PostHog analytics service — dependency declaration tracked in a separate PR
+    "apps/api/src/services/posthog.ts",
   ],
   ignoreDependencies: [
     // These are often used but not directly imported

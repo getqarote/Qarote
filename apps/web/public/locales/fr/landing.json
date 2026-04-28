@@ -3,8 +3,8 @@
     "titleBefore": "Votre RabbitMQ tourne. Savez-vous vraiment",
     "titleHighlight": "ce qui se passe",
     "titleAfter": " à l'intérieur ?",
-    "subtitle": "Sans Prometheus. Sans Grafana. Sans ops dédié. Entrez votre URL — monitoring complet des files en moins de 2 minutes.",
-    "noCreditCard": "Configuration en 2 min · Sans CB · Gratuit & open source · Pro pendant 14 jours"
+    "subtitle": "La couche d'intelligence que votre plugin de gestion RabbitMQ n'a jamais été conçu pour être. Historique des files, alertes de santé des consommateurs, et diagnostic d'incidents — connecté en moins de 2 minutes. Sans Prometheus. Sans YAML.",
+    "noCreditCard": "Configuration en 2 min · Sans CB · Offre gratuite, sans limite de durée · Developer+ à partir de 29 $/mois"
   },
   "cta": {
     "getStartedForFree": "Commencer gratuitement",
@@ -40,36 +40,52 @@
     "allSystemsOperational": "Tous les systèmes sont opérationnels"
   },
   "features": {
-    "title": "Tout ce qui compte vraiment.",
-    "titleLine2": "Supervisé au même endroit.",
-    "freeTierNote": "Les fonctionnalités de base sont gratuites pour toujours. Les alertes, le multi-serveur et l'analyse avancée nécessitent un plan Pro.",
+    "title": "La couche d'intelligence que votre",
+    "titleLine2": "plugin de gestion n'a pas.",
+    "freeTierNote": "Le monitoring en temps réel et la gestion des files sont gratuits, sans limite de durée. Developer+ ajoute les alertes, 7 jours d'Historique des files, Message Spy et le Diagnostic d'incidents — à partir de 29 $/mois.",
     "liveQueueMonitoring": {
       "title": "Monitoring des files en temps réel",
-      "description": "Surveillez la profondeur des files, le débit de messages et le nombre de consommateurs en temps réel. Suivez l'accumulation des messages et les performances de traitement."
+      "description": "Profondeur des files, débits de messages et nombre de consommateurs — mis à jour chaque seconde. Détectez un consommateur bloqué ou une file qui se remplit dès que ça arrive, pas 60 secondes plus tard."
     },
     "smartAlertingSystem": {
       "title": "Système d'alertes intelligent",
-      "description": "Des alertes intelligentes pour les retards de files, l'utilisation mémoire et les problèmes de performance. Des seuils personnalisables avec des notifications par niveau de sévérité."
+      "description": "Soyez averti avant vos utilisateurs. Définissez des seuils sur la profondeur de file, le taux de croissance ou le nombre de consommateurs — les alertes se déclenchent par email, Slack ou webhook dès qu'un problème survient, avant qu'un ticket soit ouvert."
     },
     "queueManagement": {
       "title": "Gestion des files d'attente",
-      "description": "Mettez en pause, reprenez et supprimez des files en un clic. Créez des échanges, liez des files et gérez les clés de routage via une interface intuitive."
+      "description": "Videz, purgez ou reroutez des files sans toucher au CLI. Créez des échanges, liez des files et gérez les clés de routage — depuis le même dashboard où vous avez repéré le problème."
     },
     "performanceAnalytics": {
       "title": "Analyse des performances",
-      "description": "Des métriques détaillées sur l'utilisation mémoire, l'espace disque, les descripteurs de fichiers et le débit de messages. Visualisez les tendances avec de superbes graphiques."
+      "description": "Graphiques historiques pour la mémoire, le disque et le débit de messages. Repérez une fuite de ressources du broker avant qu'elle ne devienne une alerte à 3h du matin."
     },
     "multiServerSupport": {
       "title": "Support multi-serveurs",
-      "description": "Connectez-vous à plusieurs clusters RabbitMQ et passez de l'un à l'autre en toute fluidité. Support de différents environnements et configurations."
+      "description": "Production, staging et dev dans un seul dashboard. Fini la gestion d'incidents sur trois onglets — tous vos serveurs RabbitMQ, au même endroit."
     },
     "messagePublishing": {
       "title": "Publication de messages",
-      "description": "Testez et déboguez vos applications en publiant des messages directement dans les files et les échanges. Idéal pour le développement et le dépannage."
+      "description": "Publiez des messages de test directement dans n'importe quelle file ou échange sans écrire de code. Reproduisez des bugs, validez le routage et déboguez le flux de messages depuis le même dashboard."
     },
-    "deadLetterQueueMonitoring": {
-      "title": "Surveillance des files DLQ",
-      "description": "Sachez quand vos messages échouent avant vos utilisateurs. Le taux de croissance du DLQ est l'indicateur avancé que la plupart des équipes manquent — visible en temps réel."
+    "dailyDigest": {
+      "title": "Résumé quotidien",
+      "description": "Un résumé de santé matinal livré dans votre boîte mail — tendances de profondeur des files, anomalies de consommateurs, et les 24 dernières heures en une lecture. Sachez ce qui s'est accumulé la nuit avant d'ouvrir un dashboard."
+    },
+    "messageSpy": {
+      "title": "Espion de messages",
+      "description": "Parcourez les en-têtes et les contenus directement dans n'importe quelle file — en lecture seule, non destructif, sûr en production. Le plugin de gestion ne peut pas afficher le contenu des messages sans les consommer. Message Spy le peut."
+    },
+    "metricsPersistence": {
+      "title": "Historique des files",
+      "description": "Snapshots de 5 minutes, conservés 7 jours. Le plugin de gestion oublie ce qui s'est passé dès que vous fermez l'onglet — l'Historique des files non. Voyez exactement quand une file a commencé à se remplir, même si personne ne regardait."
+    },
+    "incidentDiagnosis": {
+      "title": "Moteur de diagnostic d'incidents",
+      "description": "Le plugin de gestion montre l'état. Le Diagnostic d'incidents montre la cause. Corrèle les pics de backlog, les chutes de consommateurs et les variations du taux de publication en une chronologie lisible — 40 minutes de navigation entre onglets, faites automatiquement."
+    },
+    "messageTracing": {
+      "title": "Traçage de messages (Firehose)",
+      "description": "Suivez chaque message de la publication à la livraison — ou à l'échec. Traçage complet au niveau du broker en temps réel, avec clé de routage, échange et taille de charge utile. Trouvez exactement où un message a disparu."
     }
   },
   "enterprise": {
@@ -81,29 +97,29 @@
     "advancedSecurityDesc": "Contrôle total de vos données et de votre déploiement"
   },
   "connection": {
-    "title": "Connectez facilement vos serveurs RabbitMQ",
-    "subtitle": "Ne changez rien à la façon dont vos serveurs RabbitMQ fonctionnent, Qarote est spécialement conçu pour ce broker de messages.",
+    "title": "Opérationnel en trois étapes",
+    "subtitle": "Aucun agent, aucun exporteur Prometheus, aucun YAML. Qarote se connecte directement à l'API de gestion RabbitMQ.",
     "ecosystemTitle": "Compatible avec n'importe quel client RabbitMQ :",
     "step1": {
       "title": "Inscrivez-vous",
-      "description": "Créez votre compte en quelques secondes. Aucune carte de crédit requise. Commencez à surveiller votre infrastructure RabbitMQ immédiatement.",
+      "description": "Créez votre compte en quelques secondes. Aucune carte de crédit requise. L'offre gratuite n'a pas de limite de durée.",
       "createAccount": "Créez votre compte Qarote",
-      "transformMonitoring": "Transformez votre façon de surveiller RabbitMQ.",
+      "transformMonitoring": "Ajoutez la couche d'intelligence que votre RabbitMQ mérite.",
       "continueWithEmail": "Continuer avec un e-mail",
       "or": "ou",
       "continueWithGoogle": "Continuer avec Google"
     },
     "step2": {
       "title": "Ajoutez vos serveurs",
-      "description": "Connectez vos serveurs RabbitMQ avec une simple connexion. Support de multiples environnements et clusters.",
+      "description": "Collez l'URL de gestion de votre RabbitMQ. Production, staging et dev — tout au même endroit.",
       "productionServer": "Serveur de production",
       "stagingServer": "Serveur de pré-production",
       "developmentServer": "Serveur de développement",
       "nodes": "3 nœuds"
     },
     "step3": {
-      "title": "Surveillez et collaborez",
-      "description": "Obtenez des informations en temps réel sur vos files, échanges et flux de messages. Surveillez avec votre équipe et configurez des alertes.",
+      "title": "Obtenez une visibilité complète",
+      "description": "Profondeur des files en temps réel, santé des consommateurs et taux de variation visibles instantanément. Configurez des alertes et le Résumé quotidien pour toute votre équipe.",
       "messagesPerSec": "Messages/sec",
       "queues": "Files",
       "queueDepths": "Profondeur des files",
@@ -122,8 +138,8 @@
     "card2Cta": "Essayer Enterprise gratuitement"
   },
   "finalCta": {
-    "title": "Prêt à monitorer vos serveurs RabbitMQ ?",
-    "subtitle": "Commencez à surveiller vos serveurs RabbitMQ gratuitement dès aujourd'hui.",
+    "title": "Votre prochain incident est déjà en train de se former. Vous ne pouvez simplement pas le voir encore.",
+    "subtitle": "Connectez votre serveur RabbitMQ en 2 minutes. Historique des files, alertes de santé des consommateurs et Diagnostic d'incidents — gratuit à essayer, sans carte de crédit.",
     "noCreditCard": "Aucune carte de crédit requise",
     "openSource": "Open source",
     "selfHostable": "Self-hostable",
@@ -132,6 +148,7 @@
   },
   "footer": {
     "about": "À propos",
+    "pricing": "Tarifs",
     "blog": "Blog",
     "alerting": "Alertes",
     "privacyPolicy": "Politique de confidentialité",
@@ -140,7 +157,10 @@
     "contact": "Contact",
     "vsDatadog": "Qarote vs Datadog",
     "vsGrafana": "Qarote vs Grafana + Prometheus",
-    "quiz": "Quiz"
+    "vsCloudAMQP": "Qarote vs CloudAMQP",
+    "vsNewRelic": "Qarote vs New Relic",
+    "quiz": "Quiz",
+    "security": "Sécurité"
   },
   "founderQuote": {
     "openQuote": "« ",
@@ -159,7 +179,7 @@
     "stillHaveQuestionsDesc": "Vous ne trouvez pas la réponse que vous cherchez ? N'hésitez pas à contacter notre équipe."
   },
   "seo": {
-    "title": "Qarote - Tableau de bord de monitoring RabbitMQ",
-    "description": "Monitoring RabbitMQ en 2 minutes — sans Prometheus, sans Grafana. Connectez votre URL et c'est tout. Gratuit, open source, auto-hébergeable."
+    "title": "Qarote — Monitoring RabbitMQ, Alertes & Historique des files",
+    "description": "Monitoring RabbitMQ auto-hébergé avec profondeur de file en direct, alertes de santé des consommateurs, 7 jours d'Historique des files et Diagnostic d'incidents. Sans Prometheus, sans Grafana. Offre gratuite, connexion en 2 minutes."
   }
 }

@@ -20,7 +20,10 @@
   "freeTrial": "Essai gratuit",
   "contactSales": "Contacter l'équipe commerciale",
   "soon": "Bientôt",
+  "limited": "Limité",
+  "intelligenceDiagnostics": "Intelligence & Diagnostics",
   "securityCompatibility": "Sécurité & compatibilité",
+  "viewSecurity": "Voir nos pratiques de sécurité",
   "plans": {
     "starter": {
       "name": "Community",
@@ -96,7 +99,17 @@
     "workspace_unlimited": "Espaces de travail illimités",
     "member_upTo1": "1 membre d'équipe",
     "member_upTo3": "3 membres d'équipe",
-    "member_unlimited": "Membres d'équipe illimités"
+    "member_unlimited": "Membres d'équipe illimités",
+    "dailyDigest": "Résumé quotidien",
+    "dailyDigestDesc": "Synthèse quotidienne de l'état de vos files, alertes et anomalies",
+    "messageSpy": "Espion de messages",
+    "messageSpyDesc": "Inspectez le contenu des messages dans les files sans les consommer",
+    "metricsPersistence": "Historique des files",
+    "metricsPersistenceDesc": "Snapshots toutes les 5 minutes, conservés 7 jours — consultez la profondeur, les débits et les consommateurs à n'importe quel moment de la semaine écoulée",
+    "incidentDiagnosis": "Moteur de diagnostic d'incidents",
+    "incidentDiagnosisDesc": "Analyse automatisée des causes racines pour identifier rapidement les défaillances",
+    "messageTracing": "Traçage de messages (Firehose)",
+    "messageTracingDesc": "Traçage complet des messages via l'échange firehose de RabbitMQ"
   },
   "limits": {
     "upTo1": "Jusqu'à 1",

@@ -1,0 +1,20 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PricingIsland from "../../components/PricingIsland";
+import { loadAllTranslations } from "../../lib/i18n-static";
+import { getLocaleStaticPaths } from "../../lib/locales";
+
+export const getStaticPaths = getLocaleStaticPaths;
+
+const { locale } = Astro.params;
+const resources = loadAllTranslations(locale);
+---
+
+<BaseLayout
+  title="Pricing — Qarote RabbitMQ Monitoring"
+  description="Free community edition, or unlock advanced monitoring with Developer ($29/mo) and Enterprise plans. Self-host for free, forever."
+  locale={locale}
+  canonicalPath="/pricing/"
+>
+  <PricingIsland locale={locale} resources={resources} client:load />
+</BaseLayout>

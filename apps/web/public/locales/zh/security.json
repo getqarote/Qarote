@@ -1,0 +1,87 @@
+{
+  "seo": {
+    "title": "安全性 — Qarote RabbitMQ 监控",
+    "description": "Qarote 如何保护您的 RabbitMQ 凭据、处理您的数据并确保您的监控基础设施安全。自托管选项意味着您的数据永远不会离开您的网络。"
+  },
+  "hero": {
+    "eyebrow": "安全性",
+    "title": "为无法承受数据泄露的团队而构建。",
+    "subtitle": "您正在将 Qarote 连接到您的消息代理。以下是我们对该访问权限的确切处理方式——以及我们不会做的事情。"
+  },
+  "pillars": {
+    "eyebrow": "我们如何保护您",
+    "heading": "安全设计",
+    "items": [
+      {
+        "title": "静态凭据加密",
+        "description": "RabbitMQ 连接凭据在写入磁盘之前使用 AES-256 加密。您的密码永远不会以明文形式存储。"
+      },
+      {
+        "title": "传输中使用 TLS 1.2+",
+        "description": "您的浏览器与 Qarote API 之间的所有流量均使用 TLS 1.2 或更高版本加密。我们同样支持并推荐通过 TLS 连接到您的代理。"
+      },
+      {
+        "title": "消息内容从不离开你的 Broker",
+        "description": "Qarote 读取队列深度、消息速率和消费者数量，用于告警和趋势图表，并将这些指标保留最多 7 天。你消息的实际内容从不被访问、读取或存储。"
+      },
+      {
+        "title": "工作区隔离",
+        "description": "每个工作区完全隔离。用户只能访问其工作区内的代理和数据。跨租户数据访问在架构上是不可能的。"
+      },
+      {
+        "title": "基于角色的访问控制",
+        "description": "为每个工作区成员分配管理员或只读角色。限制谁可以修改连接、配置告警或访问敏感的代理详细信息。"
+      },
+      {
+        "title": "会话管理",
+        "description": "会话存续时间短，注销时立即失效。我们支持通过 OIDC 和 SAML 进行 SSO，适合使用集中式身份管理的企业团队。"
+      }
+    ]
+  },
+  "toc": {
+    "heading": "目录"
+  },
+  "selfHosted": {
+    "eyebrow": "自托管选项",
+    "heading": "您的网络。您的规则。",
+    "body": "Qarote 可完全部署在您自己的基础设施上——裸机、Docker 或 Kubernetes。在自托管模式下，任何遥测数据、凭据和监控数据都不会离开您的网络。您可以获得完整的产品，完全不依赖 Qarote 的云服务。",
+    "cta": "阅读部署指南",
+    "features": [
+      "Docker 和 Kubernetes",
+      "无遥测",
+      "支持断网部署",
+      "MIT 许可核心"
+    ]
+  },
+  "disclosure": {
+    "eyebrow": "负责任的披露",
+    "heading": "发现了漏洞？",
+    "body": "我们认真对待安全报告。如果您在 Qarote 中发现漏洞，请发送电子邮件至 security@qarote.io。我们将在 48 小时内确认您的报告，并在修复过程中持续更新进展。我们不会对善意的安全研究人员采取法律行动。",
+    "email": "security@qarote.io"
+  },
+  "faq": {
+    "heading": "安全常见问题",
+    "items": [
+      {
+        "question": "您是否存储我的 RabbitMQ 密码？",
+        "answer": "是的，但仅限于您使用云版本且需要 Qarote 代表您轮询代理的情况。密码在静态时使用 AES-256 加密。在自托管模式下，凭据保存在您自己的服务器上。"
+      },
+      {
+        "question": "Qarote 会读取我的消息内容吗？",
+        "answer": "不会。Qarote 访问 RabbitMQ 管理 API 以读取队列深度、消息速率和节点健康状态。它不会消费或检查消息负载内容。"
+      },
+      {
+        "question": "使用 Qarote 需要将我的代理暴露到互联网吗？",
+        "answer": "不需要。您可以在私有网络内运行 Qarote 代理。它向外连接到 Qarote 的 API——您的代理管理端口无需公开访问。"
+      },
+      {
+        "question": "您是否拥有 SOC 2 认证？",
+        "answer": "我们正在申请 SOC 2 Type II 认证。与此同时，我们的自托管版本是有严格合规要求的团队的正确选择——您掌控整个技术栈。"
+      },
+      {
+        "question": "我可以使用自己的 SSO 提供商吗？",
+        "answer": "可以。企业版支持基于 OIDC 和 SAML 的 SSO，允许您将 Qarote 集成到现有的身份提供商（Okta、Azure AD、Google Workspace 等）。"
+      }
+    ]
+  }
+}

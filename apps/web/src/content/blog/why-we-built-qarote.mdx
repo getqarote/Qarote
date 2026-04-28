@@ -27,12 +27,13 @@ The management plugin told me what I already knew from looking at the chart: the
 
 What it couldn't tell me:
 
-- Which consumers were the two listed? Were they the workers I expected, or zombie connections from a previous deployment that hadn't cleaned up?
-- Why were they connected but not processing? Were they stuck on a single message? Were they crashing silently and reconnecting? Were they blocked waiting on a downstream service?
-- When did the backlog start? The default retention window was 24 hours, but the chart resolution was too coarse to pinpoint the moment things went wrong.
-- Was this isolated to one queue or cascading? I had fifteen queues. The plugin showed me one at a time.
+- **Which consumers were those two?** Were they the workers I expected, or zombie connections from a previous deployment that hadn't cleaned up?
+- **Why were they connected but not processing?** Were they stuck on a single message? Crashing silently and reconnecting? Blocked waiting on a downstream service?
+- **When did the backlog start?** The chart resolution was too coarse to pinpoint the moment things went wrong. I couldn't tell if the accumulation started ten minutes ago or two hours ago.
+- **Was this isolated or cascading?** I had fifteen queues. The plugin showed me one at a time.
+- **What did the messages look like?** I couldn't inspect a single message without writing a throwaway consumer script — which meant I couldn't confirm whether the messages themselves were malformed or the consumers were the problem.
 
-I switched to Grafana. The RabbitMQ Prometheus metrics we'd set up gave me time-series data for queue depth and consumer count, but the scrape interval was 60 seconds — meaning I was already seeing data that was a minute stale. And the dashboards were organized by broker, not by what I actually needed: a list of queues that were behaving anomalously right now.
+I switched to Grafana. The RabbitMQ Prometheus metrics we'd set up gave me time-series data for queue depth and consumer count, but the scrape interval was 60 seconds — meaning I was already seeing data that was a minute stale. And the dashboards were organized by broker, not by what I actually needed: a list of queues behaving anomalously right now.
 
 CloudWatch had our application logs. I searched for error patterns across the consumer services. Found nothing obvious in the first pass — which either meant the consumers were healthy and the problem was upstream, or the error was being swallowed somewhere.
 
@@ -68,7 +69,7 @@ That's not a monitoring stack. That's archaeology.
 
 ## What a purpose-built RabbitMQ monitoring tool needs
 
-After the incident, I started designing in my head what a tool would look like if the only question it had to answer was: what's wrong right now?
+After the incident, I started designing what a tool would look like if the only question it had to answer was: what's wrong right now?
 
 A few things felt non-negotiable:
 
@@ -78,11 +79,15 @@ A few things felt non-negotiable:
 
 **Consumer health as a first-class signal.** Not just "how many consumers are connected" but "are they actually processing?" A consumer that's connected but not acking is broken. That distinction matters and it's invisible in most monitoring setups.
 
-**[Dead-letter queues](/blog/rabbitmq-dead-letter-queue/) as leading indicators.** DLQs are where bad messages go to pile up silently. If your DLQ is growing, you have a consumer bug. Most teams discover this weeks later, during a post-mortem, when someone finally looks at the DLQ depth chart. By then you've lost the context to diagnose it. Watching DLQ growth rate in real time changes that.
+**Queue history you can actually use post-incident.** RabbitMQ's built-in retention is coarse and short. What I needed that night was a 5-minute-resolution depth chart going back 7 days — something that showed me *exactly* when the backlog started, not just that it was currently large. That precision changes how you scope an incident: was this a slow leak or a sudden drop?
 
-**Multi-queue, multi-broker view in one place.** During an incident you don't have time to tab through fifteen queues individually. You need to see at a glance which queues are anomalous.
+**The ability to inspect messages without disturbing them.** That night, I couldn't confirm whether the messages themselves were valid without writing a throwaway consumer. I needed to peek inside the queue — read headers, check payload structure — without consuming a single message. That capability alone would have cut 15 minutes off the diagnosis.
+
+**Automated incident correlation, not manual tab-switching.** The forty-minute diagnosis wasn't forty minutes of hard thinking. It was forty minutes of assembling context that already existed in three different tools. A tool that correlates queue backlog spikes, consumer drops, and publish rate changes into a single timeline isn't doing anything magic — it's doing the mechanical part of incident diagnosis automatically.
 
 **[Alerts that fire on leading indicators](/blog/rabbitmq-alerts-setup-guide/), not just lagging ones.** An alert that fires when your queue hits 500,000 messages is mostly useful for confirming you're already in an incident. An alert that fires when your queue is growing faster than your drain rate — when you have five minutes of lead time — is actually useful.
+
+**A daily health summary delivered to your inbox.** Not because I want to check dashboards every morning, but because small accumulations need to be caught before they become 3am calls. A daily digest of queue depths, consumer trends, and anomalies from the past 24 hours means you never go into an incident blind.
 
 ## Why we built a dedicated RabbitMQ monitoring tool
 
@@ -100,16 +105,17 @@ So we built Qarote.
 
 Here's what that incident would have looked like with Qarote running:
 
-- **First five minutes:** Consumer connected-but-not-acking flag raised. Qarote polls every 15 seconds by default — no 60-second scrape lag.
-- **First five minutes:** Queue growth rate alarm triggered. The backlog was accelerating, not just deep.
-- **Context immediately available:** DLQ depth flat → not a crash-and-requeue loop → narrow the search to DB or network.
-- **Timeline visible:** Backlog acceleration and application connection error spike at the same timestamp.
+- **Minute 1:** Consumer connected-but-not-acking flag raised. Qarote polls every 15 seconds — no 60-second scrape lag.
+- **Minute 1:** Queue growth rate alert triggered. The backlog was accelerating, not just deep.
+- **Minute 2:** [Incident Diagnosis Engine](/features/incident-diagnosis/) correlated the queue backlog spike, the consumer ack rate drop, and the application error spike — same 4-minute window, automatically. No tab-switching.
+- **Minute 5:** [Message Spy](/features/message-spy/) confirmed the messages in the stuck queue were structurally valid — payload intact, headers correct. The messages weren't the problem. The consumers were.
+- **Minute 5:** Narrowed to DB or network. Fix deployed by minute 10.
 
-That's two minutes of context. It took me forty to assemble manually.
+That's ten minutes, not forty.
 
-History retention beyond RabbitMQ's default 24-hour window. Alerts that fire on rate-of-change, not just absolute thresholds. No infrastructure prerequisites beyond a running broker.
+And the next morning, the [Daily Digest](/features/digest/) would have included the incident in the 24-hour anomaly summary — so the whole team would have known about it before they opened Slack, without anyone having to write a post-mortem retrospective email.
 
-That's Qarote. Built because we lived the incident it's designed to prevent.
+If that same queue had been accumulating slowly for days before the incident — a slow leak instead of a sudden drop — [Queue History](/features/metrics/) would have shown it: 5-minute snapshots retained for 7 days, graphable against consumer count and publish rate. The kind of context that turns a surprise outage into a capacity planning conversation.
 
 ---
 

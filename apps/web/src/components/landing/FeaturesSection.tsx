@@ -2,12 +2,16 @@ import { useTranslation } from "react-i18next";
 
 import {
   Activity,
-  Archive,
   BarChart3,
+  Database,
+  Eye,
+  GitBranch,
+  Mail,
   MessageSquare,
   Rocket,
   Settings,
   Shield,
+  Zap,
 } from "lucide-react";
 
 import { trackSignUpClick } from "@/lib/gtm";
@@ -16,17 +20,21 @@ import { Button } from "@/components/ui/button";
 
 const iconImageMap: Record<string, { src: string; alt: string }> = {
   Activity: { src: "/images/real-time.svg", alt: "Real-time" },
+  Database: { src: "/images/chart.svg", alt: "Queue history" },
+  Zap: { src: "/images/flag.svg", alt: "Incident diagnosis" },
+  Eye: { src: "/images/message.svg", alt: "Message spy" },
+  GitBranch: { src: "/images/real-time.svg", alt: "Message tracing" },
+  Mail: { src: "/images/email.svg", alt: "Daily digest" },
   Shield: { src: "/images/flag.svg", alt: "Flag" },
   MessageSquare: { src: "/images/message.svg", alt: "Message" },
   BarChart3: { src: "/images/chart.svg", alt: "Chart" },
   Settings: { src: "/images/server.svg", alt: "Server" },
   Rocket: { src: "/images/send.svg", alt: "Send" },
-  Archive: { src: "/images/error.svg", alt: "Dead-letter queue" },
 };
 
 const ProBadge = () => (
-  <span className="text-[0.65rem] font-mono font-semibold tracking-wide text-primary border border-primary/40 px-1.5 py-0.5 leading-none">
-    Pro
+  <span className="text-xs font-medium text-primary border border-primary px-2 py-0.5 leading-none">
+    Developer+
   </span>
 );
 
@@ -34,12 +42,36 @@ const FeaturesSection = () => {
   const { t } = useTranslation("landing");
 
   const features = [
+    // Hero — killer feature: Queue History
     {
-      iconKey: "Activity",
-      icon: Activity,
-      title: t("features.liveQueueMonitoring.title"),
-      description: t("features.liveQueueMonitoring.description"),
-      isPro: false,
+      iconKey: "Database",
+      icon: Database,
+      title: t("features.metricsPersistence.title"),
+      description: t("features.metricsPersistence.description"),
+      isPro: true,
+    },
+    // Secondary (large cards) — Incident Diagnosis + Message Spy
+    {
+      iconKey: "Zap",
+      icon: Zap,
+      title: t("features.incidentDiagnosis.title"),
+      description: t("features.incidentDiagnosis.description"),
+      isPro: true,
+    },
+    {
+      iconKey: "Eye",
+      icon: Eye,
+      title: t("features.messageSpy.title"),
+      description: t("features.messageSpy.description"),
+      isPro: true,
+    },
+    // Compact grid — remaining killer features first, then core
+    {
+      iconKey: "GitBranch",
+      icon: GitBranch,
+      title: t("features.messageTracing.title"),
+      description: t("features.messageTracing.description"),
+      isPro: true,
     },
     {
       iconKey: "Shield",
@@ -47,6 +79,20 @@ const FeaturesSection = () => {
       title: t("features.smartAlertingSystem.title"),
       description: t("features.smartAlertingSystem.description"),
       isPro: true,
+    },
+    {
+      iconKey: "Mail",
+      icon: Mail,
+      title: t("features.dailyDigest.title"),
+      description: t("features.dailyDigest.description"),
+      isPro: true,
+    },
+    {
+      iconKey: "Activity",
+      icon: Activity,
+      title: t("features.liveQueueMonitoring.title"),
+      description: t("features.liveQueueMonitoring.description"),
+      isPro: false,
     },
     {
       iconKey: "MessageSquare",
@@ -60,27 +106,20 @@ const FeaturesSection = () => {
       icon: BarChart3,
       title: t("features.performanceAnalytics.title"),
       description: t("features.performanceAnalytics.description"),
-      isPro: true,
+      isPro: false,
     },
     {
       iconKey: "Settings",
       icon: Settings,
       title: t("features.multiServerSupport.title"),
       description: t("features.multiServerSupport.description"),
-      isPro: true,
+      isPro: false,
     },
     {
       iconKey: "Rocket",
       icon: Rocket,
       title: t("features.messagePublishing.title"),
       description: t("features.messagePublishing.description"),
-      isPro: false,
-    },
-    {
-      iconKey: "Archive",
-      icon: Archive,
-      title: t("features.deadLetterQueueMonitoring.title"),
-      description: t("features.deadLetterQueueMonitoring.description"),
       isPro: false,
     },
   ];
@@ -125,7 +164,7 @@ const FeaturesSection = () => {
                 {hero.description}
               </p>
             </div>
-            {/* Mock live metrics display — mirrors app dashboard */}
+            {/* Mock historical queue depth chart — mirrors Queue History view */}
             <div className="border border-border overflow-hidden">
               <div className="px-4 py-2.5 bg-muted/30 border-b border-border flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -138,53 +177,61 @@ const FeaturesSection = () => {
                     height={16}
                   />
                   <span className="text-xs font-medium text-foreground">
-                    Queued messages
+                    payment.queue — 7 day history
                   </span>
                 </div>
-                <span className="text-xs text-green-600 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                  Live
+                <span className="text-xs text-muted-foreground">
+                  5-min snapshots
                 </span>
               </div>
               <div className="p-4 space-y-4">
-                {/* Metric cards row */}
+                {/* Stats row */}
                 <div className="grid grid-cols-3 gap-2">
                   <div className="border border-border p-2.5">
                     <div className="text-[0.65rem] uppercase tracking-wide text-muted-foreground mb-1">
-                      Publish
+                      Peak depth
                     </div>
                     <div className="text-base font-mono text-foreground">
-                      3.4k/s
+                      14,802
                     </div>
                   </div>
                   <div className="border border-border p-2.5">
                     <div className="text-[0.65rem] uppercase tracking-wide text-muted-foreground mb-1">
-                      Deliver
+                      Avg consumers
                     </div>
-                    <div className="text-base font-mono text-foreground">
-                      3.2k/s
-                    </div>
+                    <div className="text-base font-mono text-foreground">8</div>
                   </div>
                   <div className="border border-border p-2.5">
                     <div className="text-[0.65rem] uppercase tracking-wide text-muted-foreground mb-1">
-                      Ready
+                      Retained
                     </div>
                     <div className="text-base font-mono text-foreground">
-                      241
+                      7 days
                     </div>
                   </div>
                 </div>
-                {/* Chart area */}
-                <div className="h-24 bg-muted/30 flex items-end justify-between gap-1 p-3">
-                  <div className="flex-1 bg-primary/70 h-[35%]" />
-                  <div className="flex-1 bg-primary/80 h-[55%]" />
-                  <div className="flex-1 bg-primary/70 h-[42%]" />
-                  <div className="flex-1 bg-primary h-[72%]" />
-                  <div className="flex-1 bg-primary/80 h-[58%]" />
-                  <div className="flex-1 bg-primary h-[85%]" />
-                  <div className="flex-1 bg-primary/90 h-[68%]" />
-                  <div className="flex-1 bg-primary/70 h-[48%]" />
-                  <div className="flex-1 bg-primary/80 h-[62%]" />
+                {/* Historical area chart — depth spike in the middle */}
+                <div className="h-24 bg-muted/30 relative overflow-hidden p-3 flex items-end gap-px">
+                  {[
+                    8, 10, 9, 12, 11, 14, 18, 26, 48, 72, 85, 95, 100, 88, 62,
+                    38, 22, 14, 10, 9, 11, 10, 8, 9, 10, 9, 11, 12,
+                  ].map((h, i) => (
+                    <div
+                      key={i}
+                      className="flex-1 bg-primary/75"
+                      style={{ height: `${h}%` }}
+                    />
+                  ))}
+                  {/* Spike marker */}
+                  <div className="absolute top-2 left-[42%] flex flex-col items-center gap-0.5">
+                    <div className="flex items-center gap-1 bg-red-50 border border-red-200 px-1.5 py-0.5 whitespace-nowrap">
+                      <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                      <span className="text-[0.6rem] text-red-700 font-medium">
+                        Spike — Tue 11pm
+                      </span>
+                    </div>
+                    <div className="w-px h-3 bg-red-400/60" />
+                  </div>
                 </div>
               </div>
             </div>

@@ -12,7 +12,11 @@
       "analytics": "分析",
       "queueManagement": "队列管理",
       "multiServer": "多服务器",
-      "devExperience": "开发体验"
+      "queueHistory": "队列历史",
+      "messageSpy": "消息监听",
+      "dailyDigest": "每日摘要",
+      "incidentDiagnosis": "故障诊断",
+      "messageTracing": "消息追踪"
     }
   },
   "coreFeature": "核心功能",
@@ -88,6 +92,68 @@
     "messagesPerSec": "消息/秒",
     "activeQueues": "活跃队列",
     "allSystemsOperational": "所有系统运行正常"
+  },
+  "queueIntelligence": {
+    "title": "深度队列智能分析"
+  },
+  "messageVisibility": {
+    "title": "检查任意消息而不影响队列"
+  },
+  "messagePipeline": {
+    "title": "消息流全链路可观测"
+  },
+  "queueHistory": {
+    "description": "每5分钟采集一次队列深度、消费者数量和消息速率，保留7天数据。可对任意队列在任意时间窗口绘图——即使当时你不在线，也能清楚看到队列何时开始堆积、何时排空。"
+  },
+  "messageSpy": {
+    "description": "直接在任意队列中浏览消息头和消息体——只读、无损、对生产环境安全。无需 AMQP 消费者，无需临时脚本，消息完整保留在原位。"
+  },
+  "dailyDigest": {
+    "description": "每天早晨通过邮件获取 broker 健康摘要：队列深度趋势、死信队列增长情况以及过去24小时的异常。无需打开仪表板，也能掌握系统动态。"
+  },
+  "incidentDiagnosis": {
+    "description": "针对 RabbitMQ 事故的自动化根因分析。将队列深度峰值、消费者掉线和吞吐量变化关联成一条可读时间线——让你清楚知道发生了什么、以什么顺序发生的。"
+  },
+  "messageTracing": {
+    "description": "通过 RabbitMQ Firehose 实现全 broker 消息追踪。每一次发布、每一次投递、每一次确认——实时采集，附带路由键、交换器和消息体大小。"
+  },
+  "comingSoon": {
+    "eyebrow": "更多功能",
+    "heading": "五项附加工具，同一个仪表板",
+    "subtitle": "每个链接都指向包含完整文档、使用场景和常见问题的专属页面。",
+    "learnMore": "了解更多",
+    "items": [
+      {
+        "icon": "chart.svg",
+        "title": "队列历史",
+        "description": "每5分钟采集一次队列深度、消费者数量和消息速率，保留7天。用于事故回顾和容量规划，无需 Prometheus。",
+        "href": "/features/metrics/"
+      },
+      {
+        "icon": "message.svg",
+        "title": "消息监听",
+        "description": "在任何队列中检查消息头和消息体——只读、无损、对生产环境安全。无需编写临时消费者脚本。",
+        "href": "/features/message-spy/"
+      },
+      {
+        "icon": "email.svg",
+        "title": "每日摘要",
+        "description": "每日早晨发送 broker 健康摘要邮件：队列深度趋势、死信队列增长情况以及过去24小时的异常。",
+        "href": "/features/digest/"
+      },
+      {
+        "icon": "flag.svg",
+        "title": "故障诊断引擎",
+        "description": "针对 RabbitMQ 事故的自动化根因分析。将队列深度峰值、消费者掉线和吞吐量变化关联成一条可读时间线。",
+        "href": "/features/incident-diagnosis/"
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "消息追踪（Firehose）",
+        "description": "通过 RabbitMQ Firehose 实现全 broker 消息追踪。实时查看每条消息、每条路由、每个消费者，支持过滤和搜索。",
+        "href": "/features/message-tracing/"
+      }
+    ]
   },
   "cta": {
     "title": "准备好监控您的 RabbitMQ 服务器了吗？",

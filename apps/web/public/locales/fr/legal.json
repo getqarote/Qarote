@@ -4,7 +4,7 @@
   "addressLabel": "Adresse",
   "privacyPolicy": {
     "title": "Politique de confidentialité",
-    "lastUpdated": "Dernière mise à jour : 15 janvier 2026",
+    "lastUpdated": "Dernière mise à jour : 28 avril 2026",
     "description": "Politique de confidentialité de Qarote - Découvrez comment nous collectons, utilisons et protégeons vos données.",
     "sections": {
       "informationWeCollect": {
@@ -24,7 +24,7 @@
           "description": "Nous collectons automatiquement des informations sur votre utilisation de notre service :",
           "items": [
             "Détails de connexion au serveur RabbitMQ (hôte, port, identifiants)",
-            "Données de surveillance des files d'attente et métriques",
+            "Métriques de surveillance des files d'attente (profondeurs, taux de messages, nombre de consommateurs — les contenus des messages ne sont jamais accédés ni stockés)",
             "Métriques de performance des applications",
             "Journaux d'erreurs et informations de débogage",
             "Habitudes d'utilisation des fonctionnalités"
@@ -95,10 +95,11 @@
         "title": "Conservation des données",
         "description": "Nous conservons vos informations personnelles aussi longtemps que nécessaire pour fournir notre service et remplir les objectifs décrits dans cette politique de confidentialité. Plus précisément :",
         "items": [
-          "Informations de compte : jusqu'à la suppression de votre compte",
-          "Données d'utilisation : jusqu'à 2 ans à des fins d'analyse",
-          "Informations de paiement : selon les exigences légales et des processeurs de paiement",
-          "Communications de support : jusqu'à 3 ans"
+          { "label": "Informations de compte", "detail": "jusqu'à la suppression de votre compte" },
+          { "label": "Métriques de surveillance des files d'attente (profondeurs, taux, nombre de consommateurs)", "detail": "7 jours, supprimées automatiquement" },
+          { "label": "Données d'utilisation", "detail": "jusqu'à 2 ans à des fins d'analyse" },
+          { "label": "Informations de paiement", "detail": "selon les exigences légales et des processeurs de paiement" },
+          { "label": "Communications de support", "detail": "jusqu'à 3 ans" }
         ]
       },
       "yourRights": {

@@ -301,6 +301,24 @@
   }
 }
 
+/* ─── Legal section deep-link flash ──────────────────────────────────────── */
+/* Fires when a user arrives via a hash URL (e.g. /privacy-policy/#data-retention).
+   Gives SREs and reviewers a clear "you are here" signal without JS. */
+@keyframes section-target-flash {
+  0%   { background-color: hsl(var(--primary) / 0.06); }
+  100% { background-color: transparent; }
+}
+
+section:target {
+  animation: section-target-flash 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  section:target {
+    animation: none;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;

@@ -4,7 +4,7 @@
   "addressLabel": "Address",
   "privacyPolicy": {
     "title": "Privacy Policy",
-    "lastUpdated": "Last updated: January 15, 2026",
+    "lastUpdated": "Last updated: April 28, 2026",
     "description": "Privacy Policy for Qarote - Learn how we collect, use, and protect your data.",
     "sections": {
       "informationWeCollect": {
@@ -24,7 +24,7 @@
           "description": "We automatically collect information about how you use our service:",
           "items": [
             "RabbitMQ server connection details (host, port, credentials)",
-            "Queue monitoring data and metrics",
+            "Queue monitoring metrics (queue depths, message rates, consumer counts — message payloads are never accessed or stored)",
             "Application performance metrics",
             "Error logs and debugging information",
             "Feature usage patterns"
@@ -95,10 +95,11 @@
         "title": "Data Retention",
         "description": "We retain your personal information for as long as necessary to provide our service and fulfill the purposes outlined in this privacy policy. Specifically:",
         "items": [
-          "Account information: Until you delete your account",
-          "Usage data: Up to 2 years for analytics purposes",
-          "Payment information: As required by law and payment processors",
-          "Support communications: Up to 3 years"
+          { "label": "Account information", "detail": "Until you delete your account" },
+          { "label": "Queue monitoring metrics (depths, rates, consumer counts)", "detail": "7 days, automatically purged" },
+          { "label": "Usage data", "detail": "Up to 2 years for analytics purposes" },
+          { "label": "Payment information", "detail": "As required by law and payment processors" },
+          { "label": "Support communications", "detail": "Up to 3 years" }
         ]
       },
       "yourRights": {

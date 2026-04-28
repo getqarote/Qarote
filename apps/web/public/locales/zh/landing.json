@@ -3,8 +3,8 @@
     "titleBefore": "你的 RabbitMQ 正在运行。你真的知道",
     "titleHighlight": "里面发生了什么",
     "titleAfter": "吗？",
-    "subtitle": "无需 Prometheus。无需 Grafana。无需专职运维人员。输入 URL — 2 分钟内完整监控队列。",
-    "noCreditCard": "2 分钟配置 · 无需信用卡 · 免费开源 · Pro 14 天试用"
+    "subtitle": "管理插件从未被设计成的 RabbitMQ 监控智能层。队列历史、消费者健康告警与故障诊断 — 2 分钟内完成接入。无需 Prometheus。无需 YAML。",
+    "noCreditCard": "2 分钟配置 · 无需信用卡 · 免费版永不过期 · Developer+ 从 $29/月起"
   },
   "cta": {
     "getStartedForFree": "免费开始使用",
@@ -40,36 +40,52 @@
     "allSystemsOperational": "所有系统运行正常"
   },
   "features": {
-    "title": "你真正关心的一切。",
-    "titleLine2": "集中监控于一处。",
-    "freeTierNote": "核心功能永久免费。告警、多服务器和高级分析需要专业版。",
+    "title": "管理插件所缺少的",
+    "titleLine2": "智能监控层，由 Qarote 提供。",
+    "freeTierNote": "实时监控和队列管理永久免费。Developer+ 新增告警、7 天队列历史、消息监听和故障诊断 — 从 $29/月起。",
     "liveQueueMonitoring": {
       "title": "实时队列监控",
-      "description": "实时监控队列深度、消息速率和消费者数量。追踪消息堆积情况和处理性能。"
+      "description": "队列深度、消息速率和消费者数量 — 每秒更新。在消费者卡住或队列积压的第一时间发现问题，而不是 60 秒后。"
     },
     "smartAlertingSystem": {
       "title": "智能告警系统",
-      "description": "针对队列积压、内存使用和性能问题的智能告警。可自定义阈值，按严重级别发送通知。"
+      "description": "在用户察觉前收到告警。对队列深度、增长速率或消费者数量设置阈值 — 出现问题时立即通过邮件、Slack 或 Webhook 触发告警，而不是等到有人提 ticket。"
     },
     "queueManagement": {
       "title": "队列管理",
-      "description": "一键暂停、恢复和删除队列。通过直观的界面创建交换器、绑定队列和管理路由键。"
+      "description": "无需接触 CLI，即可清空、清除或重新路由队列。创建交换器、绑定队列、管理路由键 — 全部在发现问题的同一个仪表盘中完成。"
     },
     "performanceAnalytics": {
       "title": "性能分析",
-      "description": "内存使用、磁盘空间、文件描述符和消息吞吐量的详细指标。通过精美的图表可视化趋势。"
+      "description": "内存、磁盘和消息吞吐量的历史图表。在 Broker 资源泄漏演变为凌晨3点的告警前，提前发现问题。"
     },
     "multiServerSupport": {
       "title": "多服务器支持",
-      "description": "连接多个 RabbitMQ 集群，并在它们之间无缝切换。支持不同的环境和配置。"
+      "description": "生产、预发布和开发环境集中在一个仪表盘。告别三标签页的故障响应 — 所有 RabbitMQ 服务器，一处管理。"
     },
     "messagePublishing": {
       "title": "消息发布",
-      "description": "通过直接向队列和交换器发布消息来测试和调试你的应用。非常适合开发和故障排查。"
+      "description": "无需编写代码，直接向任意队列或交换器发布测试消息。在同一个仪表盘中复现 Bug、验证路由、调试消息流。"
     },
-    "deadLetterQueueMonitoring": {
-      "title": "死信队列监控",
-      "description": "在用户察觉之前发现消息失败。DLQ 增长率是大多数团队忽视的预警指标 — 实时可见。"
+    "dailyDigest": {
+      "title": "每日摘要",
+      "description": "每天早晨收到一封健康摘要邮件 — 队列深度趋势、消费者异常，以及过去 24 小时的完整概览。在打开仪表盘之前，就知道昨夜发生了什么。"
+    },
+    "messageSpy": {
+      "title": "消息监听",
+      "description": "直接在任意队列内浏览消息头和消息体 — 只读、非破坏性、生产安全。管理插件在不消费消息的情况下无法展示消息内容，而消息监听可以。"
+    },
+    "metricsPersistence": {
+      "title": "队列历史记录",
+      "description": "每 5 分钟快照，保留 7 天。管理插件在你关闭标签页的瞬间就会遗忘历史 — 队列历史不会。即使当时无人值守，也能精确还原队列开始积压的时刻。"
+    },
+    "incidentDiagnosis": {
+      "title": "故障诊断引擎",
+      "description": "管理插件展示状态，故障诊断引擎揭示原因。将队列积压峰值、消费者掉线和发布速率变化关联成一条可读的时间线 — 40 分钟的标签页切换，自动完成。"
+    },
+    "messageTracing": {
+      "title": "消息追踪（Firehose）",
+      "description": "跟踪每条消息从发布到投递的全过程 — 或失败原因。实时全量 Broker 级追踪，包含路由键、交换器和消息体大小。精确定位消息消失的位置。"
     }
   },
   "enterprise": {
@@ -81,29 +97,29 @@
     "advancedSecurityDesc": "完全掌控你的数据和部署"
   },
   "connection": {
-    "title": "轻松连接你的 RabbitMQ 服务器",
-    "subtitle": "无需改变你的 RabbitMQ 服务器的运行方式，Qarote 专为这个消息代理而设计。",
+    "title": "三步即可运行",
+    "subtitle": "无需 Agent，无需 Prometheus Exporter，无需 YAML。Qarote 直接连接 RabbitMQ 管理 API。",
     "ecosystemTitle": "兼容任意 RabbitMQ 客户端：",
     "step1": {
       "title": "注册账户",
-      "description": "几秒钟即可创建账户。无需信用卡。立即开始监控你的 RabbitMQ 基础设施。",
+      "description": "几秒钟即可创建账户。无需信用卡。免费版无时间限制。",
       "createAccount": "创建你的 Qarote 账户",
-      "transformMonitoring": "改变你监控 RabbitMQ 的方式。",
+      "transformMonitoring": "为你的 RabbitMQ 添加它真正需要的智能层。",
       "continueWithEmail": "使用邮箱继续",
       "or": "或",
       "continueWithGoogle": "使用 Google 继续"
     },
     "step2": {
       "title": "添加你的服务器",
-      "description": "通过简单的连接接入你的 RabbitMQ 服务器。支持多个环境和集群。",
+      "description": "粘贴你的 RabbitMQ 管理 URL。生产、预发布和开发环境 — 全部集中管理。",
       "productionServer": "生产服务器",
       "stagingServer": "预发布服务器",
       "developmentServer": "开发服务器",
       "nodes": "3 个节点"
     },
     "step3": {
-      "title": "监控与协作",
-      "description": "实时洞察你的队列、交换器和消息流。与团队一起监控并设置告警。",
+      "title": "获得完整可见性",
+      "description": "实时队列深度、消费者健康状况和变化率即时可见。为整个团队配置告警和每日摘要。",
       "messagesPerSec": "消息/秒",
       "queues": "队列",
       "queueDepths": "队列深度",
@@ -122,8 +138,8 @@
     "card2Cta": "免费试用 Enterprise"
   },
   "finalCta": {
-    "title": "准备好监控你的 RabbitMQ 服务器了吗？",
-    "subtitle": "今天就免费开始监控你的 RabbitMQ 服务器。",
+    "title": "下一个故障正在悄然形成，你只是还看不到它。",
+    "subtitle": "2 分钟接入你的 RabbitMQ 服务器。队列历史、消费者健康告警和故障诊断 — 免费试用，无需信用卡。",
     "noCreditCard": "无需信用卡",
     "openSource": "Open source",
     "selfHostable": "Self-hostable",
@@ -132,6 +148,7 @@
   },
   "footer": {
     "about": "关于我们",
+    "pricing": "定价",
     "blog": "博客",
     "alerting": "告警",
     "privacyPolicy": "隐私政策",
@@ -140,7 +157,10 @@
     "contact": "联系我们",
     "vsDatadog": "Qarote vs Datadog",
     "vsGrafana": "Qarote vs Grafana + Prometheus",
-    "quiz": "测验"
+    "vsCloudAMQP": "Qarote vs CloudAMQP",
+    "vsNewRelic": "Qarote vs New Relic",
+    "quiz": "测验",
+    "security": "安全性"
   },
   "founderQuote": {
     "openQuote": "「",
@@ -159,7 +179,7 @@
     "stillHaveQuestionsDesc": "找不到你想要的答案？请联系我们友好的团队。"
   },
   "seo": {
-    "title": "Qarote - RabbitMQ 监控仪表盘",
-    "description": "2 分钟完成 RabbitMQ 监控 — 无需 Prometheus，无需 Grafana。输入服务器 URL 即可开始。免费、开源、支持自托管。"
+    "title": "Qarote — RabbitMQ 监控、告警与队列历史",
+    "description": "自托管 RabbitMQ 监控，提供实时队列深度、消费者健康告警、7 天队列历史和故障诊断。无需 Prometheus，无需 Grafana。免费版，2 分钟完成接入。"
   }
 }

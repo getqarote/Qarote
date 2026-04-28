@@ -1,0 +1,143 @@
+{
+  "seo": {
+    "title": "Qarote vs CloudAMQP : Comparaison de surveillance RabbitMQ",
+    "description": "Qarote vs CloudAMQP pour la surveillance RabbitMQ. Qarote fonctionne avec n'importe quel broker RabbitMQ — auto-hébergé ou cloud. Le dashboard de CloudAMQP ne fonctionne que s'ils hébergent votre broker. Comparaison honnête."
+  },
+  "hero": {
+    "eyebrow": "Comparaison",
+    "title": "Qarote vs CloudAMQP",
+    "subtitle": "CloudAMQP est un service d'hébergement RabbitMQ géré — pas un outil de surveillance autonome. Son dashboard ne fonctionne que si CloudAMQP héberge votre broker. Qarote est un dashboard de surveillance dédié à RabbitMQ qui fonctionne avec n'importe quelle instance : auto-hébergée, n'importe quel cloud, n'importe quel cluster."
+  },
+  "verdict": {
+    "heading": "Verdict rapide",
+    "competitor": {
+      "label": "Choisissez CloudAMQP si…",
+      "points": [
+        "Vous souhaitez un broker RabbitMQ entièrement géré et acceptez que CloudAMQP l'héberge pour vous",
+        "Vous exécutez une charge de travail réduite et le niveau gratuit Little Lemur couvre votre volume de messages et vos limites de connexions",
+        "Vous n'avez pas besoin de surveiller des instances RabbitMQ auto-hébergées ou hébergées ailleurs"
+      ]
+    },
+    "qarote": {
+      "label": "Choisissez Qarote si…",
+      "points": [
+        "Vous auto-hébergez RabbitMQ et avez besoin d'un dashboard de surveillance digne de ce nom",
+        "Vous gérez plusieurs serveurs ou clusters RabbitMQ et souhaitez une vue unifiée",
+        "Vous avez besoin d'alertes réelles sur la profondeur de queue, le nombre de consumers ou les dead-letter queues — pas seulement des graphiques basiques"
+      ]
+    }
+  },
+  "table": {
+    "heading": "Comparaison des fonctionnalités",
+    "competitorLabel": "CloudAMQP",
+    "qaroteLabel": "Qarote",
+    "featureLabel": "Fonctionnalité",
+    "caption": "Comparaison des fonctionnalités Qarote vs CloudAMQP",
+    "asOf": "Tarifs en avril 2026. Tarification du plan CloudAMQP Bunny appliquée.",
+    "rows": {
+      "brokerLockIn": {
+        "feature": "Fonctionne avec n'importe quel broker RabbitMQ",
+        "competitor": "Non — le dashboard ne fonctionne que si CloudAMQP héberge votre broker",
+        "qarote": "Oui — se connecte à n'importe quelle instance RabbitMQ via l'API de gestion"
+      },
+      "rabbitmqNative": {
+        "feature": "Surveillance native RabbitMQ",
+        "competitor": "RabbitMQ Management Plugin avec des graphiques supplémentaires — lié à l'infrastructure CloudAMQP",
+        "qarote": "Natif — conçu exclusivement pour RabbitMQ"
+      },
+      "alerting": {
+        "feature": "Alertes sur la profondeur de queue",
+        "competitor": "Basiques — limitées ou indisponibles sur les plans inférieurs ; pas de Slack ni PagerDuty en dessous des niveaux payants",
+        "qarote": "Oui — modèles d'alertes intégrés pour la profondeur de queue, le nombre de consumers et les DLQ"
+      },
+      "selfHosted": {
+        "feature": "Option auto-hébergée",
+        "competitor": "Non — SaaS entièrement géré, code source fermé",
+        "qarote": "Oui — binaire unique ou Docker, fonctionne entièrement sur votre infrastructure"
+      },
+      "multiCluster": {
+        "feature": "Vue multi-cluster / multi-serveur",
+        "competitor": "Non — chaque instance CloudAMQP dispose de son propre dashboard isolé",
+        "qarote": "Oui — surveillez plusieurs serveurs RabbitMQ depuis un seul dashboard"
+      },
+      "pricingModel": {
+        "feature": "Modèle de tarification",
+        "competitor": "Par instance (~19–299 $/mois par broker) ; le prix augmente à chaque nouvelle instance",
+        "qarote": "Licence annuelle forfaitaire par équipe — 348 $/an (Développeur) ou 1 188 $/an (Enterprise) ; noyau MIT gratuit"
+      },
+      "dataPrivacy": {
+        "feature": "Données de queue restant sur votre réseau",
+        "competitor": "Non — vos messages et métriques de queues transitent par l'infrastructure de CloudAMQP",
+        "qarote": "Oui — toutes les données de surveillance restent sur votre réseau"
+      },
+      "setupTime": {
+        "feature": "Temps de configuration de la surveillance",
+        "competitor": "Instantané si vous utilisez CloudAMQP comme broker — non applicable sinon",
+        "qarote": "60 secondes — collez votre chaîne de connexion RabbitMQ, c'est tout"
+      },
+      "openSource": {
+        "feature": "Noyau open source",
+        "competitor": "Non — code source fermé",
+        "qarote": "Oui — licence MIT"
+      },
+      "ownBroker": {
+        "feature": "Surveiller RabbitMQ auto-hébergé",
+        "competitor": "Non — le dashboard CloudAMQP ne peut pas se connecter à des brokers hébergés en externe",
+        "qarote": "Oui — connectez-vous à n'importe quel serveur RabbitMQ que vous contrôlez"
+      }
+    }
+  },
+  "sections": {
+    "eyebrow": "Analyse approfondie",
+    "lockIn": {
+      "heading": "Le dashboard de CloudAMQP est lié au broker de CloudAMQP",
+      "p1": "CloudAMQP est un service d'hébergement RabbitMQ géré. Le dashboard de surveillance qu'il propose est le RabbitMQ Management Plugin standard, exposé via leur plateforme avec quelques graphiques complémentaires. Ce n'est pas un produit de surveillance autonome — il ne fonctionne que parce que CloudAMQP contrôle le broker.",
+      "p2": "Si vous auto-hébergez RabbitMQ sur vos propres serveurs, sur AWS, sur GCP ou n'importe où où vous opérez l'infrastructure, le dashboard de CloudAMQP ne vous est tout simplement pas accessible. Vous devriez soit migrer votre broker vers CloudAMQP, soit trouver une solution de surveillance distincte.",
+      "p3": "Qarote se connecte à n'importe quelle instance RabbitMQ en utilisant l'API de gestion standard. Peu importe où tourne votre broker — sur site, dans un cloud privé, sur plusieurs régions. Vous collez une chaîne de connexion et vos queues apparaissent immédiatement."
+    },
+    "monitoring": {
+      "heading": "Profondeur de surveillance : outil dédié vs. plugin embarqué",
+      "p1": "L'interface de surveillance de CloudAMQP est construite sur le RabbitMQ Management Plugin — le même plugin livré avec toute installation RabbitMQ. Il ajoute des graphiques supplémentaires et une rétention de données historiques, mais le modèle sous-jacent reste la même interface de gestion généraliste fournie d'emblée.",
+      "p2": "Qarote a été conçu de zéro autour de la façon dont les équipes surveillent réellement les files de messages : tendances de profondeur de queue, lag des consumers, accumulation de dead-letter queues, isolation des vhosts et décomposition par connexion. Les modèles d'alertes sont bâtis autour de ces modes de défaillance propres à RabbitMQ — pas des moniteurs de seuils génériques adaptés d'une plateforme d'observabilité généraliste.",
+      "p3": "Pour les équipes où RabbitMQ est un composant critique de l'infrastructure, la différence entre un outil de surveillance dédié et un plugin de gestion embarqué devient rapidement évidente en conditions de production."
+    },
+    "multiCluster": {
+      "heading": "Un seul dashboard pour tous vos serveurs RabbitMQ",
+      "p1": "CloudAMQP donne à chaque instance hébergée son propre dashboard isolé. Si vous gérez plusieurs instances RabbitMQ — pour différents environnements, différents services ou différentes régions — vous naviguez entre plusieurs dashboards CloudAMQP distincts. Il n'existe pas de vue multi-cluster unifiée.",
+      "p2": "Qarote surveille plusieurs serveurs RabbitMQ depuis un seul dashboard. Ajoutez des connexions pour votre cluster de production, votre environnement de staging et tous les serveurs supplémentaires. Les métriques de queues, les nombres de consumers et les alertes sont visibles pour l'ensemble, sans changer de contexte."
+    },
+    "pricing": {
+      "heading": "Tarification par instance vs. forfait par équipe",
+      "p1": "La tarification de CloudAMQP est par instance et par mois : le plan gratuit Little Lemur est limité à 1 vhost, 5 connexions et 1 million de messages par mois. Les plans payants démarrent à environ 19 $/mois et montent à 299 $/mois ou plus par instance de broker. Chaque instance RabbitMQ supplémentaire que vous souhaitez héberger s'ajoute à la facture.",
+      "p2": "Le plan Développeur de Qarote est à 348 $/an (29 $/mois forfaitaire) par équipe. L'Enterprise est à 1 188 $/an. Les deux sont forfaitaires : ajouter des serveurs RabbitMQ supplémentaires à surveiller n'augmente pas le prix. Le noyau open source MIT est gratuit à auto-héberger indéfiniment.",
+      "p3": "Les deux modèles servent des objectifs différents : la tarification de CloudAMQP reflète le coût d'hébergement et d'exploitation de votre broker. Celle de Qarote correspond à la surveillance d'une infrastructure que vous gérez déjà. Si vous hébergez votre propre RabbitMQ, vous ne payez pas pour un broker — seulement pour la visibilité sur celui-ci."
+    }
+  },
+  "crossLink": {
+    "text": "Aussi en comparaison :",
+    "datadog": "Qarote vs Datadog →",
+    "pricing": "Tarifs",
+    "features": "Fonctionnalités"
+  },
+  "faq": {
+    "heading": "Questions fréquentes",
+    "items": [
+      {
+        "question": "Puis-je utiliser CloudAMQP pour surveiller mon RabbitMQ auto-hébergé ?",
+        "answer": "Non. Le dashboard de surveillance de CloudAMQP est lié à leur service d'hébergement géré. Il ne peut pas se connecter à un broker RabbitMQ que CloudAMQP n'héberge pas. Si vous gérez votre propre serveur RabbitMQ, vous avez besoin d'un outil de surveillance autonome comme Qarote."
+      },
+      {
+        "question": "Quelle est la différence entre CloudAMQP et Qarote ?",
+        "answer": "CloudAMQP est un service d'hébergement RabbitMQ géré — il fait tourner votre broker à votre place. Qarote est un dashboard de surveillance — il se connecte aux brokers RabbitMQ que vous opérez déjà et vous donne de la visibilité sur la profondeur des queues, la santé des consumers, les alertes et les vues multi-serveur. Ils répondent à des problèmes différents. Si vous auto-hébergez RabbitMQ, Qarote est pertinent ; CloudAMQP n'est pas une alternative de surveillance."
+      },
+      {
+        "question": "Qarote fonctionne-t-il avec RabbitMQ hébergé sur AWS, GCP ou Azure ?",
+        "answer": "Oui. Qarote se connecte à n'importe quelle instance RabbitMQ en utilisant l'API de gestion standard et le protocole AMQP. Il fonctionne avec RabbitMQ auto-hébergé chez n'importe quel fournisseur cloud, dans n'importe quel datacenter ou sur site — du moment que vous pouvez atteindre l'endpoint de l'API de gestion depuis là où Qarote est déployé."
+      },
+      {
+        "question": "L'édition open source de Qarote est-elle vraiment gratuite ?",
+        "answer": "Oui. Le noyau sous licence MIT de Qarote — surveillance en direct des queues, visibilité des exchanges, suivi des consumers et support multi-serveur — est gratuit à auto-héberger sans clé de licence. Les fonctionnalités premium telles que le partage d'espaces de travail, les intégrations d'alertes avancées et la gestion d'équipe nécessitent une licence Développeur ou Enterprise."
+      }
+    ]
+  }
+}

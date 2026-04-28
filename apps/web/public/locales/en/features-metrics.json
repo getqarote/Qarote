@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "RabbitMQ Queue History — 7 Days of Metric Snapshots | Qarote",
+    "description": "7 days of RabbitMQ queue history. Queue depth, consumer counts, and message rates captured every 5 minutes — for incident retrospectives and capacity planning. No Prometheus required."
+  },
+  "hero": {
+    "eyebrow": "Features → Queue History",
+    "title": "7 days of RabbitMQ queue history. Not 8 hours.",
+    "subtitle": "The RabbitMQ management plugin discards metrics after roughly 8 hours. Qarote captures queue depth, consumer counts, and message rates every 5 minutes and retains them for 7 days — so the data is there when you need it for incident retrospectives and capacity planning."
+  },
+  "metricTypes": {
+    "eyebrow": "What's stored",
+    "heading": "A complete picture of your broker over time",
+    "items": [
+      {
+        "icon": "chart.svg",
+        "title": "Queue depth history",
+        "description": "Queue message counts captured every 5 minutes, retained for 7 days — 2,016 data points per queue per week. Graph the depth of any queue over any time window. See exactly when a queue started filling, how fast it grew, and when it drained — even if you weren't watching when it happened."
+      },
+      {
+        "icon": "message.svg",
+        "title": "Consumer count history",
+        "description": "Consumer connections per queue over time. Correlate consumer drops with queue depth spikes. Identify the moment a deployment disconnected consumers, and how long it took your restart policy to bring them back."
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "Message throughput",
+        "description": "Publish and delivery rates stored continuously. Pinpoint when message flow stopped, slowed, or spiked. Throughput history is the first thing you reach for in an async pipeline incident — it tells you when the problem started and whether it's fully resolved."
+      },
+      {
+        "icon": "server.svg",
+        "title": "Broker resource usage",
+        "description": "Memory usage, disk usage, file descriptor counts, and socket counts per node over time. Capacity planning requires trend data, not snapshots. Broker resource history lets you project when your current hardware will become a constraint."
+      },
+      {
+        "icon": "flag.svg",
+        "title": "Dead-letter accumulation",
+        "description": "DLQ message counts over time, per queue. A DLQ that grows steadily over weeks indicates a systematic processing failure, not a one-off incident. Persistent DLQ data surfaces these slow-burn problems before they become backlogs."
+      },
+      {
+        "icon": "send.svg",
+        "title": "Connection and channel counts",
+        "description": "Total connections and open channels per broker over time. Connection leaks are one of the most common RabbitMQ failure modes — a chart showing steady connection count growth over 7 days is a leak in progress."
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "How it works",
+    "heading": "Automatic collection, zero configuration",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Connect your broker",
+        "description": "Qarote polls your RabbitMQ management API every 5 minutes. Queue depth, consumer counts, and message rates are captured automatically from the moment you connect — no configuration required."
+      },
+      {
+        "number": "02",
+        "title": "Metrics are stored automatically",
+        "description": "Every snapshot is written to Qarote's database. All queues on all connected servers are stored by default — no configuration required. Data is retained for 7 days and automatically purged as it ages out."
+      },
+      {
+        "number": "03",
+        "title": "Query any time window",
+        "description": "Open any queue and scrub back through the past 7 days. Zoom into a 15-minute incident window or review the full week's trend — the data is always there."
+      }
+    ]
+  },
+  "whyPersistence": {
+    "eyebrow": "Why persistence matters",
+    "heading": "The management plugin is a window, not a record",
+    "p1": "The RabbitMQ management plugin stores metrics in memory with a fixed retention window — roughly 8 hours by default, configurable but always bounded by available broker memory. The moment that window closes, the data is gone. An incident that happened 10 hours ago has no evidence left in the management UI.",
+    "p2": "Qarote writes metrics to persistent storage outside the broker. Your queue depth history survives broker restarts, management plugin resets, and the end of your on-call shift. When you're running a post-mortem the morning after an incident, the data you need is available.",
+    "p3": "Prometheus with the `rabbitmq_prometheus` plugin provides similar persistence, but requires you to operate a Prometheus server, configure scrape jobs, set retention policies, and build Grafana dashboards from scratch. Qarote's metrics persistence is built in — no additional infrastructure, no configuration."
+  },
+  "crossLink": {
+    "eyebrow": "See also",
+    "navLabel": "Related links",
+    "incidentDiagnosis": "Incident Diagnosis Engine →",
+    "alerting": "Real-time alerting",
+    "pricing": "Pricing",
+    "features": "All features"
+  },
+  "faq": {
+    "heading": "Frequently asked questions",
+    "items": [
+      {
+        "question": "How long are metrics retained?",
+        "answer": "7 days on Developer and Enterprise plans. Snapshots are taken every 5 minutes and automatically purged after 7 days. The free Community edition shows real-time metrics only — no historical data is stored."
+      },
+      {
+        "question": "How much storage does metrics persistence use?",
+        "answer": "Minimal. A typical deployment with 50 queues at 5-minute snapshots uses approximately 20 MB for the full 7-day window. Storage is managed automatically — snapshots are purged as they age out of the retention window."
+      },
+      {
+        "question": "Can I query historical metrics via API?",
+        "answer": "Historical metrics are available through the Qarote dashboard. API access to metric history is available on Enterprise plans."
+      },
+      {
+        "question": "Does metrics persistence work with self-hosted Qarote?",
+        "answer": "Yes. Self-hosted Qarote (Developer or Enterprise license) stores metrics in the PostgreSQL database you provide. You control the data, the retention, and the backup policy."
+      },
+      {
+        "question": "What happens to metrics if Qarote is offline?",
+        "answer": "Metrics collection pauses while Qarote is unrestarted. There will be gaps in your history corresponding to the downtime. Qarote does not backfill missing data from the management plugin after reconnecting."
+      }
+    ]
+  }
+}
