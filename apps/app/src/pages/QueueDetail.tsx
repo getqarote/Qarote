@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router";
 
+import { AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 import { UserRole } from "@/lib/api";
@@ -44,6 +45,7 @@ import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
+import { useDiagnosis } from "@/hooks/queries/useDiagnosis";
 import { useQueueHistory } from "@/hooks/queries/useQueueHistory";
 import {
   useDeleteQueue,
@@ -54,11 +56,13 @@ import {
 } from "@/hooks/queries/useRabbitMQ";
 import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 import { UserPlan } from "@/types/plans";
 
 const QueueDetail = () => {
   const { t } = useTranslation("queues");
+  const { t: tDiagnosis } = useTranslation("diagnosis");
   const { queueName } = useParams<{ queueName: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -107,6 +111,19 @@ const QueueDetail = () => {
 
   const deleteQueueMutation = useDeleteQueue();
   const { workspace } = useWorkspace();
+  const { hasFeature } = useFeatureFlags();
+  const isDiagnosisEnabled = hasFeature("incident_diagnosis");
+
+  const { data: diagnosisData } = useDiagnosis(selectedServerId, 120, {
+    enabled: isDiagnosisEnabled,
+  });
+
+  // Filter diagnoses for this specific queue
+  const queueDiagnoses = diagnosisData?.diagnoses
+    ? diagnosisData.diagnoses.filter(
+        (d) => d.queueName === queueName && d.vhost === (selectedVHost || "/")
+      )
+    : [];
 
   const queue = queueData?.queue;
 
@@ -212,6 +229,24 @@ const QueueDetail = () => {
                 queueName={queueName}
                 vhost={selectedVHost || "/"}
               />
+            )}
+
+            {/* Diagnosis banner — only when anomalies detected */}
+            {isDiagnosisEnabled && queueDiagnoses.length > 0 && (
+              <div className="flex items-center gap-3 rounded-md border border-orange-500/30 bg-orange-500/5 px-4 py-3 text-sm">
+                <AlertTriangle className="h-4 w-4 text-orange-500 shrink-0" />
+                <span className="text-foreground">
+                  {tDiagnosis("queueBanner", {
+                    count: queueDiagnoses.length,
+                  })}
+                </span>
+                <Link
+                  to="/diagnosis"
+                  className="ml-auto text-orange-600 hover:text-orange-700 dark:text-orange-400 hover:underline font-medium shrink-0"
+                >
+                  {tDiagnosis("viewDiagnoses")}
+                </Link>
+              </div>
             )}
 
             {/* Tabbed content */}

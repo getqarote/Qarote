@@ -17,7 +17,9 @@ import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
 import { useRabbitMQAlerts } from "@/hooks/queries/useAlerts";
+import { useDiagnosis } from "@/hooks/queries/useDiagnosis";
 import { useUser } from "@/hooks/ui/useUser";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 import { UserPlan } from "@/types/plans";
 
@@ -27,6 +29,13 @@ export const RecentAlerts = () => {
   const { selectedServerId } = useServerContext();
   const { selectedVHost } = useVHostContext();
   const { userPlan } = useUser();
+  const { hasFeature } = useFeatureFlags();
+  const hasDiagnosisFeature = hasFeature("incident_diagnosis");
+
+  const { data: diagnosisData } = useDiagnosis(selectedServerId, 120, {
+    enabled: hasDiagnosisFeature,
+  });
+  const diagnosisCount = diagnosisData?.diagnoses?.length ?? 0;
 
   // Query for recent alerts with limit of 3 (filtered by vhost)
   const {
@@ -55,7 +64,9 @@ export const RecentAlerts = () => {
   // ~300px of vertical real estate telling the user "nothing is wrong".
   // This is the "quiet baseline" from the design context: big when it
   // matters, small when it doesn't.
-  if (!isLoading && !error && summary.total === 0) {
+  // Only show "all systems normal" when both alerts AND diagnosis are clean, so
+  // we never hide active anomalies behind a false-healthy state.
+  if (!isLoading && !error && summary.total === 0 && diagnosisCount === 0) {
     return (
       <div className="flex items-center justify-between rounded-md border border-border bg-card px-4 py-3">
         <div className="flex items-center gap-2 text-sm min-w-0">
@@ -194,6 +205,23 @@ export const RecentAlerts = () => {
                 </div>
               );
             })}
+          </div>
+        )}
+        {/* Diagnosis teaser — only shown when anomalies are active so that
+            the link only appears when there is something actionable. Hiding it
+            in the healthy-zero case keeps "color/links mean something" intact. */}
+        {hasDiagnosisFeature && diagnosisCount > 0 && (
+          <div className="mt-3 pt-3 border-t border-border">
+            <Link
+              to="/diagnosis"
+              className="flex items-center justify-between text-xs text-muted-foreground hover:text-primary transition-colors"
+            >
+              <span className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-warning shrink-0" />
+                {t("diagnosisTeaser")}
+              </span>
+              <PixelChevronRight className="h-3 shrink-0" />
+            </Link>
           </div>
         )}
       </div>

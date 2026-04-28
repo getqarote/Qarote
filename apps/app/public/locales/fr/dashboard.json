@@ -47,6 +47,8 @@
   "upgradeRequired": "Passez au forfait Développeur ou Entreprise pour consulter les informations détaillées sur les alertes et configurer les seuils d'alerte.",
   "upgradeNow": "Mettre à niveau maintenant",
   "failedToLoadAlerts": "Échec du chargement des données d'alertes",
+  "diagnosisTeaser": "Lancer l'analyse des causes racines →",
+  "anomalies": "Anomalies",
   "addServer": "Ajouter un serveur",
   "upgradeToAddServers": "Mettre à niveau pour ajouter des serveurs",
   "serverLimitReached": "Vous avez atteint votre limite de serveurs. Mettez à niveau pour en ajouter davantage.",

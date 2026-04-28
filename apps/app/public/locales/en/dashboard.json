@@ -47,6 +47,8 @@
   "upgradeRequired": "Upgrade to Developer or Enterprise plan to view detailed alert information and configure alert thresholds.",
   "upgradeNow": "Upgrade now",
   "failedToLoadAlerts": "Failed to load alerts data",
+  "diagnosisTeaser": "Run root-cause analysis →",
+  "anomalies": "Anomalies",
   "addServer": "Add server",
   "upgradeToAddServers": "Upgrade to add servers",
   "serverLimitReached": "You've reached your server limit. Upgrade to add more servers.",

@@ -12,7 +12,8 @@ export type PremiumFeature =
   | "advanced_alert_rules"
   | "topology_visualization"
   | "sso"
-  | "digest_customization";
+  | "digest_customization"
+  | "incident_diagnosis";
 
 /**
  * Feature definitions
@@ -27,6 +28,7 @@ export const FEATURES = {
   TOPOLOGY_VISUALIZATION: "topology_visualization" as const,
   SSO: "sso" as const,
   DIGEST_CUSTOMIZATION: "digest_customization" as const,
+  INCIDENT_DIAGNOSIS: "incident_diagnosis" as const,
 } as const;
 
 /**
@@ -42,6 +44,7 @@ export const FEATURE_DESCRIPTIONS: Record<PremiumFeature, string> = {
   topology_visualization: "Topology Visualization",
   sso: "SSO / SAML / OIDC",
   digest_customization: "Daily Digest Customization",
+  incident_diagnosis: "Incident Diagnosis Engine",
 };
 
 /**

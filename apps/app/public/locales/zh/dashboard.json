@@ -47,6 +47,8 @@
   "upgradeRequired": "升级到开发者版或企业版以查看详细的告警信息并配置告警阈值。",
   "upgradeNow": "立即升级",
   "failedToLoadAlerts": "加载告警数据失败",
+  "diagnosisTeaser": "运行根因分析 →",
+  "anomalies": "异常",
   "addServer": "添加服务器",
   "upgradeToAddServers": "升级以添加服务器",
   "serverLimitReached": "您已达到服务器数量限制。升级以添加更多服务器。",

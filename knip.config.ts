@@ -83,6 +83,10 @@ const config: KnipConfig = {
     "apps/api/src/ee/workers/metrics-monitor.ts",
     "apps/api/src/ee/cron/queue-metrics.cron.ts",
     "apps/api/src/ee/services/metrics/queue-metrics.service.ts",
+    // These files export symbols called from queue-metrics.cron.ts (ignored
+    // above as a Procfile entry point) — knip cannot trace those import chains
+    "apps/api/src/core/cache.ts",
+    "apps/api/src/ee/services/incident/incident-diagnosis.service.ts",
     // Server-wide queue history hook — reserved for future overview page
     "apps/app/src/hooks/queries/useServerQueueHistory.ts",
     // Ignore i18n package exports (used by consuming apps)

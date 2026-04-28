@@ -47,6 +47,8 @@
   "upgradeRequired": "Actualiza al plan Developer o Enterprise para ver informaci\u00f3n detallada de alertas y configurar umbrales de alerta.",
   "upgradeNow": "Actualizar ahora",
   "failedToLoadAlerts": "No se pudieron cargar los datos de alertas",
+  "diagnosisTeaser": "Ejecutar análisis de causa raíz →",
+  "anomalies": "Anomalías",
   "addServer": "Agregar servidor",
   "upgradeToAddServers": "Actualiza para agregar servidores",
   "serverLimitReached": "Has alcanzado el límite de servidores. Actualiza para agregar más.",

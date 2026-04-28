@@ -1,0 +1,57 @@
+{
+  "title": "Diagnóstico de incidentes",
+  "subtitle": "Análisis de causa raíz bajo demanda desde el historial de métricas",
+  "refresh": "Actualizar",
+  "severity": {
+    "critical": "Crítico",
+    "high": "Alto",
+    "medium": "Medio",
+    "low": "Bajo",
+    "info": "Info"
+  },
+  "summary": {
+    "total": "{{count}} diagnósticos",
+    "total_one": "{{count}} diagnóstico",
+    "total_other": "{{count}} diagnósticos"
+  },
+  "justNow": "ahora mismo",
+  "queueBanner_one": "1 anomalía detectada en esta cola",
+  "queueBanner_other": "{{count}} anomalías detectadas en esta cola",
+  "viewDiagnoses": "Ver diagnósticos →",
+  "ruleLabel": {
+    "consumerCrash": "Fallo de consumidor",
+    "slowConsumer": "Consumidor lento",
+    "queueBacklog": "Cola acumulada",
+    "producerSpike": "Pico de productor",
+    "queueDrainStall": "Vaciado detenido",
+    "noActivity": "Sin actividad"
+  },
+  "window": {
+    "30min": "30 min",
+    "1h": "1 h",
+    "2h": "2 h",
+    "4h": "4 h",
+    "8h": "8 h"
+  },
+  "card": {
+    "viewQueue": "Ver cola →",
+    "recommendation": "Recomendación"
+  },
+  "metadata": {
+    "analyzedAgo": "Analizado {{time}}",
+    "snapshots": "{{count}} instantáneas",
+    "queues": "{{count}} colas",
+    "window": "Ventana de {{minutes}} min"
+  },
+  "empty": {
+    "title": "No se detectaron anomalías",
+    "description": "No se encontraron patrones en los últimos {{minutes}} minutos. Tus colas parecen saludables.",
+    "noSnapshots": "Aún no hay historial de métricas",
+    "noSnapshotsDescription": "Las instantáneas se recopilan cada 5 minutos. Vuelve pronto."
+  },
+  "error": {
+    "generic": "Error al ejecutar el diagnóstico. Inténtalo de nuevo.",
+    "noMetrics": "No se encontraron instantáneas de métricas. Se recopilan cada 5 minutos.",
+    "forbidden": "El diagnóstico de incidentes requiere un plan Desarrollador o Empresarial."
+  }
+}

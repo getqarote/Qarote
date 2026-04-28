@@ -11,6 +11,7 @@ import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
 import { ServerManagement } from "@/components/ServerManagement";
 import { Button } from "@/components/ui/button";
 import { PixelActivity } from "@/components/ui/pixel-activity";
+import { PixelAlert } from "@/components/ui/pixel-alert";
 import { PixelChart } from "@/components/ui/pixel-chart";
 import { PixelClock } from "@/components/ui/pixel-clock";
 import { PixelDatabase } from "@/components/ui/pixel-database";
@@ -88,6 +89,7 @@ const menuItems = [
     adminOnly: true,
   },
   { titleKey: "sidebar:alerts", url: "/alerts", icon: PixelFlag },
+  { titleKey: "sidebar:diagnosis", url: "/diagnosis", icon: PixelAlert },
   {
     titleKey: "sidebar:definitions",
     url: "/definitions",

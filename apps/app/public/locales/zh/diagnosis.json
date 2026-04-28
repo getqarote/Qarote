@@ -1,0 +1,57 @@
+{
+  "title": "故障诊断",
+  "subtitle": "基于队列指标历史的按需根因分析",
+  "refresh": "刷新",
+  "severity": {
+    "critical": "严重",
+    "high": "高",
+    "medium": "中",
+    "low": "低",
+    "info": "信息"
+  },
+  "summary": {
+    "total": "{{count}} 个诊断",
+    "total_one": "{{count}} 个诊断",
+    "total_other": "{{count}} 个诊断"
+  },
+  "justNow": "刚刚",
+  "queueBanner_one": "此队列检测到 1 个异常",
+  "queueBanner_other": "此队列检测到 {{count}} 个异常",
+  "viewDiagnoses": "查看诊断 →",
+  "ruleLabel": {
+    "consumerCrash": "消费者崩溃",
+    "slowConsumer": "消费者缓慢",
+    "queueBacklog": "队列积压",
+    "producerSpike": "生产者峰值",
+    "queueDrainStall": "排空停滞",
+    "noActivity": "无活动"
+  },
+  "window": {
+    "30min": "30 分钟",
+    "1h": "1 小时",
+    "2h": "2 小时",
+    "4h": "4 小时",
+    "8h": "8 小时"
+  },
+  "card": {
+    "viewQueue": "查看队列 →",
+    "recommendation": "建议"
+  },
+  "metadata": {
+    "analyzedAgo": "{{time}}前分析",
+    "snapshots": "{{count}} 个快照",
+    "queues": "{{count}} 个队列",
+    "window": "{{minutes}} 分钟窗口"
+  },
+  "empty": {
+    "title": "未检测到异常",
+    "description": "在过去 {{minutes}} 分钟内未发现任何模式。您的队列看起来运行正常。",
+    "noSnapshots": "暂无指标历史",
+    "noSnapshotsDescription": "指标快照每 5 分钟收集一次，请稍后查看。"
+  },
+  "error": {
+    "generic": "诊断失败，请重试。",
+    "noMetrics": "未找到指标快照，每 5 分钟收集一次，请稍后查看。",
+    "forbidden": "故障诊断需要开发者或企业版计划。"
+  }
+}

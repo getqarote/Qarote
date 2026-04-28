@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 
 import { ShieldAlert } from "lucide-react";
 
@@ -21,6 +22,8 @@ interface MetricsStatusStripProps {
   isLoading: boolean;
   metricsError?: Error | null;
   nodesError?: Error | null;
+  /** Optional diagnosis anomaly count. When provided, renders an extra cell. */
+  diagnosisCount?: number;
 }
 
 /**
@@ -38,6 +41,7 @@ export const MetricsStatusStrip = ({
   isLoading,
   metricsError,
   nodesError,
+  diagnosisCount,
 }: MetricsStatusStripProps) => {
   const { t, i18n } = useTranslation("dashboard");
 
@@ -140,13 +144,20 @@ export const MetricsStatusStrip = ({
     },
   ];
 
+  const diagnosisTone =
+    diagnosisCount !== undefined && diagnosisCount > 0
+      ? "text-warning"
+      : "text-foreground";
+
   return (
     <div className="flex flex-wrap items-stretch rounded-md border border-border bg-card overflow-hidden">
       {cells.map((cell, i) => (
         <div
           key={cell.label}
           className={`flex flex-col justify-between flex-1 min-w-[160px] min-h-[88px] px-5 py-3 ${
-            i < cells.length - 1 ? "border-r border-border last:border-r-0" : ""
+            i < cells.length - 1 || diagnosisCount !== undefined
+              ? "border-r border-border"
+              : ""
           }`}
         >
           {/* Label — wraps up to 2 lines for long translations (French
@@ -175,6 +186,29 @@ export const MetricsStatusStrip = ({
           </div>
         </div>
       ))}
+
+      {/* Diagnosis cell — only rendered when the EE feature is active */}
+      {diagnosisCount !== undefined && (
+        <Link
+          to="/diagnosis"
+          className="flex flex-col justify-between flex-1 min-w-[160px] min-h-[88px] px-5 py-3 hover:bg-muted/40 transition-colors"
+        >
+          <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground leading-tight">
+            {t("anomalies")}
+          </div>
+          <div className="mt-1 flex items-baseline gap-1">
+            {isLoading ? (
+              <Skeleton className="h-7 w-10" />
+            ) : (
+              <span
+                className={`text-2xl font-semibold font-mono tabular-nums ${diagnosisTone}`}
+              >
+                {formatInt(diagnosisCount)}
+              </span>
+            )}
+          </div>
+        </Link>
+      )}
     </div>
   );
 };

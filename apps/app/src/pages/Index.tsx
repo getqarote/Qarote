@@ -22,7 +22,9 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 
+import { useDiagnosis } from "@/hooks/queries/useDiagnosis";
 import { useDashboardData } from "@/hooks/ui/useDashboardData";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 const Index = () => {
   const { t } = useTranslation("dashboard");
@@ -54,6 +56,21 @@ const Index = () => {
     liveRatesError,
     nodesError,
   } = useDashboardData(selectedServerId, liveRatesTimeRange);
+
+  const { hasFeature } = useFeatureFlags();
+  const hasDiagnosis = hasFeature("incident_diagnosis");
+  const { data: diagnosisData, isFetched: isDiagnosisFetched } = useDiagnosis(
+    selectedServerId,
+    120,
+    { enabled: hasDiagnosis }
+  );
+  // Return undefined until the first fetch completes so downstream components
+  // don't briefly show "0 anomalies" during the loading window.
+  const diagnosisCount = hasDiagnosis
+    ? isDiagnosisFetched
+      ? (diagnosisData?.diagnoses?.length ?? 0)
+      : undefined
+    : undefined;
 
   if (!hasServers) {
     return (
@@ -122,6 +139,7 @@ const Index = () => {
           isLoading={isLoading}
           metricsError={metricsError}
           nodesError={nodesError}
+          diagnosisCount={diagnosisCount}
         />
 
         {/* CLUSTER TOTALS — inline stat line: connections, channels,

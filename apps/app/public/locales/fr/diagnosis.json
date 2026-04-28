@@ -1,0 +1,57 @@
+{
+  "title": "Diagnostic d'incident",
+  "subtitle": "Analyse de cause racine à la demande depuis l'historique des métriques",
+  "refresh": "Actualiser",
+  "severity": {
+    "critical": "Critique",
+    "high": "Élevé",
+    "medium": "Moyen",
+    "low": "Faible",
+    "info": "Info"
+  },
+  "summary": {
+    "total": "{{count}} diagnostics",
+    "total_one": "{{count}} diagnostic",
+    "total_other": "{{count}} diagnostics"
+  },
+  "justNow": "à l'instant",
+  "queueBanner_one": "1 anomalie détectée sur cette file",
+  "queueBanner_other": "{{count}} anomalies détectées sur cette file",
+  "viewDiagnoses": "Voir les diagnostics →",
+  "ruleLabel": {
+    "consumerCrash": "Crash consommateur",
+    "slowConsumer": "Consommateur lent",
+    "queueBacklog": "File en retard",
+    "producerSpike": "Pic producteur",
+    "queueDrainStall": "Vidage bloqué",
+    "noActivity": "Inactivité"
+  },
+  "window": {
+    "30min": "30 min",
+    "1h": "1 h",
+    "2h": "2 h",
+    "4h": "4 h",
+    "8h": "8 h"
+  },
+  "card": {
+    "viewQueue": "Voir la file →",
+    "recommendation": "Recommandation"
+  },
+  "metadata": {
+    "analyzedAgo": "Analysé {{time}}",
+    "snapshots": "{{count}} instantanés",
+    "queues": "{{count}} files",
+    "window": "Fenêtre de {{minutes}} min"
+  },
+  "empty": {
+    "title": "Aucune anomalie détectée",
+    "description": "Aucun schéma trouvé dans les {{minutes}} dernières minutes. Vos files semblent saines.",
+    "noSnapshots": "Pas encore d'historique de métriques",
+    "noSnapshotsDescription": "Les instantanés sont collectés toutes les 5 minutes. Revenez dans quelques instants."
+  },
+  "error": {
+    "generic": "Échec du diagnostic. Veuillez réessayer.",
+    "noMetrics": "Aucun instantané de métriques trouvé. Ils sont collectés toutes les 5 minutes.",
+    "forbidden": "Le diagnostic d'incident nécessite un plan Développeur ou Entreprise."
+  }
+}

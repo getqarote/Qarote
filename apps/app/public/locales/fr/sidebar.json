@@ -10,6 +10,7 @@
   "virtualHosts": "Hôtes virtuels",
   "users": "Utilisateurs",
   "alerts": "Alertes",
+  "diagnosis": "Diagnostic d'incident",
   "definitions": "Définitions",
   "profile": "Profil",
   "settings": "Paramètres",

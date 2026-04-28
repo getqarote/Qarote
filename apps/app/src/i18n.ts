@@ -27,6 +27,7 @@ const i18n = createI18nInstance({
     "topology",
     "onboarding",
     "definitions",
+    "diagnosis",
   ],
   defaultNamespace: "common",
   loadPath: "/locales/{{lng}}/{{ns}}.json",

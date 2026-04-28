@@ -1,0 +1,57 @@
+{
+  "title": "Incident Diagnosis",
+  "subtitle": "On-demand root cause analysis from queue metric history",
+  "refresh": "Refresh",
+  "severity": {
+    "critical": "Critical",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "info": "Info"
+  },
+  "summary": {
+    "total": "{{count}} diagnoses",
+    "total_one": "{{count}} diagnosis",
+    "total_other": "{{count}} diagnoses"
+  },
+  "justNow": "just now",
+  "queueBanner_one": "1 anomaly detected on this queue",
+  "queueBanner_other": "{{count}} anomalies detected on this queue",
+  "viewDiagnoses": "View diagnoses →",
+  "ruleLabel": {
+    "consumerCrash": "Consumer Crash",
+    "slowConsumer": "Slow Consumer",
+    "queueBacklog": "Queue Backlog",
+    "producerSpike": "Producer Spike",
+    "queueDrainStall": "Drain Stall",
+    "noActivity": "No Activity"
+  },
+  "window": {
+    "30min": "30 min",
+    "1h": "1 h",
+    "2h": "2 h",
+    "4h": "4 h",
+    "8h": "8 h"
+  },
+  "card": {
+    "viewQueue": "View queue →",
+    "recommendation": "Recommendation"
+  },
+  "metadata": {
+    "analyzedAgo": "Analyzed {{time}}",
+    "snapshots": "{{count}} snapshots",
+    "queues": "{{count}} queues",
+    "window": "{{minutes}}-min window"
+  },
+  "empty": {
+    "title": "No anomalies detected",
+    "description": "No patterns found in the last {{minutes}} minutes. Your queues appear healthy.",
+    "noSnapshots": "No metric history yet",
+    "noSnapshotsDescription": "Metric snapshots are collected every 5 minutes. Check back shortly."
+  },
+  "error": {
+    "generic": "Failed to run diagnosis. Please try again.",
+    "noMetrics": "No metric snapshots found yet. Snapshots are collected every 5 minutes — check back shortly.",
+    "forbidden": "Incident Diagnosis requires a Developer or Enterprise plan."
+  }
+}
