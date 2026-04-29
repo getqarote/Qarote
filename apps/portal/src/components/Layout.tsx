@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Link, Outlet, useLocation } from "react-router";
 
+import { usePostHog } from "@posthog/react";
 import {
   ChevronDown,
   Github,
@@ -26,6 +27,13 @@ const Layout = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const { t } = useTranslation("portal");
+  const posthog = usePostHog();
+
+  const handleLogout = () => {
+    posthog?.capture("user_signed_out");
+    posthog?.reset();
+    logout();
+  };
 
   const navigation = [
     { name: t("layout.licenses"), href: "/licenses", icon: LayoutDashboard },
@@ -96,7 +104,7 @@ const Layout = () => {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={logout}>
+                  <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>{t("layout.logout")}</span>
                   </DropdownMenuItem>

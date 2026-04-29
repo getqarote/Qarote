@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router";
 
+import { usePostHog } from "@posthog/react";
 import { CheckCircle, Mail, RefreshCw, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -33,6 +34,7 @@ export default function VerifyEmail() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { isAuthenticated, updateUser } = useAuth();
+  const posthog = usePostHog();
   const verificationAttempted = useRef(false);
   const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [userEmail, setUserEmail] = useState<string>("");
@@ -79,6 +81,8 @@ export default function VerifyEmail() {
         },
       });
 
+      posthog?.capture("account_verified", { verification_type: data.type });
+
       toast.success(t("emailVerifiedToast"));
 
       // Redirect based on authentication status
@@ -106,6 +110,7 @@ export default function VerifyEmail() {
   const resendVerificationMutation =
     trpc.auth.verification.resendVerification.useMutation({
       onSuccess: () => {
+        posthog?.capture("verification_resent");
         toast.success(t("verificationSentToast"));
       },
       onError: (error) => {

@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useReducer, useRef } from "react";
 
+import { usePostHog } from "@posthog/react";
+
 import { User } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
@@ -42,6 +44,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     user: null,
     isLoading: true,
   });
+  const posthog = usePostHog();
   const utils = trpc.useUtils();
   // Track whether initial session check is complete to prevent the global
   // unauthorized handler from clearing auth state during the check (race condition).
@@ -62,6 +65,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             };
             dispatch({ type: "SET_USER", user: enrichedUser });
             syncSentryUser(enrichedUser);
+            posthog?.identify(enrichedUser.id, { email: enrichedUser.email });
           } catch {
             // tRPC call failed but we have a valid session — use basic user data
             logger.warn("Failed to fetch enriched session, using basic data");
@@ -73,6 +77,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             } as User;
             dispatch({ type: "SET_USER", user: basicUser });
             syncSentryUser(basicUser);
+            posthog?.identify(basicUser.id, { email: basicUser.email });
           }
         } else {
           dispatch({ type: "LOADED" });
@@ -86,7 +91,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     checkSession();
-  }, [utils]);
+  }, [utils, posthog]);
 
   const login = useCallback((newUser: User) => {
     dispatch({ type: "SET_USER", user: newUser });
@@ -101,7 +106,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
     dispatch({ type: "CLEAR_USER" });
     syncSentryUser(null);
-  }, []);
+    posthog?.reset();
+  }, [posthog]);
 
   useEffect(() => {
     const handleUnauthorized = () => {

@@ -250,6 +250,12 @@ export const metricsConfig = {
   perServerTimeoutMs: config.METRICS_PER_SERVER_TIMEOUT_MS,
 } as const;
 
+export const posthogConfig = {
+  apiKey: "POSTHOG_API_KEY" in config ? config.POSTHOG_API_KEY : undefined,
+  host:
+    "POSTHOG_HOST" in config ? config.POSTHOG_HOST : "https://eu.i.posthog.com",
+} as const;
+
 export const deploymentConfig = {
   mode: config.DEPLOYMENT_MODE,
   isCloud: () => config.DEPLOYMENT_MODE === "cloud",

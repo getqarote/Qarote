@@ -79,6 +79,10 @@ export const cloudSchema = baseSchema.extend({
     ),
   LICENSE_PUBLIC_KEY: z.string().optional(),
 
+  // PostHog Analytics - Optional
+  POSTHOG_API_KEY: z.string().optional(),
+  POSTHOG_HOST: z.string().url().default("https://eu.i.posthog.com"),
+
   // Notion Configuration - Optional
   NOTION_API_KEY: z.string().optional(),
   NOTION_DATABASE_ID: z.string().optional(),

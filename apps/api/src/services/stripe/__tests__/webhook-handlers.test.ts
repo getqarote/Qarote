@@ -84,6 +84,12 @@ vi.mock("@/config", () => ({
     },
   },
   licenseConfig: { privateKey: null },
+  deploymentConfig: {
+    mode: "cloud",
+    isCloud: () => true,
+    isSelfHosted: () => false,
+  },
+  posthogConfig: { apiKey: undefined, host: "https://eu.i.posthog.com" },
 }));
 
 vi.mock("@/core/utils", () => ({

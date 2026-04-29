@@ -1,5 +1,7 @@
 import { TRPCError } from "@trpc/server";
 
+import { posthog } from "@/services/posthog";
+
 import {
   FeedbackIdSchema,
   GetAllFeedbackQuerySchema,
@@ -59,6 +61,24 @@ export const feedbackRouter = router({
             },
           },
         });
+
+        try {
+          posthog?.capture({
+            distinctId: user.id,
+            event: "feedback_submitted",
+            properties: {
+              feedback_type: data.type,
+              feedback_category: data.category ?? null,
+              feedback_priority: data.priority ?? null,
+              workspace_id: user.workspaceId ?? null,
+            },
+          });
+        } catch (analyticsError) {
+          ctx.logger.warn(
+            { error: analyticsError, userId: user.id },
+            "PostHog capture failed"
+          );
+        }
 
         return {
           message: "Feedback submitted successfully",

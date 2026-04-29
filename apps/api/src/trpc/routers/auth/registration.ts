@@ -4,6 +4,7 @@ import { hashPassword } from "@/core/auth";
 
 import { EmailVerificationService } from "@/services/email/email-verification.service";
 import { notionService } from "@/services/integrations/notion.service";
+import { posthog } from "@/services/posthog";
 import { trackSignUpError } from "@/services/sentry";
 import { StripeCustomerService } from "@/services/stripe/customer.service";
 
@@ -168,6 +169,33 @@ export const registrationRouter = router({
             );
             // Don't fail registration if email sending fails
           }
+        }
+
+        try {
+          posthog?.identify({
+            distinctId: user.id,
+            properties: {
+              $set: {
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+              },
+              $set_once: { first_registered_at: user.createdAt },
+            },
+          });
+          posthog?.capture({
+            distinctId: user.id,
+            event: "user_registered",
+            properties: {
+              auto_verified: autoVerify,
+              source_app: sourceApp ?? null,
+            },
+          });
+        } catch (analyticsError) {
+          ctx.logger.warn(
+            { error: analyticsError, userId: user.id },
+            "PostHog registration tracking failed"
+          );
         }
 
         // Update user in Notion (non-blocking)

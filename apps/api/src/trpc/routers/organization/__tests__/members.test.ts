@@ -72,6 +72,12 @@ vi.mock("@/i18n", () => ({
 
 vi.mock("@/config", () => ({
   emailConfig: { frontendUrl: "https://app.test.com" },
+  deploymentConfig: {
+    mode: "cloud",
+    isCloud: () => true,
+    isSelfHosted: () => false,
+  },
+  posthogConfig: { apiKey: undefined, host: "https://eu.i.posthog.com" },
 }));
 
 // ─── Import after mocks ──────────────────────────────────────────────────────

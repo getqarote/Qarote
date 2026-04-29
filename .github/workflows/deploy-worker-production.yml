@@ -121,7 +121,9 @@ jobs:
             NOTION_SYNC_ENABLED=${{ vars.NOTION_SYNC_ENABLED }} \
             ENABLE_NOTION=${{ vars.ENABLE_NOTION }} \
             API_URL=${{ vars.API_URL }} \
-            DATABASE_POOL_SIZE=${{ vars.DATABASE_POOL_SIZE }}
+            DATABASE_POOL_SIZE=${{ vars.DATABASE_POOL_SIZE }} \
+            POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }} \
+            POSTHOG_HOST=${{ vars.POSTHOG_HOST }}
           ssh dokku@${{ vars.DOKKU_HOST_APP1 }} "config:set --no-restart ${{ env.APP_NAME }} FROM_EMAIL='${{ vars.FROM_EMAIL }}'"
 
       - name: 🚫 Configure worker app to use app.worker.json

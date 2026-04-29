@@ -86,6 +86,8 @@ jobs:
           VITE_PORTAL_URL: ${{ vars.VITE_PORTAL_URL }}
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           VITE_DEPLOYMENT_MODE: ${{ vars.DEPLOYMENT_MODE }}
+          VITE_PUBLIC_POSTHOG_PROJECT_TOKEN: ${{ secrets.POSTHOG_API_KEY }}
+          VITE_PUBLIC_POSTHOG_HOST: ${{ vars.POSTHOG_HOST }}
           VITE_ENVIRONMENT: production
           NODE_ENV: production
         run: pnpm run build

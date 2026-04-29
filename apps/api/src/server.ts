@@ -20,6 +20,7 @@ import { configurePostgresTimeouts, prisma } from "@/core/prisma";
 import { getDirname } from "@/core/utils";
 
 import { DeploymentService } from "@/services/deployment/deployment.service";
+import { posthog } from "@/services/posthog";
 
 import { corsMiddleware } from "@/middlewares/cors";
 import {
@@ -198,16 +199,26 @@ async function startServer() {
   }
 }
 
-process.on("SIGINT", async () => {
-  logger.info("Shutting down server...");
-  await prisma.$disconnect();
+const shutdown = async (signal: string) => {
+  logger.info({ signal }, "Shutting down server...");
+  const results = await Promise.allSettled([
+    prisma.$disconnect(),
+    posthog?.shutdown(),
+  ]);
+  for (const result of results) {
+    if (result.status === "rejected") {
+      logger.error({ error: result.reason, signal }, "Shutdown task failed");
+    }
+  }
   process.exit(0);
+};
+
+process.on("SIGINT", () => {
+  void shutdown("SIGINT");
 });
 
-process.on("SIGTERM", async () => {
-  logger.info("Shutting down server...");
-  await prisma.$disconnect();
-  process.exit(0);
+process.on("SIGTERM", () => {
+  void shutdown("SIGTERM");
 });
 
 startServer();

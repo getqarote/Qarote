@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useSearchParams } from "react-router";
 
+import { usePostHog } from "@posthog/react";
 import { AlertTriangle, Loader2 } from "lucide-react";
 
 import { UserRole } from "@/lib/api";
@@ -34,6 +35,7 @@ import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 const Alerts = () => {
   const { t } = useTranslation("alerts");
+  const posthog = usePostHog();
   const { serverId } = useParams<{ serverId: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const { selectedServerId, hasServers, setSelectedServerId } =
@@ -165,7 +167,10 @@ const Alerts = () => {
             {isAdmin && (
               <>
                 <Button
-                  onClick={() => setShowAlertRulesModal(true)}
+                  onClick={() => {
+                    posthog?.capture("alert_rule_modal_opened");
+                    setShowAlertRulesModal(true);
+                  }}
                   className="btn-primary"
                 >
                   {t("alertRules")}

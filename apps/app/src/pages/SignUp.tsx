@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { usePostHog } from "@posthog/react";
 
 import { trackSignUp } from "@/lib/ga";
 import { logger } from "@/lib/logger";
@@ -78,6 +79,7 @@ import {
  */
 const SignUp = () => {
   const { t } = useTranslation("auth");
+  const posthog = usePostHog();
   const { isAuthenticated } = useAuth();
   const registerMutation = useRegister();
   const location = useLocation();
@@ -123,15 +125,26 @@ const SignUp = () => {
   }, [registerMutation.isSuccess, registerMutation.data]);
 
   const onSubmit = (data: SignUpFormData) => {
-    registerMutation.mutate({
-      email: data.email,
-      password: data.password,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      acceptTerms: data.acceptTerms,
-      referralSource: data.referralSource || undefined,
-      discoveryQuery: data.discoveryQuery || undefined,
-    });
+    registerMutation.mutate(
+      {
+        email: data.email,
+        password: data.password,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        acceptTerms: data.acceptTerms,
+        referralSource: data.referralSource || undefined,
+        discoveryQuery: data.discoveryQuery || undefined,
+      },
+      {
+        onSuccess: () => {
+          try {
+            posthog?.capture("user_signed_up", { method: "email" });
+          } catch {
+            // non-blocking analytics
+          }
+        },
+      }
+    );
   };
 
   const isDisabled = publicConfig?.registrationEnabled === false;

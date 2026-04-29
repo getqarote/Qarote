@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Navigate } from "react-router";
 
+import { usePostHog } from "@posthog/react";
 import {
   CheckCircle,
   ExternalLink,
@@ -28,12 +29,14 @@ import {
 
 const LicenseSection = () => {
   const { user } = useAuth();
+  const posthog = usePostHog();
   const [licenseKey, setLicenseKey] = useState("");
 
   const { data: status, isLoading } = useLicenseStatus();
 
   const activateMutation = useActivateLicense({
     onSuccess: (data) => {
+      posthog?.capture("license_activated", { tier: data.tier });
       toast.success(`License activated — ${data.tier} tier`);
       setLicenseKey("");
     },

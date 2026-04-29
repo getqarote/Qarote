@@ -1,6 +1,7 @@
 ---
 import { SUPPORTED_LOCALES } from "@qarote/i18n";
 
+import PostHog from "../components/posthog.astro";
 import "../styles/index.css";
 
 interface Props {
@@ -260,6 +261,9 @@ const isProd = import.meta.env.PROD;
 
     <!-- Page-specific head content -->
     <slot name="head" />
+
+    <!-- PostHog analytics -->
+    <PostHog />
 
     <!-- Google Tag Manager (production only) -->
     {

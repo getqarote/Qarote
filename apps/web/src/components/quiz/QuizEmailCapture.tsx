@@ -68,6 +68,7 @@ export function QuizEmailCapture({ tier, score }: QuizEmailCaptureProps) {
 
       setStatus("success");
       trackQuizEmailCaptured({ tier });
+      window.posthog?.capture("quiz_email_captured", { tier });
     } catch {
       setErrorMessage("Something went wrong. Try again in a moment.");
       setStatus("error");

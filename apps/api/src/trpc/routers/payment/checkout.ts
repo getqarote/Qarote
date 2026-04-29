@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 
 import { getUserDisplayName } from "@/core/utils";
 
+import { posthog } from "@/services/posthog";
 import { StripeService } from "@/services/stripe/stripe.service";
 
 import { createCheckoutSessionSchema } from "@/schemas/payment";
@@ -78,6 +79,16 @@ export const checkoutRouter = router({
           successUrl: `${emailConfig.frontendUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl: `${emailConfig.frontendUrl}/payment/cancelled`,
           customerId,
+        });
+
+        posthog?.capture({
+          distinctId: user.id,
+          event: "checkout_session_created",
+          properties: {
+            plan,
+            billing_interval: billingInterval,
+            organization_id: ctx.organizationId,
+          },
         });
 
         return { url: session.url };

@@ -9,6 +9,7 @@ import { z } from "zod/v4";
 import { invalidateLicenseCache } from "@/core/feature-flags";
 
 import { verifyLicenseJwt } from "@/services/license/license-crypto.service";
+import { posthog } from "@/services/posthog";
 
 import { isSelfHostedMode } from "@/config/deployment";
 
@@ -60,6 +61,22 @@ export const selfhostedLicenseRouter = router({
         { tier: payload.tier, exp: payload.exp },
         "License activated successfully"
       );
+
+      try {
+        posthog?.capture({
+          distinctId: ctx.user.id,
+          event: "selfhosted_license_activated",
+          properties: {
+            tier: payload.tier,
+            expires_at: new Date(payload.exp * 1000).toISOString(),
+          },
+        });
+      } catch (analyticsError) {
+        ctx.logger.warn(
+          { error: analyticsError, userId: ctx.user.id },
+          "PostHog capture failed"
+        );
+      }
 
       return {
         tier: payload.tier,
@@ -119,6 +136,19 @@ export const selfhostedLicenseRouter = router({
 
     invalidateLicenseCache();
     ctx.logger.info("License deactivated");
+
+    try {
+      posthog?.capture({
+        distinctId: ctx.user.id,
+        event: "selfhosted_license_deactivated",
+        properties: {},
+      });
+    } catch (analyticsError) {
+      ctx.logger.warn(
+        { error: analyticsError, userId: ctx.user.id },
+        "PostHog capture failed"
+      );
+    }
 
     return { success: true };
   }),

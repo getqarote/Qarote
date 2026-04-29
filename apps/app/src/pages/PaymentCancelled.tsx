@@ -1,6 +1,8 @@
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
+import { usePostHog } from "@posthog/react";
 import { CreditCard, Loader2, XCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -35,11 +37,17 @@ function getNextPlan(plan: UserPlan): UserPlan | null {
  */
 const PaymentCancelled = () => {
   const { t } = useTranslation("billing");
+  const posthog = usePostHog();
   const navigate = useNavigate();
   const { handleUpgrade, isUpgrading } = usePlanUpgrade();
   const { userPlan } = useUser();
 
   const nextPlan = getNextPlan(userPlan);
+
+  useEffect(() => {
+    posthog?.capture("payment_cancelled", { plan: userPlan });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleTryAgain = () => {
     if (nextPlan) {

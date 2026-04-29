@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 
 import { getUserDisplayName } from "@/core/utils";
 
+import { posthog } from "@/services/posthog";
 import { CoreStripeService } from "@/services/stripe/core.service";
 import { StripeService } from "@/services/stripe/stripe.service";
 
@@ -82,6 +83,24 @@ export const subscriptionRouter = router({
               feedback,
             },
             "Subscription cancellation feedback"
+          );
+        }
+
+        try {
+          posthog?.capture({
+            distinctId: user.id,
+            event: "subscription_canceled",
+            properties: {
+              organization_id: ctx.organizationId,
+              cancel_immediately: cancelImmediately,
+              reason: reason || null,
+              has_feedback: !!feedback,
+            },
+          });
+        } catch (analyticsError) {
+          ctx.logger.warn(
+            { error: analyticsError, userId: user.id },
+            "PostHog capture failed"
           );
         }
 
@@ -169,6 +188,23 @@ export const subscriptionRouter = router({
           cancelUrl: `${config.FRONTEND_URL}/payment/cancelled`,
           customerId,
         });
+
+        try {
+          posthog?.capture({
+            distinctId: user.id,
+            event: "subscription_renewal_initiated",
+            properties: {
+              plan,
+              billing_interval: interval,
+              organization_id: ctx.organizationId,
+            },
+          });
+        } catch (analyticsError) {
+          ctx.logger.warn(
+            { error: analyticsError, userId: user.id },
+            "PostHog capture failed"
+          );
+        }
 
         return { url: checkoutSession.url };
       } catch (error) {

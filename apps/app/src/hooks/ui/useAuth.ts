@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { usePostHog } from "@posthog/react";
+
 import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
@@ -8,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContextDefinition";
 
 export const useLogin = () => {
   const { login } = useAuth();
+  const posthog = usePostHog();
   const utils = trpc.useUtils();
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -54,6 +57,8 @@ export const useLogin = () => {
             workspaceId: response.user.workspace?.id,
           };
           login(user);
+          posthog?.identify(user.id, { email: user.email });
+          posthog?.capture("user_signed_in", { method: "email" });
           setIsPending(false);
           setIsSuccess(true);
           options?.onSuccess?.();
@@ -71,6 +76,8 @@ export const useLogin = () => {
               email: baUser.email,
               name: baUser.name || "",
             } as Parameters<typeof login>[0]);
+            posthog?.identify(baUser.id, { email: baUser.email });
+            posthog?.capture("user_signed_in", { method: "email" });
             setIsPending(false);
             setIsSuccess(true);
             options?.onSuccess?.();

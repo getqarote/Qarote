@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router";
 
+import { usePostHog } from "@posthog/react";
 import { CheckCircle, CreditCard } from "lucide-react";
 
 import { trackPurchase } from "@/lib/ga";
@@ -16,6 +17,7 @@ import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 const PaymentSuccess: React.FC = () => {
   const { t } = useTranslation("billing");
+  const posthog = usePostHog();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { refetchPlan, planData } = useUser();
@@ -74,17 +76,23 @@ const PaymentSuccess: React.FC = () => {
 
         if (paymentHistory.payments && paymentHistory.payments.length > 0) {
           const latestPayment = paymentHistory.payments[0];
+          const value = latestPayment.amount / 100;
 
           // Track purchase event
           trackPurchase({
             transaction_id: sessionId,
-            value: latestPayment.amount / 100, // Convert from cents to currency unit
+            value, // Convert from cents to currency unit
             currency: "USD", // Default currency, payment history doesn't include currency
+          });
+          posthog?.capture("payment_completed", {
+            transaction_id: sessionId,
+            value,
+            currency: "USD",
           });
 
           logger.info("Purchase event tracked", {
             transaction_id: sessionId,
-            value: latestPayment.amount / 100,
+            value,
             currency: "USD",
           });
         } else {
@@ -92,7 +100,12 @@ const PaymentSuccess: React.FC = () => {
           trackPurchase({
             transaction_id: sessionId,
             value: 0, // Will need to be updated if payment details are not available
-            currency: "EUR",
+            currency: "USD",
+          });
+          posthog?.capture("payment_completed", {
+            transaction_id: sessionId,
+            value: 0,
+            currency: "USD",
           });
 
           logger.warn("Purchase event tracked with fallback values", {
@@ -105,7 +118,12 @@ const PaymentSuccess: React.FC = () => {
         trackPurchase({
           transaction_id: sessionId,
           value: 0,
-          currency: "EUR",
+          currency: "USD",
+        });
+        posthog?.capture("payment_completed", {
+          transaction_id: sessionId,
+          value: 0,
+          currency: "USD",
         });
       }
     };

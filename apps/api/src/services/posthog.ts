@@ -1,9 +1,14 @@
 import { PostHog } from "posthog-node";
 
-export const posthog: PostHog | null = process.env.POSTHOG_API_KEY
-  ? new PostHog(process.env.POSTHOG_API_KEY, {
-      host: process.env.POSTHOG_HOST ?? "https://eu.i.posthog.com",
-      flushAt: 20,
-      flushInterval: 10_000,
-    })
-  : null;
+import { posthogConfig } from "@/config";
+import { isSelfHostedMode } from "@/config/deployment";
+
+// Never send telemetry from self-hosted instances regardless of env vars
+export const posthog =
+  !isSelfHostedMode() && posthogConfig.apiKey
+    ? new PostHog(posthogConfig.apiKey, {
+        host: posthogConfig.host,
+        flushAt: 20,
+        flushInterval: 10_000,
+      })
+    : null;

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { usePostHog } from "@posthog/react";
 import { ChevronRight, Loader2, Plus, Rocket } from "lucide-react";
 import { toast } from "sonner";
 
@@ -66,6 +67,7 @@ import { type OnboardingFormData, onboardingSchema } from "@/schemas";
  */
 const Onboarding = () => {
   const { t } = useTranslation("onboarding");
+  const posthog = usePostHog();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [isSuccess, setIsSuccess] = useState(false);
@@ -173,6 +175,15 @@ const Onboarding = () => {
         );
       }
 
+      try {
+        posthog?.capture("onboarding_completed", {
+          workspace_name: data.workspaceName.trim(),
+          invitees_count: invitees.length,
+          is_first_onboarding: isFirstOnboarding,
+        });
+      } catch {
+        // non-blocking analytics
+      }
       setIsSuccess(true);
     } catch (error) {
       isCreatingRef.current = false;

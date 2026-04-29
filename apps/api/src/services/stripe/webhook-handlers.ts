@@ -7,6 +7,7 @@ import { getUserDisplayName } from "@/core/utils";
 import { EmailService } from "@/services/email/email.service";
 import { licenseService } from "@/services/license/license.service";
 import { getLicenseFeaturesForTier } from "@/services/license/license-features.service";
+import { posthog } from "@/services/posthog";
 import { trackPaymentError } from "@/services/sentry";
 import { CoreStripeService } from "@/services/stripe/core.service";
 import {
@@ -192,6 +193,17 @@ export async function handleCheckoutSessionCompleted(session: Session) {
         CoreStripeService.mapBillingIntervalToString(billingIntervalEnum),
     });
 
+    posthog?.capture({
+      distinctId: userId,
+      event: "subscription_purchased",
+      properties: {
+        plan,
+        billing_interval: billingInterval ?? null,
+        organization_id: org?.id ?? null,
+        stripe_subscription_id: subscriptionId ?? null,
+      },
+    });
+
     logger.info(`User ${userId} upgraded to ${plan}`);
   } catch (error) {
     logger.error({ error }, "Error handling checkout session completed");
@@ -312,6 +324,24 @@ async function handleLicensePurchase(
       expiresAt,
       downloadUrl: `${portalUrl}/licenses`,
     });
+
+    try {
+      posthog?.capture({
+        distinctId: userId,
+        event: "license_purchased",
+        properties: {
+          plan,
+          billing_interval: billingInterval ?? null,
+          license_id: licenseId,
+          expires_at: expiresAt.toISOString(),
+        },
+      });
+    } catch (analyticsError) {
+      logger.error(
+        { error: analyticsError, userId, licenseId },
+        "PostHog license_purchased tracking failed"
+      );
+    }
   } catch (error) {
     logger.error({ error }, "Error handling license purchase");
     trackPaymentError(
@@ -508,6 +538,24 @@ export async function handleCustomerSubscriptionDeleted(
           status: SubscriptionStatus.CANCELED,
         },
       });
+
+      try {
+        posthog?.capture({
+          distinctId: existingSubscription.userId,
+          event: "subscription_churned",
+          properties: {
+            plan: existingSubscription.plan,
+            billing_interval: existingSubscription.billingInterval,
+            organization_id: existingSubscription.organizationId ?? null,
+            stripe_subscription_id: subscriptionId,
+          },
+        });
+      } catch (analyticsError) {
+        logger.error(
+          { error: analyticsError, subscriptionId },
+          "PostHog subscription_churned tracking failed"
+        );
+      }
 
       logger.info({ subscriptionId }, "Subscription canceled successfully");
 

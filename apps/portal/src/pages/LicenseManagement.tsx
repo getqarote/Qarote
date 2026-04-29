@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router";
 
+import { usePostHog } from "@posthog/react";
 import { format, formatDistanceToNow } from "date-fns";
 import {
   AlertTriangle,
@@ -25,6 +26,7 @@ const LicenseManagement = () => {
   const { data, isLoading, isError, refetch } = useLicenses();
   const { t, i18n } = useTranslation("portal");
   const dateLocale = getDateFnsLocale(i18n.language);
+  const posthog = usePostHog();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
 
@@ -42,6 +44,11 @@ const LicenseManagement = () => {
     navigator.clipboard
       .writeText(text)
       .then(() => {
+        try {
+          posthog?.capture("license_key_copied");
+        } catch {
+          // non-blocking analytics
+        }
         toast.success(t("licenseManagement.copiedToClipboard"));
         setCopiedId(licenseId);
         setTimeout(() => setCopiedId(null), 2000);
@@ -52,12 +59,20 @@ const LicenseManagement = () => {
   };
 
   const toggleKey = (licenseId: string) => {
+    const isExpanding = !expandedKeys.has(licenseId);
     setExpandedKeys((prev) => {
       const next = new Set(prev);
       if (next.has(licenseId)) next.delete(licenseId);
       else next.add(licenseId);
       return next;
     });
+    try {
+      posthog?.capture("license_key_revealed", {
+        action: isExpanding ? "show" : "hide",
+      });
+    } catch {
+      // non-blocking analytics
+    }
   };
 
   if (isLoading) {

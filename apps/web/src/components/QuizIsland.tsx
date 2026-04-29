@@ -150,6 +150,11 @@ export default function QuizIsland({
     ).length;
 
     trackQuizCompleted({ scorePct, correctCount, tier: tier.slug });
+    window.posthog?.capture("quiz_completed", {
+      score_pct: scorePct,
+      correct_count: correctCount,
+      tier: tier.slug,
+    });
 
     window.location.href = `/quiz/results/${tier.slug}/?score=${scorePct}`;
   }, [state.phase, state.answers]);
@@ -174,6 +179,7 @@ export default function QuizIsland({
     setSavedState(null);
     dispatch({ type: "START" });
     trackQuizStarted();
+    window.posthog?.capture("quiz_started");
   }
 
   function handleResume() {

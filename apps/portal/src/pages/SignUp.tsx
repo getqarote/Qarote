@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { usePostHog } from "@posthog/react";
 
 import { logger } from "@/lib/logger";
 
@@ -40,6 +41,7 @@ const SignUp = () => {
   const registerMutation = useRegister();
   const location = useLocation();
   const navigate = useNavigate();
+  const posthog = usePostHog();
 
   const from = location.state?.from?.pathname || "/";
 
@@ -62,14 +64,21 @@ const SignUp = () => {
   }, [isAuthenticated, navigate, from]);
 
   const onSubmit = (data: SignUpFormData) => {
-    registerMutation.mutate({
-      email: data.email,
-      password: data.password,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      acceptTerms: data.acceptTerms,
-      sourceApp: "portal" as const,
-    });
+    registerMutation.mutate(
+      {
+        email: data.email,
+        password: data.password,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        acceptTerms: data.acceptTerms,
+        sourceApp: "portal" as const,
+      },
+      {
+        onSuccess: () => {
+          posthog?.capture("user_signed_up", { method: "password" });
+        },
+      }
+    );
   };
 
   const isSuccess = registerMutation.isSuccess;

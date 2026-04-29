@@ -11,6 +11,7 @@ import {
   getPlanFeatures,
   validateWorkspaceCreation,
 } from "@/services/plan/plan.service";
+import { posthog } from "@/services/posthog";
 
 import {
   CreateWorkspaceSchema,
@@ -257,6 +258,16 @@ export const managementRouter = router({
           },
           "Workspace created successfully"
         );
+
+        posthog?.capture({
+          distinctId: user.id,
+          event: "workspace_created",
+          properties: {
+            workspace_id: newWorkspace.id,
+            organization_id: organizationId,
+            is_first_workspace: !user.workspaceId,
+          },
+        });
 
         return {
           workspace: {
@@ -505,6 +516,14 @@ export const managementRouter = router({
           },
           "Workspace deleted successfully"
         );
+
+        posthog?.capture({
+          distinctId: user.id,
+          event: "workspace_deleted",
+          properties: {
+            workspace_id: workspaceId,
+          },
+        });
 
         return {
           message: te(ctx.locale, "messages.workspaceDeletedSuccess"),

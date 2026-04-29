@@ -2,6 +2,8 @@ import { TRPCError } from "@trpc/server";
 
 import { applyWorkspaceAssignments } from "@/core/org-invitation-accept";
 
+import { posthog } from "@/services/posthog";
+
 import { InvitationTokenSchema } from "@/schemas/auth";
 
 import { rateLimitedProcedure, router } from "@/trpc/trpc";
@@ -121,6 +123,31 @@ export const orgInvitationRouter = router({
           },
           "Organization invitation accepted via token"
         );
+
+        try {
+          posthog?.capture({
+            distinctId: user.id,
+            event: "org_invitation_accepted",
+            properties: {
+              organization_id: invitation.organizationId,
+              invited_role: invitation.role,
+              workspace_assignments_count: Array.isArray(
+                invitation.workspaceAssignments
+              )
+                ? invitation.workspaceAssignments.length
+                : 0,
+            },
+          });
+        } catch (analyticsError) {
+          ctx.logger.warn(
+            {
+              error: analyticsError,
+              userId: user.id,
+              invitationId: invitation.id,
+            },
+            "PostHog org_invitation_accepted tracking failed"
+          );
+        }
 
         return {
           success: true,

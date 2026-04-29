@@ -20,6 +20,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@posthog/react": "^1.9.0",
+    "posthog-js": "^1.372.3",
     "@better-auth/sso": "^1.5.4",
     "@hookform/resolvers": "^5.2.2",
     "@qarote/i18n": "workspace:*",

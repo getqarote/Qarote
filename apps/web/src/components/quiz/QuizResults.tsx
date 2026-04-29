@@ -36,6 +36,10 @@ export function QuizResults({
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
         trackQuizShareClicked({ tier: tier.slug, scorePct: score });
+        window.posthog?.capture("quiz_share_clicked", {
+          tier: tier.slug,
+          score_pct: score,
+        });
       })
       .catch(() => {
         // clipboard write failed — no UI change, tracking skipped
@@ -44,6 +48,7 @@ export function QuizResults({
 
   function handleCta() {
     trackQuizCtaClicked({ tier: tier.slug });
+    window.posthog?.capture("quiz_cta_clicked", { tier: tier.slug });
     window.location.href = tier.ctaUrl;
   }
 

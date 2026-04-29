@@ -18,6 +18,10 @@ const AuthButtons = ({ align = "center", describedById }: AuthButtonsProps) => {
       source: "auth_buttons",
       location: "landing_page",
     });
+    window.posthog?.capture("sign_up_clicked", {
+      source: "auth_buttons",
+      location: "landing_page",
+    });
     window.location.href = `${authBaseUrl}/auth/sign-up`;
   };
 
