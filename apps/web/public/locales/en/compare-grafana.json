@@ -34,6 +34,7 @@
     "featureLabel": "Feature",
     "caption": "Qarote vs Grafana + Prometheus Feature Comparison",
     "asOf": "Grafana OSS and Prometheus are free. Infrastructure and maintenance costs vary by deployment.",
+    "qaroteWins": "Qarote wins {{count}}/{{total}}",
     "rows": {
       "rabbitmqNative": {
         "feature": "RabbitMQ-native monitoring",

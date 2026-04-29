@@ -3,20 +3,21 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import { FeaturesAlertingIsland } from "../../components/FeaturesAlertingIsland";
 import { loadTranslations, loadAllTranslations, t } from "../../lib/i18n-static";
 import { buildFaqSchema } from "../../lib/schema";
+import { DEFAULT_LOCALE } from "@qarote/i18n";
 
-const alerting = loadTranslations("en", "features-alerting");
-const resources = { ...loadAllTranslations("en"), "features-alerting": alerting };
+const alerting = loadTranslations(DEFAULT_LOCALE, "features-alerting");
+const resources = { ...loadAllTranslations(DEFAULT_LOCALE), "features-alerting": alerting };
 const faqSchema = buildFaqSchema(alerting);
 ---
 
 <BaseLayout
   title={t(alerting, "seo.title")}
   description={t(alerting, "seo.description")}
-  locale="en"
+  locale={DEFAULT_LOCALE}
   canonicalPath="/features/alerting/"
 >
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   </Fragment>
-  <FeaturesAlertingIsland locale="en" resources={resources} client:load />
+  <FeaturesAlertingIsland locale={DEFAULT_LOCALE} resources={resources} client:load />
 </BaseLayout>

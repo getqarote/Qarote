@@ -1,0 +1,51 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { CompareNewRelicIsland } from "../../components/CompareIsland";
+import { loadTranslations, loadAllTranslations, t } from "../../lib/i18n-static";
+import { buildFaqSchema } from "../../lib/schema";
+
+const compare = loadTranslations("en", "compare-new-relic");
+const resources = { ...loadAllTranslations("en"), "compare-new-relic": compare };
+
+const allPosts = await getCollection("blog");
+const blogPosts = allPosts
+  // exclude locale-prefixed entries like "fr/post-slug" — keep only root EN posts
+  .filter((p) => !p.id.includes("/"))
+  .sort((a, b) => new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime())
+  .slice(0, 3)
+  .map((p) => ({
+    slug: p.id,
+    title: p.data.title,
+    description: p.data.description,
+    publishedAt: p.data.publishedAt,
+    tags: p.data.tags,
+    readingTimeMin: p.data.readingTimeMin,
+  }));
+
+const newRelicSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "New Relic",
+  url: "https://newrelic.com/",
+  applicationCategory: "DeveloperApplication",
+  description: "Cloud-based full-stack observability platform for APM, infrastructure, logs, and more.",
+  sameAs: "https://www.wikidata.org/wiki/Q1543937",
+};
+
+const faqSchema = buildFaqSchema(compare);
+---
+
+<BaseLayout
+  title={t(compare, "seo.title")}
+  description={t(compare, "seo.description")}
+  locale="en"
+  canonicalPath="/compare/new-relic/"
+  image="https://qarote.io/images/qarote_card.jpg"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(newRelicSchema)} />
+  </Fragment>
+  <CompareNewRelicIsland locale="en" resources={resources} blogPosts={blogPosts} client:load />
+</BaseLayout>

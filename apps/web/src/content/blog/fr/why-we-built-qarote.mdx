@@ -3,7 +3,7 @@ title: "Pourquoi nous avons construit Qarote : une guerre des files d'attente"
 description: "Un incident de saturation RabbitMQ est passé inaperçu pendant plus d'une heure faute de visibilité. Voici ce que nous avons construit — et pourquoi."
 publishedAt: "2026-04-25"
 tags: ["rabbitmq", "monitoring", "war-story", "open-source"]
-readingTimeMin: 7
+readingTimeMin: 8
 ---
 
 Le message est arrivé à 2 h 47 du matin. Pas une alerte PagerDuty — un message Slack d'un client.
@@ -24,10 +24,11 @@ Le plugin de management m'a dit ce que je savais déjà en regardant le graphiqu
 
 Ce qu'il ne pouvait pas me dire :
 
-- Quels consommateurs étaient ces deux-là ? Étaient-ce les workers attendus, ou des connexions zombie d'un déploiement précédent ?
-- Pourquoi étaient-ils connectés mais ne traitaient-ils rien ? Bloqués sur un message ? Crashant silencieusement ? En attente d'un service en aval ?
-- Quand le [backlog de file](/fr/blog/debug-rabbitmq-queue-backlog/) a-t-il commencé ? La fenêtre de rétention par défaut était de 24 heures, mais la résolution du graphique était trop grossière.
-- S'agissait-il d'une file isolée ou d'un effet en cascade ? J'avais quinze files. Le plugin m'en montrait une à la fois.
+- **Quels consommateurs étaient ces deux-là ?** Étaient-ce les workers attendus, ou des connexions zombie d'un déploiement précédent ?
+- **Pourquoi étaient-ils connectés mais ne traitaient-ils rien ?** Bloqués sur un message ? Crashant silencieusement ? En attente d'un service en aval ?
+- **Quand le [backlog de file](/fr/blog/debug-rabbitmq-queue-backlog/) a-t-il commencé ?** La résolution du graphique était trop grossière pour identifier le moment exact où les choses avaient déraillé.
+- **S'agissait-il d'une file isolée ou d'un effet en cascade ?** J'avais quinze files. Le plugin m'en montrait une à la fois.
+- **À quoi ressemblaient les messages ?** Impossible d'inspecter un seul message sans écrire un consommateur jetable — ce qui signifiait que je ne pouvais pas confirmer si les messages eux-mêmes étaient malformés ou si le problème venait des consommateurs.
 
 J'ai basculé sur Grafana. Les métriques Prometheus RabbitMQ que nous avions configurées donnaient des données temporelles pour la profondeur de file et le nombre de consommateurs, mais l'intervalle de scrape était de 60 secondes — les données avaient déjà une minute de retard. Et les tableaux de bord étaient organisés par broker, pas par ce dont j'avais réellement besoin : une liste des files se comportant anormalement à cet instant.
 
@@ -67,13 +68,17 @@ Quelques éléments semblaient incontournables :
 
 **Le taux de changement, pas seulement la profondeur.** Une file à 50 000 messages croissant à +500/s est un réveil à 3h du matin dans 90 minutes. La même file décroissant à -1 000/s est saine. La profondeur seule est un indicateur en retard. Il faut la vélocité pour savoir si on se dirige vers un incident ou si on s'en remet.
 
-**[La santé des consommateurs](/fr/blog/rabbitmq-consumer-not-processing/) comme signal de première classe.** Pas seulement « combien de consommateurs sont connectés » mais « traitent-ils réellement ? » Un consommateur connecté mais n'acquittant pas est cassé.
+**[La santé des consommateurs](/fr/blog/rabbitmq-consumer-not-processing/) comme signal de première classe.** Pas seulement « combien de consommateurs sont connectés » mais « traitent-ils réellement ? » Un consommateur connecté mais n'acquittant pas est cassé. Cette distinction est invisible dans la plupart des outils de monitoring.
 
-**[Les dead-letter queues](/fr/blog/rabbitmq-dead-letter-queue/) comme indicateurs avancés.** Les DLQ, c'est là où les mauvais messages s'accumulent silencieusement. Si votre DLQ grandit, vous avez un bug de consommateur. La plupart des équipes le découvrent des semaines plus tard, lors d'un post-mortem.
+**Un historique de file utilisable après incident.** La rétention native de RabbitMQ est courte et peu précise. Ce dont j'avais besoin cette nuit-là, c'était un graphique de profondeur à résolution 5 minutes sur 7 jours — quelque chose qui montre _exactement_ quand le backlog a commencé, pas seulement qu'il était actuellement large. Cette précision change la façon de scoper un incident : fuite lente ou chute soudaine ?
 
-**Vue multi-files, multi-broker en un seul endroit.** Pendant un incident, vous n'avez pas le temps de parcourir quinze files individuellement.
+**La capacité d'inspecter les messages sans les perturber.** Cette nuit-là, je ne pouvais pas confirmer si les messages eux-mêmes étaient valides sans écrire un consommateur jetable. Il me fallait inspecter la file — lire les en-têtes, vérifier la structure du payload — sans consommer un seul message. Cette capacité seule aurait coupé 15 minutes de diagnostic.
 
-**[Alertes sur les indicateurs avancés](/fr/blog/rabbitmq-alerts-setup-guide/), pas seulement les indicateurs en retard.** Une alerte qui se déclenche quand votre file atteint 500 000 messages confirme surtout que vous êtes déjà dans un incident. Une alerte qui se déclenche quand votre file croît plus vite que votre taux de vidange — quand vous avez cinq minutes de marge — est réellement utile.
+**Corrélation d'incident automatisée, pas de navigation manuelle entre onglets.** Le diagnostic de quarante minutes n'était pas quarante minutes de réflexion intense. C'était quarante minutes à assembler un contexte qui existait déjà dans trois outils différents. Un outil qui corrèle les pics de profondeur de file, les chutes de consommateurs et les changements de taux de messages en une seule chronologie n'a rien de magique — il fait automatiquement la partie mécanique du diagnostic d'incident.
+
+**[Des alertes sur les indicateurs avancés](/fr/blog/rabbitmq-alerts-setup-guide/), pas seulement les indicateurs en retard.** Une alerte qui se déclenche quand votre file atteint 500 000 messages confirme surtout que vous êtes déjà dans un incident. Une alerte qui se déclenche quand votre file croît plus vite que votre taux de vidange — quand vous avez cinq minutes de marge — est réellement utile.
+
+**Un résumé de santé quotidien livré dans votre boîte mail.** Pas parce que je veux vérifier des tableaux de bord chaque matin, mais parce que les petites accumulations doivent être détectées avant de devenir des appels à 3h du matin. Un digest quotidien des profondeurs de file, des tendances de consommateurs et des anomalies des dernières 24 heures signifie qu'on n'entre jamais dans un incident sans contexte.
 
 **Zéro Prometheus requis.** Pas parce que Prometheus est mauvais, mais monter une pile complète Prometheus + Grafana + Alertmanager juste pour surveiller un cluster RabbitMQ est un investissement significatif pour les équipes qui ne l'ont pas déjà.
 
@@ -85,11 +90,21 @@ Aucun n'était construit à partir du postulat que la chose la plus importante e
 
 Alors nous avons construit Qarote.
 
-Le noyau est sous licence MIT et auto-hébergeable. Vous le pointez vers une API de management RabbitMQ — pas de plugin Prometheus, pas de YAML, pas d'agents à déployer — et il vous donne un tableau de bord multi-files avec des métriques de taux de changement, des signaux de santé des consommateurs, une surveillance des DLQ et des alertes configurables. Le genre de chose qui m'aurait dit, dans les cinq premières minutes de cet incident, que les consommateurs étaient connectés mais n'acquittaient pas, que la DLQ ne croissait pas, et que le backlog avait commencé à s'accélérer exactement au même moment qu'une pointe d'erreurs de connexion applicative.
+**Qarote est un outil de monitoring RabbitMQ auto-hébergé qui se connecte directement à l'API HTTP de management — pas de plugin Prometheus, pas de YAML, pas d'agents à déployer.** Noyau sous licence MIT, auto-hébergeable en deux minutes avec une seule commande Docker.
 
-Rétention d'historique au-delà de la fenêtre par défaut de 24 heures de RabbitMQ. Alertes sur le taux de changement, pas seulement les seuils absolus. Pas de prérequis d'infrastructure au-delà d'un broker en fonctionnement.
+Voici à quoi cet incident aurait ressemblé avec Qarote en fonctionnement :
 
-C'est Qarote. Construit parce que nous avons vécu l'incident qu'il est conçu à prévenir.
+- **Minute 1 :** Drapeau consommateur-connecté-mais-n'acquittant-pas levé. Qarote interroge toutes les 15 secondes — pas de retard de 60 secondes.
+- **Minute 1 :** Alerte sur le taux de croissance de la file déclenchée. Le backlog s'accélérait, pas seulement profond.
+- **Minute 2 :** Le [Moteur de Diagnostic d'Incident](/features/incident-diagnosis/) a corrélé le pic de backlog, la chute du taux d'acquittement des consommateurs et la pointe d'erreurs applicatives — même fenêtre de 4 minutes, automatiquement. Pas de navigation entre onglets.
+- **Minute 5 :** [Message Spy](/fr/features/message-spy/) a confirmé que les messages dans la file bloquée étaient structurellement valides — payload intact, en-têtes corrects. Les messages n'étaient pas le problème. Les consommateurs l'étaient.
+- **Minute 5 :** Réduit à DB ou réseau. Correctif déployé à la minute 10.
+
+Dix minutes, pas quarante.
+
+Et le lendemain matin, le [Daily Digest](/fr/features/digest/) aurait inclus l'incident dans le résumé d'anomalies des 24 heures — toute l'équipe aurait été informée avant d'ouvrir Slack, sans que personne n'ait à écrire un email de rétrospective.
+
+Si cette même file avait accumulé lentement pendant des jours avant l'incident — une fuite lente plutôt qu'une chute soudaine — l'[Historique de File](/fr/features/metrics/) l'aurait montré : des snapshots toutes les 5 minutes conservés 7 jours, traçables en regard du nombre de consommateurs et du taux de publication.
 
 ---
 

@@ -1,0 +1,32 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { SecurityIsland } from "../../components/SecurityIsland";
+import { loadAllTranslations, loadTranslations, t } from "../../lib/i18n-static";
+import { getLocaleStaticPaths } from "../../lib/locales";
+import { SUPPORTED_LOCALES, type SupportedLocale } from "@qarote/i18n";
+import { buildFaqSchema } from "../../lib/schema";
+
+export const getStaticPaths = getLocaleStaticPaths;
+
+const rawLocale = Astro.params.locale;
+if (!rawLocale || !SUPPORTED_LOCALES.includes(rawLocale as SupportedLocale)) {
+  return Astro.redirect("/");
+}
+const locale = rawLocale as SupportedLocale;
+
+const security = loadTranslations(locale, "security");
+const resources = { ...loadAllTranslations(locale), security };
+const faqSchema = buildFaqSchema(security);
+---
+
+<BaseLayout
+  title={t(security, "seo.title")}
+  description={t(security, "seo.description")}
+  locale={locale}
+  canonicalPath="/security/"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  </Fragment>
+  <SecurityIsland locale={locale} resources={resources} client:load />
+</BaseLayout>

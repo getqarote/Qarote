@@ -1,3 +1,4 @@
+import { type CSSProperties, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SupportedLocale } from "@qarote/i18n";
@@ -8,6 +9,9 @@ import FinalCtaSection from "@/components/landing/FinalCtaSection";
 import FooterSection from "@/components/landing/FooterSection";
 import StickyNav from "@/components/StickyNav";
 import { TawkTo } from "@/components/TawkTo";
+
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useScrollEntry } from "@/hooks/useScrollEntry";
 
 interface IslandProps {
   locale?: SupportedLocale;
@@ -39,6 +43,31 @@ const NS = "features-alerting";
 
 function Hero() {
   const { t } = useTranslation(NS);
+  const reduceMotion = useReducedMotion();
+  const [mounted, setMounted] = useState(false);
+  const [entered, setEntered] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => setEntered(true));
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
+  }, []);
+
+  const enter = (delay = 0): CSSProperties =>
+    reduceMotion || !mounted
+      ? {}
+      : !entered
+        ? { opacity: 0, transform: "translateY(14px)" }
+        : {
+            opacity: 1,
+            transform: "translateY(0)",
+            transition: `opacity 0.55s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.55s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
+          };
 
   return (
     <div className="border border-border overflow-hidden mb-8">
@@ -48,13 +77,21 @@ function Hero() {
         </span>
       </div>
       <div className="p-8 text-center">
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-normal text-foreground mb-6">
+        <h1
+          className="text-3xl sm:text-4xl lg:text-5xl font-normal text-foreground mb-6"
+          style={enter(0)}
+        >
           {t("hero.title")}
         </h1>
-        <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-8">
+        <p
+          className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-8"
+          style={enter(80)}
+        >
           {t("hero.subtitle")}
         </p>
-        <AuthButtons align="center" />
+        <div style={enter(160)}>
+          <AuthButtons align="center" />
+        </div>
       </div>
     </div>
   );
@@ -66,11 +103,22 @@ function Hero() {
 
 function AlertTypesSection() {
   const { t } = useTranslation(NS);
+  const reduceMotion = useReducedMotion();
+  const [gridRef, gridEntered] = useScrollEntry<HTMLDivElement>(0.05);
 
   const items = ((): AlertTypeItem[] => {
     const raw = t("alertTypes.items", { returnObjects: true });
     return Array.isArray(raw) ? (raw as AlertTypeItem[]) : [];
   })();
+
+  const itemStyle = (i: number): CSSProperties =>
+    reduceMotion
+      ? {}
+      : {
+          opacity: gridEntered ? 1 : 0,
+          transform: gridEntered ? "translateY(0)" : "translateY(12px)",
+          transition: `opacity 0.45s cubic-bezier(0.16,1,0.3,1) ${i * 50}ms, transform 0.45s cubic-bezier(0.16,1,0.3,1) ${i * 50}ms`,
+        };
 
   return (
     <div className="border border-border overflow-hidden mb-8">
@@ -83,11 +131,15 @@ function AlertTypesSection() {
         <h2 className="text-2xl sm:text-3xl font-normal text-foreground mb-8">
           {t("alertTypes.heading")}
         </h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+        <div
+          ref={gridRef}
+          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch"
+        >
           {items.map((item, i) => (
             <div
               key={i}
               className="flex items-start gap-4 border border-border p-5"
+              style={itemStyle(i)}
             >
               <div className="shrink-0 w-9 h-9 flex items-center justify-center bg-feature-icon-bg">
                 <img

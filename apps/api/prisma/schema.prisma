@@ -261,6 +261,8 @@ model User {
   discordJoined           Boolean                  @default(false)
   discordJoinedAt         DateTime?
   onboardingCompletedAt   DateTime?
+  referralSource          String?
+  discoveryQuery          String?
   alerts                  Alert[]
   alertRules              AlertRule[]
   emailVerificationTokens EmailVerificationToken[]

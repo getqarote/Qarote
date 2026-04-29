@@ -2,7 +2,25 @@ import { z } from "zod";
 
 import i18n from "@/i18n";
 
-// Password validation schema
+// ── Attribution / referral ───────────────────────────────────────────────────
+
+export const REFERRAL_SOURCES = [
+  "google",
+  "llm",
+  "twitter",
+  "linkedin",
+  "github",
+  "reddit",
+  "colleague",
+  "newsletter",
+  "podcast",
+  "other",
+] as const;
+
+export type ReferralSource = (typeof REFERRAL_SOURCES)[number];
+
+// ── Password ─────────────────────────────────────────────────────────────────
+
 const passwordSchema = z
   .string()
   .min(8, () => i18n.t("validation:passwordMinLength"))
@@ -11,7 +29,8 @@ const passwordSchema = z
   .regex(/[0-9]/, () => i18n.t("validation:passwordNumber"))
   .regex(/[^a-zA-Z0-9]/, () => i18n.t("validation:passwordSpecial"));
 
-// Sign up form schema
+// ── Sign up ───────────────────────────────────────────────────────────────────
+
 export const signUpSchema = z
   .object({
     firstName: z.string().min(1, () => i18n.t("validation:firstNameRequired")),
@@ -22,6 +41,8 @@ export const signUpSchema = z
     acceptTerms: z.boolean().refine((val) => val === true, {
       message: i18n.t("validation:acceptTermsRequired"),
     }),
+    referralSource: z.enum(REFERRAL_SOURCES).optional(),
+    discoveryQuery: z.string().max(500).optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: i18n.t("validation:passwordsDoNotMatch"),
@@ -30,7 +51,8 @@ export const signUpSchema = z
 
 export type SignUpFormData = z.infer<typeof signUpSchema>;
 
-// Sign in form schema
+// ── Sign in ───────────────────────────────────────────────────────────────────
+
 export const signInSchema = z.object({
   email: z.string().email(() => i18n.t("validation:invalidEmail")),
   password: z.string().min(1, () => i18n.t("validation:passwordRequired")),
@@ -38,7 +60,8 @@ export const signInSchema = z.object({
 
 export type SignInFormData = z.infer<typeof signInSchema>;
 
-// Accept invitation form schema
+// ── Accept invitation ─────────────────────────────────────────────────────────
+
 export const acceptInvitationSchema = z
   .object({
     firstName: z.string().min(1, () => i18n.t("validation:firstNameRequired")),

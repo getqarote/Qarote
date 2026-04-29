@@ -34,6 +34,7 @@
     "featureLabel": "功能",
     "caption": "Qarote vs Datadog 功能对比",
     "asOf": "定价截至 2026 年 4 月。Datadog Infrastructure Pro 套餐适用于 RabbitMQ 主机监控。",
+    "qaroteWins": "Qarote 胜出 {{count}}/{{total}}",
     "rows": {
       "rabbitmqNative": {
         "feature": "RabbitMQ 原生监控",

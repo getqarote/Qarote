@@ -34,6 +34,7 @@
     "featureLabel": "Característica",
     "caption": "Comparativa de funcionalidades Qarote vs Datadog",
     "asOf": "Precios a abril de 2026. Nivel Datadog Infrastructure Pro aplicado al monitoreo de hosts RabbitMQ.",
+    "qaroteWins": "Qarote gana {{count}}/{{total}}",
     "rows": {
       "rabbitmqNative": {
         "feature": "Monitoreo nativo de RabbitMQ",

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Menu } from "lucide-react";
@@ -21,16 +21,17 @@ const StickyNav = ({ currentPage }: { currentPage?: string }) => {
   const locale = i18n.language || "en";
   const localePrefix = locale === "en" ? "" : `/${locale}`;
 
-  const sections = [
-    { id: "video", label: t("howItWorks") },
-    { id: "pricing", label: t("pricing") },
-  ];
+  const sections = useMemo(
+    () => [{ id: "video", label: t("howItWorks") }],
+    [t]
+  );
 
   useEffect(() => {
     const sectionIds = sections.map((s) => s.id);
-    const elements = sectionIds
-      .map((id) => document.getElementById(id))
-      .filter(Boolean) as HTMLElement[];
+    const elements = sectionIds.flatMap((id) => {
+      const el = document.getElementById(id);
+      return el ? [el] : [];
+    });
 
     if (elements.length === 0) return;
 
@@ -49,7 +50,7 @@ const StickyNav = ({ currentPage }: { currentPage?: string }) => {
       observer.observe(el);
     }
     return () => observer.disconnect();
-  }, []);
+  }, [sections]);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -103,6 +104,15 @@ const StickyNav = ({ currentPage }: { currentPage?: string }) => {
                 {section.label}
               </button>
             ))}
+            <a
+              href={`${localePrefix}/pricing/`}
+              className={`px-4 py-2 text-base font-medium transition-colors ${currentPage === "pricing" ? "text-primary" : "text-foreground hover:text-primary"}`}
+              {...(currentPage === "pricing"
+                ? { "aria-current": "page" as const }
+                : {})}
+            >
+              {t("pricing")}
+            </a>
             <a
               href={`${localePrefix}/features/`}
               className={`px-4 py-2 text-base font-medium transition-colors ${currentPage === "features" ? "text-primary" : "text-foreground hover:text-primary"}`}
@@ -209,6 +219,15 @@ const StickyNav = ({ currentPage }: { currentPage?: string }) => {
                 {section.label}
               </button>
             ))}
+            <a
+              href={`${localePrefix}/pricing/`}
+              className={`px-4 py-3 text-base font-medium hover:bg-muted rounded-md transition-colors ${currentPage === "pricing" ? "text-primary" : "text-foreground hover:text-primary"}`}
+              {...(currentPage === "pricing"
+                ? { "aria-current": "page" as const }
+                : {})}
+            >
+              {t("pricing")}
+            </a>
             <a
               href={`${localePrefix}/features/`}
               className={`px-4 py-3 text-base font-medium hover:bg-muted rounded-md transition-colors ${currentPage === "features" ? "text-primary" : "text-foreground hover:text-primary"}`}

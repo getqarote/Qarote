@@ -1,0 +1,107 @@
+{
+  "seo": {
+    "title": "Rapport journalier de santé RabbitMQ | Qarote",
+    "description": "Rapports email planifiés résumant la santé des files, le nombre de consommateurs, les tendances de débit et l'accumulation en DLQ — livrés chaque matin dans votre boîte de réception."
+  },
+  "hero": {
+    "eyebrow": "Fonctionnalités → Daily Digest",
+    "title": "Votre rapport de santé RabbitMQ, livré chaque matin.",
+    "subtitle": "Qarote compile les tendances de profondeur de file, le nombre de consommateurs, l'accumulation de messages morts et le débit de messages en un seul email digest. Sachez ce qui s'est passé la nuit avant même d'ouvrir votre ordinateur."
+  },
+  "digestSections": {
+    "eyebrow": "Contenu du rapport",
+    "heading": "Tout en un seul rapport",
+    "items": [
+      {
+        "icon": "chart.svg",
+        "title": "Résumé de la profondeur de file",
+        "description": "Les files avec le plus grand nombre de messages au moment du rapport, ainsi que le pic de profondeur sur les dernières 24 heures. Repérez les files qui se sont remplies la nuit et vidées avant le matin — le genre d'incident silencieux que les logs ne capturent jamais."
+      },
+      {
+        "icon": "message.svg",
+        "title": "Santé des consommateurs",
+        "description": "Nombre de consommateurs par file au moment du rapport, avec un indicateur pour toute file ayant passé du temps sans consommateur. Une file qui perd ses consommateurs 10 minutes à 3h du matin est un incident en attente — le digest le met en évidence avant qu'il ne se reproduise."
+      },
+      {
+        "icon": "flag.svg",
+        "title": "Accumulation en dead-letter",
+        "description": "Nombre de messages en DLQ et taux de croissance sur les dernières 24 heures. Les messages morts signalent un traitement en échec — une DLQ qui a grandi silencieusement à 50 000 messages la nuit est un backlog que vous voulez connaître avant qu'il ne devienne un incident de replay."
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "Tendances de débit",
+        "description": "Taux de publication et de livraison représentés sur 24 heures. Un débit tombé à zéro à 2h du matin et récupéré à 4h apparaît clairement dans le digest — vous donnant la chronologie d'un incident dont vous ne saviez même pas qu'il s'était produit."
+      },
+      {
+        "icon": "server.svg",
+        "title": "Snapshot de santé broker",
+        "description": "Utilisation mémoire, utilisation disque et alarmes actives sur tous les brokers connectés. Un broker qui a brièvement atteint son seuil mémoire la nuit et récupéré est visible dans le digest — avant que ça ne se reproduise et ne bloque vos producteurs."
+      },
+      {
+        "icon": "send.svg",
+        "title": "Les cas les plus critiques",
+        "description": "Les files avec la profondeur la plus élevée, la croissance de DLQ la plus forte et le plus fort turnover de consommateurs sur la fenêtre de rapport. Priorisés pour que la première section du digest soit toujours actionnable — sans faire défiler 200 files saines pour trouver les deux qui nécessitent une attention."
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "Comment ça fonctionne",
+    "heading": "Configurez-le une fois, recevez-le chaque matin",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Connectez votre broker",
+        "description": "Qarote collecte en continu les métriques de files, le nombre de consommateurs et les données de santé broker via l'API de management RabbitMQ. Aucune configuration supplémentaire n'est nécessaire au-delà de la connexion initiale."
+      },
+      {
+        "number": "02",
+        "title": "Configurez votre planning",
+        "description": "Choisissez l'heure de livraison et le fuseau horaire. Les digests journaliers sont envoyés le matin par défaut. Ajoutez des destinataires — le digest va à toute l'équipe, pas seulement à la personne qui l'a configuré."
+      },
+      {
+        "number": "03",
+        "title": "Recevez votre briefing",
+        "description": "Un email structuré arrive avec le résumé de santé de votre RabbitMQ. Les problèmes sont présentés en premier. Les files saines sont résumées. Vous passez deux minutes à le lire, pas vingt minutes à consulter des dashboards."
+      }
+    ]
+  },
+  "whyDigest": {
+    "eyebrow": "Pourquoi un digest ?",
+    "heading": "Les dashboards nécessitent une intention. Le digest n'en demande aucune.",
+    "p1": "Un dashboard est réactif : vous l'ouvrez quand vous suspectez un problème. Le digest est proactif : il arrive que vous ayez pensé à vérifier ou non. Les équipes qui utilisent le digest régulièrement découvrent des incidents qui seraient passés inaperçus pendant des heures — le genre qui se produit la nuit, récupère partiellement et laisse la file dans un état dégradé au matin.",
+    "p2": "Le plugin de management RabbitMQ conserve les métriques environ 8 heures. Si quelque chose s'est passé à 2h du matin et que vous consultez le dashboard à 10h, la preuve a disparu. Le digest capture la fenêtre de 24 heures et vous la livre indépendamment de l'heure à laquelle vous ouvrez votre ordinateur.",
+    "p3": "Les rotations d'astreinte créent des lacunes de couverture. Le digest les comble — chaque membre de l'équipe obtient la même vue de la santé de l'infrastructure chaque matin, peu importe qui était d'astreinte, qui a été alerté et ce qui a été résolu sans post-mortem."
+  },
+  "crossLink": {
+    "eyebrow": "Voir aussi",
+    "navLabel": "Liens associés",
+    "alerting": "Alertes en temps réel →",
+    "pricing": "Tarifs",
+    "features": "Toutes les fonctionnalités"
+  },
+  "faq": {
+    "heading": "Questions fréquentes",
+    "items": [
+      {
+        "question": "Le Daily Digest nécessite-t-il un plan payant ?",
+        "answer": "Le digest est une fonctionnalité des plans Developer et Enterprise. Il nécessite des données de métriques historiques, qui font partie de la couche de persistance des métriques de Qarote — disponible sur les plans payants. L'édition Community gratuite inclut le dashboard en temps réel mais pas les rapports planifiés."
+      },
+      {
+        "question": "Puis-je modifier le planning de livraison ?",
+        "answer": "Oui. Vous pouvez configurer l'heure de livraison et le fuseau horaire par workspace. Les digests hebdomadaires sont également disponibles sur Enterprise."
+      },
+      {
+        "question": "Qui reçoit le digest ?",
+        "answer": "Vous configurez la liste des destinataires par workspace. Tout membre de l'équipe ayant accès au workspace peut être ajouté comme destinataire — utile pour distribuer la visibilité aux ingénieurs qui ne se connectent pas au dashboard quotidiennement."
+      },
+      {
+        "question": "Quel fuseau horaire le digest utilise-t-il ?",
+        "answer": "Le digest utilise le fuseau horaire configuré dans les paramètres de votre workspace. Les données de santé des files sont toujours affichées en horodatages UTC ; le planning de livraison utilise votre fuseau horaire local."
+      },
+      {
+        "question": "Puis-je personnaliser les files qui apparaissent dans le digest ?",
+        "answer": "Oui. Vous pouvez filtrer par vhost ou par pattern de nom de file pour centrer le digest sur les files qui comptent pour votre équipe. Les files exclues du monitoring sont automatiquement exclues du digest."
+      }
+    ]
+  }
+}

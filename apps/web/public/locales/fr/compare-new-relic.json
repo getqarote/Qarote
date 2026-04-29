@@ -1,0 +1,144 @@
+{
+  "seo": {
+    "title": "Qarote vs New Relic : Alternative de surveillance RabbitMQ",
+    "description": "Qarote vs New Relic pour la surveillance RabbitMQ. Alternative auto-hébergée et spécialisée face à la tarification à la consommation et au modèle agent-par-hôte de New Relic. Comparaison honnête."
+  },
+  "hero": {
+    "eyebrow": "Comparaison",
+    "title": "Qarote vs New Relic",
+    "subtitle": "New Relic est une puissante plateforme d'observabilité full-stack. Si vous surveillez RabbitMQ, vous installez des agents sur chaque hôte broker, vous envoyez des métriques de queues vers le cloud de New Relic, et vous écrivez du NRQL pour construire des alertes utiles. Qarote se connecte directement à l'API de gestion de RabbitMQ — sans agent, sans langage de requête, sans mauvaises surprises au GB."
+  },
+  "verdict": {
+    "heading": "Verdict rapide",
+    "competitor": {
+      "label": "Choisissez New Relic si…",
+      "points": [
+        "Vous avez besoin d'une observabilité de bout en bout sur l'APM, les logs, l'infrastructure et les synthetics dans une seule plateforme",
+        "Votre équipe utilise déjà New Relic et RabbitMQ est une intégration de plus dans un flux de travail existant",
+        "Vos volumes de données sont faibles et le niveau gratuit de 100 GB/mois couvre vos besoins"
+      ]
+    },
+    "qarote": {
+      "label": "Choisissez Qarote si…",
+      "points": [
+        "RabbitMQ est un composant critique de votre infrastructure et mérite un outil spécialisé",
+        "Vous souhaitez une surveillance auto-hébergée où les données des queues ne quittent jamais votre réseau",
+        "Vous avez besoin d'une tarification forfaitaire prévisible sans frais d'ingestion de données au GB"
+      ]
+    }
+  },
+  "table": {
+    "heading": "Comparaison des fonctionnalités",
+    "competitorLabel": "New Relic",
+    "qaroteLabel": "Qarote",
+    "featureLabel": "Fonctionnalité",
+    "caption": "Comparaison des fonctionnalités Qarote vs New Relic",
+    "asOf": "Tarifs en avril 2026. Niveau New Relic Pro à 0,40 $/GB au-delà de la franchise gratuite de 100 GB/mois.",
+    "qaroteWins": "Qarote gagne {{count}}/{{total}}",
+    "rows": {
+      "rabbitmqNative": {
+        "feature": "Surveillance native RabbitMQ",
+        "competitor": "Via agent Infrastructure + intégration on-host RabbitMQ — l'une des 750+ intégrations",
+        "qarote": "Natif — conçu exclusivement pour RabbitMQ"
+      },
+      "agentRequired": {
+        "feature": "Agent requis sur les hôtes broker",
+        "competitor": "Oui — l'agent New Relic Infrastructure doit être installé sur chaque nœud RabbitMQ",
+        "qarote": "Non — se connecte directement à l'API de gestion RabbitMQ, aucun agent nécessaire"
+      },
+      "setupTime": {
+        "feature": "Temps de configuration",
+        "competitor": "Installation de l'agent sur chaque nœud + configuration de l'intégration + configuration du dashboard (~30–60 min)",
+        "qarote": "60 secondes — collez la chaîne de connexion, c'est tout"
+      },
+      "selfHosted": {
+        "feature": "Option auto-hébergée",
+        "competitor": "Non — SaaS uniquement",
+        "qarote": "Oui — fonctionne entièrement sur votre infrastructure"
+      },
+      "dataPrivacy": {
+        "feature": "Confidentialité des données de queue",
+        "competitor": "Les métriques de queues sont envoyées vers le cloud de New Relic",
+        "qarote": "Toutes les données restent sur votre réseau"
+      },
+      "pricingModel": {
+        "feature": "Modèle de tarification",
+        "competitor": "À la consommation — facturé au GB de données ingérées au-delà du niveau gratuit",
+        "qarote": "Licence annuelle forfaitaire ou gratuit (MIT auto-hébergé)"
+      },
+      "estimatedCost": {
+        "feature": "Prévisibilité des coûts",
+        "competitor": "Imprévisible — la facture évolue avec le volume de données et le nombre d'utilisateurs",
+        "qarote": "Fixe — 29 $/mois forfaitaire (plan Développeur) quel que soit le volume de données"
+      },
+      "alerting": {
+        "feature": "Alertes sur la profondeur de queue",
+        "competitor": "Oui — via des conditions d'alerte basées sur NRQL",
+        "qarote": "Oui — modèles d'alertes RabbitMQ intégrés, sans langage de requête"
+      },
+      "openSource": {
+        "feature": "Noyau open source",
+        "competitor": "Non",
+        "qarote": "Oui — licence MIT"
+      },
+      "integrations": {
+        "feature": "Étendue de la plateforme",
+        "competitor": "750+ intégrations sur l'ensemble de votre stack",
+        "qarote": "RabbitMQ uniquement"
+      }
+    }
+  },
+  "sections": {
+    "eyebrow": "Analyse approfondie",
+    "native": {
+      "heading": "RabbitMQ est une intégration parmi 750 dans New Relic — il est au cœur de Qarote",
+      "p1": "La force de New Relic est son étendue : traces APM, métriques d'infrastructure, gestion des logs, monitoring browser, synthetics et des centaines d'intégrations dont RabbitMQ. Pour les équipes qui ont besoin d'une plateforme d'observabilité unifiée sur un stack polyglotte, cette étendue a une vraie valeur. Mais pour RabbitMQ spécifiquement, cela implique de travailler dans un modèle de surveillance conçu pour accommoder toutes les intégrations possibles — pas un modèle bâti autour des modes de défaillance réels des files de messages.",
+      "p2": "Qarote a été conçu pour une seule chose : RabbitMQ. Chaque écran, chaque métrique et chaque modèle d'alerte a été pensé autour des queues, des exchanges, des bindings, des consumers et des modes de défaillance qui comptent en production — accumulation de DLQ, lag des consumers, isolation des vhosts, événements de flow control. Il n'y a pas de couche d'abstraction à traverser.",
+      "p3": "Si RabbitMQ est un composant critique de votre infrastructure plutôt qu'une intégration accessoire, un outil spécialisé vous offre une réponse aux incidents plus rapide et des valeurs par défaut plus pertinentes qu'une plateforme généraliste."
+    },
+    "pricing": {
+      "heading": "La tarification à la consommation de New Relic évolue de manière difficile à anticiper",
+      "p1": "Le niveau gratuit de New Relic offre 100 GB d'ingestion de données par mois — généreux pour les petites configurations. Au-delà, l'ingestion de données est facturée 0,40 $/GB (ou 0,60 $/GB pour Data Plus). Sur un cluster RabbitMQ actif émettant des métriques à haute fréquence, la facture peut grimper rapidement. Ajoutez les sièges utilisateurs à 49 $/mois par utilisateur Pro et la note s'alourdit à mesure que votre équipe grandit.",
+      "p2": "Le plan Développeur de Qarote est à 348 $/an (29 $/mois forfaitaire) par équipe. L'Enterprise est à 1 188 $/an. Aucun des deux plans ne facture selon le volume de données, le nombre d'hôtes ou le nombre de sièges. Pas de frais d'ingestion, pas de frais de rétention des métriques, pas de mauvaises surprises en fin de mois.",
+      "p3": "La tarification à la consommation a du sens quand vous pouvez prédire votre usage. Pour surveiller un cluster RabbitMQ en production — où les taux de messages augmentent de façon imprévisible lors des pics de trafic — un tarif forfaitaire signifie que vous n'êtes jamais découragé d'augmenter la granularité de votre surveillance."
+    },
+    "agents": {
+      "heading": "New Relic nécessite un agent sur chaque hôte broker — Qarote n'en nécessite aucun",
+      "p1": "Pour surveiller RabbitMQ avec New Relic, vous installez l'agent Infrastructure sur chaque nœud RabbitMQ, activez l'intégration on-host et configurez le fichier YAML avec les identifiants de votre broker. Sur un cluster de 3 nœuds, cela représente trois agents à déployer, maintenir, mettre à jour et surveiller. Chaque agent tourne comme un processus en arrière-plan, consommant des ressources de l'hôte et nécessitant sa propre gestion de version.",
+      "p2": "Qarote s'installe une seule fois — n'importe où pouvant atteindre votre API de gestion RabbitMQ. Il utilise directement l'API de gestion HTTP standard et le protocole AMQP, sans aucun logiciel requis sur les hôtes broker eux-mêmes. Pour ajouter un nouveau serveur RabbitMQ à surveiller, il suffit de coller sa chaîne de connexion. Aucun déploiement d'agent, aucun accès niveau hôte requis."
+    },
+    "privacy": {
+      "heading": "Les données de vos queues restent sur votre infrastructure",
+      "p1": "New Relic est uniquement SaaS : les métriques, événements, logs et traces transitent par le cloud de New Relic. Pour de nombreuses équipes, c'est un compromis acceptable. Mais RabbitMQ gère souvent des charges de travail sensibles — événements de paiement, messages de services internes, données utilisateurs en transit. Envoyer des noms de métriques de queues, des clés de routage et des patterns de consumers vers un cloud tiers crée une surface de conformité que certaines équipes ne peuvent pas accepter.",
+      "p2": "Qarote fonctionne entièrement sur votre infrastructure. Aucune donnée de queue ne quitte votre réseau. La validation de la licence se fait hors ligne en utilisant une clé publique intégrée — même le système de licence ne nécessite aucune connexion sortante.",
+      "p3": "Pour les équipes dans des secteurs réglementés ou soumises à des exigences strictes de résidence des données, Qarote peut fonctionner dans des environnements air-gapped où les plateformes d'observabilité SaaS ne le peuvent pas."
+    }
+  },
+  "crossLink": {
+    "text": "Aussi en comparaison :",
+    "datadog": "Qarote vs Datadog →",
+    "pricing": "Tarifs",
+    "features": "Fonctionnalités"
+  },
+  "faq": {
+    "heading": "Questions fréquentes",
+    "items": [
+      {
+        "question": "Qarote peut-il remplacer entièrement New Relic ?",
+        "answer": "Qarote est un outil spécialisé, pas une plateforme d'observabilité généraliste. Il remplace spécifiquement la surveillance RabbitMQ de New Relic — pas son APM, sa gestion des logs ou la surveillance d'infrastructure pour vos autres services. Si RabbitMQ est votre principal besoin de surveillance, Qarote est un choix plus ciblé et rentable. Si vous avez besoin d'une observabilité de bout en bout sur un stack polyglotte, New Relic et Qarote peuvent coexister."
+      },
+      {
+        "question": "Qarote nécessite-t-il l'installation de quelque chose sur mes hôtes RabbitMQ ?",
+        "answer": "Non. Qarote se connecte directement à RabbitMQ en utilisant l'API de gestion standard (HTTP) et le protocole AMQP. Vous installez Qarote une seule fois sur n'importe quel hôte pouvant atteindre votre broker — il ne nécessite ni agent ni aucun logiciel sur les nœuds RabbitMQ eux-mêmes."
+      },
+      {
+        "question": "L'édition open source de Qarote est-elle vraiment gratuite ?",
+        "answer": "Oui. Le noyau sous licence MIT de Qarote — surveillance en direct des queues, visibilité des exchanges, suivi des consumers et support multi-serveur — est gratuit à auto-héberger sans aucune clé de licence. Les fonctionnalités premium (partage d'espaces de travail, alertes avancées, intégrations) nécessitent une licence Développeur ou Enterprise."
+      },
+      {
+        "question": "Quel est le meilleur outil de surveillance RabbitMQ pour les équipes utilisant déjà New Relic ?",
+        "answer": "Les équipes déjà investies dans New Relic peuvent continuer à l'utiliser pour l'observabilité infrastructure large tout en ajoutant Qarote spécifiquement pour RabbitMQ. Les dashboards dédiés de Qarote, ses modèles d'alertes intégrés et ses vues multi-vhost apportent une profondeur opérationnelle que l'intégration générique de New Relic ne peut pas égaler — sans remplacer votre stack d'observabilité existant."
+      }
+    ]
+  }
+}

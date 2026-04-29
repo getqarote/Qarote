@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "RabbitMQ Multi-Server Monitoring — Workspaces & Team Access | Qarote",
+    "description": "Connect multiple RabbitMQ instances to one Qarote workspace. Monitor production, staging, and development from a single dashboard. Team access control, TLS connections, and workspace isolation — no per-server tooling."
+  },
+  "hero": {
+    "eyebrow": "Features → Multi-Server",
+    "title": "One workspace. All your RabbitMQ servers.",
+    "subtitle": "Connect production, staging, and development brokers to a single Qarote workspace. Switch between servers in one click. Share the same dashboard with your whole team — with role-based access that keeps production operations controlled."
+  },
+  "capabilities": {
+    "eyebrow": "What's included",
+    "heading": "Everything you need for multi-environment RabbitMQ",
+    "items": [
+      {
+        "icon": "server.svg",
+        "title": "Multiple server connections",
+        "description": "Connect up to 3 RabbitMQ servers on the Developer plan, unlimited on Enterprise. Each server is monitored independently — separate queue lists, separate health states, separate alert configurations."
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "Cross-server dashboard",
+        "description": "A unified server list shows all connected brokers with their health status at a glance. Critical servers surface at the top. Switch into any server's detail view in one click — no tab juggling, no separate browser bookmarks."
+      },
+      {
+        "icon": "flag.svg",
+        "title": "Environment isolation",
+        "description": "Production, staging, and development are separate server entries with separate configurations. Alerts for staging don't fire in your production Slack channel. Queue management operations on development can't accidentally target production."
+      },
+      {
+        "icon": "send.svg",
+        "title": "TLS encrypted connections",
+        "description": "All connections to your RabbitMQ management API are over TLS. Qarote never stores your RabbitMQ credentials in plaintext — connections are tested on entry and credentials are encrypted at rest."
+      },
+      {
+        "icon": "message.svg",
+        "title": "Team access control",
+        "description": "Invite team members with scoped roles: Admin (full access), Member (monitoring + alerting), Viewer (read-only). Control who can manage queues, configure alerts, and connect new servers — per workspace."
+      },
+      {
+        "icon": "chart.svg",
+        "title": "Workspace organization",
+        "description": "Workspaces separate environments at the organizational level — useful for agencies managing multiple clients' brokers, or enterprises with isolated business units. Each workspace has independent servers, users, alerts, and billing."
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "How it works",
+    "heading": "Adding a server takes 60 seconds",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Add a server",
+        "description": "Enter your RabbitMQ management API URL and credentials. Qarote tests the connection immediately and adds the server to your workspace. The full queue list appears within seconds."
+      },
+      {
+        "number": "02",
+        "title": "All environments in one view",
+        "description": "Switch between servers from the top navigation. Each server has its own queue list, analytics, and alert configuration. The unified health view shows all servers at once — healthy, warning, or critical."
+      },
+      {
+        "number": "03",
+        "title": "Invite your team",
+        "description": "Add team members by email. Assign roles that match their responsibilities. On-call engineers get alert access. Developers get read access. Admins manage server connections and workspace settings."
+      }
+    ]
+  },
+  "teamWorkspaces": {
+    "eyebrow": "Workspaces and teams",
+    "heading": "Shared context without shared risk",
+    "p1": "When your team grows beyond one person managing RabbitMQ, you have a coordination problem. Everyone bookmarks the management plugin directly. Credentials get shared over Slack. There's no record of who purged which queue. Alerts fire to a shared email alias that nobody checks.",
+    "p2": "Qarote workspaces give your team a single shared context: the same server list, the same queue dashboard, the same alert history — with individual logins and role-based access. Operations that touch production are controlled by Qarote's permission model, not by who has the SSH key.",
+    "p3": "Enterprise workspaces add SSO (OIDC/SAML) and team-level access controls. Connect your identity provider, and Qarote user management follows your existing offboarding process. When a team member leaves, revoking their Qarote access revokes their RabbitMQ monitoring access automatically."
+  },
+  "crossLink": {
+    "eyebrow": "See also",
+    "navLabel": "Related links",
+    "alerting": "Real-time alerting →",
+    "liveMonitoring": "Live Monitoring",
+    "pricing": "Pricing",
+    "features": "All features"
+  },
+  "faq": {
+    "heading": "Frequently asked questions",
+    "items": [
+      {
+        "question": "How many servers can I connect?",
+        "answer": "Developer plans support up to 3 RabbitMQ server connections per workspace. Enterprise plans support unlimited connections. The Community (free) edition supports 1 server."
+      },
+      {
+        "question": "Can I connect servers across different environments with the same workspace?",
+        "answer": "Yes — connecting production, staging, and development to the same workspace is the intended use case. Alert configurations, user roles, and queue management permissions are all server-scoped, so environment isolation is maintained."
+      },
+      {
+        "question": "Does Qarote require network access from the broker to Qarote?",
+        "answer": "Qarote connects outbound to your RabbitMQ management API (default port 15672 for HTTP, 15671 for HTTPS/TLS if configured). Your broker does not need inbound network access from Qarote — only the RabbitMQ management API endpoint needs to be reachable from your Qarote installation. The actual port and protocol depend on your broker's management listener configuration."
+      },
+      {
+        "question": "How does team access work for self-hosted Qarote?",
+        "answer": "Self-hosted Qarote uses the same role-based access model. You manage users through the Qarote admin panel. Enterprise self-hosted adds OIDC/SAML SSO — connect your identity provider and user provisioning follows your existing directory."
+      },
+      {
+        "question": "Can different team members have different access per server?",
+        "answer": "In the current version, roles are workspace-scoped — a Member can see all servers in the workspace. Server-scoped permissions (per-server read/write control) are on the Enterprise roadmap."
+      }
+    ]
+  }
+}

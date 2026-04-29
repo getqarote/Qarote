@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "Message Tracing en RabbitMQ — Sigue los mensajes por tu topología | Qarote",
+    "description": "Rastrea mensajes individuales de RabbitMQ desde la publicación hasta la entrega o el dead-lettering. Depura configuraciones de routing incorrectas, desajustes de esquema y pérdida de mensajes sin parsear logs en bruto."
+  },
+  "hero": {
+    "eyebrow": "Funcionalidades → Message Tracing",
+    "title": "Sigue cada mensaje a través de tu topología de RabbitMQ.",
+    "subtitle": "El Message Tracing de Qarote captura el recorrido completo de los mensajes individuales — desde el routing en el exchange hasta la entrega en la queue o el dead-lettering. Depura configuraciones de routing incorrectas, desajustes de esquema y reentregas inesperadas sin tener que rebuscar en logs en bruto."
+  },
+  "traceTypes": {
+    "eyebrow": "Qué puedes rastrear",
+    "heading": "Cada paso del recorrido del mensaje",
+    "items": [
+      {
+        "icon": "send.svg",
+        "title": "Ruta de publicación y routing en el exchange",
+        "description": "Ve exactamente qué exchange recibió un mensaje y cómo fue enrutado. Confirma que los binding keys coinciden con el routing key publicado y detecta desajustes antes de que resulten en pérdida silenciosa de mensajes."
+      },
+      {
+        "icon": "message.svg",
+        "title": "Confirmación de entrega en la queue",
+        "description": "Verifica que un mensaje llegó a su queue de destino y fue confirmado por un consumidor. Distingue entre mensajes que fueron entregados pero rechazados con nack y mensajes que nunca llegaron a la queue."
+      },
+      {
+        "icon": "flag.svg",
+        "title": "Routing hacia la dead-letter queue",
+        "description": "Rastrea mensajes que fueron rechazados, caducaron o superaron su límite de longitud máxima hacia los dead-letter exchanges. Ve la ruta completa desde la queue de origen hasta el DLX y hacia la DLQ."
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "Reentregas y eventos nack",
+        "description": "Identifica mensajes que están siendo reenviados repetidamente. Un consumidor que hace nack y reencola un mensaje sin resolver el problema subyacente produce un bucle infinito de reentregas que es fácil de pasar por alto sin tracing."
+      },
+      {
+        "icon": "error.svg",
+        "title": "Desajustes de routing key",
+        "description": "Detecta mensajes publicados con un routing key que no coincide con ningún binding en el exchange de destino. RabbitMQ descarta estos mensajes silenciosamente — el tracing es la única forma de confirmar que fueron publicados."
+      },
+      {
+        "icon": "chart.svg",
+        "title": "Mensajes no enrutables",
+        "description": "Captura mensajes que llegan a un exchange fanout o topic pero son descartados porque no hay ninguna queue vinculada. Crítico para detectar huecos en la topología tras cambios en los bindings de queues o redespliegues de consumidores."
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "Cómo funciona",
+    "heading": "Habilita, captura, inspecciona",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Habilita el tracing en un vhost o exchange",
+        "description": "Qarote activa el firehose de RabbitMQ en el vhost o exchange de destino con un solo clic. No se requiere configuración manual del plugin ni acceso CLI a los nodos de tu broker."
+      },
+      {
+        "number": "02",
+        "title": "Mensajes capturados a través del firehose",
+        "description": "RabbitMQ publica una copia de cada mensaje coincidente en el exchange amq.rabbitmq.trace. Qarote consume estos eventos de tracing y almacena los metadatos de routing, las cabeceras y el resumen del payload."
+      },
+      {
+        "number": "03",
+        "title": "Inspecciona el trace completo en el dashboard",
+        "description": "Examina y filtra los traces capturados por exchange, queue, routing key o ventana temporal. Haz clic en cualquier evento de trace para ver su recorrido completo — ruta de publicación, resultado de entrega y cualquier salto hacia la dead-letter queue."
+      }
+    ]
+  },
+  "whyTracing": {
+    "eyebrow": "¿Por qué message tracing?",
+    "heading": "La pérdida silenciosa de mensajes es el bug más difícil de reproducir",
+    "p1": "Cuando un mensaje desaparece en una topología de RabbitMQ, no hay ninguna excepción, ninguna línea de log y ninguna respuesta de error. El publicador recibió una confirmación, el broker aceptó el mensaje y luego nada. Reconstruir lo que ocurrió implica leer logs del broker, comprobar configuraciones de binding y razonar sobre el estado de la topología que puede haber cambiado ya — todo ello sin un registro directo del evento.",
+    "p2": "Los bugs de routing son especialmente difíciles de detectar en desarrollo porque solo aparecen bajo condiciones topológicas específicas: un binding que parecía correcto en staging pero le faltaba un segmento de wildcard, un header exchange que requería una coincidencia exacta que el productor no estaba estableciendo, o un dead-letter exchange configurado pero nunca vinculado a una queue. El message tracing te ofrece un registro de primera mano de cada decisión de routing que tomó el broker.",
+    "p3": "El plugin de gestión de RabbitMQ incluye una funcionalidad básica de tracing (`rabbitmq_tracing`), pero escribe archivos de log en bruto en disco en cada nodo del broker y requiere acceso SSH para recuperarlos. Qarote expone los mismos datos del firehose a través de un dashboard con búsqueda y filtrado — sin parsear logs, sin acceder a los nodos del broker y sin impacto en tu configuración de monitorización existente."
+  },
+  "crossLink": {
+    "eyebrow": "Ver también",
+    "navLabel": "Enlaces relacionados",
+    "alerting": "Alertas en tiempo real →",
+    "incidentDiagnosis": "Motor de Incident Diagnosis",
+    "pricing": "Precios",
+    "features": "Todas las funcionalidades"
+  },
+  "faq": {
+    "heading": "Preguntas frecuentes",
+    "items": [
+      {
+        "question": "¿Habilitar el message tracing afecta al rendimiento del broker?",
+        "answer": "Sí — el firehose de RabbitMQ publica una copia de cada mensaje rastreado en el exchange amq.rabbitmq.trace, lo que añade una sobrecarga proporcional al throughput de mensajes. Qarote está diseñado para habilitarse de forma selectiva: apunta a un vhost o exchange específico, captura lo que necesitas y desactiva el tracing cuando concluya la investigación. No dejes el tracing habilitado permanentemente en exchanges de alto throughput en producción."
+      },
+      {
+        "question": "¿Qué plan de Qarote incluye el message tracing?",
+        "answer": "El message tracing requiere una licencia Developer o Enterprise. No está disponible en la edición open-source gratuita MIT. Una licencia Developer ($348/año) cubre un único workspace; Enterprise ($1.188/año) cubre workspaces ilimitados e incluye soporte prioritario."
+      },
+      {
+        "question": "¿El message tracing requiere el plugin rabbitmq_tracing?",
+        "answer": "No. Qarote usa el mecanismo firehose de RabbitMQ (el exchange `amq.rabbitmq.trace`), no el plugin `rabbitmq_tracing`. El firehose forma parte del núcleo de RabbitMQ y no necesita habilitarse por separado. Qarote gestiona la activación por ti cuando inicias una sesión de tracing."
+      },
+      {
+        "question": "¿Puedo filtrar los traces por queue o exchange?",
+        "answer": "Sí. El dashboard de tracing permite filtrar por exchange, queue, routing key y rango de tiempo. Puedes limitar una sesión de tracing a un vhost específico o a un exchange con nombre para reducir la sobrecarga y acotar los resultados a los mensajes que te interesan."
+      },
+      {
+        "question": "¿Funciona el message tracing en despliegues autoalojados?",
+        "answer": "Sí. El message tracing de Qarote funciona en cualquier modo de despliegue — binario, Docker Compose o Dokku. El único requisito es que el proceso de Qarote pueda acceder a la API de gestión de RabbitMQ y disponga de credenciales con permisos suficientes para consumir del exchange amq.rabbitmq.trace."
+      }
+    ]
+  }
+}

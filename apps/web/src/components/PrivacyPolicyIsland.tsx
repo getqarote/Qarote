@@ -50,18 +50,18 @@ function PrivacyPolicyContent() {
     <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Page header */}
       <div className="border border-border overflow-hidden mb-8">
-        <div className="px-6 py-3 bg-muted/30 border-b border-border">
+        <div className="px-6 py-3 bg-muted/30 border-b border-border flex items-center justify-between">
           <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Legal
           </span>
+          <span className="text-xs text-muted-foreground/50 font-mono">
+            {t("privacyPolicy.lastUpdated")}
+          </span>
         </div>
         <div className="p-8">
-          <h1 className="text-4xl font-normal text-foreground mb-4">
+          <h1 className="text-4xl font-normal text-foreground">
             {t("privacyPolicy.title")}
           </h1>
-          <p className="text-muted-foreground">
-            {t("privacyPolicy.lastUpdated")}
-          </p>
         </div>
       </div>
 
@@ -78,10 +78,10 @@ function PrivacyPolicyContent() {
               <li key={s.id}>
                 <a
                   href={`#${s.id}`}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  className="group flex items-baseline gap-2 text-muted-foreground hover:text-foreground transition-colors duration-150"
                 >
-                  <span className="font-mono text-xs text-primary mr-2">
-                    {i + 1}.
+                  <span className="font-mono text-xs text-primary/50 shrink-0 transition-colors duration-150 group-hover:text-primary">
+                    {String(i + 1).padStart(2, "0")}
                   </span>
                   {t(`privacyPolicy.sections.${s.key}.title`)}
                 </a>
@@ -250,15 +250,27 @@ function PrivacyPolicyContent() {
           title={t("privacyPolicy.sections.dataRetention.title")}
         >
           <p>{t("privacyPolicy.sections.dataRetention.description")}</p>
-          <ul className="list-disc pl-6 space-y-2">
+          <div className="divide-y divide-border border border-border">
             {(
               t("privacyPolicy.sections.dataRetention.items", {
                 returnObjects: true,
-              }) as string[]
+              }) as { label: string; detail: string; mono?: boolean }[]
             ).map((item, i) => (
-              <li key={i}>{item}</li>
+              <div
+                key={i}
+                className="grid grid-cols-[auto_1fr] gap-4 px-4 py-3"
+              >
+                <span className="text-xs font-semibold text-foreground uppercase tracking-wide leading-relaxed pt-px whitespace-nowrap">
+                  {item.label}
+                </span>
+                <span
+                  className={`text-sm text-muted-foreground leading-relaxed${item.mono ? " font-mono text-[0.8125rem]" : ""}`}
+                >
+                  {item.detail || "—"}
+                </span>
+              </div>
             ))}
-          </ul>
+          </div>
         </LegalSection>
 
         {/* Section 6 */}

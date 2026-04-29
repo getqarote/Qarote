@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "RabbitMQ Performance Analytics — Historical Charts & Trends | Qarote",
+    "description": "Historical charts for RabbitMQ message throughput, queue depth trends, and broker resource usage. Spot capacity problems before they become incidents. No Prometheus or Grafana required."
+  },
+  "hero": {
+    "eyebrow": "Features → Analytics",
+    "title": "Understand your broker's past to plan its future.",
+    "subtitle": "Message throughput, queue depth trends, and broker resource usage — charted over time with configurable windows. Spot seasonal patterns, detect slow degradation, and answer 'was this always like this?' without standing up a Prometheus stack."
+  },
+  "chartTypes": {
+    "eyebrow": "What's charted",
+    "heading": "Every metric that matters over time",
+    "items": [
+      {
+        "icon": "chart.svg",
+        "title": "Message throughput",
+        "description": "Publish rate and deliver rate over time, per queue and broker-wide. Throughput charts are the first thing you reach for in a post-mortem — they tell you when message flow changed and by how much."
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "Queue depth trends",
+        "description": "Message count per queue over configurable time windows. A queue that grows by 5% each day doesn't look alarming in real time — but a week of depth trend data makes the trajectory obvious before it becomes a capacity problem."
+      },
+      {
+        "icon": "server.svg",
+        "title": "Broker memory usage",
+        "description": "Memory consumption per node over time. RabbitMQ's memory alarm triggers at a configurable threshold — analytics let you see how close you're running and project when current usage will trigger an alarm."
+      },
+      {
+        "icon": "flag.svg",
+        "title": "Disk space trends",
+        "description": "Disk usage per node over time. Disk alarms block publishing completely. Trend data lets you project runway — so you're adding storage on your schedule, not during an incident."
+      },
+      {
+        "icon": "message.svg",
+        "title": "Consumer utilization",
+        "description": "Consumer count and utilization rate over time. Consumer count drops correlate with queue depth spikes — seeing both on the same time axis is essential for reconstructing what happened during an incident."
+      },
+      {
+        "icon": "send.svg",
+        "title": "Connection and channel history",
+        "description": "Open connections and channels per broker over time. A connection count that grows 10% each week is a leak. Trend data makes the pattern unmistakable in a way that real-time metrics cannot."
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "How it works",
+    "heading": "Charts built automatically from your metrics",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Connect your broker",
+        "description": "Qarote starts collecting metrics the moment you connect. No scrape configuration, no retention policy to set — collection is automatic."
+      },
+      {
+        "number": "02",
+        "title": "Select any queue or server",
+        "description": "Open any queue or broker node and switch to the analytics view. Charts render immediately from stored metric history — no query language needed."
+      },
+      {
+        "number": "03",
+        "title": "Adjust the time window",
+        "description": "Select 1 hour, 6 hours, 24 hours, or 7 days. Zoom into an incident window or review the full week's trend. The same chart, different resolution."
+      }
+    ]
+  },
+  "vsPrometheus": {
+    "eyebrow": "Compared to Prometheus + Grafana",
+    "heading": "Analytics without the infrastructure",
+    "p1": "Prometheus with the `rabbitmq_prometheus` plugin gives you powerful analytics — if you're willing to operate a Prometheus server, configure scrape jobs, tune retention settings, and build Grafana dashboards from scratch. The typical setup takes half a day and produces dashboards that require ongoing maintenance as your queue topology changes.",
+    "p2": "Qarote's analytics are built in. Queue depth, throughput, and resource charts are available immediately after connecting your broker — for every queue, automatically, with no dashboard to build. When you add a new queue, it appears in analytics the next time metrics are collected.",
+    "p3": "The tradeoff is flexibility — Qarote's charts cover the metrics RabbitMQ operators actually use. If you need custom PromQL queries or cross-system correlation, Prometheus is the right tool. If you need RabbitMQ analytics that work in five minutes without infrastructure, Qarote is."
+  },
+  "crossLink": {
+    "eyebrow": "See also",
+    "navLabel": "Related links",
+    "queueHistory": "Queue History →",
+    "alerting": "Real-time alerting",
+    "liveMonitoring": "Live Monitoring",
+    "features": "All features"
+  },
+  "faq": {
+    "heading": "FAQ",
+    "items": [
+      {
+        "question": "How far back do analytics go?",
+        "answer": "Analytics charts draw from Queue History data — 7 days of snapshots at 5-minute intervals on Developer and Enterprise plans. The Community edition shows real-time metrics only."
+      },
+      {
+        "question": "Can I export chart data?",
+        "answer": "Chart data export is available on Enterprise plans. Developer plans can view and screenshot charts in the dashboard. API access to metric history is an Enterprise feature."
+      },
+      {
+        "question": "Do I need to configure which metrics to collect?",
+        "answer": "No. Qarote collects metrics from all queues on all connected servers automatically. There's no configuration, no metric selection, and no need to opt queues in individually."
+      },
+      {
+        "question": "How is this different from Queue History?",
+        "answer": "Analytics and Queue History draw from the same underlying data — 5-minute snapshots stored for 7 days. Queue History emphasizes the raw timeline for incident retrospectives. Analytics emphasizes trend visualization, comparative charting, and capacity planning views over the same data."
+      },
+      {
+        "question": "Does analytics work with self-hosted Qarote?",
+        "answer": "Yes. Self-hosted Qarote (Developer or Enterprise license) stores metric history in your PostgreSQL database. Analytics charts render from that local data — no cloud dependency."
+      }
+    ]
+  }
+}

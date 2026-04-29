@@ -1,0 +1,23 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { FeaturesMetricsIsland } from "../../components/FeaturesMetricsIsland";
+import { loadTranslations, loadAllTranslations, t } from "../../lib/i18n-static";
+import { buildFaqSchema } from "../../lib/schema";
+import { DEFAULT_LOCALE } from "@qarote/i18n";
+
+const metrics = loadTranslations(DEFAULT_LOCALE, "features-metrics");
+const resources = { ...loadAllTranslations(DEFAULT_LOCALE), "features-metrics": metrics };
+const faqSchema = buildFaqSchema(metrics);
+---
+
+<BaseLayout
+  title={t(metrics, "seo.title")}
+  description={t(metrics, "seo.description")}
+  locale={DEFAULT_LOCALE}
+  canonicalPath="/features/metrics/"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  </Fragment>
+  <FeaturesMetricsIsland locale={DEFAULT_LOCALE} resources={resources} client:load />
+</BaseLayout>

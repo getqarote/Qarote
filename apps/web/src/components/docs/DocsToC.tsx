@@ -49,12 +49,12 @@ const DocsToC = ({ headings }: DocsToCProps) => {
           <li key={h.slug}>
             <a
               href={`#${h.slug}`}
-              className={`block text-sm py-0.5 transition-colors leading-snug ${
+              className={`block text-sm py-0.5 transition-colors transition-transform leading-snug ${
                 h.depth === 3 ? "pl-3" : ""
               } ${
                 activeId === h.slug
-                  ? "text-primary font-medium"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "text-primary font-medium motion-safe:translate-x-[3px]"
+                  : "text-muted-foreground hover:text-foreground motion-safe:hover:translate-x-[2px]"
               }`}
             >
               {h.text}

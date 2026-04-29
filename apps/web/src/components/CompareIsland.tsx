@@ -1,3 +1,4 @@
+import { type CSSProperties, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SupportedLocale } from "@qarote/i18n";
@@ -8,6 +9,9 @@ import FinalCtaSection from "@/components/landing/FinalCtaSection";
 import FooterSection from "@/components/landing/FooterSection";
 import StickyNav from "@/components/StickyNav";
 import { TawkTo } from "@/components/TawkTo";
+
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useScrollEntry } from "@/hooks/useScrollEntry";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -57,6 +61,32 @@ const GRAFANA_ROWS: TableRow[] = [
   { key: "flexibility", competitorType: "win", qaroteType: "neutral" },
 ];
 
+const CLOUDAMQP_ROWS: TableRow[] = [
+  { key: "brokerLockIn", competitorType: "loss", qaroteType: "win" },
+  { key: "rabbitmqNative", competitorType: "neutral", qaroteType: "win" },
+  { key: "alerting", competitorType: "neutral", qaroteType: "win" },
+  { key: "selfHosted", competitorType: "loss", qaroteType: "win" },
+  { key: "multiCluster", competitorType: "loss", qaroteType: "win" },
+  { key: "pricingModel", competitorType: "neutral", qaroteType: "win" },
+  { key: "dataPrivacy", competitorType: "loss", qaroteType: "win" },
+  { key: "setupTime", competitorType: "neutral", qaroteType: "win" },
+  { key: "openSource", competitorType: "loss", qaroteType: "win" },
+  { key: "ownBroker", competitorType: "loss", qaroteType: "win" },
+];
+
+const NEW_RELIC_ROWS: TableRow[] = [
+  { key: "rabbitmqNative", competitorType: "neutral", qaroteType: "win" },
+  { key: "agentRequired", competitorType: "loss", qaroteType: "win" },
+  { key: "setupTime", competitorType: "neutral", qaroteType: "win" },
+  { key: "selfHosted", competitorType: "loss", qaroteType: "win" },
+  { key: "dataPrivacy", competitorType: "loss", qaroteType: "win" },
+  { key: "pricingModel", competitorType: "neutral", qaroteType: "win" },
+  { key: "estimatedCost", competitorType: "loss", qaroteType: "win" },
+  { key: "alerting", competitorType: "win", qaroteType: "win" },
+  { key: "openSource", competitorType: "loss", qaroteType: "win" },
+  { key: "integrations", competitorType: "win", qaroteType: "neutral" },
+];
+
 // ---------------------------------------------------------------------------
 // Shared sub-components
 // ---------------------------------------------------------------------------
@@ -80,6 +110,20 @@ function StatusIcon({ variant }: { variant: "check" | "cross" }) {
 
 function CompareHero({ ns }: { ns: string }) {
   const { t } = useTranslation(ns);
+  const reduceMotion = useReducedMotion();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    requestAnimationFrame(() => requestAnimationFrame(() => setMounted(true)));
+  }, []);
+
+  const enter = (delay = 0): CSSProperties =>
+    reduceMotion
+      ? {}
+      : {
+          opacity: mounted ? 1 : 0,
+          transform: mounted ? "translateY(0)" : "translateY(14px)",
+          transition: `opacity 0.55s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.55s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
+        };
 
   return (
     <div className="border border-border overflow-hidden mb-8">
@@ -89,10 +133,16 @@ function CompareHero({ ns }: { ns: string }) {
         </span>
       </div>
       <div className="p-8 text-center">
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-normal text-foreground mb-6">
+        <h1
+          className="text-3xl sm:text-4xl lg:text-5xl font-normal text-foreground mb-6"
+          style={enter(0)}
+        >
           {t("hero.title")}
         </h1>
-        <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+        <p
+          className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+          style={enter(80)}
+        >
           {t("hero.subtitle")}
         </p>
       </div>
@@ -219,6 +269,19 @@ function TableCell({ text, type, isQarote }: TableCellProps) {
 
 function ComparisonTable({ ns, rows }: { ns: string; rows: TableRow[] }) {
   const { t } = useTranslation(ns);
+  const reduceMotion = useReducedMotion();
+  const [tbodyRef, tbodyEntered] =
+    useScrollEntry<HTMLTableSectionElement>(0.05);
+
+  const winCount = rows.filter((r) => r.qaroteType === "win").length;
+
+  const rowStyle = (i: number): CSSProperties =>
+    reduceMotion
+      ? {}
+      : {
+          opacity: tbodyEntered ? 1 : 0,
+          transition: `opacity 0.35s cubic-bezier(0.16,1,0.3,1) ${i * 40}ms`,
+        };
 
   return (
     <div className="border border-border overflow-hidden mb-8">
@@ -243,9 +306,13 @@ function ComparisonTable({ ns, rows }: { ns: string; rows: TableRow[] }) {
               </th>
             </tr>
           </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.key} className="border-t border-border">
+          <tbody ref={tbodyRef}>
+            {rows.map((row, i) => (
+              <tr
+                key={row.key}
+                className="border-t border-border"
+                style={rowStyle(i)}
+              >
                 <td className="sticky left-0 bg-background px-4 py-3 text-sm font-medium text-foreground align-top">
                   {t(`table.rows.${row.key}.feature`)}
                 </td>
@@ -263,8 +330,11 @@ function ComparisonTable({ ns, rows }: { ns: string; rows: TableRow[] }) {
           </tbody>
         </table>
       </div>
-      <div className="px-4 py-3 border-t border-border">
+      <div className="px-4 py-3 border-t border-border flex items-center justify-between gap-4">
         <p className="text-xs text-muted-foreground">{t("table.asOf")}</p>
+        <p className="text-xs text-primary font-medium tabular-nums">
+          {t("table.qaroteWins", { count: winCount, total: rows.length })}
+        </p>
       </div>
     </div>
   );
@@ -402,12 +472,12 @@ function FaqSection({ ns }: { ns: string }) {
         {items.map((item, i) => (
           <li key={i}>
             <details className="group">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-6 marker:hidden [&::-webkit-details-marker]:hidden">
-                <h3 className="text-sm font-semibold text-foreground">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-6 marker:hidden [&::-webkit-details-marker]:hidden hover:bg-muted/30 transition-colors duration-150">
+                <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors duration-150">
                   {item.question}
                 </h3>
                 <span
-                  className="shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
+                  className="shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-180"
                   aria-hidden="true"
                 >
                   ▾
@@ -550,6 +620,48 @@ export function CompareGrafanaIsland({
       ns="compare-grafana"
       rows={GRAFANA_ROWS}
       sectionKeys={["assembly", "promql", "dashboards", "maintenance"]}
+      crossLink={{
+        linkKey: "crossLink.datadog",
+        linkHref: "/compare/datadog/",
+      }}
+      blogPosts={blogPosts}
+    />
+  );
+}
+
+export function CompareCloudAMQPIsland({
+  locale = "en",
+  resources,
+  blogPosts = [],
+}: IslandProps) {
+  return (
+    <CompareLayout
+      locale={locale}
+      resources={resources}
+      ns="compare-cloudamqp"
+      rows={CLOUDAMQP_ROWS}
+      sectionKeys={["lockIn", "monitoring", "multiCluster", "pricing"]}
+      crossLink={{
+        linkKey: "crossLink.datadog",
+        linkHref: "/compare/datadog/",
+      }}
+      blogPosts={blogPosts}
+    />
+  );
+}
+
+export function CompareNewRelicIsland({
+  locale = "en",
+  resources,
+  blogPosts = [],
+}: IslandProps) {
+  return (
+    <CompareLayout
+      locale={locale}
+      resources={resources}
+      ns="compare-new-relic"
+      rows={NEW_RELIC_ROWS}
+      sectionKeys={["native", "pricing", "agents", "privacy"]}
       crossLink={{
         linkKey: "crossLink.datadog",
         linkHref: "/compare/datadog/",

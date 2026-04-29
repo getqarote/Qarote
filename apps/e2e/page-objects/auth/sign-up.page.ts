@@ -18,7 +18,11 @@ export class SignUpPage {
     this.emailInput = page.getByRole("textbox", { name: /email/i });
     this.passwordInput = page.getByLabel(/^password$/i);
     this.confirmPasswordInput = page.getByLabel(/confirm password/i);
-    this.acceptTermsCheckbox = page.getByRole("checkbox", { name: /terms|privacy|agree/i });
+    // Scoped to the data-testid container so the selector stays stable even
+    // if other checkboxes are added to the form in future.
+    this.acceptTermsCheckbox = page
+      .getByTestId("accept-terms")
+      .getByRole("checkbox");
     this.createAccountButton = page.getByRole("button", {
       name: /create account/i,
     });
@@ -42,10 +46,11 @@ export class SignUpPage {
     await this.emailInput.fill(data.email);
     await this.passwordInput.fill(data.password);
     await this.confirmPasswordInput.fill(data.password);
-    // Terms checkbox may or may not exist depending on config
-    if (await this.acceptTermsCheckbox.isVisible()) {
-      await this.acceptTermsCheckbox.check();
-    }
+    // Terms checkbox is required — always check it if present.
+    // Radix UI renders as button[role="checkbox"] so we use click(), not check().
+    // waitFor ensures the su-in CSS animation has completed before we interact.
+    await this.acceptTermsCheckbox.waitFor({ state: "visible" });
+    await this.acceptTermsCheckbox.click();
   }
 
   async submit() {
@@ -53,8 +58,10 @@ export class SignUpPage {
   }
 
   async expectSuccess() {
-    // In self-hosted mode (email disabled), user is auto-verified and redirected.
-    // Only consider specific post-signup paths as valid redirects.
+    // After registration the app either:
+    //   a) redirects to onboarding/dashboard (self-hosted, email disabled), or
+    //   b) stays on the sign-up page and shows a success alert
+    //      ("Your account is ready" or "We've sent a verification email").
     const allowedPaths = ["/", "/workspace", "/dashboard", "/onboarding"];
     await expect(async () => {
       const { pathname } = new URL(this.page.url());
@@ -62,7 +69,10 @@ export class SignUpPage {
         (p) => pathname === p || pathname.startsWith(`${p}/`)
       );
       const hasSuccessMessage = await this.page
-        .getByText(/account created|welcome|dashboard/i)
+        .getByText(
+          /account ready|verification email|account created|welcome/i
+        )
+        .first()
         .isVisible()
         .catch(() => false);
       expect(hasRedirected || hasSuccessMessage).toBeTruthy();
@@ -70,9 +80,20 @@ export class SignUpPage {
   }
 
   async expectSuccessMessage() {
-    await expect(
-      this.page.getByText("Account created successfully!")
-    ).toBeVisible({ timeout: 15_000 });
+    // Two valid outcomes after registration:
+    //   a) Success alert is visible ("account ready" / "verification email")
+    //   b) App auto-redirected away from sign-up (selfhosted auto-login after auto-verify)
+    // The real assertions (DB check, sign-in) follow in the test — the UI message
+    // is best-effort.
+    await expect(async () => {
+      const { pathname } = new URL(this.page.url());
+      if (pathname !== "/auth/sign-up") return; // navigated away — accept
+      await expect(
+        this.page
+          .getByText(/account ready|verification email|account created/i)
+          .first()
+      ).toBeVisible();
+    }).toPass({ timeout: 15_000 });
   }
 
   async expectError(text: string | RegExp) {

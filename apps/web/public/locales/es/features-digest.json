@@ -1,0 +1,107 @@
+{
+  "seo": {
+    "title": "Resumen diario de salud de RabbitMQ | Qarote",
+    "description": "Informes de correo programados con un resumen de la salud de las queues, número de consumidores, tendencias de throughput y acumulación en la DLQ — entregados en tu bandeja de entrada cada mañana."
+  },
+  "hero": {
+    "eyebrow": "Funcionalidades → Daily Digest",
+    "title": "Tu informe de salud de RabbitMQ, entregado cada mañana.",
+    "subtitle": "Qarote recopila tendencias de profundidad de queue, número de consumidores, acumulación de mensajes dead-letter y throughput de mensajes en un único correo de resumen. Sabe lo que ocurrió durante la noche antes de abrir el portátil."
+  },
+  "digestSections": {
+    "eyebrow": "Qué se incluye",
+    "heading": "Todo en un solo informe",
+    "items": [
+      {
+        "icon": "chart.svg",
+        "title": "Resumen de profundidad de queue",
+        "description": "Las queues con mayor número de mensajes en el momento del informe, más la profundidad máxima alcanzada durante las últimas 24 horas. Detecta queues que se llenaron durante la noche y se vaciaron antes del amanecer — el tipo de near-miss silencioso que los logs nunca capturan."
+      },
+      {
+        "icon": "message.svg",
+        "title": "Salud de los consumidores",
+        "description": "Número de consumidores por queue en el momento del informe, señalando cualquier queue que haya estado sin consumidores. Una queue que pierde consumidores durante 10 minutos a las 3 de la mañana es un incidente a punto de ocurrir — el digest lo muestra antes de que se repita."
+      },
+      {
+        "icon": "flag.svg",
+        "title": "Acumulación en la dead-letter queue",
+        "description": "Número de mensajes en la DLQ y tasa de crecimiento durante las últimas 24 horas. Los mensajes dead-lettered indican un procesamiento fallido — una DLQ que creció silenciosamente hasta 50.000 mensajes durante la noche es un backlog que conviene conocer antes de que se convierta en un incidente de replay."
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "Tendencias de throughput",
+        "description": "Tasas de publicación y entrega representadas en 24 horas. Un throughput que cayó a cero a las 2 de la mañana y se recuperó a las 4 aparece con claridad en el digest — ofreciéndote la línea temporal de un incidente que ni siquiera sabías que había ocurrido."
+      },
+      {
+        "icon": "server.svg",
+        "title": "Snapshot de salud del broker",
+        "description": "Uso de memoria, uso de disco y cualquier alarma activa en todos los brokers conectados. Un broker que brevemente alcanzó su watermark de memoria durante la noche y se recuperó es visible en el digest — antes de que vuelva a ocurrir y deje sin servicio a tus publicadores."
+      },
+      {
+        "icon": "send.svg",
+        "title": "Principales problemáticas",
+        "description": "Las queues con mayor profundidad, mayor crecimiento de DLQ y más rotación de consumidores durante el periodo del informe. Priorizadas para que la primera sección del digest sea siempre accionable — sin tener que desplazarse por 200 queues sanas para encontrar las dos que necesitan atención."
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "Cómo funciona",
+    "heading": "Configúralo una vez, recíbelo cada mañana",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Conecta tu broker",
+        "description": "Qarote recopila continuamente métricas de queues, número de consumidores y datos de salud del broker a través de la API de gestión de RabbitMQ. No se necesita ninguna configuración adicional más allá de tu conexión inicial."
+      },
+      {
+        "number": "02",
+        "title": "Configura tu horario",
+        "description": "Elige la hora de entrega y la zona horaria. Los digests diarios se envían por la mañana por defecto. Añade destinatarios — el digest llega a todo el equipo, no solo a quien lo configuró."
+      },
+      {
+        "number": "03",
+        "title": "Recibe tu briefing",
+        "description": "Llega un correo estructurado con el resumen de salud de tu RabbitMQ. Los problemas se muestran primero. Las queues sanas se resumen. Lo lees en dos minutos, no en veinte comprobando dashboards."
+      }
+    ]
+  },
+  "whyDigest": {
+    "eyebrow": "¿Por qué un digest?",
+    "heading": "Los dashboards requieren intención. El digest no requiere nada.",
+    "p1": "Un dashboard es reactivo: lo abres cuando sospechas que hay un problema. El digest es proactivo: llega tanto si pensaste en comprobarlo como si no. Los equipos que usan el digest de forma sistemática descubren incidentes que habrían pasado desapercibidos durante horas — el tipo que ocurren de madrugada, se recuperan parcialmente y dejan la queue en un estado degradado al amanecer.",
+    "p2": "El plugin de gestión de RabbitMQ retiene métricas durante aproximadamente 8 horas. Si algo ocurrió a las 2 de la mañana y revisas el dashboard a las 10, la evidencia ya ha desaparecido. El digest captura la ventana de 24 horas y te la entrega independientemente de cuándo abras el portátil.",
+    "p3": "Las rotaciones de guardia crean huecos en la cobertura. El digest los rellena — cada persona del equipo recibe la misma visión del estado de la infraestructura cada mañana, independientemente de quién estuviera de guardia, quién fue avisado y qué se resolvió sin un post-mortem."
+  },
+  "crossLink": {
+    "eyebrow": "Ver también",
+    "navLabel": "Enlaces relacionados",
+    "alerting": "Alertas en tiempo real →",
+    "pricing": "Precios",
+    "features": "Todas las funcionalidades"
+  },
+  "faq": {
+    "heading": "Preguntas frecuentes",
+    "items": [
+      {
+        "question": "¿El Daily Digest requiere un plan de pago?",
+        "answer": "El digest es una funcionalidad de los planes Developer y Enterprise. Requiere datos de métricas históricas, que forman parte de la capa de persistencia de métricas de Qarote — disponible en los planes de pago. La edición Community gratuita incluye el dashboard en tiempo real, pero no los informes programados."
+      },
+      {
+        "question": "¿Puedo cambiar el horario de entrega?",
+        "answer": "Sí. Puedes configurar la hora de entrega y la zona horaria por workspace. Los digests semanales también están disponibles en Enterprise."
+      },
+      {
+        "question": "¿Quién recibe el digest?",
+        "answer": "Configuras la lista de destinatarios por workspace. Cualquier miembro del equipo con acceso al workspace puede añadirse como destinatario — útil para distribuir visibilidad a ingenieros que no acceden al dashboard a diario."
+      },
+      {
+        "question": "¿Qué zona horaria usa el digest?",
+        "answer": "El digest usa la zona horaria configurada en los ajustes de tu workspace. Los datos de salud de las queues siempre se muestran en timestamps UTC; el horario de entrega utiliza tu zona horaria local."
+      },
+      {
+        "question": "¿Puedo personalizar qué queues aparecen en el digest?",
+        "answer": "Sí. Puedes filtrar por vhost o patrón de nombre de queue para centrar el digest en las queues que importan a tu equipo. Las queues excluidas de la monitorización se excluyen automáticamente del digest."
+      }
+    ]
+  }
+}

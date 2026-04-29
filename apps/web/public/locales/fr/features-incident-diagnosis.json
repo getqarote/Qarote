@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "Moteur de diagnostic d'incidents RabbitMQ | Qarote",
+    "description": "Identifiez automatiquement les causes racines des incidents RabbitMQ. Qarote analyse l'historique des métriques pour détecter les chutes de consommateurs, les pics de files, l'accumulation en DLQ et la pression broker — sans fouiller manuellement dans les logs."
+  },
+  "hero": {
+    "eyebrow": "Fonctionnalités → Incident Diagnosis",
+    "title": "Analyse de cause racine des incidents RabbitMQ — automatiquement.",
+    "subtitle": "Quand quelque chose ne va pas, Qarote analyse votre historique de métriques et remonte des diagnostics classés : ce qui a échoué, quand c'a commencé et ce qui en est probablement la cause. Sans comparaison manuelle de graphiques, sans fouille de logs, sans conjecture."
+  },
+  "diagnosisTypes": {
+    "eyebrow": "Ce qu'il diagnostique",
+    "heading": "Les schémas de panne qui surviennent vraiment",
+    "items": [
+      {
+        "icon": "message.svg",
+        "title": "Chute de consommateurs → pic de file",
+        "description": "Le schéma d'incident RabbitMQ le plus fréquent : les consommateurs se déconnectent, la file commence à se remplir, et au moment où quelqu'un remarque le retard il est déjà important. Qarote corrèle la chute du nombre de consommateurs avec la hausse de la profondeur de file pour confirmer la causalité et indiquer quand la perte de consommateurs a commencé."
+      },
+      {
+        "icon": "error.svg",
+        "title": "Accumulation en DLQ par incompatibilité de schéma",
+        "description": "Des messages morts qui s'accumulent de manière régulière — plutôt qu'en rafales — indiquent généralement un changement de schéma ou un message poison que les consommateurs ne peuvent pas désérialiser. Qarote identifie le schéma de croissance de la DLQ et le croise avec les variations du taux de publication pour distinguer un mauvais déploiement d'un crash consommateur passager."
+      },
+      {
+        "icon": "server.svg",
+        "title": "Pression mémoire broker",
+        "description": "Quand la mémoire broker s'approche du watermark, RabbitMQ commence à brider les producteurs avant de déclencher un blocage complet. Qarote détecte la trajectoire de pression mémoire et la corrèle avec le ralentissement des taux de publication pour vous donner une alerte pré-alarme — avant que le broker ne cesse d'accepter des connexions."
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "Anomalie de débit (panne silencieuse)",
+        "description": "Les pannes silencieuses dans les pipelines async ne laissent ni exception ni log — les messages s'arrêtent simplement de circuler. Qarote détecte les taux de publication ou de livraison qui passent sous le seuil de référence attendu et les signale comme des pannes silencieuses probables, vous donnant un point de départ pour l'investigation avant que les services en aval ne remarquent le silence."
+      },
+      {
+        "icon": "chart.svg",
+        "title": "Backlog en cascade",
+        "description": "Un consommateur lent sur une file peut bloquer les files en aval si le traitement en dépend. Qarote identifie les dépendances fanout ou pipeline où un pic de profondeur dans une file est corrélé temporellement avec la croissance du backlog dans d'autres, remontant la file racine plutôt que les files symptômes."
+      },
+      {
+        "icon": "flag.svg",
+        "title": "Alarme broker déclenchée",
+        "description": "RabbitMQ bloque tous les producteurs dès qu'une alarme mémoire ou disque se déclenche. Qarote traite les alarmes broker comme des événements de diagnostic de premier ordre, les corrèle avec les changements de métriques qui les ont précédées et les place en tête de la liste de diagnostic quand elles sont la cause la plus probable d'un incident."
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "Comment ça fonctionne",
+    "heading": "L'analyse s'exécute à la demande ou au déclenchement d'une alerte",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Historique de métriques collecté en continu",
+        "description": "Qarote interroge votre API de management RabbitMQ toutes les 15 secondes et conserve l'historique des métriques. Profondeurs de files, nombres de consommateurs, débits de messages, utilisation mémoire et alarmes broker sont tous stockés pour que le diagnostic dispose de la chronologie complète."
+      },
+      {
+        "number": "02",
+        "title": "Déclenchez le diagnostic manuellement ou sur alerte",
+        "description": "Exécutez un diagnostic depuis la vue détail d'une file ou d'un broker à tout moment. Vous pouvez également configurer des alertes pour déclencher automatiquement un diagnostic quand elles se déclenchent — ainsi, quand vous lisez la notification, l'analyse de cause racine est déjà prête."
+      },
+      {
+        "number": "03",
+        "title": "Diagnostics causaux classés retournés en secondes",
+        "description": "Qarote analyse la fenêtre d'historique des métriques, la confronte aux schémas de panne connus et retourne une liste classée de diagnostics avec des scores de confiance, les files affectées et la chronologie de chaque événement causal."
+      }
+    ]
+  },
+  "whyDiagnosis": {
+    "eyebrow": "Pourquoi le diagnostic automatisé ?",
+    "heading": "Le MTTR est dominé par le temps passé à trouver la cause, pas à la corriger",
+    "p1": "La plupart des incidents RabbitMQ ne sont pas compliqués — mais corréler les nombres de consommateurs, les profondeurs de files, les débits de messages, la pression mémoire et les alarmes broker sur plusieurs graphiques est lent et sujet aux erreurs sous pression. Le schéma de panne appartient presque toujours à un ensemble restreint de causes racines connues. Le goulot d'étranglement est de reconnaître laquelle assez vite pour agir.",
+    "p2": "Le moteur de diagnostic de Qarote encode directement ces schémas de panne. Plutôt que de vous demander de garder cinq chronologies de métriques en tête et de repérer la corrélation, il effectue la corrélation pour vous et remonte la cause la plus probable avec les preuves qui l'étayent. Un diagnostic qui prend 20 minutes de comparaison manuelle de graphiques prend quelques secondes avec le moteur.",
+    "p3": "Incident Diagnosis est une fonctionnalité Developer et Enterprise EE. Elle nécessite la persistance de l'historique des métriques, incluse dans les deux plans payants. Le moteur s'exécute entièrement au sein de votre infrastructure — aucune télémétrie n'est envoyée aux serveurs de Qarote, et le diagnostic fonctionne dans les environnements air-gapped."
+  },
+  "crossLink": {
+    "eyebrow": "Voir aussi",
+    "navLabel": "Liens associés",
+    "metrics": "Persistance des métriques →",
+    "alerting": "Alertes en temps réel",
+    "pricing": "Tarifs",
+    "features": "Toutes les fonctionnalités"
+  },
+  "faq": {
+    "heading": "Questions fréquentes",
+    "items": [
+      {
+        "question": "Quels plans incluent le diagnostic d'incidents ?",
+        "answer": "Incident Diagnosis est une fonctionnalité Developer et Enterprise EE. Elle n'est pas disponible dans l'édition community MIT gratuite. Les deux plans payants incluent la persistance de l'historique des métriques, nécessaire pour que le moteur de diagnostic dispose d'une chronologie à analyser."
+      },
+      {
+        "question": "Quelle est la fiabilité des diagnostics ?",
+        "answer": "Les diagnostics sont classés par confiance selon la force avec laquelle le schéma de métriques observé correspond à une signature de panne connue. Les diagnostics à haute confiance (chute de consommateurs corrélant étroitement avec un pic de file, par exemple) sont fiables. Les résultats à confiance plus faible sont présentés comme des possibilités avec des preuves à l'appui plutôt que des conclusions définitives — le moteur montre son raisonnement pour que vous puissiez l'évaluer."
+      },
+      {
+        "question": "Comment déclencher un diagnostic ?",
+        "answer": "Vous pouvez déclencher un diagnostic manuellement depuis n'importe quelle vue détail de file ou de broker dans le dashboard Qarote. Vous pouvez également configurer des règles d'alerte pour exécuter un diagnostic automatique à leur déclenchement, afin que l'analyse de cause racine soit prête avant que vous ayez fini de lire la notification."
+      },
+      {
+        "question": "Incident Diagnosis fonctionne-t-il dans les environnements air-gapped ?",
+        "answer": "Oui. Le diagnostic s'exécute entièrement au sein de votre instance Qarote en utilisant l'historique des métriques stocké dans votre base de données locale. Aucune donnée n'est envoyée aux serveurs de Qarote. La validation de licence est également entièrement hors ligne, donc la fonctionnalité fonctionne sans accès internet sortant."
+      },
+      {
+        "question": "Quelle quantité d'historique de métriques le moteur de diagnostic utilise-t-il ?",
+        "answer": "Par défaut, le moteur analyse la fenêtre de 4 heures précédant le déclenchement du diagnostic. Pour les problèmes à construction lente comme la pression mémoire progressive ou l'accumulation en DLQ, vous pouvez étendre la fenêtre de rétrolecture à 24 heures dans les paramètres de diagnostic. Les fenêtres plus longues nécessitent que plus d'historique de métriques soit conservé, ce que vous pouvez configurer par broker."
+      }
+    ]
+  }
+}

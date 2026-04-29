@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "RabbitMQ 性能分析——历史图表与趋势 | Qarote",
+    "description": "RabbitMQ 消息吞吐量、队列深度趋势及 Broker 资源用量的历史图表。在问题演变为事故之前发现容量隐患。无需 Prometheus 或 Grafana。"
+  },
+  "hero": {
+    "eyebrow": "功能 → 分析",
+    "title": "了解 Broker 的过去，规划其未来。",
+    "subtitle": "消息吞吐量、队列深度趋势和 Broker 资源用量——按时间轴绘图，支持自定义时间窗口。发现周期性规律、捕捉缓慢退化，回答「这是一直如此吗？」——无需搭建 Prometheus 栈。"
+  },
+  "chartTypes": {
+    "eyebrow": "图表内容",
+    "heading": "每一个随时间变化的关键指标",
+    "items": [
+      {
+        "icon": "chart.svg",
+        "title": "消息吞吐量",
+        "description": "按时间轴展示发布速率和投递速率，支持按队列和全局 Broker 两种粒度。吞吐量图表是故障复盘时最先查阅的内容——它能告诉你消息流量在何时发生变化、变化幅度有多大。"
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "队列深度趋势",
+        "description": "在可配置的时间窗口内展示每条队列的消息数。一条每天增长 5% 的队列，实时来看并不触目惊心——但一周的深度趋势数据会让轨迹一目了然，在演变为容量问题之前就清晰呈现。"
+      },
+      {
+        "icon": "server.svg",
+        "title": "Broker 内存用量",
+        "description": "按时间轴展示各节点的内存消耗。RabbitMQ 的内存告警会在可配置的阈值处触发——分析图表让你直观看到当前使用率距离阈值还有多远，并预测何时会触发告警。"
+      },
+      {
+        "icon": "flag.svg",
+        "title": "磁盘空间趋势",
+        "description": "按时间轴展示各节点的磁盘用量。磁盘告警会完全阻塞发布操作。趋势数据让你提前规划扩容窗口——在自己的计划节奏内增加存储，而不是在事故中仓促应对。"
+      },
+      {
+        "icon": "message.svg",
+        "title": "消费者利用率",
+        "description": "按时间轴展示消费者数量和利用率。消费者数量下降与队列深度激增高度相关——在同一时间轴上同时查看两者，对还原事故经过至关重要。"
+      },
+      {
+        "icon": "send.svg",
+        "title": "连接与 Channel 历史",
+        "description": "按时间轴展示各 Broker 的活跃连接数和 Channel 数。每周增长 10% 的连接数就是泄漏的迹象。趋势数据让规律清晰可辨，这是实时指标无法做到的。"
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "工作原理",
+    "heading": "图表自动从指标数据中生成",
+    "steps": [
+      {
+        "number": "01",
+        "title": "连接您的 Broker",
+        "description": "Qarote 在您连接的瞬间开始采集指标。无需配置抓取规则，无需设置保留策略——采集全程自动进行。"
+      },
+      {
+        "number": "02",
+        "title": "选择任意队列或服务器",
+        "description": "打开任意队列或 Broker 节点，切换至分析视图。图表基于已存储的指标历史即时渲染——无需任何查询语言。"
+      },
+      {
+        "number": "03",
+        "title": "调整时间窗口",
+        "description": "选择 1 小时、6 小时、24 小时或 7 天。放大事故窗口，或回顾整周趋势。同一张图表，不同的分辨率。"
+      }
+    ]
+  },
+  "vsPrometheus": {
+    "eyebrow": "与 Prometheus + Grafana 对比",
+    "heading": "无需额外基础设施的分析能力",
+    "p1": "配合 `rabbitmq_prometheus` 插件使用的 Prometheus 提供了强大的分析能力——前提是你愿意维护一套 Prometheus 服务器、配置抓取任务、调整保留策略，并从零构建 Grafana 仪表板。典型的搭建过程需要半天，产出的仪表板还需要随着队列拓扑变化持续维护。",
+    "p2": "Qarote 的分析能力是内置的。连接 Broker 后，所有队列的深度、吞吐量和资源图表立即可用——全程自动，无需构建任何仪表板。新增队列时，下次采集指标后它会自动出现在分析视图中。",
+    "p3": "折中之处在于灵活性——Qarote 的图表覆盖了 RabbitMQ 运维人员实际使用的指标。如果你需要自定义 PromQL 查询或跨系统关联分析，Prometheus 是正确选择。如果你需要五分钟内无需任何基础设施即可运行的 RabbitMQ 分析，Qarote 是正确选择。"
+  },
+  "crossLink": {
+    "eyebrow": "另请参见",
+    "navLabel": "相关链接",
+    "queueHistory": "队列历史 →",
+    "alerting": "实时告警",
+    "liveMonitoring": "实时监控",
+    "features": "全部功能"
+  },
+  "faq": {
+    "heading": "常见问题",
+    "items": [
+      {
+        "question": "分析数据可以追溯多久？",
+        "answer": "分析图表基于队列历史数据绘制——Developer 和 Enterprise 计划每 5 分钟保存一次快照，保留 7 天。社区版仅显示实时指标，不存储历史数据。"
+      },
+      {
+        "question": "可以导出图表数据吗？",
+        "answer": "图表数据导出功能在 Enterprise 计划中提供。Developer 计划用户可在仪表板中查看图表并截图。通过 API 访问指标历史是 Enterprise 专属功能。"
+      },
+      {
+        "question": "我需要配置采集哪些指标吗？",
+        "answer": "不需要。Qarote 自动采集所有已连接服务器上所有队列的指标。无需任何配置，无需筛选指标，无需逐一将队列加入采集范围。"
+      },
+      {
+        "question": "分析与队列历史有何不同？",
+        "answer": "分析与队列历史基于同一底层数据——每 5 分钟保存一次快照，保留 7 天。队列历史侧重为事故复盘提供原始时间线；分析侧重趋势可视化、对比图表，以及基于同一数据的容量规划视图。"
+      },
+      {
+        "question": "分析功能支持自托管 Qarote 吗？",
+        "answer": "支持。自托管 Qarote（Developer 或 Enterprise 许可证）将指标历史存储在您的 PostgreSQL 数据库中。分析图表基于本地数据渲染——无需依赖云端。"
+      }
+    ]
+  }
+}

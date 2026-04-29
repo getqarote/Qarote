@@ -1,4 +1,8 @@
 {
+  "seo": {
+    "title": "定价 — Qarote RabbitMQ 监控",
+    "description": "免费社区版，或升级到 Developer（$29/月）和 Enterprise 计划解锁高级监控功能。永久免费自托管。"
+  },
   "title": "简单定价。强大监控。",
   "billedMonthly": "按月计费",
   "billedYearly": "按年计费",
@@ -20,7 +24,10 @@
   "freeTrial": "免费试用",
   "contactSales": "联系销售",
   "soon": "即将推出",
+  "limited": "受限",
+  "intelligenceDiagnostics": "智能分析与诊断",
   "securityCompatibility": "安全 & 兼容性",
+  "viewSecurity": "查看我们的安全实践",
   "plans": {
     "starter": {
       "name": "社区版",
@@ -96,7 +103,17 @@
     "workspace_unlimited": "无限工作区",
     "member_upTo1": "1 个团队成员",
     "member_upTo3": "3 个团队成员",
-    "member_unlimited": "无限团队成员"
+    "member_unlimited": "无限团队成员",
+    "dailyDigest": "每日摘要",
+    "dailyDigestDesc": "每日队列健康状况、告警和异常汇总",
+    "messageSpy": "消息监听",
+    "messageSpyDesc": "在不消费消息的情况下检查队列中的实时消息内容",
+    "metricsPersistence": "队列历史记录",
+    "metricsPersistenceDesc": "每 5 分钟快照，保留 7 天 — 随时回溯过去一周任意时刻的队列深度、消息速率和消费者数量",
+    "incidentDiagnosis": "故障诊断引擎",
+    "incidentDiagnosisDesc": "自动化根因分析，快速定位故障",
+    "messageTracing": "消息追踪（Firehose）",
+    "messageTracingDesc": "通过 RabbitMQ Firehose 交换器进行全量消息追踪"
   },
   "limits": {
     "upTo1": "最多 1 个",

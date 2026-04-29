@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "RabbitMQ 消息追踪——追溯消息在拓扑中的完整路径 | Qarote",
+    "description": "追踪单条 RabbitMQ 消息从发布到投递或死信的全过程。无需解析原始日志，即可调试路由配置错误、schema 不匹配和消息丢失问题。"
+  },
+  "hero": {
+    "eyebrow": "功能 → 消息追踪",
+    "title": "追踪每条消息在 RabbitMQ 拓扑中的完整路径。",
+    "subtitle": "Qarote 的消息追踪捕获单条消息的完整旅程——从交换器路由到队列投递或死信处理。无需翻查原始日志，即可调试路由配置错误、schema 不匹配和意外重投递问题。"
+  },
+  "traceTypes": {
+    "eyebrow": "可追踪的内容",
+    "heading": "消息旅程的每一步",
+    "items": [
+      {
+        "icon": "send.svg",
+        "title": "发布路径与交换器路由",
+        "description": "精确查看消息被哪个交换器接收以及如何路由。确认绑定键与发布的路由键是否匹配，在路由键不匹配导致消息静默丢失之前将其提前暴露。"
+      },
+      {
+        "icon": "message.svg",
+        "title": "队列投递确认",
+        "description": "验证消息是否到达预期队列并被消费者确认。区分消息已投递但被 nack 的情况，与消息根本未到达队列的情况。"
+      },
+      {
+        "icon": "flag.svg",
+        "title": "死信路由",
+        "description": "追踪被拒绝、已过期或超过最大长度限制而进入死信交换器的消息。查看从原始队列经 DLX 到 DLQ 的完整路径。"
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "消息重投递与 nack 事件",
+        "description": "识别被反复重投递的消息。消费者在不解决根本问题的情况下持续 nack 并重新入队，会产生无限重投递循环——不借助追踪，这种情况极易被忽视。"
+      },
+      {
+        "icon": "error.svg",
+        "title": "路由键不匹配",
+        "description": "发现以目标交换器上没有任何绑定能匹配的路由键发布的消息。这类消息会被 RabbitMQ 静默丢弃——追踪是确认它们确实被发布的唯一途径。"
+      },
+      {
+        "icon": "chart.svg",
+        "title": "不可路由消息",
+        "description": "捕获到达 fanout 或 topic 交换器但因没有队列绑定而被丢弃的消息。在队列绑定发生变更或消费者重新部署后，检测拓扑缺口至关重要。"
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "工作原理",
+    "heading": "启用、捕获、检查",
+    "steps": [
+      {
+        "number": "01",
+        "title": "对 vhost 或交换器启用追踪",
+        "description": "Qarote 一键激活目标 vhost 或交换器上的 RabbitMQ firehose。无需手动配置插件，无需通过 CLI 访问 Broker 节点。"
+      },
+      {
+        "number": "02",
+        "title": "通过 firehose 捕获消息",
+        "description": "RabbitMQ 将每条匹配消息的副本发布到 amq.rabbitmq.trace 交换器。Qarote 消费这些追踪事件，并存储路由元数据、消息头和消息体摘要。"
+      },
+      {
+        "number": "03",
+        "title": "在仪表板中检查完整追踪",
+        "description": "按交换器、队列、路由键或时间窗口浏览和筛选已捕获的追踪记录。点击任意追踪事件，查看其完整旅程——发布路径、投递结果以及任何死信跳转。"
+      }
+    ]
+  },
+  "whyTracing": {
+    "eyebrow": "为什么需要消息追踪？",
+    "heading": "静默消息丢失是最难复现的 bug",
+    "p1": "当一条消息在 RabbitMQ 拓扑中消失时，没有异常、没有日志行、也没有错误响应。发布者收到了确认，Broker 接受了消息，然后——什么都没有了。还原事故经过意味着读取 Broker 日志、检查绑定配置，并对可能已经发生变化的拓扑状态进行推断——而这一切都没有直接的事件记录可供参考。",
+    "p2": "路由 bug 在开发阶段尤其难以发现，因为它们只在特定的拓扑条件下才会出现：在 staging 看起来正确的绑定却缺少通配符片段，要求精确匹配而生产者并未设置的头部交换器，或者配置了死信交换器却从未绑定到队列。消息追踪为 Broker 做出的每一个路由决策提供了第一手记录。",
+    "p3": "RabbitMQ 管理插件包含基本的追踪功能（`rabbitmq_tracing`），但它将原始日志文件写入每个 Broker 节点的磁盘，需要通过 SSH 才能获取。Qarote 通过可搜索、可筛选的仪表板呈现相同的 firehose 数据——无需解析日志，无需访问 Broker 节点，对现有监控设置也没有任何影响。"
+  },
+  "crossLink": {
+    "eyebrow": "另请参见",
+    "navLabel": "相关链接",
+    "alerting": "实时告警 →",
+    "incidentDiagnosis": "故障诊断引擎",
+    "pricing": "定价",
+    "features": "全部功能"
+  },
+  "faq": {
+    "heading": "常见问题",
+    "items": [
+      {
+        "question": "启用消息追踪会影响 Broker 性能吗？",
+        "answer": "会——RabbitMQ firehose 会将每条被追踪消息的副本发布到 amq.rabbitmq.trace 交换器，开销与消息吞吐量成正比。Qarote 的设计目标是选择性启用：针对特定 vhost 或交换器开启追踪，捕获所需数据，调查完成后立即关闭。请勿在生产环境的高吞吐量交换器上永久启用追踪。"
+      },
+      {
+        "question": "哪个 Qarote 计划包含消息追踪？",
+        "answer": "消息追踪需要 Developer 或 Enterprise 许可证，免费开源的 MIT 版本不包含此功能。Developer 许可证（$348/年）覆盖单个工作区；Enterprise（$1,188/年）覆盖无限工作区，并包含优先支持。"
+      },
+      {
+        "question": "消息追踪需要安装 rabbitmq_tracing 插件吗？",
+        "answer": "不需要。Qarote 使用 RabbitMQ firehose 机制（`amq.rabbitmq.trace` 交换器），而非 `rabbitmq_tracing` 插件。firehose 是 RabbitMQ 核心的一部分，无需单独启用。Qarote 会在您开启追踪会话时代您完成激活。"
+      },
+      {
+        "question": "可以按队列或交换器筛选追踪记录吗？",
+        "answer": "可以。追踪仪表板支持按交换器、队列、路由键和时间范围进行筛选。您可以将追踪会话的范围限定到特定 vhost 或指定交换器，以降低开销并将结果聚焦在您关注的消息上。"
+      },
+      {
+        "question": "消息追踪支持自托管部署吗？",
+        "answer": "支持。Qarote 的消息追踪在任何部署模式下均可工作——二进制包、Docker Compose 或 Dokku。唯一的要求是 Qarote 进程能够访问 RabbitMQ 管理 API，并拥有足够权限从 amq.rabbitmq.trace 交换器消费消息。"
+      }
+    ]
+  }
+}

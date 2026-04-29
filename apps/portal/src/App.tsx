@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
@@ -13,10 +14,15 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import LicenseManagement from "@/pages/LicenseManagement";
 import LicensePurchase from "@/pages/LicensePurchase";
 import Login from "@/pages/Login";
-import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import SignUp from "@/pages/SignUp";
-import TermsOfService from "@/pages/TermsOfService";
 import VerifyEmail from "@/pages/VerifyEmail";
+
+function ExternalRedirect({ to }: { to: string }) {
+  useEffect(() => {
+    window.location.replace(to);
+  }, [to]);
+  return null;
+}
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -53,8 +59,18 @@ const App = () => {
               <Route path="/auth/sign-in" element={<Login />} />
               <Route path="/auth/sign-up" element={<SignUp />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/terms-of-service" element={<TermsOfService />} />
+              <Route
+                path="/privacy-policy"
+                element={
+                  <ExternalRedirect to="https://qarote.io/privacy-policy/" />
+                }
+              />
+              <Route
+                path="/terms-of-service"
+                element={
+                  <ExternalRedirect to="https://qarote.io/terms-of-service/" />
+                }
+              />
               <Route
                 path="/"
                 element={

@@ -1,0 +1,144 @@
+{
+  "seo": {
+    "title": "Qarote vs New Relic: RabbitMQ Monitoring Alternative",
+    "description": "Qarote vs New Relic for RabbitMQ monitoring. Purpose-built, self-hosted alternative to New Relic's consumption-based pricing and agent-per-host model. Honest comparison."
+  },
+  "hero": {
+    "eyebrow": "Comparison",
+    "title": "Qarote vs New Relic",
+    "subtitle": "New Relic is a powerful full-stack observability platform. If you're monitoring RabbitMQ, you're installing agents on every broker host, sending queue metrics to New Relic's cloud, and writing NRQL to build useful alerts. Qarote connects directly to RabbitMQ's management API — no agents, no query language, no per-GB surprises."
+  },
+  "verdict": {
+    "heading": "Quick verdict",
+    "competitor": {
+      "label": "Choose New Relic if…",
+      "points": [
+        "You need end-to-end observability across APM, logs, infrastructure, and synthetics in one platform",
+        "Your team already uses New Relic and RabbitMQ is one more integration in an existing workflow",
+        "You have low data volumes and the 100 GB/month free tier covers your needs"
+      ]
+    },
+    "qarote": {
+      "label": "Choose Qarote if…",
+      "points": [
+        "RabbitMQ is a critical part of your infrastructure and deserves a purpose-built tool",
+        "You want self-hosted monitoring where queue data never leaves your network",
+        "You need predictable flat-rate pricing with no per-GB data ingestion charges"
+      ]
+    }
+  },
+  "table": {
+    "heading": "Feature comparison",
+    "competitorLabel": "New Relic",
+    "qaroteLabel": "Qarote",
+    "featureLabel": "Feature",
+    "caption": "Qarote vs New Relic Feature Comparison",
+    "asOf": "Pricing as of April 2026. New Relic Pro tier at $0.40/GB beyond the 100 GB/month free allowance.",
+    "qaroteWins": "Qarote wins {{count}}/{{total}}",
+    "rows": {
+      "rabbitmqNative": {
+        "feature": "RabbitMQ-native monitoring",
+        "competitor": "Via Infrastructure agent + RabbitMQ on-host integration — one of 750+ integrations",
+        "qarote": "Native — built exclusively for RabbitMQ"
+      },
+      "agentRequired": {
+        "feature": "Agent required on broker hosts",
+        "competitor": "Yes — New Relic Infrastructure agent must be installed on every RabbitMQ node",
+        "qarote": "No — connects directly to the RabbitMQ management API, no agent needed"
+      },
+      "setupTime": {
+        "feature": "Setup time",
+        "competitor": "Agent install on each node + integration config + dashboard setup (~30–60 min)",
+        "qarote": "60 seconds — paste connection string, done"
+      },
+      "selfHosted": {
+        "feature": "Self-hosted option",
+        "competitor": "No — SaaS only",
+        "qarote": "Yes — runs entirely on your infrastructure"
+      },
+      "dataPrivacy": {
+        "feature": "Queue data privacy",
+        "competitor": "Queue metrics sent to New Relic's cloud",
+        "qarote": "All data stays on your network"
+      },
+      "pricingModel": {
+        "feature": "Pricing model",
+        "competitor": "Consumption-based — charged per GB of data ingested beyond free tier",
+        "qarote": "Flat annual license or free (self-hosted MIT)"
+      },
+      "estimatedCost": {
+        "feature": "Cost predictability",
+        "competitor": "Unpredictable — bill scales with data volume and number of users",
+        "qarote": "Fixed — $29/month flat (Developer plan) regardless of data volume"
+      },
+      "alerting": {
+        "feature": "Queue depth alerting",
+        "competitor": "Yes — via NRQL-based alert conditions",
+        "qarote": "Yes — built-in RabbitMQ alert templates, no query language needed"
+      },
+      "openSource": {
+        "feature": "Open-source core",
+        "competitor": "No",
+        "qarote": "Yes — MIT licensed"
+      },
+      "integrations": {
+        "feature": "Platform breadth",
+        "competitor": "750+ integrations across your full stack",
+        "qarote": "RabbitMQ only"
+      }
+    }
+  },
+  "sections": {
+    "eyebrow": "Deep dive",
+    "native": {
+      "heading": "RabbitMQ is one integration among 750 in New Relic — it's everything in Qarote",
+      "p1": "New Relic's strength is breadth: APM traces, infrastructure metrics, log management, browser monitoring, synthetics, and hundreds of integrations including RabbitMQ. For teams that need a single observability platform across a polyglot stack, that breadth has real value. But for RabbitMQ specifically, it means working within a monitoring model designed to accommodate every possible integration — not one built around how message queues actually fail.",
+      "p2": "Qarote was built for one thing: RabbitMQ. Every screen, every metric, and every alert template was designed around queues, exchanges, bindings, consumers, and the failure modes that matter in production — DLQ accumulation, consumer lag, vhost isolation, flow control events. There's no abstraction layer to navigate.",
+      "p3": "If RabbitMQ is a critical part of your infrastructure rather than an incidental integration, a purpose-built tool gives you faster incident response and more relevant defaults than a general-purpose platform can."
+    },
+    "pricing": {
+      "heading": "New Relic's consumption pricing scales in ways that are hard to predict",
+      "p1": "New Relic's free tier provides 100 GB of data ingest per month — generous for small setups. Beyond that, data ingest is billed at $0.40/GB (or $0.60/GB for Data Plus). On a busy RabbitMQ cluster emitting metrics at high frequency, that adds up quickly. Add user seats at $349/month per Pro user (annual) or $418.80/month pay-as-you-go and the bill compounds further as your team grows.",
+      "p2": "Qarote's Developer plan is $348/year ($29/month flat) for a team. Enterprise is $1,188/year. Neither plan charges by data volume, number of hosts, or number of seats. There are no ingestion fees, no metric retention charges, no surprise line items at the end of the month.",
+      "p3": "Consumption-based pricing makes sense when you can predict your usage. For monitoring a production RabbitMQ cluster — where message rates spike unpredictably during traffic peaks — flat-rate pricing means you're never disincentivised to increase monitoring fidelity."
+    },
+    "agents": {
+      "heading": "New Relic requires an agent on every broker host — Qarote requires none",
+      "p1": "To monitor RabbitMQ with New Relic, you install the Infrastructure agent on each RabbitMQ node, enable the on-host integration, and configure the YAML file with your broker credentials. On a 3-node cluster, that's three agents to deploy, maintain, upgrade, and monitor. Each agent runs as a background process, consuming host resources and requiring its own version management.",
+      "p2": "Qarote installs once — anywhere that can reach your RabbitMQ management API. It uses the standard HTTP management API and AMQP protocol directly, with no software required on the broker hosts themselves. Add a new RabbitMQ server to monitor by pasting its connection string. No agent deployment, no host-level access required."
+    },
+    "privacy": {
+      "heading": "Your queue data stays on your infrastructure",
+      "p1": "New Relic is SaaS-only: metrics, events, logs, and traces flow through New Relic's cloud. For many teams, that's an acceptable trade-off. But RabbitMQ often carries sensitive workloads — payment events, internal service messages, user data in transit. Sending queue metric names, routing keys, and consumer patterns to a third-party cloud introduces a compliance surface that some teams cannot accept.",
+      "p2": "Qarote runs entirely on your infrastructure. No queue data leaves your network. License validation happens offline using a baked-in public key — even the licensing system requires no outbound connection.",
+      "p3": "For teams in regulated industries or under strict data residency requirements, Qarote can run in air-gapped environments where SaaS observability platforms cannot."
+    }
+  },
+  "crossLink": {
+    "text": "Also comparing:",
+    "datadog": "Qarote vs Datadog →",
+    "pricing": "Pricing",
+    "features": "Features"
+  },
+  "faq": {
+    "heading": "Frequently asked questions",
+    "items": [
+      {
+        "question": "Can Qarote replace New Relic entirely?",
+        "answer": "Qarote is a specialist tool, not a general-purpose observability platform. It replaces New Relic's RabbitMQ monitoring specifically — not New Relic's APM, log management, or infrastructure monitoring for your other services. If RabbitMQ is your primary monitoring need, Qarote is a more focused and cost-effective choice. If you need end-to-end observability across a polyglot stack, New Relic and Qarote can coexist."
+      },
+      {
+        "question": "Does Qarote require installing anything on my RabbitMQ hosts?",
+        "answer": "No. Qarote connects directly to RabbitMQ using the standard management API (HTTP) and AMQP protocol. You install Qarote once on any host that can reach your broker — it does not require agents or any software on the RabbitMQ nodes themselves."
+      },
+      {
+        "question": "Is the open-source edition of Qarote really free?",
+        "answer": "Yes. The MIT-licensed core of Qarote — live queue monitoring, exchange visibility, consumer tracking, and multi-server support — is free to self-host without any license key. Premium features (workspace sharing, advanced alerting, integrations) require a Developer or Enterprise license."
+      },
+      {
+        "question": "What is the best RabbitMQ monitoring tool for teams already using New Relic?",
+        "answer": "Teams already invested in New Relic can continue using it for broad infrastructure observability while adding Qarote specifically for RabbitMQ. Qarote's purpose-built dashboards, built-in alert templates, and multi-vhost views give RabbitMQ operations depth that New Relic's generic integration cannot match — without replacing your existing observability stack."
+      }
+    ]
+  }
+}

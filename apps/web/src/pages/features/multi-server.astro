@@ -1,0 +1,23 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { FeaturesMultiServerIsland } from "../../components/FeaturesMultiServerIsland";
+import { loadTranslations, loadAllTranslations, t } from "../../lib/i18n-static";
+import { buildFaqSchema } from "../../lib/schema";
+import { DEFAULT_LOCALE } from "@qarote/i18n";
+
+const multiServer = loadTranslations(DEFAULT_LOCALE, "features-multi-server");
+const resources = { ...loadAllTranslations(DEFAULT_LOCALE), "features-multi-server": multiServer };
+const faqSchema = buildFaqSchema(multiServer);
+---
+
+<BaseLayout
+  title={t(multiServer, "seo.title")}
+  description={t(multiServer, "seo.description")}
+  locale={DEFAULT_LOCALE}
+  canonicalPath="/features/multi-server/"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  </Fragment>
+  <FeaturesMultiServerIsland locale={DEFAULT_LOCALE} resources={resources} client:load />
+</BaseLayout>

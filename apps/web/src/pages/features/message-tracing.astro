@@ -1,0 +1,23 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { FeaturesMessageTracingIsland } from "../../components/FeaturesMessageTracingIsland";
+import { loadTranslations, loadAllTranslations, t } from "../../lib/i18n-static";
+import { buildFaqSchema } from "../../lib/schema";
+import { DEFAULT_LOCALE } from "@qarote/i18n";
+
+const messageTracing = loadTranslations(DEFAULT_LOCALE, "features-message-tracing");
+const resources = { ...loadAllTranslations(DEFAULT_LOCALE), "features-message-tracing": messageTracing };
+const faqSchema = buildFaqSchema(messageTracing);
+---
+
+<BaseLayout
+  title={t(messageTracing, "seo.title")}
+  description={t(messageTracing, "seo.description")}
+  locale={DEFAULT_LOCALE}
+  canonicalPath="/features/message-tracing/"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  </Fragment>
+  <FeaturesMessageTracingIsland locale={DEFAULT_LOCALE} resources={resources} client:load />
+</BaseLayout>

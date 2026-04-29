@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "Gestión de queues de RabbitMQ — Vaciar, eliminar, crear e inspeccionar | Qarote",
+    "description": "Gestiona tus queues de RabbitMQ desde una interfaz limpia: vacía, elimina y crea queues, inspecciona bindings, visualiza la topología de exchanges y publica mensajes de prueba — sin acceso CLI."
+  },
+  "hero": {
+    "eyebrow": "Funcionalidades → Queue Management",
+    "title": "Gestiona tus queues de RabbitMQ sin tocar el CLI.",
+    "subtitle": "Vacía queues, elimina exchanges, crea bindings y publica mensajes de prueba directamente desde el dashboard de Qarote. Las operaciones a las que recurres durante incidentes y despliegues — disponibles para todo tu equipo, sin acceso SSH al broker."
+  },
+  "operations": {
+    "eyebrow": "Qué puedes hacer",
+    "heading": "Cada operación de queue en un solo lugar",
+    "items": [
+      {
+        "icon": "message.svg",
+        "title": "Vaciar queues",
+        "description": "Vacía los mensajes de una queue con un solo clic. Útil durante la recuperación de un incidente cuando necesitas limpiar una queue bloqueada sin esperar a que los consumidores procesen el backlog — o cuando has desplegado un formato de mensaje erróneo y necesitas empezar desde cero."
+      },
+      {
+        "icon": "flag.svg",
+        "title": "Eliminar queues",
+        "description": "Elimina queues que ya no son necesarias. Eliminación con confirmación — Qarote muestra el número actual de mensajes antes de confirmar, para que sepas si estás eliminando una queue vacía o descartando mensajes activos."
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "Crear queues",
+        "description": "Crea nuevas queues con control total de propiedades: durable, exclusive, auto-delete, TTL, longitud máxima, dead-letter exchange. Las mismas opciones disponibles en el plugin de gestión — en una interfaz más limpia."
+      },
+      {
+        "icon": "chart.svg",
+        "title": "Inspeccionar bindings",
+        "description": "Visualiza todos los bindings de cualquier queue: qué exchanges enrutan hacia ella y con qué routing keys. La inspección de bindings es esencial para depurar problemas de routing — entender por qué los mensajes llegan o no a una queue."
+      },
+      {
+        "icon": "send.svg",
+        "title": "Publicar mensajes de prueba",
+        "description": "Publica un mensaje en cualquier exchange con un routing key y payload personalizados directamente desde el dashboard. Prueba tu configuración de routing, verifica el comportamiento de los consumidores o desencadena un flujo de trabajo sin escribir código."
+      },
+      {
+        "icon": "server.svg",
+        "title": "Vista de topología",
+        "description": "Visión general de exchanges, queues y bindings en todo el broker. Comprende tu arquitectura de mensajería de un vistazo — especialmente útil cuando heredas un sistema o incorporas nuevos miembros al equipo."
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "Cómo funciona",
+    "heading": "Operaciones de queue sin acceso al broker",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Abre cualquier queue",
+        "description": "Navega a cualquier queue en tu dashboard de Qarote. Todas las queues en todos los servidores conectados se listan automáticamente — sin configuración, sin lista de permitidos."
+      },
+      {
+        "number": "02",
+        "title": "Selecciona una operación",
+        "description": "Vacía, elimina, crea o publica desde la vista de detalle de la queue. Las operaciones destructivas muestran un diálogo de confirmación con el estado actual de la queue — para que siempre sepas lo que estás a punto de hacer."
+      },
+      {
+        "number": "03",
+        "title": "Los cambios se aplican de inmediato",
+        "description": "Las operaciones se ejecutan contra la API de gestión de RabbitMQ en tiempo real. La lista de queues se actualiza automáticamente tras cada operación — ves el resultado de inmediato."
+      }
+    ]
+  },
+  "whyCLI": {
+    "eyebrow": "¿Por qué no el CLI?",
+    "heading": "El acceso CLI crea cuellos de botella operativos",
+    "p1": "El `rabbitmqctl` de RabbitMQ ofrece capacidad completa de gestión de queues — en el servidor del broker, con acceso de usuario root o rabbitmq. En la práctica, esto significa que la gestión de queues está condicionada al acceso SSH a los servidores de producción. Cuando un ingeniero de guardia necesita vaciar una queue bloqueada a las 2 de la mañana, el primer paso es encontrar la clave SSH correcta y saltar a través de un bastion host.",
+    "p2": "La interfaz del plugin de gestión es una mejora — pero solo es accesible en el puerto 15672, que la mayoría de las organizaciones restringen. Tampoco proporciona ninguna auditoría: no hay registro de quién vació qué queue, cuándo y por qué.",
+    "p3": "Qarote ofrece a todo tu equipo un único lugar para la gestión de queues, controlado por el modelo de permisos de Qarote. Las operaciones de queue están disponibles para los miembros del equipo con el rol de Qarote adecuado — sin acceso al broker, sin claves SSH que distribuir."
+  },
+  "crossLink": {
+    "eyebrow": "Ver también",
+    "navLabel": "Enlaces relacionados",
+    "messageSpy": "Message Spy →",
+    "liveMonitoring": "Live Monitoring",
+    "alerting": "Alertas en tiempo real",
+    "features": "Todas las funcionalidades"
+  },
+  "faq": {
+    "heading": "Preguntas frecuentes",
+    "items": [
+      {
+        "question": "¿Quién puede realizar operaciones de gestión de queues?",
+        "answer": "Los permisos de gestión de queues están controlados por el sistema de roles de Qarote. Los admins pueden realizar todas las operaciones. Los usuarios de solo lectura pueden inspeccionar queues y bindings, pero no pueden vaciar, eliminar ni crear. Tú controlas quién tiene acceso de escritura."
+      },
+      {
+        "question": "¿Existe un registro de auditoría para las operaciones de queues?",
+        "answer": "Las operaciones de gestión de queues se registran en el log de actividad de Qarote — incluyendo qué usuario realizó la operación, qué queue se vio afectada y cuándo. El log de auditoría está disponible en los planes Developer y Enterprise."
+      },
+      {
+        "question": "¿Puedo vaciar una queue sin perder los mensajes permanentemente?",
+        "answer": "El vaciado es destructivo — los mensajes se eliminan sin ser entregados a los consumidores. Si necesitas mover mensajes en lugar de descartarlos, usa la funcionalidad de mover mensajes del plugin de gestión o un consumidor que republique en otra queue. El vaciado de Qarote es una operación irreversible."
+      },
+      {
+        "question": "¿Funciona la gestión de queues con quorum queues?",
+        "answer": "Sí. Qarote admite queues clásicas, quorum queues y stream queues. La creación de queues admite propiedades de quorum queue (factor de replicación, límite de entrega). Algunas operaciones se comportan de forma diferente para las quorum queues — por ejemplo, la API de gestión aplica las restricciones de quorum queue en el momento de la creación."
+      },
+      {
+        "question": "¿Puedo gestionar exchanges y bindings directamente?",
+        "answer": "Sí — puedes visualizar todos los exchanges, inspeccionar sus bindings y crear o eliminar bindings desde la vista de topología. La gestión directa de exchanges (crear/eliminar) está disponible en la pestaña de exchanges dentro de cualquier servidor conectado."
+      }
+    ]
+  }
+}

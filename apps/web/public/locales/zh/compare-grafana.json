@@ -34,6 +34,7 @@
     "featureLabel": "功能",
     "caption": "Qarote vs Grafana + Prometheus 功能对比",
     "asOf": "Grafana OSS 和 Prometheus 免费。基础设施和维护成本因部署方式而异。",
+    "qaroteWins": "Qarote 胜出 {{count}}/{{total}}",
     "rows": {
       "rabbitmqNative": {
         "feature": "RabbitMQ 原生监控",

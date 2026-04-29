@@ -1,0 +1,145 @@
+{
+  "seo": {
+    "title": "RabbitMQ 消息监听——在不消费的情况下检查消息内容 | Qarote",
+    "description": "在不消费消息的前提下，窥探实时 RabbitMQ 队列并检查消息头和消息体。只读操作，生产环境安全可用。无需编写一次性消费者脚本。"
+  },
+  "hero": {
+    "eyebrow": "功能 → 消息监听",
+    "title": "在不消费消息的情况下检查生产消息",
+    "subtitle": "直接在任意队列中浏览消息头和消息体——只读、无损、生产安全。无需 AMQP 消费者，无需一次性脚本，消息完全保持原样。"
+  },
+  "problem": {
+    "eyebrow": "问题所在",
+    "heading": "调试队列内容，意味着必须「触碰」队列",
+    "body": "RabbitMQ 管理插件的 basic_get 是破坏性操作——它会消费并确认消息。为了检查消息体而编写一个调试消费者，不仅容易出错、耗时低效，在生产环境中还存在风险。这两种方式都无法提供对队列现有消息的纯只读视图。",
+    "items": [
+      {
+        "icon": "error.svg",
+        "title": "basic_get 是破坏性操作",
+        "description": "管理插件的消息浏览器底层使用 basic_get。消息会被消费掉。如果您的消费者重新入队逻辑不够完善，一条消息就这样丢失了。"
+      },
+      {
+        "icon": "server.svg",
+        "title": "调试消费者徒增开销",
+        "description": "编写一次性 AMQP 消费者来检查消息体，意味着要向生产环境部署代码、管理凭证，还要担心自己是否会不小心处理了本想检查的消息。"
+      },
+      {
+        "icon": "flag.svg",
+        "title": "Schema 不匹配无从察觉",
+        "description": "当一个新发布者以不同的消息结构上线时，您的消费者开始失败——但在不消费消息的情况下，您根本无法验证队列中实际存放的是什么。"
+      }
+    ]
+  },
+  "solution": {
+    "eyebrow": "消息监听的工作原理",
+    "heading": "只读预览。真实消息体。零风险。",
+    "body": "消息监听使用 RabbitMQ HTTP API 的非破坏性预览端点——不是 basic_get，不是 AMQP 消费。消息以只读快照的形式获取。您的消费者毫不知情。队列状态保持不变。",
+    "steps": [
+      {
+        "number": "01",
+        "title": "打开任意队列",
+        "description": "在 Qarote 仪表板中导航至任意队列。消息监听对所有您有读权限的队列均可用。"
+      },
+      {
+        "number": "02",
+        "title": "点击监听",
+        "description": "Qarote 通过非破坏性 HTTP API 端点获取预览批次。不开启 AMQP 连接，不消费或确认任何消息。"
+      },
+      {
+        "number": "03",
+        "title": "浏览消息头和消息体",
+        "description": "内联检查路由键、交换器、时间戳、投递模式和完整消息体。JSON 自动语法高亮显示，二进制消息体以十六进制展示。一键复制原始内容。"
+      }
+    ]
+  },
+  "capabilities": {
+    "eyebrow": "可检查的内容",
+    "heading": "完整的消息详情，只读访问",
+    "items": [
+      {
+        "icon": "message.svg",
+        "title": "消息体",
+        "description": "完整的消息正文——JSON 格式化并语法高亮，纯文本原样显示，二进制消息体以十六进制展示。可复制原始内容或格式化输出。"
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "消息头与属性",
+        "description": "路由键、交换器、投递模式、优先级、关联 ID、reply-to、过期时间、内容类型，以及发布者设置的所有自定义消息头。"
+      },
+      {
+        "icon": "chart.svg",
+        "title": "消息位置",
+        "description": "每条消息在队列中的位置（第一条、第二条、第三条……）以及基于时间戳的大致时效。一眼了解消息顺序和新鲜度。"
+      },
+      {
+        "icon": "send.svg",
+        "title": "重投递状态",
+        "description": "消息是否被重投递——这是消费者处理失败的关键指标。在毒消息拖垮消费者之前，提前将其识别出来。"
+      }
+    ]
+  },
+  "useCases": {
+    "eyebrow": "使用场景",
+    "heading": "消息监听专为这些时刻而生",
+    "items": [
+      {
+        "title": "生产环境调试",
+        "description": "消费者正在失败，但你不知道原因。打开队列，检查消息体——是格式错误？错误的 schema？缺少字段？10 秒内得出答案，无需接触消费者。"
+      },
+      {
+        "title": "部署前 schema 验证",
+        "description": "新的发布者刚刚部署。在消费者上线之前，验证消息体结构是否符合预期。在 schema 不匹配演变为事故之前将其捕获。"
+      },
+      {
+        "title": "毒消息检测",
+        "description": "一条 redelivered: true 的消息已被多次拒绝。直接检查它，了解失败原因——无需编写死信消费者。"
+      },
+      {
+        "title": "集成测试",
+        "description": "验证发布者是否以正确格式、正确路由键向正确队列发送消息——无需在测试环境中运行消费者。"
+      }
+    ]
+  },
+  "safety": {
+    "eyebrow": "安全性",
+    "heading": "设计上的非破坏性",
+    "body": "消息监听使用 RabbitMQ HTTP API 的 /get 端点，并设置 requeue=true 和 count=N。这与管理插件内置消息浏览器所使用的机制相同——关键区别在于：Qarote 始终强制设置 requeue=true，确保消息绝不会被消费。访问受 Qarote 权限模型控制：没有队列读权限的用户无法使用监听功能。在自托管部署中，您的 RabbitMQ 凭证永远不会离开您的基础设施。"
+  },
+  "crossLink": {
+    "eyebrow": "另请参见",
+    "navLabel": "相关功能",
+    "messageTracing": "消息追踪（Firehose）→",
+    "queueHistory": "队列历史",
+    "alerting": "实时告警",
+    "features": "全部功能"
+  },
+  "faq": {
+    "heading": "常见问题",
+    "items": [
+      {
+        "question": "消息监听在生产环境中安全吗？",
+        "answer": "安全。Qarote 使用 requeue=true 的 RabbitMQ HTTP API——消息绝不会被消费或确认。您的消费者完全不受影响。监听操作前后，队列状态完全一致。"
+      },
+      {
+        "question": "这与管理插件的消息浏览器一样吗？",
+        "answer": "底层机制使用相同的 RabbitMQ HTTP API 端点。Qarote 额外提供：强制非破坏性（始终 requeue=true）、JSON 语法高亮渲染、完整消息头树形展示、重投递状态显示，以及与整个队列仪表板的无缝集成——无需切换标签页。"
+      },
+      {
+        "question": "每次可以检查多少条消息？",
+        "answer": "Developer 计划每次每个队列最多可检查 10 条消息。Enterprise 计划批量大小可配置。消息按队列顺序显示（FIFO）。"
+      },
+      {
+        "question": "消息监听支持加密的消息体吗？",
+        "answer": "消息监听显示 Qarote 从 Broker 接收到的原始消息体。如果您的应用在发布前对消息体进行加密，消息体将以加密形式显示。Qarote 不解密消息内容。"
+      },
+      {
+        "question": "消息体中包含敏感数据怎么办？",
+        "answer": "消息监听的访问由 Qarote 的用户权限模型控制。只有被明确授予队列读权限的用户才能监听该队列。在自托管部署中，您掌控整个身份验证层。"
+      },
+      {
+        "question": "消息监听支持所有 RabbitMQ 版本吗？",
+        "answer": "支持——消息监听使用标准的 RabbitMQ HTTP 管理 API，所有受支持的版本（3.x 和 4.x）均可用。"
+      }
+    ]
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "seo": {
+    "title": "Message Spy de RabbitMQ — Inspecciona payloads sin consumirlos | Qarote",
+    "description": "Inspecciona queues de RabbitMQ en vivo y examina cabeceras y payloads de mensajes sin consumirlos. Solo lectura, seguro para producción. Sin scripts de consumidor desechables."
+  },
+  "hero": {
+    "eyebrow": "Funcionalidades → Message Spy",
+    "title": "Inspecciona mensajes en producción sin consumirlos",
+    "subtitle": "Examina cabeceras y payloads de mensajes directamente en cualquier queue — solo lectura, no destructivo, seguro para producción. Sin consumidor AMQP. Sin scripts desechables. Los mensajes permanecen exactamente donde están."
+  },
+  "problem": {
+    "eyebrow": "El problema",
+    "heading": "Depurar el contenido de las queues hoy implica tocarlas",
+    "body": "El basic_get del plugin de gestión de RabbitMQ es destructivo — consume y confirma el mensaje. Escribir un consumidor de depuración solo para inspeccionar payloads es propenso a errores, lento y arriesgado en producción. Ninguna de las dos opciones ofrece una vista limpia y de solo lectura de lo que hay en tus queues.",
+    "items": [
+      {
+        "icon": "error.svg",
+        "title": "basic_get es destructivo",
+        "description": "El navegador de mensajes del plugin de gestión usa basic_get internamente. El mensaje se consume. Si tu lógica de reencola no es perfecta, acabas de perder un mensaje."
+      },
+      {
+        "icon": "server.svg",
+        "title": "Los consumidores de depuración añaden sobrecarga",
+        "description": "Escribir un consumidor AMQP desechable para inspeccionar payloads implica desplegar código en producción, gestionar credenciales y esperar no procesar accidentalmente los mensajes que intentas inspeccionar."
+      },
+      {
+        "icon": "flag.svg",
+        "title": "Los desajustes de esquema son invisibles",
+        "description": "Cuando un nuevo publicador se despliega con una estructura de payload diferente, tus consumidores empiezan a fallar — pero no puedes verificar qué hay realmente en la queue sin consumir un mensaje."
+      }
+    ]
+  },
+  "solution": {
+    "eyebrow": "Cómo funciona Message Spy",
+    "heading": "Inspección de solo lectura. Payload real. Riesgo cero.",
+    "body": "Message Spy usa el endpoint de vista previa no destructivo de la API HTTP de RabbitMQ — no basic_get, no consume AMQP. Los mensajes se obtienen como un snapshot de solo lectura. Tus consumidores no ven nada. El estado de la queue no cambia.",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Abre cualquier queue",
+        "description": "Navega a cualquier queue en tu dashboard de Qarote. Message Spy está disponible en todas las queues a las que tienes acceso de lectura."
+      },
+      {
+        "number": "02",
+        "title": "Haz clic en Spy",
+        "description": "Qarote obtiene un lote de vista previa a través del endpoint HTTP no destructivo de la API. Sin conexión AMQP abierta. Sin mensajes consumidos ni confirmados."
+      },
+      {
+        "number": "03",
+        "title": "Examina cabeceras y payload",
+        "description": "Inspecciona el routing key, el exchange, el timestamp, el modo de entrega y el payload completo en línea. El JSON aparece resaltado sintácticamente. Los payloads binarios se muestran en hexadecimal. Copia el contenido en bruto con un solo clic."
+      }
+    ]
+  },
+  "capabilities": {
+    "eyebrow": "Qué puedes inspeccionar",
+    "heading": "Detalle completo del mensaje, solo lectura",
+    "items": [
+      {
+        "icon": "message.svg",
+        "title": "Payload del mensaje",
+        "description": "Contenido completo del cuerpo — JSON formateado y resaltado sintácticamente, texto plano mostrado tal cual, payloads binarios en hexadecimal. Copia el contenido en bruto o la salida formateada."
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "Cabeceras y propiedades",
+        "description": "Routing key, exchange, modo de entrega, prioridad, correlation ID, reply-to, expiración, tipo de contenido y todas las cabeceras personalizadas establecidas por el publicador."
+      },
+      {
+        "icon": "chart.svg",
+        "title": "Posición del mensaje",
+        "description": "Posición de cada mensaje en la queue (primero, segundo, tercero…) y antigüedad aproximada basada en el timestamp. Comprende el orden y la obsolescencia de un vistazo."
+      },
+      {
+        "icon": "send.svg",
+        "title": "Estado de reentrega",
+        "description": "Si un mensaje ha sido reenviado — un indicador clave de que los consumidores están fallando al procesarlo. Detecta los poison messages antes de que saturen a tus consumidores."
+      }
+    ]
+  },
+  "useCases": {
+    "eyebrow": "Casos de uso",
+    "heading": "Los momentos para los que está hecho Message Spy",
+    "items": [
+      {
+        "title": "Depuración en producción",
+        "description": "Los consumidores están fallando y no sabes por qué. Abre la queue, inspecciona el payload — ¿está malformado? ¿Esquema incorrecto? ¿Falta algún campo? Respuesta en 10 segundos sin tocar los consumidores."
+      },
+      {
+        "title": "Validación de esquema antes del despliegue",
+        "description": "Acaba de desplegarse un nuevo publicador. Antes de que tus consumidores entren en producción, verifica que la estructura del payload es la que esperas. Detecta desajustes de esquema antes de que se conviertan en incidentes."
+      },
+      {
+        "title": "Detección de poison messages",
+        "description": "Un mensaje con redelivered: true ha sido rechazado múltiples veces. Inspecciónalo directamente para entender por qué — sin escribir un consumidor de dead-letter."
+      },
+      {
+        "title": "Pruebas de integración",
+        "description": "Verifica que tu publicador envía mensajes correctamente formateados a las queues adecuadas con los routing keys correctos — sin ejecutar un consumidor en tu entorno de pruebas."
+      }
+    ]
+  },
+  "safety": {
+    "eyebrow": "Seguridad y protección",
+    "heading": "No destructivo por diseño",
+    "body": "Message Spy usa el endpoint /get de la API HTTP de RabbitMQ con requeue=true y count=N. Es el mismo mecanismo que usa el plugin de gestión para su navegador de mensajes integrado — con una diferencia crítica: Qarote siempre establece requeue=true, garantizando que los mensajes nunca sean consumidos. El acceso está controlado por el modelo de permisos de Qarote: los usuarios sin acceso de lectura a la queue no pueden espiarla. En despliegues autoalojados, tus credenciales de RabbitMQ nunca salen de tu infraestructura."
+  },
+  "crossLink": {
+    "eyebrow": "Ver también",
+    "navLabel": "Funcionalidades relacionadas",
+    "messageTracing": "Message Tracing (Firehose) →",
+    "queueHistory": "Queue History",
+    "alerting": "Alertas en tiempo real",
+    "features": "Todas las funcionalidades"
+  },
+  "faq": {
+    "heading": "Preguntas frecuentes",
+    "items": [
+      {
+        "question": "¿Es seguro usar Message Spy en producción?",
+        "answer": "Sí. Qarote usa la API HTTP de RabbitMQ con requeue=true — los mensajes nunca son consumidos ni confirmados. Tus consumidores no se ven afectados en absoluto. El estado de la queue es idéntico antes y después de una operación de espionaje."
+      },
+      {
+        "question": "¿Es lo mismo que el navegador de mensajes del plugin de gestión?",
+        "answer": "El mecanismo subyacente es el mismo endpoint de la API HTTP de RabbitMQ. Qarote añade aplicación forzosa del modo no destructivo (siempre requeue=true), renderizado JSON con resaltado sintáctico, visualización completa del árbol de cabeceras, estado de reentrega e integración con el resto de tu dashboard de queues — sin cambiar de pestaña."
+      },
+      {
+        "question": "¿Cuántos mensajes puedo inspeccionar a la vez?",
+        "answer": "Los planes Developer pueden inspeccionar hasta 10 mensajes por queue por solicitud. Los planes Enterprise tienen un tamaño de lote configurable. Los mensajes se muestran en el orden de la queue (FIFO)."
+      },
+      {
+        "question": "¿Funciona Message Spy con payloads cifrados?",
+        "answer": "Message Spy muestra el payload en bruto tal y como Qarote lo recibe del broker. Si tu aplicación cifra los cuerpos de los mensajes antes de publicarlos, el payload aparecerá cifrado. Qarote no descifra el contenido de los mensajes."
+      },
+      {
+        "question": "¿Y los datos sensibles en los payloads?",
+        "answer": "El acceso a Message Spy está controlado por el modelo de permisos de usuario de Qarote. Solo los usuarios con acceso explícito de lectura a la queue pueden espiarla. En despliegues autoalojados, controlas toda la capa de autenticación."
+      },
+      {
+        "question": "¿Funciona Message Spy con todas las versiones de RabbitMQ?",
+        "answer": "Sí — Message Spy usa la API HTTP de gestión estándar de RabbitMQ, disponible en todas las versiones compatibles (3.x y 4.x)."
+      }
+    ]
+  }
+}

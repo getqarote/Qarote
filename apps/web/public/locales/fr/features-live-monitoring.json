@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "Monitoring RabbitMQ en temps réel — Files & Consommateurs | Qarote",
+    "description": "Surveillez la profondeur des files RabbitMQ, les débits de messages et le nombre de consommateurs en temps réel. États de santé visuels, rafraîchissement sub-seconde, zéro configuration — opérationnel dès la connexion de votre broker."
+  },
+  "hero": {
+    "eyebrow": "Fonctionnalités → Monitoring en direct",
+    "title": "Vos files RabbitMQ, en direct. Sans configuration.",
+    "subtitle": "Profondeur de file, débits de messages et nombre de consommateurs se rafraîchissent chaque seconde — automatiquement, dès la connexion. Trois états de santé vous indiquent d'un coup d'œil ce qui nécessite une attention. Aucun YAML, aucun dashboard à construire, aucun Prometheus à opérer."
+  },
+  "capabilities": {
+    "eyebrow": "Ce que vous voyez",
+    "heading": "Une image complète et en direct de chaque file",
+    "items": [
+      {
+        "icon": "real-time.svg",
+        "title": "Profondeur de file",
+        "description": "Nombre de messages par file, mis à jour chaque seconde. La barre de profondeur visuelle rend les pics immédiatement visibles — vous n'avez pas besoin de lire un chiffre pour savoir que quelque chose cloche."
+      },
+      {
+        "icon": "chart.svg",
+        "title": "Débits de messages",
+        "description": "Taux de publication, de livraison et d'acquittement par file et par seconde. Repérez le moment où un producteur cesse de publier ou où un consommateur prend du retard — sans avoir besoin d'un système de métriques séparé."
+      },
+      {
+        "icon": "message.svg",
+        "title": "Nombre de consommateurs",
+        "description": "Nombre de consommateurs en direct par file. Une file avec des messages et zéro consommateur est un pipeline bloqué. Qarote le signale immédiatement avec un état de santé en avertissement — aucun seuil à configurer."
+      },
+      {
+        "icon": "flag.svg",
+        "title": "États de santé",
+        "description": "Trois états : sain (vert), avertissement (jaune), critique (rouge). Les seuils sont appliqués automatiquement selon la profondeur de file, le nombre de consommateurs et l'âge des messages. Le dashboard affiche toujours en premier ce qui nécessite une attention."
+      },
+      {
+        "icon": "server.svg",
+        "title": "Indicateurs de ressources des nœuds",
+        "description": "Utilisation mémoire, état des alarmes disque et pression sur les descripteurs de fichiers par nœud broker — visibles aux côtés des métriques de files. Les problèmes au niveau du nœud remontent dans la même vue que les problèmes au niveau des files."
+      },
+      {
+        "icon": "send.svg",
+        "title": "Nombre de connexions et de canaux",
+        "description": "Total des connexions ouvertes et des canaux par broker. Un nombre de connexions en croissance est souvent le premier signal d'une fuite de connexions — visible sans système de monitoring séparé."
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "Comment ça fonctionne",
+    "heading": "Connectez-vous une fois, monitorez immédiatement",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Connectez votre broker",
+        "description": "Collez votre chaîne de connexion RabbitMQ ou l'URL de l'API de management. Qarote se connecte immédiatement — aucun agent, aucun plugin, aucun fichier de configuration."
+      },
+      {
+        "number": "02",
+        "title": "Toutes les files apparaissent automatiquement",
+        "description": "Chaque file de chaque vhost de votre broker apparaît dans le dashboard en quelques secondes. Les nouvelles files s'affichent automatiquement à leur création — rien à configurer."
+      },
+      {
+        "number": "03",
+        "title": "Le dashboard se rafraîchit en continu",
+        "description": "Les métriques de files se mettent à jour chaque seconde. Les états de santé sont recalculés à chaque rafraîchissement. Vous consultez toujours l'état actuel de votre broker, pas un snapshot périmé."
+      }
+    ]
+  },
+  "whyManagementPlugin": {
+    "eyebrow": "Pourquoi pas le plugin de management ?",
+    "heading": "Le plugin de management est conçu pour la configuration, pas pour le monitoring",
+    "p1": "La page de vue d'ensemble du plugin de management RabbitMQ affiche des métriques agrégées sur l'ensemble de votre broker. Elle est utile pour l'administration — pas pour surveiller des files individuelles lors d'un incident. Trouver une file spécifique dans un broker de production avec 200 files implique de faire défiler un tableau trié par nom, sans indicateurs visuels de santé et sans moyen de trier par profondeur ou par débit.",
+    "p2": "La liste de files de Qarote est conçue pour le monitoring opérationnel. Les files sont triées par état de santé — les files critiques remontent automatiquement en haut. La colonne de profondeur affiche une barre visuelle. Les débits et le nombre de consommateurs sont immédiatement visibles dans la vue liste sans cliquer sur chaque file.",
+    "p3": "Le plugin de management nécessite également un accès réseau au port 15672 depuis votre poste de monitoring. Qarote s'exécute comme un service auto-hébergé ou en cloud, se connecte à votre broker via une seule connexion sortante, et offre à toute votre équipe une vue partagée — sans exposer votre port de management à l'ordinateur de chaque développeur."
+  },
+  "crossLink": {
+    "eyebrow": "Voir aussi",
+    "navLabel": "Liens associés",
+    "alerting": "Alertes en temps réel →",
+    "queueHistory": "Historique des files",
+    "queueManagement": "Gestion des files",
+    "features": "Toutes les fonctionnalités"
+  },
+  "faq": {
+    "heading": "Questions fréquentes",
+    "items": [
+      {
+        "question": "À quelle fréquence les métriques se rafraîchissent-elles ?",
+        "answer": "Les métriques de files se rafraîchissent chaque seconde. Le dashboard interroge en continu l'API de management RabbitMQ — aucun rafraîchissement manuel n'est nécessaire. Si votre onglet navigateur est en arrière-plan, le polling s'interrompt et reprend quand vous revenez."
+      },
+      {
+        "question": "Le monitoring en direct nécessite-t-il des plugins RabbitMQ supplémentaires ?",
+        "answer": "Non. Qarote utilise l'API HTTP de management RabbitMQ, incluse avec le plugin de management standard (`rabbitmq_management`). Si votre broker a le plugin de management activé (la configuration par défaut dans la plupart des déploiements), le monitoring en direct fonctionne immédiatement."
+      },
+      {
+        "question": "Combien de files puis-je monitorer ?",
+        "answer": "Tous les plans supportent un nombre illimité de files par serveur connecté. Qarote récupère les métriques de chaque file sur chaque vhost automatiquement — aucune limite de files, aucune configuration nécessaire."
+      },
+      {
+        "question": "Quelle est la différence entre le monitoring en direct et Queue History ?",
+        "answer": "Le monitoring en direct affiche l'état actuel de vos files — mis à jour chaque seconde. Queue History (Developer+) stocke des snapshots toutes les 5 minutes pendant 7 jours, vous permettant de consulter ce qui s'est passé lors d'un incident passé. Les deux utilisent les mêmes métriques sous-jacentes."
+      },
+      {
+        "question": "Qarote stocke-t-il les données de monitoring en direct ?",
+        "answer": "Le dashboard en temps réel affiche uniquement l'état actuel — il ne stocke pas les données de monitoring en direct. Queue History est la fonctionnalité qui persiste les snapshots de métriques pour l'analyse rétrospective."
+      }
+    ]
+  }
+}

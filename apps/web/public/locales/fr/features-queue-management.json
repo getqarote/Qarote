@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "Gestion des files RabbitMQ — Purger & Inspecter | Qarote",
+    "description": "Gérez les files RabbitMQ depuis une interface claire : purgez, supprimez, créez des files, inspectez les bindings, visualisez la topologie des exchanges et publiez des messages de test — sans accès CLI."
+  },
+  "hero": {
+    "eyebrow": "Fonctionnalités → Gestion des files",
+    "title": "Gérez vos files RabbitMQ sans toucher au CLI.",
+    "subtitle": "Purgez des files, supprimez des exchanges, créez des bindings et publiez des messages de test directement depuis le dashboard Qarote. Les opérations que vous effectuez lors d'incidents et de déploiements — accessibles à toute votre équipe, sans accès SSH au broker."
+  },
+  "operations": {
+    "eyebrow": "Ce que vous pouvez faire",
+    "heading": "Chaque opération de file au même endroit",
+    "items": [
+      {
+        "icon": "message.svg",
+        "title": "Purger les files",
+        "description": "Videz les messages d'une file en un clic. Utile lors d'une récupération d'incident quand vous avez besoin de vider une file bloquée sans attendre que les consommateurs traitent un backlog — ou quand vous avez déployé un format de message erroné et avez besoin de repartir d'une ardoise vierge."
+      },
+      {
+        "icon": "flag.svg",
+        "title": "Supprimer les files",
+        "description": "Supprimez les files dont vous n'avez plus besoin. Suppression avec confirmation — Qarote vous indique le nombre de messages actuel avant validation, pour que vous sachiez si vous supprimez une file vide ou des messages en production."
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "Créer des files",
+        "description": "Créez de nouvelles files avec un contrôle complet des propriétés : durable, exclusive, auto-delete, TTL, longueur max, dead-letter exchange. Les mêmes options disponibles via le plugin de management — dans une interface plus claire."
+      },
+      {
+        "icon": "chart.svg",
+        "title": "Inspecter les bindings",
+        "description": "Consultez tous les bindings d'une file : quels exchanges y routent leurs messages, avec quels routing keys. L'inspection des bindings est essentielle pour déboguer les problèmes de routing — comprendre pourquoi les messages arrivent ou n'arrivent pas dans une file."
+      },
+      {
+        "icon": "send.svg",
+        "title": "Publier des messages de test",
+        "description": "Publiez un message vers n'importe quel exchange avec un routing key et un payload personnalisés directement depuis le dashboard. Testez votre configuration de routing, vérifiez le comportement des consommateurs ou déclenchez un workflow sans écrire de code."
+      },
+      {
+        "icon": "server.svg",
+        "title": "Vue de topologie",
+        "description": "Vue d'ensemble visuelle des exchanges, files et bindings sur votre broker. Comprenez votre architecture de messagerie d'un coup d'œil — particulièrement utile quand vous reprenez un système existant ou que vous intégrez de nouveaux membres d'équipe."
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "Comment ça fonctionne",
+    "heading": "Opérations de files sans accès au broker",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Ouvrez n'importe quelle file",
+        "description": "Naviguez vers n'importe quelle file dans votre dashboard Qarote. Toutes les files sur tous les serveurs connectés sont listées automatiquement — aucune configuration, aucune liste d'autorisation."
+      },
+      {
+        "number": "02",
+        "title": "Sélectionnez une opération",
+        "description": "Purgez, supprimez, créez ou publiez depuis la vue détail de la file. Les opérations destructives affichent une boîte de dialogue de confirmation avec l'état actuel de la file — pour que vous sachiez toujours ce que vous êtes sur le point de faire."
+      },
+      {
+        "number": "03",
+        "title": "Les modifications s'appliquent immédiatement",
+        "description": "Les opérations sont exécutées contre l'API de management RabbitMQ en temps réel. La liste des files se rafraîchit automatiquement après chaque opération — vous voyez le résultat immédiatement."
+      }
+    ]
+  },
+  "whyCLI": {
+    "eyebrow": "Pourquoi pas le CLI ?",
+    "heading": "L'accès CLI crée des goulots d'étranglement opérationnels",
+    "p1": "Le `rabbitmqctl` de RabbitMQ vous offre une capacité complète de gestion des files — sur le serveur broker, avec un accès root ou utilisateur rabbitmq. En pratique, cela signifie que la gestion des files est conditionnée à l'accès SSH aux serveurs de production. Quand un ingénieur d'astreinte doit purger une file bloquée à 2h du matin, la première étape est de trouver la bonne clé SSH et de passer par un bastion host.",
+    "p2": "L'interface du plugin de management est une amélioration — mais elle n'est accessible que sur le port 15672, que la plupart des organisations restreignent. Elle ne fournit également aucune piste d'audit : il n'y a aucun enregistrement de qui a purgé quelle file, quand et pourquoi.",
+    "p3": "Qarote offre à toute votre équipe un seul endroit pour la gestion des files, contrôlé par le modèle de permissions de Qarote. Les opérations sur les files sont accessibles aux membres de l'équipe avec le rôle Qarote approprié — aucun accès broker requis, aucune clé SSH à distribuer."
+  },
+  "crossLink": {
+    "eyebrow": "Voir aussi",
+    "navLabel": "Liens associés",
+    "messageSpy": "Message Spy →",
+    "liveMonitoring": "Monitoring en direct",
+    "alerting": "Alertes en temps réel",
+    "features": "Toutes les fonctionnalités"
+  },
+  "faq": {
+    "heading": "Questions fréquentes",
+    "items": [
+      {
+        "question": "Qui peut effectuer des opérations de gestion de files ?",
+        "answer": "Les permissions de gestion de files sont contrôlées par le système de rôles de Qarote. Les Admins peuvent effectuer toutes les opérations. Les utilisateurs en lecture seule peuvent inspecter les files et les bindings mais ne peuvent pas purger, supprimer ni créer. Vous contrôlez qui a un accès en écriture."
+      },
+      {
+        "question": "Y a-t-il un journal d'audit pour les opérations de files ?",
+        "answer": "Les opérations de gestion de files sont enregistrées dans le journal d'activité de Qarote — incluant quel utilisateur a effectué l'opération, quelle file a été affectée et quand. Le journal d'audit est disponible sur les plans Developer et Enterprise."
+      },
+      {
+        "question": "Puis-je purger une file sans perdre définitivement les messages ?",
+        "answer": "La purge est destructive — les messages sont supprimés sans être livrés aux consommateurs. Si vous avez besoin de déplacer des messages plutôt que de les supprimer, utilisez la fonctionnalité move-messages du plugin de management ou un consommateur qui republie vers une autre file. La purge de Qarote est une opération irréversible."
+      },
+      {
+        "question": "La gestion de files fonctionne-t-elle avec les quorum queues ?",
+        "answer": "Oui. Qarote supporte les classic queues, les quorum queues et les stream queues. La création de files supporte les propriétés de quorum queues (facteur de réplication, limite de livraison). Certaines opérations se comportent différemment pour les quorum queues — par exemple, l'API de management applique des contraintes de quorum queue lors de la création."
+      },
+      {
+        "question": "Puis-je gérer directement les exchanges et les bindings ?",
+        "answer": "Oui — vous pouvez consulter tous les exchanges, inspecter leurs bindings, et créer ou supprimer des bindings depuis la vue de topologie. La gestion directe des exchanges (création/suppression) est disponible dans l'onglet exchanges de n'importe quel serveur connecté."
+      }
+    ]
+  }
+}

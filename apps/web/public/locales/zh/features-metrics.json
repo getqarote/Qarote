@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "RabbitMQ 队列历史——7 天指标快照 | Qarote",
+    "description": "7 天的 RabbitMQ 队列历史。每 5 分钟捕获一次队列深度、消费者数量和消息速率——用于事故复盘和容量规划。无需 Prometheus。"
+  },
+  "hero": {
+    "eyebrow": "功能 → 队列历史",
+    "title": "7 天的 RabbitMQ 队列历史。不是 8 小时。",
+    "subtitle": "RabbitMQ 管理插件大约在 8 小时后丢弃指标数据。Qarote 每 5 分钟捕获一次队列深度、消费者数量和消息速率，并保留 7 天——确保在事故复盘和容量规划时数据始终可用。"
+  },
+  "metricTypes": {
+    "eyebrow": "存储内容",
+    "heading": "Broker 随时间变化的完整画像",
+    "items": [
+      {
+        "icon": "chart.svg",
+        "title": "队列深度历史",
+        "description": "每 5 分钟采集一次队列消息数，保留 7 天——每条队列每周共 2,016 个数据点。可在任意时间窗口内绘制任意队列的深度图。精确查看队列何时开始填满、增长速度如何、何时排空——即使发生时你并不在场。"
+      },
+      {
+        "icon": "message.svg",
+        "title": "消费者数量历史",
+        "description": "各队列随时间变化的消费者连接数。将消费者骤降与队列深度激增相关联。识别某次部署导致消费者断线的确切时刻，以及重启策略将其恢复所花费的时间。"
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "消息吞吐量",
+        "description": "持续存储发布和投递速率。精准定位消息流量停止、放缓或激增的时刻。吞吐量历史是异步管道事故中最先查阅的内容——它告诉你问题何时开始，以及是否已完全恢复。"
+      },
+      {
+        "icon": "server.svg",
+        "title": "Broker 资源用量",
+        "description": "各节点随时间变化的内存用量、磁盘用量、文件描述符数量和 socket 数量。容量规划需要趋势数据，而非瞬时快照。Broker 资源历史让你预测当前硬件何时会成为瓶颈。"
+      },
+      {
+        "icon": "flag.svg",
+        "title": "死信积累情况",
+        "description": "各队列随时间变化的 DLQ 消息数。持续数周稳定增长的 DLQ 意味着系统性处理故障，而非偶发事件。持久化的 DLQ 数据能在这类慢性问题演变为大规模积压之前将其暴露。"
+      },
+      {
+        "icon": "send.svg",
+        "title": "连接与 Channel 数量",
+        "description": "各 Broker 随时间变化的总连接数和活跃 Channel 数。连接泄漏是最常见的 RabbitMQ 故障模式之一——一张显示 7 天内连接数稳步增长的图表，就是泄漏正在发生的明证。"
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "工作原理",
+    "heading": "自动采集，零配置",
+    "steps": [
+      {
+        "number": "01",
+        "title": "连接您的 Broker",
+        "description": "Qarote 每 5 分钟轮询一次 RabbitMQ 管理 API。从连接的瞬间起，队列深度、消费者数量和消息速率便自动开始采集——无需任何配置。"
+      },
+      {
+        "number": "02",
+        "title": "指标自动存储",
+        "description": "每个快照都会写入 Qarote 的数据库。默认存储所有已连接服务器上的全部队列——无需任何配置。数据保留 7 天，到期后自动清除。"
+      },
+      {
+        "number": "03",
+        "title": "随时查询任意时间窗口",
+        "description": "打开任意队列，回溯过去 7 天的数据。放大某个 15 分钟的事故窗口，或回顾整周趋势——数据随时都在。"
+      }
+    ]
+  },
+  "whyPersistence": {
+    "eyebrow": "为什么持久化很重要",
+    "heading": "管理插件是一扇窗，不是一份记录",
+    "p1": "RabbitMQ 管理插件将指标存储在内存中，保留窗口固定——默认约 8 小时，可配置但始终受 Broker 可用内存的约束。一旦窗口关闭，数据便永久消失。10 小时前发生的事故，在管理 UI 中已无任何证据可查。",
+    "p2": "Qarote 将指标写入 Broker 之外的持久化存储。您的队列深度历史能经受 Broker 重启、管理插件重置以及值班交接的考验。在事故次日早上进行复盘时，所需的数据就在那里。",
+    "p3": "配合 `rabbitmq_prometheus` 插件使用的 Prometheus 提供了类似的持久化能力，但需要您维护一套 Prometheus 服务器、配置抓取任务、设置保留策略，并从零构建 Grafana 仪表板。Qarote 的指标持久化是内置的——无需额外基础设施，无需任何配置。"
+  },
+  "crossLink": {
+    "eyebrow": "另请参见",
+    "navLabel": "相关链接",
+    "incidentDiagnosis": "故障诊断引擎 →",
+    "alerting": "实时告警",
+    "pricing": "定价",
+    "features": "全部功能"
+  },
+  "faq": {
+    "heading": "常见问题",
+    "items": [
+      {
+        "question": "指标保留多长时间？",
+        "answer": "Developer 和 Enterprise 计划保留 7 天。每 5 分钟采集一次快照，7 天后自动清除。免费社区版仅显示实时指标——不存储任何历史数据。"
+      },
+      {
+        "question": "指标持久化会占用多少存储空间？",
+        "answer": "极少。一个拥有 50 条队列、每 5 分钟采集一次快照的典型部署，完整 7 天窗口约占用 20 MB 存储空间。存储自动管理——快照超出保留窗口后自动清除。"
+      },
+      {
+        "question": "可以通过 API 查询历史指标吗？",
+        "answer": "历史指标可通过 Qarote 仪表板访问。Enterprise 计划提供通过 API 访问指标历史的功能。"
+      },
+      {
+        "question": "指标持久化支持自托管 Qarote 吗？",
+        "answer": "支持。自托管 Qarote（Developer 或 Enterprise 许可证）将指标存储在您提供的 PostgreSQL 数据库中。数据、保留策略和备份策略均由您掌控。"
+      },
+      {
+        "question": "Qarote 离线期间，指标会发生什么？",
+        "answer": "Qarote 停止运行期间，指标采集暂停。历史数据中会出现与停机时间对应的空白。Qarote 重新连接后，不会从管理插件回填缺失数据。"
+      }
+    ]
+  }
+}

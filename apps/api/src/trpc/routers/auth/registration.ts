@@ -32,8 +32,16 @@ export const registrationRouter = router({
   register: rateLimitedPublicProcedure
     .input(RegisterUserSchema)
     .mutation(async ({ input, ctx }) => {
-      const { email, password, firstName, lastName, acceptTerms, sourceApp } =
-        input;
+      const {
+        email,
+        password,
+        firstName,
+        lastName,
+        acceptTerms,
+        sourceApp,
+        referralSource,
+        discoveryQuery,
+      } = input;
 
       // Check if public registration is enabled
       if (!registrationConfig.enabled) {
@@ -84,6 +92,8 @@ export const registrationRouter = router({
                 emailVerified: true,
                 emailVerifiedAt: new Date(),
               }),
+              ...(referralSource && { referralSource }),
+              ...(discoveryQuery && { discoveryQuery }),
             },
             select: {
               id: true,

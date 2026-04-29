@@ -23,11 +23,13 @@ const FeatureItem = ({ children }: { children: React.ReactNode }) => (
 );
 
 const PricingSection = () => {
-  const { t: tPricing } = useTranslation("pricing");
+  const { t: tPricing, i18n } = useTranslation("pricing");
+  const lp = (path: string) =>
+    i18n.language === "en" ? path : `/${i18n.language}${path}`;
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
     "yearly"
   );
-  const [hostingMode, setHostingMode] = useState<"cloud" | "selfhost">("cloud");
+  const [hostingMode, setHostingMode] = useState("cloud");
   const cloudTabRef = useRef<HTMLButtonElement>(null);
   const selfhostTabRef = useRef<HTMLButtonElement>(null);
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
@@ -109,8 +111,13 @@ const PricingSection = () => {
         communitySupport: true,
         prioritySupport: false,
         emailAlerts: false,
-        topologyVisualization: false as false | "soon",
-        roleBasedAccess: "soon" as false | "soon",
+        topologyVisualization: false,
+        roleBasedAccess: "soon",
+        dailyDigest: "limited",
+        messageSpy: "limited",
+        metricsPersistence: "limited",
+        incidentDiagnosis: "limited",
+        messageTracing: "limited",
       },
     },
     {
@@ -135,7 +142,12 @@ const PricingSection = () => {
         prioritySupport: true,
         emailAlerts: true,
         topologyVisualization: true,
-        roleBasedAccess: "soon" as false | "soon",
+        roleBasedAccess: "soon",
+        dailyDigest: true,
+        messageSpy: true,
+        metricsPersistence: true,
+        incidentDiagnosis: true,
+        messageTracing: true,
       },
     },
     {
@@ -159,7 +171,12 @@ const PricingSection = () => {
         prioritySupport: true,
         emailAlerts: true,
         topologyVisualization: true,
-        roleBasedAccess: "soon" as false | "soon",
+        roleBasedAccess: "soon",
+        dailyDigest: true,
+        messageSpy: true,
+        metricsPersistence: true,
+        incidentDiagnosis: true,
+        messageTracing: true,
       },
     },
   ];
@@ -226,7 +243,7 @@ const PricingSection = () => {
               }
               disabled={hostingMode === "selfhost"}
               aria-label={tPricing("billedYearly")}
-              className="data-[state=checked]:bg-primary"
+              className="data-[state=checked]:bg-gradient-button"
             />
             <span
               className={`text-sm font-medium ${billingPeriod === "yearly" ? "text-foreground" : "text-muted-foreground"}`}
@@ -262,7 +279,7 @@ const PricingSection = () => {
               return (
                 <div
                   key={plan.id}
-                  className="relative flex h-full flex-col border border-border overflow-hidden"
+                  className="relative flex h-full flex-col border border-border overflow-hidden transition-colors duration-200 hover:border-primary/30"
                 >
                   {/* Plan header strip */}
                   <div className="px-6 py-3 bg-muted/30 border-b border-border flex items-center justify-between">
@@ -394,12 +411,6 @@ const PricingSection = () => {
                               <span className="text-sm text-foreground">
                                 {tPricing("featureNames.topologyVisualization")}
                               </span>
-                              {plan.features.topologyVisualization ===
-                                "soon" && (
-                                <span className="font-medium px-1 border border-border text-muted-foreground text-[0.65rem]">
-                                  {tPricing("soon")}
-                                </span>
-                              )}
                             </FeatureItem>
                           )}
                           {plan.features.roleBasedAccess && (
@@ -414,6 +425,45 @@ const PricingSection = () => {
                               )}
                             </FeatureItem>
                           )}
+                        </ul>
+                      </div>
+
+                      <div>
+                        <h4 className="font-semibold text-foreground mb-3 text-xs sm:text-sm uppercase tracking-wide whitespace-nowrap">
+                          {tPricing("intelligenceDiagnostics")}
+                        </h4>
+                        <ul className="space-y-2">
+                          {(
+                            [
+                              ["dailyDigest", "featureNames.dailyDigest"],
+                              ["messageSpy", "featureNames.messageSpy"],
+                              [
+                                "metricsPersistence",
+                                "featureNames.metricsPersistence",
+                              ],
+                              [
+                                "incidentDiagnosis",
+                                "featureNames.incidentDiagnosis",
+                              ],
+                              ["messageTracing", "featureNames.messageTracing"],
+                            ] as const
+                          ).map(([key, nameKey]) => {
+                            const val =
+                              plan.features[key as keyof typeof plan.features];
+                            if (!val) return null;
+                            return (
+                              <FeatureItem key={key}>
+                                <span className="text-sm text-foreground">
+                                  {tPricing(nameKey)}
+                                </span>
+                                {val === "limited" && (
+                                  <span className="font-medium px-1 border border-border text-muted-foreground text-[0.65rem]">
+                                    {tPricing("limited")}
+                                  </span>
+                                )}
+                              </FeatureItem>
+                            );
+                          })}
                         </ul>
                       </div>
 
@@ -459,6 +509,22 @@ const PricingSection = () => {
                             </FeatureItem>
                           )}
                         </ul>
+                        <a
+                          href={lp("/security/")}
+                          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors duration-150 mt-3"
+                        >
+                          {tPricing("viewSecurity")}
+                          <svg
+                            className="w-3 h-3"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                            aria-hidden="true"
+                          >
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                          </svg>
+                        </a>
                       </div>
 
                       <div className="mt-auto space-y-4">

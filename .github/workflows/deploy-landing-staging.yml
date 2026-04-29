@@ -46,7 +46,9 @@ jobs:
 
       - name: 💅 Format Check
         working-directory: apps/web
-        run: pnpm run format
+        run: |
+          pnpm run format:fix
+          git diff --exit-code || (echo "::error::Formatting issues detected. Run 'pnpm run format:fix' locally and commit the result." && exit 1)
 
   deploy-landing:
     name: Deploy Landing to Cloudflare Pages - Staging

@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "Queue History RabbitMQ — 7 jours de snapshots de métriques | Qarote",
+    "description": "7 jours d'historique de files RabbitMQ. Profondeur de file, nombres de consommateurs et débits de messages capturés toutes les 5 minutes — pour les rétrospectives d'incidents et la planification de capacité. Sans Prometheus."
+  },
+  "hero": {
+    "eyebrow": "Fonctionnalités → Queue History",
+    "title": "7 jours d'historique de files RabbitMQ. Pas 8 heures.",
+    "subtitle": "Le plugin de management RabbitMQ supprime les métriques après environ 8 heures. Qarote capture la profondeur de file, les nombres de consommateurs et les débits de messages toutes les 5 minutes et les conserve 7 jours — pour que les données soient là quand vous en avez besoin pour les rétrospectives d'incidents et la planification de capacité."
+  },
+  "metricTypes": {
+    "eyebrow": "Ce qui est stocké",
+    "heading": "Une image complète de votre broker dans le temps",
+    "items": [
+      {
+        "icon": "chart.svg",
+        "title": "Historique de profondeur de file",
+        "description": "Nombre de messages par file capturé toutes les 5 minutes, conservé 7 jours — 2 016 points de données par file et par semaine. Représentez la profondeur de n'importe quelle file sur n'importe quelle fenêtre temporelle. Voyez exactement quand une file a commencé à se remplir, à quelle vitesse elle a grossi et quand elle s'est vidée — même si vous ne regardiez pas quand c'est arrivé."
+      },
+      {
+        "icon": "message.svg",
+        "title": "Historique du nombre de consommateurs",
+        "description": "Connexions consommateurs par file dans le temps. Corrélez les chutes de consommateurs avec les pics de profondeur de file. Identifiez le moment où un déploiement a déconnecté les consommateurs et combien de temps votre politique de redémarrage a mis à les relancer."
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "Débit de messages",
+        "description": "Taux de publication et de livraison stockés en continu. Identifiez précisément quand le flux de messages s'est arrêté, ralenti ou a piqué. L'historique de débit est la première chose que l'on consulte lors d'un incident de pipeline async — il indique quand le problème a commencé et s'il est entièrement résolu."
+      },
+      {
+        "icon": "server.svg",
+        "title": "Utilisation des ressources broker",
+        "description": "Utilisation mémoire, utilisation disque, compteurs de descripteurs de fichiers et de sockets par nœud dans le temps. La planification de capacité nécessite des données de tendance, pas des snapshots. L'historique des ressources broker vous permet de projeter quand votre matériel actuel deviendra une contrainte."
+      },
+      {
+        "icon": "flag.svg",
+        "title": "Accumulation en dead-letter",
+        "description": "Nombre de messages en DLQ dans le temps, par file. Une DLQ qui grossit régulièrement sur des semaines indique un échec de traitement systématique, pas un incident ponctuel. Les données persistantes de DLQ remontent ces problèmes à combustion lente avant qu'ils ne deviennent des backlogs."
+      },
+      {
+        "icon": "send.svg",
+        "title": "Nombre de connexions et de canaux",
+        "description": "Total des connexions et canaux ouverts par broker dans le temps. Les fuites de connexions sont l'un des modes de panne RabbitMQ les plus courants — un graphique montrant une croissance constante du nombre de connexions sur 7 jours est une fuite en cours."
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "Comment ça fonctionne",
+    "heading": "Collecte automatique, zéro configuration",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Connectez votre broker",
+        "description": "Qarote interroge votre API de management RabbitMQ toutes les 5 minutes. Profondeur de file, nombres de consommateurs et débits de messages sont capturés automatiquement dès que vous vous connectez — aucune configuration requise."
+      },
+      {
+        "number": "02",
+        "title": "Les métriques sont stockées automatiquement",
+        "description": "Chaque snapshot est écrit dans la base de données de Qarote. Toutes les files sur tous les serveurs connectés sont stockées par défaut — aucune configuration requise. Les données sont conservées 7 jours et purgées automatiquement au fur et à mesure qu'elles sortent de la fenêtre de rétention."
+      },
+      {
+        "number": "03",
+        "title": "Interrogez n'importe quelle fenêtre temporelle",
+        "description": "Ouvrez n'importe quelle file et remontez jusqu'aux 7 derniers jours. Zoomez sur une fenêtre d'incident de 15 minutes ou consultez la tendance de la semaine complète — les données sont toujours là."
+      }
+    ]
+  },
+  "whyPersistence": {
+    "eyebrow": "Pourquoi la persistance compte",
+    "heading": "Le plugin de management est une fenêtre, pas un enregistrement",
+    "p1": "Le plugin de management RabbitMQ stocke les métriques en mémoire avec une fenêtre de rétention fixe — environ 8 heures par défaut, configurable mais toujours limitée par la mémoire disponible du broker. Le moment où cette fenêtre se ferme, les données sont perdues. Un incident survenu il y a 10 heures ne laisse plus aucune trace dans l'interface de management.",
+    "p2": "Qarote écrit les métriques dans un stockage persistant externe au broker. Votre historique de profondeur de file survit aux redémarrages du broker, aux resets du plugin de management et à la fin de votre astreinte. Quand vous faites un post-mortem le lendemain matin d'un incident, les données dont vous avez besoin sont disponibles.",
+    "p3": "Prometheus avec le plugin `rabbitmq_prometheus` offre une persistance similaire, mais nécessite d'opérer un serveur Prometheus, de configurer des jobs de scrape, de définir des politiques de rétention et de construire des dashboards Grafana from scratch. La persistance des métriques de Qarote est intégrée — aucune infrastructure supplémentaire, aucune configuration."
+  },
+  "crossLink": {
+    "eyebrow": "Voir aussi",
+    "navLabel": "Liens associés",
+    "incidentDiagnosis": "Moteur de diagnostic d'incidents →",
+    "alerting": "Alertes en temps réel",
+    "pricing": "Tarifs",
+    "features": "Toutes les fonctionnalités"
+  },
+  "faq": {
+    "heading": "Questions fréquentes",
+    "items": [
+      {
+        "question": "Combien de temps les métriques sont-elles conservées ?",
+        "answer": "7 jours sur les plans Developer et Enterprise. Les snapshots sont pris toutes les 5 minutes et automatiquement purgés après 7 jours. L'édition Community gratuite affiche uniquement les métriques en temps réel — aucune donnée historique n'est stockée."
+      },
+      {
+        "question": "Quel espace de stockage la persistance des métriques utilise-t-elle ?",
+        "answer": "Minimal. Un déploiement typique avec 50 files à des snapshots de 5 minutes utilise environ 20 Mo pour la fenêtre complète de 7 jours. Le stockage est géré automatiquement — les snapshots sont purgés au fur et à mesure qu'ils sortent de la fenêtre de rétention."
+      },
+      {
+        "question": "Puis-je interroger les métriques historiques via API ?",
+        "answer": "Les métriques historiques sont accessibles via le dashboard Qarote. L'accès API à l'historique des métriques est disponible sur les plans Enterprise."
+      },
+      {
+        "question": "La persistance des métriques fonctionne-t-elle avec Qarote auto-hébergé ?",
+        "answer": "Oui. Qarote auto-hébergé (licence Developer ou Enterprise) stocke les métriques dans la base de données PostgreSQL que vous fournissez. Vous contrôlez les données, la rétention et la politique de sauvegarde."
+      },
+      {
+        "question": "Que se passe-t-il pour les métriques si Qarote est hors ligne ?",
+        "answer": "La collecte de métriques s'interrompt pendant que Qarote est hors ligne. Il y aura des lacunes dans votre historique correspondant à la durée d'indisponibilité. Qarote ne comble pas les données manquantes depuis le plugin de management après reconnexion."
+      }
+    ]
+  }
+}

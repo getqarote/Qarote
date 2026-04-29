@@ -1,0 +1,23 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { FeaturesDigestIsland } from "../../components/FeaturesDigestIsland";
+import { loadTranslations, loadAllTranslations, t } from "../../lib/i18n-static";
+import { buildFaqSchema } from "../../lib/schema";
+import { DEFAULT_LOCALE } from "@qarote/i18n";
+
+const digest = loadTranslations(DEFAULT_LOCALE, "features-digest");
+const resources = { ...loadAllTranslations(DEFAULT_LOCALE), "features-digest": digest };
+const faqSchema = buildFaqSchema(digest);
+---
+
+<BaseLayout
+  title={t(digest, "seo.title")}
+  description={t(digest, "seo.description")}
+  locale={DEFAULT_LOCALE}
+  canonicalPath="/features/digest/"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  </Fragment>
+  <FeaturesDigestIsland locale={DEFAULT_LOCALE} resources={resources} client:load />
+</BaseLayout>

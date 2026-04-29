@@ -1,4 +1,8 @@
 {
+  "seo": {
+    "title": "Precios — Qarote Monitoreo de RabbitMQ",
+    "description": "Edición Community gratuita, o desbloquea el monitoreo avanzado con los planes Developer ($29/mes) y Enterprise. Auto-alojado gratis, para siempre."
+  },
   "title": "Precios simples. Monitoreo potente.",
   "billedMonthly": "Facturación mensual",
   "billedYearly": "Facturación anual",
@@ -20,7 +24,10 @@
   "freeTrial": "Prueba gratuita",
   "contactSales": "Contactar ventas",
   "soon": "Próximamente",
+  "limited": "Limitado",
+  "intelligenceDiagnostics": "Inteligencia y Diagnósticos",
   "securityCompatibility": "Seguridad & compatibilidad",
+  "viewSecurity": "Ver nuestras prácticas de seguridad",
   "plans": {
     "starter": {
       "name": "Community",
@@ -96,7 +103,17 @@
     "workspace_unlimited": "Espacios de trabajo ilimitados",
     "member_upTo1": "1 miembro de equipo",
     "member_upTo3": "3 miembros de equipo",
-    "member_unlimited": "Miembros de equipo ilimitados"
+    "member_unlimited": "Miembros de equipo ilimitados",
+    "dailyDigest": "Resumen diario",
+    "dailyDigestDesc": "Resumen diario de la salud de tus colas, alertas y anomalías",
+    "messageSpy": "Espía de mensajes",
+    "messageSpyDesc": "Inspecciona el contenido de mensajes en las colas sin consumirlos",
+    "metricsPersistence": "Historial de colas",
+    "metricsPersistenceDesc": "Snapshots cada 5 minutos, retenidos 7 días — revisa profundidades, tasas y consumidores en cualquier momento de la semana pasada",
+    "incidentDiagnosis": "Motor de diagnóstico de incidentes",
+    "incidentDiagnosisDesc": "Análisis automatizado de causa raíz para identificar fallos rápidamente",
+    "messageTracing": "Trazado de mensajes (Firehose)",
+    "messageTracingDesc": "Trazado completo de mensajes mediante el exchange firehose de RabbitMQ"
   },
   "limits": {
     "upTo1": "Hasta 1",

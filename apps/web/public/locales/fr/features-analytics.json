@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "Analytiques RabbitMQ — Historique et tendances | Qarote",
+    "description": "Graphiques historiques du débit de messages RabbitMQ, des tendances de profondeur de file et de l'utilisation des ressources broker. Repérez les problèmes de capacité avant qu'ils ne deviennent des incidents. Sans Prometheus ni Grafana."
+  },
+  "hero": {
+    "eyebrow": "Fonctionnalités → Analytiques",
+    "title": "Comprenez le passé de votre broker pour planifier son avenir.",
+    "subtitle": "Débit de messages, tendances de profondeur de file et utilisation des ressources broker — représentés dans le temps avec des fenêtres configurables. Détectez les tendances saisonnières, identifiez les dégradations progressives et répondez à « était-ce toujours ainsi ? » sans déployer une stack Prometheus."
+  },
+  "chartTypes": {
+    "eyebrow": "Ce qui est représenté",
+    "heading": "Chaque métrique qui compte dans le temps",
+    "items": [
+      {
+        "icon": "chart.svg",
+        "title": "Débit de messages",
+        "description": "Taux de publication et de livraison dans le temps, par file et à l'échelle du broker. Les graphiques de débit sont la première chose qu'on consulte lors d'un post-mortem — ils indiquent quand le flux de messages a changé et de combien."
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "Tendances de profondeur de file",
+        "description": "Nombre de messages par file sur des fenêtres de temps configurables. Une file qui grossit de 5 % par jour n'a pas l'air alarmante en temps réel — mais une semaine de données de tendance rend la trajectoire évidente avant que ça ne devienne un problème de capacité."
+      },
+      {
+        "icon": "server.svg",
+        "title": "Utilisation mémoire du broker",
+        "description": "Consommation mémoire par nœud dans le temps. L'alarme mémoire de RabbitMQ se déclenche à un seuil configurable — les analytiques vous permettent de voir à quel point vous êtes proche et de projeter quand l'utilisation actuelle déclenchera une alarme."
+      },
+      {
+        "icon": "flag.svg",
+        "title": "Tendances d'espace disque",
+        "description": "Utilisation disque par nœud dans le temps. Les alarmes disque bloquent complètement la publication. Les données de tendance vous permettent de projeter la marge restante — pour ajouter du stockage selon votre planning, pas en plein incident."
+      },
+      {
+        "icon": "message.svg",
+        "title": "Utilisation des consommateurs",
+        "description": "Nombre de consommateurs et taux d'utilisation dans le temps. Les chutes du nombre de consommateurs corrèlent avec les pics de profondeur de file — voir les deux sur le même axe temporel est essentiel pour reconstituer ce qui s'est passé lors d'un incident."
+      },
+      {
+        "icon": "send.svg",
+        "title": "Historique des connexions et canaux",
+        "description": "Connexions ouvertes et canaux par broker dans le temps. Un nombre de connexions qui croît de 10 % chaque semaine est une fuite. Les données de tendance rendent le schéma indiscutable d'une façon que les métriques en temps réel ne peuvent pas."
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "Comment ça fonctionne",
+    "heading": "Des graphiques construits automatiquement à partir de vos métriques",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Connectez votre broker",
+        "description": "Qarote commence à collecter des métriques dès que vous vous connectez. Aucune configuration de scrape, aucune politique de rétention à définir — la collecte est automatique."
+      },
+      {
+        "number": "02",
+        "title": "Sélectionnez une file ou un serveur",
+        "description": "Ouvrez n'importe quelle file ou nœud broker et basculez vers la vue analytiques. Les graphiques s'affichent immédiatement à partir de l'historique des métriques stockées — aucun langage de requête nécessaire."
+      },
+      {
+        "number": "03",
+        "title": "Ajustez la fenêtre temporelle",
+        "description": "Sélectionnez 1 heure, 6 heures, 24 heures ou 7 jours. Zoomez sur une fenêtre d'incident ou consultez la tendance de la semaine complète. Le même graphique, à différentes résolutions."
+      }
+    ]
+  },
+  "vsPrometheus": {
+    "eyebrow": "Comparé à Prometheus + Grafana",
+    "heading": "Des analytiques sans l'infrastructure",
+    "p1": "Prometheus avec le plugin `rabbitmq_prometheus` offre des analytiques puissantes — si vous acceptez d'opérer un serveur Prometheus, de configurer des jobs de scrape, d'affiner les paramètres de rétention et de construire des dashboards Grafana à partir de zéro. La mise en place typique prend une demi-journée et produit des dashboards qui nécessitent une maintenance continue au fur et à mesure que votre topologie de files évolue.",
+    "p2": "Les analytiques de Qarote sont intégrées. Les graphiques de profondeur de file, de débit et de ressources sont disponibles immédiatement après avoir connecté votre broker — pour chaque file, automatiquement, sans dashboard à construire. Quand vous ajoutez une nouvelle file, elle apparaît dans les analytiques dès la prochaine collecte de métriques.",
+    "p3": "Le compromis est la flexibilité — les graphiques de Qarote couvrent les métriques que les opérateurs RabbitMQ utilisent vraiment. Si vous avez besoin de requêtes PromQL personnalisées ou de corrélations multi-systèmes, Prometheus est le bon outil. Si vous avez besoin d'analytiques RabbitMQ opérationnelles en cinq minutes sans infrastructure, c'est Qarote."
+  },
+  "crossLink": {
+    "eyebrow": "Voir aussi",
+    "navLabel": "Liens associés",
+    "queueHistory": "Queue History →",
+    "alerting": "Alertes en temps réel",
+    "liveMonitoring": "Monitoring en direct",
+    "features": "Toutes les fonctionnalités"
+  },
+  "faq": {
+    "heading": "Questions fréquentes",
+    "items": [
+      {
+        "question": "Sur quelle période les analytiques remontent-elles ?",
+        "answer": "Les graphiques analytiques s'appuient sur les données de Queue History — 7 jours de snapshots à intervalles de 5 minutes sur les plans Developer et Enterprise. L'édition Community affiche uniquement les métriques en temps réel."
+      },
+      {
+        "question": "Puis-je exporter les données des graphiques ?",
+        "answer": "L'export des données de graphiques est disponible sur les plans Enterprise. Les plans Developer peuvent consulter et capturer les graphiques dans le dashboard. L'accès API à l'historique des métriques est une fonctionnalité Enterprise."
+      },
+      {
+        "question": "Dois-je configurer quelles métriques collecter ?",
+        "answer": "Non. Qarote collecte les métriques de toutes les files sur tous les serveurs connectés automatiquement. Aucune configuration, aucune sélection de métriques, et pas besoin d'activer les files individuellement."
+      },
+      {
+        "question": "Quelle est la différence avec Queue History ?",
+        "answer": "Analytiques et Queue History s'appuient sur les mêmes données sous-jacentes — des snapshots à 5 minutes conservés 7 jours. Queue History met l'accent sur la chronologie brute pour les rétrospectives d'incidents. Analytiques met l'accent sur la visualisation des tendances, les graphiques comparatifs et les vues de planification de capacité sur les mêmes données."
+      },
+      {
+        "question": "Les analytiques fonctionnent-elles avec Qarote auto-hébergé ?",
+        "answer": "Oui. Qarote auto-hébergé (licence Developer ou Enterprise) stocke l'historique des métriques dans votre base de données PostgreSQL. Les graphiques analytiques se génèrent à partir de ces données locales — aucune dépendance cloud."
+      }
+    ]
+  }
+}

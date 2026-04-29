@@ -1,0 +1,25 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PricingIsland from "../../components/PricingIsland";
+import { loadTranslations, t } from "../../lib/i18n-static";
+import { getLocaleStaticPaths } from "../../lib/locales";
+
+export const getStaticPaths = getLocaleStaticPaths;
+
+const { locale } = Astro.params;
+const resources = {
+  common: loadTranslations(locale, "common"),
+  nav: loadTranslations(locale, "nav"),
+  landing: loadTranslations(locale, "landing"),
+  pricing: loadTranslations(locale, "pricing"),
+};
+---
+
+<BaseLayout
+  title={t(resources.pricing, "seo.title")}
+  description={t(resources.pricing, "seo.description")}
+  locale={locale}
+  canonicalPath="/pricing/"
+>
+  <PricingIsland locale={locale} resources={resources} client:load />
+</BaseLayout>

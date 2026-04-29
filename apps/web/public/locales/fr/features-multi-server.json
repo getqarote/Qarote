@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "Monitoring multi-serveurs RabbitMQ — Workspaces et accès équipe | Qarote",
+    "description": "Connectez plusieurs instances RabbitMQ à un seul workspace Qarote. Monitorez production, staging et développement depuis un tableau de bord unique. Contrôle d'accès équipe, connexions TLS et isolation des workspaces — sans outillage par serveur."
+  },
+  "hero": {
+    "eyebrow": "Fonctionnalités → Multi-Server",
+    "title": "Un seul workspace. Tous vos serveurs RabbitMQ.",
+    "subtitle": "Connectez vos brokers de production, staging et développement à un seul workspace Qarote. Passez d'un serveur à l'autre en un clic. Partagez le même dashboard avec toute votre équipe — avec un contrôle d'accès par rôle qui garde les opérations de production sous contrôle."
+  },
+  "capabilities": {
+    "eyebrow": "Contenu inclus",
+    "heading": "Tout ce qu'il faut pour RabbitMQ multi-environnements",
+    "items": [
+      {
+        "icon": "server.svg",
+        "title": "Connexions à plusieurs serveurs",
+        "description": "Connectez jusqu'à 3 serveurs RabbitMQ sur le plan Developer, illimité sur Enterprise. Chaque serveur est monitoré indépendamment — listes de files séparées, états de santé séparés, configurations d'alertes séparées."
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "Dashboard cross-serveurs",
+        "description": "Une liste unifiée de serveurs affiche tous les brokers connectés avec leur état de santé d'un coup d'œil. Les serveurs critiques remontent automatiquement en haut. Accédez à la vue détail de n'importe quel serveur en un clic — sans jongler entre onglets ni marque-pages navigateur."
+      },
+      {
+        "icon": "flag.svg",
+        "title": "Isolation des environnements",
+        "description": "Production, staging et développement sont des entrées serveur séparées avec des configurations séparées. Les alertes de staging ne se déclenchent pas dans votre canal Slack de production. Les opérations de gestion de files sur le développement ne peuvent pas accidentellement cibler la production."
+      },
+      {
+        "icon": "send.svg",
+        "title": "Connexions chiffrées TLS",
+        "description": "Toutes les connexions à votre API de management RabbitMQ sont en TLS. Qarote ne stocke jamais vos credentials RabbitMQ en clair — les connexions sont testées à la saisie et les credentials sont chiffrés au repos."
+      },
+      {
+        "icon": "message.svg",
+        "title": "Contrôle d'accès équipe",
+        "description": "Invitez des membres de l'équipe avec des rôles délimités : Admin (accès complet), Member (monitoring + alertes), Viewer (lecture seule). Contrôlez qui peut gérer les files, configurer les alertes et connecter de nouveaux serveurs — par workspace."
+      },
+      {
+        "icon": "chart.svg",
+        "title": "Organisation en workspaces",
+        "description": "Les workspaces séparent les environnements au niveau organisationnel — utile pour les agences gérant les brokers de plusieurs clients, ou les entreprises avec des unités métier isolées. Chaque workspace dispose de serveurs, utilisateurs, alertes et facturation indépendants."
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "Comment ça fonctionne",
+    "heading": "Ajouter un serveur prend 60 secondes",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Ajoutez un serveur",
+        "description": "Saisissez l'URL de votre API de management RabbitMQ et vos credentials. Qarote teste la connexion immédiatement et ajoute le serveur à votre workspace. La liste complète des files apparaît en quelques secondes."
+      },
+      {
+        "number": "02",
+        "title": "Tous les environnements en une vue",
+        "description": "Passez d'un serveur à l'autre depuis la navigation principale. Chaque serveur a sa propre liste de files, ses analytiques et sa configuration d'alertes. La vue de santé unifiée affiche tous les serveurs en même temps — sain, avertissement ou critique."
+      },
+      {
+        "number": "03",
+        "title": "Invitez votre équipe",
+        "description": "Ajoutez des membres de l'équipe par email. Attribuez des rôles correspondant à leurs responsabilités. Les ingénieurs d'astreinte ont accès aux alertes. Les développeurs ont accès en lecture. Les admins gèrent les connexions serveur et les paramètres du workspace."
+      }
+    ]
+  },
+  "teamWorkspaces": {
+    "eyebrow": "Workspaces et équipes",
+    "heading": "Contexte partagé sans risque partagé",
+    "p1": "Quand votre équipe dépasse une personne gérant RabbitMQ, vous avez un problème de coordination. Tout le monde met le plugin de management en marque-page directement. Les credentials sont partagés sur Slack. Il n'y a aucun enregistrement de qui a purgé quelle file. Les alertes se déclenchent vers un alias email partagé que personne ne vérifie.",
+    "p2": "Les workspaces Qarote donnent à votre équipe un contexte partagé unique : la même liste de serveurs, le même dashboard de files, le même historique d'alertes — avec des connexions individuelles et un accès par rôle. Les opérations qui touchent la production sont contrôlées par le modèle de permissions de Qarote, pas par qui détient la clé SSH.",
+    "p3": "Les workspaces Enterprise ajoutent le SSO (OIDC/SAML) et les contrôles d'accès au niveau équipe. Connectez votre fournisseur d'identité, et la gestion des utilisateurs Qarote suit votre processus d'offboarding existant. Quand un membre de l'équipe part, révoquer son accès Qarote révoque automatiquement son accès au monitoring RabbitMQ."
+  },
+  "crossLink": {
+    "eyebrow": "Voir aussi",
+    "navLabel": "Liens associés",
+    "alerting": "Alertes en temps réel →",
+    "liveMonitoring": "Monitoring en direct",
+    "pricing": "Tarifs",
+    "features": "Toutes les fonctionnalités"
+  },
+  "faq": {
+    "heading": "Questions fréquentes",
+    "items": [
+      {
+        "question": "Combien de serveurs puis-je connecter ?",
+        "answer": "Les plans Developer supportent jusqu'à 3 connexions de serveurs RabbitMQ par workspace. Les plans Enterprise supportent des connexions illimitées. L'édition Community (gratuite) supporte 1 serveur."
+      },
+      {
+        "question": "Puis-je connecter des serveurs de différents environnements au même workspace ?",
+        "answer": "Oui — connecter la production, le staging et le développement au même workspace est le cas d'usage prévu. Les configurations d'alertes, les rôles utilisateurs et les permissions de gestion de files sont tous délimités par serveur, donc l'isolation des environnements est maintenue."
+      },
+      {
+        "question": "Qarote nécessite-t-il un accès réseau du broker vers Qarote ?",
+        "answer": "Qarote se connecte en sortant vers votre API de management RabbitMQ (port 15672 par défaut en HTTP, 15671 en HTTPS/TLS si configuré). Votre broker n'a pas besoin d'accès réseau entrant depuis Qarote — seul l'endpoint de l'API de management RabbitMQ doit être accessible depuis votre installation Qarote. Le port et le protocole exacts dépendent de la configuration du listener de management de votre broker."
+      },
+      {
+        "question": "Comment fonctionne l'accès équipe pour Qarote auto-hébergé ?",
+        "answer": "Qarote auto-hébergé utilise le même modèle d'accès par rôle. Vous gérez les utilisateurs via le panneau d'administration Qarote. Enterprise auto-hébergé ajoute le SSO OIDC/SAML — connectez votre fournisseur d'identité et le provisionnement des utilisateurs suit votre répertoire existant."
+      },
+      {
+        "question": "Les membres de l'équipe peuvent-ils avoir des accès différents par serveur ?",
+        "answer": "Dans la version actuelle, les rôles sont délimités par workspace — un Member peut voir tous les serveurs dans le workspace. Les permissions délimitées par serveur (contrôle lecture/écriture par serveur) sont au programme Enterprise."
+      }
+    ]
+  }
+}

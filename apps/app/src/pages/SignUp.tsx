@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useId, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router";
@@ -7,15 +7,27 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { trackSignUp } from "@/lib/ga";
 import { logger } from "@/lib/logger";
+import { cn } from "@/lib/utils";
 
-import { AuthPageHeader } from "@/components/auth/AuthPageHeader";
 import { AuthPageWrapper } from "@/components/auth/AuthPageWrapper";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import { SSOLoginButton } from "@/components/auth/SSOLoginButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { CardContent } from "@/components/ui/card";
+import {
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Command,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/components/ui/command";
 import {
   Form,
   FormControl,
@@ -27,7 +39,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { PasswordRequirements } from "@/components/ui/password-requirements";
-import { PixelUserPlus } from "@/components/ui/pixel-user-plus";
+import { PixelCheck } from "@/components/ui/pixel-check";
+import { PixelChevronDown } from "@/components/ui/pixel-chevron-down";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
@@ -35,21 +53,28 @@ import { usePublicConfig } from "@/hooks/queries/usePublicConfig";
 import { useShowAlternativeAuth } from "@/hooks/queries/useSsoConfig";
 import { useRegister } from "@/hooks/ui/useAuth";
 
-import { type SignUpFormData, signUpSchema } from "@/schemas";
+import {
+  REFERRAL_SOURCES,
+  type ReferralSource,
+  type SignUpFormData,
+  signUpSchema,
+} from "@/schemas";
 
 /**
- * Sign-up page. Adopts the shared `AuthPageWrapper` so the auth
- * flow matches the quiet dashboard aesthetic. Three render states:
+ * Sign-up page. Three render states:
  *
- *   1. **Registration disabled** — warning alert with "Go to sign-in"
- *      fallback (self-hosted admins can turn registration off)
- *   2. **Success** — success alert with "Go to sign-in" CTA, plus
- *      a note about email verification if SMTP is configured
- *   3. **Form mode** — the happy path, full registration form with
- *      terms acceptance
+ *   1. Registration disabled — warning alert with "Go to sign-in" fallback
+ *   2. Success — success alert with "Go to sign-in" CTA
+ *   3. Form mode — full registration form with attribution questions
  *
- * Alternative auth (Google / SSO) is hidden in the success state
- * because re-offering it after account creation is confusing.
+ * Design:
+ * - No icon badge — typographic header carries hierarchy on its own.
+ * - Bricolage Grotesque heading with a Fragment Mono orange eyebrow.
+ * - Form sectioned: account fields / optional attribution / legal.
+ * - Staggered entrance animation (respects prefers-reduced-motion).
+ * - Attribution: Popover+Command combobox for referral source; discovery
+ *   query revealed only for search/AI sources via grid-template-rows.
+ * - Submit button reveals → on hover; terms label brightens on check.
  */
 const SignUp = () => {
   const { t } = useTranslation("auth");
@@ -71,18 +96,23 @@ const SignUp = () => {
       password: "",
       confirmPassword: "",
       acceptTerms: false,
+      referralSource: undefined,
+      discoveryQuery: "",
     },
   });
 
-  // Redirect if already authenticated (shouldn't normally happen on
-  // the signup page, but handles the deep-link case)
+  const acceptTermsValue = form.watch("acceptTerms");
+  const referralSourceValue = form.watch("referralSource");
+  const showDiscoveryQuery =
+    referralSourceValue !== undefined &&
+    SEARCH_AI_KEYS.has(referralSourceValue);
+
   useEffect(() => {
     if (isAuthenticated) {
       navigate(from, { replace: true });
     }
   }, [isAuthenticated, navigate, from]);
 
-  // Track successful sign-ups with GA
   useEffect(() => {
     if (registerMutation.isSuccess && registerMutation.data) {
       trackSignUp({
@@ -99,6 +129,8 @@ const SignUp = () => {
       firstName: data.firstName,
       lastName: data.lastName,
       acceptTerms: data.acceptTerms,
+      referralSource: data.referralSource || undefined,
+      discoveryQuery: data.discoveryQuery || undefined,
     });
   };
 
@@ -107,13 +139,48 @@ const SignUp = () => {
 
   return (
     <AuthPageWrapper>
-      <AuthPageHeader
-        Icon={PixelUserPlus}
-        title={t("getStarted")}
-        description={t("createAccountDescription")}
-      />
+      {/* ── Entrance animation ────────────────────────────────────── */}
+      <style>{`
+        @keyframes su-field-in {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0);   }
+        }
+        .su-in {
+          animation: su-field-in 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .su-in { animation: none !important; }
+        }
+      `}</style>
 
-      <CardContent className="space-y-4">
+      {/* ── Header — no icon badge ────────────────────────────────── */}
+      <CardHeader className="px-8 pt-8 pb-2 space-y-0">
+        <p
+          className="su-in text-[10px] tracking-[0.18em] uppercase text-primary font-medium mb-3 select-none"
+          style={{ fontFamily: "var(--font-mono)", animationDelay: "0ms" }}
+        >
+          Qarote
+        </p>
+        <CardTitle
+          className="su-in text-[1.65rem] font-bold tracking-tight leading-[1.15]"
+          style={{
+            fontFamily: "var(--font-heading)",
+            fontOpticalSizing: "auto",
+            animationDelay: "40ms",
+          }}
+        >
+          {t("getStarted")}
+        </CardTitle>
+        <CardDescription
+          className="su-in text-sm leading-relaxed mt-2"
+          style={{ animationDelay: "80ms" }}
+        >
+          {t("createAccountDescription")}
+        </CardDescription>
+      </CardHeader>
+
+      {/* ── Body ─────────────────────────────────────────────────── */}
+      <CardContent className="px-8 pb-8 pt-5">
         {isDisabled ? (
           <RegistrationDisabledAlert
             onGoToSignIn={() => navigate("/auth/sign-in")}
@@ -127,7 +194,7 @@ const SignUp = () => {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               {registerMutation.isError && (
-                <Alert variant="destructive">
+                <Alert variant="destructive" className="su-in">
                   <AlertDescription>
                     {registerMutation.error instanceof Error
                       ? registerMutation.error.message
@@ -136,7 +203,11 @@ const SignUp = () => {
                 </Alert>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
+              {/* ── Name row ── */}
+              <div
+                className="su-in grid grid-cols-2 gap-3"
+                style={{ animationDelay: "120ms" }}
+              >
                 <FormField
                   control={form.control}
                   name="firstName"
@@ -175,121 +246,235 @@ const SignUp = () => {
                 />
               </div>
 
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("emailAddress")}</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder={t("emailPlaceholder")}
-                        disabled={registerMutation.isPending}
-                        autoComplete="username"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("password")}</FormLabel>
-                    <FormControl>
-                      <PasswordInput
-                        placeholder={t("createAPassword")}
-                        disabled={registerMutation.isPending}
-                        autoComplete="new-password"
-                        {...field}
-                      />
-                    </FormControl>
-                    <PasswordRequirements
-                      password={field.value || ""}
-                      className="mt-2"
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("confirmPassword")}</FormLabel>
-                    <FormControl>
-                      <PasswordInput
-                        placeholder={t("confirmYourPassword")}
-                        disabled={registerMutation.isPending}
-                        autoComplete="new-password"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="acceptTerms"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        disabled={registerMutation.isPending}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel className="text-sm font-normal">
-                        {t("agreeToTerms")}{" "}
-                        <Link
-                          to="/terms-of-service"
-                          className="font-medium text-primary hover:underline underline-offset-2"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {t("common:termsOfService")}
-                        </Link>{" "}
-                        {t("andThe")}{" "}
-                        <Link
-                          to="/privacy-policy"
-                          className="font-medium text-primary hover:underline underline-offset-2"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {t("common:privacyPolicy")}
-                        </Link>
-                        .
-                      </FormLabel>
+              {/* ── Email ── */}
+              <div className="su-in" style={{ animationDelay: "160ms" }}>
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("emailAddress")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder={t("emailPlaceholder")}
+                          disabled={registerMutation.isPending}
+                          autoComplete="username"
+                          {...field}
+                        />
+                      </FormControl>
                       <FormMessage />
-                    </div>
-                  </FormItem>
-                )}
-              />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-              <Button
-                type="submit"
-                className="w-full btn-primary"
-                disabled={registerMutation.isPending}
+              {/* ── Password ── */}
+              <div className="su-in" style={{ animationDelay: "200ms" }}>
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("password")}</FormLabel>
+                      <FormControl>
+                        <PasswordInput
+                          placeholder={t("createAPassword")}
+                          disabled={registerMutation.isPending}
+                          autoComplete="new-password"
+                          {...field}
+                        />
+                      </FormControl>
+                      <PasswordRequirements
+                        password={field.value || ""}
+                        className="mt-2"
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* ── Confirm password ── */}
+              <div className="su-in" style={{ animationDelay: "230ms" }}>
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("confirmPassword")}</FormLabel>
+                      <FormControl>
+                        <PasswordInput
+                          placeholder={t("confirmYourPassword")}
+                          disabled={registerMutation.isPending}
+                          autoComplete="new-password"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* ── Attribution section divider ── */}
+              <div
+                className="su-in space-y-2 pt-1"
+                style={{ animationDelay: "260ms" }}
               >
-                {registerMutation.isPending
-                  ? t("creatingAccount")
-                  : t("createAccountButton")}
-              </Button>
+                <div className="flex items-center gap-3">
+                  <div className="h-px flex-1 bg-border" />
+                  <span
+                    className="text-[10px] tracking-[0.16em] uppercase text-muted-foreground/60 font-medium"
+                    style={{ fontFamily: "var(--font-mono)" }}
+                  >
+                    {t("optionalDividerLabel")}
+                  </span>
+                  <div className="h-px flex-1 bg-border" />
+                </div>
+                <p className="text-[11px] text-center leading-relaxed text-muted-foreground/60">
+                  {t("attributionHelperText")}
+                </p>
+              </div>
+
+              {/* ── Referral source (Combobox) ── */}
+              <div className="su-in" style={{ animationDelay: "290ms" }}>
+                <FormField
+                  control={form.control}
+                  name="referralSource"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-muted-foreground">
+                        {t("referralSourceLabel")}
+                      </FormLabel>
+                      <FormControl>
+                        <ReferralSourceCombobox
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          disabled={registerMutation.isPending}
+                          placeholder={t("referralSourceSelectPlaceholder")}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* ── Discovery query — revealed for search/AI sources ── */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateRows: showDiscoveryQuery ? "1fr" : "0fr",
+                  transition:
+                    "grid-template-rows 0.28s cubic-bezier(0.16, 1, 0.3, 1)",
+                }}
+              >
+                <div className="overflow-hidden">
+                  <div className="pt-4">
+                    <FormField
+                      control={form.control}
+                      name="discoveryQuery"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-muted-foreground">
+                            {t("discoveryQueryLabel")}
+                          </FormLabel>
+                          <FormControl>
+                            <DiscoveryQueryCombobox
+                              value={field.value ?? ""}
+                              onValueChange={field.onChange}
+                              disabled={registerMutation.isPending}
+                              placeholder={t("discoveryQueryPlaceholder")}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Terms ── */}
+              <div className="su-in pt-1" style={{ animationDelay: "350ms" }}>
+                <FormField
+                  control={form.control}
+                  name="acceptTerms"
+                  render={({ field }) => (
+                    <FormItem
+                      data-testid="accept-terms"
+                      className="flex flex-row items-start space-x-3 space-y-0"
+                    >
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          disabled={registerMutation.isPending}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel
+                          className={`text-sm font-normal transition-colors duration-300 ${
+                            acceptTermsValue
+                              ? "text-foreground"
+                              : "text-muted-foreground"
+                          }`}
+                        >
+                          {t("agreeToTerms")}{" "}
+                          <a
+                            href={`${import.meta.env.VITE_WEB_BASE_URL}/terms-of-service/`}
+                            className="font-medium text-primary hover:underline underline-offset-2"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {t("common:termsOfService")}
+                          </a>{" "}
+                          {t("andThe")}{" "}
+                          <a
+                            href={`${import.meta.env.VITE_WEB_BASE_URL}/privacy-policy/`}
+                            className="font-medium text-primary hover:underline underline-offset-2"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {t("common:privacyPolicy")}
+                          </a>
+                          .
+                        </FormLabel>
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* ── Submit ── */}
+              <div className="su-in pt-1" style={{ animationDelay: "380ms" }}>
+                <Button
+                  type="submit"
+                  className="w-full btn-primary h-11 group"
+                  disabled={registerMutation.isPending}
+                >
+                  <span className="flex items-center justify-center gap-1.5">
+                    {registerMutation.isPending
+                      ? t("creatingAccount")
+                      : t("createAccountButton")}
+                    {!registerMutation.isPending && (
+                      <span
+                        className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
+                        aria-hidden="true"
+                      >
+                        →
+                      </span>
+                    )}
+                  </span>
+                </Button>
+              </div>
             </form>
           </Form>
         )}
 
+        {/* ── Alternative auth ── */}
         {!isDisabled && !isSuccess && showAlternativeAuth && (
           <>
             <div className="relative my-6">
@@ -305,7 +490,6 @@ const SignUp = () => {
                 </span>
               </div>
             </div>
-
             <div className="space-y-2">
               <GoogleLoginButton
                 mode="signup"
@@ -315,12 +499,43 @@ const SignUp = () => {
                 mode="signup"
                 onError={(error) => logger.error("SSO signup error:", error)}
               />
+              <p className="text-center text-xs text-muted-foreground">
+                {t("socialAuthTermsNotice")}{" "}
+                <a
+                  href={`${import.meta.env.VITE_WEB_BASE_URL}/terms-of-service/`}
+                  className="underline underline-offset-2 hover:text-foreground transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t("common:termsOfService")}
+                </a>{" "}
+                {t("andThe")}{" "}
+                <a
+                  href={`${import.meta.env.VITE_WEB_BASE_URL}/privacy-policy/`}
+                  className="underline underline-offset-2 hover:text-foreground transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t("common:privacyPolicy")}
+                </a>
+                {" · "}
+                <a
+                  href={`${import.meta.env.VITE_WEB_BASE_URL}/security/`}
+                  className="underline underline-offset-2 hover:text-foreground transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t("viewSecurity")}
+                </a>
+                .
+              </p>
             </div>
           </>
         )}
 
+        {/* ── Sign-in link ── */}
         {!isSuccess && (
-          <div className="pt-2 text-center text-sm text-muted-foreground">
+          <p className="pt-4 text-center text-sm text-muted-foreground">
             {t("or")}{" "}
             <Link
               to="/auth/sign-in"
@@ -328,18 +543,232 @@ const SignUp = () => {
             >
               {t("signInToExisting")}
             </Link>
-          </div>
+          </p>
         )}
       </CardContent>
     </AuthPageWrapper>
   );
 };
 
-/**
- * Rendered when `registrationEnabled` is false. Self-hosted admins
- * can disable public registration; this state explains the state
- * and funnels the user to sign-in instead.
- */
+// ── ReferralSourceCombobox ────────────────────────────────────────────────────
+
+const SEARCH_AI_KEYS = new Set<ReferralSource>(["google", "llm"]);
+const SEARCH_AI_SOURCES = REFERRAL_SOURCES.filter((s) => SEARCH_AI_KEYS.has(s));
+const COMMUNITY_SOURCES = REFERRAL_SOURCES.filter(
+  (s) => !SEARCH_AI_KEYS.has(s) && s !== "other"
+);
+
+function ReferralSourceCombobox({
+  value,
+  onValueChange,
+  disabled,
+  placeholder,
+}: {
+  value: ReferralSource | undefined;
+  onValueChange: (value: ReferralSource) => void;
+  disabled?: boolean;
+  placeholder: string;
+}) {
+  const { t } = useTranslation("auth");
+  const [open, setOpen] = useState(false);
+  const listboxId = useId();
+
+  const selectedLabel = value ? t(`referralSource_${value}`) : null;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          role="combobox"
+          aria-expanded={open}
+          aria-controls={listboxId}
+          disabled={disabled}
+          className={cn(
+            "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
+            "hover:bg-accent/40 transition-colors duration-150",
+            "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+            "disabled:cursor-not-allowed disabled:opacity-50",
+            !selectedLabel && "text-muted-foreground"
+          )}
+        >
+          <span className="truncate">{selectedLabel ?? placeholder}</span>
+          <PixelChevronDown
+            className={cn(
+              "h-3 w-auto shrink-0 opacity-50 ml-2 transition-transform duration-200",
+              open && "rotate-180"
+            )}
+          />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        sideOffset={4}
+        className="p-0"
+        style={{ width: "var(--radix-popover-trigger-width)" }}
+      >
+        <Command>
+          <CommandList id={listboxId}>
+            <CommandGroup heading={t("referralGroup_searchAi")}>
+              {SEARCH_AI_SOURCES.map((src) => (
+                <CommandItem
+                  key={src}
+                  value={src}
+                  onSelect={() => {
+                    onValueChange(src);
+                    setOpen(false);
+                  }}
+                >
+                  <span className="flex-1">{t(`referralSource_${src}`)}</span>
+                  {value === src && (
+                    <PixelCheck className="h-2.5 text-primary ml-2" />
+                  )}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+            <CommandSeparator />
+            <CommandGroup heading={t("referralGroup_community")}>
+              {COMMUNITY_SOURCES.map((src) => (
+                <CommandItem
+                  key={src}
+                  value={src}
+                  onSelect={() => {
+                    onValueChange(src);
+                    setOpen(false);
+                  }}
+                >
+                  <span className="flex-1">{t(`referralSource_${src}`)}</span>
+                  {value === src && (
+                    <PixelCheck className="h-2.5 text-primary ml-2" />
+                  )}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+            <CommandSeparator />
+            <CommandGroup>
+              <CommandItem
+                value="other"
+                onSelect={() => {
+                  onValueChange("other");
+                  setOpen(false);
+                }}
+              >
+                <span className="flex-1">{t("referralSource_other")}</span>
+                {value === "other" && (
+                  <PixelCheck className="h-2.5 text-primary ml-2" />
+                )}
+              </CommandItem>
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// ── DiscoveryQueryCombobox ────────────────────────────────────────────────────
+
+const DISCOVERY_QUERY_PRESETS = [
+  "RabbitMQ management UI alternative",
+  "RabbitMQ alerting",
+  "RabbitMQ daily digest",
+  "RabbitMQ metrics persistence layer",
+  "RabbitMQ incident diagnosis engine",
+  "RabbitMQ message tracing",
+] as const;
+
+function DiscoveryQueryCombobox({
+  value,
+  onValueChange,
+  disabled,
+  placeholder,
+}: {
+  value: string;
+  onValueChange: (value: string) => void;
+  disabled?: boolean;
+  placeholder: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const listboxId = useId();
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          role="combobox"
+          aria-expanded={open}
+          aria-controls={listboxId}
+          disabled={disabled}
+          className={cn(
+            "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
+            "hover:bg-accent/40 transition-colors duration-150",
+            "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+            "disabled:cursor-not-allowed disabled:opacity-50",
+            !value && "text-muted-foreground"
+          )}
+        >
+          <span className="truncate">{value || placeholder}</span>
+          <PixelChevronDown
+            className={cn(
+              "h-3 w-auto shrink-0 opacity-50 ml-2 transition-transform duration-200",
+              open && "rotate-180"
+            )}
+          />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        sideOffset={4}
+        className="p-0"
+        style={{ width: "var(--radix-popover-trigger-width)" }}
+      >
+        <Command shouldFilter={false}>
+          <div className="flex items-center border-b px-3">
+            <input
+              className="flex h-10 w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder={placeholder}
+              value={value}
+              onChange={(e) => {
+                onValueChange(e.target.value);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  setOpen(false);
+                }
+              }}
+            />
+          </div>
+          <CommandList id={listboxId}>
+            <CommandGroup>
+              {DISCOVERY_QUERY_PRESETS.filter((preset) =>
+                preset.toLowerCase().includes(value.toLowerCase())
+              ).map((preset) => (
+                <CommandItem
+                  key={preset}
+                  value={preset}
+                  onSelect={() => {
+                    onValueChange(preset);
+                    setOpen(false);
+                  }}
+                >
+                  <span className="flex-1">{preset}</span>
+                  {value === preset && (
+                    <PixelCheck className="h-2.5 text-primary ml-2" />
+                  )}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// ── Alert sub-components ──────────────────────────────────────────────────────
+
 function RegistrationDisabledAlert({
   onGoToSignIn,
 }: {
@@ -364,12 +793,6 @@ function RegistrationDisabledAlert({
   );
 }
 
-/**
- * Rendered when the account has been created. Shows different copy
- * depending on whether the account was auto-verified (e.g. SSO
- * flows or configs with SMTP disabled that skip the verification
- * email) or still requires email verification.
- */
 function RegistrationSuccessAlert({
   autoVerified,
   onGoToSignIn,

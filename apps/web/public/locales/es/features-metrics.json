@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "Queue History de RabbitMQ — 7 días de snapshots de métricas | Qarote",
+    "description": "7 días de historial de queues de RabbitMQ. Profundidad de queue, número de consumidores y tasas de mensajes capturados cada 5 minutos — para retrospectivas de incidentes y planificación de capacidad. Sin Prometheus."
+  },
+  "hero": {
+    "eyebrow": "Funcionalidades → Queue History",
+    "title": "7 días de historial de queues de RabbitMQ. No 8 horas.",
+    "subtitle": "El plugin de gestión de RabbitMQ descarta las métricas tras aproximadamente 8 horas. Qarote captura la profundidad de queue, el número de consumidores y las tasas de mensajes cada 5 minutos y los retiene durante 7 días — para que los datos estén disponibles cuando los necesites en retrospectivas de incidentes y planificación de capacidad."
+  },
+  "metricTypes": {
+    "eyebrow": "Qué se almacena",
+    "heading": "Una imagen completa de tu broker a lo largo del tiempo",
+    "items": [
+      {
+        "icon": "chart.svg",
+        "title": "Historial de profundidad de queue",
+        "description": "Número de mensajes por queue capturado cada 5 minutos, retenido durante 7 días — 2.016 puntos de datos por queue por semana. Representa la profundidad de cualquier queue en cualquier ventana de tiempo. Ve exactamente cuándo empezó a llenarse una queue, a qué velocidad creció y cuándo se vació — aunque no estuvieras mirando cuando ocurrió."
+      },
+      {
+        "icon": "message.svg",
+        "title": "Historial de número de consumidores",
+        "description": "Conexiones de consumidores por queue a lo largo del tiempo. Correlaciona las caídas de consumidores con los picos en la profundidad de queue. Identifica el momento en que un despliegue desconectó consumidores y cuánto tardó tu política de reinicio en recuperarlos."
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "Throughput de mensajes",
+        "description": "Tasas de publicación y entrega almacenadas de forma continua. Determina con precisión cuándo se detuvo, ralentizó o disparó el flujo de mensajes. El historial de throughput es lo primero a lo que se recurre en un incidente de pipeline asíncrono — indica cuándo comenzó el problema y si está completamente resuelto."
+      },
+      {
+        "icon": "server.svg",
+        "title": "Uso de recursos del broker",
+        "description": "Uso de memoria, uso de disco, número de descriptores de archivo y número de sockets por nodo a lo largo del tiempo. La planificación de capacidad requiere datos de tendencia, no snapshots. El historial de recursos del broker te permite proyectar cuándo tu hardware actual se convertirá en una limitación."
+      },
+      {
+        "icon": "flag.svg",
+        "title": "Acumulación en la dead-letter queue",
+        "description": "Número de mensajes en la DLQ a lo largo del tiempo, por queue. Una DLQ que crece de forma constante durante semanas indica un fallo sistemático de procesamiento, no un incidente puntual. Los datos persistentes de la DLQ sacan a la luz estos problemas de combustión lenta antes de que se conviertan en backlogs."
+      },
+      {
+        "icon": "send.svg",
+        "title": "Número de conexiones y canales",
+        "description": "Total de conexiones y canales abiertos por broker a lo largo del tiempo. Las fugas de conexiones son uno de los modos de fallo más comunes de RabbitMQ — una gráfica que muestra un crecimiento constante del número de conexiones durante 7 días es una fuga en curso."
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "Cómo funciona",
+    "heading": "Recopilación automática, cero configuración",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Conecta tu broker",
+        "description": "Qarote consulta la API de gestión de RabbitMQ cada 5 minutos. La profundidad de queue, el número de consumidores y las tasas de mensajes se capturan automáticamente desde el momento en que te conectas — sin configuración necesaria."
+      },
+      {
+        "number": "02",
+        "title": "Las métricas se almacenan automáticamente",
+        "description": "Cada snapshot se escribe en la base de datos de Qarote. Todas las queues en todos los servidores conectados se almacenan por defecto — sin configuración necesaria. Los datos se retienen durante 7 días y se eliminan automáticamente a medida que superan el periodo de retención."
+      },
+      {
+        "number": "03",
+        "title": "Consulta cualquier ventana de tiempo",
+        "description": "Abre cualquier queue y navega por los últimos 7 días. Haz zoom en una ventana de incidente de 15 minutos o revisa la tendencia de toda la semana — los datos siempre están ahí."
+      }
+    ]
+  },
+  "whyPersistence": {
+    "eyebrow": "Por qué importa la persistencia",
+    "heading": "El plugin de gestión es una ventana, no un registro",
+    "p1": "El plugin de gestión de RabbitMQ almacena métricas en memoria con una ventana de retención fija — aproximadamente 8 horas por defecto, configurable pero siempre limitada por la memoria disponible del broker. En el momento en que esa ventana se cierra, los datos desaparecen. Un incidente ocurrido hace 10 horas no deja evidencia alguna en la interfaz de gestión.",
+    "p2": "Qarote escribe las métricas en almacenamiento persistente fuera del broker. Tu historial de profundidad de queue sobrevive a reinicios del broker, reseteos del plugin de gestión y al final de tu turno de guardia. Cuando hagas un post-mortem a la mañana siguiente de un incidente, los datos que necesitas estarán disponibles.",
+    "p3": "Prometheus con el plugin `rabbitmq_prometheus` ofrece una persistencia similar, pero requiere operar un servidor de Prometheus, configurar jobs de scraping, definir políticas de retención y construir dashboards de Grafana desde cero. La persistencia de métricas de Qarote viene integrada — sin infraestructura adicional, sin configuración."
+  },
+  "crossLink": {
+    "eyebrow": "Ver también",
+    "navLabel": "Enlaces relacionados",
+    "incidentDiagnosis": "Diagnóstico de Incidentes →",
+    "alerting": "Alertas en tiempo real",
+    "pricing": "Precios",
+    "features": "Todas las funcionalidades"
+  },
+  "faq": {
+    "heading": "Preguntas frecuentes",
+    "items": [
+      {
+        "question": "¿Cuánto tiempo se retienen las métricas?",
+        "answer": "7 días en los planes Developer y Enterprise. Los snapshots se toman cada 5 minutos y se eliminan automáticamente tras 7 días. La edición Community gratuita muestra solo métricas en tiempo real — no se almacenan datos históricos."
+      },
+      {
+        "question": "¿Cuánto almacenamiento consume la persistencia de métricas?",
+        "answer": "Mínimo. Un despliegue típico con 50 queues a snapshots de 5 minutos utiliza aproximadamente 20 MB para la ventana completa de 7 días. El almacenamiento se gestiona automáticamente — los snapshots se eliminan a medida que superan la ventana de retención."
+      },
+      {
+        "question": "¿Puedo consultar métricas históricas a través de la API?",
+        "answer": "Las métricas históricas están disponibles a través del dashboard de Qarote. El acceso API al historial de métricas está disponible en los planes Enterprise."
+      },
+      {
+        "question": "¿Funciona la persistencia de métricas con Qarote autoalojado?",
+        "answer": "Sí. Qarote autoalojado (licencia Developer o Enterprise) almacena las métricas en la base de datos PostgreSQL que tú proporciones. Controlas los datos, la retención y la política de copias de seguridad."
+      },
+      {
+        "question": "¿Qué ocurre con las métricas si Qarote está offline?",
+        "answer": "La recopilación de métricas se pausa mientras Qarote está fuera de servicio. Habrá huecos en tu historial correspondientes al tiempo de inactividad. Qarote no rellena los datos faltantes del plugin de gestión al reconectarse."
+      }
+    ]
+  }
+}

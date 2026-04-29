@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "RabbitMQ 多服务器监控——工作区与团队访问控制 | Qarote",
+    "description": "将多个 RabbitMQ 实例连接到同一个 Qarote 工作区。从单一仪表板监控生产、预发和开发环境。团队访问控制、TLS 加密连接和工作区隔离——无需为每台服务器单独部署工具。"
+  },
+  "hero": {
+    "eyebrow": "功能 → 多服务器",
+    "title": "一个工作区，管理所有 RabbitMQ 服务器。",
+    "subtitle": "将生产、预发和开发 Broker 连接到同一个 Qarote 工作区。一键切换服务器。与整个团队共享同一仪表板——基于角色的访问控制，确保生产操作在受控范围内进行。"
+  },
+  "capabilities": {
+    "eyebrow": "功能概览",
+    "heading": "多环境 RabbitMQ 管理所需的一切",
+    "items": [
+      {
+        "icon": "server.svg",
+        "title": "多服务器连接",
+        "description": "Developer 计划最多连接 3 台 RabbitMQ 服务器，Enterprise 计划无限制。每台服务器独立监控——独立的队列列表、独立的健康状态、独立的告警配置。"
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "跨服务器仪表板",
+        "description": "统一的服务器列表一览所有已连接 Broker 的健康状态。严重告警服务器自动浮至顶部。一键进入任意服务器的详情视图——无需来回切换标签页，无需记忆各种书签。"
+      },
+      {
+        "icon": "flag.svg",
+        "title": "环境隔离",
+        "description": "生产、预发和开发作为独立服务器条目，拥有各自独立的配置。预发环境的告警不会触发到生产 Slack 频道。在开发环境执行的队列管理操作不会误操作生产环境。"
+      },
+      {
+        "icon": "send.svg",
+        "title": "TLS 加密连接",
+        "description": "与 RabbitMQ 管理 API 的所有连接均通过 TLS 进行。Qarote 不以明文存储您的 RabbitMQ 凭证——连接在录入时进行测试，凭证静态加密存储。"
+      },
+      {
+        "icon": "message.svg",
+        "title": "团队访问控制",
+        "description": "以限定角色邀请团队成员：管理员（完全访问）、成员（监控 + 告警）、观察者（只读）。按工作区控制谁可以管理队列、配置告警以及接入新服务器。"
+      },
+      {
+        "icon": "chart.svg",
+        "title": "工作区组织",
+        "description": "工作区在组织层面实现环境隔离——适合管理多个客户 Broker 的代理机构，或拥有独立业务单元的企业。每个工作区拥有独立的服务器、用户、告警和计费。"
+      }
+    ]
+  },
+  "howItWorks": {
+    "eyebrow": "工作原理",
+    "heading": "添加一台服务器只需 60 秒",
+    "steps": [
+      {
+        "number": "01",
+        "title": "添加服务器",
+        "description": "输入您的 RabbitMQ 管理 API 地址和凭证。Qarote 立即测试连接并将服务器加入您的工作区。完整的队列列表在数秒内出现。"
+      },
+      {
+        "number": "02",
+        "title": "在同一视图管理所有环境",
+        "description": "从顶部导航切换服务器。每台服务器拥有独立的队列列表、分析视图和告警配置。统一健康视图同时显示所有服务器的状态——健康、警告或严重。"
+      },
+      {
+        "number": "03",
+        "title": "邀请团队成员",
+        "description": "通过邮件添加团队成员。分配与其职责相匹配的角色。值班工程师获得告警访问权限，开发者获得只读权限，管理员负责管理服务器连接和工作区设置。"
+      }
+    ]
+  },
+  "teamWorkspaces": {
+    "eyebrow": "工作区与团队",
+    "heading": "共享上下文，各负其责",
+    "p1": "当负责 RabbitMQ 的人员超过一人时，协作问题随之而来：每个人各自收藏管理插件的链接，凭证通过 Slack 传来传去，没有人知道是谁在什么时候清空了哪条队列，告警发到一个没人查看的公共邮箱别名。",
+    "p2": "Qarote 工作区为团队提供统一的共享上下文：相同的服务器列表、相同的队列仪表板、相同的告警历史——每人独立登录，角色权限各不相同。触碰生产环境的操作受 Qarote 权限模型约束，而非取决于谁持有 SSH 密钥。",
+    "p3": "Enterprise 工作区额外支持 SSO（OIDC/SAML）和团队级访问控制。接入您的身份提供商，Qarote 的用户管理即可与现有离职流程保持同步。当团队成员离职时，撤销其 Qarote 访问权限，即同步撤销其 RabbitMQ 监控访问权限。"
+  },
+  "crossLink": {
+    "eyebrow": "另请参见",
+    "navLabel": "相关链接",
+    "alerting": "实时告警 →",
+    "liveMonitoring": "实时监控",
+    "pricing": "定价",
+    "features": "全部功能"
+  },
+  "faq": {
+    "heading": "常见问题",
+    "items": [
+      {
+        "question": "可以连接多少台服务器？",
+        "answer": "Developer 计划每个工作区最多支持 3 个 RabbitMQ 服务器连接，Enterprise 计划无限制。社区版（免费）支持 1 台服务器。"
+      },
+      {
+        "question": "可以在同一工作区中连接不同环境的服务器吗？",
+        "answer": "可以——将生产、预发和开发环境连接到同一工作区正是其预期用途。告警配置、用户角色和队列管理权限均按服务器作用域限定，因此环境隔离可以得到保障。"
+      },
+      {
+        "question": "Qarote 需要 Broker 向 Qarote 开放网络访问吗？",
+        "answer": "Qarote 向您的 RabbitMQ 管理 API（默认端口 15672）发起出站 HTTPS 连接。您的 Broker 不需要向 Qarote 开放入站网络访问——只需 RabbitMQ 管理 API 端点能从您的 Qarote 安装位置访问即可。"
+      },
+      {
+        "question": "自托管 Qarote 的团队访问如何运作？",
+        "answer": "自托管 Qarote 使用相同的基于角色的访问模型。您通过 Qarote 管理面板管理用户。Enterprise 自托管版额外支持 OIDC/SAML SSO——接入您的身份提供商，用户管理即可与现有目录保持同步。"
+      },
+      {
+        "question": "不同团队成员可以对不同服务器拥有不同访问权限吗？",
+        "answer": "在当前版本中，角色以工作区为作用域——成员可以查看工作区内的所有服务器。按服务器粒度的权限控制（每台服务器的读/写控制）已列入 Enterprise 路线图。"
+      }
+    ]
+  }
+}

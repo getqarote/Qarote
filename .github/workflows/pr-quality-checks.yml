@@ -44,7 +44,9 @@ jobs:
 
       - name: 💅 Format Check
         working-directory: apps/api
-        run: pnpm run format
+        run: |
+          pnpm run format:fix
+          git diff --exit-code || (echo "::error::Formatting issues detected. Run 'pnpm run format:fix' locally and commit the result." && exit 1)
 
       - name: 🌐 Validate i18n keys
         run: pnpm run validate:i18n

@@ -5,7 +5,9 @@ import { trackSignUpClick } from "@/lib/gtm";
 import { Button } from "@/components/ui/button";
 
 const AudienceSection = () => {
-  const { t } = useTranslation("landing");
+  const { t, i18n } = useTranslation("landing");
+  const locale = i18n.language || "en";
+  const localePrefix = locale === "en" ? "" : `/${locale}`;
 
   const handleSignUp = (source: string) => {
     trackSignUpClick({ source, location: "landing_page" });
@@ -24,9 +26,14 @@ const AudienceSection = () => {
         <div className="grid md:grid-cols-2 gap-6">
           {/* Card 1 — No monitoring yet */}
           <div className="border border-border p-8 lg:p-10 flex flex-col">
-            <span className="text-2xl mb-5" aria-hidden="true">
-              🔧
-            </span>
+            <img
+              src="/images/server.svg"
+              alt=""
+              aria-hidden="true"
+              className="h-8 w-auto image-crisp mb-5 self-start"
+              width={32}
+              height={32}
+            />
             <h3 className="text-2xl text-foreground mb-3 font-normal">
               {t("audience.card1Title")}
             </h3>
@@ -58,9 +65,14 @@ const AudienceSection = () => {
 
           {/* Card 2 — Already running Grafana */}
           <div className="border border-border p-8 lg:p-10 flex flex-col">
-            <span className="text-2xl mb-5" aria-hidden="true">
-              📊
-            </span>
+            <img
+              src="/images/chart.svg"
+              alt=""
+              aria-hidden="true"
+              className="h-8 w-auto image-crisp mb-5 self-start"
+              width={32}
+              height={32}
+            />
             <h3 className="text-2xl text-foreground mb-3 font-normal">
               {t("audience.card2Title")}
             </h3>
@@ -71,21 +83,18 @@ const AudienceSection = () => {
               {t("audience.card2Detail")}
             </p>
             <div className="mt-auto">
-              <Button
-                type="button"
-                variant="pillGhost"
-                size="pillMd"
-                onClick={() => handleSignUp("audience_card2")}
-              >
-                <span>{t("audience.card2Cta")}</span>
-                <img
-                  src="/images/arrow-right.svg"
-                  alt=""
-                  aria-hidden="true"
-                  className="h-[0.8em] w-auto image-crisp align-middle"
-                  width={14}
-                  height={14}
-                />
+              <Button type="button" variant="pillGhost" size="pillMd" asChild>
+                <a href={`${localePrefix}/pricing/`}>
+                  <span>{t("audience.card2Cta")}</span>
+                  <img
+                    src="/images/arrow-right.svg"
+                    alt=""
+                    aria-hidden="true"
+                    className="h-[0.8em] w-auto image-crisp align-middle"
+                    width={14}
+                    height={14}
+                  />
+                </a>
               </Button>
             </div>
           </div>

@@ -1,0 +1,88 @@
+{
+  "seo": {
+    "title": "Security — Qarote RabbitMQ Monitoring",
+    "description": "How Qarote protects your RabbitMQ credentials, handles your data, and keeps your monitoring infrastructure safe. Self-hosted option means your data never leaves your network."
+  },
+  "hero": {
+    "eyebrow": "Security",
+    "title": "Built for teams who can't afford a breach.",
+    "subtitle": "You're connecting Qarote to your message broker. Here's exactly what we do with that access — and what we don't."
+  },
+  "pillars": {
+    "eyebrow": "How we protect you",
+    "controlsCount": "{{count}} controls",
+    "heading": "Security by design",
+    "items": [
+      {
+        "title": "Credentials encrypted at rest",
+        "description": "RabbitMQ connection credentials are encrypted with AES-256 before being written to disk. Your passwords are never stored in plaintext."
+      },
+      {
+        "title": "TLS 1.2+ in transit",
+        "description": "All traffic between your browser and Qarote's API is encrypted with TLS 1.2 or higher. Connections to your broker over TLS are also supported and recommended."
+      },
+      {
+        "title": "Message payloads never leave your broker",
+        "description": "Qarote reads queue depths, message rates, and consumer counts to power alerting and trend charts — retaining those metrics for up to 7 days. The actual contents of your messages are never accessed, read, or stored."
+      },
+      {
+        "title": "Workspace isolation",
+        "description": "Each workspace is fully isolated. Users can only access brokers and data within their workspace. Cross-tenant data access is architecturally impossible."
+      },
+      {
+        "title": "Role-based access control",
+        "description": "Assign admin or read-only roles per workspace member. Limit who can modify connections, configure alerts, or access sensitive broker details."
+      },
+      {
+        "title": "Session management",
+        "description": "Sessions are short-lived and invalidated on logout. We support SSO via OIDC and SAML for enterprise teams with centralized identity management."
+      }
+    ]
+  },
+  "toc": {
+    "heading": "Contents"
+  },
+  "selfHosted": {
+    "eyebrow": "Self-hosted option",
+    "heading": "Your network. Your rules.",
+    "body": "Qarote can be deployed entirely on your own infrastructure — bare metal, Docker, or Kubernetes. In self-hosted mode, no telemetry, no credentials, and no monitoring data ever leave your network. You get the full product with zero dependency on Qarote's cloud.",
+    "cta": "Read the deployment guide",
+    "features": [
+      "Docker & Kubernetes",
+      "No telemetry",
+      "Air-gapped support",
+      "MIT licensed core"
+    ]
+  },
+  "disclosure": {
+    "eyebrow": "Responsible disclosure",
+    "heading": "Found a vulnerability?",
+    "body": "We take security reports seriously. If you discover a vulnerability in Qarote, please email us at security@qarote.io. We'll acknowledge your report within 48 hours and keep you updated as we work on a fix. We do not pursue legal action against good-faith security researchers.",
+    "email": "security@qarote.io"
+  },
+  "faq": {
+    "heading": "Security questions",
+    "items": [
+      {
+        "question": "Do you store my RabbitMQ password?",
+        "answer": "Yes — but only if you use the cloud edition and need Qarote to poll your broker on your behalf. Passwords are encrypted with AES-256 at rest. In self-hosted mode, credentials stay on your own server."
+      },
+      {
+        "question": "Does Qarote read my message payloads?",
+        "answer": "No. Qarote accesses the RabbitMQ management API to read queue depths, message rates, and node health. It does not consume or inspect message payloads."
+      },
+      {
+        "question": "Is my broker exposed to the internet to use Qarote?",
+        "answer": "No. You can run the Qarote agent inside your private network. It connects outbound to Qarote's API — your broker management port never needs to be publicly accessible."
+      },
+      {
+        "question": "Do you have SOC 2 certification?",
+        "answer": "We are working toward SOC 2 Type II. In the meantime, our self-hosted edition is the right choice for teams with strict compliance requirements — you control the entire stack."
+      },
+      {
+        "question": "Can I use my own SSO provider?",
+        "answer": "Yes. The Enterprise edition supports OIDC and SAML-based SSO, allowing you to plug Qarote into your existing identity provider (Okta, Azure AD, Google Workspace, etc.)."
+      }
+    ]
+  }
+}

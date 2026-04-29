@@ -1,0 +1,145 @@
+{
+  "seo": {
+    "title": "Message Spy RabbitMQ — Inspectez les payloads sans consommer | Qarote",
+    "description": "Consultez les files RabbitMQ en direct et inspectez les headers et payloads des messages sans les consommer. Lecture seule, sans danger en production. Sans scripts consommateurs jetables."
+  },
+  "hero": {
+    "eyebrow": "Fonctionnalités → Message Spy",
+    "title": "Inspectez les messages en production sans les consommer",
+    "subtitle": "Parcourez les headers et payloads de messages directement dans n'importe quelle file — en lecture seule, non destructif, sans danger en production. Sans connexion AMQP. Sans scripts jetables. Les messages restent exactement où ils sont."
+  },
+  "problem": {
+    "eyebrow": "Le problème",
+    "heading": "Déboguer le contenu d'une file aujourd'hui implique de toucher à la file",
+    "body": "Sans requeue configuré, le basic_get du plugin de management RabbitMQ est destructif — il consomme et acquitte le message. Écrire un consommateur de debug juste pour inspecter des payloads est risqué, lent et dangereux en production. Aucune des deux options ne vous offre une vue propre en lecture seule de ce qui se trouve dans vos files.",
+    "items": [
+      {
+        "icon": "error.svg",
+        "title": "basic_get est destructif par défaut",
+        "description": "Le navigateur de messages du plugin de management utilise basic_get en coulisses. Sans requeue/ackmode configuré, le message est consommé. Si votre logique de requeue n'est pas parfaite, vous venez de perdre un message."
+      },
+      {
+        "icon": "server.svg",
+        "title": "Les consommateurs de debug sont une charge",
+        "description": "Écrire un consommateur AMQP jetable pour inspecter des payloads implique de déployer du code en production, de gérer des credentials et d'espérer ne pas traiter accidentellement les messages que vous cherchez à inspecter."
+      },
+      {
+        "icon": "flag.svg",
+        "title": "Les incompatibilités de schéma sont invisibles",
+        "description": "Quand un nouveau producteur se déploie avec une structure de payload différente, vos consommateurs commencent à échouer — mais vous ne pouvez pas vérifier ce qui se trouve réellement dans la file sans consommer un message."
+      }
+    ]
+  },
+  "solution": {
+    "eyebrow": "Comment Message Spy fonctionne",
+    "heading": "Aperçu en lecture seule. Payload réel. Zéro risque.",
+    "body": "Message Spy utilise l'endpoint de prévisualisation non destructif de l'API HTTP RabbitMQ — pas basic_get, pas de consommation AMQP. Les messages sont récupérés en snapshot lecture seule. Vos consommateurs ne voient rien. L'état de la file est inchangé.",
+    "steps": [
+      {
+        "number": "01",
+        "title": "Ouvrez n'importe quelle file",
+        "description": "Naviguez vers n'importe quelle file dans votre dashboard Qarote. Message Spy est disponible sur toutes les files auxquelles vous avez accès en lecture."
+      },
+      {
+        "number": "02",
+        "title": "Cliquez sur Spy",
+        "description": "Qarote récupère un lot de prévisualisation via l'endpoint HTTP non destructif. Aucune connexion AMQP ouverte. Aucun message consommé ou acquitté."
+      },
+      {
+        "number": "03",
+        "title": "Parcourez headers et payload",
+        "description": "Inspectez le routing key, l'exchange, le timestamp, le mode de livraison et le payload complet en ligne. Le JSON est mis en surbrillance syntaxique. Les payloads binaires sont affichés en hex. Copiez le contenu brut en un clic."
+      }
+    ]
+  },
+  "capabilities": {
+    "eyebrow": "Ce que vous pouvez inspecter",
+    "heading": "Détail complet du message, en lecture seule",
+    "items": [
+      {
+        "icon": "message.svg",
+        "title": "Payload du message",
+        "description": "Contenu complet du corps — JSON formaté et mis en surbrillance syntaxique, texte brut affiché tel quel, payloads binaires affichés en hex. Copiez le contenu brut ou la sortie formatée."
+      },
+      {
+        "icon": "real-time.svg",
+        "title": "Headers et propriétés",
+        "description": "Routing key, exchange, mode de livraison, priorité, correlation ID, reply-to, expiration, content type et tous les headers personnalisés définis par le producteur."
+      },
+      {
+        "icon": "chart.svg",
+        "title": "Position du message",
+        "description": "Position de chaque message dans la file (premier, deuxième, troisième…) et âge approximatif basé sur le timestamp. Comprenez l'ordre et l'ancienneté d'un coup d'œil."
+      },
+      {
+        "icon": "send.svg",
+        "title": "Statut de relivraison",
+        "description": "Si un message a été relivré — un indicateur clé que les consommateurs échouent à le traiter. Identifiez les messages poison avant qu'ils ne saturent vos consommateurs."
+      }
+    ]
+  },
+  "useCases": {
+    "eyebrow": "Cas d'usage",
+    "heading": "Les moments pour lesquels Message Spy est conçu",
+    "items": [
+      {
+        "title": "Débogage en production",
+        "description": "Les consommateurs échouent et vous ne savez pas pourquoi. Ouvrez la file, inspectez le payload — est-il malformé ? Mauvais schéma ? Champ manquant ? Réponse en 10 secondes sans toucher aux consommateurs."
+      },
+      {
+        "title": "Validation de schéma avant déploiement",
+        "description": "Un nouveau producteur vient de se déployer. Avant que vos consommateurs ne passent en production, vérifiez que la structure du payload correspond à vos attentes. Repérez les incompatibilités de schéma avant qu'elles ne deviennent des incidents."
+      },
+      {
+        "title": "Détection de messages poison",
+        "description": "Un message avec redelivered: true a été rejeté plusieurs fois. Inspectez-le directement pour comprendre pourquoi — sans écrire un consommateur dead-letter."
+      },
+      {
+        "title": "Tests d'intégration",
+        "description": "Vérifiez que votre producteur envoie des messages correctement formatés vers les bonnes files avec les bons routing keys — sans faire tourner un consommateur dans votre environnement de test."
+      }
+    ]
+  },
+  "safety": {
+    "eyebrow": "Sécurité & sûreté",
+    "heading": "Non destructif par conception",
+    "body": "Message Spy utilise l'endpoint /get de l'API HTTP RabbitMQ avec requeue=true et count=N. C'est le même mécanisme que celui utilisé par le plugin de management pour son navigateur de messages intégré — avec une différence critique : Qarote définit toujours requeue=true, garantissant que les messages ne sont jamais consommés. L'accès est conditionné par le modèle de permissions de Qarote : les utilisateurs sans accès en lecture à la file ne peuvent pas l'espionner. Sur les déploiements auto-hébergés, vos credentials RabbitMQ ne quittent jamais votre infrastructure."
+  },
+  "crossLink": {
+    "eyebrow": "Voir aussi",
+    "navLabel": "Fonctionnalités associées",
+    "messageTracing": "Message Tracing (Firehose) →",
+    "queueHistory": "Queue History",
+    "alerting": "Alertes en temps réel",
+    "features": "Toutes les fonctionnalités"
+  },
+  "faq": {
+    "heading": "Questions fréquentes",
+    "items": [
+      {
+        "question": "Message Spy est-il sûr à utiliser en production ?",
+        "answer": "Oui. Qarote utilise l'API HTTP RabbitMQ avec requeue=true — les messages ne sont jamais consommés ni acquittés. Vos consommateurs ne sont pas du tout affectés. L'état de la file est identique avant et après une opération d'espionnage."
+      },
+      {
+        "question": "Est-ce la même chose que le navigateur de messages du plugin de management ?",
+        "answer": "Le mécanisme sous-jacent est le même endpoint de l'API HTTP RabbitMQ. Qarote ajoute l'application non destructive (toujours requeue=true), le rendu JSON avec surbrillance syntaxique, l'affichage complet de l'arborescence des headers, le statut de relivraison, et l'intégration avec le reste de votre dashboard de files — sans changement d'onglet."
+      },
+      {
+        "question": "Combien de messages puis-je inspecter à la fois ?",
+        "answer": "Les plans Developer peuvent inspecter jusqu'à 10 messages par file et par requête. Les plans Enterprise ont une taille de lot configurable. Les messages sont affichés dans l'ordre de la file (FIFO)."
+      },
+      {
+        "question": "Message Spy fonctionne-t-il avec des payloads chiffrés ?",
+        "answer": "Message Spy affiche le payload brut tel que Qarote le reçoit du broker. Si votre application chiffre le corps des messages avant de les publier, le payload apparaîtra chiffré. Qarote ne déchiffre pas le contenu des messages."
+      },
+      {
+        "question": "Qu'en est-il des données sensibles dans les payloads ?",
+        "answer": "L'accès à Message Spy est contrôlé par le modèle de permissions utilisateur de Qarote. Seuls les utilisateurs avec un accès en lecture explicite à la file peuvent l'espionner. Sur les déploiements auto-hébergés, vous contrôlez toute la couche d'authentification."
+      },
+      {
+        "question": "Message Spy fonctionne-t-il avec toutes les versions de RabbitMQ ?",
+        "answer": "Oui — Message Spy utilise l'API HTTP de management RabbitMQ standard, disponible dans toutes les versions supportées (3.x et 4.x)."
+      }
+    ]
+  }
+}
