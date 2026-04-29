@@ -53,5 +53,12 @@
     "generic": "Échec du diagnostic. Veuillez réessayer.",
     "noMetrics": "Aucun instantané de métriques trouvé. Ils sont collectés toutes les 5 minutes.",
     "forbidden": "Le diagnostic d'incident nécessite un plan Développeur ou Entreprise."
+  },
+  "preview": {
+    "banner": "Aperçu du plan gratuit — affichage de {{shown}} sur {{total}} diagnostics. Passez à une offre supérieure pour voir tous les diagnostics.",
+    "bannerHidden": "{{count}} diagnostic masqué. Passez à une offre supérieure pour voir tous les diagnostics.",
+    "bannerHidden_one": "{{count}} diagnostic masqué. Passez à une offre supérieure pour voir tous les diagnostics.",
+    "bannerHidden_other": "{{count}} diagnostics masqués. Passez à une offre supérieure pour voir tous les diagnostics.",
+    "upgrade": "Changer d'offre"
   }
 }

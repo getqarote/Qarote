@@ -68,5 +68,8 @@
   "empty.managementApi.description": "The RabbitMQ Management Plugin is unreachable. Check that it is enabled and accessible on the broker.",
   "empty.managementApi.retry": "Retry",
   "page.errorTitle": "Something went wrong loading Message Tracing.",
-  "page.errorHint": "Reload the page to try again."
+  "page.errorHint": "Reload the page to try again.",
+  "preview.liveBanner": "Free plan preview — showing the first {{count}} events. Upgrade for unlimited live tail.",
+  "preview.queryBanner": "Free plan preview — showing the most recent {{count}} events from the last 24 hours. Upgrade for full query access.",
+  "preview.upgrade": "Upgrade plan"
 }

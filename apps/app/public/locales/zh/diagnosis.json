@@ -53,5 +53,12 @@
     "generic": "诊断失败，请重试。",
     "noMetrics": "未找到指标快照，每 5 分钟收集一次，请稍后查看。",
     "forbidden": "故障诊断需要开发者或企业版计划。"
+  },
+  "preview": {
+    "banner": "免费版预览 — 显示 {{total}} 个结果中的 {{shown}} 个。升级以查看全部诊断。",
+    "bannerHidden_one": "{{count}} 个结果已隐藏。升级以查看全部诊断。",
+    "bannerHidden_other": "{{count}} 个结果已隐藏。升级以查看全部诊断。",
+    "upgrade": "升级套餐",
+    "bannerHidden": "{{count}} 个结果已隐藏。升级以查看全部诊断。"
   }
 }

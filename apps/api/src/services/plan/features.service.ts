@@ -30,6 +30,12 @@ export interface PlanFeatures {
   hasSoc2Compliance: boolean;
   isPopular: boolean;
 
+  // Retention limits (in hours)
+  // Note: these are operational quotas, not billing/display features.
+  // A future refactor can extract a PlanLimits type for cleaner separation.
+  maxTraceRetentionHours: number;
+  maxMetricsRetentionHours: number;
+
   // RabbitMQ version support
   supportedRabbitMqVersions: string[];
   ltsOnly: boolean;
@@ -76,6 +82,10 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
     hasSsoSamlOidc: false,
     hasSoc2Compliance: true,
     isPopular: false,
+
+    // Retention limits
+    maxTraceRetentionHours: 24, // 1 day — fixed, not user-configurable on FREE
+    maxMetricsRetentionHours: 24, // 1 day (queryable range is further clamped to 6h)
 
     // RabbitMQ support
     supportedRabbitMqVersions: ["3.12", "3.13", "4.0", "4.1"],
@@ -130,6 +140,10 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
     hasSsoSamlOidc: false,
     hasSoc2Compliance: true,
     isPopular: true,
+
+    // Retention limits
+    maxTraceRetentionHours: 168, // 7 days — user-configurable within this bound
+    maxMetricsRetentionHours: 168, // 7 days
 
     // RabbitMQ support
     supportedRabbitMqVersions: [
@@ -201,6 +215,10 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
     hasSsoSamlOidc: true,
     hasSoc2Compliance: true,
     isPopular: false,
+
+    // Retention limits
+    maxTraceRetentionHours: 720, // 30 days — user-configurable within this bound
+    maxMetricsRetentionHours: 720, // 30 days
 
     // RabbitMQ support
     supportedRabbitMqVersions: [

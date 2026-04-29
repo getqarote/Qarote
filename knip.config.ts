@@ -79,6 +79,8 @@ const config: KnipConfig = {
     // Ignore digest service public API types — used transitively via DigestData
     "apps/api/src/ee/services/digest/digest.service.ts",
     "apps/api/src/ee/services/digest/digest-sender.service.ts",
+    // EE workers (entry points via Procfile / package.json scripts)
+    "apps/api/src/ee/workers/firehose-monitor.ts",
     // Metrics persistence worker and supporting files (entry point via Procfile)
     "apps/api/src/ee/workers/metrics-monitor.ts",
     "apps/api/src/ee/cron/queue-metrics.cron.ts",

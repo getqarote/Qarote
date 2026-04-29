@@ -23,13 +23,15 @@ test.describe("License Feature Gating @p1", () => {
     await db.clearSystemSetting("license_jwt");
   });
 
-  test("should show paywall for premium features without license", async ({
+  test("should show paywall for hard-gated features without license", async ({
     adminPage,
   }) => {
+    // Alerts remains hard-gated (full FeatureGate overlay).
+    // Note: tracing and diagnosis are now soft-preview — they no longer show
+    // the hard paywall. Test uses /alerts as the canonical hard-gated feature.
     await adminPage.goto("/alerts");
     await adminPage.waitForLoadState("domcontentloaded");
 
-    // Should show the upgrade prompt with selfhosted-specific CTAs
     await expect(
       adminPage.getByText(/premium feature/i)
     ).toBeVisible({ timeout: 15_000 });
@@ -37,6 +39,19 @@ test.describe("License Feature Gating @p1", () => {
     await expect(
       adminPage.getByRole("button", { name: /activate license/i })
     ).toBeVisible();
+  });
+
+  test("soft-preview features accessible without license (no hard paywall) @p1", async ({
+    adminPage,
+  }) => {
+    // Tracing and diagnosis are now soft-preview — no hard FeatureGate overlay.
+    for (const path of ["/tracing", "/diagnosis"]) {
+      await adminPage.goto(path);
+      await adminPage.waitForLoadState("domcontentloaded");
+      await expect(
+        adminPage.getByText(/activate a license to unlock/i)
+      ).not.toBeVisible({ timeout: 10_000 });
+    }
   });
 
   test("should unlock premium features after license activation", async ({

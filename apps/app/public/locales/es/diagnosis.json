@@ -53,5 +53,12 @@
     "generic": "Error al ejecutar el diagnóstico. Inténtalo de nuevo.",
     "noMetrics": "No se encontraron instantáneas de métricas. Se recopilan cada 5 minutos.",
     "forbidden": "El diagnóstico de incidentes requiere un plan Desarrollador o Empresarial."
+  },
+  "preview": {
+    "banner": "Vista previa del plan gratuito — mostrando {{shown}} de {{total}} hallazgos. Actualiza para ver todos los diagnósticos.",
+    "bannerHidden": "{{count}} hallazgo oculto. Actualiza para ver todos los diagnósticos.",
+    "bannerHidden_one": "{{count}} hallazgo oculto. Actualiza para ver todos los diagnósticos.",
+    "bannerHidden_other": "{{count}} hallazgos ocultos. Actualiza para ver todos los diagnósticos.",
+    "upgrade": "Actualizar plan"
   }
 }

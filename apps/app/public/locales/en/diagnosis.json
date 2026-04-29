@@ -53,5 +53,12 @@
     "generic": "Failed to run diagnosis. Please try again.",
     "noMetrics": "No metric snapshots found yet. Snapshots are collected every 5 minutes — check back shortly.",
     "forbidden": "Incident Diagnosis requires a Developer or Enterprise plan."
+  },
+  "preview": {
+    "banner": "Free plan preview — showing {{shown}} of {{total}} findings. Upgrade to see all diagnoses.",
+    "bannerHidden": "{{count}} finding hidden. Upgrade to see all diagnoses.",
+    "bannerHidden_one": "{{count}} finding hidden. Upgrade to see all diagnoses.",
+    "bannerHidden_other": "{{count}} findings hidden. Upgrade to see all diagnoses.",
+    "upgrade": "Upgrade plan"
   }
 }

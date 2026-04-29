@@ -28,6 +28,11 @@ export const UpdateWorkspaceSchema = z.object({
   vhostThresholds: z
     .record(z.string(), z.number().int().min(0).max(100_000))
     .optional(),
+  // Trace retention window in hours. Validated server-side against the plan max.
+  // FREE: not configurable (ignored / rejected by the router).
+  // DEVELOPER: 1–168h. ENTERPRISE: 1–720h.
+  // The absolute upper bound (720) matches the Enterprise plan max (30 days).
+  traceRetentionHours: z.number().int().min(1).max(720).optional(),
 });
 
 // Schema for workspace ID parameter

@@ -8,6 +8,7 @@ import {
 import {
   getOrgPlan,
   getOrgResourceCounts,
+  getPlanFeatures,
   validateWorkspaceCreation,
 } from "@/services/plan/plan.service";
 
@@ -26,7 +27,7 @@ import {
   workspaceProcedure,
 } from "@/trpc/trpc";
 
-import { OrgRole, UserRole } from "@/generated/prisma/client";
+import { OrgRole, UserPlan, UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -324,6 +325,40 @@ export const managementRouter = router({
             throw new TRPCError({
               code: "CONFLICT",
               message: te(ctx.locale, "workspace.nameAlreadyExists"),
+            });
+          }
+        }
+
+        // Plan-aware validation for traceRetentionHours.
+        // FREE: field is not configurable — reject any explicit value.
+        // DEVELOPER/ENTERPRISE: must not exceed plan max.
+        if (updateData.traceRetentionHours !== undefined) {
+          const orgPlan = workspace.organizationId
+            ? await getOrgPlan(workspace.organizationId)
+            : UserPlan.FREE;
+
+          if (orgPlan === UserPlan.FREE) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: te(
+                ctx.locale,
+                "workspace.traceRetentionNotConfigurableOnFree"
+              ),
+            });
+          }
+
+          const planMax = getPlanFeatures(orgPlan).maxTraceRetentionHours;
+          if (updateData.traceRetentionHours > planMax) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: te(
+                ctx.locale,
+                "workspace.traceRetentionExceedsPlanMax",
+                {
+                  planMax,
+                  plan: orgPlan,
+                }
+              ),
             });
           }
         }

@@ -3,19 +3,17 @@ import { expect, test } from "../../fixtures/test-base.js";
 /**
  * E2E tests for the Message Tracing page.
  *
- * These tests cover:
- * - Navigation to /tracing
- * - FeatureGate: paywall shown without Enterprise license
- * - FeatureGate: page content accessible with Enterprise license
- * - Mode toggle between Live Tail and Query
- * - Filters bar rendered and URL params updated
+ * Gating model (updated):
+ * - setTraceEnabled: still license-gated (Enable Tracing button requires license)
+ * - Page itself: soft preview for free users — no hard paywall
+ *   Free users see the page shell + FirehoseDisabledState or preview teaser.
+ *   Paid users see full access without teaser.
  *
- * Note: Live data from the RabbitMQ Firehose is not testable in E2E
- * (no real broker). Tests cover the page shell, gate, and static UI.
+ * Note: live data from the RabbitMQ Firehose is not testable in E2E
+ * (no real broker). Tests cover the page shell, gate model, and static UI.
  */
 
 test.describe("Message Tracing @p2", () => {
-  // Clear license before each test to ensure a clean state
   test.beforeEach(async ({ db }) => {
     await db.clearSystemSetting("license_jwt");
   });
@@ -26,52 +24,35 @@ test.describe("Message Tracing @p2", () => {
     await expect(adminPage).toHaveURL(/\/tracing/);
   });
 
-  test("should show upgrade paywall without Enterprise license", async ({
+  test("FREE plan: tracing page loads without hard paywall @p1", async ({
     adminPage,
   }) => {
     await adminPage.goto("/tracing");
     await adminPage.waitForLoadState("domcontentloaded");
 
-    // FeatureGate renders UpgradePrompt for non-Enterprise users
+    // Soft-preview model: the FeatureGate overlay is gone.
+    // The page should not show the old hard-gate text.
     await expect(
       adminPage.getByText(/activate a license to unlock/i)
-    ).toBeVisible({ timeout: 10_000 });
+    ).not.toBeVisible({ timeout: 10_000 });
   });
 
-  test("should show upgrade options for message_tracing feature", async ({
+  test("FREE plan: shows FirehoseDisabledState (no broker) @p1", async ({
     adminPage,
   }) => {
     await adminPage.goto("/tracing");
     await adminPage.waitForLoadState("domcontentloaded");
 
-    await expect(
-      adminPage.getByRole("button", { name: /activate license/i })
-    ).toBeVisible({ timeout: 10_000 });
-  });
-
-  test("should show Message Tracing heading with Enterprise license", async ({
-    adminPage,
-    db,
-  }) => {
-    // Grant Enterprise license
-    await db.setSystemSetting(
-      "license_jwt",
-      await db.generateEnterpriseLicenseJwt()
-    );
-
-    await adminPage.goto("/tracing");
-    await adminPage.waitForLoadState("domcontentloaded");
-
-    // Either the heading or the FirehoseDisabledState should be visible
-    const heading = adminPage.getByRole("heading", {
-      name: /message tracing/i,
-    });
+    // Without a real broker checkFirehoseStatus returns inactive — page shows
+    // the disabled state. The "Enable Tracing" button is still license-gated
+    // (it calls setTraceEnabled which requires a license).
     const firehoseDisabled = adminPage.getByText(/firehose not active/i);
+    const tracingHeading = adminPage.getByRole("heading", { name: /message tracing/i });
 
-    await expect(heading.or(firehoseDisabled)).toBeVisible({ timeout: 15_000 });
+    await expect(firehoseDisabled.or(tracingHeading)).toBeVisible({ timeout: 15_000 });
   });
 
-  test("should show FirehoseDisabledState when firehose is inactive", async ({
+  test("DEVELOPER license: no preview teaser shown @p1", async ({
     adminPage,
     db,
   }) => {
@@ -83,16 +64,27 @@ test.describe("Message Tracing @p2", () => {
     await adminPage.goto("/tracing");
     await adminPage.waitForLoadState("domcontentloaded");
 
-    // Without a real broker the checkFirehoseStatus query will fail or
-    // return inactive — either way FirehoseDisabledState is expected
+    // With a license, no teaser / "upgrade" copy should appear from the preview gate
+    await expect(
+      adminPage.getByText(/more events hidden/i)
+    ).not.toBeVisible({ timeout: 10_000 });
+  });
+
+  test("should show FirehoseDisabledState with Enterprise license (no broker)", async ({
+    adminPage,
+    db,
+  }) => {
+    await db.setSystemSetting(
+      "license_jwt",
+      await db.generateEnterpriseLicenseJwt()
+    );
+
+    await adminPage.goto("/tracing");
+    await adminPage.waitForLoadState("domcontentloaded");
+
     await expect(
       adminPage.getByText(/firehose not active/i)
     ).toBeVisible({ timeout: 15_000 });
-
-    // "Enable tracing" button should be present
-    await expect(
-      adminPage.getByRole("button", { name: /enable tracing/i })
-    ).toBeVisible();
   });
 
   test("should have sidebar nav item for Message Tracing", async ({

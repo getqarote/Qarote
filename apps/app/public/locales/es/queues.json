@@ -275,5 +275,7 @@
   "featureLim": "Límite de longitud máxima configurado",
   "featureDlx": "Intercambio de mensajes muertos: {{exchange}}",
   "featurePrio": "Cola de prioridad — prioridad máx: {{value}}",
-  "featureSac": "Consumidor activo único"
+  "featureSac": "Consumidor activo único",
+  "spyPreviewBanner": "Vista previa del plan gratuito — mostrando los primeros {{count}} mensajes. Actualiza para escucha ilimitada.",
+  "spyPreviewUpgrade": "Actualizar plan"
 }

@@ -1,14 +1,19 @@
 /**
  * Message Tracing Page
  *
- * Enterprise-only. Two modes:
+ * Two modes:
  *   Live Tail  — tRPC subscription, log-style stream, auto-scroll
  *   Query      — cursor-based infinite scroll table with time range
  *
+ * Gating model (soft preview):
+ *   Free plan — page loads without a hard paywall. Live tail shows the first
+ *   10 events then emits a preview_limit banner. Query shows the most recent
+ *   10 events from the last 24 hours with a teaser.
+ *   Paid plans — full access, no caps.
+ *
  * Layout:
- *   FeatureGate (UpgradePrompt for non-Enterprise)
- *     → FirehoseStatus check (FirehoseDisabledState if inactive)
- *       → <TracingContent> (mode toggle + filters + results)
+ *   FirehoseStatus check (FirehoseDisabledState if inactive)
+ *     → <TracingContent> (mode toggle + filters + results)
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -22,11 +27,11 @@ import {
   Play,
   Radio,
   WifiOff,
+  Zap,
 } from "lucide-react";
 
 import { SentryErrorBoundary } from "@/lib/sentry";
 
-import { FeatureGate } from "@/components/FeatureGate";
 import { PageShell } from "@/components/PageShell";
 import { FirehoseDisabledState } from "@/components/tracing/FirehoseDisabledState";
 import {
@@ -106,6 +111,9 @@ function StatsBar({ serverId }: { serverId: string }) {
 // LiveTail
 // ---------------------------------------------------------------------------
 
+/** Number of events the backend shows free-plan users. Must match FREE_TRACE_PREVIEW_COUNT. */
+const FREE_TRACE_PREVIEW_COUNT = 10;
+
 function LiveTail({
   serverId,
   enabled,
@@ -115,8 +123,15 @@ function LiveTail({
 }) {
   const { t } = useTranslation("tracing");
   const filters = useTracingFilters();
-  const { events, error, dropped, totalReceived, isLoading, clearEvents } =
-    useWatchTraces({ serverId, filters, enabled });
+  const {
+    events,
+    error,
+    dropped,
+    totalReceived,
+    isLoading,
+    clearEvents,
+    isPreviewLimited,
+  } = useWatchTraces({ serverId, filters, enabled });
 
   const sentinelRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -335,6 +350,24 @@ function LiveTail({
           </button>
         )}
       </div>
+
+      {/* Soft-preview teaser — shown when free-plan cap is reached */}
+      {isPreviewLimited && (
+        <div className="flex items-center justify-between gap-4 px-4 py-3 border-t border-primary/20 bg-primary/5">
+          <div className="flex items-center gap-2 text-sm text-foreground">
+            <Zap className="w-4 h-4 text-primary shrink-0" />
+            {t("preview.liveBanner", { count: FREE_TRACE_PREVIEW_COUNT })}
+          </div>
+          <Button
+            variant="default"
+            size="sm"
+            className="shrink-0 text-xs h-7"
+            onClick={() => window.open("https://qarote.io/pricing", "_blank", "noopener,noreferrer")}
+          >
+            {t("preview.upgrade")}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -373,6 +406,8 @@ function QueryView({ serverId }: { serverId: string }) {
     });
 
   const allEvents = data?.pages.flatMap((p) => p.events) ?? [];
+  // isPreview is set on the first page by the backend when the free-plan cap applies.
+  const isPreview = data?.pages[0]?.isPreview ?? false;
 
   return (
     <div>
@@ -416,6 +451,24 @@ function QueryView({ serverId }: { serverId: string }) {
               <Loader2 className="w-3 h-3 mr-2 animate-spin" />
             ) : null}
             {t("query.loadMore")}
+          </Button>
+        </div>
+      )}
+
+      {/* Soft-preview teaser — shown when free-plan query cap is active */}
+      {!isLoading && isPreview && (
+        <div className="flex items-center justify-between gap-4 px-4 py-3 border-t border-primary/20 bg-primary/5">
+          <div className="flex items-center gap-2 text-sm text-foreground">
+            <Zap className="w-4 h-4 text-primary shrink-0" />
+            {t("preview.queryBanner", { count: FREE_TRACE_PREVIEW_COUNT })}
+          </div>
+          <Button
+            variant="default"
+            size="sm"
+            className="shrink-0 text-xs h-7"
+            onClick={() => window.open("https://qarote.io/pricing", "_blank", "noopener,noreferrer")}
+          >
+            {t("preview.upgrade")}
           </Button>
         </div>
       )}
@@ -487,7 +540,7 @@ function TracingContent({ serverId }: { serverId: string }) {
 }
 
 // ---------------------------------------------------------------------------
-// TracingGated (inside FeatureGate — checks firehose status)
+// TracingGated (checks firehose status, renders content or disabled state)
 // ---------------------------------------------------------------------------
 
 function TracingGated({ serverId }: { serverId: string }) {
@@ -615,9 +668,7 @@ export default function Tracing() {
 
   return (
     <PageShell>
-      <FeatureGate feature="message_tracing">
-        <TracingGatedBounded serverId={selectedServerId} />
-      </FeatureGate>
+      <TracingGatedBounded serverId={selectedServerId} />
     </PageShell>
   );
 }

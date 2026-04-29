@@ -93,7 +93,9 @@
     "failedToFetchInvitations": "获取邀请列表失败",
     "failedToSendInvitation": "发送邀请失败",
     "invitationNotFoundOrUsed": "未找到邀请或邀请已被使用",
-    "failedToRevokeInvitation": "撤销邀请失败"
+    "failedToRevokeInvitation": "撤销邀请失败",
+    "traceRetentionNotConfigurableOnFree": "免费计划不支持配置追踪保留时间。请升级到 Developer 或 Enterprise 计划。",
+    "traceRetentionExceedsPlanMax": "{{plan}} 计划的追踪保留时间不能超过 {{planMax}} 小时。"
   },
   "user": {
     "failedToFetchUsers": "获取用户列表失败",

@@ -93,7 +93,9 @@
     "failedToFetchInvitations": "Failed to fetch invitations",
     "failedToSendInvitation": "Failed to send invitation",
     "invitationNotFoundOrUsed": "Invitation not found or already used",
-    "failedToRevokeInvitation": "Failed to revoke invitation"
+    "failedToRevokeInvitation": "Failed to revoke invitation",
+    "traceRetentionNotConfigurableOnFree": "Trace retention is not configurable on the Free plan. Upgrade to Developer or Enterprise.",
+    "traceRetentionExceedsPlanMax": "Trace retention cannot exceed {{planMax}} hours on the {{plan}} plan."
   },
   "user": {
     "failedToFetchUsers": "Failed to fetch users",

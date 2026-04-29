@@ -3,6 +3,8 @@ import path from "node:path";
 import { PrismaPg } from "@prisma/adapter-pg";
 import dotenv from "dotenv";
 
+import { generateTestLicenseJwt } from "./license.js";
+
 import type { PrismaClient } from "../../api/src/generated/prisma/client.js";
 
 dotenv.config({ path: path.resolve(import.meta.dirname, "../.env.test") });
@@ -86,5 +88,25 @@ export class DbHelper {
   async getWorkspaceByName(name: string) {
     const prisma = await getPrisma();
     return prisma.workspace.findFirst({ where: { name } });
+  }
+
+  async setSystemSetting(key: string, value: string) {
+    const prisma = await getPrisma();
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO "SystemSetting" (key, value) VALUES ($1, $2)
+       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
+      key,
+      value
+    );
+  }
+
+  /** Generate a signed Enterprise-tier license JWT for E2E tests. */
+  async generateEnterpriseLicenseJwt(): Promise<string> {
+    return generateTestLicenseJwt({ tier: "ENTERPRISE" });
+  }
+
+  /** Generate a signed Developer-tier license JWT for E2E tests. */
+  async generateDeveloperLicenseJwt(): Promise<string> {
+    return generateTestLicenseJwt({ tier: "DEVELOPER" });
   }
 }

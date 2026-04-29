@@ -199,6 +199,8 @@
   "spyEmpty": "(空)",
   "spyRedelivered": "重新投递",
   "spyDefaultExchange": "(默认)",
+  "spyPreviewBanner": "免费版预览 — 显示前 {{count}} 条消息。升级套餐以获取无限消息监听。",
+  "spyPreviewUpgrade": "升级套餐",
   "stateRunning": "运行中",
   "stateDown": "已停机",
   "stateCrashed": "已崩溃",

@@ -183,6 +183,9 @@ async function buildQueuesResponse(
   return response;
 }
 
+/** Number of spy messages shown to FREE-plan users before the soft preview wall. */
+const FREE_SPY_PREVIEW_COUNT = 5;
+
 /**
  * Queues router
  * Handles RabbitMQ queue management operations
@@ -937,6 +940,17 @@ export const queuesRouter = router({
         });
       }
 
+      // Resolve plan for preview cap — done once at subscription start.
+      // Message Spy is plan-gated only (not license-gated): free users get a
+      // soft preview of FREE_SPY_PREVIEW_COUNT messages then hit a soft wall.
+      const spyOrgInfo = await ctx.resolveOrg();
+      const spyUserPlan = spyOrgInfo?.organizationId
+        ? await getOrgPlan(spyOrgInfo.organizationId)
+        : UserPlan.FREE;
+      const spyIsFree = spyUserPlan === UserPlan.FREE;
+      // Counter maintained outside the drain loop to correctly handle batches.
+      let spyMessagesSent = 0;
+
       // Fetch target queue bindings via Management HTTP API
       const httpClient = createRabbitMQClientFromServer(server);
       const allBindings = await httpClient.getQueueBindings(queueName, vhost);
@@ -1182,11 +1196,38 @@ export const queuesRouter = router({
           const batch = buffer.drain(50);
 
           if (batch.length > 0) {
-            yield {
-              type: "messages" as const,
-              messages: batch,
-              dropped: buffer.droppedCount,
-            };
+            if (spyIsFree) {
+              // Cap the batch so we never exceed FREE_SPY_PREVIEW_COUNT total.
+              const remaining = FREE_SPY_PREVIEW_COUNT - spyMessagesSent;
+              if (remaining <= 0) {
+                // Already at cap — emit terminal event and stop.
+                yield {
+                  type: "preview_limit" as const,
+                  totalSeen: FREE_SPY_PREVIEW_COUNT,
+                };
+                break;
+              }
+              const cappedBatch = batch.slice(0, remaining);
+              spyMessagesSent += cappedBatch.length;
+              yield {
+                type: "messages" as const,
+                messages: cappedBatch,
+                dropped: buffer.droppedCount,
+              };
+              if (spyMessagesSent >= FREE_SPY_PREVIEW_COUNT) {
+                yield {
+                  type: "preview_limit" as const,
+                  totalSeen: FREE_SPY_PREVIEW_COUNT,
+                };
+                break;
+              }
+            } else {
+              yield {
+                type: "messages" as const,
+                messages: batch,
+                dropped: buffer.droppedCount,
+              };
+            }
             // Short yield to avoid starving the event loop
             await abortableSleep(50, signal);
           } else {

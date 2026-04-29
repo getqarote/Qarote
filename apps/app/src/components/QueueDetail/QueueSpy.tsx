@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { AlertTriangle, ArrowDown, Loader2, Radio } from "lucide-react";
+import { AlertTriangle, ArrowDown, Loader2, Radio, Zap } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,9 @@ interface QueueSpyProps {
 
 export function QueueSpy({ serverId, queueName, vhost }: QueueSpyProps) {
   const { t } = useTranslation("queues");
+  /** Must match FREE_SPY_PREVIEW_COUNT in queues.ts */
+  const FREE_SPY_PREVIEW_COUNT = 5;
+
   const {
     messages,
     error,
@@ -28,6 +31,7 @@ export function QueueSpy({ serverId, queueName, vhost }: QueueSpyProps) {
     totalReceived,
     isLoading,
     clearMessages,
+    isPreviewLimited,
   } = useSpyOnQueue(serverId, queueName, vhost, true);
 
   // Auto-scroll via IntersectionObserver.
@@ -230,6 +234,24 @@ export function QueueSpy({ serverId, queueName, vhost }: QueueSpyProps) {
             </button>
           )}
         </div>
+
+        {/* Soft-preview teaser — shown when free-plan message cap is reached */}
+        {isPreviewLimited && (
+          <div className="flex items-center justify-between gap-4 px-4 py-3 border-t border-primary/20 bg-primary/5">
+            <div className="flex items-center gap-2 text-sm text-foreground">
+              <Zap className="w-4 h-4 text-primary shrink-0" />
+              {t("spyPreviewBanner", { count: FREE_SPY_PREVIEW_COUNT })}
+            </div>
+            <Button
+              variant="default"
+              size="sm"
+              className="shrink-0 text-xs h-7"
+              onClick={() => window.open("https://qarote.io/pricing", "_blank", "noopener,noreferrer")}
+            >
+              {t("spyPreviewUpgrade")}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

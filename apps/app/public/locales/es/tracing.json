@@ -68,5 +68,8 @@
   "empty.managementApi.description": "El plugin de gestión de RabbitMQ no es accesible. Comprueba que esté habilitado y accesible en el broker.",
   "empty.managementApi.retry": "Reintentar",
   "page.errorTitle": "Algo salió mal al cargar el rastreo de mensajes.",
-  "page.errorHint": "Vuelve a cargar la página para intentarlo de nuevo."
+  "page.errorHint": "Vuelve a cargar la página para intentarlo de nuevo.",
+  "preview.liveBanner": "Vista previa del plan gratuito — mostrando los primeros {{count}} eventos. Actualiza para rastreo en vivo ilimitado.",
+  "preview.queryBanner": "Vista previa del plan gratuito — mostrando los {{count}} eventos más recientes de las últimas 24 horas. Actualiza para acceso completo a consultas.",
+  "preview.upgrade": "Actualizar plan"
 }

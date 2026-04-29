@@ -44,5 +44,10 @@ export function useDiagnosis(
   const errorCode =
     (query.error as { data?: { code?: string } } | null)?.data?.code ?? null;
 
-  return { ...query, errorCode };
+  // Surface the soft-preview fields so the page can render a teaser.
+  const isPreview = query.data?.isPreview ?? false;
+  const hiddenCount = query.data?.hiddenCount ?? 0;
+  const severitySummary = query.data?.severitySummary ?? null;
+
+  return { ...query, errorCode, isPreview, hiddenCount, severitySummary };
 }

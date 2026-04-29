@@ -553,6 +553,8 @@ export const useSpyOnQueue = (
     spyQueueName: string;
     bindingCount: number;
   } | null>(null);
+  // Set when backend emits preview_limit — no further messages will arrive for free users.
+  const [isPreviewLimited, setIsPreviewLimited] = useState(false);
   // Backend cumulative dropped count (BoundedBuffer overflow on the server).
   const [dropped, setDropped] = useState(0);
   // Cumulative count of messages evicted client-side when the ring buffer
@@ -641,6 +643,9 @@ export const useSpyOnQueue = (
           if (rafRef.current === null) {
             rafRef.current = requestAnimationFrame(flushPending);
           }
+        } else if (data.type === "preview_limit") {
+          // Backend has soft-capped the stream — no further messages will arrive.
+          setIsPreviewLimited(true);
         } else if (data.type === "error") {
           setError(data.message);
         }
@@ -661,6 +666,7 @@ export const useSpyOnQueue = (
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     }
+    setIsPreviewLimited(false);
   }, [dropped, clientDropped]);
 
   return {
@@ -669,6 +675,7 @@ export const useSpyOnQueue = (
     spyInfo,
     dropped: Math.max(0, dropped + clientDropped - droppedBaseline),
     totalReceived,
+    isPreviewLimited,
     isLoading: isActive && !spyInfo && !error,
     clearMessages,
   };

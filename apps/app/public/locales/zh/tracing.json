@@ -68,5 +68,8 @@
   "empty.managementApi.description": "RabbitMQ 管理插件无法访问。请检查该插件是否已在 Broker 上启用并可正常访问。",
   "empty.managementApi.retry": "重试",
   "page.errorTitle": "加载消息追踪时出错。",
-  "page.errorHint": "请重新加载页面后重试。"
+  "page.errorHint": "请重新加载页面后重试。",
+  "preview.liveBanner": "免费版预览 — 显示前 {{count}} 条事件。升级套餐以获取无限实时追踪。",
+  "preview.queryBanner": "免费版预览 — 显示过去 24 小时内最近 {{count}} 条事件。升级套餐以获取完整查询功能。",
+  "preview.upgrade": "升级套餐"
 }

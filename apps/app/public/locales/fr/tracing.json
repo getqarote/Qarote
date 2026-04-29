@@ -68,5 +68,8 @@
   "empty.managementApi.description": "Le plugin de gestion RabbitMQ est inaccessible. Vérifiez qu'il est activé et accessible sur le broker.",
   "empty.managementApi.retry": "Réessayer",
   "page.errorTitle": "Une erreur est survenue lors du chargement du traçage des messages.",
-  "page.errorHint": "Rechargez la page pour réessayer."
+  "page.errorHint": "Rechargez la page pour réessayer.",
+  "preview.liveBanner": "Aperçu du plan gratuit — affichage des {{count}} premiers événements. Passez à une offre supérieure pour un suivi en direct illimité.",
+  "preview.queryBanner": "Aperçu du plan gratuit — affichage des {{count}} événements les plus récents des dernières 24 heures. Passez à une offre supérieure pour un accès complet aux requêtes.",
+  "preview.upgrade": "Mettre à niveau"
 }

@@ -199,6 +199,8 @@
   "spyEmpty": "(empty)",
   "spyRedelivered": "redelivered",
   "spyDefaultExchange": "(default)",
+  "spyPreviewBanner": "Free plan preview — showing the first {{count}} messages. Upgrade for unlimited spy.",
+  "spyPreviewUpgrade": "Upgrade plan",
   "stateRunning": "Running",
   "stateDown": "Down",
   "stateCrashed": "Crashed",

@@ -93,7 +93,9 @@
     "failedToFetchInvitations": "Échec de la récupération des invitations",
     "failedToSendInvitation": "Échec de l'envoi de l'invitation",
     "invitationNotFoundOrUsed": "Invitation introuvable ou déjà utilisée",
-    "failedToRevokeInvitation": "Échec de la révocation de l'invitation"
+    "failedToRevokeInvitation": "Échec de la révocation de l'invitation",
+    "traceRetentionNotConfigurableOnFree": "La rétention des traces n'est pas configurable sur le plan Gratuit. Passez à Developer ou Enterprise.",
+    "traceRetentionExceedsPlanMax": "La rétention des traces ne peut pas dépasser {{planMax}} heures sur le plan {{plan}}."
   },
   "user": {
     "failedToFetchUsers": "Échec de la récupération des utilisateurs",

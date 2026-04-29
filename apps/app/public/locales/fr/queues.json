@@ -275,5 +275,7 @@
   "featureLim": "Limite de longueur maximale définie",
   "featureDlx": "Exchange de lettres mortes : {{exchange}}",
   "featurePrio": "File prioritaire — priorité max : {{value}}",
-  "featureSac": "Consommateur actif unique"
+  "featureSac": "Consommateur actif unique",
+  "spyPreviewBanner": "Aperçu du plan gratuit — affichage des {{count}} premiers messages. Passez à une offre supérieure pour une écoute illimitée.",
+  "spyPreviewUpgrade": "Changer d'offre"
 }

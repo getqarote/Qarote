@@ -137,6 +137,9 @@ export const useWatchTraces = ({
   // Without this, isLoading stays true forever on an idle-but-healthy broker
   // because events.length never leaves 0.
   const [started, setStarted] = useState(false);
+  // Set when the backend emits a preview_limit event — the subscription has
+  // been soft-capped and no further events will arrive for free-plan users.
+  const [isPreviewLimited, setIsPreviewLimited] = useState(false);
 
   // RAF batching — same pattern as useSpyOnQueue
   const pendingRef = useRef<MessageTraceEvent[]>([]);
@@ -181,6 +184,7 @@ export const useWatchTraces = ({
     // live subscription re-initialises (isActive becomes true again).
     setError(null);
     setStarted(false);
+    setIsPreviewLimited(false);
   }, []);
 
   // Cancel any pending RAF on unmount to prevent setState after teardown.
@@ -250,6 +254,9 @@ export const useWatchTraces = ({
           if (rafRef.current === null) {
             rafRef.current = requestAnimationFrame(flushPending);
           }
+        } else if (data.type === "preview_limit") {
+          // Backend has soft-capped the stream — no further events will arrive.
+          setIsPreviewLimited(true);
         } else if (data.type === "error") {
           setError(data.message);
         }
@@ -267,6 +274,7 @@ export const useWatchTraces = ({
     dropped,
     totalReceived,
     clearEvents,
+    isPreviewLimited,
     isLoading: isActive && !started && events.length === 0 && !error,
   };
 };

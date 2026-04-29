@@ -14,7 +14,8 @@ export type PremiumFeature =
   | "sso"
   | "digest_customization"
   | "incident_diagnosis"
-  | "message_tracing";
+  | "message_tracing"
+  | "message_spy";
 
 /**
  * Feature definitions
@@ -31,6 +32,8 @@ export const FEATURES = {
   DIGEST_CUSTOMIZATION: "digest_customization" as const,
   INCIDENT_DIAGNOSIS: "incident_diagnosis" as const,
   MESSAGE_TRACING: "message_tracing" as const,
+  // Plan-gated only (not license-gated) — see plan note in preview plan doc.
+  MESSAGE_SPY: "message_spy" as const,
 } as const;
 
 /**
@@ -48,6 +51,7 @@ export const FEATURE_DESCRIPTIONS: Record<PremiumFeature, string> = {
   digest_customization: "Daily Digest Customization",
   incident_diagnosis: "Incident Diagnosis Engine",
   message_tracing: "Message Tracing",
+  message_spy: "Message Spy",
 };
 
 /**

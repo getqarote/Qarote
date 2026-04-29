@@ -93,7 +93,9 @@
     "failedToFetchInvitations": "Error al obtener las invitaciones",
     "failedToSendInvitation": "Error al enviar la invitación",
     "invitationNotFoundOrUsed": "Invitación no encontrada o ya utilizada",
-    "failedToRevokeInvitation": "Error al revocar la invitación"
+    "failedToRevokeInvitation": "Error al revocar la invitación",
+    "traceRetentionNotConfigurableOnFree": "La retención de trazas no es configurable en el plan Gratuito. Actualice a Developer o Enterprise.",
+    "traceRetentionExceedsPlanMax": "La retención de trazas no puede superar {{planMax}} horas en el plan {{plan}}."
   },
   "user": {
     "failedToFetchUsers": "Error al obtener los usuarios",
