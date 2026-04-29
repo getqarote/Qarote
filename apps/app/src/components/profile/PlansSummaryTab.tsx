@@ -345,7 +345,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
       {!selfHosted && (
         <div className="rounded-lg border border-border overflow-hidden">
           <a
-            href={`${import.meta.env.VITE_PORTAL_URL}/documentation`}
+            href="https://qarote.io/docs/self-hosted/deployment/"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-muted/50 transition-colors rounded-lg"
