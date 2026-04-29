@@ -16,6 +16,7 @@ import {
   baseStyles,
   buttonStyles,
   codeStyles,
+  colorVariants,
   contentStyles,
   sectionStyles,
   textStyles,
@@ -48,7 +49,7 @@ export default function UpdateAvailableEmail({
     <Html>
       <Head />
       <Preview>
-        Qarote {latestVersion} is available (you have {currentVersion})
+        Qarote {latestVersion} is available — you're on {currentVersion}
       </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
@@ -64,21 +65,20 @@ export default function UpdateAvailableEmail({
               instance.
             </Text>
 
+            {/* Version delta — monospace, prominent */}
             <Section style={sectionStyles.infoSection}>
-              <Text style={contentStyles.heading}>Version Details</Text>
-              <Text style={textStyles.infoText}>
-                <strong>Current version:</strong> {currentVersion}
-              </Text>
-              <Text style={textStyles.infoText}>
-                <strong>Latest version:</strong> {latestVersion}
-              </Text>
+              <Text style={versionStyles.label}>installed</Text>
+              <Text style={versionStyles.currentVersion}>{currentVersion}</Text>
+              <Text style={versionStyles.label}>available</Text>
+              <Text style={versionStyles.latestVersion}>{latestVersion}</Text>
             </Section>
 
+            {/* Update command */}
             <Section style={sectionStyles.highlightSection}>
               <Text style={contentStyles.heading}>
                 {updateInstructions.title}
               </Text>
-              <Text style={contentStyles.paragraph}>
+              <Text style={versionStyles.commandDescription}>
                 {updateInstructions.description}
               </Text>
               <Text style={codeStyles.commandBlock}>
@@ -88,13 +88,13 @@ export default function UpdateAvailableEmail({
 
             <Section style={buttonStyles.buttonSection}>
               <Button style={buttonStyles.primaryButton} href={releaseUrl}>
-                View Release on GitHub
+                View Release Notes
               </Button>
               <Button
                 style={buttonStyles.secondaryButton}
                 href="https://qarote.io/changelog"
               >
-                View Changelog
+                Changelog
               </Button>
             </Section>
 
@@ -105,3 +105,30 @@ export default function UpdateAvailableEmail({
     </Html>
   );
 }
+
+const versionStyles = {
+  label: {
+    ...textStyles.metric,
+    color: colorVariants.neutral.primary,
+    fontSize: "13px",
+    margin: "0 0 4px",
+  },
+  currentVersion: {
+    ...textStyles.metric,
+    fontSize: "18px",
+    color: colorVariants.neutral.primary,
+    margin: "0 0 16px",
+    textDecoration: "line-through" as const,
+  },
+  latestVersion: {
+    ...textStyles.metric,
+    fontSize: "24px",
+    fontWeight: "700",
+    color: contentStyles.heading.color,
+    margin: "0",
+  },
+  commandDescription: {
+    ...contentStyles.paragraph,
+    marginBottom: "12px",
+  },
+} as const;

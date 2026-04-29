@@ -16,6 +16,8 @@ import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
+  codeStyles,
+  colorVariants,
   contentStyles,
   sectionStyles,
   textStyles,
@@ -29,7 +31,6 @@ interface LicenseDeliveryEmailProps {
   licenseKey: string;
   tier: UserPlan;
   expiresAt: Date;
-  downloadUrl: string;
   portalUrl: string;
   locale?: string;
 }
@@ -39,12 +40,11 @@ export default function LicenseDeliveryEmail({
   licenseKey,
   tier,
   expiresAt,
-  downloadUrl,
   portalUrl,
   locale = "en",
 }: LicenseDeliveryEmailProps): JSX.Element {
   const tierDisplay = tier.charAt(0) + tier.slice(1).toLowerCase();
-  const expiryDate = expiresAt.toLocaleDateString("en-US", {
+  const expiryDate = expiresAt.toLocaleDateString(locale, {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -55,8 +55,8 @@ export default function LicenseDeliveryEmail({
     <Html>
       <Head />
       <Preview>
-        Your Qarote {tierDisplay} license is ready! Copy your license key to
-        activate your self-hosted instance.
+        Your Qarote {tierDisplay} license is ready — paste it in your admin
+        panel to activate.
       </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
@@ -68,62 +68,54 @@ export default function LicenseDeliveryEmail({
             </Text>
 
             <Text style={contentStyles.paragraph}>
-              {tEmail(locale, "common.greeting", { name: userName || "" })}
+              {userName ? `Hi ${userName},` : "Hi,"}
             </Text>
 
             <Text style={contentStyles.paragraph}>
-              Thank you for purchasing Qarote <strong>{tierDisplay}</strong>!
-              Your self-hosted license has been generated and is ready to use.
+              Your Qarote <strong>{tierDisplay}</strong> license is ready. Copy
+              the key below and paste it into your admin panel — you'll be
+              monitoring in minutes.
             </Text>
 
-            {/* License Details */}
-            <Section style={sectionStyles.infoSection}>
-              <Text style={contentStyles.heading}>License Details</Text>
+            {/* License key as the visual centerpiece */}
+            <Text style={styles.keyLabel}>Your license key</Text>
+            <Text style={codeStyles.commandBlock}>{licenseKey}</Text>
+
+            {/* License meta — secondary info */}
+            <Section style={styles.metaSection}>
               <Text style={textStyles.infoText}>
                 <strong>Plan:</strong> {tierDisplay}
               </Text>
               <Text style={textStyles.infoText}>
-                <strong>License Key:</strong> {licenseKey}
+                <strong>Valid until:</strong> {expiryDate}
               </Text>
               <Text style={textStyles.infoText}>
-                <strong>Valid Until:</strong> {expiryDate} (12 months)
-              </Text>
-              <Text style={textStyles.infoText}>
-                <strong>Auto-Renewal:</strong> Enabled
+                <strong>Auto-renewal:</strong> Enabled
               </Text>
             </Section>
 
-            <Text style={contentStyles.paragraph}>
-              Copy your license key above, then paste it in your self-hosted
-              Qarote admin panel to activate your license.
-            </Text>
-
-            {/* Call to Action */}
             <Section style={buttonStyles.buttonSection}>
-              <Button style={buttonStyles.primaryButton} href={downloadUrl}>
-                Manage Your Licenses
+              <Button style={buttonStyles.primaryButton} href={portalUrl}>
+                Open License Portal
               </Button>
             </Section>
 
-            {/* Installation Instructions */}
+            {/* Activation steps — brief */}
             <Section style={sectionStyles.featuresSection}>
-              <Text style={contentStyles.heading}>Activation Steps</Text>
+              <Text style={contentStyles.heading}>Activation</Text>
               <Text style={textStyles.featureText}>
                 1. Copy the license key above
               </Text>
               <Text style={textStyles.featureText}>
-                2. Open your Qarote self-hosted admin panel
+                2. Open your Qarote admin panel → License
               </Text>
               <Text style={textStyles.featureText}>
-                3. Go to the License page and paste your key
-              </Text>
-              <Text style={textStyles.featureText}>
-                4. Your license will be activated immediately
+                3. Paste and save — active immediately
               </Text>
             </Section>
 
             <Text style={contentStyles.paragraph}>
-              You can also manage your licenses anytime from your{" "}
+              Manage your licenses anytime from your{" "}
               <Link href={`${portalUrl}/licenses`} style={textStyles.link}>
                 license portal
               </Link>
@@ -137,3 +129,19 @@ export default function LicenseDeliveryEmail({
     </Html>
   );
 }
+
+const styles = {
+  keyLabel: {
+    ...contentStyles.paragraph,
+    color: colorVariants.neutral.primary,
+    marginBottom: "8px",
+    fontSize: "13px",
+    fontWeight: "600",
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.06em",
+  },
+  metaSection: {
+    ...sectionStyles.infoSection,
+    marginTop: "24px",
+  },
+} as const;

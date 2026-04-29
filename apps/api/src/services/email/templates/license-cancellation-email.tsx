@@ -28,7 +28,6 @@ interface LicenseCancellationEmailProps {
   licenseKey: string;
   tier: UserPlan;
   expiresAt: Date;
-  gracePeriodDays: number;
   portalUrl: string;
   locale?: string;
 }
@@ -38,7 +37,6 @@ export default function LicenseCancellationEmail({
   licenseKey,
   tier,
   expiresAt,
-  gracePeriodDays,
   portalUrl,
   locale = "en",
 }: LicenseCancellationEmailProps): JSX.Element {
@@ -54,7 +52,8 @@ export default function LicenseCancellationEmail({
     <Html>
       <Head />
       <Preview>
-        {`Your Qarote ${tierDisplay} license has been cancelled. Access until ${accessUntil}.`}
+        Your Qarote {tierDisplay} license has been cancelled. Access continues
+        until {accessUntil}.
       </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
@@ -64,61 +63,40 @@ export default function LicenseCancellationEmail({
             <Text style={contentStyles.title}>License Cancelled</Text>
 
             <Text style={contentStyles.paragraph}>
-              {userName ? `Hi ${userName}` : "Hi"},
+              {userName ? `Hi ${userName},` : "Hi,"}
             </Text>
 
             <Text style={contentStyles.paragraph}>
-              We're sorry to see you go. Your Qarote{" "}
-              <strong>{tierDisplay}</strong> license has been cancelled and will
-              not renew automatically.
+              Your Qarote <strong>{tierDisplay}</strong> license has been
+              cancelled and will not renew. Your instance will keep running
+              until <strong>{accessUntil}</strong> — no further charges will be
+              made.
             </Text>
 
-            {/* Cancellation Details */}
             <Section style={sectionStyles.infoSection}>
-              <Text style={contentStyles.heading}>Cancellation Details</Text>
               <Text style={textStyles.infoText}>
                 <strong>Plan:</strong> {tierDisplay}
               </Text>
+              <Text style={styles.licenseKey}>{licenseKey}</Text>
               <Text style={textStyles.infoText}>
-                <strong>License Key:</strong> {licenseKey}
-              </Text>
-              <Text style={textStyles.infoText}>
-                <strong>Access Until:</strong> {accessUntil}
-              </Text>
-              <Text style={textStyles.infoText}>
-                <strong>Status:</strong> Cancelled (no auto-renewal)
+                <strong>Access until:</strong> {accessUntil}
               </Text>
             </Section>
 
             <Text style={contentStyles.paragraph}>
-              Your self-hosted instance will continue to work until{" "}
-              <strong>{accessUntil}</strong> ({gracePeriodDays}-day grace
-              period). After this date, your license will expire and your
-              instance will stop functioning.
+              Your data remains intact throughout the grace period. After{" "}
+              {accessUntil}, your instance will stop and your data will be
+              preserved — reactivate any time to pick up where you left off.
             </Text>
-
-            <Section style={sectionStyles.featuresSection}>
-              <Text style={contentStyles.heading}>What Happens Next?</Text>
-              <Text style={textStyles.featureText}>
-                • Your instance remains operational until {accessUntil}
-              </Text>
-              <Text style={textStyles.featureText}>
-                • No further charges will be made
-              </Text>
-              <Text style={textStyles.featureText}>
-                • Access stops after the grace period expires
-              </Text>
-              <Text style={textStyles.featureText}>
-                • Your data remains intact but inaccessible
-              </Text>
-            </Section>
 
             <Text style={contentStyles.paragraph}>
-              <strong>Changed your mind?</strong> You can reactivate your
-              license at any time before it expires.
+              Changed your mind?{" "}
+              <Link href={`${portalUrl}/licenses`} style={textStyles.link}>
+                Reactivate your license
+              </Link>{" "}
+              before {accessUntil} and nothing will be interrupted.
             </Text>
 
-            {/* Call to Action */}
             <Section style={buttonStyles.buttonSection}>
               <Button
                 style={buttonStyles.primaryButton}
@@ -129,16 +107,8 @@ export default function LicenseCancellationEmail({
             </Section>
 
             <Text style={contentStyles.paragraph}>
-              We'd love to hear your feedback! If there's anything we could have
-              done better, please let us know by replying to this email.
-            </Text>
-
-            <Text style={contentStyles.paragraph}>
-              You can manage your licenses anytime in your{" "}
-              <Link href={`${portalUrl}/licenses`} style={textStyles.link}>
-                license portal
-              </Link>
-              .
+              We'd genuinely like to know what didn't work. Reply to this email
+              and we'll read it.
             </Text>
 
             <EmailFooter locale={locale} frontendUrl={portalUrl} />
@@ -148,3 +118,10 @@ export default function LicenseCancellationEmail({
     </Html>
   );
 }
+
+const styles = {
+  licenseKey: {
+    ...textStyles.metric,
+    margin: "4px 0",
+  },
+} as const;

@@ -16,6 +16,7 @@ import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
+  colorVariants,
   contentStyles,
   sectionStyles,
   textStyles,
@@ -50,7 +51,7 @@ export default function LicensePaymentFailedEmail({
     <Html>
       <Head />
       <Preview>
-        ⚠️ Payment failed for your Qarote {tierDisplay} license. Update your
+        Payment failed for your Qarote {tierDisplay} license. Update your
         payment method to avoid service interruption.
       </Preview>
       <Body style={baseStyles.main}>
@@ -58,15 +59,16 @@ export default function LicensePaymentFailedEmail({
           <EmailHeader frontendUrl={portalUrl} />
 
           <Section style={contentStyles.contentPadded}>
-            <Text style={contentStyles.title}>⚠️ License Payment Failed</Text>
+            <Text style={contentStyles.title}>License Payment Failed</Text>
 
             <Text style={contentStyles.paragraph}>
               {userName ? `Hi ${userName}` : "Hi"},
             </Text>
 
             <Text style={contentStyles.paragraph}>
-              We were unable to process the renewal payment for your Qarote{" "}
-              <strong>{tierDisplay}</strong> license.
+              We couldn't process the renewal payment for your Qarote{" "}
+              <strong>{tierDisplay}</strong> license. Update your payment method
+              to keep your instance running.
             </Text>
 
             {/* License Details */}
@@ -75,24 +77,18 @@ export default function LicensePaymentFailedEmail({
               <Text style={textStyles.warningText}>
                 <strong>Plan:</strong> {tierDisplay}
               </Text>
-              <Text style={textStyles.warningText}>
-                <strong>License Key:</strong> {licenseKey}
-              </Text>
+              <Text style={styles.licenseKeyText}>{licenseKey}</Text>
               {isInGracePeriod && (
                 <Text style={textStyles.warningText}>
-                  <strong>Grace Period:</strong> {gracePeriodDays} days
+                  <strong>Grace period:</strong> {gracePeriodDays} days
                   remaining
                 </Text>
               )}
-              <Text style={textStyles.warningText}>
-                <strong>Status:</strong>{" "}
-                {isInGracePeriod ? "Grace Period" : "Payment Failed"}
-              </Text>
             </Section>
 
             <Text style={contentStyles.paragraph}>
-              <strong>Action Required:</strong> Please update your payment
-              method as soon as possible to avoid service interruption.
+              Your data is safe. Once payment is resolved, your instance
+              continues without any data loss.
             </Text>
 
             {willDeactivate && (
@@ -149,3 +145,11 @@ export default function LicensePaymentFailedEmail({
     </Html>
   );
 }
+
+const styles = {
+  licenseKeyText: {
+    ...textStyles.metric,
+    color: colorVariants.warning.text,
+    margin: "4px 0",
+  },
+} as const;

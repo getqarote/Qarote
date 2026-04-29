@@ -18,6 +18,7 @@ import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
+  colorVariants,
   contentStyles,
   sectionStyles,
   textStyles,
@@ -39,22 +40,23 @@ interface PaymentActionRequiredEmailProps {
 
 const styles = {
   paymentDetails: {
-    backgroundColor: "#fef2f2",
+    backgroundColor: colorVariants.warning.background,
     padding: "20px",
     borderRadius: "8px",
-    border: "1px solid #fecaca",
+    border: `1px solid ${colorVariants.warning.border}`,
     margin: "24px 0",
   },
   amount: {
     fontSize: "24px",
     fontWeight: "700",
-    color: "#dc2626",
+    fontFamily: textStyles.metric.fontFamily,
+    color: colorVariants.warning.text,
     textAlign: "center" as const,
     margin: "16px 0",
   },
   supportText: {
     fontSize: "14px",
-    color: "#6b7280",
+    color: colorVariants.neutral.primary,
     fontStyle: "italic",
   },
   listItem: {
@@ -122,7 +124,7 @@ export default function PaymentActionRequiredEmail({
             {/* Action Required Section */}
             <Section style={sectionStyles.warningSection}>
               <Text style={contentStyles.heading}>
-                🚨 Immediate action required
+                Immediate action required
               </Text>
 
               <Text style={contentStyles.paragraph}>

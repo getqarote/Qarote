@@ -19,6 +19,7 @@ import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
+  colorVariants,
   contentStyles,
   sectionStyles,
   textStyles,
@@ -74,10 +75,9 @@ export const UpgradeConfirmationEmail = ({
             </Text>
 
             <Text style={contentStyles.paragraph}>
-              Great news! Your workspace "{workspaceName}" has been successfully
-              upgraded to the {planDisplayName} plan. You now have access to all
-              the powerful features that will help you monitor and optimize your
-              RabbitMQ infrastructure.
+              <strong>{workspaceName}</strong> is now on the{" "}
+              <strong>{planDisplayName}</strong> plan. Everything below is
+              unlocked and ready to use.
             </Text>
 
             <Section style={sectionStyles.featuresSection}>
@@ -86,7 +86,7 @@ export const UpgradeConfirmationEmail = ({
               </Heading>
               {planFeatures.featureDescriptions.map((feature, index) => (
                 <Text key={index} style={textStyles.featureText}>
-                  ✅ {feature}
+                  {feature}
                 </Text>
               ))}
             </Section>
@@ -147,7 +147,7 @@ const styles = {
   billingText: {
     fontSize: "14px",
     lineHeight: "1.5",
-    color: "#6b7280",
+    color: colorVariants.neutral.primary,
     margin: "8px 0",
   },
 

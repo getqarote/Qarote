@@ -87,8 +87,7 @@ const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> = ({
             </Text>
 
             <Text style={contentStyles.paragraph}>
-              Great news! Your payment has been successfully processed and your
-              Qarote subscription is now active.
+              Payment received. Your subscription is active.
             </Text>
 
             <Section style={sectionStyles.successSection}>
@@ -98,7 +97,7 @@ const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> = ({
 
               <Section style={layoutStyles.detailRow}>
                 <Text style={layoutStyles.detailLabel}>Amount:</Text>
-                <Text style={layoutStyles.detailValue}>
+                <Text style={styles.amountValue}>
                   {formatAmount(amount, currency)}
                 </Text>
               </Section>
@@ -112,14 +111,13 @@ const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> = ({
 
               <Section style={layoutStyles.detailRow}>
                 <Text style={layoutStyles.detailLabel}>Status:</Text>
-                <Text style={textStyles.successText}>✅ Completed</Text>
+                <Text style={textStyles.successText}>Completed</Text>
               </Section>
             </Section>
 
             <Text style={contentStyles.paragraph}>
-              Thank you for your payment! You can continue using Qarote without
-              any interruptions. Your subscription is now active and you have
-              full access to all features.
+              You have full access to all features. Your next invoice will
+              arrive before the next billing cycle.
             </Text>
 
             <Section style={buttonStyles.buttonSection}>
@@ -148,3 +146,10 @@ const PaymentConfirmationEmail: React.FC<PaymentConfirmationEmailProps> = ({
 };
 
 export default PaymentConfirmationEmail;
+
+const styles = {
+  amountValue: {
+    ...layoutStyles.detailValue,
+    fontFamily: textStyles.metric.fontFamily,
+  },
+} as const;

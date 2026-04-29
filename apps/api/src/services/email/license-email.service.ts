@@ -20,7 +20,6 @@ interface SendLicenseDeliveryEmailParams {
   licenseKey: string;
   tier: UserPlan;
   expiresAt: Date;
-  downloadUrl: string;
   locale?: string;
 }
 
@@ -31,7 +30,6 @@ interface SendLicenseRenewalEmailParams {
   tier: UserPlan;
   previousExpiresAt: Date;
   newExpiresAt: Date;
-  downloadUrl: string;
   locale?: string;
 }
 
@@ -87,15 +85,7 @@ export class LicenseEmailService {
   static async sendLicenseDeliveryEmail(
     params: SendLicenseDeliveryEmailParams
   ): Promise<EmailResult> {
-    const {
-      to,
-      userName,
-      licenseKey,
-      tier,
-      expiresAt,
-      downloadUrl,
-      locale = "en",
-    } = params;
+    const { to, userName, licenseKey, tier, expiresAt, locale = "en" } = params;
 
     const { portalFrontendUrl } = CoreEmailService.getConfig();
     const portalUrl = portalFrontendUrl;
@@ -108,7 +98,6 @@ export class LicenseEmailService {
       licenseKey,
       tier,
       expiresAt,
-      downloadUrl,
       portalUrl,
       locale,
     });
@@ -139,7 +128,6 @@ export class LicenseEmailService {
       tier,
       previousExpiresAt,
       newExpiresAt,
-      downloadUrl,
       locale = "en",
     } = params;
 
@@ -153,9 +141,7 @@ export class LicenseEmailService {
       userName,
       licenseKey,
       tier,
-      previousExpiresAt,
       newExpiresAt,
-      downloadUrl,
       portalUrl,
       locale,
     });
@@ -345,7 +331,6 @@ export class LicenseEmailService {
       licenseKey,
       tier,
       expiresAt,
-      gracePeriodDays,
       portalUrl,
       locale,
     });

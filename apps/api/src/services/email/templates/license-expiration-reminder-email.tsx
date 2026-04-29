@@ -16,6 +16,7 @@ import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
+  colorVariants,
   contentStyles,
   sectionStyles,
   textStyles,
@@ -53,22 +54,19 @@ export default function LicenseExpirationReminderEmail({
   });
 
   const urgency = daysUntilExpiration <= 7 ? "urgent" : "info";
-  const emoji = daysUntilExpiration <= 7 ? "⚠️" : "ℹ️";
 
   return (
     <Html>
       <Head />
       <Preview>
-        {`${emoji} Your Qarote ${tierDisplay} license expires in ${daysUntilExpiration} days`}
+        {`Your Qarote ${tierDisplay} license expires in ${daysUntilExpiration} days`}
       </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
           <EmailHeader frontendUrl={portalUrl} />
 
           <Section style={contentStyles.contentPadded}>
-            <Text style={contentStyles.title}>
-              {emoji} License Expiration Reminder
-            </Text>
+            <Text style={contentStyles.title}>License Expiration Reminder</Text>
 
             <Text style={contentStyles.paragraph}>
               {userName ? `Hi ${userName}` : "Hi"},
@@ -101,11 +99,11 @@ export default function LicenseExpirationReminderEmail({
               <Text
                 style={
                   urgency === "urgent"
-                    ? textStyles.warningText
-                    : textStyles.infoText
+                    ? styles.licenseKeyUrgent
+                    : styles.licenseKeyDefault
                 }
               >
-                <strong>License Key:</strong> {licenseKey}
+                {licenseKey}
               </Text>
               <Text
                 style={
@@ -114,7 +112,7 @@ export default function LicenseExpirationReminderEmail({
                     : textStyles.infoText
                 }
               >
-                <strong>Expires On:</strong> {expiryDate}
+                <strong>Expires:</strong> {expiryDate}
               </Text>
             </Section>
 
@@ -146,16 +144,16 @@ export default function LicenseExpirationReminderEmail({
             <Section style={sectionStyles.featuresSection}>
               <Text style={contentStyles.heading}>What Happens Next?</Text>
               <Text style={textStyles.featureText}>
-                ✓ Automatic renewal will occur on {expiryDate}
+                Automatic renewal will occur on {expiryDate}
               </Text>
               <Text style={textStyles.featureText}>
-                ✓ You'll receive an updated license file via email
+                You'll receive an updated license file via email
               </Text>
               <Text style={textStyles.featureText}>
-                ✓ Simply replace your current license file to continue
+                Simply replace your current license file to continue
               </Text>
               <Text style={textStyles.featureText}>
-                ✓ No service interruption if renewed on time
+                No service interruption if renewed on time
               </Text>
             </Section>
 
@@ -174,3 +172,16 @@ export default function LicenseExpirationReminderEmail({
     </Html>
   );
 }
+
+const styles = {
+  licenseKeyUrgent: {
+    ...textStyles.metric,
+    color: colorVariants.warning.text,
+    margin: "4px 0",
+  },
+  licenseKeyDefault: {
+    ...textStyles.metric,
+    color: colorVariants.neutral.text,
+    margin: "4px 0",
+  },
+} as const;

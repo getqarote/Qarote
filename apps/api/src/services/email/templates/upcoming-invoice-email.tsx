@@ -16,6 +16,7 @@ import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
+  colorVariants,
   contentStyles,
   layoutStyles,
   sectionStyles,
@@ -41,15 +42,16 @@ const styles = {
   invoiceAmount: {
     fontSize: "32px",
     fontWeight: "700",
-    color: "#059669", // Green success color
+    fontFamily: textStyles.metric.fontFamily,
+    color: contentStyles.heading.color,
     textAlign: "center" as const,
     margin: "20px 0",
   },
   invoiceDetails: {
-    backgroundColor: "#f0f9ff",
+    backgroundColor: colorVariants.neutral.background,
     padding: "24px",
     borderRadius: "8px",
-    border: "1px solid #bfdbfe",
+    border: `1px solid ${colorVariants.neutral.border}`,
     margin: "24px 0",
   },
   usageGrid: {
@@ -63,18 +65,18 @@ const styles = {
     backgroundColor: "#ffffff",
     padding: "16px",
     borderRadius: "6px",
-    border: "1px solid #e5e7eb",
+    border: `1px solid ${colorVariants.neutral.border}`,
     textAlign: "center" as const,
   },
   usageNumber: {
     fontSize: "24px",
     fontWeight: "700",
-    color: "#1f2937",
+    color: contentStyles.heading.color,
     margin: "0 0 4px",
   },
   usageLabel: {
     fontSize: "14px",
-    color: "#6b7280",
+    color: colorVariants.neutral.primary,
     margin: "0",
   },
 };
@@ -125,7 +127,7 @@ export default function UpcomingInvoiceEmail({
 
             {/* Invoice Details Section */}
             <Section style={styles.invoiceDetails}>
-              <Text style={contentStyles.heading}>📄 Invoice details</Text>
+              <Text style={contentStyles.heading}>Invoice details</Text>
 
               <Section style={layoutStyles.detailRow}>
                 <Text style={layoutStyles.detailLabel}>Workspace:</Text>
@@ -168,31 +170,31 @@ export default function UpcomingInvoiceEmail({
 
               <Section style={layoutStyles.rowItem}>
                 <Text style={textStyles.featureText}>
-                  📊 Advanced analytics and detailed metrics
+                  Advanced analytics and detailed metrics
                 </Text>
               </Section>
 
               <Section style={layoutStyles.rowItem}>
                 <Text style={textStyles.featureText}>
-                  🔔 Custom alerts and real-time notifications
+                  Custom alerts and real-time notifications
                 </Text>
               </Section>
 
               <Section style={layoutStyles.rowItem}>
                 <Text style={textStyles.featureText}>
-                  👥 Team collaboration and workspace sharing
+                  Team collaboration and workspace sharing
                 </Text>
               </Section>
 
               <Section style={layoutStyles.rowItem}>
                 <Text style={textStyles.featureText}>
-                  🧠 Memory optimization insights and recommendations
+                  Memory optimization insights and recommendations
                 </Text>
               </Section>
 
               <Section style={layoutStyles.rowItem}>
                 <Text style={textStyles.featureText}>
-                  🎯 Priority support and expert consultation
+                  Priority support and expert consultation
                 </Text>
               </Section>
             </Section>
@@ -228,20 +230,3 @@ export default function UpcomingInvoiceEmail({
     </Html>
   );
 }
-
-const _footer = {
-  padding: "32px 32px 0",
-  textAlign: "center" as const,
-};
-
-const _footerText = {
-  fontSize: "14px",
-  lineHeight: "20px",
-  color: "#6b7280",
-  margin: "0 0 8px",
-};
-
-const _footerLink = {
-  color: "#3b82f6",
-  textDecoration: "underline",
-};

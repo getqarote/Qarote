@@ -73,37 +73,18 @@ export default function WelcomeEmail({
             <Text style={contentStyles.paragraph}>
               {workspaceName ? (
                 <>
-                  Welcome to Qarote! Your workspace{" "}
-                  <strong>{workspaceName}</strong> has been successfully set up
-                  on the <strong>{planDisplayName}</strong> plan.
+                  Your workspace <strong>{workspaceName}</strong> is live on the{" "}
+                  <strong>{planDisplayName}</strong> plan. Connect your first
+                  RabbitMQ server and Qarote will start watching your queues,
+                  message rates, and consumer health — and alert you before
+                  problems reach your users.
                 </>
               ) : (
                 <>
-                  Welcome to Qarote! Your account has been successfully created
-                  on the <strong>{planDisplayName}</strong> plan. Get started by
-                  creating your first workspace!
-                </>
-              )}
-            </Text>
-
-            {!workspaceName && (
-              <Text style={contentStyles.paragraph}>
-                A workspace helps you organize your RabbitMQ servers, manage
-                team members, and track your monitoring data. You can create one
-                right away!
-              </Text>
-            )}
-
-            <Text style={contentStyles.paragraph}>
-              {workspaceName ? (
-                <>
-                  You can now start monitoring your RabbitMQ clusters and
-                  managing your message queues with ease.
-                </>
-              ) : (
-                <>
-                  Once you create your workspace, you can start monitoring your
-                  RabbitMQ clusters and managing your message queues with ease.
+                  Your account is ready on the{" "}
+                  <strong>{planDisplayName}</strong> plan. Create a workspace,
+                  connect a RabbitMQ server, and you'll have full queue
+                  visibility in a few minutes.
                 </>
               )}
             </Text>

@@ -1,9 +1,9 @@
-// Shared email template styles for consistency across all templates
+// Shared email template styles — Qarote brand design system
 
 // Base styles
 export const baseStyles = {
   main: {
-    backgroundColor: "#f6f9fc",
+    backgroundColor: "#faf8f6",
     fontFamily:
       '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
   },
@@ -23,7 +23,7 @@ export const headerStyles = {
   header: {
     padding: "32px 32px 20px",
     textAlign: "center" as const,
-    borderBottom: "1px solid #e5e7eb",
+    borderBottom: "1px solid #e7e5e0",
   },
 
   headerWithLogo: {
@@ -31,7 +31,7 @@ export const headerStyles = {
     alignItems: "center",
     justifyContent: "center",
     padding: "40px 40px 20px",
-    borderBottom: "1px solid #e5e7eb",
+    borderBottom: "1px solid #e7e5e0",
   },
 
   logo: {
@@ -46,7 +46,7 @@ export const headerStyles = {
   headerText: {
     fontSize: "24px",
     fontWeight: "bold",
-    color: "#1f2937",
+    color: "#1c1917",
     margin: "0",
     lineHeight: "28px",
   },
@@ -65,7 +65,7 @@ export const contentStyles = {
   title: {
     fontSize: "28px",
     fontWeight: "bold",
-    color: "#1f2937",
+    color: "#1c1917",
     textAlign: "center" as const,
     margin: "0 0 32px",
   },
@@ -74,29 +74,30 @@ export const contentStyles = {
     fontSize: "24px",
     lineHeight: "28px",
     fontWeight: "bold",
-    color: "#1f2937",
+    color: "#1c1917",
     margin: "0 0 24px",
     textAlign: "center" as const,
   },
 
   heading: {
-    fontSize: "20px",
-    fontWeight: "600",
-    color: "#1f2937",
-    margin: "0 0 16px",
+    fontSize: "16px",
+    fontWeight: "700",
+    color: "#1c1917",
+    margin: "0 0 12px",
+    letterSpacing: "0.01em",
   },
 
   paragraph: {
     fontSize: "16px",
-    lineHeight: "24px",
-    color: "#374151",
+    lineHeight: "26px",
+    color: "#44403c",
     margin: "0 0 16px",
   },
 
   signature: {
     fontSize: "16px",
     lineHeight: "24px",
-    color: "#374151",
+    color: "#44403c",
     margin: "24px 0 0",
     fontWeight: "500",
   },
@@ -114,17 +115,22 @@ export const sectionStyles = {
   featuresSection: {
     margin: "32px 0",
     padding: "24px",
-    // backgroundColor: "#f9fafb",
-    // borderRadius: "8px",
-    // border: "1px solid #e5e7eb",
   },
 
   warningSection: {
     margin: "32px 0",
     padding: "24px",
+    backgroundColor: "#fff7ed",
+    borderRadius: "8px",
+    border: "1px solid #fdba74",
+  },
+
+  errorSection: {
+    margin: "32px 0",
+    padding: "24px",
     backgroundColor: "#fef2f2",
     borderRadius: "8px",
-    border: "1px solid #fecaca",
+    border: "1px solid #fca5a5",
   },
 
   successSection: {
@@ -132,21 +138,21 @@ export const sectionStyles = {
     padding: "24px",
     backgroundColor: "#f0fdf4",
     borderRadius: "8px",
-    border: "1px solid #bbf7d0",
+    border: "1px solid #86efac",
   },
 
   infoSection: {
     margin: "32px 0",
     padding: "24px",
-    backgroundColor: "#f0f9ff",
+    backgroundColor: "#faf8f6",
     borderRadius: "8px",
-    border: "1px solid #bfdbfe",
+    border: "1px solid #e7e5e0",
   },
 
   highlightSection: {
-    background: "#e8f5e8",
-    border: "1px solid #c3e6c3",
-    padding: "15px",
+    background: "#fff7ed",
+    border: "1px solid #fdba74",
+    padding: "20px",
     borderRadius: "8px",
     margin: "20px 0",
   },
@@ -173,9 +179,9 @@ export const buttonStyles = {
   },
 
   secondaryButton: {
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "#f5f4f2",
     borderRadius: "6px",
-    color: "#374151",
+    color: "#44403c",
     fontSize: "14px",
     fontWeight: "500",
     textDecoration: "none",
@@ -184,58 +190,58 @@ export const buttonStyles = {
     margin: "0 8px",
     padding: "8px 16px",
   },
-
-  linkButton: {
-    display: "inline-block",
-    background: "#667eea",
-    color: "white",
-    padding: "12px 30px",
-    textDecoration: "none",
-    borderRadius: "5px",
-    fontWeight: "bold",
-  },
 } as const;
 
 // Text styles
 export const textStyles = {
   link: {
-    color: "#3b82f6",
+    color: "#c2410c",
     textDecoration: "underline",
   },
 
   linkText: {
     fontSize: "14px",
     lineHeight: "20px",
-    color: "#6b7280",
+    color: "#78716c",
     margin: "0 0 16px",
     wordBreak: "break-all" as const,
   },
 
   featureText: {
     fontSize: "15px",
-    lineHeight: "20px",
-    color: "#374151",
-    margin: "0",
+    lineHeight: "22px",
+    color: "#44403c",
+    margin: "0 0 6px",
   },
 
   warningText: {
     fontSize: "15px",
-    lineHeight: "20px",
-    color: "#991b1b",
-    margin: "0",
+    lineHeight: "22px",
+    color: "#9a3412",
+    margin: "0 0 4px",
   },
 
   successText: {
     fontSize: "15px",
-    lineHeight: "20px",
-    color: "#059669",
-    margin: "0",
+    lineHeight: "22px",
+    color: "#166534",
+    margin: "0 0 4px",
   },
 
   infoText: {
     fontSize: "15px",
-    lineHeight: "20px",
-    color: "#1e40af",
+    lineHeight: "22px",
+    color: "#44403c",
+    margin: "0 0 4px",
+  },
+
+  // Fragment Mono for all numeric/technical values
+  metric: {
+    fontFamily:
+      "'Fragment Mono', 'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
+    fontSize: "15px",
+    lineHeight: "22px",
+    color: "#1c1917",
     margin: "0",
   },
 } as const;
@@ -245,28 +251,28 @@ export const footerStyles = {
   footer: {
     padding: "32px 32px 0",
     textAlign: "center" as const,
-    borderTop: "1px solid #e5e7eb",
+    borderTop: "1px solid #e7e5e0",
     paddingTop: "32px",
   },
 
   footerSimple: {
     padding: "0 40px 40px",
     textAlign: "center" as const,
-    borderTop: "1px solid #e5e7eb",
+    borderTop: "1px solid #e7e5e0",
     paddingTop: "32px",
   },
 
   footerText: {
     fontSize: "14px",
     lineHeight: "20px",
-    color: "#6b7280",
+    color: "#78716c",
     margin: "0 0 8px",
   },
 
   footerTextSmall: {
     fontSize: "12px",
     lineHeight: "16px",
-    color: "#6b7280",
+    color: "#a8a29e",
     margin: "0 0 8px",
   },
 } as const;
@@ -274,10 +280,11 @@ export const footerStyles = {
 // Code block styles
 export const codeStyles = {
   commandBlock: {
-    fontFamily: "monospace",
+    fontFamily:
+      "'Fragment Mono', 'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
     fontSize: "14px",
-    backgroundColor: "#1f2937",
-    color: "#f9fafb",
+    backgroundColor: "#1c1917",
+    color: "#fafaf9",
     padding: "12px 16px",
     borderRadius: "6px",
     margin: "0",
@@ -288,7 +295,7 @@ export const codeStyles = {
 // Utility styles
 export const utilityStyles = {
   hr: {
-    borderColor: "#e5e7eb",
+    borderColor: "#e7e5e0",
     margin: "32px 0",
   },
 
@@ -328,49 +335,49 @@ export const layoutStyles = {
 
   detailLabel: {
     fontSize: "15px",
-    color: "#6b7280",
+    color: "#78716c",
     margin: "0",
     fontWeight: "500",
   },
 
   detailValue: {
     fontSize: "15px",
-    color: "#1f2937",
+    color: "#1c1917",
     margin: "0",
     fontWeight: "600",
   },
 } as const;
 
-// Color variants for different email types
+// Severity color system — derived from brand palette
 export const colorVariants = {
   success: {
-    primary: "#059669",
+    primary: "#16a34a",
     background: "#f0fdf4",
-    border: "#bbf7d0",
-    text: "#065f46",
+    border: "#86efac",
+    text: "#166534",
   },
   warning: {
-    primary: "#d97706",
-    background: "#fffbeb",
-    border: "#fed7aa",
-    text: "#92400e",
+    primary: "#ea580c",
+    background: "#fff7ed",
+    border: "#fdba74",
+    text: "#9a3412",
   },
   error: {
     primary: "#dc2626",
     background: "#fef2f2",
-    border: "#fecaca",
+    border: "#fca5a5",
     text: "#991b1b",
   },
   info: {
-    primary: "#2563eb",
-    background: "#f0f9ff",
-    border: "#bfdbfe",
-    text: "#1e40af",
+    primary: "#78716c",
+    background: "#faf8f6",
+    border: "#e7e5e0",
+    text: "#44403c",
   },
   neutral: {
-    primary: "#6b7280",
-    background: "#f9fafb",
-    border: "#e5e7eb",
-    text: "#374151",
+    primary: "#78716c",
+    background: "#faf8f6",
+    border: "#e7e5e0",
+    text: "#44403c",
   },
 } as const;

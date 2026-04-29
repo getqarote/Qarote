@@ -16,6 +16,7 @@ import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
+  colorVariants,
   contentStyles,
   sectionStyles,
   textStyles,
@@ -51,11 +52,11 @@ export const WelcomeBackEmail = ({
         <Container style={baseStyles.container}>
           <EmailHeader frontendUrl={frontendUrl} />
 
-          {/* Main Content */}
-          <Section style={sectionStyles.featuresSection}>
-            <Heading style={contentStyles.title}>
+          <Section style={contentStyles.contentPadded}>
+            <Text style={contentStyles.title}>
               {tEmail(locale, "welcomeBack.title")}
-            </Heading>
+            </Text>
+
             <Text style={contentStyles.paragraph}>
               We noticed you've renewed your subscription for{" "}
               <strong>{workspaceName}</strong>
@@ -68,56 +69,52 @@ export const WelcomeBackEmail = ({
                   })}
                 </>
               )}
-              . We're excited to continue supporting your RabbitMQ monitoring
-              needs!
+              . We're glad to have you back and look forward to supporting your
+              RabbitMQ monitoring.
             </Text>
 
             <Section style={sectionStyles.highlightSection}>
               <Text style={styles.highlightText}>
-                🙏 Thank you for giving us another chance!
+                Thank you for giving us another chance.
               </Text>
               <Text style={styles.highlightSubtext}>
-                Your feedback and loyalty mean the world to us. We've been
-                working hard to improve Qarote based on user feedback like
-                yours.
+                Your feedback and loyalty mean a lot. We've been working to
+                improve Qarote based on input from users like you.
               </Text>
             </Section>
-          </Section>
 
-          {/* Plan Info */}
-          <Section style={styles.planSection}>
-            <Heading as="h3" style={contentStyles.heading}>
-              Your {planDisplayName} Plan Features
-            </Heading>
-            <Text style={contentStyles.paragraph}>
-              <strong>Billing:</strong>{" "}
-              {billingInterval === "yearly" ? "Annual" : "Monthly"} subscription
-            </Text>
-
-            {getPlanFeatures(plan).featureDescriptions.map((feature, index) => (
-              <Text key={index} style={styles.featureItem}>
-                ✓ {feature}
+            {/* Plan Info */}
+            <Section style={styles.planSection}>
+              <Heading as="h3" style={contentStyles.heading}>
+                Your {planDisplayName} Plan
+              </Heading>
+              <Text style={contentStyles.paragraph}>
+                <strong>Billing:</strong>{" "}
+                {billingInterval === "yearly" ? "Annual" : "Monthly"}{" "}
+                subscription
               </Text>
-            ))}
-          </Section>
 
-          {/* CTA Button */}
-          <Section style={buttonStyles.buttonSection}>
-            <Link href={frontendUrl} style={buttonStyles.primaryButton}>
-              {tEmail(locale, "welcomeBack.viewDashboard")}
-            </Link>
-          </Section>
+              {getPlanFeatures(plan).featureDescriptions.map(
+                (feature, index) => (
+                  <Text key={index} style={styles.featureItem}>
+                    {feature}
+                  </Text>
+                )
+              )}
+            </Section>
 
-          {/* What's New */}
-          <Section style={sectionStyles.featuresSection}>
+            <Section style={buttonStyles.buttonSection}>
+              <Link href={frontendUrl} style={buttonStyles.primaryButton}>
+                {tEmail(locale, "welcomeBack.viewDashboard")}
+              </Link>
+            </Section>
+
             <Text style={contentStyles.paragraph}>
-              <strong>Need help getting started again?</strong>
-            </Text>
-            <Text style={contentStyles.paragraph}>
-              Our team is here to help! check out our{" "}
+              Need help getting started again? Our{" "}
               <Link href={`${frontendUrl}/help`} style={textStyles.link}>
                 {tEmail(locale, "common.supportTeam")}
               </Link>{" "}
+              is here.
             </Text>
 
             <EmailFooter locale={locale} frontendUrl={frontendUrl} />
@@ -128,55 +125,35 @@ export const WelcomeBackEmail = ({
   );
 };
 
-// Custom styles for this template
 const styles = {
-  welcomeHeader: {
-    textAlign: "center" as const,
-    padding: "30px 20px",
-    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-    color: "white",
-    borderRadius: "8px",
-    marginBottom: "30px",
-  },
-
-  welcomeTitle: {
-    fontSize: "28px",
-    fontWeight: "bold",
-    margin: "0 0 10px 0",
-    color: "white",
-  },
-
-  welcomeSubtitle: {
-    fontSize: "16px",
-    margin: "0",
-    opacity: "0.9",
-    color: "white",
-  },
-
   highlightText: {
-    margin: "0",
-    fontWeight: "bold",
-    color: "#059669",
+    margin: "0 0 8px",
+    fontWeight: "600",
+    color: colorVariants.warning.text,
+    fontSize: "16px",
   },
 
   highlightSubtext: {
-    margin: "10px 0 0 0",
-    color: "#065f46",
+    margin: "0",
+    color: colorVariants.neutral.primary,
+    fontSize: "15px",
+    lineHeight: "22px",
   },
 
   planSection: {
-    background: "white",
+    backgroundColor: colorVariants.neutral.background,
     padding: "20px",
     borderRadius: "8px",
-    borderLeft: "4px solid #667eea",
+    border: `1px solid ${colorVariants.neutral.border}`,
     margin: "20px 0",
   },
 
   featureItem: {
-    margin: "8px 0",
-    borderBottom: "1px solid #eee",
-    paddingBottom: "8px",
+    margin: "6px 0",
     fontSize: "15px",
-    color: "#374151",
+    lineHeight: "22px",
+    color: colorVariants.neutral.text,
+    paddingBottom: "6px",
+    borderBottom: `1px solid ${colorVariants.neutral.border}`,
   },
 } as const;

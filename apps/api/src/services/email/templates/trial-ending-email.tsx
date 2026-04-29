@@ -93,7 +93,7 @@ export default function TrialEndingEmail({
             {/* Warning Section */}
             <Section style={sectionStyles.warningSection}>
               <Text style={contentStyles.heading}>
-                ⚠️ What happens if you don't upgrade?
+                What happens if you don't upgrade?
               </Text>
 
               <Section style={styles.warningItem}>
@@ -123,7 +123,7 @@ export default function TrialEndingEmail({
 
               {planFeatures.featureDescriptions.map((feature, index) => (
                 <Section key={index} style={styles.benefitItem}>
-                  <Text style={textStyles.infoText}>✓ {feature}</Text>
+                  <Text style={textStyles.infoText}>{feature}</Text>
                 </Section>
               ))}
             </Section>

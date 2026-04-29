@@ -10,7 +10,7 @@ export function EmailHeader({ frontendUrl }: EmailHeaderProps) {
   return (
     <Section style={headerStyles.headerWithLogo}>
       <Img
-        src={`${frontendUrl}/images/favicon.png`}
+        src={`${frontendUrl}/images/email-logo.png`}
         width="32"
         height="32"
         alt="Qarote"

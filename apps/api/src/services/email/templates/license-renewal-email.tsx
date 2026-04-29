@@ -16,6 +16,8 @@ import { EmailHeader } from "../shared/email-header";
 import {
   baseStyles,
   buttonStyles,
+  codeStyles,
+  colorVariants,
   contentStyles,
   sectionStyles,
   textStyles,
@@ -28,9 +30,7 @@ interface LicenseRenewalEmailProps {
   userName?: string;
   licenseKey: string;
   tier: UserPlan;
-  previousExpiresAt: Date;
   newExpiresAt: Date;
-  downloadUrl: string;
   portalUrl: string;
   locale?: string;
 }
@@ -39,9 +39,7 @@ export default function LicenseRenewalEmail({
   userName,
   licenseKey,
   tier,
-  previousExpiresAt,
   newExpiresAt,
-  downloadUrl,
   portalUrl,
   locale = "en",
 }: LicenseRenewalEmailProps): JSX.Element {
@@ -57,8 +55,8 @@ export default function LicenseRenewalEmail({
     <Html>
       <Head />
       <Preview>
-        Your Qarote {tierDisplay} license has been renewed! Download your
-        updated license file.
+        Your Qarote {tierDisplay} license has been renewed — update your key
+        before {newExpiryDate}.
       </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
@@ -70,74 +68,51 @@ export default function LicenseRenewalEmail({
             </Text>
 
             <Text style={contentStyles.paragraph}>
-              {userName ? `Hi ${userName}` : "Hi"},
+              {userName ? `Hi ${userName},` : "Hi,"}
             </Text>
 
             <Text style={contentStyles.paragraph}>
-              Great news! Your Qarote <strong>{tierDisplay}</strong> license has
-              been automatically renewed for another 12 months.
+              Your Qarote <strong>{tierDisplay}</strong> license has been
+              automatically renewed for another 12 months. You need to update
+              your license key in the admin panel to keep your instance running
+              without interruption.
             </Text>
 
-            {/* License Details */}
-            <Section style={sectionStyles.successSection}>
-              <Text style={contentStyles.heading}>Updated License Details</Text>
+            {/* New license key — the centerpiece */}
+            <Text style={styles.keyLabel}>Your new license key</Text>
+            <Text style={codeStyles.commandBlock}>{licenseKey}</Text>
+
+            <Section style={styles.successSection}>
+              <Text style={textStyles.successText}>
+                <strong>Valid until:</strong> {newExpiryDate}
+              </Text>
               <Text style={textStyles.successText}>
                 <strong>Plan:</strong> {tierDisplay}
-              </Text>
-              <Text style={textStyles.successText}>
-                <strong>License Key:</strong> {licenseKey}
-              </Text>
-              <Text style={textStyles.successText}>
-                <strong>Previous Expiry:</strong>{" "}
-                {previousExpiresAt.toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                  timeZone: "UTC",
-                })}
-              </Text>
-              <Text style={textStyles.successText}>
-                <strong>New Expiry:</strong> {newExpiryDate}
               </Text>
             </Section>
 
             <Section style={sectionStyles.warningSection}>
-              <Text style={contentStyles.heading}>
-                ⚠️ Action Required: Update Your License Key
+              <Text style={styles.warningHeading}>
+                Action Required: Update Your License Key
               </Text>
               <Text style={textStyles.warningText}>
-                To continue using your self-hosted Qarote instance without
-                interruption, copy your new license key and paste it in your
-                admin panel.
+                Copy your new license key above, open your admin panel, and
+                paste it on the License page. Your instance won't start until
+                you've applied the updated key.
               </Text>
             </Section>
 
-            {/* Call to Action */}
             <Section style={buttonStyles.buttonSection}>
-              <Button style={buttonStyles.primaryButton} href={downloadUrl}>
-                View Updated License
+              <Button
+                style={buttonStyles.primaryButton}
+                href={`${portalUrl}/licenses`}
+              >
+                Open License Portal
               </Button>
             </Section>
 
-            {/* Installation Instructions */}
-            <Section style={sectionStyles.featuresSection}>
-              <Text style={contentStyles.heading}>Update Steps</Text>
-              <Text style={textStyles.featureText}>
-                1. Copy your new license key from the portal
-              </Text>
-              <Text style={textStyles.featureText}>
-                2. Open your Qarote self-hosted admin panel
-              </Text>
-              <Text style={textStyles.featureText}>
-                3. Go to the License page and paste your new key
-              </Text>
-              <Text style={textStyles.featureText}>
-                4. Your license will be updated immediately
-              </Text>
-            </Section>
-
             <Text style={contentStyles.paragraph}>
-              You can also manage your licenses anytime from your{" "}
+              Manage your licenses anytime from your{" "}
               <Link href={`${portalUrl}/licenses`} style={textStyles.link}>
                 license portal
               </Link>
@@ -151,3 +126,23 @@ export default function LicenseRenewalEmail({
     </Html>
   );
 }
+
+const styles = {
+  keyLabel: {
+    ...contentStyles.paragraph,
+    color: colorVariants.neutral.primary,
+    marginBottom: "8px",
+    fontSize: "13px",
+    fontWeight: "600",
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.06em",
+  },
+  successSection: {
+    ...sectionStyles.successSection,
+    marginTop: "24px",
+  },
+  warningHeading: {
+    ...contentStyles.heading,
+    margin: "0 0 8px",
+  },
+} as const;

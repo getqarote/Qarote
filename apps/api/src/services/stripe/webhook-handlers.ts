@@ -315,14 +315,12 @@ async function handleLicensePurchase(
     );
 
     // Send license delivery email
-    const portalUrl = emailConfig.portalFrontendUrl;
     await EmailService.sendLicenseDeliveryEmail({
       to: user.email,
       userName: getUserDisplayName(user),
       licenseKey,
       tier: plan,
       expiresAt,
-      downloadUrl: `${portalUrl}/licenses`,
     });
 
     try {
@@ -743,14 +741,12 @@ export async function handleInvoicePaymentSucceeded(invoice: Invoice) {
           );
 
           // Send license renewal email
-          const portalUrl = emailConfig.portalFrontendUrl;
           await EmailService.sendLicenseRenewalEmail({
             to: license.customerEmail,
             licenseKey: license.licenseKey,
             tier: license.tier,
             previousExpiresAt: license.expiresAt,
             newExpiresAt,
-            downloadUrl: `${portalUrl}/licenses`,
           });
 
           logger.info(

@@ -54,75 +54,51 @@ export default function LicenseExpiredEmail({
     <Html>
       <Head />
       <Preview>
-        Your Qarote {tierDisplay} license has expired. Renew now to restore
-        access.
+        Your Qarote {tierDisplay} license expired on {expiredDate} — renew to
+        restore access.
       </Preview>
       <Body style={baseStyles.main}>
         <Container style={baseStyles.container}>
           <EmailHeader frontendUrl={portalUrl} />
 
           <Section style={contentStyles.contentPadded}>
-            <Text style={contentStyles.title}>❌ License Expired</Text>
+            <Text style={contentStyles.title}>Your license has expired</Text>
 
             <Text style={contentStyles.paragraph}>
-              {userName ? `Hi ${userName}` : "Hi"},
+              {userName ? `Hi ${userName},` : "Hi,"}
             </Text>
 
             <Text style={contentStyles.paragraph}>
-              Your Qarote <strong>{tierDisplay}</strong> license has expired as
-              of {expiredDate}. Your self-hosted instance is no longer
-              operational.
+              Your Qarote <strong>{tierDisplay}</strong> license expired on{" "}
+              <strong>{expiredDate}</strong>. Renew now to restore full access
+              to your self-hosted instance.
             </Text>
 
-            {/* License Details */}
-            <Section style={sectionStyles.warningSection}>
-              <Text style={contentStyles.heading}>License Status</Text>
-              <Text style={textStyles.warningText}>
-                <strong>Plan:</strong> {tierDisplay}
-              </Text>
-              <Text style={textStyles.warningText}>
-                <strong>License Key:</strong> {licenseKey}
-              </Text>
-              <Text style={textStyles.warningText}>
-                <strong>Expired On:</strong> {expiredDate}
-              </Text>
-              <Text style={textStyles.warningText}>
-                <strong>Status:</strong> Inactive
-              </Text>
-            </Section>
-
-            <Text style={contentStyles.paragraph}>
-              <strong>Action Required:</strong> Renew your license immediately
-              to restore access to your self-hosted Qarote instance.
-            </Text>
-
-            {/* Call to Action */}
+            {/* Recovery action — first and prominent */}
             <Section style={buttonStyles.buttonSection}>
               <Button style={buttonStyles.primaryButton} href={renewalUrl}>
-                Renew License Now
+                Renew License
               </Button>
             </Section>
 
+            {/* License reference info */}
             <Section style={sectionStyles.infoSection}>
-              <Text style={contentStyles.heading}>What This Means</Text>
+              <Text style={contentStyles.heading}>License Details</Text>
               <Text style={textStyles.infoText}>
-                • Your self-hosted instance will not start
+                <strong>Plan:</strong> {tierDisplay}
               </Text>
               <Text style={textStyles.infoText}>
-                • License validation will fail
+                <strong>License Key:</strong> {licenseKey}
               </Text>
               <Text style={textStyles.infoText}>
-                • Renew to receive a new license file
-              </Text>
-              <Text style={textStyles.infoText}>
-                • All your data remains safe and intact
+                <strong>Expired:</strong> {expiredDate}
               </Text>
             </Section>
 
             <Text style={contentStyles.paragraph}>
-              Once renewed, you'll receive an updated license file via email.
-              Install it in your Qarote directory and restart your instance to
-              restore full functionality.
+              Your data is safe and intact. Once renewed, you'll receive an
+              updated license key via email — paste it in your admin panel and
+              restart your instance to restore full functionality.
             </Text>
 
             <Text style={contentStyles.paragraph}>
