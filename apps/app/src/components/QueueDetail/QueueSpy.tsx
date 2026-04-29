@@ -246,7 +246,13 @@ export function QueueSpy({ serverId, queueName, vhost }: QueueSpyProps) {
               variant="default"
               size="sm"
               className="shrink-0 text-xs h-7"
-              onClick={() => window.open("https://qarote.io/pricing", "_blank", "noopener,noreferrer")}
+              onClick={() =>
+                window.open(
+                  "https://qarote.io/pricing",
+                  "_blank",
+                  "noopener,noreferrer"
+                )
+              }
             >
               {t("spyPreviewUpgrade")}
             </Button>

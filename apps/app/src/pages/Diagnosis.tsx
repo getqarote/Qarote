@@ -131,9 +131,7 @@ export default function Diagnosis() {
             <span>·</span>
             <span>{t("metadata.queues", { count: data.queueCount })}</span>
             <span>·</span>
-            <span>
-              {t("metadata.window", { minutes: data.windowMinutes })}
-            </span>
+            <span>{t("metadata.window", { minutes: data.windowMinutes })}</span>
           </div>
         )}
 
@@ -181,14 +179,18 @@ export default function Diagnosis() {
         )}
 
         {/* Empty — no anomalies */}
-        {!isLoading && !error && diagnoses.length === 0 && data && !isPreview && (
-          <div className="rounded-lg border border-border bg-card px-6 py-10 text-center space-y-2">
-            <p className="font-medium text-foreground">{t("empty.title")}</p>
-            <p className="text-sm text-muted-foreground">
-              {t("empty.description", { minutes: windowMinutes })}
-            </p>
-          </div>
-        )}
+        {!isLoading &&
+          !error &&
+          diagnoses.length === 0 &&
+          data &&
+          !isPreview && (
+            <div className="rounded-lg border border-border bg-card px-6 py-10 text-center space-y-2">
+              <p className="font-medium text-foreground">{t("empty.title")}</p>
+              <p className="text-sm text-muted-foreground">
+                {t("empty.description", { minutes: windowMinutes })}
+              </p>
+            </div>
+          )}
 
         {/* Results */}
         {!isLoading && !error && diagnoses.length > 0 && (
@@ -228,7 +230,13 @@ export default function Diagnosis() {
               variant="default"
               size="sm"
               className="shrink-0 text-xs h-7"
-              onClick={() => window.open("https://qarote.io/pricing", "_blank", "noopener,noreferrer")}
+              onClick={() =>
+                window.open(
+                  "https://qarote.io/pricing",
+                  "_blank",
+                  "noopener,noreferrer"
+                )
+              }
             >
               {t("preview.upgrade")}
             </Button>

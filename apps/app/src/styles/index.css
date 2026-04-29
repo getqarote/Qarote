@@ -562,12 +562,24 @@
   animation: si-field-in 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.si-delay-0 { animation-delay: 0ms; }
-.si-delay-40 { animation-delay: 40ms; }
-.si-delay-80 { animation-delay: 80ms; }
-.si-delay-120 { animation-delay: 120ms; }
-.si-delay-160 { animation-delay: 160ms; }
-.si-delay-200 { animation-delay: 200ms; }
+.si-delay-0 {
+  animation-delay: 0ms;
+}
+.si-delay-40 {
+  animation-delay: 40ms;
+}
+.si-delay-80 {
+  animation-delay: 80ms;
+}
+.si-delay-120 {
+  animation-delay: 120ms;
+}
+.si-delay-160 {
+  animation-delay: 160ms;
+}
+.si-delay-200 {
+  animation-delay: 200ms;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .si-in {

@@ -362,7 +362,13 @@ function LiveTail({
             variant="default"
             size="sm"
             className="shrink-0 text-xs h-7"
-            onClick={() => window.open("https://qarote.io/pricing", "_blank", "noopener,noreferrer")}
+            onClick={() =>
+              window.open(
+                "https://qarote.io/pricing",
+                "_blank",
+                "noopener,noreferrer"
+              )
+            }
           >
             {t("preview.upgrade")}
           </Button>
@@ -466,7 +472,13 @@ function QueryView({ serverId }: { serverId: string }) {
             variant="default"
             size="sm"
             className="shrink-0 text-xs h-7"
-            onClick={() => window.open("https://qarote.io/pricing", "_blank", "noopener,noreferrer")}
+            onClick={() =>
+              window.open(
+                "https://qarote.io/pricing",
+                "_blank",
+                "noopener,noreferrer"
+              )
+            }
           >
             {t("preview.upgrade")}
           </Button>
