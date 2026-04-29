@@ -71,15 +71,15 @@
       "bash -c 'cd apps/api && pnpm exec eslint --fix \"$@\"' _",
       "bash -c 'cd apps/api && pnpm exec prettier --write \"$@\"' _"
     ],
-    "apps/app/**/*.{ts,tsx,js,jsx}": [
+    "apps/app/**/*.{ts,tsx,js,jsx,css}": [
       "bash -c 'cd apps/app && pnpm exec eslint --fix --max-warnings=-1 \"$@\"' _",
       "bash -c 'cd apps/app && pnpm exec prettier --write \"$@\"' _"
     ],
-    "apps/web/**/*.{ts,tsx,js,jsx}": [
+    "apps/web/**/*.{ts,tsx,js,jsx,css}": [
       "bash -c 'cd apps/web && pnpm exec eslint --fix --max-warnings=-1 \"$@\"' _",
       "bash -c 'cd apps/web && pnpm exec prettier --write \"$@\"' _"
     ],
-    "apps/portal/**/*.{ts,tsx,js,jsx}": [
+    "apps/portal/**/*.{ts,tsx,js,jsx,css}": [
       "bash -c 'cd apps/portal && pnpm exec eslint --fix --max-warnings=-1 \"$@\"' _",
       "bash -c 'cd apps/portal && pnpm exec prettier --write \"$@\"' _"
     ]
