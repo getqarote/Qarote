@@ -80,7 +80,7 @@ export const useUpdateOrgMemberRole = () => {
 export const useRemoveOrgMember = () => {
   const utils = trpc.useUtils();
 
-  return trpc.organization.members.remove.useMutation({
+  return trpc.organization.members.removeMember.useMutation({
     onSuccess: () => {
       utils.organization.members.list.invalidate();
       utils.organization.management.getCurrent.invalidate();

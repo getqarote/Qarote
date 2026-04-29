@@ -126,6 +126,9 @@ function makeCtx(overrides: Record<string, unknown> = {}) {
         findUnique: vi.fn().mockResolvedValue({ name: "Test Org" }),
       },
       $transaction: mockTransaction,
+      session: {
+        deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
+      },
     },
     logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
     user: {

@@ -47,6 +47,33 @@ import { te } from "@/i18n";
 /** Invitation validity period: 7 days */
 const INVITATION_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
 
+async function invalidateUserSessions(
+  prisma: {
+    session?: {
+      deleteMany: (args: { where: { userId: string } }) => Promise<unknown>;
+    };
+  },
+  logger: { warn: (obj: object, msg: string) => void },
+  userId: string,
+  context: string
+): Promise<void> {
+  if (!prisma.session) {
+    logger.warn(
+      { userId },
+      `Session delegate unavailable — cannot invalidate sessions after ${context}`
+    );
+    return;
+  }
+  try {
+    await prisma.session.deleteMany({ where: { userId } });
+  } catch (error) {
+    logger.warn(
+      { error, userId },
+      `Failed to invalidate sessions after ${context} — stale session may persist up to 5 min`
+    );
+  }
+}
+
 /**
  * Organization members router
  * Handles member listing, invitations, role changes, and removal
@@ -484,6 +511,13 @@ export const membersRouter = router({
         }
       });
 
+      await invalidateUserSessions(
+        ctx.prisma,
+        ctx.logger,
+        ctx.user.id,
+        "invitation acceptance"
+      );
+
       ctx.logger.info(
         {
           invitationId: input.invitationId,
@@ -633,6 +667,13 @@ export const membersRouter = router({
         });
       });
 
+      await invalidateUserSessions(
+        ctx.prisma,
+        ctx.logger,
+        target.userId,
+        "role update"
+      );
+
       ctx.logger.info(
         {
           organizationId: ctx.organizationId,
@@ -649,7 +690,7 @@ export const membersRouter = router({
   /**
    * Remove a member from the organization (OWNER/ADMIN only)
    */
-  remove: rateLimitedOrgAdminProcedure
+  removeMember: rateLimitedOrgAdminProcedure
     .input(RemoveOrgMemberSchema)
     .mutation(async ({ input, ctx }) => {
       const target = await ctx.prisma.organizationMember.findUnique({
@@ -718,6 +759,13 @@ export const membersRouter = router({
         });
       });
 
+      await invalidateUserSessions(
+        ctx.prisma,
+        ctx.logger,
+        target.userId,
+        "member removal"
+      );
+
       ctx.logger.info(
         {
           organizationId: ctx.organizationId,
@@ -777,6 +825,13 @@ export const membersRouter = router({
           tx
         );
       });
+
+      await invalidateUserSessions(
+        ctx.prisma,
+        ctx.logger,
+        input.userId,
+        "workspace assignment"
+      );
 
       ctx.logger.info(
         {
@@ -898,6 +953,13 @@ export const membersRouter = router({
         }),
       ]);
 
+      await invalidateUserSessions(
+        ctx.prisma,
+        ctx.logger,
+        input.userId,
+        "workspace removal"
+      );
+
       ctx.logger.info(
         {
           organizationId: ctx.organizationId,
@@ -963,6 +1025,13 @@ export const membersRouter = router({
           tx
         );
       });
+
+      await invalidateUserSessions(
+        ctx.prisma,
+        ctx.logger,
+        input.userId,
+        "workspace role update"
+      );
 
       ctx.logger.info(
         {

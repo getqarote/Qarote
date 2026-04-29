@@ -33,7 +33,7 @@ const BLOCKED_PATHS = new Set([
   // Organization management (organization.*)
   "organization.management.update",
   "organization.members.invite",
-  "organization.members.remove",
+  "organization.members.removeMember",
   "organization.members.updateRole",
   // Alert rules (alerts.rules.*)
   "alerts.rules.createRule",
