@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import type { SupportedLocale } from "@qarote/i18n";
 
+import { track } from "@/lib/analytics";
 import { QUIZ_QUESTIONS } from "@/lib/quiz-data";
 import { trackQuizCompleted, trackQuizStarted } from "@/lib/quiz-gtm";
 import { resolveScore, resolveTier } from "@/lib/quiz-logic";
@@ -150,7 +151,7 @@ export default function QuizIsland({
     ).length;
 
     trackQuizCompleted({ scorePct, correctCount, tier: tier.slug });
-    window.posthog?.capture("quiz_completed", {
+    track("quiz_completed", {
       score_pct: scorePct,
       correct_count: correctCount,
       tier: tier.slug,
@@ -179,7 +180,7 @@ export default function QuizIsland({
     setSavedState(null);
     dispatch({ type: "START" });
     trackQuizStarted();
-    window.posthog?.capture("quiz_started");
+    track("quiz_started");
   }
 
   function handleResume() {

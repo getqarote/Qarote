@@ -155,6 +155,7 @@
     "termsOfService": "服务条款",
     "status": "系统状态",
     "contact": "联系我们",
+    "cookiePreferences": "Cookie 偏好设置",
     "vsDatadog": "Qarote vs Datadog",
     "vsGrafana": "Qarote vs Grafana + Prometheus",
     "vsCloudAMQP": "Qarote vs CloudAMQP",

@@ -158,7 +158,25 @@
             "text": "用于定向广告（需经同意）"
           }
         },
-        "control": "您可以通过浏览器偏好设置来控制 Cookie 设置。"
+        "control": "您可以通过浏览器偏好设置来控制 Cookie 设置。",
+        "tracking": {
+          "header": "我们使用的跟踪技术",
+          "items": {
+            "posthog": {
+              "name": "PostHog",
+              "text": "— 产品分析和会话回放。记录页面上的交互（点击、导航、表单输入），并可能捕获您会话的匿名录制内容,以帮助我们改进产品。由 PostHog Inc. 托管。Cookie 和本地存储键:ph_*。"
+            },
+            "gtm": {
+              "name": "Google Tag Manager",
+              "text": "— 加载营销和分析标签。后续 Cookie 取决于所配置的标签,可能包括 _ga、_gid。"
+            },
+            "tawkto": {
+              "name": "TawkTo",
+              "text": "— 用于支持请求的实时聊天小部件。设置 tawk_* Cookie 并连接到 embed.tawk.to。"
+            }
+          },
+          "note": "在您首次访问时显示的同意横幅中接受这些技术之前,它们都不会加载。您可以随时通过页面底部的「Cookie 偏好设置」链接更改您的选择。"
+        }
       },
       "internationalTransfers": {
         "title": "国际数据传输",

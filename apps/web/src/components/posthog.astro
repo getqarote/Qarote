@@ -1,16 +1,119 @@
 ---
-// PostHog analytics snippet
-// Uses is:inline to prevent Astro from processing the script
+// PostHog analytics — gated behind cookie consent.
+// Without consent: window.posthog is a no-op shim so existing
+// `window.posthog?.capture(...)` and `track(...)` calls silently drop events.
+// On consent: real PostHog snippet loads and initializes.
 const apiKey = import.meta.env.PUBLIC_POSTHOG_PROJECT_TOKEN;
 const apiHost = import.meta.env.PUBLIC_POSTHOG_HOST;
 ---
 
 <script is:inline define:vars={{ apiKey, apiHost }}>
-  !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys getNextSurveyStep onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
-  if (apiKey && apiHost) {
-    posthog.init(apiKey, {
-      api_host: apiHost,
-      defaults: '2026-01-30'
-    });
-  }
+  // KEEP IN SYNC with apps/web/src/lib/consent.ts (canonical source) and the
+  // GTM block in apps/web/src/layouts/BaseLayout.astro. Any change to
+  // CONSENT_KEY, CONSENT_VERSION, POLICY_VERSION, CONSENT_TTL_MS, or
+  // CONSENT_EVENT must be mirrored in all three places.
+  (function () {
+    var CONSENT_KEY = "qarote_consent";
+    var CONSENT_VERSION = 1;
+    var POLICY_VERSION = "2026-04-30";
+    var CONSENT_TTL_MS = 13 * 30 * 24 * 60 * 60 * 1000;
+    var CONSENT_EVENT = "qarote:consent-changed";
+
+    function hasConsent() {
+      try {
+        var raw = localStorage.getItem(CONSENT_KEY);
+        if (!raw) return false;
+        var p = JSON.parse(raw);
+        if (p.v !== CONSENT_VERSION) return false;
+        if (p.policy !== POLICY_VERSION) return false;
+        if (Date.now() - p.ts > CONSENT_TTL_MS) return false;
+        return p.granted === true;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function installNoopShim() {
+      if (window.posthog && window.posthog.__qarote_real) return;
+      var noop = function () {};
+      window.posthog = {
+        __qarote_noop: true,
+        capture: noop,
+        identify: noop,
+        reset: noop,
+        captureException: noop,
+        opt_in_capturing: noop,
+        opt_out_capturing: noop,
+        register: noop,
+        register_once: noop,
+        people: { set: noop, set_once: noop },
+      };
+    }
+
+    var loaded = false;
+    function loadRealPostHog() {
+      if (loaded) return;
+      if (!apiKey || !apiHost) return;
+      loaded = true;
+      !(function (t, e) {
+        var o, n, p, r;
+        e.__SV ||
+          ((window.posthog = e),
+          (e._i = []),
+          (e.init = function (i, s, a) {
+            function g(t, e) {
+              var o = e.split(".");
+              2 == o.length && ((t = t[o[0]]), (e = o[1])),
+                (t[e] = function () {
+                  t.push([e].concat(Array.prototype.slice.call(arguments, 0)));
+                });
+            }
+            ((p = t.createElement("script")).type = "text/javascript"),
+              (p.crossOrigin = "anonymous"),
+              (p.async = !0),
+              (p.src = s.api_host + "/static/array.js"),
+              (r = t.getElementsByTagName("script")[0]),
+              r.parentNode.insertBefore(p, r);
+            var u = e;
+            for (
+              void 0 !== a ? (u = e[a] = []) : (a = "posthog"),
+                u.people = u.people || [],
+                u.toString = function (t) {
+                  var e = "posthog";
+                  return (
+                    "posthog" !== a && (e += "." + a), t || (e += " (stub)"), e
+                  );
+                },
+                u.people.toString = function () {
+                  return u.toString(1) + ".people (stub)";
+                },
+                o =
+                  "capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys getNextSurveyStep onSessionId".split(
+                    " "
+                  ),
+                n = 0;
+              n < o.length;
+              n++
+            )
+              g(u, o[n]);
+            e._i.push([i, s, a]);
+          }),
+          (e.__SV = 1));
+      })(document, []);
+      window.posthog.__qarote_real = true;
+      window.posthog.init(apiKey, {
+        api_host: apiHost,
+        defaults: "2026-01-30",
+      });
+    }
+
+    installNoopShim();
+    if (hasConsent()) {
+      loadRealPostHog();
+    } else {
+      window.addEventListener(CONSENT_EVENT, function (e) {
+        if (e && e.detail && e.detail.granted) loadRealPostHog();
+      });
+    }
+  })();
 </script>

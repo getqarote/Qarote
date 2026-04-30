@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { track } from "@/lib/analytics";
 import { trackQuizCtaClicked, trackQuizShareClicked } from "@/lib/quiz-gtm";
 import type { TierResult } from "@/lib/quiz-logic";
 
@@ -36,7 +37,7 @@ export function QuizResults({
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
         trackQuizShareClicked({ tier: tier.slug, scorePct: score });
-        window.posthog?.capture("quiz_share_clicked", {
+        track("quiz_share_clicked", {
           tier: tier.slug,
           score_pct: score,
         });
@@ -48,7 +49,7 @@ export function QuizResults({
 
   function handleCta() {
     trackQuizCtaClicked({ tier: tier.slug });
-    window.posthog?.capture("quiz_cta_clicked", { tier: tier.slug });
+    track("quiz_cta_clicked", { tier: tier.slug });
     window.location.href = tier.ctaUrl;
   }
 

@@ -1,8 +1,10 @@
 ---
+import "../styles/index.css";
+
 import { SUPPORTED_LOCALES } from "@qarote/i18n";
 
+import { ConsentBanner } from "../components/consent/ConsentBanner";
 import PostHog from "../components/posthog.astro";
-import "../styles/index.css";
 
 interface Props {
   title: string;
@@ -265,40 +267,70 @@ const isProd = import.meta.env.PROD;
     <!-- PostHog analytics -->
     <PostHog />
 
-    <!-- Google Tag Manager (production only) -->
+    <!-- Google Tag Manager — production + consent only.
+         No <noscript> fallback: without JS we cannot read consent state.
+         KEEP IN SYNC with apps/web/src/lib/consent.ts (canonical source) and
+         apps/web/src/components/posthog.astro — any change to CONSENT_KEY,
+         CONSENT_VERSION, POLICY_VERSION, CONSENT_TTL_MS, or CONSENT_EVENT
+         must be mirrored in all three places. -->
     {
       isProd && (
         <script is:inline>
           (function () {
-            var w = window,
-              d = document,
-              l = "dataLayer",
-              i = "GTM-52CRNTFK";
-            w[l] = w[l] || [];
-            w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
-            var f = d.getElementsByTagName("script")[0],
-              j = d.createElement("script");
-            j.async = true;
-            j.src = "https://www.googletagmanager.com/gtm.js?id=" + i;
-            f.parentNode.insertBefore(j, f);
+            var CONSENT_KEY = "qarote_consent";
+            var CONSENT_VERSION = 1;
+            var POLICY_VERSION = "2026-04-30";
+            var CONSENT_TTL_MS = 13 * 30 * 24 * 60 * 60 * 1000;
+            var CONSENT_EVENT = "qarote:consent-changed";
+
+            function hasConsent() {
+              try {
+                var raw = localStorage.getItem(CONSENT_KEY);
+                if (!raw) return false;
+                var p = JSON.parse(raw);
+                if (p.v !== CONSENT_VERSION) return false;
+                if (p.policy !== POLICY_VERSION) return false;
+                if (Date.now() - p.ts > CONSENT_TTL_MS) return false;
+                return p.granted === true;
+              } catch (_) {
+                return false;
+              }
+            }
+
+            var loaded = false;
+            function loadGTM() {
+              if (loaded) return;
+              loaded = true;
+              var w = window,
+                d = document,
+                l = "dataLayer",
+                i = "GTM-52CRNTFK";
+              w[l] = w[l] || [];
+              w[l].push({
+                "gtm.start": new Date().getTime(),
+                event: "gtm.js",
+              });
+              var f = d.getElementsByTagName("script")[0],
+                j = d.createElement("script");
+              j.async = true;
+              j.src = "https://www.googletagmanager.com/gtm.js?id=" + i;
+              f.parentNode.insertBefore(j, f);
+            }
+
+            if (hasConsent()) {
+              loadGTM();
+            } else {
+              window.addEventListener(CONSENT_EVENT, function (e) {
+                if (e && e.detail && e.detail.granted) loadGTM();
+              });
+            }
           })();
         </script>
       )
     }
   </head>
   <body>
-    {
-      isProd && (
-        <noscript>
-          <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-52CRNTFK"
-            height="0"
-            width="0"
-            style="display:none;visibility:hidden"
-          />
-        </noscript>
-      )
-    }
     <slot />
+    <ConsentBanner client:load />
   </body>
 </html>

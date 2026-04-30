@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 
 import type { SupportedLocale } from "@qarote/i18n";
 
+import { clearConsent, readConsent } from "@/lib/consent";
+
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 interface FooterSectionProps {
@@ -74,6 +76,14 @@ const SocialIcons = () => (
 const FooterSection = ({ currentLocale = "en" }: FooterSectionProps) => {
   const { t } = useTranslation("landing");
   const prefix = currentLocale === "en" ? "" : `/${currentLocale}`;
+
+  const handleCookiePreferences = () => {
+    const previouslyGranted = readConsent()?.granted === true;
+    clearConsent();
+    // Third-party scripts (PostHog, GTM, Tawk) cannot be cleanly torn down
+    // once injected — reload so the page restarts in a clean no-tracker state.
+    if (previouslyGranted) window.location.reload();
+  };
 
   useEffect(() => {
     // eslint-disable-next-line no-console
@@ -150,6 +160,13 @@ const FooterSection = ({ currentLocale = "en" }: FooterSectionProps) => {
             >
               {t("footer.status", "Status")}
             </a>
+            <button
+              type="button"
+              onClick={handleCookiePreferences}
+              className={legalLinkClass}
+            >
+              {t("footer.cookiePreferences", "Cookie preferences")}
+            </button>
             <button
               type="button"
               onClick={() => {
@@ -253,6 +270,13 @@ const FooterSection = ({ currentLocale = "en" }: FooterSectionProps) => {
                 </span>
                 {t("footer.status", "Status")}
               </a>
+              <button
+                type="button"
+                onClick={handleCookiePreferences}
+                className={legalLinkClass}
+              >
+                {t("footer.cookiePreferences", "Cookie preferences")}
+              </button>
               <button
                 type="button"
                 onClick={() => {

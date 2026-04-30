@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 
+import { track } from "@/lib/analytics";
 import { trackSignUpClick } from "@/lib/gtm";
 
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,7 @@ const AuthButtons = ({ align = "center", describedById }: AuthButtonsProps) => {
       source: "auth_buttons",
       location: "landing_page",
     });
-    window.posthog?.capture("sign_up_clicked", {
+    track("sign_up_clicked", {
       source: "auth_buttons",
       location: "landing_page",
     });

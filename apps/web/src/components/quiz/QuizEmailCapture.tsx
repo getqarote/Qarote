@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { track } from "@/lib/analytics";
 import { trackQuizEmailCaptured } from "@/lib/quiz-gtm";
 import type { TierSlug } from "@/lib/quiz-logic";
 
@@ -68,7 +69,7 @@ export function QuizEmailCapture({ tier, score }: QuizEmailCaptureProps) {
 
       setStatus("success");
       trackQuizEmailCaptured({ tier });
-      window.posthog?.capture("quiz_email_captured", { tier });
+      track("quiz_email_captured", { tier });
     } catch {
       setErrorMessage("Something went wrong. Try again in a moment.");
       setStatus("error");

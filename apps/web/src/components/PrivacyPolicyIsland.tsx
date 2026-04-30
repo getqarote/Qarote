@@ -322,6 +322,22 @@ function PrivacyPolicyContent() {
             ))}
           </ul>
           <p>{t("privacyPolicy.sections.cookies.control")}</p>
+          <h3 className="text-base font-medium text-foreground pt-2">
+            {t("privacyPolicy.sections.cookies.tracking.header")}
+          </h3>
+          <ul className="list-disc pl-6 space-y-2">
+            {(["posthog", "gtm", "tawkto"] as const).map((key) => (
+              <li key={key}>
+                <strong>
+                  {t(
+                    `privacyPolicy.sections.cookies.tracking.items.${key}.name`
+                  )}
+                </strong>{" "}
+                {t(`privacyPolicy.sections.cookies.tracking.items.${key}.text`)}
+              </li>
+            ))}
+          </ul>
+          <p>{t("privacyPolicy.sections.cookies.tracking.note")}</p>
         </LegalSection>
 
         {/* Section 8 */}

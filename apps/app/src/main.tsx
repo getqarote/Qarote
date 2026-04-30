@@ -27,11 +27,19 @@ if (deploymentMode === "cloud") {
   initializeGA();
 }
 
-// Initialize PostHog when token is configured
+// Initialize PostHog when token is configured.
+// Phase 1 of cookie-consent rollout: opt-out by default, no session replay,
+// no autocapture, no /decide call, no persistence. Phase 2 will add an
+// in-app privacy toggle that opts users in after explicit consent.
 if (import.meta.env.VITE_PUBLIC_POSTHOG_PROJECT_TOKEN) {
   posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_PROJECT_TOKEN, {
     api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
     defaults: "2026-01-30",
+    opt_out_capturing_by_default: true,
+    disable_session_recording: true,
+    autocapture: false,
+    persistence: "memory",
+    advanced_disable_decide: true,
   });
 }
 
