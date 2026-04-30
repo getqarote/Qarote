@@ -193,7 +193,7 @@ export function TracingFiltersBar({
           type="datetime-local"
           value={from ?? ""}
           onChange={(e) => onFromChange?.(e.target.value)}
-          className="h-8 w-44 text-xs"
+          className="h-8 w-52"
           aria-label={t("filter.from")}
         />
         <span className="text-xs text-muted-foreground" aria-hidden>
@@ -203,7 +203,7 @@ export function TracingFiltersBar({
           type="datetime-local"
           value={to ?? ""}
           onChange={(e) => onToChange?.(e.target.value)}
-          className="h-8 w-44 text-xs"
+          className="h-8 w-52"
           aria-label={t("filter.to")}
         />
       </div>

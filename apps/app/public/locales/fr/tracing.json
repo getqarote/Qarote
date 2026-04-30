@@ -19,6 +19,7 @@
   "stats.published": "publiés",
   "stats.delivered": "livrés",
   "stats.topQueues": "Meilleures files",
+  "stats.retention": "Données conservées 7 jours",
   "payload.title": "Charge utile",
   "payload.metadataOnly": "Corps non capturé ({{size}}). Le stockage des charges sera disponible dans une prochaine version.",
   "payload.json": "JSON",

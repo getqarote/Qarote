@@ -154,6 +154,17 @@ const LicensePurchase = () => {
     [t]
   );
 
+  const sharedIntelligenceFeatures = useMemo(
+    (): FeatureItem[] => [
+      { label: t("licensePurchase.features.dailyDigest") },
+      { label: t("licensePurchase.features.messageSpy") },
+      { label: t("licensePurchase.features.metricsPersistence") },
+      { label: t("licensePurchase.features.incidentDiagnosis") },
+      { label: t("licensePurchase.features.messageTracing") },
+    ],
+    [t]
+  );
+
   const sharedSecurityBase = useMemo(
     (): FeatureItem[] => [
       {
@@ -185,6 +196,10 @@ const LicensePurchase = () => {
             items: sharedCoreFeatures(t("licensePurchase.limits.upTo3")),
           },
           {
+            label: t("licensePurchase.categories.intelligenceDiagnostics"),
+            items: sharedIntelligenceFeatures,
+          },
+          {
             label: t("licensePurchase.categories.security"),
             items: sharedSecurityBase,
           },
@@ -204,6 +219,10 @@ const LicensePurchase = () => {
             items: sharedCoreFeatures(t("licensePurchase.limits.unlimited")),
           },
           {
+            label: t("licensePurchase.categories.intelligenceDiagnostics"),
+            items: sharedIntelligenceFeatures,
+          },
+          {
             label: t("licensePurchase.categories.security"),
             items: [
               { label: t("licensePurchase.features.ssoSamlOidc") },
@@ -217,7 +236,13 @@ const LicensePurchase = () => {
         ],
       },
     ],
-    [t, sharedCoreFeatures, sharedSecurityBase, sharedSupportFeatures]
+    [
+      t,
+      sharedCoreFeatures,
+      sharedIntelligenceFeatures,
+      sharedSecurityBase,
+      sharedSupportFeatures,
+    ]
   );
 
   const selectedPlan = plans.find((p) => p.tier === selectedTier)!;

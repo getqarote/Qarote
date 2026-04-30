@@ -103,6 +103,9 @@ function StatsBar({ serverId }: { serverId: string }) {
           </span>
         </span>
       )}
+      <span className="ml-auto text-muted-foreground/60">
+        {t("stats.retention")}
+      </span>
     </div>
   );
 }

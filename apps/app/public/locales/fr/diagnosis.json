@@ -2,6 +2,7 @@
   "title": "Diagnostic d'incident",
   "subtitle": "Analyse de cause racine à la demande depuis l'historique des métriques",
   "refresh": "Actualiser",
+  "noServerDescription": "Configurez un serveur RabbitMQ pour commencer à diagnostiquer les anomalies de file d'attente.",
   "severity": {
     "critical": "Critique",
     "high": "Élevé",

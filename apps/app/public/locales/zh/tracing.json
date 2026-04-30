@@ -19,6 +19,7 @@
   "stats.published": "已发布",
   "stats.delivered": "已投递",
   "stats.topQueues": "热门队列",
+  "stats.retention": "数据保留 7 天",
   "payload.title": "消息体",
   "payload.metadataOnly": "消息体未捕获（{{size}}）。消息体存储将在后续版本中提供。",
   "payload.json": "JSON",

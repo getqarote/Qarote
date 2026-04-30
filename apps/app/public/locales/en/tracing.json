@@ -19,6 +19,7 @@
   "stats.published": "published",
   "stats.delivered": "delivered",
   "stats.topQueues": "Top queues",
+  "stats.retention": "Data kept for 7 days",
   "payload.title": "Payload",
   "payload.metadataOnly": "Body not captured ({{size}}). Payload storage is coming in a future release.",
   "payload.json": "JSON",

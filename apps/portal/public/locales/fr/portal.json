@@ -66,6 +66,7 @@
     },
     "categories": {
       "coreFeatures": "Fonctionnalités principales",
+      "intelligenceDiagnostics": "Intelligence et diagnostics",
       "security": "Sécurité et compatibilité",
       "support": "Support"
     },
@@ -78,6 +79,11 @@
       "alertsWebhooks": "Alertes et webhooks",
       "topologyVisualization": "Visualisation de la topologie",
       "roleBasedAccess": "Contrôle d'accès par rôle",
+      "dailyDigest": "Résumé quotidien",
+      "messageSpy": "Message Spy",
+      "metricsPersistence": "Persistance des métriques",
+      "incidentDiagnosis": "Diagnostic d'incident",
+      "messageTracing": "Traçage des messages",
       "ssoSamlOidc": "SSO, SAML et OIDC",
       "soc2": "Conformité SOC 2",
       "rabbitmqVersions": "Support des versions RabbitMQ",
@@ -87,7 +93,8 @@
     "limits": {
       "upTo3": "Jusqu'à 3",
       "unlimited": "Illimité",
-      "rabbitmqVersionsValue": "Toutes versions 3.x et 4.x"
+      "rabbitmqVersionsValue": "Toutes versions 3.x et 4.x",
+      "limited": "Limité"
     },
     "plans": {
       "developer": {

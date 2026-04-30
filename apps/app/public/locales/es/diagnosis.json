@@ -2,6 +2,7 @@
   "title": "Diagnóstico de incidentes",
   "subtitle": "Análisis de causa raíz bajo demanda desde el historial de métricas",
   "refresh": "Actualizar",
+  "noServerDescription": "Configura un servidor RabbitMQ para empezar a diagnosticar anomalías en las colas.",
   "severity": {
     "critical": "Crítico",
     "high": "Alto",

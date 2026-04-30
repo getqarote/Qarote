@@ -19,6 +19,7 @@
   "stats.published": "publicados",
   "stats.delivered": "entregados",
   "stats.topQueues": "Colas principales",
+  "stats.retention": "Datos conservados 7 días",
   "payload.title": "Carga útil",
   "payload.metadataOnly": "Cuerpo no capturado ({{size}}). El almacenamiento de mensajes estará disponible en una próxima versión.",
   "payload.json": "JSON",

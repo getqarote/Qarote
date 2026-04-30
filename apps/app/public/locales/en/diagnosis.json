@@ -2,6 +2,7 @@
   "title": "Incident Diagnosis",
   "subtitle": "On-demand root cause analysis from queue metric history",
   "refresh": "Refresh",
+  "noServerDescription": "Configure a RabbitMQ server to start diagnosing queue anomalies.",
   "severity": {
     "critical": "Critical",
     "high": "High",

@@ -2,6 +2,7 @@
   "title": "故障诊断",
   "subtitle": "基于队列指标历史的按需根因分析",
   "refresh": "刷新",
+  "noServerDescription": "配置 RabbitMQ 服务器以开始诊断队列异常。",
   "severity": {
     "critical": "严重",
     "high": "高",

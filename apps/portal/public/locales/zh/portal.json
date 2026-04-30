@@ -66,6 +66,7 @@
     },
     "categories": {
       "coreFeatures": "核心功能",
+      "intelligenceDiagnostics": "智能与诊断",
       "security": "安全与兼容性",
       "support": "支持"
     },
@@ -78,6 +79,11 @@
       "alertsWebhooks": "告警与 Webhook",
       "topologyVisualization": "拓扑可视化",
       "roleBasedAccess": "基于角色的访问控制",
+      "dailyDigest": "每日摘要",
+      "messageSpy": "消息侦察",
+      "metricsPersistence": "指标持久化",
+      "incidentDiagnosis": "故障诊断",
+      "messageTracing": "消息追踪",
       "ssoSamlOidc": "SSO、SAML 与 OIDC",
       "soc2": "SOC 2 合规",
       "rabbitmqVersions": "RabbitMQ 版本支持",
@@ -87,7 +93,8 @@
     "limits": {
       "upTo3": "最多 3 个",
       "unlimited": "无限制",
-      "rabbitmqVersionsValue": "全部 3.x 和 4.x 版本"
+      "rabbitmqVersionsValue": "全部 3.x 和 4.x 版本",
+      "limited": "受限"
     },
     "plans": {
       "developer": {
