@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { ExternalLink } from "lucide-react";
 
 import AuthButtons from "@/components/AuthButtons";
+import HeroBackgroundFlow from "@/components/landing/HeroBackgroundFlow";
 import { Button } from "@/components/ui/button";
 
 const HeroSection = () => {
@@ -22,44 +23,47 @@ const HeroSection = () => {
   return (
     <header
       id="home"
-      className="relative overflow-visible text-foreground pb-16 bg-background"
+      className="relative overflow-hidden text-foreground pb-16 bg-background"
     >
-      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 md:pt-28 pb-3.5">
-        <div className="w-full text-center">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-6 leading-tight max-w-4xl mx-auto px-2 font-normal">
-            {t("hero.titleBefore")}
-            {needsWordSpacing ? " " : ""}
-            <span className="text-primary">{t("hero.titleHighlight")}</span>
-            {t("hero.titleAfter")}
-          </h1>
+      <div className="relative">
+        <HeroBackgroundFlow />
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 md:pt-28 pb-3.5">
+          <div className="w-full text-center">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-6 leading-tight max-w-4xl mx-auto px-2 font-normal">
+              {t("hero.titleBefore")}
+              {needsWordSpacing ? " " : ""}
+              <span className="text-primary">{t("hero.titleHighlight")}</span>
+              {t("hero.titleAfter")}
+            </h1>
 
-          <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-12 leading-relaxed max-w-3xl mx-auto px-2">
-            {t("hero.subtitle")}
-          </p>
-
-          <div className="mb-12">
-            <AuthButtons describedById="hero-no-credit-card" />
-            <p
-              id="hero-no-credit-card"
-              className="text-xs sm:text-sm text-muted-foreground mt-3 px-4"
-            >
-              {t("hero.noCreditCard")}
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-12 leading-relaxed max-w-3xl mx-auto px-2">
+              {t("hero.subtitle")}
             </p>
-            <div className="flex justify-center mt-5 px-4">
-              <Button asChild variant="pillGhost" size="pillMd">
-                <a
-                  href="https://demo.qarote.io/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {t("cta.tryLiveDemo")}
-                  <ExternalLink
-                    className="h-4 w-4 opacity-70"
-                    aria-hidden="true"
-                  />
-                  <span className="sr-only">{t("cta.opensInNewTab")}</span>
-                </a>
-              </Button>
+
+            <div className="mb-12">
+              <AuthButtons describedById="hero-no-credit-card" />
+              <p
+                id="hero-no-credit-card"
+                className="text-xs sm:text-sm text-muted-foreground mt-3 px-4"
+              >
+                {t("hero.noCreditCard")}
+              </p>
+              <div className="flex justify-center mt-5 px-4">
+                <Button asChild variant="pillGhost" size="pillMd">
+                  <a
+                    href="https://demo.qarote.io/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {t("cta.tryLiveDemo")}
+                    <ExternalLink
+                      className="h-4 w-4 opacity-70"
+                      aria-hidden="true"
+                    />
+                    <span className="sr-only">{t("cta.opensInNewTab")}</span>
+                  </a>
+                </Button>
+              </div>
             </div>
           </div>
         </div>

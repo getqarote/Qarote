@@ -37,7 +37,7 @@ pnpm db:studio        # Open Prisma Studio
 - **Commits**: Conventional Commits enforced by commitlint + Husky. Types: `feat`, `fix`, `refactor`, `chore`, `docs`, `style`, `perf`, `test`, `build`, `ci`, `revert`. Lowercase subject, no period, max 100 chars.
 - **Formatting**: Prettier — double quotes, semicolons, 2-space indent, trailing commas (ES5), LF line endings.
 - **Linting**: ESLint flat config per app. No `console.log` in production. `simple-import-sort` with strict group ordering. No `any`.
-- **Styling**: Tailwind CSS 4 utility classes. Radix UI primitives wrapped as shadcn components.
+- **Styling**: Tailwind CSS 4 utility classes. Radix UI primitives wrapped as shadcn components. Avoid inline `style={{}}` — prefer Tailwind classes, including arbitrary values like `shadow-[0_0_0_24px_hsl(var(--background))]`. Inline style is acceptable only for values that genuinely cannot be expressed in Tailwind (runtime-computed transforms, dynamic chart dimensions, etc.).
 - **Database**: Prisma schema at `apps/api/prisma/schema.prisma`. Generated client at `apps/api/src/generated/prisma`.
 
 ## Architecture
