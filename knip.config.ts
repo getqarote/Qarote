@@ -42,6 +42,14 @@ const config: KnipConfig = {
     "apps/api/src/trpc/routers/workspace/data.ce.ts",
     // Ignore trpc.ts — orgScopedProcedure exported for progressive adoption
     "apps/api/src/trpc/trpc.ts",
+    // Feature-gate public barrel + interior modules whose exports are
+    // public API surface re-exported across packages and consumed by
+    // frontend via @api/... paths that knip can't trace.
+    "apps/api/src/services/feature-gate/index.ts",
+    "apps/api/src/services/feature-gate/types.ts",
+    "apps/api/src/services/feature-gate/error.ts",
+    "apps/api/src/services/feature-gate/gate.config.ts",
+    "apps/api/src/services/feature-gate/capability-snapshot.ts",
     // Ignore API services used in tRPC type inference
     "apps/api/src/services/plan/features.service.ts",
     // Ignore hooks used in UI components
@@ -72,6 +80,7 @@ const config: KnipConfig = {
     "apps/api/src/cron/license-expiration-reminders.cron.ts",
     "apps/api/src/cron/license-file-cleanup.cron.ts",
     "apps/api/src/cron/release-notifier.cron.ts",
+    "apps/api/src/cron/server-capabilities.cron.ts",
     "apps/api/src/workers/license-monitor.ts",
     "apps/api/src/workers/release-notifier.ts",
     "apps/api/src/ee/cron/daily-digest.cron.ts",
@@ -106,10 +115,20 @@ const config: KnipConfig = {
     ".claire/**",
     // In-progress blog section component — not yet wired into the landing page
     "apps/web/src/components/landing/BlogSection.tsx",
+    // Feature-gate frontend primitives — wired via CapabilityGate +
+    // ServerCapabilityBadge as of PR-B. The barrel + readGateError are
+    // imported by error-driven render paths that knip can't trace; the
+    // index file just re-exports.
+    "apps/app/src/lib/feature-gate/index.ts",
+    "apps/app/src/lib/feature-gate/readGateError.ts",
   ],
   ignoreDependencies: [
     // These are often used but not directly imported
     "@types/*",
+    // Vitest pragma at the top of `.test.tsx` files. Knip parses
+    // `// @vitest-environment jsdom` as `vitest-environment-jsdom` —
+    // it's a runtime selector, not a package.
+    "vitest-environment-jsdom",
     // API dependencies that are used but not directly imported
     "pino-pretty", // Used in logger config
     "@react-email/components", // Used in email templates but knip doesn't detect it

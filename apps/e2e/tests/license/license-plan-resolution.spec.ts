@@ -147,9 +147,7 @@ test.describe("License Plan Resolution @p1", () => {
     expect(planData.user.plan).toBe("DEVELOPER");
 
     // Deactivate
-    await api
-      .withAuth(cookie)
-      .mutation("selfhostedLicense.deactivate", {});
+    await api.withAuth(cookie).mutation("selfhostedLicense.deactivate", {});
 
     // Verify plan reverts to FREE
     planData = await api

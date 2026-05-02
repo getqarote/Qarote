@@ -1,0 +1,75 @@
+{
+  "title": {
+    "license": "Licencia requerida",
+    "plan": "Actualiza tu plan",
+    "capability": "No disponible en este broker"
+  },
+  "license": {
+    "featureRequiresLicense": "{{feature}} requiere una licencia Enterprise activada en esta instancia.",
+    "cta": {
+      "activate": "Activar licencia"
+    }
+  },
+  "plan": {
+    "featureRequiresUpgrade": "{{feature}} no está disponible en el plan {{currentPlan}}.",
+    "cta": {
+      "upgrade": "Actualizar plan"
+    }
+  },
+  "loadingGate": "Comprobando compatibilidad…",
+  "badge": {
+    "loading": "Comprobando capacidades del broker",
+    "pending": "Capacidades pendientes",
+    "summary": "{{version}} · {{count}}/{{total}} funciones listas",
+    "unknownVersion": "Broker desconocido",
+    "featureReady": "(disponible)",
+    "featureUnavailable": "(no disponible)"
+  },
+  "capability": {
+    "unknown": "Qarote no pudo determinar las capacidades de este broker. Vuelve a comprobar la conexión.",
+    "recheck": "Volver a comprobar",
+    "recheckIn": "Volver a comprobar en {{seconds}}s",
+    "tracing": {
+      "pluginMissing": "El seguimiento de mensajes requiere el plugin rabbitmq_tracing activado en este broker.",
+      "enablePlugin": "Cómo activar el plugin rabbitmq_tracing"
+    },
+    "tap": {
+      "streamUnsupported": "La escucha en vivo no admite streams — los streams usan consumo por offset en lugar de bindings.",
+      "useRecorderForStreams": "Por qué los streams no son compatibles",
+      "amqpUnreliable": "La conectividad AMQP a este broker ha sido inestable recientemente. Las escuchas en vivo pueden desconectarse."
+    },
+    "diagnosis": {
+      "warmingUp": "El diagnóstico se está calentando — Qarote necesita al menos {{requiredMinutes}} minutos de historial de métricas para que las reglas con ventana lleven señal. Los resultados pueden ser dispersos hasta entonces."
+    }
+  },
+  "preview": {
+    "showingPreview": "Mostrando {{shown}} de {{total}} — actualiza para verlo todo.",
+    "cta": {
+      "upgrade": "Ver todo"
+    }
+  },
+  "fallback": {
+    "tryAlternative": "Prueba {{alternative}} en su lugar",
+    "unavailable": "Esta alternativa todavía no tiene una página dedicada."
+  },
+  "remediation": {
+    "runOnBroker": "Ejecuta esto en tu broker:",
+    "copy": "Copiar comando"
+  },
+  "lastChecked": "Comprobado hace {{relative}}",
+  "checkedJustNow": "ahora mismo",
+  "features": {
+    "workspace_management": "Gestión de espacios de trabajo",
+    "alerting": "Alertas",
+    "slack_integration": "Integración con Slack",
+    "webhook_integration": "Integración con Webhook",
+    "data_export": "Exportación de datos",
+    "advanced_alert_rules": "Reglas de alerta avanzadas",
+    "topology_visualization": "Visualización de topología",
+    "sso": "SSO / SAML / OIDC",
+    "digest_customization": "Personalización del resumen diario",
+    "incident_diagnosis": "Diagnóstico de incidentes",
+    "message_tracing": "Seguimiento de mensajes",
+    "message_spy": "Espía de mensajes"
+  }
+}

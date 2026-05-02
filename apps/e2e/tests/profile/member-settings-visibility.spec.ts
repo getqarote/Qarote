@@ -39,13 +39,13 @@ test.describe("Member Settings Visibility @p2", () => {
     await adminPage.goto("/settings/plans");
     await adminPage.waitForLoadState("domcontentloaded");
 
-    await expect(
-      adminPage.getByText(/billing & usage/i).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(adminPage.getByText(/billing & usage/i).first()).toBeVisible({
+      timeout: 10_000,
+    });
 
-    await expect(
-      adminPage.getByText(/compare plans/i).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(adminPage.getByText(/compare plans/i).first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("non-admin does not see Billing & Usage or Compare Plans", async ({
@@ -55,13 +55,13 @@ test.describe("Member Settings Visibility @p2", () => {
     await readonlyPage.waitForLoadState("domcontentloaded");
 
     // Quick action links should not be visible for non-admin users
-    await expect(
-      readonlyPage.getByText(/billing & usage/i)
-    ).not.toBeVisible({ timeout: 10_000 });
+    await expect(readonlyPage.getByText(/billing & usage/i)).not.toBeVisible({
+      timeout: 10_000,
+    });
 
-    await expect(
-      readonlyPage.getByText(/compare plans/i)
-    ).not.toBeVisible({ timeout: 10_000 });
+    await expect(readonlyPage.getByText(/compare plans/i)).not.toBeVisible({
+      timeout: 10_000,
+    });
 
     // Plan info card itself should still be visible for members
     await expect(

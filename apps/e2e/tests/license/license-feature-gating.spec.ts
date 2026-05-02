@@ -4,7 +4,10 @@ import path from "node:path";
 import { test, expect } from "../../fixtures/test-base.js";
 import { generateTestLicenseJwt } from "../../helpers/license.js";
 
-const AUTH_TOKENS_FILE = path.resolve(import.meta.dirname, "../../.auth-tokens.json");
+const AUTH_TOKENS_FILE = path.resolve(
+  import.meta.dirname,
+  "../../.auth-tokens.json"
+);
 
 function getAdminCookie(): string {
   const raw = fs.readFileSync(AUTH_TOKENS_FILE, "utf-8");
@@ -32,9 +35,9 @@ test.describe("License Feature Gating @p1", () => {
     await adminPage.goto("/alerts");
     await adminPage.waitForLoadState("domcontentloaded");
 
-    await expect(
-      adminPage.getByText(/premium feature/i)
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(adminPage.getByText(/premium feature/i)).toBeVisible({
+      timeout: 15_000,
+    });
 
     await expect(
       adminPage.getByRole("button", { name: /activate license/i })
@@ -93,9 +96,7 @@ test.describe("License Feature Gating @p1", () => {
       .mutation("selfhostedLicense.activate", { licenseKey: jwt });
 
     // Deactivate it
-    await api
-      .withAuth(cookie)
-      .mutation("selfhostedLicense.deactivate", {});
+    await api.withAuth(cookie).mutation("selfhostedLicense.deactivate", {});
 
     // Navigate to alerts page
     await adminPage.goto("/alerts");

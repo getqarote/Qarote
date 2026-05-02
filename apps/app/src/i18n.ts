@@ -29,6 +29,7 @@ const i18n = createI18nInstance({
     "definitions",
     "diagnosis",
     "tracing",
+    "gate",
   ],
   defaultNamespace: "common",
   loadPath: "/locales/{{lng}}/{{ns}}.json",

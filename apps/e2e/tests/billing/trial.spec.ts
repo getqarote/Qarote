@@ -94,7 +94,9 @@ test.describe("Trial Billing UI @p1", () => {
     await adminPage.waitForLoadState("domcontentloaded");
 
     // Verify trial badge is visible
-    await expect(adminPage.getByText(/^Trial$/)).toBeVisible({ timeout: 15_000 });
+    await expect(adminPage.getByText(/^Trial$/)).toBeVisible({
+      timeout: 15_000,
+    });
 
     // Verify "Add payment method" buttons are visible (one in plan card, one in management banner)
     const addPaymentButtons = adminPage.getByRole("button", {
@@ -108,9 +110,7 @@ test.describe("Trial Billing UI @p1", () => {
     await expect(adminPage.getByText(/trial ends/i)).toBeVisible();
 
     // Verify trial active banner is shown
-    await expect(
-      adminPage.getByText(/your trial is active/i)
-    ).toBeVisible();
+    await expect(adminPage.getByText(/your trial is active/i)).toBeVisible();
   });
 
   test("should NOT show add payment button when trialing WITH a card @cloud", async ({
@@ -129,7 +129,9 @@ test.describe("Trial Billing UI @p1", () => {
     await adminPage.waitForLoadState("domcontentloaded");
 
     // Trial badge should still be visible
-    await expect(adminPage.getByText(/^Trial$/)).toBeVisible({ timeout: 15_000 });
+    await expect(adminPage.getByText(/^Trial$/)).toBeVisible({
+      timeout: 15_000,
+    });
 
     // Card last4 should be shown
     await expect(adminPage.getByText("4242")).toBeVisible();

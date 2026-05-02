@@ -58,7 +58,10 @@ async function mockConnectedState(page: Page): Promise<void> {
 
 /** Click the "Create queue" header button and wait for the dialog to open. */
 async function openCreateQueueDialog(page: Page): Promise<void> {
-  await page.getByRole("button", { name: /create queue/i }).first().click();
+  await page
+    .getByRole("button", { name: /create queue/i })
+    .first()
+    .click();
   await expect(page.getByRole("dialog")).toBeVisible({ timeout: 10_000 });
 }
 
@@ -78,9 +81,7 @@ test.describe("Create Queue Dialog – Queue Type Selector @p1", () => {
   test.beforeEach(async ({ adminPage }) => {
     // Start each test with no persisted server selection so the mock server
     // is auto-selected by the ServerContext effect.
-    await adminPage.evaluate(() =>
-      localStorage.removeItem("selectedServerId")
-    );
+    await adminPage.evaluate(() => localStorage.removeItem("selectedServerId"));
     await mockConnectedState(adminPage);
     await adminPage.goto("/queues");
     await adminPage.waitForLoadState("domcontentloaded");
@@ -123,9 +124,9 @@ test.describe("Create Queue Dialog – Queue Type Selector @p1", () => {
     await openCreateQueueDialog(adminPage);
 
     // At least one preset card should be visible in quick-create mode
-    await expect(
-      adminPage.getByText("Classic persistent")
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(adminPage.getByText("Classic persistent")).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("selecting Quorum hides the preset selector", async ({ adminPage }) => {
@@ -235,9 +236,7 @@ test.describe("Create Queue Dialog – Queue Type Selector @p1", () => {
 
 test.describe("Create Queue Dialog – Error Toast @p1", () => {
   test.beforeEach(async ({ adminPage }) => {
-    await adminPage.evaluate(() =>
-      localStorage.removeItem("selectedServerId")
-    );
+    await adminPage.evaluate(() => localStorage.removeItem("selectedServerId"));
     await mockConnectedState(adminPage);
     await adminPage.goto("/queues");
     await adminPage.waitForLoadState("domcontentloaded");

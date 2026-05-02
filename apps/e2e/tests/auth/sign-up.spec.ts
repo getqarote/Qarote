@@ -36,7 +36,11 @@ test.describe("User Registration @p0", () => {
 
     // Should show an error about existing email
     await expect(
-      page.getByText(/already in use|already exists|already registered|email.*taken/i).first()
+      page
+        .getByText(
+          /already in use|already exists|already registered|email.*taken/i
+        )
+        .first()
     ).toBeVisible({ timeout: 10_000 });
   });
 
@@ -118,7 +122,9 @@ test.describe("User Registration @p0", () => {
     const signInPage = new SignInPage(page);
     await signInPage.goto();
     await signInPage.login(email, password);
-    await signInPage.expectErrorMessage(/verify your email|email not verified|not verified/i);
+    await signInPage.expectErrorMessage(
+      /verify your email|email not verified|not verified/i
+    );
   });
 
   test("should show registration disabled message when registration is off", async ({
@@ -130,16 +136,15 @@ test.describe("User Registration @p0", () => {
       registrationEnabled: false,
       emailEnabled: false,
       oauthEnabled: false,
-
     });
 
     await page.goto("/auth/sign-up");
     await page.waitForLoadState("domcontentloaded");
 
     // Should show "Registration Disabled" message
-    await expect(
-      page.getByText(/registration disabled/i).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/registration disabled/i).first()).toBeVisible({
+      timeout: 10_000,
+    });
 
     // Registration form should NOT be visible
     await expect(
@@ -153,10 +158,7 @@ test.describe("User Registration @p0", () => {
   });
 
   test("should reject registration at API level when disabled @selfhosted", async () => {
-    test.skip(
-      process.env.DEPLOYMENT_MODE === "cloud",
-      "Selfhosted mode only"
-    );
+    test.skip(process.env.DEPLOYMENT_MODE === "cloud", "Selfhosted mode only");
     test.skip(
       process.env.ENABLE_REGISTRATION !== "false",
       "Requires ENABLE_REGISTRATION=false to validate the API guard"

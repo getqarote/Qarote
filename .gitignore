@@ -74,3 +74,6 @@ license.json
 
 # Local scripts
 scripts/sync-prod-db.sh
+
+# TS incremental build artefacts (per-tsconfig, regenerated on build)
+*.tsbuildinfo

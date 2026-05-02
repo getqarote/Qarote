@@ -25,7 +25,23 @@
     "queueBacklog": "队列积压",
     "producerSpike": "生产者峰值",
     "queueDrainStall": "排空停滞",
-    "noActivity": "无活动"
+    "noActivity": "无活动",
+    "memoryAlarmActive": "内存告警",
+    "diskAlarmActive": "磁盘告警",
+    "publisherFlowControl": "发布者流控",
+    "channelLeak": "通道泄漏",
+    "noConsumerPersistentQueue": "无消费者/持久化",
+    "queueNearLengthLimit": "接近长度限制",
+    "dlxFilling": "死信队列堆积",
+    "consumerUtilizationLow": "消费者利用率低",
+    "quorumLeaderChurn": "Quorum 主节点漂移",
+    "streamNoOffsetTracking": "Stream 偏移量未跟踪",
+    "classicQueueV1Large": "大型 CQv1 队列"
+  },
+  "clusterScope": "集群范围",
+  "signalErrors": {
+    "title": "诊断不完整",
+    "description": "部分实时 broker 信号不可用 ({{endpoints}})。相关规则在数据可达前将不会显示。"
   },
   "window": {
     "30min": "30 分钟",
@@ -36,7 +52,17 @@
   },
   "card": {
     "viewQueue": "查看队列 →",
-    "recommendation": "建议"
+    "recommendation": "建议",
+    "whyThisDiagnosis": "为什么是这个诊断?",
+    "citationIntro": "记录在官方 RabbitMQ 文档中:",
+    "opensInNewTab": "在新标签页打开",
+    "causedBy": "由此引起",
+    "openSince": "开始于",
+    "helpfulPrompt": "有用吗?",
+    "helpfulYes": "有用",
+    "helpfulNo": "没用",
+    "copyCommand": "复制命令",
+    "copied": "已复制"
   },
   "metadata": {
     "analyzedAgo": "{{time}}前分析",

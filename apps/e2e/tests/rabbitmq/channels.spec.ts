@@ -29,9 +29,7 @@ const MOCK_SERVER = {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function channelsResponse(
-  channels: ReturnType<typeof mockChannel>[]
-) {
+function channelsResponse(channels: ReturnType<typeof mockChannel>[]) {
   return { success: true, channels, totalChannels: channels.length };
 }
 
@@ -79,9 +77,9 @@ test.describe("Channels Page – Navigation @p1", () => {
     });
     await gotoChannels(adminPage);
 
-    await expect(
-      adminPage.getByText(/add a rabbitmq server/i)
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(adminPage.getByText(/add a rabbitmq server/i)).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test("shows empty state when server has no channels", async ({
@@ -90,9 +88,9 @@ test.describe("Channels Page – Navigation @p1", () => {
     await mockConnectedState(adminPage, []);
     await gotoChannels(adminPage);
 
-    await expect(
-      adminPage.getByText(/no active channels/i)
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(adminPage.getByText(/no active channels/i)).toBeVisible({
+      timeout: 15_000,
+    });
   });
 });
 
@@ -287,9 +285,9 @@ test.describe("Channels Page – State Filter @p1", () => {
     await expect(adminPage.getByText("idle-connection")).toBeVisible({
       timeout: 5_000,
     });
-    await expect(
-      adminPage.getByText("running-connection")
-    ).not.toBeVisible();
+    await expect(adminPage.getByText("running-connection")).not.toBeVisible({
+      timeout: 5_000,
+    });
   });
 
   test("clicking All resets the filter and shows all channels", async ({
@@ -324,9 +322,9 @@ test.describe("Channels Page – State Filter @p1", () => {
 
     // Filter to Idle, then reset to All
     await adminPage.getByRole("button", { name: "Idle" }).click();
-    await expect(
-      adminPage.getByText("running-connection")
-    ).not.toBeVisible({ timeout: 5_000 });
+    await expect(adminPage.getByText("running-connection")).not.toBeVisible({
+      timeout: 5_000,
+    });
 
     await adminPage.getByRole("button", { name: "All" }).click();
     await expect(adminPage.getByText("running-connection")).toBeVisible({
@@ -367,9 +365,9 @@ test.describe("Channels Page – State Filter @p1", () => {
     await pill.click();
 
     // Running channel should disappear; idle remains
-    await expect(
-      adminPage.getByText("running-connection")
-    ).not.toBeVisible({ timeout: 5_000 });
+    await expect(adminPage.getByText("running-connection")).not.toBeVisible({
+      timeout: 5_000,
+    });
     await expect(adminPage.getByText("idle-connection")).toBeVisible();
   });
 });
@@ -407,16 +405,12 @@ test.describe("Channels Page – Search @p1", () => {
       timeout: 15_000,
     });
 
-    await adminPage
-      .getByPlaceholder(/filter by connection/i)
-      .fill("beta");
+    await adminPage.getByPlaceholder(/filter by connection/i).fill("beta");
 
     await expect(adminPage.getByText("beta-connection")).toBeVisible({
       timeout: 5_000,
     });
-    await expect(
-      adminPage.getByText("alpha-connection")
-    ).not.toBeVisible();
+    await expect(adminPage.getByText("alpha-connection")).not.toBeVisible();
   });
 
   test("clearing search restores all channels", async ({ adminPage }) => {
@@ -447,9 +441,9 @@ test.describe("Channels Page – Search @p1", () => {
 
     const searchInput = adminPage.getByPlaceholder(/filter by connection/i);
     await searchInput.fill("beta");
-    await expect(
-      adminPage.getByText("alpha-connection")
-    ).not.toBeVisible({ timeout: 5_000 });
+    await expect(adminPage.getByText("alpha-connection")).not.toBeVisible({
+      timeout: 5_000,
+    });
 
     // Clear via the PixelX button (aria-label="Clear search")
     await adminPage.getByRole("button", { name: /clear search/i }).click();
@@ -481,9 +475,9 @@ test.describe("Channels Page – Search @p1", () => {
 
     await adminPage.getByPlaceholder(/filter by connection/i).fill("alice");
 
-    await expect(
-      adminPage.getByText("bob-connection")
-    ).not.toBeVisible({ timeout: 5_000 });
+    await expect(adminPage.getByText("bob-connection")).not.toBeVisible({
+      timeout: 5_000,
+    });
   });
 });
 
@@ -541,9 +535,9 @@ test.describe("Channels Page – Expand Row @p1", () => {
       .filter({ hasText: "peer-connection" })
       .click();
 
-    await expect(
-      adminPage.getByText("192.168.50.99:43210")
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(adminPage.getByText("192.168.50.99:43210")).toBeVisible({
+      timeout: 5_000,
+    });
   });
 
   test("expanded panel shows deliver rate when non-zero", async ({
@@ -605,9 +599,9 @@ test.describe("Channels Page – Expand Row @p1", () => {
 
     // Collapse
     await row.click();
-    await expect(
-      adminPage.getByText("10.0.0.1:50001")
-    ).not.toBeVisible({ timeout: 5_000 });
+    await expect(adminPage.getByText("10.0.0.1:50001")).not.toBeVisible({
+      timeout: 5_000,
+    });
   });
 });
 

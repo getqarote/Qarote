@@ -22,16 +22,19 @@ import { useTranslation } from "react-i18next";
 import {
   ArrowDown,
   Database,
+  Info,
   Loader2,
   Pause,
   Play,
   Radio,
   WifiOff,
+  X,
   Zap,
 } from "lucide-react";
 
 import { SentryErrorBoundary } from "@/lib/sentry";
 
+import { FeatureGate } from "@/components/feature-gate/FeatureGate";
 import { PageShell } from "@/components/PageShell";
 import { FirehoseDisabledState } from "@/components/tracing/FirehoseDisabledState";
 import {
@@ -51,7 +54,7 @@ import {
   useTraces,
   useTraceStats,
   useWatchTraces,
-} from "@/hooks/queries/useMessageTracing";
+} from "@/hooks/queries/useMessageRecording";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import type { MessageTraceEvent } from "@/types/tracing";
@@ -495,9 +498,69 @@ function QueryView({ serverId }: { serverId: string }) {
 // TracingContent (inside the gate, after firehose check)
 // ---------------------------------------------------------------------------
 
+/**
+ * localStorage key for the mode-switch banner dismissal state. Per
+ * mode so an operator who's seen the live-mode tip but is new to
+ * recorded-mode still gets the corresponding tip the first time they
+ * land there. Versioned (`-v1`) so a future copy revision can bump
+ * and re-surface the banner without orphaning prior dismissals.
+ */
+const MODE_BANNER_DISMISSED_KEY = "qarote.messages.modeBanner.dismissed-v1";
+
+/**
+ * Read the per-mode dismissal set from localStorage. Returns an empty
+ * Set on parse failure / absence rather than throwing — a corrupted
+ * value should never break the page render.
+ */
+function readDismissedModes(): Set<"live" | "query"> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = window.localStorage.getItem(MODE_BANNER_DISMISSED_KEY);
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return new Set();
+    return new Set(
+      parsed.filter((v): v is "live" | "query" => v === "live" || v === "query")
+    );
+  } catch {
+    return new Set();
+  }
+}
+
+function persistDismissedModes(modes: Set<"live" | "query">): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(
+      MODE_BANNER_DISMISSED_KEY,
+      JSON.stringify([...modes])
+    );
+  } catch {
+    // Quota exceeded / private mode — operator just sees the banner
+    // again next session, which is the safe direction.
+  }
+}
+
 function TracingContent({ serverId }: { serverId: string }) {
   const { t } = useTranslation("tracing");
   const [mode, setMode] = useState<"live" | "query">("live");
+
+  // Mode-switch advisory banner — surfaces the trade-off between
+  // "what you see now" and "what's archived". Without this, operators
+  // routinely click Live, see nothing for a quiet vhost, and conclude
+  // the firehose is broken — when they should have queried Recorded.
+  // Per-mode dismissal so a power user sees each tip exactly once.
+  const [dismissedModes, setDismissedModes] = useState<Set<"live" | "query">>(
+    () => readDismissedModes()
+  );
+  const bannerDismissed = dismissedModes.has(mode);
+  const dismissBanner = useCallback(() => {
+    setDismissedModes((prev) => {
+      const next = new Set(prev);
+      next.add(mode);
+      persistDismissedModes(next);
+      return next;
+    });
+  }, [mode]);
 
   return (
     <div className="rounded-lg border border-border overflow-hidden">
@@ -533,6 +596,40 @@ function TracingContent({ serverId }: { serverId: string }) {
           </button>
         </div>
       </div>
+
+      {/* Mode-switch advisory — explains what each mode does and how
+          to switch. Hidden once the operator dismisses it for the
+          current mode (per-mode + persistent). */}
+      {!bannerDismissed && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="flex items-start gap-2 px-4 py-2 border-b border-border bg-blue-500/5 text-xs text-blue-700 dark:text-blue-400"
+        >
+          <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" aria-hidden />
+          <p className="flex-1">
+            {mode === "live" ? t("mode.tipLive") : t("mode.tipQuery")}{" "}
+            <button
+              type="button"
+              onClick={() => setMode(mode === "live" ? "query" : "live")}
+              className="underline hover:no-underline"
+            >
+              {mode === "live"
+                ? t("mode.switchToQuery")
+                : t("mode.switchToLive")}
+            </button>
+          </p>
+          <button
+            type="button"
+            onClick={dismissBanner}
+            aria-label={t("mode.dismissTip")}
+            title={t("mode.dismissTip")}
+            className="shrink-0 -m-0.5 p-0.5 rounded text-blue-700/60 hover:text-blue-700 dark:text-blue-400/60 dark:hover:text-blue-400"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Stats bar */}
       <StatsBar serverId={serverId} />
@@ -663,6 +760,21 @@ const TracingGatedBounded = SentryErrorBoundary(TracingGated, {
   fallback: () => <TracingErrorFallback />,
 });
 
+/**
+ * Capability gate wrapper — checks `message_tracing` capability for the
+ * selected server before rendering the firehose-aware `TracingGated`.
+ * When the broker can't host the firehose, `<FeatureGateCard>` replaces
+ * the page body with the broker version, last-checked, Re-check button,
+ * and a "Try Live tap instead" fallback CTA.
+ */
+function TracingFeatureGated({ serverId }: { serverId: string }) {
+  return (
+    <FeatureGate feature="message_tracing" serverId={serverId}>
+      <TracingGatedBounded serverId={serverId} />
+    </FeatureGate>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Page root
 // ---------------------------------------------------------------------------
@@ -683,7 +795,7 @@ export default function Tracing() {
 
   return (
     <PageShell>
-      <TracingGatedBounded serverId={selectedServerId} />
+      <TracingFeatureGated serverId={selectedServerId} />
     </PageShell>
   );
 }

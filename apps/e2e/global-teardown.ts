@@ -19,9 +19,8 @@ async function globalTeardown() {
       process.env.DATABASE_URL ||
       "postgres://postgres:password@localhost:5433/qarote_e2e";
 
-    const { PrismaClient } = await import(
-      "../api/src/generated/prisma/client.js"
-    );
+    const { PrismaClient } =
+      await import("../api/src/generated/prisma/client.js");
     const adapter = new PrismaPg({ connectionString: DATABASE_URL });
     const prisma = new PrismaClient({ adapter });
 
@@ -56,9 +55,7 @@ async function globalTeardown() {
 
       for (const table of tables) {
         try {
-          await prisma.$executeRawUnsafe(
-            `TRUNCATE TABLE "${table}" CASCADE`
-          );
+          await prisma.$executeRawUnsafe(`TRUNCATE TABLE "${table}" CASCADE`);
         } catch (err: any) {
           const msg = err?.message ?? "";
           if (msg.includes("does not exist")) continue;

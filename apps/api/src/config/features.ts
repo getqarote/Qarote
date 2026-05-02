@@ -37,25 +37,11 @@ export const FEATURES = {
 } as const;
 
 /**
- * Feature descriptions for error messages
- */
-export const FEATURE_DESCRIPTIONS: Record<PremiumFeature, string> = {
-  workspace_management: "Workspace Management",
-  alerting: "Alerting System",
-  slack_integration: "Slack Integration",
-  webhook_integration: "Webhook Integration",
-  data_export: "Data Export",
-  advanced_alert_rules: "Advanced Alert Rules",
-  topology_visualization: "Topology Visualization",
-  sso: "SSO / SAML / OIDC",
-  digest_customization: "Daily Digest Customization",
-  incident_diagnosis: "Incident Diagnosis Engine",
-  message_tracing: "Message Tracing",
-  message_spy: "Message Spy",
-};
-
-/**
- * Get all premium features
+ * Get all premium features.
+ *
+ * Used for the gate config completeness invariant test. Human-readable
+ * descriptions live in the frontend `gate.json` namespace; the backend
+ * deals only in the keys.
  */
 export function getAllPremiumFeatures(): PremiumFeature[] {
   return Object.values(FEATURES);

@@ -1,6 +1,12 @@
 import { TRPCError } from "@trpc/server";
 import { initTRPC } from "@trpc/server";
 
+import { logger } from "@/core/logger";
+
+// Deep import: only pulls in error.ts so test mocks of upstream modules
+// (prisma, config, plan.service) are not transitively required for any
+// procedure that simply uses the errorFormatter.
+import { extractGatePayload } from "@/services/feature-gate/error";
 import {
   PlanErrorCode,
   PlanLimitExceededError,
@@ -21,9 +27,35 @@ import { OrgRole, UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
- * Initialize tRPC with context
+ * Initialize tRPC with context.
+ *
+ * The errorFormatter lifts the structured `gate` payload (set by
+ * `throwGateError` per ADR-002) onto `shape.data.gate` so the frontend can
+ * render `<FeatureGateCard>` without string-parsing `message`. Default
+ * tRPC error fields (`message`, `code`, `httpStatus`, `path`, `stack`) are
+ * preserved.
  */
-const t = initTRPC.context<Context>().create();
+const t = initTRPC.context<Context>().create({
+  errorFormatter({ shape, error }) {
+    // Defensive: a malformed bag or a non-object `shape.data` must never
+    // turn every tRPC error into an opaque 500. We catch any failure during
+    // the lift and fall back to the original shape, logging once so the
+    // regression is visible in operational tooling.
+    try {
+      const gate = extractGatePayload(error);
+      if (!gate) return shape;
+      const baseData =
+        shape.data && typeof shape.data === "object" ? shape.data : {};
+      return { ...shape, data: { ...baseData, gate } };
+    } catch (formatErr) {
+      logger.error(
+        { error: formatErr },
+        "feature-gate errorFormatter lift failed — returning original shape"
+      );
+      return shape;
+    }
+  },
+});
 
 /**
  * Demo mode guard — blocks destructive mutations on demo.qarote.io
@@ -42,7 +74,7 @@ export const publicProcedure = t.procedure.use(demoGuardMiddleware);
 /**
  * Protected procedure - requires authentication
  */
-const protectedProcedure = publicProcedure.use(async (opts) => {
+export const protectedProcedure = publicProcedure.use(async (opts) => {
   const { ctx } = opts;
 
   if (!ctx.user) {

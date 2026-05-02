@@ -45,9 +45,9 @@ test.describe("Incident Diagnosis @p1", () => {
     ).toBeVisible({ timeout: 10_000 });
 
     // Page must not show a generic FORBIDDEN / access-denied error
-    await expect(
-      adminPage.getByText(/forbidden/i)
-    ).not.toBeVisible({ timeout: 10_000 });
+    await expect(adminPage.getByText(/forbidden/i)).not.toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("DEVELOPER license: diagnosis page accessible, no teaser @p1", async ({
@@ -63,9 +63,9 @@ test.describe("Incident Diagnosis @p1", () => {
     await adminPage.waitForLoadState("domcontentloaded");
 
     // No preview teaser should appear for paid users
-    await expect(
-      adminPage.getByText(/more findings hidden/i)
-    ).not.toBeVisible({ timeout: 10_000 });
+    await expect(adminPage.getByText(/more findings hidden/i)).not.toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("diagnosis page is navigable from sidebar @p2", async ({

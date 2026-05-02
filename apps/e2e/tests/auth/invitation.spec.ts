@@ -14,12 +14,18 @@ test.describe("Invitation Flow @p1", () => {
     const admin = await prisma.user.findUnique({
       where: { email: "admin@e2e-test.local" },
     });
-    expect(admin, "Seeded admin user not found — did global-setup run?").toBeTruthy();
+    expect(
+      admin,
+      "Seeded admin user not found — did global-setup run?"
+    ).toBeTruthy();
 
     const workspace = await prisma.workspace.findFirst({
       where: { ownerId: admin!.id },
     });
-    expect(workspace, "Seeded workspace not found — did global-setup run?").toBeTruthy();
+    expect(
+      workspace,
+      "Seeded workspace not found — did global-setup run?"
+    ).toBeTruthy();
 
     const inviteToken = `e2e-invite-${Date.now()}`;
     const invitation = await prisma.invitation.create({
@@ -50,9 +56,10 @@ test.describe("Invitation Flow @p1", () => {
 
     // Should show an error about invalid/expired invitation
     await expect(
-      page.getByText(/invalid|expired|not found|error/i).first().or(
-        page.getByRole("heading", { name: /sign in/i })
-      )
+      page
+        .getByText(/invalid|expired|not found|error/i)
+        .first()
+        .or(page.getByRole("heading", { name: /sign in/i }))
     ).toBeVisible({ timeout: 10_000 });
   });
 
@@ -122,7 +129,10 @@ test.describe("Invitation Flow @p1", () => {
     const subscription = await prisma.subscription.findUnique({
       where: { userId: admin!.id },
     });
-    expect(subscription, "Expected no subscription for self-hosted scenario").toBeNull();
+    expect(
+      subscription,
+      "Expected no subscription for self-hosted scenario"
+    ).toBeNull();
 
     const inviteToken = `e2e-nosub-${Date.now()}`;
     const invitation = await prisma.invitation.create({
@@ -148,8 +158,8 @@ test.describe("Invitation Flow @p1", () => {
     ).toBeVisible({ timeout: 15_000 });
 
     // Should NOT show "workspaceOwnerNoSubscription" error
-    await expect(
-      page.getByText(/subscription/i)
-    ).not.toBeVisible({ timeout: 3_000 });
+    await expect(page.getByText(/subscription/i)).not.toBeVisible({
+      timeout: 3_000,
+    });
   });
 });

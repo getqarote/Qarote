@@ -8,6 +8,7 @@ import { Server } from "@/lib/api/types";
 import { logger } from "@/lib/logger";
 
 import { AddServerForm } from "@/components/AddServerFormComponent";
+import { ServerCapabilityBadge } from "@/components/feature-gate/ServerCapabilityBadge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -161,6 +162,7 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
         <div>
           <div className="flex items-center gap-2">
             <h4 className="font-medium">{server.name}</h4>
+            <ServerCapabilityBadge serverId={server.id} />
           </div>
           <p className="text-sm text-muted-foreground">
             {server.username}@{server.host}:{server.port} ({server.vhost})

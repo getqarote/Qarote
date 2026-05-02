@@ -1,7 +1,6 @@
 import { TRPCError } from "@trpc/server";
 
-import { getLicensePayload } from "@/core/feature-flags";
-
+import { getLicensePayload } from "@/services/feature-gate";
 import {
   getOrgPlan,
   getPlanFeatures,

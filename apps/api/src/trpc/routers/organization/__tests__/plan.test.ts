@@ -36,7 +36,7 @@ vi.mock("@/services/plan/plan.service", async (importOriginal) => {
 });
 
 const mockGetLicensePayload = vi.fn();
-vi.mock("@/core/feature-flags", () => ({
+vi.mock("@/services/feature-gate/license", () => ({
   getLicensePayload: (...args: unknown[]) => mockGetLicensePayload(...args),
   invalidateLicenseCache: vi.fn(),
 }));

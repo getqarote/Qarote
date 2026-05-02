@@ -1,0 +1,75 @@
+{
+  "title": {
+    "license": "需要许可证",
+    "plan": "升级您的计划",
+    "capability": "此 broker 不支持"
+  },
+  "license": {
+    "featureRequiresLicense": "{{feature}} 需要在此实例上激活 Enterprise 许可证。",
+    "cta": {
+      "activate": "激活许可证"
+    }
+  },
+  "plan": {
+    "featureRequiresUpgrade": "{{feature}} 在 {{currentPlan}} 计划中不可用。",
+    "cta": {
+      "upgrade": "升级计划"
+    }
+  },
+  "loadingGate": "正在检查兼容性…",
+  "badge": {
+    "loading": "正在检查 broker 功能",
+    "pending": "功能待定",
+    "summary": "{{version}} · {{count}}/{{total}} 项功能就绪",
+    "unknownVersion": "未知 broker",
+    "featureReady": "(可用)",
+    "featureUnavailable": "(不可用)"
+  },
+  "capability": {
+    "unknown": "Qarote 无法确定此 broker 的功能。请重新检查连接。",
+    "recheck": "重新检查",
+    "recheckIn": "{{seconds}}秒后重新检查",
+    "tracing": {
+      "pluginMissing": "消息追踪需要在此 broker 上启用 rabbitmq_tracing 插件。",
+      "enablePlugin": "如何启用 rabbitmq_tracing 插件"
+    },
+    "tap": {
+      "streamUnsupported": "实时侦听不支持 streams — streams 使用基于偏移量的消费方式而非绑定。",
+      "useRecorderForStreams": "为什么不支持 streams",
+      "amqpUnreliable": "近期此 broker 的 AMQP 连接不稳定,实时侦听可能断开。"
+    },
+    "diagnosis": {
+      "warmingUp": "诊断正在预热 — Qarote 需要至少 {{requiredMinutes}} 分钟的指标历史，窗口规则才能产生有效信号。在此之前结果可能稀疏。"
+    }
+  },
+  "preview": {
+    "showingPreview": "显示 {{shown}} / {{total}} — 升级以查看全部。",
+    "cta": {
+      "upgrade": "查看全部"
+    }
+  },
+  "fallback": {
+    "tryAlternative": "改为尝试 {{alternative}}",
+    "unavailable": "此替代功能尚未提供专属页面。"
+  },
+  "remediation": {
+    "runOnBroker": "在您的 broker 上运行:",
+    "copy": "复制命令"
+  },
+  "lastChecked": "{{relative}}前已检查",
+  "checkedJustNow": "刚刚",
+  "features": {
+    "workspace_management": "工作区管理",
+    "alerting": "告警",
+    "slack_integration": "Slack 集成",
+    "webhook_integration": "Webhook 集成",
+    "data_export": "数据导出",
+    "advanced_alert_rules": "高级告警规则",
+    "topology_visualization": "拓扑可视化",
+    "sso": "SSO / SAML / OIDC",
+    "digest_customization": "每日摘要自定义",
+    "incident_diagnosis": "事件诊断",
+    "message_tracing": "消息追踪",
+    "message_spy": "消息侦听"
+  }
+}

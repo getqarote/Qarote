@@ -657,6 +657,17 @@ docker compose -f docker-compose.selfhosted.yml up -d
 git push dokku main
 ```
 
+### Rolling Deploys (Multi-Replica)
+
+If you run more than one Qarote replica behind a load balancer, schema and behavioural changes ship in a single deploy — Qarote does **not** carry parallel "old" and "new" code paths. The implications during a rolling restart:
+
+- **Database migrations apply once.** On startup, the first replica to boot the new version runs `prisma migrate deploy`. Older replicas continue serving requests against the new schema until they cycle. This works because every migration is written backward-compatible for the duration of one deploy window: new columns are nullable or have defaults, removed columns are dropped only after the code that writes them is gone, and renamed columns ship as a two-step (add new, dual-write, drop old) across two releases when needed.
+- **No long-lived "legacy mode."** Qarote does not gate features on a version flag or read both old and new wire shapes simultaneously. A given release reads/writes one shape. Rolling forward through a feature flag (PostHog) is supported; rolling forward through a wire-shape change is not — that requires a brief full-fleet restart.
+- **Tap and recording sessions reconnect.** Live message tap (`messages.tap`) holds a server-side AMQP consumer per session. When a replica restarts, in-flight tap sessions on that replica error out with `RECONNECT_REQUIRED` and the frontend reopens the subscription against the new replica. Expect a 1–3 second blank window during the cycle.
+- **Cron singletons.** Daily jobs (incident-diagnosis-cleanup, queue-metrics-cron, server-capabilities-cron) are idempotent — running them twice on the same day does no harm, so the metrics-monitor worker can restart freely. They use Postgres-side `WHERE` predicates rather than in-memory locks, so concurrent execution from two replicas during the cycle is safe.
+
+The practical recommendation: deploy during low-traffic windows and let the load balancer drain connections (30s grace) before terminating each replica. This keeps tap/recording session interruptions to the cycle window itself.
+
 ## Troubleshooting
 
 ### "Exec format error" (Binary)

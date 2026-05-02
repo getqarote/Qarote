@@ -93,10 +93,15 @@ const menuItems = [
   { titleKey: "sidebar:alerts", url: "/alerts", icon: PixelFlag },
   { titleKey: "sidebar:diagnosis", url: "/diagnosis", icon: PixelAlert },
   {
-    titleKey: "sidebar:tracing",
-    url: "/tracing",
+    titleKey: "sidebar:messages",
+    url: "/messages",
     icon: PixelMonitor,
-    premiumFeature: "message_tracing" as const,
+    // Intentionally NOT premium-gated in the sidebar: the /messages
+    // page is plan-gated with `freeBehaviour: { mode: "preview" }` in
+    // gate.config.ts, so free-plan users get a soft-preview experience
+    // and need to be able to reach it from the nav. The page itself
+    // renders the preview banner + upgrade CTA — that's where the
+    // monetisation hint belongs, not in the sidebar.
   },
   {
     titleKey: "sidebar:definitions",

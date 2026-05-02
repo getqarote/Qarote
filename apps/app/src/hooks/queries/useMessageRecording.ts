@@ -1,5 +1,5 @@
 /**
- * useMessageTracing hooks
+ * useMessageRecording hooks
  *
  * TanStack Query + tRPC subscription hooks for the Message Tracing page.
  *
@@ -24,7 +24,7 @@ const MAX_LIVE_EVENTS = 500;
 
 export const useFirehoseStatus = (serverId: string, serverExists = true) => {
   const { workspace } = useWorkspace();
-  return trpc.rabbitmq.tracing.checkFirehoseStatus.useQuery(
+  return trpc.messages.recording.status.useQuery(
     { serverId, workspaceId: workspace?.id ?? "" },
     {
       enabled: !!serverId && !!workspace?.id && serverExists,
@@ -41,7 +41,7 @@ export const useFirehoseStatus = (serverId: string, serverExists = true) => {
 // ---------------------------------------------------------------------------
 
 export const useSetTraceEnabled = () => {
-  return trpc.rabbitmq.tracing.setTraceEnabled.useMutation();
+  return trpc.messages.recording.setEnabled.useMutation();
 };
 
 // ---------------------------------------------------------------------------
@@ -68,7 +68,7 @@ export const useTraces = ({
   const { workspace } = useWorkspace();
   const workspaceId = workspace?.id ?? "";
 
-  return trpc.rabbitmq.tracing.getTraces.useInfiniteQuery(
+  return trpc.messages.recording.query.useInfiniteQuery(
     {
       serverId: serverId ?? "",
       workspaceId,
@@ -103,7 +103,7 @@ export const useTraceStats = (
   serverExists = true
 ) => {
   const { workspace } = useWorkspace();
-  return trpc.rabbitmq.tracing.getTraceStats.useQuery(
+  return trpc.messages.recording.stats.useQuery(
     { serverId, workspaceId: workspace?.id ?? "", windowMinutes },
     {
       enabled: !!serverId && !!workspace?.id && enabled && serverExists,
@@ -227,7 +227,7 @@ export const useWatchTraces = ({
 
   const isActive = !!serverId && !!workspace?.id && enabled && tabVisible;
 
-  trpc.rabbitmq.tracing.watchTraces.useSubscription(
+  trpc.messages.recording.subscribe.useSubscription(
     {
       serverId,
       workspaceId: workspace?.id ?? "",

@@ -23,9 +23,7 @@ test.describe("Queue Detail Page @p2", () => {
 });
 
 test.describe("Queue Detail Metrics @p2", () => {
-  const mockQueueDetail = (
-    overrides?: Parameters<typeof mockQueue>[0]
-  ) =>
+  const mockQueueDetail = (overrides?: Parameters<typeof mockQueue>[0]) =>
     mockQueue({
       messages: 50,
       messages_ready: 30,

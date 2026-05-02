@@ -36,9 +36,7 @@ test.describe("Digest Settings Page @p1", () => {
       if (isChecked) await toggle.click();
 
       // Schedule section should not be visible
-      await expect(
-        adminPage.getByText("When to send")
-      ).not.toBeVisible();
+      await expect(adminPage.getByText("When to send")).not.toBeVisible();
     });
 
     test("schedule section appears after enabling digest", async ({

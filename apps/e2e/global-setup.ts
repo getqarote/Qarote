@@ -19,9 +19,8 @@ const AUTH_TOKENS_FILE = path.resolve(import.meta.dirname, ".auth-tokens.json");
 
 async function globalSetup() {
   // Dynamically import PrismaClient (generated in the api package)
-  const { PrismaClient } = await import(
-    "../api/src/generated/prisma/client.js"
-  );
+  const { PrismaClient } =
+    await import("../api/src/generated/prisma/client.js");
   const adapter = new PrismaPg({ connectionString: DATABASE_URL });
   const prisma = new PrismaClient({ adapter });
 
@@ -102,9 +101,7 @@ async function cleanDatabase(prisma: PrismaClient) {
 
   for (const table of tables) {
     try {
-      await prisma.$executeRawUnsafe(
-        `TRUNCATE TABLE "${table}" CASCADE`
-      );
+      await prisma.$executeRawUnsafe(`TRUNCATE TABLE "${table}" CASCADE`);
     } catch (err: any) {
       const msg = err?.message ?? "";
       if (msg.includes("does not exist")) continue;
@@ -260,11 +257,16 @@ async function loginViaApi(
     const data = await response.json();
     return { cookie, user: data.user || data };
   }
-  throw new Error(`Login failed for ${email}: rate limited after ${maxRetries} retries`);
+  throw new Error(
+    `Login failed for ${email}: rate limited after ${maxRetries} retries`
+  );
 }
 
 async function acquireAuthTokens() {
-  const tokens: Record<string, { cookie: string; user: Record<string, unknown> }> = {};
+  const tokens: Record<
+    string,
+    { cookie: string; user: Record<string, unknown> }
+  > = {};
 
   tokens["admin@e2e-test.local"] = await loginViaApi(
     "admin@e2e-test.local",

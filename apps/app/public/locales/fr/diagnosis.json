@@ -25,7 +25,23 @@
     "queueBacklog": "File en retard",
     "producerSpike": "Pic producteur",
     "queueDrainStall": "Vidage bloqué",
-    "noActivity": "Inactivité"
+    "noActivity": "Inactivité",
+    "memoryAlarmActive": "Alarme mémoire",
+    "diskAlarmActive": "Alarme disque",
+    "publisherFlowControl": "Contrôle de flux producteur",
+    "channelLeak": "Fuite de canaux",
+    "noConsumerPersistentQueue": "Sans consommateur / persistant",
+    "queueNearLengthLimit": "Proche de la limite",
+    "dlxFilling": "DLX accumule",
+    "consumerUtilizationLow": "Utilisation consommateur faible",
+    "quorumLeaderChurn": "Élection quorum instable",
+    "streamNoOffsetTracking": "Offset stream non suivi",
+    "classicQueueV1Large": "Grande file CQv1"
+  },
+  "clusterScope": "Échelle du cluster",
+  "signalErrors": {
+    "title": "Diagnostic incomplet",
+    "description": "Certains signaux broker en direct ne sont pas disponibles ({{endpoints}}). Les règles concernées resteront vides jusqu'à ce que les données soient accessibles."
   },
   "window": {
     "30min": "30 min",
@@ -36,7 +52,17 @@
   },
   "card": {
     "viewQueue": "Voir la file →",
-    "recommendation": "Recommandation"
+    "recommendation": "Recommandation",
+    "whyThisDiagnosis": "Pourquoi ce diagnostic ?",
+    "citationIntro": "Documenté dans la source RabbitMQ officielle :",
+    "opensInNewTab": "Ouvre dans un nouvel onglet",
+    "causedBy": "Causé par",
+    "openSince": "ouvert depuis",
+    "helpfulPrompt": "Utile ?",
+    "helpfulYes": "Utile",
+    "helpfulNo": "Pas utile",
+    "copyCommand": "Copier la commande",
+    "copied": "Copié"
   },
   "metadata": {
     "analyzedAgo": "Analysé {{time}}",

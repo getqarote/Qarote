@@ -1,0 +1,75 @@
+{
+  "title": {
+    "license": "License required",
+    "plan": "Upgrade your plan",
+    "capability": "Not available on this broker"
+  },
+  "license": {
+    "featureRequiresLicense": "{{feature}} requires an Enterprise license to be activated on this instance.",
+    "cta": {
+      "activate": "Activate license"
+    }
+  },
+  "plan": {
+    "featureRequiresUpgrade": "{{feature}} is not available on the {{currentPlan}} plan.",
+    "cta": {
+      "upgrade": "Upgrade plan"
+    }
+  },
+  "loadingGate": "Checking compatibility…",
+  "badge": {
+    "loading": "Checking broker capabilities",
+    "pending": "Capabilities pending",
+    "summary": "{{version}} · {{count}}/{{total}} features ready",
+    "unknownVersion": "Unknown broker",
+    "featureReady": "(available)",
+    "featureUnavailable": "(unavailable)"
+  },
+  "capability": {
+    "unknown": "Qarote could not determine this broker's capabilities. Try re-checking the connection.",
+    "recheck": "Re-check",
+    "recheckIn": "Re-check in {{seconds}}s",
+    "tracing": {
+      "pluginMissing": "Message Tracing requires the rabbitmq_tracing plugin to be enabled on this broker.",
+      "enablePlugin": "How to enable the rabbitmq_tracing plugin"
+    },
+    "tap": {
+      "streamUnsupported": "Live tap doesn't support streams — streams use offset-based consumption rather than bindings.",
+      "useRecorderForStreams": "Why streams aren't supported",
+      "amqpUnreliable": "AMQP connectivity to this broker has been unreliable recently. Live taps may disconnect."
+    },
+    "diagnosis": {
+      "warmingUp": "Diagnosis is warming up — Qarote needs at least {{requiredMinutes}} minutes of metric history before windowed rules carry signal. Findings may be sparse until then."
+    }
+  },
+  "preview": {
+    "showingPreview": "Showing {{shown}} of {{total}} — upgrade to see all results.",
+    "cta": {
+      "upgrade": "Upgrade to see all"
+    }
+  },
+  "fallback": {
+    "tryAlternative": "Try {{alternative}} instead",
+    "unavailable": "This alternative does not have a dedicated page yet."
+  },
+  "remediation": {
+    "runOnBroker": "Run this on your broker:",
+    "copy": "Copy command"
+  },
+  "lastChecked": "Last checked {{relative}}",
+  "checkedJustNow": "just now",
+  "features": {
+    "workspace_management": "Workspace Management",
+    "alerting": "Alerting",
+    "slack_integration": "Slack Integration",
+    "webhook_integration": "Webhook Integration",
+    "data_export": "Data Export",
+    "advanced_alert_rules": "Advanced Alert Rules",
+    "topology_visualization": "Topology Visualization",
+    "sso": "SSO / SAML / OIDC",
+    "digest_customization": "Daily Digest Customization",
+    "incident_diagnosis": "Incident Diagnosis",
+    "message_tracing": "Message Tracing",
+    "message_spy": "Message Spy"
+  }
+}

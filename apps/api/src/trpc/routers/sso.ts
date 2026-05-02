@@ -17,9 +17,9 @@ import dns from "node:dns";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod/v4";
 
-import { isFeatureEnabled } from "@/core/feature-flags";
 import { isPrivateIP } from "@/core/network";
 
+import { isFeatureEnabled } from "@/services/feature-gate";
 import { getOrgPlan } from "@/services/plan/plan.service";
 
 import { isDevelopment } from "@/config";

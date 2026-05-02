@@ -69,9 +69,7 @@ export class SignUpPage {
         (p) => pathname === p || pathname.startsWith(`${p}/`)
       );
       const hasSuccessMessage = await this.page
-        .getByText(
-          /account ready|verification email|account created|welcome/i
-        )
+        .getByText(/account ready|verification email|account created|welcome/i)
         .first()
         .isVisible()
         .catch(() => false);

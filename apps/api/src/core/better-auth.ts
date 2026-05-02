@@ -3,11 +3,11 @@ import bcrypt from "bcryptjs";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 
-import { getLicensePayload } from "@/core/feature-flags";
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
 import { EmailVerificationService } from "@/services/email/email-verification.service";
+import { getLicensePayload } from "@/services/feature-gate";
 import { notionService } from "@/services/integrations/notion.service";
 import { getOrgPlan } from "@/services/plan/plan.service";
 import { StripeCustomerService } from "@/services/stripe/customer.service";

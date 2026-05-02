@@ -21,8 +21,8 @@ test.describe("Connect RabbitMQ Server @p0", () => {
     await adminPage.waitForLoadState("domcontentloaded");
 
     // Sidebar should show "Add Server" when no server is configured
-    await expect(
-      adminPage.getByText(/no servers configured/i)
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(adminPage.getByText(/no servers configured/i)).toBeVisible({
+      timeout: 15_000,
+    });
   });
 });

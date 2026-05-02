@@ -2,9 +2,15 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { test, expect } from "../../fixtures/test-base.js";
-import { generateTestLicenseJwt, ALL_PREMIUM_FEATURES } from "../../helpers/license.js";
+import {
+  generateTestLicenseJwt,
+  ALL_PREMIUM_FEATURES,
+} from "../../helpers/license.js";
 
-const AUTH_TOKENS_FILE = path.resolve(import.meta.dirname, "../../.auth-tokens.json");
+const AUTH_TOKENS_FILE = path.resolve(
+  import.meta.dirname,
+  "../../.auth-tokens.json"
+);
 
 function getAdminCookie(): string {
   const raw = fs.readFileSync(AUTH_TOKENS_FILE, "utf-8");
@@ -59,14 +65,12 @@ test.describe("License Page @p1", () => {
       .fill("invalid-jwt-garbage");
 
     // Click activate
-    await adminPage
-      .getByRole("button", { name: /activate license/i })
-      .click();
+    await adminPage.getByRole("button", { name: /activate license/i }).click();
 
     // Expect error toast
-    await expect(
-      adminPage.getByText(/invalid or expired/i)
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(adminPage.getByText(/invalid or expired/i)).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test("should activate a valid license", async ({ adminPage }) => {
@@ -80,19 +84,15 @@ test.describe("License Page @p1", () => {
     });
 
     // Paste the JWT
-    await adminPage
-      .getByPlaceholder(/paste your license key/i)
-      .fill(jwt);
+    await adminPage.getByPlaceholder(/paste your license key/i).fill(jwt);
 
     // Click activate
-    await adminPage
-      .getByRole("button", { name: /activate license/i })
-      .click();
+    await adminPage.getByRole("button", { name: /activate license/i }).click();
 
     // Expect success toast
-    await expect(
-      adminPage.getByText(/license activated/i)
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(adminPage.getByText(/license activated/i)).toBeVisible({
+      timeout: 15_000,
+    });
 
     // Expect "Active" badge
     await expect(adminPage.getByText("Active")).toBeVisible();
@@ -129,9 +129,9 @@ test.describe("License Page @p1", () => {
       .click();
 
     // Expect success toast
-    await expect(
-      adminPage.getByText(/license deactivated/i)
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(adminPage.getByText(/license deactivated/i)).toBeVisible({
+      timeout: 15_000,
+    });
 
     // Expect "No License" badge
     await expect(adminPage.getByText(/no license/i)).toBeVisible();

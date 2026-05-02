@@ -56,7 +56,9 @@ test.describe("SSO Settings Page @p1 @adminonly", () => {
       await expect(adminPage.locator("#setup-saml-metadata")).not.toBeVisible();
     });
 
-    test("switching to SAML shows metadata URL field", async ({ adminPage }) => {
+    test("switching to SAML shows metadata URL field", async ({
+      adminPage,
+    }) => {
       await adminPage.goto("/settings/sso");
       await adminPage.waitForLoadState("domcontentloaded");
 
@@ -145,14 +147,10 @@ test.describe("SSO Settings Page @p1 @adminonly", () => {
         timeout: 15_000,
       });
 
-      await adminPage
-        .getByRole("button", { name: /delete provider/i })
-        .click();
+      await adminPage.getByRole("button", { name: /delete provider/i }).click();
 
       // AlertDialog should appear — not native confirm()
-      await expect(
-        adminPage.getByRole("alertdialog")
-      ).toBeVisible();
+      await expect(adminPage.getByRole("alertdialog")).toBeVisible();
       await expect(
         adminPage.getByText(/this will disable sso for all users/i)
       ).toBeVisible();
@@ -168,9 +166,7 @@ test.describe("SSO Settings Page @p1 @adminonly", () => {
         timeout: 15_000,
       });
 
-      await adminPage
-        .getByRole("button", { name: /delete provider/i })
-        .click();
+      await adminPage.getByRole("button", { name: /delete provider/i }).click();
       await expect(adminPage.getByRole("alertdialog")).toBeVisible();
 
       await adminPage.getByRole("button", { name: /cancel/i }).click();
@@ -209,9 +205,9 @@ test.describe("SSO Settings Page @p1 @adminonly", () => {
 
       await adminPage.getByRole("button", { name: /save/i }).click();
 
-      await expect(
-        adminPage.getByText(/enterprise/i)
-      ).toBeVisible({ timeout: 5_000 });
+      await expect(adminPage.getByText(/enterprise/i)).toBeVisible({
+        timeout: 5_000,
+      });
     });
   });
 });

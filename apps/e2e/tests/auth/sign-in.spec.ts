@@ -67,7 +67,6 @@ test.describe("User Login @p0", () => {
       registrationEnabled: false,
       emailEnabled: false,
       oauthEnabled: false,
-
     });
 
     const signInPage = new SignInPage(page);

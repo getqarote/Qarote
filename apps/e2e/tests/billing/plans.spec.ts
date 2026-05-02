@@ -49,6 +49,8 @@ test.describe("Plans Page @p2", () => {
     await page.waitForLoadState("domcontentloaded");
 
     // Plans should display dollar-amount pricing
-    await expect(page.getByText(/\$\d+/).first()).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/\$\d+/).first()).toBeVisible({
+      timeout: 15_000,
+    });
   });
 });

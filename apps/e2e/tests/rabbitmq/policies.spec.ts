@@ -236,7 +236,9 @@ test.describe("Create Policy Dialog @p1", () => {
     await expect(
       adminPage.getByRole("spinbutton", { name: /priority/i })
     ).toBeVisible();
-    await expect(adminPage.getByRole("textbox", { name: /definition/i })).toBeVisible();
+    await expect(
+      adminPage.getByRole("textbox", { name: /definition/i })
+    ).toBeVisible();
   });
 
   test("should show Common keys hint section", async ({ adminPage }) => {
@@ -270,11 +272,14 @@ test.describe("Create Policy Dialog @p1", () => {
       .getByRole("textbox", { name: /policy name/i })
       .fill("test-policy");
 
-    await adminPage.getByRole("button", { name: /create policy/i }).last().click();
+    await adminPage
+      .getByRole("button", { name: /create policy/i })
+      .last()
+      .click();
 
-    await expect(
-      adminPage.getByText(/at least one key/i)
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(adminPage.getByText(/at least one key/i)).toBeVisible({
+      timeout: 5_000,
+    });
   });
 
   test("should show validation error for invalid JSON in definition", async ({
@@ -294,11 +299,14 @@ test.describe("Create Policy Dialog @p1", () => {
     const textarea = adminPage.getByRole("textbox", { name: /definition/i });
     await textarea.fill("not-valid-json");
 
-    await adminPage.getByRole("button", { name: /create policy/i }).last().click();
+    await adminPage
+      .getByRole("button", { name: /create policy/i })
+      .last()
+      .click();
 
-    await expect(
-      adminPage.getByText(/valid json/i)
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(adminPage.getByText(/valid json/i)).toBeVisible({
+      timeout: 5_000,
+    });
   });
 
   test("should close dialog on cancel", async ({ adminPage }) => {
@@ -345,7 +353,10 @@ test.describe("Edit Policy @p1", () => {
     await adminPage.goto("/policies");
     await adminPage.waitForLoadState("domcontentloaded");
 
-    await adminPage.getByRole("button", { name: /edit policy/i }).first().click();
+    await adminPage
+      .getByRole("button", { name: /edit policy/i })
+      .first()
+      .click();
     await expect(adminPage.getByRole("dialog")).toBeVisible({ timeout: 5_000 });
 
     const nameField = adminPage.getByRole("textbox", { name: /policy name/i });
@@ -363,7 +374,10 @@ test.describe("Edit Policy @p1", () => {
     await adminPage.goto("/policies");
     await adminPage.waitForLoadState("domcontentloaded");
 
-    await adminPage.getByRole("button", { name: /edit policy/i }).first().click();
+    await adminPage
+      .getByRole("button", { name: /edit policy/i })
+      .first()
+      .click();
     await expect(adminPage.getByRole("dialog")).toBeVisible({ timeout: 5_000 });
 
     await expect(

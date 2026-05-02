@@ -40,7 +40,7 @@ vi.mock("@/services/plan/plan.service", () => ({
   PlanValidationError: class extends Error {},
 }));
 
-vi.mock("@/core/feature-flags", () => ({
+vi.mock("@/services/feature-gate/license", () => ({
   isFeatureEnabled: vi.fn().mockResolvedValue(true),
   getLicensePayload: vi.fn(),
   invalidateLicenseCache: vi.fn(),

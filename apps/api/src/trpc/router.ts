@@ -1,5 +1,6 @@
 import { authRouter } from "./routers/auth/index";
 import { discordRouter } from "./routers/discord";
+import { featureGateRouter } from "./routers/feature-gate";
 import { feedbackRouter } from "./routers/feedback";
 import { organizationRouter } from "./routers/organization/index";
 import { paymentRouter } from "./routers/payment/index";
@@ -24,6 +25,7 @@ export const appRouter = router({
   workspace: workspaceRouter,
   organization: organizationRouter,
   feedback: feedbackRouter,
+  featureGate: featureGateRouter,
   license: licenseRouter,
   payment: paymentRouter,
   rabbitmq: rabbitmqRouter,

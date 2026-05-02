@@ -21,9 +21,8 @@ let prismaInstance: PrismaClient | null = null;
  */
 async function getPrisma(): Promise<PrismaClient> {
   if (!prismaInstance) {
-    const { PrismaClient } = await import(
-      "../../api/src/generated/prisma/client.js"
-    );
+    const { PrismaClient } =
+      await import("../../api/src/generated/prisma/client.js");
     const adapter = new PrismaPg({ connectionString: DATABASE_URL });
     prismaInstance = new PrismaClient({ adapter });
   }

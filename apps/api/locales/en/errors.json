@@ -146,6 +146,8 @@
     "failedToUpdateServer": "Failed to update server",
     "failedToDeleteServer": "Failed to delete server",
     "connectionFailed": "Connection failed",
+    "recheckCooldown": "Capability re-check is rate-limited — please retry in {{seconds}}s",
+    "messageTapConcurrentLimitReached": "Too many concurrent message tap subscriptions for this workspace. Close one and retry.",
     "failedToFetchOverview": "Failed to fetch server overview",
     "failedToSetClusterName": "Failed to update cluster name",
     "serverWorkspaceNotFound": "Server workspace not found",

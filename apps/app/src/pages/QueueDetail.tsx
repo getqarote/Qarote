@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 
 import { AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
@@ -64,11 +64,17 @@ const QueueDetail = () => {
   const { t } = useTranslation("queues");
   const { t: tDiagnosis } = useTranslation("diagnosis");
   const { queueName } = useParams<{ queueName: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const isAdmin = user?.role === UserRole.ADMIN;
   const { selectedServerId } = useServerContext();
   const { selectedVHost } = useVHostContext();
+  // When navigating from DiagnosisCard the target vhost is encoded in the
+  // query param — takes precedence over the global vhost picker so the user
+  // lands on the correct queue even when their picker is set to a different
+  // vhost.
+  const vhost = searchParams.get("vhost") ?? selectedVHost;
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
   const [timeRange, setTimeRange] = useState<TimeRange>("1m");
@@ -83,19 +89,19 @@ const QueueDetail = () => {
     data: queueData,
     isLoading,
     refetch,
-  } = useQueue(selectedServerId, queueName, selectedVHost);
+  } = useQueue(selectedServerId, queueName, vhost);
 
   const { data: consumersData, isLoading: consumersLoading } =
-    useQueueConsumers(selectedServerId, queueName, selectedVHost);
+    useQueueConsumers(selectedServerId, queueName, vhost);
 
   const { data: bindingsData, isLoading: bindingsLoading } = useQueueBindings(
     selectedServerId,
     queueName,
-    selectedVHost
+    vhost
   );
 
   const { data: queueLiveRatesData, isLoading: liveRatesLoading } =
-    useQueueLiveRates(selectedServerId, queueName, timeRange, selectedVHost);
+    useQueueLiveRates(selectedServerId, queueName, timeRange, vhost);
 
   const {
     data: historyData,
@@ -104,7 +110,7 @@ const QueueDetail = () => {
   } = useQueueHistory({
     serverId: selectedServerId,
     queueName,
-    vhost: selectedVHost || "/",
+    vhost: vhost || "/",
     rangeHours: histRange,
     enabled: activeTab === "history",
   });
@@ -121,7 +127,7 @@ const QueueDetail = () => {
   // Filter diagnoses for this specific queue
   const queueDiagnoses = diagnosisData?.diagnoses
     ? diagnosisData.diagnoses.filter(
-        (d) => d.queueName === queueName && d.vhost === (selectedVHost || "/")
+        (d) => d.queueName === queueName && d.vhost === (vhost || "/")
       )
     : [];
 
@@ -139,9 +145,7 @@ const QueueDetail = () => {
         queueName,
         ifUnused: true,
         ifEmpty: true,
-        vhost: selectedVHost
-          ? encodeURIComponent(selectedVHost)
-          : encodeURIComponent("/"),
+        vhost: vhost ? encodeURIComponent(vhost) : encodeURIComponent("/"),
       });
 
       toast(t("common:success"), {
@@ -221,13 +225,20 @@ const QueueDetail = () => {
               )}
             </div>
 
-            {/* Spy panel — expands when active */}
+            {/* Spy panel — expands when active. The `queueType` is
+                included in the key so a queue whose arguments resolve
+                AFTER the spy mounted re-runs the capability gate
+                (otherwise a stream queue would silently bypass the
+                gate when the user pre-toggled spy before queue load). */}
             {spyEnabled && (
               <QueueSpy
-                key={`${selectedServerId}|${queueName}|${selectedVHost || "/"}`}
+                key={`${selectedServerId}|${queueName}|${vhost || "/"}|${
+                  resolveQueueType(queue) ?? "loading"
+                }`}
                 serverId={selectedServerId}
                 queueName={queueName}
-                vhost={selectedVHost || "/"}
+                vhost={vhost || "/"}
+                queueType={resolveQueueType(queue)}
               />
             )}
 
@@ -465,5 +476,22 @@ const QueueDetail = () => {
     </TooltipProvider>
   );
 };
+
+/**
+ * Map a queue's `arguments["x-queue-type"]` to the narrowed type the
+ * capability gate consumes. Defaults to `"classic"` when the argument
+ * is absent — the historical default for queues declared without an
+ * explicit type. Returns `undefined` only when the queue itself hasn't
+ * loaded yet (i.e. caller passed `undefined`); the gate then waits.
+ */
+function resolveQueueType(
+  queue: { arguments?: { "x-queue-type"?: string } | null } | undefined
+): "classic" | "quorum" | "stream" | undefined {
+  if (!queue) return undefined; // queue not loaded yet
+  if (queue.arguments === undefined) return undefined; // arguments not yet resolved
+  const raw = queue.arguments?.["x-queue-type"];
+  if (raw === "quorum" || raw === "stream" || raw === "classic") return raw;
+  return "classic"; // null arguments means no x-queue-type set → classic
+}
 
 export default QueueDetail;

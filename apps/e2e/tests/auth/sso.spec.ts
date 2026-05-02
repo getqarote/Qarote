@@ -19,9 +19,9 @@ test.describe("SSO Visibility @p2", () => {
     await page.waitForLoadState("domcontentloaded");
 
     // SSO button should not be visible when SSO is not configured
-    await expect(
-      page.getByRole("button", { name: /sso/i })
-    ).not.toBeVisible({ timeout: 5_000 });
+    await expect(page.getByRole("button", { name: /sso/i })).not.toBeVisible({
+      timeout: 5_000,
+    });
   });
 
   test("should show SSO button when sso.getConfig returns enabled config", async ({
@@ -68,9 +68,9 @@ test.describe("SSO Visibility @p2", () => {
     await page.goto("/auth/sign-up");
     await page.waitForLoadState("domcontentloaded");
 
-    await expect(
-      page.getByRole("button", { name: /sso/i })
-    ).not.toBeVisible({ timeout: 5_000 });
+    await expect(page.getByRole("button", { name: /sso/i })).not.toBeVisible({
+      timeout: 5_000,
+    });
   });
 
   test("cloud: should show email input when SSO button is clicked", async ({
@@ -137,9 +137,9 @@ test.describe("SSO Callback @p2", () => {
     // Should redirect to workspace (or another page based on auth state)
     // Since we're not actually logged in, it may redirect to sign-in
     // The important thing is that no error is displayed
-    await expect(
-      page.getByText(/authentication error/i)
-    ).not.toBeVisible({ timeout: 3_000 });
+    await expect(page.getByText(/authentication error/i)).not.toBeVisible({
+      timeout: 3_000,
+    });
   });
 
   test("should show error card for invalid_state error", async ({ page }) => {
@@ -161,14 +161,12 @@ test.describe("SSO Callback @p2", () => {
     await page.goto("/auth/sso/callback?error=no_email");
     await page.waitForLoadState("domcontentloaded");
 
-    await expect(
-      page.getByText(/did not return an email/i)
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText(/did not return an email/i)).toBeVisible({
+      timeout: 5_000,
+    });
   });
 
-  test("should show generic error for unknown error code", async ({
-    page,
-  }) => {
+  test("should show generic error for unknown error code", async ({ page }) => {
     await page.goto("/auth/sso/callback?error=some_unknown_error");
     await page.waitForLoadState("domcontentloaded");
 

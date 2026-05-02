@@ -52,7 +52,7 @@ vi.mock("@/services/plan/plan.service", () => ({
 }));
 
 const mockIsFeatureEnabled = vi.fn();
-vi.mock("@/core/feature-flags", () => ({
+vi.mock("@/services/feature-gate/license", () => ({
   isFeatureEnabled: (...a: unknown[]) => mockIsFeatureEnabled(...a),
 }));
 

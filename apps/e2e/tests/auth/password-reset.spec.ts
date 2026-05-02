@@ -6,9 +6,7 @@ test.describe("Password Reset Flow @p1", () => {
     await expect(
       page.getByRole("heading", { name: /forgot password/i })
     ).toBeVisible();
-    await expect(
-      page.getByPlaceholder(/email/i)
-    ).toBeVisible();
+    await expect(page.getByPlaceholder(/email/i)).toBeVisible();
     await expect(
       page.getByRole("button", { name: /send reset link/i })
     ).toBeVisible();

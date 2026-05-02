@@ -25,7 +25,23 @@
     "queueBacklog": "Queue Backlog",
     "producerSpike": "Producer Spike",
     "queueDrainStall": "Drain Stall",
-    "noActivity": "No Activity"
+    "noActivity": "No Activity",
+    "memoryAlarmActive": "Memory Alarm",
+    "diskAlarmActive": "Disk Alarm",
+    "publisherFlowControl": "Publisher Flow Control",
+    "channelLeak": "Channel Leak",
+    "noConsumerPersistentQueue": "No Consumer / Persistent",
+    "queueNearLengthLimit": "Near Length Limit",
+    "dlxFilling": "DLX Filling",
+    "consumerUtilizationLow": "Low Consumer Utilisation",
+    "quorumLeaderChurn": "Quorum Leader Churn",
+    "streamNoOffsetTracking": "Stream Offset Untracked",
+    "classicQueueV1Large": "Large CQv1 Queue"
+  },
+  "clusterScope": "Cluster-wide",
+  "signalErrors": {
+    "title": "Diagnosis incomplete",
+    "description": "Some live broker signals are unavailable ({{endpoints}}). Affected rules will appear empty until the data is reachable."
   },
   "window": {
     "30min": "30 min",
@@ -36,7 +52,17 @@
   },
   "card": {
     "viewQueue": "View queue →",
-    "recommendation": "Recommendation"
+    "recommendation": "Recommendation",
+    "whyThisDiagnosis": "Why this diagnosis?",
+    "citationIntro": "Documented in the canonical RabbitMQ source:",
+    "opensInNewTab": "Opens in a new tab",
+    "causedBy": "Caused by",
+    "openSince": "open since",
+    "helpfulPrompt": "Was this helpful?",
+    "helpfulYes": "Helpful",
+    "helpfulNo": "Not helpful",
+    "copyCommand": "Copy command",
+    "copied": "Copied"
   },
   "metadata": {
     "analyzedAgo": "Analyzed {{time}}",

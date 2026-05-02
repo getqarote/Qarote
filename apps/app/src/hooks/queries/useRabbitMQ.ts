@@ -555,6 +555,10 @@ export const useSpyOnQueue = (
   } | null>(null);
   // Set when backend emits preview_limit — no further messages will arrive for free users.
   const [isPreviewLimited, setIsPreviewLimited] = useState(false);
+  // Set when backend emits duration_limit — the 30 min hard cap on tap
+  // sessions has fired. No further messages will arrive; the user must
+  // reconnect to resume.
+  const [isDurationLimited, setIsDurationLimited] = useState(false);
   // Backend cumulative dropped count (BoundedBuffer overflow on the server).
   const [dropped, setDropped] = useState(0);
   // Cumulative count of messages evicted client-side when the ring buffer
@@ -611,7 +615,7 @@ export const useSpyOnQueue = (
 
   const isActive = !!serverId && !!queueName && !!workspace?.id && enabled;
 
-  trpc.rabbitmq.queues.spyOnQueue.useSubscription(
+  trpc.messages.tap.subscribe.useSubscription(
     {
       serverId,
       workspaceId: workspace?.id || "",
@@ -646,6 +650,11 @@ export const useSpyOnQueue = (
         } else if (data.type === "preview_limit") {
           // Backend has soft-capped the stream — no further messages will arrive.
           setIsPreviewLimited(true);
+        } else if (data.type === "duration_limit") {
+          // 30 min hard cap reached — terminal event. UI shows a
+          // "session ended after 30 minutes" notice with a Reconnect
+          // affordance.
+          setIsDurationLimited(true);
         } else if (data.type === "error") {
           setError(data.message);
         }
@@ -667,6 +676,7 @@ export const useSpyOnQueue = (
       rafRef.current = null;
     }
     setIsPreviewLimited(false);
+    setIsDurationLimited(false);
   }, [dropped, clientDropped]);
 
   return {
@@ -676,6 +686,7 @@ export const useSpyOnQueue = (
     dropped: Math.max(0, dropped + clientDropped - droppedBaseline),
     totalReceived,
     isPreviewLimited,
+    isDurationLimited,
     isLoading: isActive && !spyInfo && !error,
     clearMessages,
   };

@@ -6,8 +6,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod/v4";
 
-import { invalidateLicenseCache } from "@/core/feature-flags";
-
+import { invalidateLicenseCache } from "@/services/feature-gate";
 import { verifyLicenseJwt } from "@/services/license/license-crypto.service";
 import { posthog } from "@/services/posthog";
 

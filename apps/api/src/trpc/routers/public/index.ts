@@ -1,7 +1,7 @@
-import { areFeaturesEnabled } from "@/core/feature-flags";
 import { logger } from "@/core/logger";
 
 import { CoreEmailService } from "@/services/email/core-email.service";
+import { areFeaturesEnabled } from "@/services/feature-gate";
 
 import { emailConfig, googleConfig, registrationConfig } from "@/config";
 import { getAllPremiumFeatures } from "@/config/features";

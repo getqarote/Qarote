@@ -2,7 +2,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { type BrowserContext, type Page, test as base } from "@playwright/test";
 
-const AUTH_TOKENS_FILE = path.resolve(import.meta.dirname, "../.auth-tokens.json");
+const AUTH_TOKENS_FILE = path.resolve(
+  import.meta.dirname,
+  "../.auth-tokens.json"
+);
 
 type AuthFixtures = {
   adminPage: Page;
@@ -13,7 +16,10 @@ type AuthFixtures = {
  * Read pre-acquired auth cookies from the file written by global-setup.
  * This avoids hitting the login API rate limiter across workers.
  */
-function getAuthData(email: string): { cookie: string; user: Record<string, unknown> } {
+function getAuthData(email: string): {
+  cookie: string;
+  user: Record<string, unknown>;
+} {
   const raw = fs.readFileSync(AUTH_TOKENS_FILE, "utf-8");
   let tokens: Record<string, { cookie: string; user: Record<string, unknown> }>;
   try {
@@ -31,7 +37,10 @@ function getAuthData(email: string): { cookie: string; user: Record<string, unkn
 /**
  * Parse cookie string into individual cookie objects for Playwright.
  */
-function parseCookies(cookieString: string, baseUrl: string): Array<{
+function parseCookies(
+  cookieString: string,
+  baseUrl: string
+): Array<{
   name: string;
   value: string;
   domain: string;
@@ -61,7 +70,8 @@ async function createAuthenticatedPage(
   email: string
 ): Promise<Page> {
   const { cookie } = getAuthData(email);
-  const baseUrl = process.env.VITE_APP_URL || process.env.APP_URL || "http://localhost:5173";
+  const baseUrl =
+    process.env.VITE_APP_URL || process.env.APP_URL || "http://localhost:5173";
 
   // Inject session cookies into the browser context
   const cookies = parseCookies(cookie, baseUrl);
@@ -83,7 +93,10 @@ export const test = base.extend<AuthFixtures>({
 
   readonlyPage: async ({ browser }, use) => {
     const context = await browser.newContext();
-    const page = await createAuthenticatedPage(context, "readonly@e2e-test.local");
+    const page = await createAuthenticatedPage(
+      context,
+      "readonly@e2e-test.local"
+    );
     await use(page);
     await context.close();
   },

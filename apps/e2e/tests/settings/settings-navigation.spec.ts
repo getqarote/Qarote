@@ -1,7 +1,9 @@
 import { test, expect } from "../../fixtures/test-base.js";
 
 test.describe("Settings Navigation @p2", () => {
-  test("should redirect /settings to /settings/profile", async ({ adminPage }) => {
+  test("should redirect /settings to /settings/profile", async ({
+    adminPage,
+  }) => {
     await adminPage.goto("/settings");
     await adminPage.waitForLoadState("domcontentloaded");
 
@@ -15,29 +17,21 @@ test.describe("Settings Navigation @p2", () => {
     await adminPage.waitForLoadState("domcontentloaded");
 
     // Personal group links
-    await expect(
-      adminPage.getByRole("link", { name: /profile/i })
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(adminPage.getByRole("link", { name: /profile/i })).toBeVisible(
+      { timeout: 10_000 }
+    );
     await expect(
       adminPage.getByRole("link", { name: /workspace/i })
     ).toBeVisible();
-    await expect(
-      adminPage.getByRole("link", { name: /plans/i })
-    ).toBeVisible();
+    await expect(adminPage.getByRole("link", { name: /plans/i })).toBeVisible();
 
     // Administration group links (admin only)
-    await expect(
-      adminPage.getByRole("link", { name: /team/i })
-    ).toBeVisible();
+    await expect(adminPage.getByRole("link", { name: /team/i })).toBeVisible();
     await expect(
       adminPage.getByRole("link", { name: /license/i })
     ).toBeVisible();
-    await expect(
-      adminPage.getByRole("link", { name: /sso/i })
-    ).toBeVisible();
-    await expect(
-      adminPage.getByRole("link", { name: /email/i })
-    ).toBeVisible();
+    await expect(adminPage.getByRole("link", { name: /sso/i })).toBeVisible();
+    await expect(adminPage.getByRole("link", { name: /email/i })).toBeVisible();
 
     // Feedback
     await expect(
@@ -124,6 +118,8 @@ test.describe("Settings Navigation @p2", () => {
     const settingsMenuItem = adminPage
       .locator("[data-sidebar='menu-button']")
       .filter({ hasText: /settings|paramètres/i });
-    await expect(settingsMenuItem).toHaveClass(/from-orange-600/, { timeout: 10_000 });
+    await expect(settingsMenuItem).toHaveClass(/from-orange-600/, {
+      timeout: 10_000,
+    });
   });
 });

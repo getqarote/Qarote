@@ -4,7 +4,17 @@ import { prisma } from "@/core/prisma";
 import { RabbitMQClient } from "@/core/rabbitmq";
 
 import { seedDefaultAlertRules } from "@/services/alerts/alert-seeding.service";
+import { recordCapabilityRecheck } from "@/services/audit";
 import { EncryptionService } from "@/services/encryption.service";
+import {
+  getBadgeTrackedFeatures,
+  isFeatureReadyOnSnapshot,
+} from "@/services/feature-gate";
+import { refreshServerCapabilities } from "@/services/feature-gate/capability-refresh";
+import {
+  applyCapabilityOverride,
+  parseCapabilitySnapshot,
+} from "@/services/feature-gate/capability-snapshot";
 import {
   extractMajorMinorVersion,
   getOrgPlan,
@@ -241,6 +251,16 @@ export const serverRouter = router({
         // server creation is never blocked or rolled back by seeding failures.
         void seedDefaultAlertRules(server.id, workspaceId);
 
+        // Detect broker capabilities and persist the snapshot. Fire-and-forget
+        // for the same reason as alert seeding — capability detection failure
+        // must not block server creation; the nightly cron will retry.
+        void refreshServerCapabilities(server.id, client).catch((error) => {
+          ctx.logger.warn(
+            { error, serverId: server.id },
+            "initial capability detection failed — nightly cron will retry"
+          );
+        });
+
         return {
           server: {
             id: server.id,
@@ -453,4 +473,190 @@ export const serverRouter = router({
         });
       }
     }),
+
+  /**
+   * Read the persisted capability snapshot for a server, with the
+   * support `capabilityOverride` already merged in. Returns the
+   * indexable scalars (version, productName) alongside the snapshot
+   * payload so the UI can render version + plugin info in one query.
+   *
+   * Returns `null` snapshot when the server has no detection yet —
+   * frontend treats this as "loading" / "Re-check needed".
+   */
+  getCapabilities: workspaceProcedure
+    .input(GetServerInputSchema)
+    .query(async ({ input, ctx }) => {
+      const { id: serverId, workspaceId } = input;
+      const server = await prisma.rabbitMQServer.findFirst({
+        where: { id: serverId, workspaceId },
+        select: {
+          id: true,
+          version: true,
+          productName: true,
+          capabilities: true,
+          capabilityOverride: true,
+          capabilitiesAt: true,
+        },
+      });
+      if (!server) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
+        });
+      }
+
+      const snapshot = applyCapabilityOverride(
+        parseCapabilitySnapshot(server.capabilities),
+        server.capabilityOverride
+      );
+
+      // Computed server-side so the frontend never re-implements the
+      // dispatch — the badge just renders the list as-is. Adding a new
+      // capability-gated feature in `gate.config.ts` automatically
+      // surfaces here without a frontend change.
+      const featureReadiness = getBadgeTrackedFeatures().map((feature) => ({
+        feature,
+        ready: snapshot ? isFeatureReadyOnSnapshot(feature, snapshot) : false,
+      }));
+
+      return {
+        snapshot,
+        version: server.version,
+        productName: server.productName,
+        capabilitiesAt: server.capabilitiesAt
+          ? server.capabilitiesAt.toISOString()
+          : null,
+        featureReadiness,
+      };
+    }),
+
+  /**
+   * Manually re-detect broker capabilities for a server.
+   *
+   * Server-side rate limit: 1 attempt per server per 60 s. The cap is
+   * keyed on **attempt time**, not last-success time — a user spamming
+   * Re-check against a broken broker would otherwise dodge the cooldown
+   * (`capabilitiesAt` is only updated on a successful detection).
+   *
+   * The map is in-memory and per-replica. With multiple API replicas,
+   * each replica enforces its own 60s window — acceptable: cross-replica
+   * coordination would require Redis and the DoS risk here (the user's
+   * own broker) is low. Promote to a DB column if multi-replica becomes
+   * a hard requirement.
+   */
+  recheckCapabilities: workspaceProcedure
+    .input(GetServerInputSchema)
+    .mutation(async ({ input, ctx }) => {
+      const { id: serverId, workspaceId } = input;
+
+      // Fetch the server + the prior snapshot fields in one round-trip.
+      // Prior `hasFirehoseExchange` feeds the audit-log diff so a
+      // reviewer can see a plugin flipping off without joining tables.
+      const server = await prisma.rabbitMQServer.findFirst({
+        where: { id: serverId, workspaceId },
+        select: { id: true, capabilities: true },
+      });
+      if (!server) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
+        });
+      }
+      const priorSnapshot = parseCapabilitySnapshot(server.capabilities);
+      const hadFirehoseBefore = priorSnapshot?.hasFirehoseExchange ?? null;
+
+      const now = Date.now();
+      evictStaleRecheckEntries(now);
+      const lastAttempt = recheckAttemptByServer.get(serverId);
+      if (lastAttempt && now - lastAttempt < RECHECK_COOLDOWN_MS) {
+        const retryAfterMs = RECHECK_COOLDOWN_MS - (now - lastAttempt);
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: te(ctx.locale, "rabbitmq.recheckCooldown", {
+            seconds: Math.ceil(retryAfterMs / 1000),
+          }),
+        });
+      }
+      // Mark the attempt BEFORE running the refresh so failures still
+      // count toward the cooldown (defends against a broken-broker DoS).
+      recheckAttemptByServer.set(serverId, now);
+
+      const result = await refreshServerCapabilities(serverId);
+
+      // Best-effort audit write — `recordCapabilityRecheck` swallows
+      // its own errors and logs them, so awaiting is safe here. We
+      // intentionally DON'T fire-and-forget (`void ...`): that would
+      // mask any future synchronous throw in the helper as an
+      // unhandled rejection. Awaiting keeps the response ordered with
+      // the audit row's persistence, which the eventual audit-reader
+      // UI relies on.
+      //
+      // The audit insert is intentionally OUT of any transaction with
+      // the capability refresh — the contract is "record every attempt
+      // (success and failure)", which a shared TX would defeat (a
+      // refresh-side rollback would also drop the audit row).
+      await recordCapabilityRecheck(serverId, ctx.user.id, {
+        success: result.snapshot !== null,
+        // Audit `changed` reflects what was actually written, not what
+        // the detector saw. `result.changed` is the detected diff
+        // computed BEFORE the optimistic CAS — a losing concurrent
+        // refresh would otherwise log `changed: true` while persisting
+        // nothing. AND-ing with `result.persisted` keeps the audit
+        // contract truthful.
+        changed: result.persisted && result.changed,
+        hadFirehoseBefore,
+        hasFirehoseAfter: result.snapshot?.hasFirehoseExchange ?? null,
+      });
+
+      // Re-read the row so the response carries the SAME merged-shape
+      // payload as `getCapabilities` — including version, productName,
+      // capabilitiesAt, and any persisted capabilityOverride. Without
+      // this re-read, the FE has to fire a second `getCapabilities`
+      // query right after the recheck mutation.
+      const refreshed = await prisma.rabbitMQServer.findFirst({
+        where: { id: serverId, workspaceId },
+        select: {
+          version: true,
+          productName: true,
+          capabilities: true,
+          capabilityOverride: true,
+          capabilitiesAt: true,
+        },
+      });
+      const mergedSnapshot = refreshed
+        ? applyCapabilityOverride(
+            parseCapabilitySnapshot(refreshed.capabilities),
+            refreshed.capabilityOverride
+          )
+        : null;
+
+      return {
+        persisted: result.persisted,
+        changed: result.changed,
+        snapshot: mergedSnapshot,
+        version: refreshed?.version ?? null,
+        productName: refreshed?.productName ?? null,
+        capabilitiesAt: refreshed?.capabilitiesAt
+          ? refreshed.capabilitiesAt.toISOString()
+          : null,
+      };
+    }),
 });
+
+/** Rate-limit window for manual capability rechecks (per replica, in-memory). */
+const RECHECK_COOLDOWN_MS = 60_000;
+
+/**
+ * Per-server recheck cooldown — module-scoped Map keyed on serverId.
+ * Lives outside the router definition so the entries persist across
+ * mutations (router definitions are evaluated once at module init).
+ * Entries older than RECHECK_COOLDOWN_MS are evicted on each check to
+ * prevent the Map from growing unbounded on long-lived replicas.
+ */
+const recheckAttemptByServer = new Map<string, number>();
+
+function evictStaleRecheckEntries(now: number): void {
+  for (const [id, ts] of recheckAttemptByServer) {
+    if (now - ts >= RECHECK_COOLDOWN_MS) recheckAttemptByServer.delete(id);
+  }
+}

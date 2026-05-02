@@ -203,11 +203,22 @@ model RabbitMQServer {
   amqpPort              Int                   @default(5672)
   traceEnabled          Boolean               @default(false)
   payloadCaptureEnabled Boolean               @default(false)
+  // Broker capability snapshot — see services/feature-gate/capability-axis.ts.
+  // `version` (above) already stores rabbitmq_version; productName captures
+  // the product flavour (RabbitMQ / Tanzu RabbitMQ / AWS MQ for RabbitMQ /…).
+  productName           String?
+  capabilities          Json?
+  capabilitiesAt        DateTime?
+  // Support-only override merged on top of detected snapshot. Read-only from
+  // app code; writable through admin tooling for misclassified brokers.
+  capabilityOverride    Json?
   alertRules            AlertRule[]
   alerts                Alert[]
   queues                Queue[]
   queueMetricSnapshots  QueueMetricSnapshot[]
   messageTraceEvents    MessageTraceEvent[]
+  auditLogs             AuditLog[]
+  diagnosisRecords      IncidentDiagnosisRecord[]
   workspace             Workspace?            @relation(fields: [workspaceId], references: [id])
 }
 
@@ -279,6 +290,7 @@ model User {
   subscription            Subscription?
   organizationMembers     OrganizationMember[]
   orgInvitationsSent      OrganizationInvitation[] @relation("OrgInvitationsSent")
+  auditLogs               AuditLog[]
 }
 
 // ─── Better Auth Models ─────────────────────────────────────────────
@@ -361,6 +373,7 @@ model Workspace {
   webhooks                      Webhook[]
   digestSettings                WorkspaceDigestSettings?
   digestLogs                    DigestLog[]
+  diagnosisRuleConfigs          DiagnosisRuleConfig[]
   organization                  Organization              @relation(fields: [organizationId], references: [id])
 
   @@index([organizationId])
@@ -863,4 +876,121 @@ model QuizLead {
 
   @@index([email])
   @@index([createdAt])
+}
+
+/// Append-only log of operator-initiated actions a self-hosted admin
+/// (or compliance auditor) may want to inspect after the fact.
+///
+/// **Scope (v1)**: capability re-checks. The first concrete consumer
+/// is `rabbitmq.recheckCapabilities` — the operator manually
+/// triggers broker introspection, which is sensitive enough to log.
+/// Future actions (license activation, alert rule edits, role changes)
+/// extend the `kind` enum.
+///
+/// **Not** a replacement for application logs — the structured logger
+/// (Pino) already records every request. AuditLog is the operator-
+/// facing surface: queryable from the UI / portal, filtered by user,
+/// scoped to admin-relevant events, and intentionally narrow.
+///
+/// `actorUserId` is nullable to support system-triggered events later
+/// (e.g. cron-driven actions). For PR-A consumers it's always set.
+model AuditLog {
+  id           String         @id @default(uuid())
+  kind         AuditLogKind
+  actorUserId  String?
+  /// Server the action targeted, when applicable. Nullable so future
+  /// non-server-scoped actions can share the table.
+  serverId     String?
+  /// Free-form structured payload. Schema is per-`kind` — see the
+  /// `*Payload` types in `apps/api/src/services/audit/types.ts`. JSON
+  /// keeps the schema flexible for new event kinds without a migration
+  /// per shape.
+  payload      Json?
+  createdAt    DateTime       @default(now())
+
+  actor        User?          @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  server       RabbitMQServer? @relation(fields: [serverId], references: [id], onDelete: SetNull)
+
+  // Composite indexes cover the three planned query shapes (by-actor /
+  // by-server / by-kind, all newest-first). A standalone `(createdAt)`
+  // index would be redundant and pure write amplification — Postgres
+  // already has the leading `createdAt` from any of the three composites
+  // when planning a global newest-first scan. Add it back when a
+  // concrete "all activity" feed query proves the need.
+  @@index([actorUserId, createdAt])
+  @@index([serverId, createdAt])
+  @@index([kind, createdAt])
+  @@map("audit_logs")
+}
+
+/// Action types the AuditLog records. Add a new variant when a new
+/// operator action becomes auditable; extend the `AuditLogPayload`
+/// discriminated union accordingly.
+enum AuditLogKind {
+  CAPABILITY_RECHECK
+}
+
+/// Persisted diagnosis findings, deduplicated by `(serverId, fingerprint)`.
+/// Re-firing the same rule on the same target updates `lastSeenAt` rather
+/// than creating a new row — the engine writes O(rules × targets) per cold
+/// cycle and degenerates to O(updates) on warm cycles. See
+/// `apps/api/src/ee/services/incident/dedup.ts` for fingerprint composition.
+///
+/// Lifecycle: a record without a `resolvedAt` is "open"; the engine flips
+/// `resolvedAt` when the rule no longer fires for that fingerprint and the
+/// previous `lastSeenAt` is older than the dedup TTL.
+model IncidentDiagnosisRecord {
+  id             String        @id @default(uuid())
+  serverId       String
+  /// Denormalised for tenant-scoped queries without joining through server.
+  /// Kept in sync at write time (no FK).
+  workspaceId    String
+  /// Stable hash of (scope, ruleId, queueName, vhost). Identical re-firings
+  /// collide on this column and use the unique constraint below to drive
+  /// upsert. `scope` is part of the input so a queue-scoped finding can
+  /// never collide with a broker-scoped one for the same rule.
+  fingerprint    String
+  /// Discriminator: "queue" — finding ties to a specific (queueName, vhost);
+  /// "broker" — cluster-scoped (alarms, flow-control, channel leak), and
+  /// queueName/vhost are empty strings on the wire.
+  scope          String
+  ruleId         String
+  queueName      String
+  vhost          String
+  severity       AlertSeverity
+  /// Defense-in-depth length caps. Backend rules generate these strings
+  /// today, but a buggy rule emitting a multi-MB description would
+  /// otherwise persist verbatim. 2 KB is generous for human-readable
+  /// diagnostic text; larger detail belongs in linked docs.
+  description    String         @db.VarChar(2000)
+  recommendation String         @db.VarChar(2000)
+  /// When set, another rule's firing on the same target supersedes this one.
+  supersededBy   String?
+  firstSeenAt    DateTime      @default(now())
+  lastSeenAt     DateTime      @default(now())
+  resolvedAt     DateTime?
+
+  server         RabbitMQServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@unique([serverId, fingerprint])
+  @@index([workspaceId, lastSeenAt])
+  @@index([serverId, lastSeenAt])
+  @@index([resolvedAt])
+  @@map("incident_diagnosis_records")
+}
+
+/// Per-workspace, per-rule kill switch. Default enabled (a missing row
+/// means the rule is on); support / admin tooling toggles `enabled = false`
+/// to silence a rule that's misbehaving for one tenant without a release.
+model DiagnosisRuleConfig {
+  workspaceId String
+  ruleId      String
+  enabled     Boolean   @default(true)
+  updatedAt   DateTime  @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@id([workspaceId, ruleId])
+  @@index([workspaceId, enabled])
+  @@map("diagnosis_rule_configs")
 }

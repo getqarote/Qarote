@@ -77,11 +77,7 @@ async function mockConnectedStateWithClusterName(
     servers: [MOCK_SERVER],
   });
   await mockTrpcQuery(page, "rabbitmq.overview.getOverview", MOCK_OVERVIEW);
-  await mockTrpcQuery(
-    page,
-    "organization.management.getCurrent",
-    orgData
-  );
+  await mockTrpcQuery(page, "organization.management.getCurrent", orgData);
 }
 
 // ---------------------------------------------------------------------------
@@ -92,25 +88,21 @@ test.describe("Cluster Name Display @p1", () => {
   test("should display the cluster name from overview data", async ({
     adminPage,
   }) => {
-    await adminPage.evaluate(() =>
-      localStorage.removeItem("selectedServerId")
-    );
+    await adminPage.evaluate(() => localStorage.removeItem("selectedServerId"));
     await mockConnectedStateWithClusterName(adminPage);
 
     await adminPage.goto("/nodes");
     await adminPage.waitForLoadState("domcontentloaded");
 
-    await expect(
-      adminPage.getByText("rabbit@node1.example.com")
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(adminPage.getByText("rabbit@node1.example.com")).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test("should display a 'Cluster name' label alongside the name", async ({
     adminPage,
   }) => {
-    await adminPage.evaluate(() =>
-      localStorage.removeItem("selectedServerId")
-    );
+    await adminPage.evaluate(() => localStorage.removeItem("selectedServerId"));
     await mockConnectedStateWithClusterName(adminPage);
 
     await adminPage.goto("/nodes");
@@ -124,18 +116,16 @@ test.describe("Cluster Name Display @p1", () => {
   test("should not show edit button when org role is MEMBER", async ({
     adminPage,
   }) => {
-    await adminPage.evaluate(() =>
-      localStorage.removeItem("selectedServerId")
-    );
+    await adminPage.evaluate(() => localStorage.removeItem("selectedServerId"));
     await mockConnectedStateWithClusterName(adminPage, MOCK_ORG_MEMBER);
 
     await adminPage.goto("/nodes");
     await adminPage.waitForLoadState("domcontentloaded");
 
     // Cluster name should still be visible
-    await expect(
-      adminPage.getByText("rabbit@node1.example.com")
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(adminPage.getByText("rabbit@node1.example.com")).toBeVisible({
+      timeout: 15_000,
+    });
 
     // But the pencil edit button must not exist
     await expect(
@@ -150,9 +140,7 @@ test.describe("Cluster Name Display @p1", () => {
 
 test.describe("Cluster Name Edit Button Access Control @p1", () => {
   test("OWNER sees the edit (pencil) button", async ({ adminPage }) => {
-    await adminPage.evaluate(() =>
-      localStorage.removeItem("selectedServerId")
-    );
+    await adminPage.evaluate(() => localStorage.removeItem("selectedServerId"));
     await mockConnectedStateWithClusterName(adminPage, MOCK_ORG_OWNER);
 
     await adminPage.goto("/nodes");
@@ -164,9 +152,7 @@ test.describe("Cluster Name Edit Button Access Control @p1", () => {
   });
 
   test("ADMIN sees the edit (pencil) button", async ({ adminPage }) => {
-    await adminPage.evaluate(() =>
-      localStorage.removeItem("selectedServerId")
-    );
+    await adminPage.evaluate(() => localStorage.removeItem("selectedServerId"));
     await mockConnectedStateWithClusterName(adminPage, MOCK_ORG_ADMIN);
 
     await adminPage.goto("/nodes");
@@ -202,37 +188,29 @@ test.describe("Cluster Name Edit Button Access Control @p1", () => {
 
 test.describe("Cluster Name Inline Edit @p1", () => {
   test.beforeEach(async ({ adminPage }) => {
-    await adminPage.evaluate(() =>
-      localStorage.removeItem("selectedServerId")
-    );
+    await adminPage.evaluate(() => localStorage.removeItem("selectedServerId"));
     await mockConnectedStateWithClusterName(adminPage, MOCK_ORG_OWNER);
     await adminPage.goto("/nodes");
     await adminPage.waitForLoadState("domcontentloaded");
 
     // Wait for the cluster name to appear before each test
-    await expect(
-      adminPage.getByText("rabbit@node1.example.com")
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(adminPage.getByText("rabbit@node1.example.com")).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test("clicking edit reveals the input field pre-populated with current name", async ({
     adminPage,
   }) => {
-    await adminPage
-      .getByRole("button", { name: /edit cluster name/i })
-      .click();
+    await adminPage.getByRole("button", { name: /edit cluster name/i }).click();
 
     const input = adminPage.getByRole("textbox");
     await expect(input).toBeVisible({ timeout: 5_000 });
     await expect(input).toHaveValue("rabbit@node1.example.com");
   });
 
-  test("clicking edit shows Save and Cancel buttons", async ({
-    adminPage,
-  }) => {
-    await adminPage
-      .getByRole("button", { name: /edit cluster name/i })
-      .click();
+  test("clicking edit shows Save and Cancel buttons", async ({ adminPage }) => {
+    await adminPage.getByRole("button", { name: /edit cluster name/i }).click();
 
     await expect(
       adminPage.getByRole("button", { name: /^save$/i })
@@ -243,9 +221,7 @@ test.describe("Cluster Name Inline Edit @p1", () => {
   });
 
   test("clicking edit hides the pencil button", async ({ adminPage }) => {
-    await adminPage
-      .getByRole("button", { name: /edit cluster name/i })
-      .click();
+    await adminPage.getByRole("button", { name: /edit cluster name/i }).click();
 
     await expect(
       adminPage.getByRole("button", { name: /edit cluster name/i })
@@ -255,9 +231,7 @@ test.describe("Cluster Name Inline Edit @p1", () => {
   test("pressing Escape cancels editing and restores display mode", async ({
     adminPage,
   }) => {
-    await adminPage
-      .getByRole("button", { name: /edit cluster name/i })
-      .click();
+    await adminPage.getByRole("button", { name: /edit cluster name/i }).click();
 
     const input = adminPage.getByRole("textbox");
     await expect(input).toBeVisible({ timeout: 5_000 });
@@ -265,18 +239,14 @@ test.describe("Cluster Name Inline Edit @p1", () => {
     await input.press("Escape");
 
     await expect(input).not.toBeVisible({ timeout: 5_000 });
-    await expect(
-      adminPage.getByText("rabbit@node1.example.com")
-    ).toBeVisible();
+    await expect(adminPage.getByText("rabbit@node1.example.com")).toBeVisible();
     await expect(
       adminPage.getByRole("button", { name: /edit cluster name/i })
     ).toBeVisible();
   });
 
   test("clicking Cancel restores display mode", async ({ adminPage }) => {
-    await adminPage
-      .getByRole("button", { name: /edit cluster name/i })
-      .click();
+    await adminPage.getByRole("button", { name: /edit cluster name/i }).click();
 
     await expect(adminPage.getByRole("textbox")).toBeVisible({
       timeout: 5_000,
@@ -292,12 +262,8 @@ test.describe("Cluster Name Inline Edit @p1", () => {
     ).toBeVisible();
   });
 
-  test("Save button is disabled when input is empty", async ({
-    adminPage,
-  }) => {
-    await adminPage
-      .getByRole("button", { name: /edit cluster name/i })
-      .click();
+  test("Save button is disabled when input is empty", async ({ adminPage }) => {
+    await adminPage.getByRole("button", { name: /edit cluster name/i }).click();
 
     const input = adminPage.getByRole("textbox");
     await expect(input).toBeVisible({ timeout: 5_000 });
@@ -319,28 +285,22 @@ test.describe("Cluster Name Save Success @p1", () => {
   test("pressing Enter submits and shows success toast", async ({
     adminPage,
   }) => {
-    await adminPage.evaluate(() =>
-      localStorage.removeItem("selectedServerId")
-    );
+    await adminPage.evaluate(() => localStorage.removeItem("selectedServerId"));
     await mockConnectedStateWithClusterName(adminPage, MOCK_ORG_OWNER);
 
     // Mock the mutation to succeed
-    await mockTrpcQuery(
-      adminPage,
-      "rabbitmq.overview.setClusterName",
-      { success: true }
-    );
+    await mockTrpcQuery(adminPage, "rabbitmq.overview.setClusterName", {
+      success: true,
+    });
 
     await adminPage.goto("/nodes");
     await adminPage.waitForLoadState("domcontentloaded");
 
-    await expect(
-      adminPage.getByText("rabbit@node1.example.com")
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(adminPage.getByText("rabbit@node1.example.com")).toBeVisible({
+      timeout: 15_000,
+    });
 
-    await adminPage
-      .getByRole("button", { name: /edit cluster name/i })
-      .click();
+    await adminPage.getByRole("button", { name: /edit cluster name/i }).click();
 
     const input = adminPage.getByRole("textbox");
     await expect(input).toBeVisible({ timeout: 5_000 });
@@ -348,35 +308,29 @@ test.describe("Cluster Name Save Success @p1", () => {
     await input.press("Enter");
 
     // Success toast
-    await expect(
-      adminPage.getByText(/cluster name updated/i)
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(adminPage.getByText(/cluster name updated/i)).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("clicking Save button submits and shows success toast", async ({
     adminPage,
   }) => {
-    await adminPage.evaluate(() =>
-      localStorage.removeItem("selectedServerId")
-    );
+    await adminPage.evaluate(() => localStorage.removeItem("selectedServerId"));
     await mockConnectedStateWithClusterName(adminPage, MOCK_ORG_OWNER);
 
-    await mockTrpcQuery(
-      adminPage,
-      "rabbitmq.overview.setClusterName",
-      { success: true }
-    );
+    await mockTrpcQuery(adminPage, "rabbitmq.overview.setClusterName", {
+      success: true,
+    });
 
     await adminPage.goto("/nodes");
     await adminPage.waitForLoadState("domcontentloaded");
 
-    await expect(
-      adminPage.getByText("rabbit@node1.example.com")
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(adminPage.getByText("rabbit@node1.example.com")).toBeVisible({
+      timeout: 15_000,
+    });
 
-    await adminPage
-      .getByRole("button", { name: /edit cluster name/i })
-      .click();
+    await adminPage.getByRole("button", { name: /edit cluster name/i }).click();
 
     const input = adminPage.getByRole("textbox");
     await expect(input).toBeVisible({ timeout: 5_000 });
@@ -384,33 +338,27 @@ test.describe("Cluster Name Save Success @p1", () => {
 
     await adminPage.getByRole("button", { name: /^save$/i }).click();
 
-    await expect(
-      adminPage.getByText(/cluster name updated/i)
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(adminPage.getByText(/cluster name updated/i)).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("editing mode closes after successful save", async ({ adminPage }) => {
-    await adminPage.evaluate(() =>
-      localStorage.removeItem("selectedServerId")
-    );
+    await adminPage.evaluate(() => localStorage.removeItem("selectedServerId"));
     await mockConnectedStateWithClusterName(adminPage, MOCK_ORG_OWNER);
 
-    await mockTrpcQuery(
-      adminPage,
-      "rabbitmq.overview.setClusterName",
-      { success: true }
-    );
+    await mockTrpcQuery(adminPage, "rabbitmq.overview.setClusterName", {
+      success: true,
+    });
 
     await adminPage.goto("/nodes");
     await adminPage.waitForLoadState("domcontentloaded");
 
-    await expect(
-      adminPage.getByText("rabbit@node1.example.com")
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(adminPage.getByText("rabbit@node1.example.com")).toBeVisible({
+      timeout: 15_000,
+    });
 
-    await adminPage
-      .getByRole("button", { name: /edit cluster name/i })
-      .click();
+    await adminPage.getByRole("button", { name: /edit cluster name/i }).click();
 
     const input = adminPage.getByRole("textbox");
     await expect(input).toBeVisible({ timeout: 5_000 });
@@ -428,9 +376,7 @@ test.describe("Cluster Name Save Success @p1", () => {
 
 test.describe("Cluster Name Save Error @p1", () => {
   test("failed mutation shows error toast", async ({ adminPage }) => {
-    await adminPage.evaluate(() =>
-      localStorage.removeItem("selectedServerId")
-    );
+    await adminPage.evaluate(() => localStorage.removeItem("selectedServerId"));
     await mockConnectedStateWithClusterName(adminPage, MOCK_ORG_OWNER);
 
     await mockTrpcMutationError(
@@ -442,13 +388,11 @@ test.describe("Cluster Name Save Error @p1", () => {
     await adminPage.goto("/nodes");
     await adminPage.waitForLoadState("domcontentloaded");
 
-    await expect(
-      adminPage.getByText("rabbit@node1.example.com")
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(adminPage.getByText("rabbit@node1.example.com")).toBeVisible({
+      timeout: 15_000,
+    });
 
-    await adminPage
-      .getByRole("button", { name: /edit cluster name/i })
-      .click();
+    await adminPage.getByRole("button", { name: /edit cluster name/i }).click();
 
     const input = adminPage.getByRole("textbox");
     await expect(input).toBeVisible({ timeout: 5_000 });
@@ -463,9 +407,7 @@ test.describe("Cluster Name Save Error @p1", () => {
   test("editing mode remains open after a failed save", async ({
     adminPage,
   }) => {
-    await adminPage.evaluate(() =>
-      localStorage.removeItem("selectedServerId")
-    );
+    await adminPage.evaluate(() => localStorage.removeItem("selectedServerId"));
     await mockConnectedStateWithClusterName(adminPage, MOCK_ORG_OWNER);
 
     await mockTrpcMutationError(
@@ -477,13 +419,11 @@ test.describe("Cluster Name Save Error @p1", () => {
     await adminPage.goto("/nodes");
     await adminPage.waitForLoadState("domcontentloaded");
 
-    await expect(
-      adminPage.getByText("rabbit@node1.example.com")
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(adminPage.getByText("rabbit@node1.example.com")).toBeVisible({
+      timeout: 15_000,
+    });
 
-    await adminPage
-      .getByRole("button", { name: /edit cluster name/i })
-      .click();
+    await adminPage.getByRole("button", { name: /edit cluster name/i }).click();
 
     const input = adminPage.getByRole("textbox");
     await expect(input).toBeVisible({ timeout: 5_000 });

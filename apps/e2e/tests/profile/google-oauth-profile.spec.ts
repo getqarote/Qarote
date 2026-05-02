@@ -42,9 +42,7 @@ test.describe("Google OAuth Profile Security @p1", () => {
     ).toBeVisible({ timeout: 15_000 });
 
     // Should NOT see password change form
-    await expect(
-      adminPage.getByText(/change password/i)
-    ).not.toBeVisible();
+    await expect(adminPage.getByText(/change password/i)).not.toBeVisible();
 
     // Should NOT see email change form
     await expect(
@@ -60,13 +58,11 @@ test.describe("Google OAuth Profile Security @p1", () => {
     await adminPage.waitForLoadState("domcontentloaded");
 
     // Should see the Security Settings section with password change
-    await expect(
-      adminPage.getByText(/security settings/i)
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(adminPage.getByText(/security settings/i)).toBeVisible({
+      timeout: 15_000,
+    });
 
-    await expect(
-      adminPage.getByText(/change password/i)
-    ).toBeVisible();
+    await expect(adminPage.getByText(/change password/i)).toBeVisible();
 
     // Should NOT see "managed by Google" card
     await expect(

@@ -24,7 +24,7 @@ vi.mock("@/services/license/license-crypto.service", () => ({
 }));
 
 const mockInvalidateLicenseCache = vi.fn();
-vi.mock("@/core/feature-flags", () => ({
+vi.mock("@/services/feature-gate/license", () => ({
   invalidateLicenseCache: () => mockInvalidateLicenseCache(),
 }));
 

@@ -14,14 +14,10 @@ test.describe("Public Config Endpoint @p0 @smoke", () => {
     expect(typeof config.registrationEnabled).toBe("boolean");
     expect(typeof config.emailEnabled).toBe("boolean");
     expect(typeof config.oauthEnabled).toBe("boolean");
-
   });
 
   test("should reflect selfhosted defaults @selfhosted", async () => {
-    test.skip(
-      process.env.DEPLOYMENT_MODE === "cloud",
-      "Selfhosted mode only"
-    );
+    test.skip(process.env.DEPLOYMENT_MODE === "cloud", "Selfhosted mode only");
 
     const response = await fetch(`${apiUrl}/trpc/public.getConfig`);
     const body = await response.json();

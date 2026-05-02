@@ -114,9 +114,9 @@ test.describe("Definitions Import @p1", () => {
       .getByRole("button", { name: /upload broker definitions/i })
       .click();
 
-    await expect(
-      adminPage.getByRole("dialog")
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(adminPage.getByRole("dialog")).toBeVisible({
+      timeout: 10_000,
+    });
     await expect(
       adminPage.getByRole("button", { name: /yes|confirm|import|overwrite/i })
     ).toBeVisible({ timeout: 10_000 });

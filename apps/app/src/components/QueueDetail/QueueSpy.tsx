@@ -3,6 +3,9 @@ import { useTranslation } from "react-i18next";
 
 import { AlertTriangle, ArrowDown, Loader2, Radio, Zap } from "lucide-react";
 
+import { queueSubject } from "@/lib/feature-gate/types";
+
+import { FeatureGate } from "@/components/feature-gate/FeatureGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PixelTrash } from "@/components/ui/pixel-trash";
@@ -16,9 +19,36 @@ interface QueueSpyProps {
   serverId: string;
   queueName: string;
   vhost: string;
+  /**
+   * RabbitMQ queue type. Used to gate the spy: streams use offset-based
+   * consumption and can't be tapped via the binding-mirror mechanism, so
+   * the capability axis blocks `message_spy` for stream queues.
+   */
+  queueType?: "classic" | "quorum" | "stream";
 }
 
-export function QueueSpy({ serverId, queueName, vhost }: QueueSpyProps) {
+export function QueueSpy({
+  serverId,
+  queueName,
+  vhost,
+  queueType,
+}: QueueSpyProps) {
+  return (
+    <FeatureGate
+      feature="message_spy"
+      serverId={serverId}
+      subject={queueSubject(queueType)}
+    >
+      <QueueSpyInner serverId={serverId} queueName={queueName} vhost={vhost} />
+    </FeatureGate>
+  );
+}
+
+function QueueSpyInner({
+  serverId,
+  queueName,
+  vhost,
+}: Omit<QueueSpyProps, "queueType">) {
   const { t } = useTranslation("queues");
   /** Must match FREE_SPY_PREVIEW_COUNT in queues.ts */
   const FREE_SPY_PREVIEW_COUNT = 5;

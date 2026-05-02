@@ -112,7 +112,13 @@ export async function mockTrpcMutationError(
       const batch = procedures.map((_, i) =>
         i === index
           ? errorEntry
-          : { error: { code: -32603, message: "mocked", data: { code: "INTERNAL_SERVER_ERROR", httpStatus: 500 } } }
+          : {
+              error: {
+                code: -32603,
+                message: "mocked",
+                data: { code: "INTERNAL_SERVER_ERROR", httpStatus: 500 },
+              },
+            }
       );
       return route.fulfill({
         status: 200,

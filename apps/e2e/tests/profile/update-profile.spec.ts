@@ -43,9 +43,7 @@ test.describe("Profile Management @p2", () => {
     await adminPage.waitForLoadState("domcontentloaded");
 
     // Feedback form should be visible
-    await expect(
-      adminPage.locator("form, textarea").first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(adminPage.locator("form, textarea").first()).toBeVisible({ timeout: 10_000 });
   });
 
   test("readonly user should see profile section", async ({ readonlyPage }) => {
