@@ -13,3 +13,35 @@
  */
 
 import "@testing-library/jest-dom/vitest";
+
+// jsdom polyfills for Radix UI primitives.
+//
+// Radix consumers (Select, Popover, Dialog, AlertDialog, Tabs, Accordion)
+// call DOM APIs that jsdom does not implement during keyboard / pointer
+// interactions. The shims below are pure no-ops — we don't simulate
+// the underlying behaviour, we just prevent throws so RTL tests can
+// drive Radix components.
+//
+//   hasPointerCapture / setPointerCapture / releasePointerCapture
+//     - Used by Select / Popover / Dialog when handling pointer-down.
+//       Without these, userEvent.click on a SelectTrigger throws
+//       `target.hasPointerCapture is not a function`.
+//   scrollIntoView
+//     - Used by Select / Tabs to scroll the active item into view on
+//       open. Without this, opening a popover throws.
+//
+// When jsdom ships native support for these, the shims become removable.
+if (typeof window !== "undefined") {
+  if (!Element.prototype.hasPointerCapture) {
+    Element.prototype.hasPointerCapture = () => false;
+  }
+  if (!Element.prototype.releasePointerCapture) {
+    Element.prototype.releasePointerCapture = () => {};
+  }
+  if (!Element.prototype.setPointerCapture) {
+    Element.prototype.setPointerCapture = () => {};
+  }
+  if (!Element.prototype.scrollIntoView) {
+    Element.prototype.scrollIntoView = () => {};
+  }
+}

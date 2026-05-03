@@ -407,6 +407,10 @@ export const metricsRouter = router({
           z.literal(24),
           z.literal(72),
           z.literal(168),
+          // 720 (30 d) is the ENTERPRISE-tier ceiling. Plan-aware
+          // clamping happens server-side via `resolveAllowedRange`;
+          // this schema just gates the wire shape.
+          z.literal(720),
         ]),
       })
     )
@@ -480,6 +484,7 @@ export const metricsRouter = router({
           z.literal(24),
           z.literal(72),
           z.literal(168),
+          z.literal(720),
         ]),
         centeredAt: z.string().datetime().optional(),
       })

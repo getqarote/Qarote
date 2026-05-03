@@ -107,7 +107,10 @@
     "tags": "标签",
     "tagsPlaceholder": "添加标签...",
     "unackedWarnThreshold": "未确认消息警告阈值",
-    "unackedWarnThresholdDesc": "当未确认消息超过此阈值时，将以黄色高亮显示虚拟主机行。"
+    "unackedWarnThresholdDesc": "当未确认消息超过此阈值时，将以黄色高亮显示虚拟主机行。",
+    "traceRetentionHours": "消息追踪保留时长（小时）",
+    "traceRetentionDesc": "记录的 firehose 事件保留时长。当前套餐最长 {{max}} 小时。",
+    "traceRetentionLockedFree": "免费套餐保留时长固定为 24 小时。升级后可自定义配置。"
   },
   "team": {
     "workspaceMembersTitle": "工作区成员",

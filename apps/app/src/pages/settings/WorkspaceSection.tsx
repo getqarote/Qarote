@@ -15,7 +15,10 @@ import {
   useDeleteWorkspace,
   useUpdateWorkspace,
 } from "@/hooks/queries/useWorkspaceApi";
+import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
+
+import { UserPlan } from "@/types/plans";
 
 const WorkspaceSection = () => {
   const { t } = useTranslation("profile");
@@ -25,6 +28,17 @@ const WorkspaceSection = () => {
   const navigate = useNavigate();
   const updateWorkspaceMutation = useUpdateWorkspace();
   const deleteWorkspaceMutation = useDeleteWorkspace();
+  const { userPlan, planData } = useUser();
+  // FREE plan rejects ANY explicit `traceRetentionHours` with FORBIDDEN
+  // (workspace/management.ts:351). Don't send the field at all for FREE
+  // workspaces so unrelated edits (name, email, threshold) still go through.
+  //
+  // Read `planData` (not just `userPlan`) so we can distinguish
+  // "plan resolved as FREE" from "plan still loading and useUser
+  // defaulted to FREE". Submitting a paid-workspace edit before the
+  // plan resolves used to silently strip the retention field.
+  const planResolved = planData != null;
+  const isFreePlan = userPlan === UserPlan.FREE;
 
   const [editingWorkspace, setEditingWorkspace] = useState(false);
   const [workspaceForm, setWorkspaceForm] = useState<WorkspaceFormState>({
@@ -32,6 +46,9 @@ const WorkspaceSection = () => {
     contactEmail: "",
     tags: [],
     unackedWarnThreshold: 100,
+    // Undefined = "inherit plan default" — the input renders the
+    // effective retention until the user explicitly sets a value.
+    traceRetentionHours: undefined,
   });
 
   const profile = profileData?.user;
@@ -43,6 +60,9 @@ const WorkspaceSection = () => {
       contactEmail: workspace?.contactEmail || "",
       tags: workspace?.tags || [],
       unackedWarnThreshold: workspace?.unackedWarnThreshold ?? 100,
+      // Preserve undefined when the workspace row has no persisted
+      // value — the input then displays the plan's effective default.
+      traceRetentionHours: workspace?.traceRetentionHours,
     });
   };
 
@@ -94,6 +114,15 @@ const WorkspaceSection = () => {
         contactEmail: workspaceForm.contactEmail || undefined,
         tags: workspaceForm.tags.length > 0 ? workspaceForm.tags : undefined,
         unackedWarnThreshold: workspaceForm.unackedWarnThreshold,
+        // Only paid plans can configure retention. FREE submissions of
+        // this field — even with the same value — are rejected as
+        // FORBIDDEN by the server. Skip the field while the plan
+        // query is still loading too: `userPlan` defaults to FREE
+        // before resolution, so a paid user submitting fast would
+        // otherwise have their retention edit silently stripped.
+        ...(planResolved && !isFreePlan
+          ? { traceRetentionHours: workspaceForm.traceRetentionHours }
+          : {}),
       });
       setEditingWorkspace(false);
       await refetchWorkspace();

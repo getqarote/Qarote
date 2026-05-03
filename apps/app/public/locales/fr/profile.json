@@ -107,7 +107,10 @@
     "tags": "Étiquettes",
     "tagsPlaceholder": "Ajouter une étiquette...",
     "unackedWarnThreshold": "Seuil d'alerte non acquittés",
-    "unackedWarnThresholdDesc": "Met en évidence les lignes de vhost en jaune lorsque les messages non acquittés dépassent ce seuil."
+    "unackedWarnThresholdDesc": "Met en évidence les lignes de vhost en jaune lorsque les messages non acquittés dépassent ce seuil.",
+    "traceRetentionHours": "Rétention du Suivi des messages (heures)",
+    "traceRetentionDesc": "Durée de conservation des événements firehose enregistrés. Maximum {{max}}h sur votre plan actuel.",
+    "traceRetentionLockedFree": "La rétention du plan gratuit est fixée à 24 heures. Passez à un plan supérieur pour la configurer."
   },
   "team": {
     "workspaceMembersTitle": "Membres de l'espace de travail",

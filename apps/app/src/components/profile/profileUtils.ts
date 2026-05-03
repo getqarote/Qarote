@@ -12,6 +12,15 @@ export interface WorkspaceFormState {
   contactEmail: string;
   tags: string[];
   unackedWarnThreshold: number;
+  /**
+   * Trace retention window in hours. Server validates the value against
+   * the org's plan (FREE: locked at 24h, DEVELOPER: ≤168h, ENTERPRISE: ≤720h).
+   * Optional — undefined means "inherit the plan's effective default."
+   * The form input falls back to the effective retention so a paid
+   * workspace that hasn't customised the field shows its plan's max
+   * instead of a hardcoded 24.
+   */
+  traceRetentionHours?: number;
 }
 
 export interface InviteFormState {

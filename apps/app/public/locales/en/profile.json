@@ -107,7 +107,10 @@
     "tags": "Tags",
     "tagsPlaceholder": "Add a tag...",
     "unackedWarnThreshold": "Unacked Warning Threshold",
-    "unackedWarnThresholdDesc": "Highlight vhost rows in yellow when unacknowledged messages exceed this count."
+    "unackedWarnThresholdDesc": "Highlight vhost rows in yellow when unacknowledged messages exceed this count.",
+    "traceRetentionHours": "Message Tracing retention (hours)",
+    "traceRetentionDesc": "How long to keep recorded firehose events. Max {{max}}h on your current plan.",
+    "traceRetentionLockedFree": "Free plan retention is fixed at 24 hours. Upgrade to configure."
   },
   "team": {
     "workspaceMembersTitle": "Workspace members",

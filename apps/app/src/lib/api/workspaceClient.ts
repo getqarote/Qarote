@@ -13,6 +13,7 @@ export interface Workspace {
   ownerId?: string;
   unackedWarnThreshold?: number;
   vhostThresholds?: Record<string, number>;
+  traceRetentionHours?: number;
   createdAt: string;
   updatedAt: string;
 }
