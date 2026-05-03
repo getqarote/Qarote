@@ -12,6 +12,7 @@
   },
   "plan": {
     "featureRequiresUpgrade": "{{feature}} n'est pas disponible sur le forfait {{currentPlan}}.",
+    "limitExceeded": "Limite de {{feature}} atteinte : {{current}} sur {{max}} pour le forfait {{currentPlan}}.",
     "cta": {
       "upgrade": "Changer de forfait"
     }

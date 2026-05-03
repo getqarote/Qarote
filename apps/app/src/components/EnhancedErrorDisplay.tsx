@@ -1,73 +1,34 @@
-import { AlertTriangle, ArrowUpCircle, XCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-import { generateErrorProps } from "@/lib/error-utils";
+import { XCircle } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 
 interface EnhancedErrorDisplayProps {
-  error: Error;
-  onUpgrade?: () => void;
+  /**
+   * Human-readable error message. Used as-is — no regex parsing or
+   * plan-string extraction. Structured gate errors (license / plan /
+   * capability blocks per ADR-002) render via `<FeatureGateCard>`
+   * upstream; this component is the fallback for unstructured
+   * errors (network, auth, broker unreachable, etc.).
+   */
+  message?: string;
   className?: string;
 }
 
 export const EnhancedErrorDisplay = ({
-  error,
-  onUpgrade,
+  message,
   className,
 }: EnhancedErrorDisplayProps) => {
-  const { title, message, action, variant } = generateErrorProps(error);
-
-  const Icon = variant === "warning" ? AlertTriangle : XCircle;
-
+  const { t } = useTranslation("common");
   return (
     <Alert
-      className={`${className} ${
-        variant === "warning"
-          ? "border-warning/30 bg-warning-muted"
-          : "border-destructive/30 bg-destructive/10"
-      }`}
+      className={`${className ?? ""} border-destructive/30 bg-destructive/10`}
     >
-      <Icon
-        className={`h-4 w-4 ${
-          variant === "warning" ? "text-warning" : "text-destructive"
-        }`}
-      />
-      <AlertTitle
-        className={variant === "warning" ? "text-warning" : "text-destructive"}
-      >
-        {title}
-      </AlertTitle>
-      <AlertDescription className="space-y-3">
-        <div
-          className={
-            variant === "warning" ? "text-warning" : "text-destructive"
-          }
-        >
-          {message}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span
-            className={`text-sm ${
-              variant === "warning" ? "text-warning" : "text-destructive"
-            }`}
-          >
-            {action}
-          </span>
-
-          {variant === "warning" && onUpgrade && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onUpgrade}
-              className="border-warning/40 text-warning hover:bg-warning-muted"
-            >
-              <ArrowUpCircle className="h-3 w-3 mr-1" />
-              Upgrade Plan
-            </Button>
-          )}
-        </div>
+      <XCircle className="h-4 w-4 text-destructive" />
+      <AlertTitle className="text-destructive">{t("error")}</AlertTitle>
+      <AlertDescription className="text-destructive">
+        {message ?? t("errorDescription")}
       </AlertDescription>
     </Alert>
   );

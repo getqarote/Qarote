@@ -12,6 +12,7 @@
   },
   "plan": {
     "featureRequiresUpgrade": "{{feature}} 在 {{currentPlan}} 计划中不可用。",
+    "limitExceeded": "已达到 {{feature}} 限制：{{currentPlan}} 计划下 {{current}}/{{max}}。",
     "cta": {
       "upgrade": "升级计划"
     }

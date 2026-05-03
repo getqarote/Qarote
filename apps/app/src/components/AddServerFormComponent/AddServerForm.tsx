@@ -6,6 +6,8 @@ import { useNavigate } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 
+import { readGateError } from "@/lib/feature-gate/readGateError";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -183,6 +185,7 @@ export const AddServerForm = ({
         status: "error",
         message:
           error instanceof Error ? error.message : t("connectionTestFailed"),
+        gate: readGateError(error) ?? undefined,
       });
     } finally {
       setIsTestingConnection(false);
@@ -244,6 +247,7 @@ export const AddServerForm = ({
             : mode === "edit"
               ? t("failedToUpdateServer")
               : t("failedToCreateServer"),
+        gate: readGateError(error) ?? undefined,
       });
     } finally {
       setIsLoading(false);
@@ -303,7 +307,6 @@ export const AddServerForm = ({
                   <ServerDetails form={form} alwaysExpanded />
                   <ConnectionStatusDisplay
                     connectionStatus={connectionStatus}
-                    onUpgrade={handleUpgrade}
                   />
                 </>
               )}
@@ -326,7 +329,6 @@ export const AddServerForm = ({
                   />
                   <ConnectionStatusDisplay
                     connectionStatus={connectionStatus}
-                    onUpgrade={handleUpgrade}
                   />
                   <PlanVersionSupport />
                 </>

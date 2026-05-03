@@ -46,7 +46,6 @@ vi.mock("@/config/deployment", () => ({
 const mockGetOrgPlan = vi.fn();
 vi.mock("@/services/plan/plan.service", () => ({
   getOrgPlan: (...a: unknown[]) => mockGetOrgPlan(...a),
-  PlanErrorCode: { PLAN_RESTRICTION: "PLAN_RESTRICTION" },
   PlanLimitExceededError: class extends Error {},
   PlanValidationError: class extends Error {},
 }));

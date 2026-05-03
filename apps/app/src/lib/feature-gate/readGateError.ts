@@ -18,6 +18,12 @@ interface ErrorWithData {
   } | null;
 }
 
+const BLOCKED_BY_VALUES: ReadonlySet<string> = new Set([
+  "license",
+  "plan",
+  "capability",
+]);
+
 /**
  * `unknown` because TanStack Query and tRPC client surface errors as
  * `unknown`/`Error` depending on the API. We accept anything and narrow.
@@ -28,10 +34,13 @@ export function readGateError(error: unknown): GateErrorPayload | null {
   if (!data || typeof data !== "object") return null;
   const gate = data.gate;
   if (!gate || typeof gate !== "object") return null;
-  // Spot-check required fields to defend against malformed payloads in
-  // dev/test environments.
+  // Spot-check required fields to defend against malformed payloads.
+  // `blockedBy` is the discriminant `<FeatureGateCard>` indexes into
+  // for the icon/title — a stray value would render undefined and
+  // crash the card.
   if (
     typeof gate.blockedBy !== "string" ||
+    !BLOCKED_BY_VALUES.has(gate.blockedBy) ||
     typeof gate.feature !== "string" ||
     typeof gate.reasonKey !== "string"
   ) {

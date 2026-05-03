@@ -53,7 +53,6 @@ vi.mock("@/middlewares/workspace", () => ({
 vi.mock("@/services/plan/plan.service", () => ({
   getPlanFeatures: vi.fn().mockReturnValue({ maxWorkspaces: 3 }),
   validateWorkspaceCreation: vi.fn(),
-  PlanErrorCode: { PLAN_RESTRICTION: "PLAN_RESTRICTION" },
   PlanLimitExceededError: class extends Error {},
   PlanValidationError: class extends Error {},
 }));

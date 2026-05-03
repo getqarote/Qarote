@@ -9,13 +9,14 @@ import { UserPlan } from "@/generated/prisma/client";
 // Re-export for convenience
 export { getPlanFeatures, PLAN_FEATURES } from "./features.service";
 
-// Error codes enum
-export enum PlanErrorCode {
-  PLAN_RESTRICTION = "PLAN_RESTRICTION",
-  PLAN_LIMIT_EXCEEDED = "PLAN_LIMIT_EXCEEDED",
-}
-
-// Error classes
+// Error classes —
+// surfaced over tRPC via the unified `gate` wire shape (ADR-002).
+// Translation into a `BlockedGate` and use of `throwGateError` is
+// restricted to the validation-middleware layer (`planValidationProcedure`,
+// `adminPlanValidationProcedure` in `trpc.ts`, plus any future
+// gate-translation middleware that uses the same helper). Direct
+// catch-and-rethrow in router or service code is a smell — let the
+// middleware do it so every call site emits the same wire shape.
 export class PlanValidationError extends Error {
   constructor(
     public feature: string,

@@ -13,10 +13,6 @@ vi.mock("@/middlewares/workspace", () => ({
 vi.mock("@/services/plan/plan.service", () => ({
   PlanValidationError: class extends Error {},
   PlanLimitExceededError: class extends Error {},
-  PlanErrorCode: {
-    PLAN_RESTRICTION: "PLAN_RESTRICTION",
-    PLAN_LIMIT_EXCEEDED: "PLAN_LIMIT_EXCEEDED",
-  },
 }));
 
 const { publicOrgInvitationRouter } = await import("../org-invitation");

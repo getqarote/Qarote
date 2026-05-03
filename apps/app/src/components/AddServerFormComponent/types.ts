@@ -1,6 +1,16 @@
+import type { GateErrorPayload } from "@/lib/feature-gate/types";
+
 export interface ConnectionStatus {
   status: "idle" | "success" | "error";
   message?: string;
+  /**
+   * Structured gate payload extracted from the thrown error at the catch
+   * boundary via `readGateError`. Storing the narrow shape (instead of
+   * the raw `unknown`) keeps `TRPCClientError` cause chains and request
+   * payloads from being retained on form state and serialised by
+   * downstream loggers.
+   */
+  gate?: GateErrorPayload;
   details?: {
     version?: string;
     cluster_name?: string;

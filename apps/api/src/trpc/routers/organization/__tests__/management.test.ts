@@ -13,10 +13,6 @@ vi.mock("@/services/plan/plan.service", () => ({
   UserPlan: { FREE: "FREE", DEVELOPER: "DEVELOPER", ENTERPRISE: "ENTERPRISE" },
   PlanValidationError: class extends Error {},
   PlanLimitExceededError: class extends Error {},
-  PlanErrorCode: {
-    PLAN_RESTRICTION: "PLAN_RESTRICTION",
-    PLAN_LIMIT_EXCEEDED: "PLAN_LIMIT_EXCEEDED",
-  },
 }));
 
 vi.mock("@/middlewares/workspace", () => ({

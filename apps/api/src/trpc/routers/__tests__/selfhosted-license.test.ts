@@ -46,7 +46,6 @@ vi.mock("../../middlewares/rateLimiter", () => ({
 
 // Mock plan service (imported by trpc.ts)
 vi.mock("@/services/plan/plan.service", () => ({
-  PlanErrorCode: { PLAN_RESTRICTION: "PLAN_RESTRICTION" },
   PlanLimitExceededError: class extends Error {},
   PlanValidationError: class extends Error {},
 }));

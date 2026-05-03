@@ -6,12 +6,11 @@ import { logger } from "@/core/logger";
 // Deep import: only pulls in error.ts so test mocks of upstream modules
 // (prisma, config, plan.service) are not transitively required for any
 // procedure that simply uses the errorFormatter.
-import { extractGatePayload } from "@/services/feature-gate/error";
 import {
-  PlanErrorCode,
-  PlanLimitExceededError,
-  PlanValidationError,
-} from "@/services/plan/plan.service";
+  extractGatePayload,
+  throwGateError,
+} from "@/services/feature-gate/error";
+import { planErrorToBlockedGate } from "@/services/plan/plan-gate";
 
 import { hasWorkspaceAccess } from "@/middlewares/workspace";
 
@@ -314,87 +313,30 @@ export const workspaceProcedure = rateLimitedProcedure.use(async (opts) => {
 });
 
 /**
- * Plan validation procedure - wraps procedures that need plan validation
- * Catches PlanValidationError and PlanLimitExceededError and converts them to TRPCError
+ * Plan validation procedure - wraps procedures that need plan validation.
+ * Catches PlanValidationError / PlanLimitExceededError and emits the
+ * unified gate-error wire shape via `throwGateError` (ADR-002).
  */
 export const planValidationProcedure = protectedProcedure.use(async (opts) => {
   try {
     return await opts.next();
   } catch (error) {
-    if (error instanceof PlanValidationError) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: error.message,
-        cause: {
-          code: PlanErrorCode.PLAN_RESTRICTION,
-          feature: error.feature,
-          currentPlan: error.currentPlan,
-          requiredPlan: error.requiredPlan,
-          currentCount: error.currentCount,
-          limit: error.limit,
-          details: error.details,
-        },
-      });
-    }
-
-    if (error instanceof PlanLimitExceededError) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: error.message,
-        cause: {
-          code: PlanErrorCode.PLAN_LIMIT_EXCEEDED,
-          feature: error.feature,
-          currentCount: error.currentCount,
-          limit: error.limit,
-          currentPlan: error.currentPlan,
-        },
-      });
-    }
-
-    // Re-throw other errors
+    const gate = planErrorToBlockedGate(error);
+    if (gate) throwGateError(gate);
     throw error;
   }
 });
 
 /**
- * Admin procedure with plan validation
- * Combines admin role check and plan validation error handling
+ * Admin procedure with plan validation. Combines admin role check and
+ * plan validation error handling.
  */
 export const adminPlanValidationProcedure = adminProcedure.use(async (opts) => {
   try {
     return await opts.next();
   } catch (error) {
-    if (error instanceof PlanValidationError) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: error.message,
-        cause: {
-          code: PlanErrorCode.PLAN_RESTRICTION,
-          feature: error.feature,
-          currentPlan: error.currentPlan,
-          requiredPlan: error.requiredPlan,
-          currentCount: error.currentCount,
-          limit: error.limit,
-          details: error.details,
-        },
-      });
-    }
-
-    if (error instanceof PlanLimitExceededError) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: error.message,
-        cause: {
-          code: PlanErrorCode.PLAN_LIMIT_EXCEEDED,
-          feature: error.feature,
-          currentCount: error.currentCount,
-          limit: error.limit,
-          currentPlan: error.currentPlan,
-        },
-      });
-    }
-
-    // Re-throw other errors
+    const gate = planErrorToBlockedGate(error);
+    if (gate) throwGateError(gate);
     throw error;
   }
 });
