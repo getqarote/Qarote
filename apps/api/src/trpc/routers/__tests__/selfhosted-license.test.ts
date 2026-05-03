@@ -23,9 +23,9 @@ vi.mock("@/services/license/license-crypto.service", () => ({
   verifyLicenseJwt: (...args: unknown[]) => mockVerifyLicenseJwt(...args),
 }));
 
-const mockInvalidateLicenseCache = vi.fn();
-vi.mock("@/services/feature-gate/license", () => ({
-  invalidateLicenseCache: () => mockInvalidateLicenseCache(),
+const mockBroadcastLicenseInvalidation = vi.fn();
+vi.mock("@/services/feature-gate/license-invalidation", () => ({
+  broadcastLicenseInvalidation: () => mockBroadcastLicenseInvalidation(),
 }));
 
 let mockSelfHostedMode = true;
@@ -115,7 +115,7 @@ describe("selfhostedLicenseRouter", () => {
           create: { key: "license_jwt", value: "valid-jwt" },
         })
       );
-      expect(mockInvalidateLicenseCache).toHaveBeenCalled();
+      expect(mockBroadcastLicenseInvalidation).toHaveBeenCalled();
       expect(result.tier).toBe("DEVELOPER");
       expect(result.features).toEqual(["alerting", "slack_integration"]);
     });
@@ -199,7 +199,7 @@ describe("selfhostedLicenseRouter", () => {
       expect(mockDelete).toHaveBeenCalledWith({
         where: { key: "license_jwt" },
       });
-      expect(mockInvalidateLicenseCache).toHaveBeenCalled();
+      expect(mockBroadcastLicenseInvalidation).toHaveBeenCalled();
       expect(result).toEqual({ success: true });
     });
 

@@ -20,6 +20,10 @@ import { configurePostgresTimeouts, prisma } from "@/core/prisma";
 import { getDirname } from "@/core/utils";
 
 import { DeploymentService } from "@/services/deployment/deployment.service";
+import {
+  startLicenseInvalidationListener,
+  stopLicenseInvalidationListener,
+} from "@/services/feature-gate/license-invalidation";
 import { posthog } from "@/services/posthog";
 
 import { corsMiddleware } from "@/middlewares/cors";
@@ -165,6 +169,12 @@ async function startServer() {
       );
     }
 
+    // Multi-process license cache coherency: subscribe to NOTIFY so the
+    // in-process cache clears when peers (other web replicas, the alert
+    // worker, etc.) activate / deactivate a license. See
+    // services/feature-gate/license-invalidation.ts for the rationale.
+    await startLicenseInvalidationListener();
+
     // Bootstrap admin account on first boot (if configured via setup CLI)
     await bootstrapAdmin();
 
@@ -202,6 +212,7 @@ async function startServer() {
 const shutdown = async (signal: string) => {
   logger.info({ signal }, "Shutting down server...");
   const results = await Promise.allSettled([
+    stopLicenseInvalidationListener(),
     prisma.$disconnect(),
     posthog?.shutdown(),
   ]);

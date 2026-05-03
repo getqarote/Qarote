@@ -668,6 +668,17 @@ If you run more than one Qarote replica behind a load balancer, schema and behav
 
 The practical recommendation: deploy during low-traffic windows and let the load balancer drain connections (30s grace) before terminating each replica. This keeps tap/recording session interruptions to the cycle window itself.
 
+### License Cache Coherency
+
+Each Qarote process keeps a 60-second in-memory cache of the active license JWT. When you activate or deactivate a license, peer processes (other web replicas, the alert worker, the digest worker) need to clear theirs so they stop serving stale entitlement decisions — for example, the alert worker continuing to send Slack/webhook notifications under a deactivated license.
+
+Qarote uses Postgres `LISTEN`/`NOTIFY` on the `license_invalidated` channel for this. No additional infrastructure is required, but two operational notes apply:
+
+- **PgBouncer in transaction-pooling mode breaks LISTEN.** Each query may be assigned to a different backend, so the LISTEN session does not persist between commands. If PgBouncer fronts your database, either switch to **session pooling** for Qarote's connection, or have Qarote connect directly to Postgres on a separate URL. Dokku-managed PG, RDS, and Cloud SQL accept both modes.
+- **Failure mode is graceful.** If `NOTIFY` cannot be delivered, peers will still resync on the next cache miss after the 60-second TTL. The window during which a stale license can be observed widens to up to 60 seconds. Logs include a `license-invalidation: NOTIFY failed` warn line on the originating process when this happens.
+
+The mechanism is automatic and requires no operator configuration as long as your Postgres user can issue `NOTIFY` (any role with `CONNECT` privilege can; this is the default for application roles).
+
 ## Troubleshooting
 
 ### "Exec format error" (Binary)

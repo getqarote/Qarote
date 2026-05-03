@@ -6,7 +6,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod/v4";
 
-import { invalidateLicenseCache } from "@/services/feature-gate";
+import { broadcastLicenseInvalidation } from "@/services/feature-gate/license-invalidation";
 import { verifyLicenseJwt } from "@/services/license/license-crypto.service";
 import { posthog } from "@/services/posthog";
 
@@ -53,8 +53,11 @@ export const selfhostedLicenseRouter = router({
         create: { key: "license_jwt", value: licenseKey },
       });
 
-      // Invalidate cached license so feature checks reflect immediately
-      invalidateLicenseCache();
+      // Invalidate cached license everywhere — local first, then NOTIFY
+      // so peer processes (workers, other web replicas) clear theirs too.
+      // Without the broadcast, the alert worker can keep sending Slack /
+      // webhook notifications using a stale license for up to 60 s.
+      await broadcastLicenseInvalidation();
 
       ctx.logger.info(
         { tier: payload.tier, exp: payload.exp },
@@ -133,7 +136,7 @@ export const selfhostedLicenseRouter = router({
       if (!isNotFound) throw error;
     }
 
-    invalidateLicenseCache();
+    await broadcastLicenseInvalidation();
     ctx.logger.info("License deactivated");
 
     try {
