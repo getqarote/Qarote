@@ -22,8 +22,26 @@ export default defineConfig({
     setupFiles: ["./vitest.setup.ts"],
   },
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
+    // Array form so more-specific subpath aliases are matched before the
+    // shorter package alias. @qarote/i18n is a workspace package whose
+    // `dist/` is not built during tests — point directly at the TypeScript
+    // source so component tests don't need a pre-build step.
+    alias: [
+      {
+        find: "@qarote/i18n/react",
+        replacement: path.resolve(
+          __dirname,
+          "../../packages/i18n/src/react.ts"
+        ),
+      },
+      {
+        find: "@qarote/i18n",
+        replacement: path.resolve(
+          __dirname,
+          "../../packages/i18n/src/index.ts"
+        ),
+      },
+      { find: "@", replacement: path.resolve(__dirname, "./src") },
+    ],
   },
 });
