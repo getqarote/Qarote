@@ -15,18 +15,12 @@
 export const MEMORY_WARN_PCT = 75;
 export const MEMORY_CRITICAL_PCT = 90;
 
-export type HealthTone =
+type HealthTone =
   | "text-success"
   | "text-warning"
   | "text-destructive"
   | "text-foreground"
   | "text-muted-foreground";
-
-export type HealthBgTone =
-  | "bg-success"
-  | "bg-warning"
-  | "bg-destructive"
-  | "bg-muted";
 
 /**
  * Foreground tone for a usage percentage (0–100).
@@ -47,39 +41,6 @@ export function getUsageTone(
   if (value >= critical) return "text-destructive";
   if (value >= warn) return "text-warning";
   return "text-foreground";
-}
-
-/**
- * Background tone for a usage percentage (0–100). Same threshold semantics
- * as `getUsageTone`. Used for progress bar fills and similar surfaces.
- *
- * Note: returns `bg-success` (semantic green) below the warn threshold
- * because progress bars conventionally show "filled = ok". For text where
- * "no signal" is the calm state, prefer `getUsageTone` which returns
- * `text-foreground`.
- */
-export function getUsageBgTone(
-  value: number | null | undefined,
-  { warn = 60, critical = 80 }: { warn?: number; critical?: number } = {}
-): HealthBgTone {
-  if (value == null) return "bg-muted";
-  if (value >= critical) return "bg-destructive";
-  if (value >= warn) return "bg-warning";
-  return "bg-success";
-}
-
-/**
- * Cluster health tone — applied to a 0–100 health percentage where 100 = all
- * nodes healthy. Inverted from `getUsageTone` because here higher = better.
- *
- *   100  → text-success (everything green)
- *   ≥ 80 → text-warning (some degraded)
- *   < 80 → text-destructive (critical)
- */
-export function getClusterHealthTone(percentage: number): HealthTone {
-  if (percentage >= 100) return "text-success";
-  if (percentage >= 80) return "text-warning";
-  return "text-destructive";
 }
 
 export function getClusterHealthBgClasses(

@@ -1,5 +1,14 @@
 import type { KnipConfig } from "knip";
 
+// Knip's default entry roots. Workspaces that define a custom `entry`
+// array OVERRIDE these defaults rather than extending them, so any
+// workspace listing extra runtime entries must re-include the defaults
+// or knip will silently stop tracing the standard ones.
+const DEFAULT_ENTRY = [
+  "{index,cli,main}.{js,cjs,mjs,jsx,ts,cts,mts,tsx}",
+  "src/{index,cli,main}.{js,cjs,mjs,jsx,ts,cts,mts,tsx}",
+];
+
 const config: KnipConfig = {
   workspaces: {
     "apps/app": {
@@ -10,6 +19,15 @@ const config: KnipConfig = {
     },
     "apps/web": {
       project: ["src/**/*.{ts,tsx}"],
+      // .astro files import these but knip can't scan .astro syntax
+      entry: [
+        ...DEFAULT_ENTRY,
+        "src/**/*.astro",
+        "src/components/docs/DocsToC.tsx",
+        "src/components/docs/DocsSidebar.tsx",
+        "src/lib/docs-nav.ts",
+        "src/hooks/use-mobile.tsx",
+      ],
     },
     "apps/portal": {
       project: ["src/**/*.{ts,tsx}"],
@@ -17,10 +35,32 @@ const config: KnipConfig = {
     "apps/api": {
       project: ["src/**/*.ts"],
       prisma: false, // Prisma plugin loads prisma.config.ts which requires DATABASE_URL at load time
+      // Runtime entry points: registered via Procfile / package.json scripts,
+      // not imported. Listing them here lets knip trace their import chains
+      // (services, helpers) instead of false-flagging the whole subtree.
+      //
+      // Crons match the `.cron.ts` suffix; workers are top-level `*.ts`
+      // files only. The narrow glob keeps any future `_helpers/`,
+      // `__tests__/`, or shared module under workers/ from being
+      // misclassified as an entry point.
+      entry: [
+        ...DEFAULT_ENTRY,
+        "src/cron/**/*.cron.ts",
+        "src/workers/*.ts",
+        "src/ee/cron/**/*.cron.ts",
+        "src/ee/workers/*.ts",
+        // Migration scripts run manually via `npx tsx`
+        "src/core/migrations/org-migration.ts",
+        "src/core/migrations/org-verification.ts",
+      ],
     },
     "packages/i18n": {
       project: ["src/**/*.ts"],
+      entry: [...DEFAULT_ENTRY, "src/index.ts", "src/react.ts", "src/server.ts"],
       ignoreDependencies: ["i18next", "react-i18next", "react"],
+    },
+    ".": {
+      entry: [...DEFAULT_ENTRY, "scripts/**/*.{mjs,ts}"],
     },
   },
   ignore: [
@@ -52,61 +92,8 @@ const config: KnipConfig = {
     "apps/api/src/services/feature-gate/capability-snapshot.ts",
     // Ignore API services used in tRPC type inference
     "apps/api/src/services/plan/features.service.ts",
-    // Ignore hooks used in UI components
-    "apps/web/src/hooks/use-mobile.tsx",
-    // Ignore docs components/lib used by .astro layouts (Knip doesn't scan .astro files)
-    "apps/web/src/components/docs/DocsToC.tsx",
-    "apps/web/src/components/docs/DocsSidebar.tsx",
-    "apps/web/src/lib/docs-nav.ts",
-    // Workspace invites hook — function temporarily unused after removing invite from creation forms
-    "apps/app/src/hooks/ui/useWorkspaceInvites.ts",
-    // In-progress nodes components — not yet wired into the page tree
-    "apps/app/src/components/nodes/PortsAndContexts.tsx",
-    // ChurnStatistics removed from Nodes page — preserved for relocation to the main dashboard
-    "apps/app/src/components/nodes/ChurnStatistics.tsx",
-    // In-progress policies components — DefinitionBuilder not yet wired into PolicyForm
-    "apps/app/src/components/PoliciesList/DefinitionBuilder.tsx",
-    "apps/app/src/components/PoliciesList/constants.ts",
-    // Threshold tone helpers — small library API of related helpers; some
-    // exports (getUsageBgTone, getClusterHealthTone, getClusterHealthBgClasses)
-    // are reserved for upcoming work and not yet referenced
-    "apps/app/src/lib/health-tones.ts",
     // Ignore email style exports (used in email templates but knip doesn't detect)
     "apps/api/src/services/email/shared/styles.ts",
-    // Ignore organization migration scripts (run manually via npx tsx, not imported)
-    "apps/api/src/core/migrations/org-migration.ts",
-    "apps/api/src/core/migrations/org-verification.ts",
-    // Ignore cron jobs and workers (registered at runtime, not imported)
-    "apps/api/src/cron/license-expiration-reminders.cron.ts",
-    "apps/api/src/cron/license-file-cleanup.cron.ts",
-    "apps/api/src/cron/release-notifier.cron.ts",
-    "apps/api/src/cron/server-capabilities.cron.ts",
-    "apps/api/src/workers/license-monitor.ts",
-    "apps/api/src/workers/release-notifier.ts",
-    "apps/api/src/ee/cron/daily-digest.cron.ts",
-    "apps/api/src/ee/workers/digest-monitor.ts",
-    // Ignore digest service public API types — used transitively via DigestData
-    "apps/api/src/ee/services/digest/digest.service.ts",
-    "apps/api/src/ee/services/digest/digest-sender.service.ts",
-    // EE workers (entry points via Procfile / package.json scripts)
-    "apps/api/src/ee/workers/firehose-monitor.ts",
-    // Metrics persistence worker and supporting files (entry point via Procfile)
-    "apps/api/src/ee/workers/metrics-monitor.ts",
-    "apps/api/src/ee/cron/queue-metrics.cron.ts",
-    "apps/api/src/ee/services/metrics/queue-metrics.service.ts",
-    // These files export symbols called from queue-metrics.cron.ts (ignored
-    // above as a Procfile entry point) — knip cannot trace those import chains
-    "apps/api/src/core/cache.ts",
-    "apps/api/src/ee/services/incident/incident-diagnosis.service.ts",
-    // Server-wide queue history hook — reserved for future overview page
-    "apps/app/src/hooks/queries/useServerQueueHistory.ts",
-    // Ignore i18n package exports (used by consuming apps)
-    "packages/i18n/src/react.ts",
-    "packages/i18n/src/server.ts",
-    // Ignore standalone scripts (run via CLI, not imported)
-    "scripts/validate-i18n-keys.mjs",
-    "scripts/generate-compare-og.mjs",
-    "scripts/generate-quiz-og.mjs",
     // Ignore config files
     "**/vite-env.d.ts",
     // Ignore type definitions
@@ -132,6 +119,7 @@ const config: KnipConfig = {
     // API dependencies that are used but not directly imported
     "pino-pretty", // Used in logger config
     "@react-email/components", // Used in email templates but knip doesn't detect it
+    "@playwright/test", // Imported via absolute path in scripts/generate-compare-og.mjs
     // Tailwind v4 dependencies referenced via CSS @plugin/@import directives
     "tailwindcss",
     "tailwindcss-animate",
