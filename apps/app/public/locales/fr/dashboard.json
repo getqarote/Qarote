@@ -1,4 +1,46 @@
 {
+  "home": {
+    "title": "Accueil",
+    "serverFallback": "ce broker",
+    "statusBanner": {
+      "loading": "Chargement du statut",
+      "calmHeadline": "Tout est calme sur {{serverName}}.",
+      "calmSubline": "Aucun incident actif sur les 2 dernières heures.",
+      "warningHeadline_one": "{{count}} point d'attention",
+      "warningHeadline_other": "{{count}} points d'attention",
+      "criticalHeadline_one": "{{count}} incident actif",
+      "criticalHeadline_other": "{{count}} incidents actifs",
+      "review": "Examiner",
+      "investigateNow": "Investiguer",
+      "partialData": "Statut incomplet pour {{serverName}}",
+      "partialDataDetail": "{{count}} endpoints de signal ont échoué — le diagnostic peut être partiel.",
+      "partialDataDetail_one": "{{count}} endpoint de signal a échoué — le diagnostic peut être partiel.",
+      "partialDataDetail_other": "{{count}} endpoints de signal ont échoué — le diagnostic peut être partiel.",
+      "unavailableHeadline": "Diagnostic indisponible pour {{serverName}}",
+      "unavailableSubline": "Mettez à niveau ou vérifiez les capabilities du broker pour activer le diagnostic d'incident.",
+      "regionLabel": "Vue d'ensemble du statut du broker"
+    },
+    "activeConcerns": {
+      "heading": "Points d'attention",
+      "viewAll": "Tout voir dans Diagnostic",
+      "viewAllWithOverflow": "Tout voir (+{{count}} de plus)",
+      "openInDiagnosis": "Ouvrir dans Diagnostic"
+    },
+    "activity": {
+      "label": "Activité"
+    },
+    "pulse": {
+      "ariaLabel": "Statut du digest quotidien",
+      "workspaceFallback": "votre espace de travail",
+      "invitationHeadline": "Recevez un résumé quotidien par e-mail",
+      "invitationSubline": "Un récap matinal de la santé, des alertes et de l'activité des files de {{workspace}}.",
+      "enabledHeadline": "Digest quotidien actif pour {{workspace}}",
+      "enabledSubline": "Prochain envoi vers {{time}} UTC.",
+      "enabledSublineNoTime": "Heure de livraison non encore planifiée.",
+      "setUp": "Configurer",
+      "configure": "Configurer"
+    }
+  },
   "pageTitle": "Tableau de bord",
   "pageSubtitle": "Aperçu de la santé et des performances de votre serveur RabbitMQ",
   "rabbitMQDashboard": "Tableau de bord",

@@ -1,3 +1,4 @@
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const ECOSYSTEM_LIBRARIES = [
@@ -9,15 +10,66 @@ const ECOSYSTEM_LIBRARIES = [
   "amqp (Go)",
 ];
 
+function useReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return reduced;
+}
+
+function useScrollEntry<T extends Element>(
+  threshold = 0.1
+): [React.RefObject<T>, boolean] {
+  const ref = useRef<T>(null);
+  const [entered, setEntered] = useState(false);
+  useEffect(() => {
+    if (!ref.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setEntered(true);
+          observer.disconnect();
+        }
+      },
+      { threshold }
+    );
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [threshold]);
+  return [ref, entered];
+}
+
 const ConnectionSection = () => {
   const { t } = useTranslation("landing");
+  const reduceMotion = useReducedMotion();
+  const [leftRef, leftEntered] = useScrollEntry<HTMLDivElement>(0.1);
+  const [stepsRef, stepsEntered] = useScrollEntry<HTMLDivElement>(0.05);
+
+  const enter = (entered: boolean, delay: number): CSSProperties =>
+    reduceMotion
+      ? {}
+      : {
+          opacity: entered ? 1 : 0,
+          transform: entered ? "none" : "translateY(12px)",
+          transition: `opacity 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
+        };
 
   return (
     <section className="pt-12 pb-20 bg-muted/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 items-start">
           {/* Left side - Title and description */}
-          <div className="lg:sticky lg:top-20">
+          <div
+            ref={leftRef}
+            className="lg:sticky lg:top-20"
+            style={enter(leftEntered, 0)}
+          >
             <h2 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-6 max-w-4xl leading-[1.2] font-normal">
               {t("connection.title")}
             </h2>
@@ -42,9 +94,12 @@ const ConnectionSection = () => {
           </div>
 
           {/* Right side - Steps */}
-          <div className="space-y-8">
+          <div ref={stepsRef} className="space-y-8">
             {/* Step 1: Sign up */}
-            <div className="border border-border overflow-hidden">
+            <div
+              className="border border-border overflow-hidden"
+              style={enter(stepsEntered, 0)}
+            >
               <div className="px-6 py-3 bg-muted/30 border-b border-border flex items-center gap-4">
                 <span className="w-8 h-8 flex items-center justify-center bg-feature-icon-bg text-sm font-mono text-primary">
                   1
@@ -124,7 +179,10 @@ const ConnectionSection = () => {
             </div>
 
             {/* Step 2: Add your servers */}
-            <div className="border border-border overflow-hidden">
+            <div
+              className="border border-border overflow-hidden"
+              style={enter(stepsEntered, 100)}
+            >
               <div className="px-6 py-3 bg-muted/30 border-b border-border flex items-center gap-4">
                 <span className="w-8 h-8 flex items-center justify-center bg-feature-icon-bg text-sm font-mono text-primary">
                   2
@@ -223,7 +281,10 @@ const ConnectionSection = () => {
             </div>
 
             {/* Step 3: Monitor and collaborate */}
-            <div className="border border-border overflow-hidden">
+            <div
+              className="border border-border overflow-hidden"
+              style={enter(stepsEntered, 200)}
+            >
               <div className="px-6 py-3 bg-muted/30 border-b border-border flex items-center gap-4">
                 <span className="w-8 h-8 flex items-center justify-center bg-feature-icon-bg text-sm font-mono text-primary">
                   3

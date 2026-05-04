@@ -1,4 +1,46 @@
 {
+  "home": {
+    "title": "首页",
+    "serverFallback": "此 broker",
+    "statusBanner": {
+      "loading": "加载状态中",
+      "calmHeadline": "{{serverName}} 一切正常。",
+      "calmSubline": "过去 2 小时无活跃问题。",
+      "warningHeadline_one": "{{count}} 项需要关注",
+      "warningHeadline_other": "{{count}} 项需要关注",
+      "criticalHeadline_one": "{{count}} 个活跃事件",
+      "criticalHeadline_other": "{{count}} 个活跃事件",
+      "review": "查看",
+      "investigateNow": "立即排查",
+      "partialData": "{{serverName}} 状态不完整",
+      "partialDataDetail": "{{count}} 个信号端点失败 — 诊断可能不完整。",
+      "partialDataDetail_one": "{{count}} 个信号端点失败 — 诊断可能不完整。",
+      "partialDataDetail_other": "{{count}} 个信号端点失败 — 诊断可能不完整。",
+      "unavailableHeadline": "{{serverName}} 暂无诊断",
+      "unavailableSubline": "升级或检查 broker 能力以启用事件诊断。",
+      "regionLabel": "Broker 状态概览"
+    },
+    "activeConcerns": {
+      "heading": "活跃问题",
+      "viewAll": "在诊断中查看全部",
+      "viewAllWithOverflow": "查看全部（还有 {{count}} 项）",
+      "openInDiagnosis": "在诊断中打开"
+    },
+    "activity": {
+      "label": "活动"
+    },
+    "pulse": {
+      "ariaLabel": "每日摘要状态",
+      "workspaceFallback": "您的工作区",
+      "invitationHeadline": "在邮箱中获取每日摘要",
+      "invitationSubline": "{{workspace}} 的健康状况、告警和队列活动晨间回顾。",
+      "enabledHeadline": "{{workspace}} 的每日摘要已启用",
+      "enabledSubline": "下次推送时间约为 {{time}} UTC。",
+      "enabledSublineNoTime": "送达时间尚未安排。",
+      "setUp": "设置",
+      "configure": "配置"
+    }
+  },
   "pageTitle": "仪表盘",
   "pageSubtitle": "RabbitMQ 服务器健康状态和性能概览",
   "rabbitMQDashboard": "仪表盘",

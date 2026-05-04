@@ -20,7 +20,7 @@ import { buildTopologyGraph } from "@/lib/topology/layout";
 
 import { FeatureGate } from "@/components/FeatureGate";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
-import { PageError } from "@/components/PageError";
+import { PageErrorOrGate } from "@/components/PageErrorOrGate";
 import { PageLoader } from "@/components/PageLoader";
 import { NoServerSelectedCard, PageShell } from "@/components/PageShell";
 import { ExchangeNode } from "@/components/topology/ExchangeNode";
@@ -208,7 +208,10 @@ const Topology = () => {
         </div>
 
         {error ? (
-          <PageError message={t("common:serverConnectionError")} />
+          <PageErrorOrGate
+            error={error}
+            fallbackMessage={t("common:serverConnectionError")}
+          />
         ) : isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (

@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { initTRPC } from "@trpc/server";
 
 import { logger } from "@/core/logger";
+import { prisma } from "@/core/prisma";
 
 // Deep import: only pulls in error.ts so test mocks of upstream modules
 // (prisma, config, plan.service) are not transitively required for any
@@ -11,8 +12,6 @@ import {
   throwGateError,
 } from "@/services/feature-gate/error";
 import { planErrorToBlockedGate } from "@/services/plan/plan-gate";
-
-import { hasWorkspaceAccess } from "@/middlewares/workspace";
 
 import type { Context } from "./context";
 import { assertNotDemoBlocked } from "./middlewares/demoGuard";
@@ -263,8 +262,18 @@ export const billingRateLimitedOrgAdminProcedure = orgAdminProcedure.use(
 );
 
 /**
- * Workspace-scoped procedure - requires workspace access and rate limiting
- * Workspace ID can come from input, context, or user's workspaceId
+ * Workspace-scoped procedure - requires workspace access and rate limiting.
+ * Workspace ID can come from input, context, or user's workspaceId.
+ *
+ * Resolves the workspace's `organizationId` and threads it into ctx so
+ * downstream feature-gate middleware (which reads `ctx.organizationId` for
+ * plan-axis evaluation) sees the correct subscription tier. Without this,
+ * `requirePremiumFeature` defaulted every workspace-scoped paid user to
+ * FREE — see ADR-002 § "context resolution".
+ *
+ * The org lookup is folded into the membership check via a single
+ * `findFirst` filtered by `members.some(userId)`, so the non-admin path
+ * costs the same one query as the previous boolean access check.
  */
 export const workspaceProcedure = rateLimitedProcedure.use(async (opts) => {
   const { ctx } = opts;
@@ -285,19 +294,38 @@ export const workspaceProcedure = rateLimitedProcedure.use(async (opts) => {
     });
   }
 
-  // Allow ADMIN users to access any workspace
+  // ADMIN bypass — no membership check, but still resolve org so
+  // feature-gate evaluates against the workspace's actual plan.
   if (ctx.user.role === UserRole.ADMIN) {
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { organizationId: true },
+    });
+    if (!workspace) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: te(ctx.locale, "workspace.notFound"),
+      });
+    }
     return opts.next({
       ctx: {
         ...ctx,
         workspaceId,
+        organizationId: workspace.organizationId ?? undefined,
       },
     });
   }
 
-  // Check if user has access to the workspace
-  const hasAccess = await hasWorkspaceAccess(ctx.user.id, workspaceId);
-  if (!hasAccess) {
+  // Single query: validate membership + retrieve org. Returns null when
+  // the workspace doesn't exist OR the user has no WorkspaceMember row.
+  const workspace = await prisma.workspace.findFirst({
+    where: {
+      id: workspaceId,
+      members: { some: { userId: ctx.user.id } },
+    },
+    select: { organizationId: true },
+  });
+  if (!workspace) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: te(ctx.locale, "workspace.cannotAccessResources"),
@@ -308,6 +336,7 @@ export const workspaceProcedure = rateLimitedProcedure.use(async (opts) => {
     ctx: {
       ...ctx,
       workspaceId,
+      organizationId: workspace.organizationId ?? undefined,
     },
   });
 });

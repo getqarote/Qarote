@@ -48,19 +48,6 @@ const DATADOG_ROWS: TableRow[] = [
   { key: "integrations", competitorType: "win", qaroteType: "neutral" },
 ];
 
-const GRAFANA_ROWS: TableRow[] = [
-  { key: "rabbitmqNative", competitorType: "neutral", qaroteType: "win" },
-  { key: "components", competitorType: "loss", qaroteType: "win" },
-  { key: "setupTime", competitorType: "loss", qaroteType: "win" },
-  { key: "queryLanguage", competitorType: "loss", qaroteType: "win" },
-  { key: "dashboards", competitorType: "neutral", qaroteType: "win" },
-  { key: "alerting", competitorType: "neutral", qaroteType: "win" },
-  { key: "selfHosted", competitorType: "win", qaroteType: "win" },
-  { key: "maintenance", competitorType: "loss", qaroteType: "win" },
-  { key: "openSource", competitorType: "win", qaroteType: "win" },
-  { key: "flexibility", competitorType: "win", qaroteType: "neutral" },
-];
-
 const CLOUDAMQP_ROWS: TableRow[] = [
   { key: "brokerLockIn", competitorType: "loss", qaroteType: "win" },
   { key: "rabbitmqNative", competitorType: "neutral", qaroteType: "win" },
@@ -81,10 +68,23 @@ const NEW_RELIC_ROWS: TableRow[] = [
   { key: "selfHosted", competitorType: "loss", qaroteType: "win" },
   { key: "dataPrivacy", competitorType: "loss", qaroteType: "win" },
   { key: "pricingModel", competitorType: "neutral", qaroteType: "win" },
-  { key: "estimatedCost", competitorType: "loss", qaroteType: "win" },
+  { key: "estimatedCost", competitorType: "neutral", qaroteType: "win" },
   { key: "alerting", competitorType: "win", qaroteType: "win" },
   { key: "openSource", competitorType: "loss", qaroteType: "win" },
   { key: "integrations", competitorType: "win", qaroteType: "neutral" },
+];
+
+const GRAFANA_ROWS: TableRow[] = [
+  { key: "rabbitmqNative", competitorType: "neutral", qaroteType: "win" },
+  { key: "components", competitorType: "loss", qaroteType: "win" },
+  { key: "setupTime", competitorType: "loss", qaroteType: "win" },
+  { key: "queryLanguage", competitorType: "loss", qaroteType: "win" },
+  { key: "dashboards", competitorType: "neutral", qaroteType: "win" },
+  { key: "alerting", competitorType: "neutral", qaroteType: "win" },
+  { key: "selfHosted", competitorType: "win", qaroteType: "win" },
+  { key: "maintenance", competitorType: "loss", qaroteType: "win" },
+  { key: "openSource", competitorType: "win", qaroteType: "win" },
+  { key: "flexibility", competitorType: "win", qaroteType: "neutral" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -128,7 +128,10 @@ function CompareHero({ ns }: { ns: string }) {
   return (
     <div className="border border-border overflow-hidden mb-8">
       <div className="px-6 py-3 bg-muted/30 border-b border-border">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <span
+          className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+          style={enter(0)}
+        >
           {t("hero.eyebrow")}
         </span>
       </div>
@@ -156,6 +159,8 @@ function CompareHero({ ns }: { ns: string }) {
 
 function VerdictSection({ ns }: { ns: string }) {
   const { t } = useTranslation(ns);
+  const reduceMotion = useReducedMotion();
+  const [sectionRef, sectionInView] = useScrollEntry<HTMLDivElement>(0.15);
 
   const competitorPoints = ((): string[] => {
     const raw = t("verdict.competitor.points", { returnObjects: true });
@@ -167,8 +172,25 @@ function VerdictSection({ ns }: { ns: string }) {
     return Array.isArray(raw) ? (raw as string[]) : [];
   })();
 
+  const bulletEnter = (i: number): CSSProperties =>
+    reduceMotion
+      ? {}
+      : {
+          opacity: sectionInView ? 1 : 0,
+          transform: sectionInView ? "translateY(0)" : "translateY(5px)",
+          transition: `opacity 0.3s ease ${i * 45}ms, transform 0.3s ease ${i * 45}ms`,
+        };
+
+  const dotEnter = (i: number): CSSProperties =>
+    reduceMotion
+      ? {}
+      : {
+          transform: sectionInView ? "scale(1)" : "scale(0)",
+          transition: `transform 0.25s cubic-bezier(0.16,1,0.3,1) ${i * 45 + 60}ms`,
+        };
+
   return (
-    <div className="border border-border overflow-hidden mb-8">
+    <div ref={sectionRef} className="border border-border overflow-hidden mb-8">
       <div className="px-6 py-3 bg-muted/30 border-b border-border">
         <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           {t("verdict.heading")}
@@ -186,6 +208,7 @@ function VerdictSection({ ns }: { ns: string }) {
                 <li
                   key={i}
                   className="flex items-start gap-2 text-sm text-muted-foreground"
+                  style={bulletEnter(i)}
                 >
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 bg-muted-foreground/40" />
                   {point}
@@ -203,8 +226,12 @@ function VerdictSection({ ns }: { ns: string }) {
                 <li
                   key={i}
                   className="flex items-start gap-2 text-sm text-muted-foreground"
+                  style={bulletEnter(i)}
                 >
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 bg-primary/60" />
+                  <span
+                    className="mt-1.5 h-1.5 w-1.5 shrink-0 bg-primary/60"
+                    style={dotEnter(i)}
+                  />
                   {point}
                 </li>
               ))}
@@ -231,9 +258,13 @@ function TableCell({ text, type, isQarote }: TableCellProps) {
 
   if (type === "win") {
     return (
-      <td className={`${baseClass}${isQarote ? " bg-primary/5" : ""}`}>
+      <td
+        className={`${baseClass} transition-colors duration-200${isQarote ? " bg-primary/5 group/wincell hover:bg-primary/[0.09]" : ""}`}
+      >
         <span className="flex items-start gap-2">
-          <span className="mt-0.5 shrink-0">
+          <span
+            className={`mt-0.5 shrink-0${isQarote ? " transition-transform duration-150 group-hover/wincell:scale-110" : ""}`}
+          >
             <StatusIcon variant="check" />
           </span>
           <span className="text-foreground">{text}</span>
@@ -285,9 +316,17 @@ function ComparisonTable({ ns, rows }: { ns: string; rows: TableRow[] }) {
 
   return (
     <div className="border border-border overflow-hidden mb-8">
-      <div className="px-6 py-3 bg-muted/30 border-b border-border">
+      <div className="px-6 py-3 bg-muted/30 border-b border-border flex items-center justify-between gap-4">
         <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           {t("table.heading")}
+        </span>
+        <span
+          className="font-mono text-xs tabular-nums shrink-0"
+          aria-label={`Qarote wins ${winCount} of ${rows.length} categories`}
+        >
+          <span className="text-muted-foreground">Qarote </span>
+          <span className="text-primary">{winCount}</span>
+          <span className="text-muted-foreground">/{rows.length}</span>
         </span>
       </div>
       <div className="overflow-x-auto">
@@ -356,7 +395,6 @@ function NarrativeSections({
   return (
     <div className="space-y-8 mb-8">
       {sectionKeys.map((key) => {
-        // Determine how many paragraphs exist (p1, p2, p3)
         const paragraphs: string[] = [];
         for (const pKey of ["p1", "p2", "p3"]) {
           const val = t(`sections.${key}.${pKey}`, { defaultValue: "" });
@@ -448,18 +486,15 @@ function CrossLinkSection({
 // FAQ section
 // ---------------------------------------------------------------------------
 
-interface FaqItem {
+interface FaqItemData {
   question: string;
   answer: string;
 }
 
 function FaqSection({ ns }: { ns: string }) {
   const { t } = useTranslation(ns);
-
-  const items = ((): FaqItem[] => {
-    const raw = t("faq.items", { returnObjects: true });
-    return Array.isArray(raw) ? (raw as FaqItem[]) : [];
-  })();
+  const raw = t("faq.items", { returnObjects: true });
+  const items: FaqItemData[] = Array.isArray(raw) ? (raw as FaqItemData[]) : [];
 
   return (
     <div className="border border-border overflow-hidden mb-8">
@@ -493,10 +528,6 @@ function FaqSection({ ns }: { ns: string }) {
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// CompareLayout — shared layout for all comparison pages
-// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 // Blog preview strip
@@ -587,48 +618,6 @@ function CompareLayout({
 // Exported island components
 // ---------------------------------------------------------------------------
 
-export function CompareDatadogIsland({
-  locale = "en",
-  resources,
-  blogPosts = [],
-}: IslandProps) {
-  return (
-    <CompareLayout
-      locale={locale}
-      resources={resources}
-      ns="compare-datadog"
-      rows={DATADOG_ROWS}
-      sectionKeys={["native", "pricing", "privacy", "setup"]}
-      crossLink={{
-        linkKey: "crossLink.grafana",
-        linkHref: "/compare/grafana-prometheus/",
-      }}
-      blogPosts={blogPosts}
-    />
-  );
-}
-
-export function CompareGrafanaIsland({
-  locale = "en",
-  resources,
-  blogPosts = [],
-}: IslandProps) {
-  return (
-    <CompareLayout
-      locale={locale}
-      resources={resources}
-      ns="compare-grafana"
-      rows={GRAFANA_ROWS}
-      sectionKeys={["assembly", "promql", "dashboards", "maintenance"]}
-      crossLink={{
-        linkKey: "crossLink.datadog",
-        linkHref: "/compare/datadog/",
-      }}
-      blogPosts={blogPosts}
-    />
-  );
-}
-
 export function CompareCloudAMQPIsland({
   locale = "en",
   resources,
@@ -662,6 +651,48 @@ export function CompareNewRelicIsland({
       ns="compare-new-relic"
       rows={NEW_RELIC_ROWS}
       sectionKeys={["native", "pricing", "agents", "privacy"]}
+      crossLink={{
+        linkKey: "crossLink.datadog",
+        linkHref: "/compare/datadog/",
+      }}
+      blogPosts={blogPosts}
+    />
+  );
+}
+
+export function CompareDatadogIsland({
+  locale = "en",
+  resources,
+  blogPosts = [],
+}: IslandProps) {
+  return (
+    <CompareLayout
+      locale={locale}
+      resources={resources}
+      ns="compare-datadog"
+      rows={DATADOG_ROWS}
+      sectionKeys={["native", "pricing", "privacy", "setup"]}
+      crossLink={{
+        linkKey: "crossLink.grafana",
+        linkHref: "/compare/grafana-prometheus/",
+      }}
+      blogPosts={blogPosts}
+    />
+  );
+}
+
+export function CompareGrafanaIsland({
+  locale = "en",
+  resources,
+  blogPosts = [],
+}: IslandProps) {
+  return (
+    <CompareLayout
+      locale={locale}
+      resources={resources}
+      ns="compare-grafana"
+      rows={GRAFANA_ROWS}
+      sectionKeys={["assembly", "promql", "dashboards", "maintenance"]}
       crossLink={{
         linkKey: "crossLink.datadog",
         linkHref: "/compare/datadog/",

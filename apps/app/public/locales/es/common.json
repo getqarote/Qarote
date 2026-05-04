@@ -100,6 +100,11 @@
     "message": "Página no encontrada",
     "returnHome": "Volver al inicio"
   },
+  "upgradePrompt": {
+    "notAvailableOnDemo": "No disponible en la demo",
+    "planUpgradeRequired": "Se requiere actualizar el plan",
+    "licenseRequired": "Se requiere licencia"
+  },
   "updating": "Actualizando…",
   "updatedAgo": "Actualizado hace {{seconds}}s",
   "justUpdated": "Recién actualizado"

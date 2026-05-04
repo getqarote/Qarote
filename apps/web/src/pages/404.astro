@@ -3,17 +3,64 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
 <BaseLayout
-  title="Page Not Found | Qarote"
-  description="The page you are looking for could not be found."
+  title="404 — Queue Not Found | Qarote"
+  description="This page doesn't exist. Head back to Qarote."
   canonicalPath="/"
 >
-  <div class="min-h-screen flex items-center justify-center bg-muted">
-    <div class="text-center">
-      <h1 class="text-4xl font-bold mb-4">404</h1>
-      <p class="text-xl text-muted-foreground mb-4">Page not found</p>
-      <a href="/" class="text-primary hover:text-primary/80 underline">
-        Return to Home
+  <div class="min-h-screen flex items-center justify-center bg-background px-6">
+    <div class="text-center max-w-sm not-found-enter">
+      <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-6">
+        Error 404
+      </p>
+      <h1
+        class="font-mono font-normal text-foreground mb-6 leading-none tabular-nums"
+        style="font-size: clamp(5rem, 20vw, 9rem);"
+      >
+        404
+      </h1>
+      <p class="text-xl text-foreground mb-3 font-normal">Queue not found</p>
+      <p class="text-muted-foreground mb-10 leading-relaxed">
+        This message was never delivered. The route you're looking for doesn't
+        exist or has been moved.
+      </p>
+      <a
+        href="/"
+        class="group inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+          class="transition-transform duration-150 group-hover:-translate-x-0.5"
+        >
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Back to home
       </a>
     </div>
   </div>
+
+  <style>
+    @media (prefers-reduced-motion: no-preference) {
+      @keyframes not-found-up {
+        from {
+          opacity: 0;
+          transform: translateY(16px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .not-found-enter {
+        animation: not-found-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+    }
+  </style>
 </BaseLayout>

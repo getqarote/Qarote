@@ -103,7 +103,9 @@ const SignUp = () => {
     },
   });
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const acceptTermsValue = form.watch("acceptTerms");
+
   const referralSourceValue = form.watch("referralSource");
   const showDiscoveryQuery =
     referralSourceValue !== undefined &&
@@ -206,6 +208,7 @@ const SignUp = () => {
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {/* Error alert */}
               {registerMutation.isError && (
                 <Alert variant="destructive" className="su-in">
                   <AlertDescription>

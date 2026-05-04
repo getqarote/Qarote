@@ -169,7 +169,7 @@ function InviteeRow({
         className="text-muted-foreground hover:text-destructive transition-colors"
         aria-label={t("inviteRemove", { defaultValue: "Remove invitee" })}
       >
-        <PixelX className="h-4 w-auto shrink-0" aria-hidden="true" />
+        <PixelX className="h-3 w-3 shrink-0" aria-hidden="true" />
       </button>
     </div>
   );

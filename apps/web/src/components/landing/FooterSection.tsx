@@ -113,14 +113,20 @@ const FooterSection = ({ currentLocale = "en" }: FooterSectionProps) => {
             </h3>
           </div>
           <div className="flex flex-wrap gap-x-5 gap-y-3">
-            <a href={`${prefix}/about/`} className={navLinkClass}>
-              {t("footer.about", "About")}
+            <a href="/docs/getting-started/" className={navLinkClass}>
+              {t("footer.docs", "Docs")}
             </a>
             <a href={`${prefix}/pricing/`} className={navLinkClass}>
               {t("footer.pricing", "Pricing")}
             </a>
             <a href={`${prefix}/blog/`} className={navLinkClass}>
               {t("footer.blog", "Blog")}
+            </a>
+            <a href={`${prefix}/changelog/`} className={navLinkClass}>
+              {t("footer.changelog", "Changelog")}
+            </a>
+            <a href={`${prefix}/about/`} className={navLinkClass}>
+              {t("footer.about", "About")}
             </a>
             <a href={`${prefix}/features/alerting/`} className={navLinkClass}>
               {t("footer.alerting", "Alerting")}
@@ -210,14 +216,20 @@ const FooterSection = ({ currentLocale = "en" }: FooterSectionProps) => {
               </div>
             </div>
             <nav className="flex items-center gap-6">
-              <a href={`${prefix}/about/`} className={navLinkClass}>
-                {t("footer.about", "About")}
+              <a href="/docs/getting-started/" className={navLinkClass}>
+                {t("footer.docs", "Docs")}
               </a>
               <a href={`${prefix}/pricing/`} className={navLinkClass}>
                 {t("footer.pricing", "Pricing")}
               </a>
               <a href={`${prefix}/blog/`} className={navLinkClass}>
                 {t("footer.blog", "Blog")}
+              </a>
+              <a href={`${prefix}/changelog/`} className={navLinkClass}>
+                {t("footer.changelog", "Changelog")}
+              </a>
+              <a href={`${prefix}/about/`} className={navLinkClass}>
+                {t("footer.about", "About")}
               </a>
               <a href={`${prefix}/features/alerting/`} className={navLinkClass}>
                 {t("footer.alerting", "Alerting")}

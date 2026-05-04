@@ -10,7 +10,7 @@ import { AddVirtualHostButton } from "@/components/AddVirtualHostButton";
 import { filterByRegex } from "@/components/filterByRegex";
 import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
-import { PageError } from "@/components/PageError";
+import { PageErrorOrGate } from "@/components/PageErrorOrGate";
 import {
   FullPageAlert,
   NoServerSelectedCard,
@@ -174,7 +174,10 @@ export default function VHostsPage() {
         <div className="flex items-center gap-4">
           <SidebarTrigger />
         </div>
-        <PageError message={t("common:serverConnectionError")} />
+        <PageErrorOrGate
+          error={error}
+          fallbackMessage={t("common:serverConnectionError")}
+        />
       </PageShell>
     );
   }

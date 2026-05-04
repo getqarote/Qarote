@@ -1,18 +1,33 @@
+import { type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 
 import { trackSignUpClick } from "@/lib/gtm";
 
 import { Button } from "@/components/ui/button";
 
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useScrollEntry } from "@/hooks/useScrollEntry";
+
 const AudienceSection = () => {
   const { t, i18n } = useTranslation("landing");
   const locale = i18n.language || "en";
   const localePrefix = locale === "en" ? "" : `/${locale}`;
+  const reduceMotion = useReducedMotion();
+  const [gridRef, gridEntered] = useScrollEntry<HTMLDivElement>(0.1);
 
   const handleSignUp = (source: string) => {
     trackSignUpClick({ source, location: "landing_page" });
     window.location.href = `${import.meta.env.VITE_APP_BASE_URL}/auth/sign-up`;
   };
+
+  const cardStyle = (delay: number): CSSProperties =>
+    reduceMotion
+      ? {}
+      : {
+          opacity: gridEntered ? 1 : 0,
+          transform: gridEntered ? "translateY(0)" : "translateY(12px)",
+          transition: `opacity 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
+        };
 
   return (
     <section className="pt-12 pb-20 bg-muted/10">
@@ -23,9 +38,12 @@ const AudienceSection = () => {
           </h2>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div ref={gridRef} className="grid md:grid-cols-2 gap-6">
           {/* Card 1 — No monitoring yet */}
-          <div className="border border-border p-8 lg:p-10 flex flex-col">
+          <div
+            className="border border-border p-8 lg:p-10 flex flex-col"
+            style={cardStyle(0)}
+          >
             <img
               src="/images/server.svg"
               alt=""
@@ -64,7 +82,10 @@ const AudienceSection = () => {
           </div>
 
           {/* Card 2 — Already running Grafana */}
-          <div className="border border-border p-8 lg:p-10 flex flex-col">
+          <div
+            className="border border-border p-8 lg:p-10 flex flex-col"
+            style={cardStyle(100)}
+          >
             <img
               src="/images/chart.svg"
               alt=""

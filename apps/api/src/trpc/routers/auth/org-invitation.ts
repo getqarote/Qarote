@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 
 import { applyWorkspaceAssignments } from "@/core/org-invitation-accept";
+import { prisma } from "@/core/prisma";
 
 import { posthog } from "@/services/posthog";
 
@@ -113,6 +114,16 @@ export const orgInvitationRouter = router({
 
           return assignedWorkspaceId;
         });
+
+        // Invalidate session cache — workspaceId may have changed.
+        await prisma.session
+          .deleteMany({ where: { userId: user.id } })
+          .catch((err) => {
+            ctx.logger.warn(
+              { err, userId: user.id },
+              "Failed to invalidate sessions after org invitation acceptance — stale session may persist up to 5 min"
+            );
+          });
 
         ctx.logger.info(
           {

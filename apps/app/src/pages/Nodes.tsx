@@ -8,7 +8,7 @@ import { EnhancedNodesOverview } from "@/components/nodes/EnhancedNodesOverview"
 import { EnhancedNodesTable } from "@/components/nodes/EnhancedNodesTable";
 import { PortsAndContexts } from "@/components/nodes/PortsAndContexts";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
-import { PageError } from "@/components/PageError";
+import { PageErrorOrGate } from "@/components/PageErrorOrGate";
 import { NoServerSelectedCard, PageShell } from "@/components/PageShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -145,8 +145,9 @@ const Nodes = () => {
             <h1 className="title-page">{t("pageTitle")}</h1>
           </div>
         </div>
-        <PageError
-          message={t("common:serverConnectionError")}
+        <PageErrorOrGate
+          error={nodesQueryError}
+          fallbackMessage={t("common:serverConnectionError")}
           onRetry={() => refetchNodes()}
         />
       </PageShell>

@@ -62,6 +62,10 @@ vi.mock("@/middlewares/workspace", () => ({
   hasWorkspaceAccess: vi.fn().mockResolvedValue(true),
 }));
 
+vi.mock("@/core/prisma", () => ({
+  prisma: {},
+}));
+
 vi.mock("@/core/logger", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));

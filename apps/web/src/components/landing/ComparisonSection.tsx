@@ -1,21 +1,81 @@
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-const ComparisonPoint = ({ icon, text }: { icon: string; text: string }) => (
-  <div className="flex gap-4 items-center">
-    <img
-      src={`/images/${icon}.svg`}
-      alt=""
-      aria-hidden="true"
-      className="h-3 shrink-0 w-auto image-crisp"
-      width={12}
-      height={12}
-    />
-    <p className="text-foreground">{text}</p>
-  </div>
-);
+function useReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return reduced;
+}
+
+function useScrollEntry<T extends Element>(
+  threshold = 0.1
+): [React.RefObject<T>, boolean] {
+  const ref = useRef<T>(null);
+  const [entered, setEntered] = useState(false);
+  useEffect(() => {
+    if (!ref.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setEntered(true);
+          observer.disconnect();
+        }
+      },
+      { threshold }
+    );
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [threshold]);
+  return [ref, entered];
+}
+
+const ComparisonPoint = ({
+  icon,
+  text,
+  entered,
+  delay,
+  reduceMotion,
+}: {
+  icon: string;
+  text: string;
+  entered: boolean;
+  delay: number;
+  reduceMotion: boolean;
+}) => {
+  const style: CSSProperties = reduceMotion
+    ? {}
+    : {
+        opacity: entered ? 1 : 0,
+        transform: entered ? "none" : "translateX(-6px)",
+        transition: `opacity 0.45s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.45s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
+      };
+
+  return (
+    <div className="flex gap-4 items-center" style={style}>
+      <img
+        src={`/images/${icon}.svg`}
+        alt=""
+        aria-hidden="true"
+        className="h-3 shrink-0 w-auto image-crisp"
+        width={12}
+        height={12}
+      />
+      <p className="text-foreground">{text}</p>
+    </div>
+  );
+};
 
 const ComparisonSection = () => {
   const { t } = useTranslation("landing");
+  const reduceMotion = useReducedMotion();
+  const [containerRef, containerEntered] = useScrollEntry<HTMLDivElement>(0.08);
 
   return (
     <section className="pb-20 bg-background pt-10">
@@ -73,7 +133,10 @@ const ComparisonSection = () => {
         </nav>
 
         {/* Main Comparison Container */}
-        <div className="border border-border overflow-hidden">
+        <div
+          ref={containerRef}
+          className="border border-border overflow-hidden"
+        >
           <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
             {/* Left Column - Traditional */}
             <div className="flex flex-col">
@@ -87,18 +150,30 @@ const ComparisonSection = () => {
                   <ComparisonPoint
                     icon="cross"
                     text={t("comparison.traditional.point1")}
+                    entered={containerEntered}
+                    delay={0}
+                    reduceMotion={reduceMotion}
                   />
                   <ComparisonPoint
                     icon="cross"
                     text={t("comparison.traditional.point2")}
+                    entered={containerEntered}
+                    delay={50}
+                    reduceMotion={reduceMotion}
                   />
                   <ComparisonPoint
                     icon="cross"
                     text={t("comparison.traditional.point3")}
+                    entered={containerEntered}
+                    delay={100}
+                    reduceMotion={reduceMotion}
                   />
                   <ComparisonPoint
                     icon="cross"
                     text={t("comparison.traditional.point4")}
+                    entered={containerEntered}
+                    delay={150}
+                    reduceMotion={reduceMotion}
                   />
                 </div>
 
@@ -138,18 +213,30 @@ const ComparisonSection = () => {
                   <ComparisonPoint
                     icon="check"
                     text={t("comparison.qarote.point1")}
+                    entered={containerEntered}
+                    delay={80}
+                    reduceMotion={reduceMotion}
                   />
                   <ComparisonPoint
                     icon="check"
                     text={t("comparison.qarote.point2")}
+                    entered={containerEntered}
+                    delay={130}
+                    reduceMotion={reduceMotion}
                   />
                   <ComparisonPoint
                     icon="check"
                     text={t("comparison.qarote.point3")}
+                    entered={containerEntered}
+                    delay={180}
+                    reduceMotion={reduceMotion}
                   />
                   <ComparisonPoint
                     icon="check"
                     text={t("comparison.qarote.point4")}
+                    entered={containerEntered}
+                    delay={230}
+                    reduceMotion={reduceMotion}
                   />
                 </div>
 

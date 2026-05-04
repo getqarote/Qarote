@@ -1,3 +1,4 @@
+import { type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -17,6 +18,9 @@ import {
 import { trackSignUpClick } from "@/lib/gtm";
 
 import { Button } from "@/components/ui/button";
+
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useScrollEntry } from "@/hooks/useScrollEntry";
 
 const iconImageMap: Record<string, { src: string; alt: string }> = {
   Activity: { src: "/images/real-time.svg", alt: "Real-time" },
@@ -40,6 +44,19 @@ const ProBadge = () => (
 
 const FeaturesSection = () => {
   const { t } = useTranslation("landing");
+  const reduceMotion = useReducedMotion();
+  const [heroRef, heroEntered] = useScrollEntry<HTMLDivElement>(0.1);
+  const [secRef, secEntered] = useScrollEntry<HTMLDivElement>(0.08);
+  const [compactRef, compactEntered] = useScrollEntry<HTMLDivElement>(0.05);
+
+  const enter = (entered: boolean, delay: number): CSSProperties =>
+    reduceMotion
+      ? {}
+      : {
+          opacity: entered ? 1 : 0,
+          transform: entered ? "none" : "translateY(12px)",
+          transition: `opacity 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
+        };
 
   const features = [
     // Hero — killer feature: Queue History
@@ -143,7 +160,11 @@ const FeaturesSection = () => {
         </div>
 
         {/* Hero feature — full width */}
-        <div className="border border-border p-8 lg:p-12 mb-6">
+        <div
+          ref={heroRef}
+          className="border border-border p-8 lg:p-12 mb-6 transition-colors duration-200 hover:border-primary/30"
+          style={enter(heroEntered, 0)}
+        >
           <div className="grid lg:grid-cols-[1fr_1.2fr] gap-8 lg:gap-16 items-center">
             <div>
               <div className="inline-flex p-3 bg-feature-icon-bg mb-6">
@@ -239,13 +260,14 @@ const FeaturesSection = () => {
         </div>
 
         {/* Secondary features — 2 columns, taller */}
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
-          {secondary.map((feature) => {
+        <div ref={secRef} className="grid md:grid-cols-2 gap-6 mb-6">
+          {secondary.map((feature, i) => {
             const imageSrc = iconImageMap[feature.iconKey];
             return (
               <div
                 key={feature.iconKey}
-                className="border border-border p-8 flex flex-col"
+                className="border border-border p-8 flex flex-col transition-colors duration-200 hover:border-primary/30"
+                style={enter(secEntered, i * 80)}
               >
                 <div className="inline-flex p-3 bg-feature-icon-bg mb-5 self-start">
                   {imageSrc ? (
@@ -274,13 +296,17 @@ const FeaturesSection = () => {
         </div>
 
         {/* Compact features — 2 columns on sm, 4 on lg */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {compact.map((feature) => {
+        <div
+          ref={compactRef}
+          className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6"
+        >
+          {compact.map((feature, i) => {
             const imageSrc = iconImageMap[feature.iconKey];
             return (
               <div
                 key={feature.iconKey}
-                className="border border-border p-6 flex gap-4 items-start"
+                className="border border-border p-6 flex gap-4 items-start transition-colors duration-200 hover:border-primary/30"
+                style={enter(compactEntered, i * 50)}
               >
                 <div className="inline-flex p-2.5 bg-feature-icon-bg shrink-0">
                   {imageSrc ? (

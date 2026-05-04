@@ -34,6 +34,5 @@
   "successDescription": "Votre espace de travail est pret. Voici ce que vous pouvez faire ensuite :",
   "successStep1": "Ajoutez votre premiere connexion RabbitMQ",
   "successStep2": "Invitez votre equipe",
-  "successStep3": "Explorez votre tableau de bord",
   "successCta": "Aller au tableau de bord"
 }

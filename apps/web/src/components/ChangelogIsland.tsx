@@ -1,3 +1,4 @@
+import { type CSSProperties, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SupportedLocale } from "@qarote/i18n";
@@ -6,6 +7,9 @@ import { IslandProvider } from "@/components/IslandProvider";
 import FooterSection from "@/components/landing/FooterSection";
 import StickyNav from "@/components/StickyNav";
 import { TawkTo } from "@/components/TawkTo";
+
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useScrollEntry } from "@/hooks/useScrollEntry";
 
 import changelogRaw from "../../../../CHANGELOG.md?raw";
 
@@ -94,13 +98,42 @@ function ChangelogContent({
   locale?: SupportedLocale;
 }) {
   const { t } = useTranslation("common");
+  const reduceMotion = useReducedMotion();
+  const [mounted, setMounted] = useState(false);
+  const [listRef, listEntered] = useScrollEntry<HTMLDivElement>(0.04);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  const mountEnter = (delay: number): CSSProperties =>
+    reduceMotion
+      ? {}
+      : {
+          opacity: mounted ? 1 : 0,
+          transform: mounted ? "none" : "translateY(10px)",
+          transition: `opacity 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
+        };
+
+  const entryStyle = (i: number): CSSProperties =>
+    reduceMotion
+      ? {}
+      : {
+          opacity: listEntered ? 1 : 0,
+          transform: listEntered ? "none" : "translateY(10px)",
+          transition: `opacity 0.45s cubic-bezier(0.16,1,0.3,1) ${Math.min(i * 50, 300)}ms, transform 0.45s cubic-bezier(0.16,1,0.3,1) ${Math.min(i * 50, 300)}ms`,
+        };
 
   return (
     <div className="min-h-screen bg-background font-sans">
       <StickyNav currentPage="changelog" />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Page header */}
-        <div className="border border-border overflow-hidden mb-12">
+        <div
+          className="border border-border overflow-hidden mb-12"
+          style={mountEnter(0)}
+        >
           <div className="px-6 py-3 bg-muted/30 border-b border-border">
             <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Changelog
@@ -116,11 +149,12 @@ function ChangelogContent({
           </div>
         </div>
 
-        <div className="space-y-8">
-          {entries.map((entry) => (
+        <div ref={listRef} className="space-y-8">
+          {entries.map((entry, i) => (
             <article
               key={entry.version}
               className="border border-border overflow-hidden"
+              style={entryStyle(i)}
             >
               <div className="px-6 py-3 bg-muted/30 border-b border-border flex items-center justify-between">
                 <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
@@ -144,9 +178,9 @@ function ChangelogContent({
                       {category.name}
                     </span>
                     <ul className="space-y-2">
-                      {category.items.map((item, i) => (
+                      {category.items.map((item, j) => (
                         <li
-                          key={i}
+                          key={j}
                           className="text-muted-foreground flex items-start gap-2"
                         >
                           <span className="mt-2 shrink-0 block w-1.5 h-1.5 bg-primary/60" />

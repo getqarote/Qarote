@@ -1,4 +1,46 @@
 {
+  "home": {
+    "title": "Home",
+    "serverFallback": "this broker",
+    "statusBanner": {
+      "loading": "Loading status",
+      "calmHeadline": "All quiet across {{serverName}}.",
+      "calmSubline": "No active findings in the last 2 hours.",
+      "warningHeadline_one": "{{count}} concern needs attention",
+      "warningHeadline_other": "{{count}} concerns need attention",
+      "criticalHeadline_one": "{{count}} active incident",
+      "criticalHeadline_other": "{{count}} active incidents",
+      "review": "Review",
+      "investigateNow": "Investigate now",
+      "partialData": "Status incomplete for {{serverName}}",
+      "partialDataDetail": "{{count}} signal endpoints failed — diagnosis may be partial.",
+      "partialDataDetail_one": "{{count}} signal endpoint failed — diagnosis may be partial.",
+      "partialDataDetail_other": "{{count}} signal endpoints failed — diagnosis may be partial.",
+      "unavailableHeadline": "Diagnosis unavailable for {{serverName}}",
+      "unavailableSubline": "Upgrade or check broker capabilities to enable incident diagnosis.",
+      "regionLabel": "Broker status overview"
+    },
+    "activeConcerns": {
+      "heading": "Active concerns",
+      "viewAll": "View all in Diagnosis",
+      "viewAllWithOverflow": "View all (+{{count}} more)",
+      "openInDiagnosis": "Open in Diagnosis"
+    },
+    "activity": {
+      "label": "Activity"
+    },
+    "pulse": {
+      "ariaLabel": "Daily digest status",
+      "workspaceFallback": "your workspace",
+      "invitationHeadline": "Get a daily summary in your inbox",
+      "invitationSubline": "A morning recap of {{workspace}} health, alerts, and queue activity.",
+      "enabledHeadline": "Daily digest is on for {{workspace}}",
+      "enabledSubline": "Next delivery around {{time}} UTC.",
+      "enabledSublineNoTime": "Delivery time not yet scheduled.",
+      "setUp": "Set up",
+      "configure": "Configure"
+    }
+  },
   "pageTitle": "Dashboard",
   "pageSubtitle": "Overview of your RabbitMQ server health and performance",
   "rabbitMQDashboard": "Dashboard",

@@ -23,7 +23,6 @@ import { NotFound } from "@/components/QueueDetail/NotFound";
 import { QueueBindings } from "@/components/QueueDetail/QueueBindings";
 import { QueueConfiguration } from "@/components/QueueDetail/QueueConfiguration";
 import { QueueHeader } from "@/components/QueueDetail/QueueHeader";
-import { QueueSpy } from "@/components/QueueDetail/QueueSpy";
 import { QueueStats } from "@/components/QueueDetail/QueueStats";
 import { QueueTiming } from "@/components/QueueDetail/QueueTiming";
 import { QueuedMessagesChart } from "@/components/QueuedMessagesChart";
@@ -81,7 +80,6 @@ const QueueDetail = () => {
   const [timeRange, setTimeRange] = useState<TimeRange>("1m");
   const [histRange, setHistRange] = useState<HistoricalRange>(6);
   const [activeTab, setActiveTab] = useState("health");
-  const [spyEnabled, setSpyEnabled] = useState(false);
   const { userPlan } = useUser();
   const isPremium =
     userPlan === UserPlan.DEVELOPER || userPlan === UserPlan.ENTERPRISE;
@@ -224,48 +222,22 @@ const QueueDetail = () => {
             {/* Stats — always visible at top */}
             <QueueStats queue={queue} />
 
-            {/* Spy toggle — prominent, lives above tabs */}
+            {/* Spy CTA — navigates to Messages page in Live mode, pre-scoped to this queue */}
             <div className="flex items-center gap-3">
               <Button
-                variant={spyEnabled ? "default" : "outline"}
-                onClick={() => setSpyEnabled((prev) => !prev)}
-                className="rounded-none"
+                variant="outline"
+                onClick={() =>
+                  navigate(
+                    `/messages?mode=live&queue=${encodeURIComponent(queueName)}&vhost=${encodeURIComponent(vhost || "/")}`
+                  )
+                }
               >
                 <span className="relative flex h-2 w-2 mr-2">
-                  {spyEnabled ? (
-                    <>
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary-foreground opacity-75" />
-                      <span className="relative inline-flex h-2 w-2 rounded-full bg-primary-foreground" />
-                    </>
-                  ) : (
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-muted-foreground" />
-                  )}
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
                 </span>
-                {spyEnabled ? t("stopSpy") : t("spyOnQueue")}
+                {t("spyOnQueue")}
               </Button>
-              {spyEnabled && (
-                <span className="text-xs text-muted-foreground">
-                  {t("spyDescription")}
-                </span>
-              )}
             </div>
-
-            {/* Spy panel — expands when active. The `queueType` is
-                included in the key so a queue whose arguments resolve
-                AFTER the spy mounted re-runs the capability gate
-                (otherwise a stream queue would silently bypass the
-                gate when the user pre-toggled spy before queue load). */}
-            {spyEnabled && (
-              <QueueSpy
-                key={`${selectedServerId}|${queueName}|${vhost || "/"}|${
-                  resolveQueueType(queue) ?? "loading"
-                }`}
-                serverId={selectedServerId}
-                queueName={queueName}
-                vhost={vhost || "/"}
-                queueType={resolveQueueType(queue)}
-              />
-            )}
 
             {/* Diagnosis banner — only when anomalies detected */}
             {isDiagnosisEnabled && queueDiagnoses.length > 0 && (
@@ -501,22 +473,5 @@ const QueueDetail = () => {
     </TooltipProvider>
   );
 };
-
-/**
- * Map a queue's `arguments["x-queue-type"]` to the narrowed type the
- * capability gate consumes. Defaults to `"classic"` when the argument
- * is absent — the historical default for queues declared without an
- * explicit type. Returns `undefined` only when the queue itself hasn't
- * loaded yet (i.e. caller passed `undefined`); the gate then waits.
- */
-function resolveQueueType(
-  queue: { arguments?: { "x-queue-type"?: string } | null } | undefined
-): "classic" | "quorum" | "stream" | undefined {
-  if (!queue) return undefined; // queue not loaded yet
-  if (queue.arguments === undefined) return undefined; // arguments not yet resolved
-  const raw = queue.arguments?.["x-queue-type"];
-  if (raw === "quorum" || raw === "stream" || raw === "classic") return raw;
-  return "classic"; // null arguments means no x-queue-type set → classic
-}
 
 export default QueueDetail;

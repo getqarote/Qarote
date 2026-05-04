@@ -8,7 +8,7 @@ import { ConnectionsOverviewCards } from "@/components/ConnectionsList/Connectio
 import { LoadingSkeleton } from "@/components/ConnectionsList/LoadingSkeleton";
 import type { ConnectionListItem } from "@/components/ConnectionsList/types";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
-import { PageError } from "@/components/PageError";
+import { PageErrorOrGate } from "@/components/PageErrorOrGate";
 import { NoServerSelectedCard, PageShell } from "@/components/PageShell";
 import { Input } from "@/components/ui/input";
 import { PixelX } from "@/components/ui/pixel-x";
@@ -104,7 +104,10 @@ const Connections = () => {
             <h1 className="title-page">{t("pageTitle")}</h1>
           </div>
         </div>
-        <PageError message={t("common:serverConnectionError")} />
+        <PageErrorOrGate
+          error={connectionsError}
+          fallbackMessage={t("common:serverConnectionError")}
+        />
       </PageShell>
     );
   }

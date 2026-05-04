@@ -1,4 +1,14 @@
 {
+  "home": "Inicio",
+  "overview": "Vista general",
+  "browse": "Explorar",
+  "browseToggle": {
+    "collapse": "Contraer sección Explorar",
+    "expand": "Expandir sección Explorar"
+  },
+  "diagnosisActiveBadge": "{{count}} incidencias activas",
+  "diagnosisActiveBadge_one": "{{count}} incidencia activa",
+  "diagnosisActiveBadge_other": "{{count}} incidencias activas",
   "dashboard": "Panel",
   "queues": "Colas",
   "channels": "Canales",

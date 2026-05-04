@@ -1,3 +1,4 @@
+import { type CSSProperties, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SupportedLocale } from "@qarote/i18n";
@@ -9,6 +10,9 @@ import { IslandProvider } from "@/components/IslandProvider";
 import FooterSection from "@/components/landing/FooterSection";
 import StickyNav from "@/components/StickyNav";
 import { TawkTo } from "@/components/TawkTo";
+
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useScrollEntry } from "@/hooks/useScrollEntry";
 
 interface AboutIslandProps {
   locale?: SupportedLocale;
@@ -33,11 +37,41 @@ export default function AboutIsland({
 
 function AboutContent() {
   const { t } = useTranslation("about");
+  const reduceMotion = useReducedMotion();
+  const [mounted, setMounted] = useState(false);
+  const [teamRef, teamEntered] = useScrollEntry<HTMLDivElement>(0.05);
+  const [missionRef, missionEntered] = useScrollEntry<HTMLDivElement>(0.1);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  const mountEnter = (delay: number): CSSProperties =>
+    reduceMotion
+      ? {}
+      : {
+          opacity: mounted ? 1 : 0,
+          transform: mounted ? "none" : "translateY(10px)",
+          transition: `opacity 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
+        };
+
+  const scrollEnter = (entered: boolean, delay: number): CSSProperties =>
+    reduceMotion
+      ? {}
+      : {
+          opacity: entered ? 1 : 0,
+          transform: entered ? "none" : "translateY(12px)",
+          transition: `opacity 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
+        };
 
   return (
     <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Page header */}
-      <div className="border border-border overflow-hidden mb-12">
+      <div
+        className="border border-border overflow-hidden mb-12"
+        style={mountEnter(0)}
+      >
         <div className="px-6 py-3 bg-muted/30 border-b border-border">
           <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             About
@@ -54,11 +88,12 @@ function AboutContent() {
       </div>
 
       {/* Team members */}
-      <div className="space-y-8">
-        {teamMembers.map((member) => (
+      <div ref={teamRef} className="space-y-8">
+        {teamMembers.map((member, i) => (
           <article
             key={member.id}
-            className="border border-border overflow-hidden"
+            className="border border-border overflow-hidden transition-colors duration-200 hover:border-primary/30"
+            style={scrollEnter(teamEntered, i * 80)}
           >
             <div className="px-6 py-3 bg-muted/30 border-b border-border flex items-center justify-between">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
@@ -109,9 +144,9 @@ function AboutContent() {
                         returnObjects: true,
                       });
                       return Array.isArray(raw) ? (raw as string[]) : [];
-                    })().map((highlight, i) => (
+                    })().map((highlight, j) => (
                       <li
-                        key={i}
+                        key={j}
                         className="flex items-start gap-2 text-sm text-muted-foreground"
                       >
                         <span className="mt-1.5 h-1.5 w-1.5 shrink-0 bg-primary/60" />
@@ -127,7 +162,11 @@ function AboutContent() {
       </div>
 
       {/* Mission section */}
-      <div className="border border-border overflow-hidden mt-12">
+      <div
+        ref={missionRef}
+        className="border border-border overflow-hidden mt-12"
+        style={scrollEnter(missionEntered, 0)}
+      >
         <div className="px-6 py-3 bg-muted/30 border-b border-border">
           <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Mission

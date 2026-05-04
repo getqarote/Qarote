@@ -49,7 +49,12 @@ export type GateSubject = {
 
 /** Optional context the resolver uses to make a per-call decision. */
 export interface GateContext {
-  /** Organization owning the request. Required for plan-axis evaluation. */
+  /**
+   * Organization owning the request. Required for plan-axis evaluation.
+   * Resolved upstream — `workspaceProcedure` derives it from the workspace,
+   * `orgScopedProcedure` from `ctx.resolveOrg()`. The gate axes never
+   * resolve org themselves — this is a pre-condition, not a fallback.
+   */
   organizationId?: string;
   /** Locale for any *fallback* server-rendered string (none today). */
   locale?: string;

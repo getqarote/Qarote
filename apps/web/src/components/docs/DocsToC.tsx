@@ -35,7 +35,8 @@ const DocsToC = ({ headings }: DocsToCProps) => {
     }
 
     return () => observer.disconnect();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [headings]);
 
   if (tocHeadings.length === 0) return null;
 

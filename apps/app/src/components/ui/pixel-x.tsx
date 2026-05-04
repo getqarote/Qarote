@@ -10,7 +10,6 @@ export function PixelX({ className }: PixelXProps) {
       shapeRendering="crispEdges"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
-      style={{ width: "auto" }}
       aria-hidden="true"
     >
       {/* Top-left to bottom-right diagonal */}

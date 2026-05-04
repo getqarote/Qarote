@@ -7,7 +7,7 @@ import { Search } from "lucide-react";
 import { UserRole } from "@/lib/api";
 
 import { NoServerConfigured } from "@/components/NoServerConfigured";
-import { PageError } from "@/components/PageError";
+import { PageErrorOrGate } from "@/components/PageErrorOrGate";
 import { NoServerSelectedCard, PageShell } from "@/components/PageShell";
 import { QueueHeader } from "@/components/Queues/QueueHeader";
 import { QueuesOverviewCards } from "@/components/Queues/QueuesOverviewCards";
@@ -41,6 +41,7 @@ const Queues = () => {
     data: queuesData,
     isLoading,
     isError,
+    error: queuesError,
   } = useQueues(selectedServerId, selectedVHost, hasServers);
 
   const queues = useMemo(() => queuesData?.queues || [], [queuesData?.queues]);
@@ -100,7 +101,10 @@ const Queues = () => {
             <h1 className="title-page">{t("pageTitle")}</h1>
           </div>
         </div>
-        <PageError message={t("common:serverConnectionError")} />
+        <PageErrorOrGate
+          error={queuesError}
+          fallbackMessage={t("common:serverConnectionError")}
+        />
       </PageShell>
     );
   }

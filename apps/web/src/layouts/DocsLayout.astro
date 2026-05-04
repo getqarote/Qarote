@@ -62,9 +62,9 @@ const sectionFirstSlug = sectionData?.pages[0]?.slug ?? "getting-started";
       <div class="flex items-center gap-4">
         <a
           href="/"
-          class="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:flex items-center gap-1.5"
+          class="group text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:flex items-center gap-1.5"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="transition-transform duration-150 group-hover:-translate-x-0.5">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
           Back to site
@@ -96,7 +96,7 @@ const sectionFirstSlug = sectionData?.pages[0]?.slug ?? "getting-started";
 
     <!-- Main content -->
     <main class="flex-1 min-w-0 px-6 sm:px-10 lg:px-14 py-10">
-      <div class="max-w-[65ch]">
+      <div class="max-w-[65ch] docs-content-enter">
         <!-- Breadcrumb -->
         {section && (
           <nav class="flex items-center gap-2 text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
@@ -121,9 +121,9 @@ const sectionFirstSlug = sectionData?.pages[0]?.slug ?? "getting-started";
               {prevPage && (
                 <a
                   href={`/docs/${prevPage.slug}/`}
-                  class="group flex flex-col gap-0.5 text-sm no-underline"
+                  class="group flex flex-col gap-0.5 text-sm no-underline transition-transform duration-150 hover:-translate-y-px"
                 >
-                  <span class="text-xs text-muted-foreground uppercase tracking-wider font-medium">← Previous</span>
+                  <span class="text-xs text-muted-foreground uppercase tracking-wider font-medium transition-transform duration-150 group-hover:-translate-x-0.5">← Previous</span>
                   <span class="text-foreground group-hover:text-primary transition-colors font-medium">{prevPage.title}</span>
                 </a>
               )}
@@ -132,9 +132,9 @@ const sectionFirstSlug = sectionData?.pages[0]?.slug ?? "getting-started";
               {nextPage && (
                 <a
                   href={`/docs/${nextPage.slug}/`}
-                  class="group flex flex-col gap-0.5 text-sm no-underline"
+                  class="group flex flex-col gap-0.5 text-sm no-underline transition-transform duration-150 hover:-translate-y-px"
                 >
-                  <span class="text-xs text-muted-foreground uppercase tracking-wider font-medium">Next →</span>
+                  <span class="text-xs text-muted-foreground uppercase tracking-wider font-medium transition-transform duration-150 group-hover:translate-x-0.5">Next →</span>
                   <span class="text-foreground group-hover:text-primary transition-colors font-medium">{nextPage.title}</span>
                 </a>
               )}
@@ -151,6 +151,24 @@ const sectionFirstSlug = sectionData?.pages[0]?.slug ?? "getting-started";
       </div>
     </aside>
   </div>
+
+<style>
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes docs-fade-up {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .docs-content-enter {
+      animation: docs-fade-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+  }
+</style>
 
 <script>
   // Copy-to-clipboard buttons on all code blocks
@@ -176,9 +194,18 @@ const sectionFirstSlug = sectionData?.pages[0]?.slug ?? "getting-started";
       const onSuccess = () => {
         btn.textContent = "Copied!";
         btn.classList.add("copied");
+        btn.style.transform = "scale(1.08)";
+        btn.style.transition = "transform 0.12s cubic-bezier(0.16,1,0.3,1)";
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            btn.style.transform = "scale(1)";
+          });
+        });
         setTimeout(() => {
           btn.textContent = "Copy";
           btn.classList.remove("copied");
+          btn.style.transform = "";
+          btn.style.transition = "";
         }, 2000);
       };
 

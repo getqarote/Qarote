@@ -100,6 +100,11 @@
     "message": "页面未找到",
     "returnHome": "返回首页"
   },
+  "upgradePrompt": {
+    "notAvailableOnDemo": "演示版不可用",
+    "planUpgradeRequired": "需要升级套餐",
+    "licenseRequired": "需要激活许可证"
+  },
   "updating": "更新中…",
   "updatedAgo": "{{seconds}} 秒前更新",
   "justUpdated": "刚刚更新"

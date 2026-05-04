@@ -90,7 +90,7 @@ interface FeatureGateCardProps {
  */
 const FEATURE_PATHS: Partial<Record<FeatureKey, string>> = {
   message_tracing: "/messages",
-  message_spy: "/messages",
+  message_spy: "/queues",
   incident_diagnosis: "/diagnosis",
 };
 

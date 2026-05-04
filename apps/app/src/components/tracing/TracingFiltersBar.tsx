@@ -1,19 +1,22 @@
 /**
  * TracingFiltersBar
  *
- * Filter inputs for the Message Tracing page.
+ * Filter controls for the Recorded mode (firehose). Vhost, Queue and
+ * Exchange are driven by live data from the broker — Select dropdowns
+ * instead of free-text inputs. Routing Key stays as free text (pattern
+ * matching, too many possible values to enumerate).
+ *
  * State is stored in URL search params so filters survive page reload
  * and are shareable via URL.
  *
  * Params: vhost, queue, exchange, rk (routingKey), dir (direction)
- * Time range params (from, to) are passed as controlled props —
- * they are only shown in Query mode.
+ * Time range params (from, to) are controlled props — only shown in History mode.
  *
  * Layout:
- *   Live mode  — single flat row of 5 filter controls
- *   Query mode — two labeled rows:
- *                  Row 1 "Time range": from → to
- *                  Row 2 "Filter":     vhost, queue, exchange, rk, dir + clear
+ *   Stream mode  — single flat row of filter controls
+ *   History mode — two labeled rows:
+ *                    Row 1 "Time range": from → to
+ *                    Row 2 "Filter":     vhost, queue, exchange, rk, dir + clear
  */
 
 import { useTranslation } from "react-i18next";
@@ -31,10 +34,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+import { useVHostContext } from "@/contexts/VHostContextDefinition";
+
+import { useExchanges, useQueues } from "@/hooks/queries/useRabbitMQ";
+
 import type { TraceDirection, TraceFilters } from "@/types/tracing";
 
 interface TracingFiltersBarProps {
-  /** Only shown in Query mode */
+  serverId: string;
+  /** Only shown in History mode */
   showTimeRange?: boolean;
   from?: string;
   to?: string;
@@ -43,6 +51,7 @@ interface TracingFiltersBarProps {
 }
 
 const VALID_DIRECTIONS: TraceDirection[] = ["publish", "deliver"];
+const ALL_VALUE = "__all__";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function useTracingFilters(): TraceFilters {
@@ -62,6 +71,7 @@ export function useTracingFilters(): TraceFilters {
 }
 
 export function TracingFiltersBar({
+  serverId,
   showTimeRange = false,
   from,
   to,
@@ -70,6 +80,16 @@ export function TracingFiltersBar({
 }: TracingFiltersBarProps) {
   const { t } = useTranslation("tracing");
   const [params, setParams] = useSearchParams();
+  const { availableVHosts } = useVHostContext();
+
+  const vhostFilter = params.get("vhost") ?? undefined;
+  const { data: queuesData } = useQueues(serverId, vhostFilter ?? null);
+  const queues = queuesData?.queues ?? [];
+
+  const { data: exchangesData } = useExchanges(serverId, vhostFilter ?? null);
+  const exchanges = (exchangesData?.exchanges ?? []).filter(
+    (e) => e.name !== "" && !e.name.startsWith("amq.")
+  );
 
   const set = (key: string, value: string | undefined) => {
     setParams(
@@ -107,30 +127,72 @@ export function TracingFiltersBar({
     from ||
     to;
 
-  /** The 5 text/select filter controls — shared between both modes */
   const filterControls = (
     <>
-      <Input
-        placeholder={t("filter.vhost")}
-        aria-label={t("filter.vhost")}
-        value={params.get("vhost") ?? ""}
-        onChange={(e) => set("vhost", e.target.value || undefined)}
-        className="h-8 w-32 text-xs font-mono"
-      />
-      <Input
-        placeholder={t("filter.queue")}
-        aria-label={t("filter.queue")}
-        value={params.get("queue") ?? ""}
-        onChange={(e) => set("queue", e.target.value || undefined)}
-        className="h-8 w-32 text-xs font-mono"
-      />
-      <Input
-        placeholder={t("filter.exchange")}
-        aria-label={t("filter.exchange")}
-        value={params.get("exchange") ?? ""}
-        onChange={(e) => set("exchange", e.target.value || undefined)}
-        className="h-8 w-36 text-xs font-mono"
-      />
+      {/* Vhost — select from available vhosts */}
+      <Select
+        value={params.get("vhost") ?? ALL_VALUE}
+        onValueChange={(v) => set("vhost", v === ALL_VALUE ? undefined : v)}
+      >
+        <SelectTrigger
+          className="h-8 w-32 text-xs"
+          aria-label={t("filter.vhost")}
+        >
+          <SelectValue placeholder={t("filter.vhost")} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={ALL_VALUE}>{t("filter.allVhosts")}</SelectItem>
+          {availableVHosts.map((v) => (
+            <SelectItem key={v.name} value={v.name}>
+              <span className="font-mono">{v.name}</span>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {/* Queue — select from queues for the filtered vhost (or all) */}
+      <Select
+        value={params.get("queue") ?? ALL_VALUE}
+        onValueChange={(v) => set("queue", v === ALL_VALUE ? undefined : v)}
+      >
+        <SelectTrigger
+          className="h-8 w-36 text-xs"
+          aria-label={t("filter.queue")}
+        >
+          <SelectValue placeholder={t("filter.queue")} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={ALL_VALUE}>{t("filter.allQueues")}</SelectItem>
+          {queues.map((q) => (
+            <SelectItem key={`${q.vhost}/${q.name}`} value={q.name}>
+              <span className="font-mono text-xs">{q.name}</span>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {/* Exchange — select from exchanges (excluding system exchanges) */}
+      <Select
+        value={params.get("exchange") ?? ALL_VALUE}
+        onValueChange={(v) => set("exchange", v === ALL_VALUE ? undefined : v)}
+      >
+        <SelectTrigger
+          className="h-8 w-36 text-xs"
+          aria-label={t("filter.exchange")}
+        >
+          <SelectValue placeholder={t("filter.exchange")} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={ALL_VALUE}>{t("filter.allExchanges")}</SelectItem>
+          {exchanges.map((e) => (
+            <SelectItem key={`${e.vhost}/${e.name}`} value={e.name}>
+              <span className="font-mono text-xs">{e.name}</span>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {/* Routing Key — free text (pattern matching, not enumerable) */}
       <Input
         placeholder={t("filter.routingKey")}
         aria-label={t("filter.routingKey")}
@@ -138,9 +200,11 @@ export function TracingFiltersBar({
         onChange={(e) => set("rk", e.target.value || undefined)}
         className="h-8 w-36 text-xs font-mono"
       />
+
+      {/* Direction */}
       <Select
-        value={params.get("dir") ?? "all"}
-        onValueChange={(v) => set("dir", v === "all" ? undefined : v)}
+        value={params.get("dir") ?? ALL_VALUE}
+        onValueChange={(v) => set("dir", v === ALL_VALUE ? undefined : v)}
       >
         <SelectTrigger
           className="h-8 w-28 text-xs"
@@ -149,7 +213,7 @@ export function TracingFiltersBar({
           <SelectValue placeholder={t("filter.direction")} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">{t("filter.direction.all")}</SelectItem>
+          <SelectItem value={ALL_VALUE}>{t("filter.direction.all")}</SelectItem>
           <SelectItem value="publish">
             {t("filter.direction.publish")}
           </SelectItem>
@@ -161,7 +225,7 @@ export function TracingFiltersBar({
     </>
   );
 
-  /* ── Live mode: single flat row ── */
+  /* ── Stream mode: single flat row ── */
   if (!showTimeRange) {
     return (
       <div className="flex flex-wrap items-center gap-2">
@@ -181,10 +245,10 @@ export function TracingFiltersBar({
     );
   }
 
-  /* ── Query mode: two labeled groups ── */
+  /* ── History mode: two labeled groups ── */
   return (
     <div className="flex flex-col gap-2">
-      {/* Row 1 — Time range (primary: defines the data window) */}
+      {/* Row 1 — Time range */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-[11px] font-medium text-muted-foreground tracking-wide uppercase w-20 shrink-0">
           {t("filter.timeRangeLabel")}
@@ -208,7 +272,7 @@ export function TracingFiltersBar({
         />
       </div>
 
-      {/* Row 2 — Attribute filters (secondary: refine within the window) */}
+      {/* Row 2 — Attribute filters */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-[11px] font-medium text-muted-foreground tracking-wide uppercase w-20 shrink-0">
           {t("filter.filterLabel")}

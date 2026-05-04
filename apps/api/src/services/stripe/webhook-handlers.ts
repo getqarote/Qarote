@@ -201,6 +201,7 @@ export async function handleCheckoutSessionCompleted(session: Session) {
         billing_interval: billingInterval ?? null,
         organization_id: org?.id ?? null,
         stripe_subscription_id: subscriptionId ?? null,
+        is_trial: subscriptionStatus !== SubscriptionStatus.ACTIVE,
       },
     });
 
@@ -332,6 +333,7 @@ async function handleLicensePurchase(
           billing_interval: billingInterval ?? null,
           license_id: licenseId,
           expires_at: expiresAt.toISOString(),
+          stripe_subscription_id: subscriptionId,
         },
       });
     } catch (analyticsError) {
@@ -556,6 +558,16 @@ export async function handleCustomerSubscriptionDeleted(
       }
 
       logger.info({ subscriptionId }, "Subscription canceled successfully");
+
+      posthog?.capture({
+        distinctId: existingSubscription.userId,
+        event: "subscription_churned",
+        properties: {
+          plan: existingSubscription.plan,
+          stripe_subscription_id: subscriptionId,
+          organization_id: existingSubscription.organizationId,
+        },
+      });
 
       // Deactivate associated licenses (if any)
       const licenses = await prisma.license.findMany({

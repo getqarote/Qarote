@@ -67,6 +67,14 @@
   "theme": "主题",
   "language": "语言",
   "manageServers": "管理服务器",
+  "consent": {
+    "ariaLabel": "Cookie 偏好设置",
+    "title": "几项工具帮助我们改善 Qarote",
+    "description": "我们使用分析、会话回放和聊天工具来了解 Qarote 的使用情况并提供支持。请选择您允许的内容。",
+    "learnMore": "了解更多",
+    "essentialOnly": "仅使用必要功能",
+    "acceptAll": "全部接受"
+  },
   "rabbitMQDashboard": "RabbitMQ 仪表盘",
   "noCreditCard": "无需信用卡",
   "changelog": {

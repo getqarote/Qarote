@@ -1,25 +1,27 @@
 /**
- * Message Tracing Page
+ * Messages page — unified Live (Spy) + Recorded (Firehose) experience.
  *
- * Two modes:
- *   Live Tail  — tRPC subscription, log-style stream, auto-scroll
- *   Query      — cursor-based infinite scroll table with time range
+ * Top-level modes (URL ?mode=):
+ *   live     — QueueSpy per-queue tap (no firehose required).
+ *              Queue pre-selected via ?queue=<name>&vhost=<vh> deep-link
+ *              from QueueDetail. Default when firehose is inactive.
+ *   recorded — Firehose-based stream + history query. Default when firehose
+ *              is active. Gated by FeatureGate(message_tracing).
  *
- * Gating model (soft preview):
- *   Free plan — page loads without a hard paywall. Live tail shows the first
- *   10 events then emits a preview_limit banner. Query shows the most recent
- *   10 events from the last 24 hours with a teaser.
- *   Paid plans — full access, no caps.
+ * Within Recorded mode:
+ *   Stream   — live tail of firehose events (requires firehose active)
+ *   History  — cursor-based query over a time range
  *
- * Layout:
- *   FirehoseStatus check (FirehoseDisabledState if inactive)
- *     → <TracingContent> (mode toggle + filters + results)
+ * Default mode: ?mode= absent → "recorded" if firehose active, else "live".
+ * Back/Forward: topMode derived from URL, no local state needed.
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router";
 
 import {
+  AlertTriangle,
   ArrowDown,
   Database,
   Info,
@@ -35,6 +37,7 @@ import {
 import { SentryErrorBoundary } from "@/lib/sentry";
 
 import { FeatureGate } from "@/components/feature-gate/FeatureGate";
+import { QueueSpy } from "@/components/messages/QueueSpy";
 import { PageShell } from "@/components/PageShell";
 import { FirehoseDisabledState } from "@/components/tracing/FirehoseDisabledState";
 import {
@@ -45,8 +48,16 @@ import { TracingMessageRow } from "@/components/tracing/TracingMessageRow";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scrollArea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import { useServerContext } from "@/contexts/ServerContext";
+import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
 import {
   useFirehoseStatus,
@@ -55,6 +66,7 @@ import {
   useTraceStats,
   useWatchTraces,
 } from "@/hooks/queries/useMessageRecording";
+import { useQueues } from "@/hooks/queries/useRabbitMQ";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import type { MessageTraceEvent } from "@/types/tracing";
@@ -425,6 +437,7 @@ function QueryView({ serverId }: { serverId: string }) {
     <div>
       <div className="px-4 py-2 border-b border-border">
         <TracingFiltersBar
+          serverId={serverId}
           showTimeRange
           from={from}
           to={to}
@@ -495,6 +508,89 @@ function QueryView({ serverId }: { serverId: string }) {
 }
 
 // ---------------------------------------------------------------------------
+// LiveSpyContent — queue picker + per-queue spy (no firehose required)
+// ---------------------------------------------------------------------------
+
+function LiveSpyContent({
+  serverId,
+  initialQueueName,
+}: {
+  serverId: string;
+  initialQueueName?: string;
+}) {
+  const { t } = useTranslation("tracing");
+  const { selectedVHost } = useVHostContext();
+  const { data: queuesData, isLoading } = useQueues(serverId, selectedVHost);
+  const queues = queuesData?.queues ?? [];
+  const [selectedQueueName, setSelectedQueueName] = useState<string>(
+    initialQueueName ?? ""
+  );
+
+  // Reset selection when vhost changes — the queue may not exist on the new vhost.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSelectedQueueName("");
+  }, [selectedVHost]);
+
+  const selectedQueue = queues.find((q) => q.name === selectedQueueName);
+
+  return (
+    <div>
+      {/* Queue picker */}
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-muted/30">
+        <span className="text-sm text-muted-foreground shrink-0">
+          {t("spy.queueLabel")}
+        </span>
+        <Select
+          value={selectedQueueName}
+          onValueChange={setSelectedQueueName}
+          disabled={isLoading || queues.length === 0}
+        >
+          <SelectTrigger className="h-8 text-sm max-w-xs">
+            <SelectValue
+              placeholder={
+                isLoading ? t("spy.loadingQueues") : t("spy.selectQueue")
+              }
+            />
+          </SelectTrigger>
+          <SelectContent>
+            {queues.map((q) => (
+              <SelectItem key={`${q.vhost}/${q.name}`} value={q.name}>
+                <span className="font-mono text-xs">{q.name}</span>
+                {q.type && q.type !== "classic" && (
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    {q.type}
+                  </span>
+                )}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Spy panel */}
+      {selectedQueue ? (
+        <div className="p-4">
+          <QueueSpy
+            serverId={serverId}
+            queueName={selectedQueue.name}
+            vhost={selectedQueue.vhost ?? selectedVHost ?? "/"}
+            queueType={
+              selectedQueue.type as "classic" | "quorum" | "stream" | undefined
+            }
+          />
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center gap-2 py-16 text-muted-foreground">
+          <Radio className="w-5 h-5" />
+          <span className="text-sm">{t("spy.selectQueueHint")}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // TracingContent (inside the gate, after firehose check)
 // ---------------------------------------------------------------------------
 
@@ -540,7 +636,21 @@ function persistDismissedModes(modes: Set<"live" | "query">): void {
   }
 }
 
-function TracingContent({ serverId }: { serverId: string }) {
+interface RecordedContentProps {
+  serverId: string;
+  firehoseActive: boolean;
+  firehoseVhosts: { name: string; tracing: boolean }[];
+  isEnablingFirehose: boolean;
+  onEnableFirehose: () => Promise<void>;
+}
+
+function RecordedContent({
+  serverId,
+  firehoseActive,
+  firehoseVhosts,
+  isEnablingFirehose,
+  onEnableFirehose,
+}: RecordedContentProps) {
   const { t } = useTranslation("tracing");
   const [mode, setMode] = useState<"live" | "query">("live");
 
@@ -563,12 +673,9 @@ function TracingContent({ serverId }: { serverId: string }) {
   }, [mode]);
 
   return (
-    <div className="rounded-lg border border-border overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
-        <div className="flex items-center gap-2">
-          <h1 className="title-section">{t("page.title")}</h1>
-        </div>
+    <>
+      {/* Recorded sub-mode header: Stream | History */}
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border">
         <div className="flex items-center gap-1 rounded-md border border-border p-0.5">
           <button
             type="button"
@@ -637,15 +744,126 @@ function TracingContent({ serverId }: { serverId: string }) {
       {/* Filters — shared across both modes, time range only in query */}
       {mode === "live" && (
         <div className="px-4 py-2 border-b border-border">
-          <TracingFiltersBar />
+          <TracingFiltersBar serverId={serverId} />
         </div>
       )}
 
       {/* Content */}
       {mode === "live" ? (
         <LiveTail serverId={serverId} enabled={mode === "live"} />
-      ) : (
+      ) : firehoseActive ? (
         <QueryView serverId={serverId} />
+      ) : (
+        <FirehoseDisabledState
+          vhosts={firehoseVhosts}
+          isEnabling={isEnablingFirehose}
+          onEnable={onEnableFirehose}
+        />
+      )}
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// MessagesContent — top-level Spy | Recorded switcher
+// ---------------------------------------------------------------------------
+
+interface MessagesContentProps {
+  serverId: string;
+  firehoseActive: boolean;
+  firehoseVhosts: { name: string; tracing: boolean }[];
+  isEnablingFirehose: boolean;
+  onEnableFirehose: () => Promise<void>;
+}
+
+function MessagesContent({
+  serverId,
+  firehoseActive,
+  firehoseVhosts,
+  isEnablingFirehose,
+  onEnableFirehose,
+}: MessagesContentProps) {
+  const { t } = useTranslation("tracing");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const modeParam = searchParams.get("mode"); // "live" | "recorded" | null
+  const queueParam = searchParams.get("queue") ?? undefined;
+
+  // MAJOR 2: derive topMode from URL — Back/Forward updates mode automatically.
+  // MAJOR 4: when no ?mode= param, default to "recorded" if firehose is
+  // active (more powerful), else "live" (always accessible without firehose).
+  const topMode: "live" | "recorded" =
+    modeParam === "recorded"
+      ? "recorded"
+      : modeParam === "live"
+        ? "live"
+        : firehoseActive
+          ? "recorded"
+          : "live";
+
+  const switchMode = (mode: "live" | "recorded") => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("mode", mode);
+        if (mode !== "live") {
+          next.delete("queue");
+          next.delete("vhost");
+        }
+        return next;
+      },
+      { replace: true }
+    );
+  };
+
+  return (
+    <div className="rounded-lg border border-border overflow-hidden">
+      {/* Top-level header: title + Live | Recorded switcher */}
+      <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
+        <h1 className="title-section">{t("page.title")}</h1>
+        <div className="flex items-center gap-1 rounded-md border border-border p-0.5">
+          <button
+            type="button"
+            aria-pressed={topMode === "live"}
+            onClick={() => switchMode("live")}
+            className={`flex items-center gap-1.5 px-3 py-1 text-xs rounded transition-colors ${
+              topMode === "live"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Radio className="h-3 w-3" aria-hidden />
+            {t("mode.spy")}
+          </button>
+          <button
+            type="button"
+            aria-pressed={topMode === "recorded"}
+            onClick={() => switchMode("recorded")}
+            className={`flex items-center gap-1.5 px-3 py-1 text-xs rounded transition-colors ${
+              topMode === "recorded"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Database className="h-3 w-3" aria-hidden />
+            {t("mode.recorded")}
+          </button>
+        </div>
+      </div>
+
+      {/* Mode content */}
+      {topMode === "live" ? (
+        <LiveSpyContent serverId={serverId} initialQueueName={queueParam} />
+      ) : (
+        <FeatureGate feature="message_tracing" serverId={serverId}>
+          <RecordedContent
+            serverId={serverId}
+            firehoseActive={firehoseActive}
+            firehoseVhosts={firehoseVhosts}
+            isEnablingFirehose={isEnablingFirehose}
+            onEnableFirehose={onEnableFirehose}
+          />
+        </FeatureGate>
       )}
     </div>
   );
@@ -666,6 +884,9 @@ function TracingGated({ serverId }: { serverId: string }) {
   } = useFirehoseStatus(serverId);
   const setTraceEnabled = useSetTraceEnabled();
   const [isEnabling, setIsEnabling] = useState(false);
+  const [partialEnableWarning, setPartialEnableWarning] = useState<
+    string | null
+  >(null);
 
   if (isLoading) {
     return (
@@ -695,46 +916,56 @@ function TracingGated({ serverId }: { serverId: string }) {
     );
   }
 
-  if (!firehoseStatus?.active) {
-    return (
-      <FirehoseDisabledState
-        vhosts={firehoseStatus?.vhosts ?? []}
-        isEnabling={isEnabling}
-        onEnable={async () => {
-          setIsEnabling(true);
-          try {
-            const result = await setTraceEnabled.mutateAsync({
-              serverId,
-              workspaceId,
-              enabled: true,
-            });
-            if (!result.success) {
-              const totalVhosts = firehoseStatus?.vhosts.length ?? 0;
-              const failedCount = result.failedVhosts?.length ?? 0;
-              // Partial success: some vhosts enabled, some failed.
-              // Refetch so the UI reflects whatever is now active rather
-              // than bouncing the user to the error boundary.
-              if (totalVhosts > 0 && failedCount < totalVhosts) {
-                await refetch();
-              } else {
-                throw new Error(
-                  result.failedVhosts?.length
-                    ? `${t("empty.firehose.enableError")}: ${result.failedVhosts.join(", ")}`
-                    : t("empty.firehose.enableError")
-                );
-              }
-            } else {
-              await refetch();
-            }
-          } finally {
-            setIsEnabling(false);
-          }
-        }}
-      />
-    );
-  }
+  const handleEnableFirehose = async () => {
+    setIsEnabling(true);
+    try {
+      const result = await setTraceEnabled.mutateAsync({
+        serverId,
+        workspaceId,
+        enabled: true,
+      });
+      if (!result.success) {
+        const totalVhosts = firehoseStatus?.vhosts.length ?? 0;
+        const failedCount = result.failedVhosts?.length ?? 0;
+        if (totalVhosts > 0 && failedCount < totalVhosts) {
+          await refetch();
+          setPartialEnableWarning(
+            result.failedVhosts?.length
+              ? `${t("empty.firehose.enableError")}: ${result.failedVhosts.join(", ")}`
+              : t("empty.firehose.enableError")
+          );
+        } else {
+          throw new Error(
+            result.failedVhosts?.length
+              ? `${t("empty.firehose.enableError")}: ${result.failedVhosts.join(", ")}`
+              : t("empty.firehose.enableError")
+          );
+        }
+      } else {
+        await refetch();
+      }
+    } finally {
+      setIsEnabling(false);
+    }
+  };
 
-  return <TracingContent serverId={serverId} />;
+  return (
+    <>
+      {partialEnableWarning && (
+        <div className="mx-4 mt-3 flex items-start gap-2 rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-warning">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>{partialEnableWarning}</span>
+        </div>
+      )}
+      <MessagesContent
+        serverId={serverId}
+        firehoseActive={firehoseStatus?.active ?? false}
+        firehoseVhosts={firehoseStatus?.vhosts ?? []}
+        isEnablingFirehose={isEnabling}
+        onEnableFirehose={handleEnableFirehose}
+      />
+    </>
+  );
 }
 
 /** Fallback rendered by the error boundary when TracingGated crashes.
@@ -760,21 +991,6 @@ const TracingGatedBounded = SentryErrorBoundary(TracingGated, {
   fallback: () => <TracingErrorFallback />,
 });
 
-/**
- * Capability gate wrapper — checks `message_tracing` capability for the
- * selected server before rendering the firehose-aware `TracingGated`.
- * When the broker can't host the firehose, `<FeatureGateCard>` replaces
- * the page body with the broker version, last-checked, Re-check button,
- * and a "Try Live tap instead" fallback CTA.
- */
-function TracingFeatureGated({ serverId }: { serverId: string }) {
-  return (
-    <FeatureGate feature="message_tracing" serverId={serverId}>
-      <TracingGatedBounded serverId={serverId} />
-    </FeatureGate>
-  );
-}
-
 // ---------------------------------------------------------------------------
 // Page root
 // ---------------------------------------------------------------------------
@@ -795,7 +1011,7 @@ export default function Tracing() {
 
   return (
     <PageShell>
-      <TracingFeatureGated serverId={selectedServerId} />
+      <TracingGatedBounded serverId={selectedServerId} />
     </PageShell>
   );
 }

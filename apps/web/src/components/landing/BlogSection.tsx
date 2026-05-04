@@ -1,3 +1,5 @@
+import { type CSSProperties, useEffect, useRef, useState } from "react";
+
 export interface BlogPostPreview {
   slug: string;
   title: string;
@@ -7,12 +9,59 @@ export interface BlogPostPreview {
   readingTimeMin?: number;
 }
 
+function useReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return reduced;
+}
+
+function useScrollEntry<T extends Element>(
+  threshold = 0.1
+): [React.RefObject<T>, boolean] {
+  const ref = useRef<T>(null);
+  const [entered, setEntered] = useState(false);
+  useEffect(() => {
+    if (!ref.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setEntered(true);
+          observer.disconnect();
+        }
+      },
+      { threshold }
+    );
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [threshold]);
+  return [ref, entered];
+}
+
 interface BlogSectionProps {
   posts: BlogPostPreview[];
 }
 
 const BlogSection = ({ posts }: BlogSectionProps) => {
+  const reduceMotion = useReducedMotion();
+  const [gridRef, gridEntered] = useScrollEntry<HTMLDivElement>(0.08);
+
   if (posts.length === 0) return null;
+
+  const cardStyle = (i: number): CSSProperties =>
+    reduceMotion
+      ? {}
+      : {
+          opacity: gridEntered ? 1 : 0,
+          transform: gridEntered ? "none" : "translateY(12px)",
+          transition: `opacity 0.5s cubic-bezier(0.16,1,0.3,1) ${i * 60}ms, transform 0.5s cubic-bezier(0.16,1,0.3,1) ${i * 60}ms`,
+        };
 
   return (
     <section className="pt-12 pb-20 bg-muted/20">
@@ -26,12 +75,13 @@ const BlogSection = ({ posts }: BlogSectionProps) => {
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {posts.map((post) => (
+        <div ref={gridRef} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {posts.map((post, i) => (
             <a
               key={post.slug}
               href={`/blog/${post.slug}/`}
               className="group border border-border bg-background p-6 flex flex-col gap-4 hover:border-primary/50 transition-colors duration-200"
+              style={cardStyle(i)}
             >
               <div className="flex-1 flex flex-col gap-3">
                 <h3 className="text-lg font-medium text-foreground leading-snug group-hover:text-primary transition-colors duration-200">

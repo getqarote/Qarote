@@ -161,7 +161,9 @@
     "security": "Seguridad",
     "pricing": "Precios",
     "vsCloudAMQP": "Qarote vs CloudAMQP",
-    "vsNewRelic": "Qarote vs New Relic"
+    "vsNewRelic": "Qarote vs New Relic",
+    "docs": "Documentación",
+    "changelog": "Registro de cambios"
   },
   "founderQuote": {
     "openQuote": "“",

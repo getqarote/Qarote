@@ -34,6 +34,5 @@
   "successDescription": "您的工作区已创建成功。接下来您可以：",
   "successStep1": "添加您的第一个 RabbitMQ 连接",
   "successStep2": "邀请您的团队",
-  "successStep3": "探索您的仪表板",
   "successCta": "前往仪表板"
 }

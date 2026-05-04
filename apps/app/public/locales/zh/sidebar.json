@@ -1,4 +1,14 @@
 {
+  "home": "首页",
+  "overview": "概览",
+  "browse": "浏览",
+  "browseToggle": {
+    "collapse": "折叠浏览部分",
+    "expand": "展开浏览部分"
+  },
+  "diagnosisActiveBadge": "{{count}} 个活跃问题",
+  "diagnosisActiveBadge_one": "{{count}} 个活跃问题",
+  "diagnosisActiveBadge_other": "{{count}} 个活跃问题",
   "dashboard": "仪表盘",
   "queues": "队列",
   "channels": "通道",

@@ -94,7 +94,7 @@ const TagsInput: React.FC<TagsInputProps> = ({
               }}
               className="ml-1 rounded-full hover:bg-destructive hover:text-destructive-foreground"
             >
-              <PixelX className="h-3 w-auto shrink-0" />
+              <PixelX className="h-3 w-3 shrink-0" />
             </button>
           )}
         </Badge>

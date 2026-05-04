@@ -7,7 +7,7 @@ import { UserRole } from "@/lib/api";
 import { logger } from "@/lib/logger";
 
 import { NoServerConfigured } from "@/components/NoServerConfigured";
-import { PageError } from "@/components/PageError";
+import { PageErrorOrGate } from "@/components/PageErrorOrGate";
 import { NoServerSelectedCard, PageShell } from "@/components/PageShell";
 import { DeletePolicyDialog } from "@/components/PoliciesList/DeletePolicyDialog";
 import { PoliciesTable } from "@/components/PoliciesList/PoliciesTable";
@@ -102,7 +102,10 @@ const Policies = () => {
           <SidebarTrigger />
           <h1 className="title-page">{t("pageTitle")}</h1>
         </div>
-        <PageError message={t("common:serverConnectionError")} />
+        <PageErrorOrGate
+          error={error}
+          fallbackMessage={t("common:serverConnectionError")}
+        />
       </PageShell>
     );
   }

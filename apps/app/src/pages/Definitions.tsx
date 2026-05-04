@@ -5,7 +5,7 @@ import { Download, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { NoServerConfigured } from "@/components/NoServerConfigured";
-import { PageError } from "@/components/PageError";
+import { PageErrorOrGate } from "@/components/PageErrorOrGate";
 import { NoServerSelectedCard, PageShell } from "@/components/PageShell";
 import { Button } from "@/components/ui/button";
 import {
@@ -163,7 +163,10 @@ const Definitions = () => {
             <h1 className="title-page">{t("pageTitle")}</h1>
           </div>
         </div>
-        <PageError message={t("common:serverConnectionError")} />
+        <PageErrorOrGate
+          error={exportError}
+          fallbackMessage={t("common:serverConnectionError")}
+        />
       </PageShell>
     );
   }

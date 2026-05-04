@@ -247,7 +247,6 @@ const Onboarding = () => {
                 [
                   { label: t("successStep1"), href: "/?addServer=true" },
                   { label: t("successStep2"), href: "/settings/members" },
-                  { label: t("successStep3"), href: "/" },
                 ] as const
               ).map(({ label, href }, i) => (
                 <li key={i}>

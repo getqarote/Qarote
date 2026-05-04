@@ -1,4 +1,14 @@
 {
+  "home": "Accueil",
+  "overview": "Vue d'ensemble",
+  "browse": "Explorer",
+  "browseToggle": {
+    "collapse": "Replier la section Explorer",
+    "expand": "Déplier la section Explorer"
+  },
+  "diagnosisActiveBadge": "{{count}} incidents actifs",
+  "diagnosisActiveBadge_one": "{{count}} incident actif",
+  "diagnosisActiveBadge_other": "{{count}} incidents actifs",
   "dashboard": "Tableau de bord",
   "queues": "Files d'attente",
   "channels": "Canaux",

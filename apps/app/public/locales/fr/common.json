@@ -100,6 +100,11 @@
     "message": "Page introuvable",
     "returnHome": "Retour à l'accueil"
   },
+  "upgradePrompt": {
+    "notAvailableOnDemo": "Non disponible sur la démo",
+    "planUpgradeRequired": "Mise à niveau du plan requise",
+    "licenseRequired": "Licence requise"
+  },
   "updating": "Mise à jour…",
   "updatedAgo": "Mis à jour il y a {{seconds}}s",
   "justUpdated": "À l'instant"

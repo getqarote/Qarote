@@ -1,4 +1,46 @@
 {
+  "home": {
+    "title": "Inicio",
+    "serverFallback": "este broker",
+    "statusBanner": {
+      "loading": "Cargando estado",
+      "calmHeadline": "Todo tranquilo en {{serverName}}.",
+      "calmSubline": "Sin incidencias activas en las últimas 2 horas.",
+      "warningHeadline_one": "{{count}} aviso requiere atención",
+      "warningHeadline_other": "{{count}} avisos requieren atención",
+      "criticalHeadline_one": "{{count}} incidencia activa",
+      "criticalHeadline_other": "{{count}} incidencias activas",
+      "review": "Revisar",
+      "investigateNow": "Investigar",
+      "partialData": "Estado incompleto para {{serverName}}",
+      "partialDataDetail": "{{count}} endpoints de señal fallaron — el diagnóstico puede ser parcial.",
+      "partialDataDetail_one": "{{count}} endpoint de señal falló — el diagnóstico puede ser parcial.",
+      "partialDataDetail_other": "{{count}} endpoints de señal fallaron — el diagnóstico puede ser parcial.",
+      "unavailableHeadline": "Diagnóstico no disponible para {{serverName}}",
+      "unavailableSubline": "Actualiza o verifica las capacidades del broker para activar el diagnóstico de incidencias.",
+      "regionLabel": "Vista general del estado del broker"
+    },
+    "activeConcerns": {
+      "heading": "Avisos activos",
+      "viewAll": "Ver todo en Diagnóstico",
+      "viewAllWithOverflow": "Ver todo (+{{count}} más)",
+      "openInDiagnosis": "Abrir en Diagnóstico"
+    },
+    "activity": {
+      "label": "Actividad"
+    },
+    "pulse": {
+      "ariaLabel": "Estado del resumen diario",
+      "workspaceFallback": "tu espacio de trabajo",
+      "invitationHeadline": "Recibe un resumen diario en tu bandeja",
+      "invitationSubline": "Un resumen matutino de la salud, alertas y actividad de colas de {{workspace}}.",
+      "enabledHeadline": "Resumen diario activo para {{workspace}}",
+      "enabledSubline": "Próximo envío sobre las {{time}} UTC.",
+      "enabledSublineNoTime": "Hora de envío aún no programada.",
+      "setUp": "Configurar",
+      "configure": "Configurar"
+    }
+  },
   "pageTitle": "Panel",
   "pageSubtitle": "Resumen del estado y rendimiento de tu servidor RabbitMQ",
   "rabbitMQDashboard": "Panel",

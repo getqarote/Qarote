@@ -32,6 +32,22 @@ import { OrgRole, UserPlan, UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
+ * Invalidate all cached sessions for a user so that the next request
+ * re-reads fresh data from the database (bypassing the 5-minute cookie cache).
+ * Called after any mutation that changes User.role or User.workspaceId.
+ */
+async function invalidateUserSessions(
+  prisma: {
+    session: {
+      deleteMany: (args: { where: { userId: string } }) => Promise<unknown>;
+    };
+  },
+  userId: string
+): Promise<void> {
+  await prisma.session.deleteMany({ where: { userId } });
+}
+
+/**
  * Workspace management router
  * Handles workspace creation, updates, deletion, and switching
  */
@@ -250,6 +266,18 @@ export const managementRouter = router({
           return workspace;
         });
 
+        // Invalidate the cookie-cached session so role/workspaceId changes
+        // take effect immediately (cookie cache TTL is 5 minutes otherwise).
+        await invalidateUserSessions(
+          ctx.prisma as unknown as Parameters<typeof invalidateUserSessions>[0],
+          user.id
+        ).catch((err) => {
+          ctx.logger.warn(
+            { err, userId: user.id },
+            "Failed to invalidate user sessions after workspace create — stale session may persist up to 5 min"
+          );
+        });
+
         ctx.logger.info(
           {
             workspaceId: newWorkspace.id,
@@ -264,6 +292,7 @@ export const managementRouter = router({
           event: "workspace_created",
           properties: {
             workspace_id: newWorkspace.id,
+            workspace_name: name,
             organization_id: organizationId,
             is_first_workspace: !user.workspaceId,
           },
@@ -508,6 +537,17 @@ export const managementRouter = router({
           return { id: user.workspaceId } as { id: string };
         });
 
+        // Invalidate session cache — workspaceId changed for this user.
+        await invalidateUserSessions(
+          ctx.prisma as unknown as Parameters<typeof invalidateUserSessions>[0],
+          user.id
+        ).catch((err) => {
+          ctx.logger.warn(
+            { err, userId: user.id },
+            "Failed to invalidate user sessions after workspace delete — stale session may persist up to 5 min"
+          );
+        });
+
         ctx.logger.info(
           {
             workspaceId,
@@ -567,6 +607,17 @@ export const managementRouter = router({
         await ctx.prisma.user.update({
           where: { id: user.id },
           data: { workspaceId },
+        });
+
+        // Invalidate session cache — workspaceId changed for this user.
+        await invalidateUserSessions(
+          ctx.prisma as unknown as Parameters<typeof invalidateUserSessions>[0],
+          user.id
+        ).catch((err) => {
+          ctx.logger.warn(
+            { err, userId: user.id },
+            "Failed to invalidate user sessions after workspace switch — stale session may persist up to 5 min"
+          );
         });
 
         ctx.logger.info(

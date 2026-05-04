@@ -161,7 +161,9 @@
     "vsCloudAMQP": "Qarote vs CloudAMQP",
     "vsNewRelic": "Qarote vs New Relic",
     "quiz": "测验",
-    "security": "安全性"
+    "security": "安全性",
+    "docs": "文档",
+    "changelog": "更新日志"
   },
   "founderQuote": {
     "openQuote": "「",

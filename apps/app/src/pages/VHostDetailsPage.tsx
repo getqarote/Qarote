@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 import { UserRole } from "@/lib/api";
 
-import { PageError } from "@/components/PageError";
+import { PageErrorOrGate } from "@/components/PageErrorOrGate";
 import { FullPageAlert, PageShell } from "@/components/PageShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -284,7 +284,10 @@ export default function VHostDetailsPage() {
   if (error) {
     return (
       <PageShell>
-        <PageError message={t("common:serverConnectionError")} />
+        <PageErrorOrGate
+          error={error}
+          fallbackMessage={t("common:serverConnectionError")}
+        />
       </PageShell>
     );
   }

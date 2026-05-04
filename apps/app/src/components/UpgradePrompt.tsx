@@ -3,6 +3,7 @@
  * Shows a non-dismissible overlay prompting users to activate a license
  */
 
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { AlertCircle, Lock } from "lucide-react";
@@ -34,6 +35,7 @@ export function UpgradePrompt({
   message,
   className,
 }: UpgradePromptProps) {
+  const { t } = useTranslation("common");
   const navigate = useNavigate();
   const featureName = getFeatureDescription(feature);
   const cloud = isCloudMode();
@@ -60,7 +62,13 @@ export function UpgradePrompt({
           <div className="flex items-start gap-3 rounded-lg border bg-muted/50 p-4">
             <AlertCircle className="h-5 w-5 text-muted-foreground mt-0.5" />
             <div className="space-y-1">
-              <p className="text-sm font-medium">License Required</p>
+              <p className="text-sm font-medium">
+                {demo
+                  ? t("upgradePrompt.notAvailableOnDemo")
+                  : cloud
+                    ? t("upgradePrompt.planUpgradeRequired")
+                    : t("upgradePrompt.licenseRequired")}
+              </p>
               <p className="text-sm text-muted-foreground">
                 {demo
                   ? "This premium feature is not available on the demo. Deploy your own instance to access it."

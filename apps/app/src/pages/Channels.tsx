@@ -8,7 +8,7 @@ import { ChannelsOverviewCards } from "@/components/ChannelsList/ChannelsOvervie
 import { LoadingSkeleton } from "@/components/ChannelsList/LoadingSkeleton";
 import type { ChannelListItem } from "@/components/ChannelsList/types";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
-import { PageError } from "@/components/PageError";
+import { PageErrorOrGate } from "@/components/PageErrorOrGate";
 import { NoServerSelectedCard, PageShell } from "@/components/PageShell";
 import { Input } from "@/components/ui/input";
 import { PixelX } from "@/components/ui/pixel-x";
@@ -101,7 +101,10 @@ const Channels = () => {
             <h1 className="title-page">{t("pageTitle")}</h1>
           </div>
         </div>
-        <PageError message={t("common:serverConnectionError")} />
+        <PageErrorOrGate
+          error={error}
+          fallbackMessage={t("common:serverConnectionError")}
+        />
       </PageShell>
     );
   }

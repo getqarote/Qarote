@@ -14,7 +14,7 @@ import type { ExchangeTypeFilterValue } from "@/components/ExchangesList/Exchang
 import { LoadingSkeleton } from "@/components/ExchangesList/LoadingSkeleton";
 import type { ExchangeListItem } from "@/components/ExchangesList/types";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
-import { PageError } from "@/components/PageError";
+import { PageErrorOrGate } from "@/components/PageErrorOrGate";
 import { NoServerSelectedCard, PageShell } from "@/components/PageShell";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { TitleWithCount } from "@/components/ui/TitleWithCount";
@@ -135,7 +135,10 @@ const Exchanges = () => {
             <h1 className="title-page">{t("pageTitle")}</h1>
           </div>
         </div>
-        <PageError message={t("common:serverConnectionError")} />
+        <PageErrorOrGate
+          error={exchangesError}
+          fallbackMessage={t("common:serverConnectionError")}
+        />
       </PageShell>
     );
   }

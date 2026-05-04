@@ -67,6 +67,14 @@
   "theme": "Theme",
   "language": "Language",
   "manageServers": "Manage servers",
+  "consent": {
+    "ariaLabel": "Cookie preferences",
+    "title": "A few tools help us improve Qarote",
+    "description": "We use analytics, session replay, and chat tools to understand how Qarote is used and to provide support. Choose what you allow.",
+    "learnMore": "Learn more",
+    "essentialOnly": "Use essential only",
+    "acceptAll": "Accept all"
+  },
   "rabbitMQDashboard": "RabbitMQ Dashboard",
   "noCreditCard": "No credit card required",
   "changelog": {

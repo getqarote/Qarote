@@ -23,12 +23,21 @@ import type { RabbitMQApiClient } from "./ApiClient";
 import type { RabbitMQNode, RabbitMQOverview } from "./rabbitmq.interfaces";
 
 /**
- * Plugin names whose presence on ANY node implies the firehose exchange
- * is available. `rabbitmq_tracing` is the canonical plugin; the
- * `rabbitmq_event_exchange` plugin offers a similar surface and is
- * accepted as a fallback so we don't lock customers into one plugin.
+ * The firehose exchange (`amq.rabbitmq.trace`) is a core RabbitMQ
+ * mechanism available on every standard broker since 2.7 — it is NOT
+ * gated behind the `rabbitmq_tracing` plugin. Qarote enables tracing via
+ * `PUT /api/vhosts/{name}` with `{ tracing: true }` (standard Management
+ * API, equivalent to `rabbitmqctl trace_on`) and then binds to
+ * `amq.rabbitmq.trace` via AMQP — both operations require no plugin.
+ *
+ * `rabbitmq_tracing` only adds Management UI + log-file storage, which
+ * Qarote does not use. Detecting by plugin presence produced false
+ * negatives on managed brokers (AWS MQ, CloudAMQP) that omit the plugin
+ * from their `enabled_plugins` list while fully supporting the firehose.
+ *
+ * Detection: the firehose is available on any broker where `getNodes()`
+ * succeeds — i.e., any broker reachable via the standard Management API.
  */
-const FIREHOSE_PLUGIN_NAMES = ["rabbitmq_tracing", "rabbitmq_event_exchange"];
 
 interface DetectionResult {
   /** Detected snapshot — `null` if the detector failed to read the broker. */
@@ -86,15 +95,15 @@ export async function detectServerCapabilities(
     return EMPTY_RESULT;
   }
 
-  // Union enabled plugins across all nodes — a feature is "available" if
-  // any node hosts it. This matches RabbitMQ's clustering semantics
-  // (queues created on a node hosting the right plugin work cluster-wide
-  // for federation/exchange-type concerns).
+  // Union enabled plugins across all nodes — kept for diagnostics and
+  // future per-plugin capability checks (e.g. federation, shovel).
   const enabledPlugins = unionPlugins(nodes);
 
-  const hasFirehoseExchange = FIREHOSE_PLUGIN_NAMES.some((name) =>
-    enabledPlugins.includes(name)
-  );
+  // The firehose is available on any broker reachable via the Management
+  // API — no plugin required (see note above). Reachability is the only
+  // gate: if we got here, `getNodes()` returned without throwing, which
+  // is sufficient evidence even if the cluster returned zero nodes.
+  const hasFirehoseExchange = true;
 
   const detectedAt = new Date().toISOString();
 

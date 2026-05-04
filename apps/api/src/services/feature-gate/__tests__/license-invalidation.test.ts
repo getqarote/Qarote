@@ -195,6 +195,38 @@ describe("stopLicenseInvalidationListener", () => {
   });
 });
 
+describe("keepalive", () => {
+  it("sends SELECT 1 after the keepalive interval to prevent idle-session timeout", async () => {
+    vi.useFakeTimers();
+    const { startLicenseInvalidationListener, KEEPALIVE_INTERVAL_MS } =
+      await import("../license-invalidation");
+    await startLicenseInvalidationListener();
+
+    mockClientQuery.mockClear();
+    await vi.advanceTimersByTimeAsync(KEEPALIVE_INTERVAL_MS);
+
+    expect(mockClientQuery).toHaveBeenCalledWith("SELECT 1");
+    vi.useRealTimers();
+  });
+
+  it("does not send keepalive queries after stop()", async () => {
+    vi.useFakeTimers();
+    const {
+      startLicenseInvalidationListener,
+      stopLicenseInvalidationListener,
+      KEEPALIVE_INTERVAL_MS,
+    } = await import("../license-invalidation");
+    await startLicenseInvalidationListener();
+    await stopLicenseInvalidationListener();
+
+    mockClientQuery.mockClear();
+    await vi.advanceTimersByTimeAsync(KEEPALIVE_INTERVAL_MS * 3);
+
+    expect(mockClientQuery).not.toHaveBeenCalledWith("SELECT 1");
+    vi.useRealTimers();
+  });
+});
+
 describe("setup failure paths", () => {
   it("schedules reconnect when LISTEN query fails after connect succeeds", async () => {
     vi.useFakeTimers();

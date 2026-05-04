@@ -1,4 +1,14 @@
 {
+  "home": "Home",
+  "overview": "Overview",
+  "browse": "Browse",
+  "browseToggle": {
+    "collapse": "Collapse Browse section",
+    "expand": "Expand Browse section"
+  },
+  "diagnosisActiveBadge": "{{count}} active findings",
+  "diagnosisActiveBadge_one": "{{count}} active finding",
+  "diagnosisActiveBadge_other": "{{count}} active findings",
   "dashboard": "Dashboard",
   "queues": "Queues",
   "channels": "Channels",

@@ -4,9 +4,10 @@
  * Reads the persisted `CapabilitySnapshot` from `RabbitMQServer` (with
  * support-override merged on top) and applies per-feature rules:
  *
- *   - `message_tracing` blocked when no firehose plugin is enabled. The
- *     ADR-002 fallback to `message_spy` (Live tap) is wired in
- *     `gate.config.ts:capabilityFallback` and attached by the composer.
+ *   - `message_tracing` blocked when the broker is unreachable (no nodes
+ *     returned by the Management API). The ADR-002 fallback to `message_spy`
+ *     (Live tap) is wired in `gate.config.ts:capabilityFallback` and attached
+ *     by the composer.
  *   - `message_spy` blocked when the targeted queue is a stream — streams
  *     use offset-based consumption, the spy mechanism (binding mirror onto
  *     an exclusive queue) doesn't apply.
@@ -87,18 +88,10 @@ export async function resolveCapabilityAxis(
   switch (feature) {
     case FEATURES.MESSAGE_TRACING:
       if (!caps.hasFirehoseExchange) {
-        return blocked(
-          feature,
-          "capability.tracing.pluginMissing",
-          {
-            ctaKey: "capability.tracing.enablePlugin",
-            docsUrl: "/docs/features/tracing#enabling-firehose",
-            commands: ["rabbitmq-plugins enable rabbitmq_tracing"],
-          },
-          // `broker` is a reserved interpolation slot for future i18n copy
-          // that names the specific broker; empty string until copy is added.
-          { broker: "" }
-        );
+        return blocked(feature, "capability.tracing.brokerUnreachable", {
+          ctaKey: "capability.tracing.checkConnectivity",
+          docsUrl: "https://www.rabbitmq.com/docs/firehose",
+        });
       }
       return { kind: "ok" };
 

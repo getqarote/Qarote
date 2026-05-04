@@ -100,6 +100,11 @@
     "message": "Page not found",
     "returnHome": "Return to home"
   },
+  "upgradePrompt": {
+    "notAvailableOnDemo": "Not available on demo",
+    "planUpgradeRequired": "Plan upgrade required",
+    "licenseRequired": "License required"
+  },
   "updating": "Updating…",
   "updatedAgo": "Updated {{seconds}}s ago",
   "justUpdated": "Just updated"

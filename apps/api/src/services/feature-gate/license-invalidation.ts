@@ -60,6 +60,9 @@ import { invalidateLicenseCache } from "./license";
 const LISTEN_CHANNEL = "license_invalidated";
 const INITIAL_BACKOFF_MS = 1_000;
 const MAX_BACKOFF_MS = 60_000;
+// Must be shorter than the database's idle_session_timeout. 20 minutes is a
+// safe default that survives typical cloud-hosted Postgres settings (often 30m).
+export const KEEPALIVE_INTERVAL_MS = 20 * 60 * 1_000;
 
 // Decorrelated jitter — half-to-full window. Without it, N workers all
 // wake at exactly 1s after a Postgres restart, then 2s, 4s, …, hammering
@@ -77,6 +80,7 @@ const LOG_BINDINGS = {
 
 let listenClient: PgClient | null = null;
 let reconnectTimer: NodeJS.Timeout | null = null;
+let keepaliveTimer: NodeJS.Timeout | null = null;
 let backoffMs = INITIAL_BACKOFF_MS;
 let stopped = false;
 // Serialises concurrent `start()` calls so two callers don't each open
@@ -220,6 +224,14 @@ async function setupClient(): Promise<void> {
 
   listenClient = client;
   backoffMs = INITIAL_BACKOFF_MS;
+  // A LISTEN connection sends no traffic, so Postgres will close it with
+  // code 57P05 once idle_session_timeout elapses. A periodic no-op query
+  // resets the idle clock and keeps the connection alive.
+  keepaliveTimer = setInterval(() => {
+    listenClient?.query("SELECT 1").catch(() => {
+      // The error handler on the client will fire and trigger reconnect.
+    });
+  }, KEEPALIVE_INTERVAL_MS);
   logger.info(
     { ...LOG_BINDINGS, channel: LISTEN_CHANNEL },
     "license-invalidation: LISTEN active"
@@ -277,6 +289,10 @@ export async function broadcastLicenseInvalidation(): Promise<void> {
 }
 
 async function teardownClient(): Promise<void> {
+  if (keepaliveTimer) {
+    clearInterval(keepaliveTimer);
+    keepaliveTimer = null;
+  }
   if (!listenClient) return;
   const client = listenClient;
   listenClient = null;

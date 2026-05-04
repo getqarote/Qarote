@@ -116,17 +116,14 @@ describe("resolveCapabilityAxis — snapshot missing", () => {
 
 // ── MESSAGE_TRACING (rename target: message_recording) ───────────────
 describe("resolveCapabilityAxis — MESSAGE_TRACING", () => {
-  it("blocks when no firehose plugin is enabled", async () => {
+  it("blocks when broker returns no nodes (firehose exchange unavailable)", async () => {
     mockGetServerCapabilities.mockResolvedValue(RMQ_3_12_OSS);
     const result = await resolveCapabilityAxis(FEATURES.MESSAGE_TRACING, {
       serverId: "srv_1",
     });
     expect(result.kind).toBe("blocked");
     if (result.kind !== "blocked") return;
-    expect(result.reasonKey).toBe("capability.tracing.pluginMissing");
-    expect(result.remediation?.commands).toEqual([
-      "rabbitmq-plugins enable rabbitmq_tracing",
-    ]);
+    expect(result.reasonKey).toBe("capability.tracing.brokerUnreachable");
     expect(result.remediation?.docsUrl).toBeTruthy();
   });
 
@@ -229,7 +226,7 @@ describe("resolveCapabilityAxis — features without rules", () => {
 
 // ── Subject is ignored for features whose rule is not subject-based ───
 describe("resolveCapabilityAxis — subject ignored for non-subject rules", () => {
-  it("MESSAGE_TRACING ignores subject (rule is plugin-based)", async () => {
+  it("MESSAGE_TRACING ignores subject (rule is broker-reachability-based)", async () => {
     mockGetServerCapabilities.mockResolvedValue(RMQ_3_12_OSS_WITH_FIREHOSE);
     // Pass a stream subject to a feature whose rule doesn't read it.
     // Must still return ok — a future refactor that hoists subject

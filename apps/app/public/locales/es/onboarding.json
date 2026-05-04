@@ -34,6 +34,5 @@
   "successDescription": "Tu espacio de trabajo esta listo. Esto es lo que puedes hacer ahora:",
   "successStep1": "Agrega tu primera conexion RabbitMQ",
   "successStep2": "Invita a tu equipo",
-  "successStep3": "Explora tu panel",
   "successCta": "Ir al panel"
 }

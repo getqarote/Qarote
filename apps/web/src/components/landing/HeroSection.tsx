@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { type CSSProperties, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ExternalLink } from "lucide-react";
@@ -7,11 +7,20 @@ import AuthButtons from "@/components/AuthButtons";
 import HeroBackgroundFlow from "@/components/landing/HeroBackgroundFlow";
 import { Button } from "@/components/ui/button";
 
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+
 const HeroSection = () => {
   const { t, i18n } = useTranslation("landing");
   const lang = i18n.resolvedLanguage ?? i18n.language ?? "";
   const needsWordSpacing = !/^(zh|ja|ko)(-|$)/i.test(lang);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   // Listen for play-video custom events from StickyNav island
   useEffect(() => {
@@ -19,6 +28,15 @@ const HeroSection = () => {
     document.addEventListener("play-video", handler);
     return () => document.removeEventListener("play-video", handler);
   }, []);
+
+  const enter = (delay: number): CSSProperties =>
+    reduceMotion
+      ? {}
+      : {
+          opacity: mounted ? 1 : 0,
+          transform: mounted ? "none" : "translateY(10px)",
+          transition: `opacity 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
+        };
 
   return (
     <header
@@ -70,7 +88,7 @@ const HeroSection = () => {
       </div>
 
       {/* YouTube Video */}
-      <div id="video" className="relative pb-12">
+      <div id="video" className="relative pb-12" style={enter(260)}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {!isVideoPlaying ? (
             <button
