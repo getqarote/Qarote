@@ -36,6 +36,8 @@ function getAuthData(email: string): {
 
 /**
  * Parse cookie string into individual cookie objects for Playwright.
+ * sameSite: "Lax" is set explicitly so cross-port localhost requests
+ * (frontend 8081 → API 3001) include the cookie reliably.
  */
 function parseCookies(
   cookieString: string,
@@ -45,6 +47,7 @@ function parseCookies(
   value: string;
   domain: string;
   path: string;
+  sameSite: "Lax";
 }> {
   const url = new URL(baseUrl);
   return cookieString
@@ -57,6 +60,7 @@ function parseCookies(
         value: valueParts.join("="),
         domain: url.hostname,
         path: "/",
+        sameSite: "Lax" as const,
       };
     });
 }

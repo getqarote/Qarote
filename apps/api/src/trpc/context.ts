@@ -28,6 +28,9 @@ export interface Context extends Record<string, unknown> {
   locale: string;
   prisma: typeof prisma;
   logger: typeof logger;
+  /** Client IP resolved at context creation. Prefers CF-Connecting-IP (Cloudflare proxy),
+   *  falls back to X-Forwarded-For. Null in environments without a reverse proxy. */
+  remoteIp: string | null;
 }
 
 /**
@@ -150,6 +153,14 @@ export async function createContext(opts: {
   // Resolve locale: user preference > Accept-Language header > default
   const locale = resolveLocale(req, user);
 
+  // Resolve client IP: prefer Cloudflare header, fall back to X-Forwarded-For.
+  // Used by Turnstile verification and rate-limit enrichment; resolved once here
+  // so procedures stay transport-agnostic.
+  const remoteIp =
+    req.header("CF-Connecting-IP") ??
+    req.header("X-Forwarded-For")?.split(",")[0]?.trim() ??
+    null;
+
   return {
     user,
     workspaceId,
@@ -159,6 +170,7 @@ export async function createContext(opts: {
     locale,
     prisma,
     logger,
+    remoteIp,
   };
 }
 

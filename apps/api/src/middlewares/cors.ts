@@ -25,7 +25,12 @@ const parseCorsOrigins = (
 export const corsMiddleware = cors({
   origin: parseCorsOrigins(corsConfig.origin),
   allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowHeaders: ["Content-Type", "Authorization", "x-workspace-id"],
+  allowHeaders: [
+    "Content-Type",
+    "Authorization",
+    "x-workspace-id",
+    "X-Turnstile-Token",
+  ],
   exposeHeaders: ["Content-Length"],
   maxAge: 600, // 10 minutes
   credentials: true,

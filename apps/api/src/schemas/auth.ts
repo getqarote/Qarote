@@ -12,6 +12,9 @@ export const RegisterUserSchema = z.object({
   sourceApp: z.enum(["app", "portal"]).optional().default("app"),
   referralSource: z.string().max(500).optional(),
   discoveryQuery: z.string().trim().max(500).optional(),
+  // Optional — only required when TURNSTILE_SECRET_KEY is set server-side.
+  // Self-hosted deployments that omit the env var skip CAPTCHA entirely.
+  turnstileToken: z.string().optional(),
 });
 
 // Schema for password reset request

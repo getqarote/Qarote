@@ -31,6 +31,7 @@ import {
   performanceMonitoring,
   requestIdMiddleware,
 } from "@/middlewares/request";
+import { turnstileMiddleware } from "@/middlewares/turnstile";
 
 import { config, serverConfig } from "@/config";
 import { isCloudMode } from "@/config/deployment";
@@ -72,10 +73,13 @@ app.route("/webhooks", webhookApp);
 
 // Mount better-auth handler (handles /api/auth/* routes for sign-in, sign-up, OAuth callbacks,
 // and SSO callbacks: OIDC /api/auth/sso/callback/{providerId},
-// SAML ACS /api/auth/sso/saml2/callback/{providerId})
-app.on(["POST", "GET"], "/api/auth/**", (c) => {
-  return auth.handler(c.req.raw);
-});
+// SAML ACS /api/auth/sso/saml2/callback/{providerId}).
+// turnstileMiddleware runs on every auth request but only enforces on the
+// sign-in endpoint — splitting the route caused Hono's trie router to drop
+// the GET branch of /api/auth/** and 404 every session check.
+app.on(["POST", "GET"], "/api/auth/**", turnstileMiddleware, (c) =>
+  auth.handler(c.req.raw)
+);
 
 // Rate limit API routes only (not static assets/locales/SPA files)
 app.use("/trpc/*", standardRateLimiter);

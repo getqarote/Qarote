@@ -7,6 +7,10 @@ import { notionService } from "@/services/integrations/notion.service";
 import { posthog } from "@/services/posthog";
 import { trackSignUpError } from "@/services/sentry";
 import { StripeCustomerService } from "@/services/stripe/customer.service";
+import {
+  turnstileEnabled,
+  verifyTurnstileToken,
+} from "@/services/turnstile/turnstile.service";
 
 import { RegisterUserSchema } from "@/schemas/auth";
 
@@ -50,6 +54,26 @@ export const registrationRouter = router({
           code: "FORBIDDEN",
           message: te(ctx.locale, "auth.registrationDisabled"),
         });
+      }
+
+      // Verify Cloudflare Turnstile token when configured
+      if (turnstileEnabled) {
+        if (!input.turnstileToken) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: te(ctx.locale, "auth.captchaRequired"),
+          });
+        }
+        const ok = await verifyTurnstileToken(
+          input.turnstileToken,
+          ctx.remoteIp ?? undefined
+        );
+        if (!ok) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: te(ctx.locale, "auth.captchaVerificationFailed"),
+          });
+        }
       }
 
       // Validate that terms were accepted

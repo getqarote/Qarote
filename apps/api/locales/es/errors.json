@@ -8,6 +8,8 @@
     "failedToLogin": "Error al iniciar sesión",
     "failedToFetchSession": "Error al obtener la sesión",
     "userNotFound": "Usuario no encontrado",
+    "captchaRequired": "Se requiere el token CAPTCHA",
+    "captchaVerificationFailed": "Error en la verificación CAPTCHA",
     "mustAcceptTerms": "Debe aceptar los términos de servicio para registrarse",
     "emailAlreadyInUse": "El correo electrónico ya está en uso",
     "registrationDisabled": "El registro público está actualmente deshabilitado. Contacte con su administrador para obtener una invitación.",

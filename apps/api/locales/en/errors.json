@@ -8,6 +8,8 @@
     "failedToLogin": "Failed to login",
     "failedToFetchSession": "Failed to fetch session",
     "userNotFound": "User not found",
+    "captchaRequired": "CAPTCHA token is required",
+    "captchaVerificationFailed": "CAPTCHA verification failed",
     "mustAcceptTerms": "You must accept the terms of service to register",
     "emailAlreadyInUse": "Email already in use",
     "registrationDisabled": "Public registration is currently disabled. Please contact your administrator for an invitation.",

@@ -18,7 +18,7 @@ export const useLogin = () => {
   const [isSuccess, setIsSuccess] = useState(false);
 
   const mutate = (
-    data: { email: string; password: string },
+    data: { email: string; password: string; turnstileToken?: string },
     options?: {
       onSuccess?: () => void;
       onError?: (error: Error) => void;
@@ -30,10 +30,16 @@ export const useLogin = () => {
     setIsSuccess(false);
 
     authClient.signIn
-      .email({
-        email: data.email,
-        password: data.password,
-      })
+      .email(
+        { email: data.email, password: data.password },
+        data.turnstileToken
+          ? {
+              fetchOptions: {
+                headers: { "X-Turnstile-Token": data.turnstileToken },
+              },
+            }
+          : {}
+      )
       .then(async (result) => {
         if (result.error) {
           const err = new Error(

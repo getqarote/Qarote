@@ -8,6 +8,8 @@
     "failedToLogin": "Échec de la connexion",
     "failedToFetchSession": "Échec de la récupération de la session",
     "userNotFound": "Utilisateur introuvable",
+    "captchaRequired": "Le jeton CAPTCHA est requis",
+    "captchaVerificationFailed": "La vérification CAPTCHA a échoué",
     "mustAcceptTerms": "Vous devez accepter les conditions d'utilisation pour vous inscrire",
     "emailAlreadyInUse": "Cette adresse e-mail est déjà utilisée",
     "registrationDisabled": "L'inscription publique est actuellement désactivée. Veuillez contacter votre administrateur pour obtenir une invitation.",

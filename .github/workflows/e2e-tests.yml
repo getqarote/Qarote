@@ -127,6 +127,9 @@ jobs:
           E2E_RABBITMQ_AMQP_PORT: "5682"
           E2E_RABBITMQ_USER: admin
           E2E_RABBITMQ_PASS: admin123
+          # TURNSTILE_SECRET_KEY is intentionally absent: Cloudflare's widget cannot
+          # auto-pass in headless Chromium, so enabling it would block all sign-in/sign-up
+          # UI tests. Turnstile is covered by unit tests; E2E API tests skip when unset.
           CI: "true"
 
       - name: Upload test report
@@ -266,6 +269,9 @@ jobs:
           E2E_RABBITMQ_AMQP_PORT: "5682"
           E2E_RABBITMQ_USER: admin
           E2E_RABBITMQ_PASS: admin123
+          # TURNSTILE_SECRET_KEY is intentionally absent: Cloudflare's widget cannot
+          # auto-pass in headless Chromium, so enabling it would block all sign-in/sign-up
+          # UI tests. Turnstile is covered by unit tests; E2E API tests skip when unset.
           CI: "true"
 
       - name: Upload test report
@@ -378,6 +384,9 @@ jobs:
           E2E_RABBITMQ_AMQP_PORT: "5682"
           E2E_RABBITMQ_USER: admin
           E2E_RABBITMQ_PASS: admin123
+          # TURNSTILE_SECRET_KEY is intentionally absent: Cloudflare's widget cannot
+          # auto-pass in headless Chromium, so enabling it would block all sign-in/sign-up
+          # UI tests. Turnstile is covered by unit tests; E2E API tests skip when unset.
           CI: "true"
 
       - name: Upload test report

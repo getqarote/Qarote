@@ -13,6 +13,10 @@ import { cn } from "@/lib/utils";
 import { AuthPageWrapper } from "@/components/auth/AuthPageWrapper";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import { SSOLoginButton } from "@/components/auth/SSOLoginButton";
+import {
+  TurnstileCaptcha,
+  turnstileEnabled,
+} from "@/components/auth/TurnstileCaptcha";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -88,6 +92,8 @@ const SignUp = () => {
   const { data: publicConfig } = usePublicConfig();
 
   const from = location.state?.from?.pathname || "/";
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [captchaKey, setCaptchaKey] = useState(0);
 
   const form = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
@@ -136,6 +142,7 @@ const SignUp = () => {
         acceptTerms: data.acceptTerms,
         referralSource: data.referralSource || undefined,
         discoveryQuery: data.discoveryQuery || undefined,
+        turnstileToken: turnstileToken ?? undefined,
       },
       {
         onSuccess: () => {
@@ -144,6 +151,12 @@ const SignUp = () => {
           } catch {
             // non-blocking analytics
           }
+        },
+        onError: () => {
+          // Reset the widget so the user gets a fresh challenge — Turnstile
+          // tokens are single-use and the previous one is now consumed.
+          setTurnstileToken(null);
+          setCaptchaKey((k) => k + 1);
         },
       }
     );
@@ -464,12 +477,27 @@ const SignUp = () => {
                 />
               </div>
 
+              {/* ── Turnstile CAPTCHA ── */}
+              {turnstileEnabled && (
+                <div className="su-in pt-1 [animation-delay:360ms]">
+                  <TurnstileCaptcha
+                    key={captchaKey}
+                    onVerify={setTurnstileToken}
+                    onExpire={() => setTurnstileToken(null)}
+                    onError={() => setTurnstileToken(null)}
+                  />
+                </div>
+              )}
+
               {/* ── Submit ── */}
               <div className="su-in pt-1" style={{ animationDelay: "380ms" }}>
                 <Button
                   type="submit"
                   className="w-full btn-primary h-11 group"
-                  disabled={registerMutation.isPending}
+                  disabled={
+                    registerMutation.isPending ||
+                    (turnstileEnabled && !turnstileToken)
+                  }
                 >
                   <span className="flex items-center justify-center gap-1.5">
                     {registerMutation.isPending

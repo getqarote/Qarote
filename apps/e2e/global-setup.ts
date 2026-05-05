@@ -230,7 +230,15 @@ async function loginViaApi(
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     const response = await fetch(`${API_URL}/api/auth/sign-in/email`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        // When Turnstile is enabled, supply the always-pass test token so the
+        // middleware doesn't block programmatic logins. CI must use Cloudflare's
+        // test secret (1x0000000000000000000000000000000AA) which accepts any token.
+        ...(process.env.TURNSTILE_SECRET_KEY
+          ? { "X-Turnstile-Token": "1x00000000000000000000AA" }
+          : {}),
+      },
       body: JSON.stringify({ email, password }),
       redirect: "manual",
     });

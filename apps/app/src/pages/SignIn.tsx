@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useSearchParams } from "react-router";
@@ -10,6 +10,10 @@ import { logger } from "@/lib/logger";
 import { AuthPageWrapper } from "@/components/auth/AuthPageWrapper";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import { SSOLoginButton } from "@/components/auth/SSOLoginButton";
+import {
+  TurnstileCaptcha,
+  turnstileEnabled,
+} from "@/components/auth/TurnstileCaptcha";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -58,6 +62,10 @@ const SignIn = () => {
   const { data: publicConfig } = usePublicConfig();
 
   const demoAutoLoginAttempted = useRef(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  // Incrementing this key forces the Turnstile widget to remount and issue a
+  // fresh challenge after a failed login attempt (Cloudflare tokens are single-use).
+  const [captchaKey, setCaptchaKey] = useState(0);
 
   const form = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
@@ -90,10 +98,20 @@ const SignIn = () => {
   const onSubmit = (data: SignInFormData) => {
     logger.info("SignIn form submitted", { email: data.email });
     loginMutation.mutate(
-      { email: data.email, password: data.password },
+      {
+        email: data.email,
+        password: data.password,
+        turnstileToken: turnstileToken ?? undefined,
+      },
       {
         onSuccess: () => {
           navigate(redirectTo || "/onboarding", { replace: true });
+        },
+        onError: () => {
+          // Reset the widget so the user gets a fresh challenge — Turnstile
+          // tokens are single-use and the previous one is now consumed.
+          setTurnstileToken(null);
+          setCaptchaKey((k) => k + 1);
         },
       }
     );
@@ -182,12 +200,27 @@ const SignIn = () => {
               />
             </div>
 
+            {/* ── Turnstile CAPTCHA ── */}
+            {turnstileEnabled && (
+              <div className="si-in [animation-delay:180ms]">
+                <TurnstileCaptcha
+                  key={captchaKey}
+                  onVerify={setTurnstileToken}
+                  onExpire={() => setTurnstileToken(null)}
+                  onError={() => setTurnstileToken(null)}
+                />
+              </div>
+            )}
+
             {/* ── Submit ── */}
             <div className="si-in si-delay-200 pt-1">
               <Button
                 type="submit"
                 className="w-full btn-primary h-11 group"
-                disabled={loginMutation.isPending}
+                disabled={
+                  loginMutation.isPending ||
+                  (turnstileEnabled && !turnstileToken)
+                }
               >
                 <span className="flex items-center justify-center gap-1.5">
                   {loginMutation.isPending ? t("signingIn") : t("signIn")}

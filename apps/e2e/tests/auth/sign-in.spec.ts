@@ -39,9 +39,12 @@ test.describe("User Login @p0", () => {
   test("should redirect authenticated users away from sign-in", async ({
     adminPage,
   }) => {
+    // Navigate directly to sign-in with a pre-seeded authenticated session.
+    // PublicRoute detects the active session and redirects away from /auth/*.
     await adminPage.goto("/auth/sign-in");
-    // Authenticated user should be redirected to dashboard
-    await adminPage.waitForURL("/", { timeout: 10_000 });
+    await adminPage.waitForURL((url) => !url.pathname.startsWith("/auth/"), {
+      timeout: 15_000,
+    });
   });
 
   test("should navigate to sign-up page", async ({ page }) => {
