@@ -1,5 +1,7 @@
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+
 export interface BlogPostPreview {
   slug: string;
   title: string;
@@ -7,19 +9,6 @@ export interface BlogPostPreview {
   publishedAt: string;
   tags?: string[];
   readingTimeMin?: number;
-}
-
-function useReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(
-    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-  return reduced;
 }
 
 function useScrollEntry<T extends Element>(
