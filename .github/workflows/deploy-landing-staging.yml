@@ -90,7 +90,7 @@ jobs:
         run: pnpm run build
 
       - name: 🚀 Deploy to Cloudflare Pages - Staging
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           command: pages deploy apps/web/dist --project-name=qarote-landing-staging --branch=main --commit-hash=${{ github.sha }}
