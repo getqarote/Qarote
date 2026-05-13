@@ -93,7 +93,7 @@ jobs:
         run: pnpm run build
 
       - name: 🚀 Deploy to Cloudflare Pages - Production
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           command: pages deploy apps/portal/dist --project-name=qarote-portal-production --branch=main --commit-hash=${{ github.sha }}
