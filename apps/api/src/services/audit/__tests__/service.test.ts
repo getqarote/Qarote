@@ -1,14 +1,15 @@
 /**
  * Audit service tests — verifies the contract that:
- *   1. A successful write inserts the right shape (kind / actorUserId /
- *      serverId / payload).
+ *   1. A successful capability-recheck insert produces the right new-shape
+ *      row (action='system.capability.recheck', category='system',
+ *      entityType='server', metadata=payload).
  *   2. A failing write does NOT throw — failures are logged + swallowed
  *      so the audited action stays unaffected by audit-layer issues.
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { CapabilityRecheckPayload } from "@/services/audit";
+import type { CapabilityRecheckPayload } from "@/services/audit/types";
 
 const mockCreate = vi.fn();
 const mockLoggerError = vi.fn();
@@ -26,6 +27,13 @@ vi.mock("@/core/logger", () => ({
   },
 }));
 
+// Plan-gate: pretend the workspace is on Enterprise so the writer
+// proceeds to the DB call. (Free / Developer is exercised in the
+// audit-log.service.test.ts plan-gate test.)
+vi.mock("@/services/plan/plan.service", () => ({
+  getWorkspacePlan: vi.fn().mockResolvedValue("ENTERPRISE"),
+}));
+
 const { recordCapabilityRecheck } = await import("@/services/audit");
 
 const SAMPLE_PAYLOAD: CapabilityRecheckPayload = {
@@ -41,29 +49,43 @@ beforeEach(() => {
 });
 
 describe("recordCapabilityRecheck", () => {
-  it("inserts a CAPABILITY_RECHECK row with the actor + server + payload", async () => {
+  it("inserts the broader-shape row (action / category / entityType / metadata)", async () => {
     mockCreate.mockResolvedValue({});
-    await recordCapabilityRecheck("srv_1", "user_1", SAMPLE_PAYLOAD);
+    await recordCapabilityRecheck(
+      "srv_1",
+      { actorUserId: "user_1", workspaceId: "ws_1" },
+      SAMPLE_PAYLOAD
+    );
 
     expect(mockCreate).toHaveBeenCalledOnce();
     const arg = mockCreate.mock.calls[0]?.[0] as {
       data: {
-        kind: string;
-        actorUserId: string | null;
+        action: string;
+        category: string;
+        entityType: string;
+        actorId: string | null;
         serverId: string | null;
-        payload: unknown;
+        workspaceId: string | null;
+        metadata: unknown;
       };
     };
-    expect(arg.data.kind).toBe("CAPABILITY_RECHECK");
-    expect(arg.data.actorUserId).toBe("user_1");
+    expect(arg.data.action).toBe("system.capability.recheck");
+    expect(arg.data.category).toBe("system");
+    expect(arg.data.entityType).toBe("server");
+    expect(arg.data.actorId).toBe("user_1");
     expect(arg.data.serverId).toBe("srv_1");
-    expect(arg.data.payload).toEqual(SAMPLE_PAYLOAD);
+    expect(arg.data.workspaceId).toBe("ws_1");
+    expect(arg.data.metadata).toEqual(SAMPLE_PAYLOAD);
   });
 
   it("does NOT throw when the prisma insert fails — audit is best-effort", async () => {
     mockCreate.mockRejectedValue(new Error("connection lost"));
     await expect(
-      recordCapabilityRecheck("srv_1", "user_1", SAMPLE_PAYLOAD)
+      recordCapabilityRecheck(
+        "srv_1",
+        { actorUserId: "user_1", workspaceId: "ws_1" },
+        SAMPLE_PAYLOAD
+      )
     ).resolves.toBeUndefined();
     expect(mockLoggerError).toHaveBeenCalledOnce();
   });

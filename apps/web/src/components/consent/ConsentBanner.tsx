@@ -13,12 +13,13 @@ export const ConsentBanner = ({
   privacyHref?: string;
 }) => {
   const { t } = useTranslation("common");
-  const [visible, setVisible] = useState(shouldShowBanner);
+  const [visible, setVisible] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const isDismissingRef = useRef(false);
   const dismissTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    setVisible(shouldShowBanner());
     const onChange = () => setVisible(shouldShowBanner());
     window.addEventListener(CONSENT_EVENT, onChange);
     return () => window.removeEventListener(CONSENT_EVENT, onChange);

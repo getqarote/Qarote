@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Link, Outlet, useLocation } from "react-router";
 
-import { usePostHog } from "@posthog/react";
 import {
   ChevronDown,
   Github,
@@ -9,6 +8,8 @@ import {
   LogOut,
   User,
 } from "lucide-react";
+
+import { resetIdentity, track } from "@/lib/analytics";
 
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
@@ -27,11 +28,10 @@ const Layout = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const { t } = useTranslation("portal");
-  const posthog = usePostHog();
 
   const handleLogout = () => {
-    posthog?.capture("user_signed_out");
-    posthog?.reset();
+    track("user_signed_out");
+    resetIdentity();
     logout();
   };
 

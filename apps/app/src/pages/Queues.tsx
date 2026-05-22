@@ -1,10 +1,9 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { Search } from "lucide-react";
-
-import { UserRole } from "@/lib/api";
+import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { PageErrorOrGate } from "@/components/PageErrorOrGate";
@@ -16,25 +15,34 @@ import { Input } from "@/components/ui/input";
 import { PixelX } from "@/components/ui/pixel-x";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
-import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
 import { useQueues } from "@/hooks/queries/useRabbitMQ";
+import { useIsWorkspaceAdmin } from "@/hooks/queries/useWorkspaceRole";
 import { useUser } from "@/hooks/ui/useUser";
 
 // No-op: data is kept fresh via the subscription automatically
 const handleRefetch = () => {};
 
+const queueFiltersOptions = {
+  history: "replace" as const,
+  clearOnDefault: true,
+};
+
 const Queues = () => {
   const { t } = useTranslation("queues");
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const isAdmin = user?.role === UserRole.ADMIN;
+  const isAdmin = useIsWorkspaceAdmin() === true;
   const { isLoading: workspaceLoading } = useUser();
-  const [filterRegex, setFilterRegex] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
+  const [{ q: searchTerm, page, size: pageSize }, setFilters] = useQueryStates(
+    {
+      q: parseAsString.withDefault(""),
+      page: parseAsInteger.withDefault(1),
+      size: parseAsInteger.withDefault(25),
+    },
+    queueFiltersOptions
+  );
   const { selectedServerId, hasServers } = useServerContext();
   const { selectedVHost } = useVHostContext();
   const {
@@ -48,19 +56,14 @@ const Queues = () => {
   const queueCount = queues.length;
 
   const filteredQueues = useMemo(() => {
-    if (!filterRegex) return queues;
-    return queues.filter((queue) => {
-      try {
-        const regex = new RegExp(filterRegex, "i");
-        return regex.test(queue.name) || regex.test(queue.vhost);
-      } catch {
-        return (
-          queue.name.toLowerCase().includes(filterRegex.toLowerCase()) ||
-          queue.vhost.toLowerCase().includes(filterRegex.toLowerCase())
-        );
-      }
-    });
-  }, [queues, filterRegex]);
+    if (!searchTerm) return queues;
+    const q = searchTerm.toLowerCase();
+    return queues.filter(
+      (queue) =>
+        queue.name.toLowerCase().includes(q) ||
+        queue.vhost.toLowerCase().includes(q)
+    );
+  }, [queues, searchTerm]);
 
   const paginatedQueues = useMemo(
     () => filteredQueues.slice((page - 1) * pageSize, page * pageSize),
@@ -135,17 +138,16 @@ const Queues = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             placeholder={t("searchPlaceholder")}
-            value={filterRegex}
+            value={searchTerm}
             onChange={(e) => {
-              setFilterRegex(e.target.value);
-              setPage(1);
+              void setFilters({ q: e.target.value, page: 1 });
             }}
             className="pl-9 pr-8 h-9"
           />
-          {filterRegex && (
+          {searchTerm && (
             <button
               type="button"
-              onClick={() => setFilterRegex("")}
+              onClick={() => void setFilters({ q: "", page: 1 })}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
               <PixelX className="h-4 w-auto shrink-0" />
@@ -158,18 +160,15 @@ const Queues = () => {
       <QueueTable
         queues={paginatedQueues}
         isLoading={isLoading}
-        searchTerm={filterRegex}
+        searchTerm={searchTerm}
         isAdmin={isAdmin}
         onNavigateToQueue={(queueName) => navigate(`/queues/${queueName}`)}
         onRefetch={handleRefetch}
         total={filteredQueues.length}
         page={page}
         pageSize={pageSize}
-        onPageChange={setPage}
-        onPageSizeChange={(size) => {
-          setPageSize(size);
-          setPage(1);
-        }}
+        onPageChange={(p) => void setFilters({ page: p })}
+        onPageSizeChange={(s) => void setFilters({ size: s, page: 1 })}
       />
     </PageShell>
   );

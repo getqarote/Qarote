@@ -3,12 +3,13 @@ import { TRPCError } from "@trpc/server";
 import { applyWorkspaceAssignments } from "@/core/org-invitation-accept";
 import { prisma } from "@/core/prisma";
 
-import { posthog } from "@/services/posthog";
+import { trackEvent } from "@/services/posthog";
 
 import { InvitationTokenSchema } from "@/schemas/auth";
 
 import { rateLimitedProcedure, router } from "@/trpc/trpc";
 
+import { hashInvitationToken } from "@/auth/invitation-tokens";
 import { te } from "@/i18n";
 
 /**
@@ -29,7 +30,7 @@ export const orgInvitationRouter = router({
       try {
         const invitation = await ctx.prisma.organizationInvitation.findFirst({
           where: {
-            token,
+            tokenHash: hashInvitationToken(token),
             acceptedAt: null,
             expiresAt: {
               gt: new Date(),
@@ -136,10 +137,16 @@ export const orgInvitationRouter = router({
         );
 
         try {
-          posthog?.capture({
-            distinctId: user.id,
-            event: "org_invitation_accepted",
-            properties: {
+          trackEvent(
+            {
+              distinctId: user.id,
+              superProperties: {
+                app: "api",
+                organization_id: invitation.organizationId,
+              },
+            },
+            "org_invitation_accepted",
+            {
               organization_id: invitation.organizationId,
               invited_role: invitation.role,
               workspace_assignments_count: Array.isArray(
@@ -147,8 +154,8 @@ export const orgInvitationRouter = router({
               )
                 ? invitation.workspaceAssignments.length
                 : 0,
-            },
-          });
+            }
+          );
         } catch (analyticsError) {
           ctx.logger.warn(
             {

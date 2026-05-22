@@ -1,68 +1,42 @@
 /**
- * AuditLog service — single writer surface for the operator-facing
- * audit table. Per-event helpers (`recordCapabilityRecheck`, etc.) keep
- * call sites ergonomic; `record()` is the underlying primitive.
+ * Capability-recheck audit helper. Pre-existing thin wrapper from the
+ * narrow v1 audit feature; now delegates to the broader
+ * `recordAuditLog()` writer (`docs/internal/AUDIT_LOG.md`).
  *
- * Writes are best-effort — an audit failure must NOT abort the action
- * being audited (capability recheck succeeded ⇒ user response succeeds
- * even if the audit insert fails). All errors are caught + logged.
+ * Kept as a separate helper so the call-site at
+ * `rabbitmq.recheckCapabilities` stays terse, and so the per-event
+ * payload type (`CapabilityRecheckPayload`) keeps a single home.
  */
 
-import { logger } from "@/core/logger";
-import { prisma } from "@/core/prisma";
-
+import { recordAuditLog } from "./audit-log.service";
 import type { CapabilityRecheckPayload } from "./types";
-
-import { AuditLogKind, type Prisma } from "@/generated/prisma/client";
 
 interface RecordOptions {
   actorUserId: string | null;
+  /** Denormalized for readability after user deletion (matches AuditLog schema). */
+  actorEmail?: string | null;
   serverId?: string | null;
-}
-
-async function record(
-  kind: AuditLogKind,
-  payload: Prisma.InputJsonValue,
-  options: RecordOptions
-): Promise<void> {
-  try {
-    await prisma.auditLog.create({
-      data: {
-        kind,
-        actorUserId: options.actorUserId,
-        serverId: options.serverId ?? null,
-        payload,
-      },
-    });
-  } catch (error) {
-    // Audit writes are best-effort. Log loudly — silent audit failure
-    // is its own compliance issue — but do not throw.
-    logger.error(
-      {
-        error,
-        kind,
-        actorUserId: options.actorUserId,
-        serverId: options.serverId,
-      },
-      "audit log: write failed"
-    );
-  }
+  workspaceId?: string | null;
 }
 
 /**
  * Record a capability recheck attempt. Called from the
  * `rabbitmq.recheckCapabilities` mutation regardless of outcome.
- *
- * `payload` is a `type` (not interface) in `types.ts` so it's
- * structurally assignable to Prisma's `InputJsonValue` without a cast.
  */
 export async function recordCapabilityRecheck(
   serverId: string,
-  actorUserId: string,
+  options: RecordOptions,
   payload: CapabilityRecheckPayload
 ): Promise<void> {
-  await record(AuditLogKind.CAPABILITY_RECHECK, payload, {
-    actorUserId,
+  await recordAuditLog({
+    actorId: options.actorUserId,
+    actorEmail: options.actorEmail ?? null,
+    action: "system.capability.recheck",
+    category: "system",
+    entityType: "server",
+    entityId: serverId,
     serverId,
+    workspaceId: options.workspaceId ?? null,
+    metadata: payload,
   });
 }

@@ -1,0 +1,73 @@
+{
+  "title": "审计日志",
+  "description": "管理相关变更的取证记录（RBAC 拒绝、RabbitMQ 破坏性操作、成员变更、设置更新）。保留期：{{retentionDays}} 天。仅企业版。",
+  "tab": {
+    "activity": "活动",
+    "denials": "拒绝"
+  },
+  "col": {
+    "timestamp": "时间",
+    "action": "操作",
+    "actor": "执行者",
+    "entity": "对象",
+    "source": "来源"
+  },
+  "source": {
+    "all": "全部来源",
+    "qarote": "Qarote",
+    "rbac_denial": "拒绝",
+    "broker_diff": "Broker 差异"
+  },
+  "category": {
+    "all": "全部类别",
+    "rabbitmq": "RabbitMQ",
+    "workspace": "工作区",
+    "org": "组织",
+    "alert": "告警",
+    "auth": "认证",
+    "system": "系统"
+  },
+  "filter": {
+    "category": { "placeholder": "类别" },
+    "source": { "placeholder": "来源" },
+    "from": { "label": "起始日期" },
+    "to": { "label": "截止日期" },
+    "actor": { "placeholder": "执行者 — 邮箱或用户 ID" },
+    "clear": "清除筛选"
+  },
+  "status": {
+    "loading": "加载中…",
+    "refreshing": "刷新中…",
+    "empty": "没有匹配的事件",
+    "range": "显示第 {{start}}–{{end}} 条，共 {{total}} 条"
+  },
+  "empty": {
+    "filtered": "没有审计事件与过滤条件匹配。",
+    "none": "尚无审计事件。管理相关变更将显示在此处。",
+    "quiet": "日志静默中",
+    "quietDetail": "暂无特权操作记录。管理相关变更将在发生时显示在此处。"
+  },
+  "shortcuts": {
+    "label": "键盘快捷键",
+    "focusActor": "聚焦执行者搜索",
+    "clear": "清除筛选",
+    "refresh": "刷新"
+  },
+  "error": {
+    "title": "无法加载审计日志",
+    "message": "服务器返回错误。请重试或调整过滤条件。",
+    "retry": "重试"
+  },
+  "pagination": {
+    "first": "首页",
+    "next": "下一页",
+    "more_one": "还有 {{count}} 条事件",
+    "more_other": "还有 {{count}} 条事件"
+  },
+  "export": {
+    "button": "导出 CSV",
+    "success": "已导出 {{count}} 行",
+    "truncated": "结果已截断到上限。请细化过滤条件以捕获更早的历史。",
+    "failed": "导出失败"
+  }
+}

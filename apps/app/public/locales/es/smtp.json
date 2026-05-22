@@ -45,5 +45,7 @@
   "save": "Guardar configuración",
   "saving": "Guardando...",
   "saveSuccess": "Configuración de correo guardada con éxito",
-  "saveError": "Error al guardar la configuración de correo"
+  "saveError": "Error al guardar la configuración de correo",
+  "accessDeniedTitle": "Se requiere administrador de la organización",
+  "accessDenied": "La configuración del relé SMTP está reservada a los administradores de la organización."
 }

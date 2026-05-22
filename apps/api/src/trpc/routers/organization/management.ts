@@ -1,3 +1,4 @@
+import { recordFromContext } from "@/services/audit";
 import { getOrgPlan } from "@/services/plan/plan.service";
 
 import { UpdateOrganizationSchema } from "@/schemas/organization";
@@ -114,6 +115,24 @@ export const managementRouter = router({
         },
         "Organization updated successfully"
       );
+
+      void recordFromContext(ctx, {
+        action: "org.updated",
+        category: "org",
+        entityType: "organization",
+        entityId: updated.id,
+        entityLabel: updated.name,
+        metadata: {
+          changes: {
+            ...(input.name !== undefined && { name: input.name }),
+            ...(input.contactEmail !== undefined && {
+              contactEmail: input.contactEmail,
+            }),
+            ...(input.logoUrl !== undefined && { logoUrl: input.logoUrl }),
+          },
+        },
+        workspaceId: null,
+      });
 
       return {
         organization: {

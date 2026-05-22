@@ -48,7 +48,9 @@ export const ServerDetails = ({
 
   const isOpen = alwaysExpanded || expanded;
 
-  const fields = (
+  // Name + environment are always visible (outside the collapsible) so the
+  // environment tag is discoverable in add mode without expanding manual setup.
+  const topFields = (
     <div className="space-y-4">
       {!hideNameField && (
         <FormField
@@ -65,7 +67,35 @@ export const ServerDetails = ({
           )}
         />
       )}
+      <FormField
+        control={form.control}
+        name="environment"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>{t("serverEnvironment")}</FormLabel>
+            <FormControl>
+              <Input
+                placeholder={t("serverEnvironmentPlaceholder")}
+                value={field.value ?? ""}
+                onChange={(e) => field.onChange(e.target.value || null)}
+                onBlur={field.onBlur}
+                name={field.name}
+                ref={field.ref}
+                maxLength={64}
+              />
+            </FormControl>
+            <p className="text-xs text-muted-foreground">
+              {t("serverEnvironmentHelper")}
+            </p>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </div>
+  );
 
+  const connectionFields = (
+    <div className="space-y-4">
       <FormField
         control={form.control}
         name="host"
@@ -267,11 +297,17 @@ export const ServerDetails = ({
   );
 
   if (alwaysExpanded) {
-    return fields;
+    return (
+      <div className="space-y-4">
+        {topFields}
+        {connectionFields}
+      </div>
+    );
   }
 
   return (
     <div className="space-y-3">
+      {topFields}
       <button
         type="button"
         onClick={() => setExpanded((prev) => !prev)}
@@ -286,7 +322,7 @@ export const ServerDetails = ({
       </button>
       {isOpen && (
         <div id="server-details-fields" className="pt-1">
-          {fields}
+          {connectionFields}
         </div>
       )}
     </div>

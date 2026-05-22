@@ -113,6 +113,61 @@ async function cleanDatabase(prisma: PrismaClient) {
 async function seedBaseData(prisma: PrismaClient) {
   const passwordHash = hashSync("TestPassword123!", 1);
 
+  // Re-seed built-in Role rows (RBAC Phase 3 PR-1). The migration seeds
+  // them, but `cleanDatabase` above runs `TRUNCATE "Workspace" CASCADE`
+  // which cascades into `Role` (via `Role.workspaceId` FK) and wipes
+  // built-ins too. Upserting by `builtinKey` keeps fresh installs and
+  // repeated test runs both green.
+  const builtins: ReadonlyArray<{
+    id: string;
+    builtinKey: "OWNER" | "ADMIN" | "MEMBER" | "READONLY";
+    name: string;
+    description: string;
+  }> = [
+    {
+      id: "00000000-0000-4000-8000-000000000001",
+      builtinKey: "OWNER",
+      name: "Owner",
+      description:
+        "Full workspace access including ownership transfer and deletion",
+    },
+    {
+      id: "00000000-0000-4000-8000-000000000002",
+      builtinKey: "ADMIN",
+      name: "Admin",
+      description:
+        "Manage members, servers, alerts, and most workspace operations",
+    },
+    {
+      id: "00000000-0000-4000-8000-000000000003",
+      builtinKey: "MEMBER",
+      name: "Member",
+      description: "Read-only access plus selected write operations",
+    },
+    {
+      id: "00000000-0000-4000-8000-000000000004",
+      builtinKey: "READONLY",
+      name: "Readonly",
+      description: "View workspace state without making changes",
+    },
+  ];
+  for (const r of builtins) {
+    await prisma.role.upsert({
+      where: { builtinKey: r.builtinKey },
+      create: {
+        id: r.id,
+        workspaceId: null,
+        name: r.name,
+        description: r.description,
+        isSystem: true,
+        builtinKey: r.builtinKey,
+      },
+      update: {},
+    });
+  }
+  const adminRoleId = builtins.find((r) => r.builtinKey === "ADMIN")!.id;
+  const readonlyRoleId = builtins.find((r) => r.builtinKey === "READONLY")!.id;
+
   // Create organization and workspace
   const organization = await prisma.organization.create({
     data: {
@@ -130,7 +185,9 @@ async function seedBaseData(prisma: PrismaClient) {
     },
   });
 
-  // Create admin user
+  // Create admin user. `User.role` was removed in the UserRole cleanup —
+  // role assignment now lives on `OrganizationMember.role` (org-scoped)
+  // and `WorkspaceMember.roleId` (workspace-scoped, set below).
   const adminUser = await prisma.user.create({
     data: {
       email: "admin@e2e-test.local",
@@ -138,7 +195,6 @@ async function seedBaseData(prisma: PrismaClient) {
       name: "E2E Admin",
       firstName: "E2E",
       lastName: "Admin",
-      role: "ADMIN",
       emailVerified: true,
       emailVerifiedAt: new Date(),
       workspaceId: workspace.id,
@@ -169,7 +225,7 @@ async function seedBaseData(prisma: PrismaClient) {
     data: {
       userId: adminUser.id,
       workspaceId: workspace.id,
-      role: "ADMIN",
+      roleId: adminRoleId,
     },
   });
 
@@ -179,7 +235,7 @@ async function seedBaseData(prisma: PrismaClient) {
     data: { ownerId: adminUser.id },
   });
 
-  // Create readonly user
+  // Create readonly user. See note on adminUser above re: User.role.
   const readonlyUser = await prisma.user.create({
     data: {
       email: "readonly@e2e-test.local",
@@ -187,7 +243,6 @@ async function seedBaseData(prisma: PrismaClient) {
       name: "Read Only",
       firstName: "Read",
       lastName: "Only",
-      role: "READONLY",
       emailVerified: true,
       emailVerifiedAt: new Date(),
       workspaceId: workspace.id,
@@ -217,9 +272,10 @@ async function seedBaseData(prisma: PrismaClient) {
     data: {
       userId: readonlyUser.id,
       workspaceId: workspace.id,
-      role: "READONLY",
+      roleId: readonlyRoleId,
     },
   });
+
 }
 
 async function loginViaApi(

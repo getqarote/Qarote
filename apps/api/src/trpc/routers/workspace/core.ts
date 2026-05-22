@@ -5,13 +5,12 @@ import { WorkspaceIdParamSchema } from "@/schemas/workspace";
 import { WorkspaceMapper } from "@/mappers/workspace";
 
 import {
-  authorize,
   rateLimitedProcedure,
   router,
+  workspacePermissionProcedure,
   workspaceProcedure,
 } from "@/trpc/trpc";
 
-import { UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -74,9 +73,24 @@ export const coreRouter = router({
   }),
 
   /**
-   * Get specific workspace by ID (WORKSPACE)
+   * Return the caller's WorkspaceRole + the resolved permission list for
+   * the workspace. Frontend reads `permissions[]` directly so the static
+   * role→permissions map can be retired (Phase 2 / PR-C, rbac.md §3).
    */
-  getById: workspaceProcedure
+  getMyRole: workspaceProcedure
+    .input(WorkspaceIdParamSchema)
+    .query(({ ctx }) => ({
+      // Surfaces "CUSTOM" for non-builtin assignments so the
+      // frontend can branch UX. Permission set is the canonical
+      // source either way.
+      role: ctx.workspaceRole ?? "CUSTOM",
+      permissions: Array.from(ctx.effectivePermissions.permissions),
+    })),
+
+  /**
+   * Get specific workspace by ID (workspace:read)
+   */
+  getById: workspacePermissionProcedure("workspace:read")
     .input(WorkspaceIdParamSchema)
     .query(async ({ input, ctx }) => {
       const { workspaceId } = input;
@@ -113,30 +127,4 @@ export const coreRouter = router({
         });
       }
     }),
-
-  /**
-   * Get all workspaces (ADMIN ONLY)
-   */
-  getAll: authorize([UserRole.ADMIN]).query(async ({ ctx }) => {
-    try {
-      const workspaces = await ctx.prisma.workspace.findMany({
-        include: {
-          _count: {
-            select: {
-              members: true,
-              servers: true,
-            },
-          },
-        },
-      });
-
-      return { workspaces: WorkspaceMapper.toApiResponseArray(workspaces) };
-    } catch (error) {
-      ctx.logger.error({ error }, "Error fetching workspaces:");
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: te(ctx.locale, "workspace.failedToFetchWorkspaces"),
-      });
-    }
-  }),
 });

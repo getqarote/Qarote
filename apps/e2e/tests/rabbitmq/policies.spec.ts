@@ -52,6 +52,17 @@ test.describe("Policies Page Navigation @p0", () => {
     await adminPage.goto("/");
     await adminPage.waitForLoadState("domcontentloaded");
 
+    // Since the sidebar redesign (#52), the BROWSE section — which holds
+    // the Policies link — is collapsed by default. Expand it before
+    // asserting visibility. The trigger advertises `aria-expanded`, so
+    // we toggle only when it's not already open (the persisted state in
+    // localStorage may differ between sessions).
+    const browseTrigger = adminPage.getByRole("button", { name: /^browse$/i });
+    await expect(browseTrigger).toBeVisible({ timeout: 15_000 });
+    if ((await browseTrigger.getAttribute("aria-expanded")) !== "true") {
+      await browseTrigger.click();
+    }
+
     await expect(
       adminPage.getByRole("link", { name: /policies/i })
     ).toBeVisible({ timeout: 15_000 });

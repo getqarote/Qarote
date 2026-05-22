@@ -6,8 +6,8 @@
  * instead of free-text inputs. Routing Key stays as free text (pattern
  * matching, too many possible values to enumerate).
  *
- * State is stored in URL search params so filters survive page reload
- * and are shareable via URL.
+ * State is stored in URL search params (via nuqs) so filters survive
+ * page reload and are shareable via URL.
  *
  * Params: vhost, queue, exchange, rk (routingKey), dir (direction)
  * Time range params (from, to) are controlled props — only shown in History mode.
@@ -19,10 +19,13 @@
  *                    Row 2 "Filter":     vhost, queue, exchange, rk, dir + clear
  */
 
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSearchParams } from "react-router";
 
-import { X } from "lucide-react";
+import { AlertTriangle, X } from "lucide-react";
+import { parseAsString, parseAsStringEnum, useQueryStates } from "nuqs";
+
+import { TRACE_RETENTION_DAYS } from "@/lib/tracingConfig";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,23 +53,31 @@ interface TracingFiltersBarProps {
   onToChange?: (value: string) => void;
 }
 
-const VALID_DIRECTIONS: TraceDirection[] = ["publish", "deliver"];
+const VALID_DIRECTIONS = ["publish", "deliver"] as const;
 const ALL_VALUE = "__all__";
+
+const tracingFiltersParsers = {
+  vhost: parseAsString,
+  queue: parseAsString,
+  exchange: parseAsString,
+  rk: parseAsString,
+  dir: parseAsStringEnum<TraceDirection>([...VALID_DIRECTIONS]),
+};
+
+const tracingFiltersOptions = {
+  history: "replace" as const,
+  clearOnDefault: true,
+};
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function useTracingFilters(): TraceFilters {
-  const [params] = useSearchParams();
-  const rawDir = params.get("dir");
-  const direction =
-    rawDir && (VALID_DIRECTIONS as string[]).includes(rawDir)
-      ? (rawDir as TraceDirection)
-      : undefined;
+  const [params] = useQueryStates(tracingFiltersParsers, tracingFiltersOptions);
   return {
-    vhost: params.get("vhost") ?? undefined,
-    queueName: params.get("queue") ?? undefined,
-    exchange: params.get("exchange") ?? undefined,
-    routingKey: params.get("rk") ?? undefined,
-    direction,
+    vhost: params.vhost ?? undefined,
+    queueName: params.queue ?? undefined,
+    exchange: params.exchange ?? undefined,
+    routingKey: params.rk ?? undefined,
+    direction: params.dir ?? undefined,
   };
 }
 
@@ -79,63 +90,54 @@ export function TracingFiltersBar({
   onToChange,
 }: TracingFiltersBarProps) {
   const { t } = useTranslation("tracing");
-  const [params, setParams] = useSearchParams();
+  const [filters, setFilters] = useQueryStates(
+    tracingFiltersParsers,
+    tracingFiltersOptions
+  );
   const { availableVHosts } = useVHostContext();
 
-  const vhostFilter = params.get("vhost") ?? undefined;
-  const { data: queuesData } = useQueues(serverId, vhostFilter ?? null);
+  // Mount-time retention floor. useState's lazy initializer is the
+  // documented escape hatch for "read wall-clock once" — Date.now()
+  // during render directly is flagged as impure, but a lazy init
+  // function runs exactly once per component instance. Drift over a
+  // long-lived session is negligible for a 7-day-window UX hint.
+  // Hooked before the early return so call order stays stable.
+  const [retentionFloorMs] = useState(
+    () => Date.now() - TRACE_RETENTION_DAYS * 24 * 60 * 60 * 1000
+  );
+
+  const { data: queuesData } = useQueues(serverId, filters.vhost ?? null);
   const queues = queuesData?.queues ?? [];
 
-  const { data: exchangesData } = useExchanges(serverId, vhostFilter ?? null);
+  const { data: exchangesData } = useExchanges(serverId, filters.vhost ?? null);
   const exchanges = (exchangesData?.exchanges ?? []).filter(
     (e) => e.name !== "" && !e.name.startsWith("amq.")
   );
 
-  const set = (key: string, value: string | undefined) => {
-    setParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        if (value) next.set(key, value);
-        else next.delete(key);
-        return next;
-      },
-      { replace: true }
-    );
-  };
-
   const clear = () => {
-    setParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        ["vhost", "queue", "exchange", "rk", "dir"].forEach((k) =>
-          next.delete(k)
-        );
-        return next;
-      },
-      { replace: true }
-    );
+    setFilters(null);
     onFromChange?.("");
     onToChange?.("");
   };
 
   const hasFilters =
-    params.has("vhost") ||
-    params.has("queue") ||
-    params.has("exchange") ||
-    params.has("rk") ||
-    params.has("dir") ||
-    from ||
-    to;
+    filters.vhost !== null ||
+    filters.queue !== null ||
+    filters.exchange !== null ||
+    filters.rk !== null ||
+    filters.dir !== null ||
+    Boolean(from) ||
+    Boolean(to);
 
   const filterControls = (
     <>
       {/* Vhost — select from available vhosts */}
       <Select
-        value={params.get("vhost") ?? ALL_VALUE}
-        onValueChange={(v) => set("vhost", v === ALL_VALUE ? undefined : v)}
+        value={filters.vhost ?? ALL_VALUE}
+        onValueChange={(v) => setFilters({ vhost: v === ALL_VALUE ? null : v })}
       >
         <SelectTrigger
-          className="h-8 w-32 text-xs"
+          className="h-8 min-w-32 w-auto text-xs"
           aria-label={t("filter.vhost")}
         >
           <SelectValue placeholder={t("filter.vhost")} />
@@ -152,11 +154,11 @@ export function TracingFiltersBar({
 
       {/* Queue — select from queues for the filtered vhost (or all) */}
       <Select
-        value={params.get("queue") ?? ALL_VALUE}
-        onValueChange={(v) => set("queue", v === ALL_VALUE ? undefined : v)}
+        value={filters.queue ?? ALL_VALUE}
+        onValueChange={(v) => setFilters({ queue: v === ALL_VALUE ? null : v })}
       >
         <SelectTrigger
-          className="h-8 w-36 text-xs"
+          className="h-8 min-w-36 w-auto text-xs"
           aria-label={t("filter.queue")}
         >
           <SelectValue placeholder={t("filter.queue")} />
@@ -173,11 +175,13 @@ export function TracingFiltersBar({
 
       {/* Exchange — select from exchanges (excluding system exchanges) */}
       <Select
-        value={params.get("exchange") ?? ALL_VALUE}
-        onValueChange={(v) => set("exchange", v === ALL_VALUE ? undefined : v)}
+        value={filters.exchange ?? ALL_VALUE}
+        onValueChange={(v) =>
+          setFilters({ exchange: v === ALL_VALUE ? null : v })
+        }
       >
         <SelectTrigger
-          className="h-8 w-36 text-xs"
+          className="h-8 min-w-36 w-auto text-xs"
           aria-label={t("filter.exchange")}
         >
           <SelectValue placeholder={t("filter.exchange")} />
@@ -196,18 +200,22 @@ export function TracingFiltersBar({
       <Input
         placeholder={t("filter.routingKey")}
         aria-label={t("filter.routingKey")}
-        value={params.get("rk") ?? ""}
-        onChange={(e) => set("rk", e.target.value || undefined)}
+        value={filters.rk ?? ""}
+        onChange={(e) => setFilters({ rk: e.target.value || null })}
         className="h-8 w-36 text-xs font-mono"
       />
 
       {/* Direction */}
       <Select
-        value={params.get("dir") ?? ALL_VALUE}
-        onValueChange={(v) => set("dir", v === ALL_VALUE ? undefined : v)}
+        value={filters.dir ?? ALL_VALUE}
+        onValueChange={(v) =>
+          setFilters({
+            dir: v === ALL_VALUE ? null : (v as TraceDirection),
+          })
+        }
       >
         <SelectTrigger
-          className="h-8 w-28 text-xs"
+          className="h-8 min-w-28 w-auto text-xs"
           aria-label={t("filter.direction")}
         >
           <SelectValue placeholder={t("filter.direction")} />
@@ -246,6 +254,26 @@ export function TracingFiltersBar({
   }
 
   /* ── History mode: two labeled groups ── */
+  // Validation for the time range. Two failure modes are surfaced to the
+  // user in a single hint line:
+  //   1. from > to — the query would return no rows; flag immediately.
+  //   2. from < (now − retention) — the query is valid but the older
+  //      portion of the range falls outside the configured retention
+  //      window, so the result will be incomplete. We don't block the
+  //      query; the user just gets an honest signal that they're asking
+  //      for something the backend can't fully serve.
+  const fromMs = from ? Date.parse(from) : NaN;
+  const toMs = to ? Date.parse(to) : NaN;
+  const rangeInverted =
+    Number.isFinite(fromMs) && Number.isFinite(toMs) && fromMs > toMs;
+  const exceedsRetention =
+    Number.isFinite(fromMs) && fromMs < retentionFloorMs && !rangeInverted;
+  const validationKey = rangeInverted
+    ? "filter.rangeInverted"
+    : exceedsRetention
+      ? "filter.rangeExceedsRetention"
+      : null;
+
   return (
     <div className="flex flex-col gap-2">
       {/* Row 1 — Time range */}
@@ -256,9 +284,18 @@ export function TracingFiltersBar({
         <Input
           type="datetime-local"
           value={from ?? ""}
+          // Cap `from` at the current `to` so the picker can't produce an
+          // inverted range; we still validate at runtime in case the user
+          // types directly.
+          max={to ?? undefined}
           onChange={(e) => onFromChange?.(e.target.value)}
           className="h-8 w-52"
           aria-label={t("filter.from")}
+          // aria-invalid only on the *error* (inverted range) — exceeding
+          // retention is a warning that doesn't break the query, so it
+          // stays in aria-describedby without flagging the field invalid.
+          aria-invalid={rangeInverted ? true : undefined}
+          aria-describedby={validationKey ? "tracing-range-error" : undefined}
         />
         <span className="text-xs text-muted-foreground" aria-hidden>
           →
@@ -266,11 +303,43 @@ export function TracingFiltersBar({
         <Input
           type="datetime-local"
           value={to ?? ""}
+          // Floor `to` at the current `from` so the picker can't produce
+          // an inverted range.
+          min={from ?? undefined}
           onChange={(e) => onToChange?.(e.target.value)}
           className="h-8 w-52"
           aria-label={t("filter.to")}
+          aria-invalid={rangeInverted ? true : undefined}
+          aria-describedby={validationKey ? "tracing-range-error" : undefined}
         />
       </div>
+
+      {/* Validation hint — always-mounted live region so NVDA + Firefox
+          (which can miss announcements when the live region is added to
+          the DOM with content already in it) reliably picks up content
+          changes. The container is rendered on every paint; only its
+          inner content and visibility toggle with validationKey. */}
+      <p
+        id="tracing-range-error"
+        role="status"
+        aria-live="polite"
+        className={
+          validationKey
+            ? "flex items-start gap-1.5 text-xs text-warning"
+            : "sr-only"
+        }
+      >
+        {validationKey && (
+          <>
+            <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" aria-hidden />
+            <span>
+              {validationKey === "filter.rangeExceedsRetention"
+                ? t(validationKey, { days: TRACE_RETENTION_DAYS })
+                : t(validationKey)}
+            </span>
+          </>
+        )}
+      </p>
 
       {/* Row 2 — Attribute filters */}
       <div className="flex flex-wrap items-center gap-2">

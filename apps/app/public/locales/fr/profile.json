@@ -172,8 +172,34 @@
     "toast": {
       "inviteFailed": "Échec de l'invitation",
       "removeFailed": "Impossible de retirer le membre",
-      "addFailed": "Impossible d'ajouter le membre"
-    }
+      "addFailed": "Impossible d'ajouter le membre",
+      "roleUpdateFailed": "Échec de la mise à jour du rôle",
+      "roleFetchFailed": "Impossible de charger vos permissions d'espace de travail.",
+      "bulkRoleUpdated_one": "{{count}} membre mis à jour",
+      "bulkRoleUpdated_other": "{{count}} membres mis à jour",
+      "bulkRoleUpdateFailed": "Échec de la mise à jour des membres",
+      "scopeDenied": "Vous devez avoir la permission « {{permission}} » pour cette action.",
+      "scopeDeniedGeneric": "Vous n'avez pas la permission requise pour cette action."
+    },
+    "selectRow": "Sélectionner ce membre",
+    "selectAll": "Sélectionner tous les membres de cette page",
+    "bulkSelected_one": "<strong>{{count}}</strong> membre sélectionné",
+    "bulkSelected_other": "<strong>{{count}}</strong> membres sélectionnés",
+    "bulkSelectRolePlaceholder": "Attribuer un rôle…",
+    "bulkApplying": "Attribution…",
+    "bulkDeselectAll": "Effacer la sélection",
+    "bulkLastOwnerTitle": "Cette action retire le dernier Owner",
+    "bulkLastOwnerBody": "Après cette action, personne ne pourra gérer la facturation, supprimer l'espace ou accorder le rôle Owner. Continuer ?",
+    "bulkLastOwnerCancel": "Annuler",
+    "bulkLastOwnerConfirm": "Je comprends, continuer",
+    "roleGroupBuiltin": "Rôles standards",
+    "roleGroupCustom": "Rôles personnalisés",
+    "roleCustomBadge": "Personnalisé",
+    "selectRowNamed": "Sélectionner {{name}}",
+    "selectAllNamed": "Sélectionner les {{count}} membres de cette page",
+    "bulkApply_one": "Attribuer à {{count}} membre",
+    "bulkApply_other": "Attribuer à {{count}} membres",
+    "roleLoading": "Chargement des rôles…"
   },
   "org": {
     "title": "Organisation",

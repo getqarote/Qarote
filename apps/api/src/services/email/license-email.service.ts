@@ -21,6 +21,8 @@ interface SendLicenseDeliveryEmailParams {
   tier: UserPlan;
   expiresAt: Date;
   locale?: string;
+  /** Pre-built `docker login` command injected at dispatch time. Not stored in outbox payload. */
+  ghcrLoginCommand?: string;
 }
 
 interface SendLicenseRenewalEmailParams {
@@ -85,7 +87,15 @@ export class LicenseEmailService {
   static async sendLicenseDeliveryEmail(
     params: SendLicenseDeliveryEmailParams
   ): Promise<EmailResult> {
-    const { to, userName, licenseKey, tier, expiresAt, locale = "en" } = params;
+    const {
+      to,
+      userName,
+      licenseKey,
+      tier,
+      expiresAt,
+      locale = "en",
+      ghcrLoginCommand,
+    } = params;
 
     const { portalFrontendUrl } = CoreEmailService.getConfig();
     const portalUrl = portalFrontendUrl;
@@ -100,6 +110,7 @@ export class LicenseEmailService {
       expiresAt,
       portalUrl,
       locale,
+      ghcrLoginCommand,
     });
 
     return CoreEmailService.sendEmail({

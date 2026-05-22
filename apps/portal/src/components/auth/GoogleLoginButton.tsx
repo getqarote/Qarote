@@ -1,8 +1,8 @@
 import React from "react";
 
-import { usePostHog } from "@posthog/react";
 import { toast } from "sonner";
 
+import { track } from "@/lib/analytics";
 import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
 
@@ -19,8 +19,6 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   className,
   mode = "signin",
 }) => {
-  const posthog = usePostHog();
-
   // OAuth is only enabled for cloud deployments
   const deploymentMode = import.meta.env.VITE_DEPLOYMENT_MODE || "cloud";
   const enableOAuth = deploymentMode === "cloud";
@@ -30,7 +28,7 @@ export const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   }
 
   const handleGoogleLogin = async () => {
-    posthog?.capture("google_sign_in_clicked", { mode });
+    track("google_sign_in_clicked", { mode });
     try {
       await authClient.signIn.social({
         provider: "google",

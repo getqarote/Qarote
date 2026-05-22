@@ -5,9 +5,9 @@ import { Navigate } from "react-router";
 import { Loader2, Mail } from "lucide-react";
 import { toast } from "sonner";
 
-import { UserRole } from "@/lib/api";
 import { isSelfHostedMode } from "@/lib/featureFlags";
 
+import { PermissionDeniedCard, RequireOrgAdmin } from "@/components/rbac";
 import { SMTPAuthCard } from "@/components/settings/smtp/SMTPAuthCard";
 import { SMTPOAuth2Card } from "@/components/settings/smtp/SMTPOAuth2Card";
 import { SMTPServerCard } from "@/components/settings/smtp/SMTPServerCard";
@@ -21,8 +21,6 @@ import {
 } from "@/components/settings/smtp/types";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-
-import { useAuth } from "@/contexts/AuthContextDefinition";
 
 import {
   useSelfhostedSmtpSettings,
@@ -40,26 +38,48 @@ import {
  * into a single `SMTPFormValues` object so each card takes
  * `values` + a `onChange(patch)` callback.
  *
- * Hidden on cloud mode (where SMTP is managed centrally) and for
- * non-admins (who redirect to their profile instead).
+ * Hidden on cloud mode (where SMTP is managed centrally) and behind
+ * `<RequireOrgAdmin>` for org-scope authority. Demoted admins see an
+ * inline empty-state with a CTA — never a silent redirect.
  */
 const SMTPSection = () => {
-  const { user } = useAuth();
+  const { t } = useTranslation("smtp");
+  const { t: tc } = useTranslation("common");
 
-  const {
-    data: settings,
-    isLoading,
-    refetch,
-  } = useSelfhostedSmtpSettings({
-    enabled: isSelfHostedMode() && user?.role === UserRole.ADMIN,
-  });
-
-  // Cloud mode has central SMTP, and non-admins have no business
-  // here — redirect to the profile page instead of rendering an
-  // empty forbidden state.
-  if (!isSelfHostedMode() || (user && user.role !== UserRole.ADMIN)) {
+  // Cloud mode has central SMTP — no role lookup needed; bail
+  // synchronously so cloud users never see a role-resolution spinner.
+  if (!isSelfHostedMode()) {
     return <Navigate to="/settings/profile" replace />;
   }
+
+  return (
+    <RequireOrgAdmin
+      loadingFallback={<SMTPLoadingSkeleton />}
+      deniedFallback={
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <PermissionDeniedCard
+            title={t("accessDeniedTitle")}
+            description={t("accessDenied")}
+            returnTo="/settings/profile"
+            returnLabel={tc("backToSettings")}
+          />
+        </div>
+      }
+    >
+      <SMTPSectionBody />
+    </RequireOrgAdmin>
+  );
+};
+
+export default SMTPSection;
+
+/**
+ * Mounted only after RequireOrgAdmin proves the caller is an org
+ * admin — the settings query runs unconditionally here, with no
+ * `enabled` gating on a role boolean.
+ */
+function SMTPSectionBody() {
+  const { data: settings, isLoading, refetch } = useSelfhostedSmtpSettings();
 
   if (isLoading || !settings) {
     return <SMTPLoadingSkeleton />;
@@ -72,9 +92,7 @@ const SMTPSection = () => {
       onRefetch={refetch}
     />
   );
-};
-
-export default SMTPSection;
+}
 
 /**
  * Inner form component — kept as a child of the section so the

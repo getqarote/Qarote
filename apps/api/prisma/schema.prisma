@@ -7,6 +7,13 @@ datasource db {
   provider = "postgresql"
 }
 
+enum LlmProvider {
+  OLLAMA
+  ANTHROPIC
+  OPENAI
+  MANAGED
+}
+
 enum TraceDirection {
   publish
   deliver
@@ -33,8 +40,10 @@ model Alert {
   fingerprint    String?
   firstSeenAt    DateTime?
   lastSeenAt     DateTime?
-  emailSentAt    DateTime?
-  lastNotifiedAt DateTime?
+  emailSentAt      DateTime?
+  slackNotifiedAt  DateTime?
+  webhookNotifiedAt DateTime?
+  lastNotifiedAt   DateTime?
   category       String?
   sourceType     String?
   sourceName     String?
@@ -66,30 +75,40 @@ model Alert {
 }
 
 model AlertRule {
-  id          String             @id @default(cuid())
-  name        String
-  description String?
-  slug        String?
-  type        AlertType
-  threshold   Float
-  operator    ComparisonOperator
-  severity    AlertSeverity
-  enabled     Boolean            @default(true)
-  isDefault   Boolean            @default(false)
-  serverId    String?
-  createdById String?
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  workspaceId String
-  alerts      Alert[]
-  user        User?              @relation(fields: [createdById], references: [id], onDelete: SetNull)
-  server      RabbitMQServer?    @relation(fields: [serverId], references: [id], onDelete: Cascade)
-  workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  id                    String             @id @default(cuid())
+  name                  String
+  description           String?
+  slug                  String?
+  type                  AlertType
+  threshold             Float
+  operator              ComparisonOperator
+  severity              AlertSeverity
+  enabled               Boolean            @default(true)
+  isDefault             Boolean            @default(false)
+  serverId              String?
+  createdById           String?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  workspaceId           String
+  /// Discriminator for which evaluator runs this rule. METRIC rules are evaluated
+  /// by alert.analyzer; CONFIG rules by config.evaluator.
+  evaluator             AlertEvaluator     @default(METRIC)
+  /// Per-rule evaluation cadence in seconds. Null = use the worker default
+  /// (30s for METRIC, 600s for CONFIG).
+  evaluationIntervalSec Int?
+  /// Stable string ID for CONFIG rules (e.g. "config.queue.missing_dlx").
+  /// Doubles as i18n bundle key. Null for METRIC rules.
+  configRuleKey         String?
+  alerts                Alert[]
+  user                  User?              @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  server                RabbitMQServer?    @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  workspace             Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([serverId, slug])
   @@index([serverId])
   @@index([workspaceId])
   @@index([isDefault])
+  @@index([serverId, evaluator])
 }
 
 model EmailVerificationToken {
@@ -135,20 +154,29 @@ model Feedback {
 }
 
 model Invitation {
-  id            String           @id @default(uuid())
-  email         String
-  token         String           @unique
-  invitedById   String
-  invitedUserId String?
-  role          UserRole         @default(MEMBER)
-  status        InvitationStatus @default(PENDING)
-  expiresAt     DateTime
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  workspaceId   String
-  invitedBy     User             @relation("Invitation_invitedByIdToUser", fields: [invitedById], references: [id], onDelete: Cascade)
-  invitedUser   User?            @relation("Invitation_invitedUserIdToUser", fields: [invitedUserId], references: [id])
-  workspace     Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  id               String           @id @default(uuid())
+  email            String
+  /// SHA-256 hex of the raw token. Raw token is never stored — only sent to
+  /// the invitee via email and compared in constant time on accept.
+  /// docs/plans/rbac.md §2.5 (R-INV-1).
+  tokenHash        String           @unique
+  invitedById      String
+  invitedUserId    String?
+  acceptedByUserId String?
+  /// Workspace-scoped role minus OWNER (see InviteRole). Ownership transfer
+  /// is a separate, explicit flow.
+  role             InviteRole       @default(MEMBER)
+  status           InvitationStatus @default(PENDING)
+  expiresAt        DateTime
+  acceptedAt       DateTime?
+  revokedAt        DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  workspaceId      String
+  invitedBy        User             @relation("Invitation_invitedByIdToUser", fields: [invitedById], references: [id], onDelete: Cascade)
+  invitedUser      User?            @relation("Invitation_invitedUserIdToUser", fields: [invitedUserId], references: [id])
+  acceptedBy       User?            @relation("Invitation_acceptedByIdToUser", fields: [acceptedByUserId], references: [id], onDelete: SetNull)
+  workspace        Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }
 
 model PasswordReset {
@@ -183,27 +211,31 @@ model Queue {
 }
 
 model RabbitMQServer {
-  id                    String                @id @default(uuid())
+  id                    String                    @id @default(uuid())
   name                  String
   host                  String
   port                  Int
   username              String
   password              String
-  vhost                 String                @default("/")
-  createdAt             DateTime              @default(now())
-  updatedAt             DateTime              @updatedAt
-  sslVerifyPeer         Boolean               @default(true)
+  vhost                 String                    @default("/")
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+  sslVerifyPeer         Boolean                   @default(true)
   workspaceId           String?
   version               String?
   versionMajorMinor     String?
-  isOverQueueLimit      Boolean               @default(false)
-  overLimitWarningShown Boolean               @default(false)
+  isOverQueueLimit      Boolean                   @default(false)
+  overLimitWarningShown Boolean                   @default(false)
   queueCountAtConnect   Int?
-  useHttps              Boolean               @default(false)
+  /// Free-text environment tag (`prod`, `staging`, `dev`, …) consumed
+  /// by the RBAC Phase 3 `server.environment` resource-scope
+  /// predicate. Operator-controlled — no automated derivation.
+  environment           String?
+  useHttps              Boolean                   @default(false)
   queuePauseStates      Json?
-  amqpPort              Int                   @default(5672)
-  traceEnabled          Boolean               @default(false)
-  payloadCaptureEnabled Boolean               @default(false)
+  amqpPort              Int                       @default(5672)
+  traceEnabled          Boolean                   @default(false)
+  payloadCaptureEnabled Boolean                   @default(false)
   // Broker capability snapshot — see services/feature-gate/capability-axis.ts.
   // `version` (above) already stores rabbitmq_version; productName captures
   // the product flavour (RabbitMQ / Tanzu RabbitMQ / AWS MQ for RabbitMQ /…).
@@ -220,7 +252,8 @@ model RabbitMQServer {
   messageTraceEvents    MessageTraceEvent[]
   auditLogs             AuditLog[]
   diagnosisRecords      IncidentDiagnosisRecord[]
-  workspace             Workspace?            @relation(fields: [workspaceId], references: [id])
+  configFindings        ConfigFinding[]
+  workspace             Workspace?                @relation(fields: [workspaceId], references: [id])
 }
 
 /// Scheduled time-series snapshots written every 5 min by the metrics poller.
@@ -247,6 +280,7 @@ model QueueMetricSnapshot {
   @@index([serverId, timestamp])
   @@index([timestamp])
   @@index([workspaceId, serverId, timestamp])
+  @@index([workspaceId, serverId, queueName, vhost, timestamp])
   @@map("queue_metric_snapshots")
 }
 
@@ -258,7 +292,6 @@ model User {
   passwordHash            String?
   firstName               String
   lastName                String
-  role                    UserRole                 @default(MEMBER)
   isActive                Boolean                  @default(true)
   lastLogin               DateTime?
   createdAt               DateTime                 @default(now())
@@ -282,6 +315,7 @@ model User {
   feedback                Feedback[]               @relation("Feedback_userIdToUser")
   invitationsSent         Invitation[]             @relation("Invitation_invitedByIdToUser")
   invitationsReceived     Invitation[]             @relation("Invitation_invitedUserIdToUser")
+  invitationsAccepted     Invitation[]             @relation("Invitation_acceptedByIdToUser")
   passwordResets          PasswordReset[]
   sessions                Session[]
   accounts                Account[]
@@ -292,6 +326,9 @@ model User {
   organizationMembers     OrganizationMember[]
   orgInvitationsSent      OrganizationInvitation[] @relation("OrgInvitationsSent")
   auditLogs               AuditLog[]
+  llmConfigs              WorkspaceLlmConfig[]
+  rolesCreated            Role[]                   @relation("RoleCreator")
+  llmExplanations         LlmExplanation[]         @relation("LlmExplanationCreator")
 }
 
 // ─── Better Auth Models ─────────────────────────────────────────────
@@ -344,37 +381,48 @@ model Verification {
 // ────────────────────────────────────────────────────────────────────
 
 model Workspace {
-  id                            String                    @id @default(uuid())
+  id                            String                   @id @default(uuid())
   name                          String
   contactEmail                  String?
   logoUrl                       String?
-  createdAt                     DateTime                  @default(now())
-  updatedAt                     DateTime                  @updatedAt
+  createdAt                     DateTime                 @default(now())
+  updatedAt                     DateTime                 @updatedAt
   ownerId                       String?
   organizationId                String
   tags                          Json?
-  emailNotificationsEnabled     Boolean                   @default(true)
+  emailNotificationsEnabled     Boolean                  @default(true)
   notificationSeverities        Json?
-  browserNotificationsEnabled   Boolean                   @default(false)
+  browserNotificationsEnabled   Boolean                  @default(false)
   browserNotificationSeverities Json?
   notificationServerIds         Json?
-  unackedWarnThreshold          Int                       @default(100)
+  unackedWarnThreshold          Int                      @default(100)
   vhostThresholds               Json?
   /// Message tracing retention window in hours. Default 24h, max 168h (7 days).
-  traceRetentionHours           Int                       @default(24)
+  traceRetentionHours           Int                      @default(24)
+  /// Denormalized license tier for fast plan-axis reads on the audit
+  /// and RBAC paths. Kept in sync by `apps/api/src/workers/license-monitor.ts`
+  /// — workspace mutations and license-flip events update this so the
+  /// resolver doesn't pay the org→subscription join cost per request.
+  licenseTier                   UserPlan?
   alerts                        Alert[]
   alertRules                    AlertRule[]
   feedback                      Feedback[]
   invitations                   Invitation[]
   servers                       RabbitMQServer[]
   users                         User[]
-  members                       WorkspaceMember[]         @relation("WorkspaceMembers")
+  members                       WorkspaceMember[]        @relation("WorkspaceMembers")
   licenses                      License[]
   slackConfigs                  SlackConfig[]
   webhooks                      Webhook[]
   digestSettings                WorkspaceDigestSettings?
   digestLogs                    DigestLog[]
   diagnosisRuleConfigs          DiagnosisRuleConfig[]
+  configFindings                ConfigFinding[]
+  llmConfig                     WorkspaceLlmConfig?
+  auditLogs                     AuditLog[]
+  roles                         Role[]
+  llmExplanations               LlmExplanation[]
+  llmUsageCounters              LlmUsageCounter[]
   organization                  Organization              @relation(fields: [organizationId], references: [id])
 
   @@index([organizationId])
@@ -402,7 +450,8 @@ model MessageTraceEvent {
   direction    TraceDirection
   timestamp    DateTime
 
-  server RabbitMQServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  server          RabbitMQServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  llmExplanations LlmExplanation[]
 
   @@index([serverId, cursorId])
   @@index([serverId, direction, cursorId])
@@ -411,7 +460,29 @@ model MessageTraceEvent {
   @@index([serverId, direction, timestamp])
   @@index([serverId, vhost, queueName, timestamp])
   @@index([serverId, vhost, exchange, timestamp])
+  /// Supports `ORDER BY "cursorId" DESC LIMIT N` over the last N delivers
+  /// on a given queue — the access pattern of the drain-lag fetcher
+  /// (#firehose-evidence Phase 2 #8). Without this index Postgres falls
+  /// back to a heap sort of the queue+direction filtered rowset, which
+  /// blows the 300ms statement_timeout on busy queues.
+  @@index([serverId, vhost, queueName, direction, cursorId])
   @@index([timestamp])
+}
+
+model WorkspaceLlmConfig {
+  workspaceId          String      @id
+  provider             LlmProvider
+  ollamaEndpoint       String?
+  ollamaModel          String?
+  endpointOverride     String?
+  apiKeyEnc            String?
+  encryptionKeyVersion Int         @default(1)
+  model                String?
+  enabled              Boolean     @default(false)
+  updatedAt            DateTime    @updatedAt
+  updatedById          String?
+  updatedBy            User?       @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+  workspace            Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 }
 
 model WorkspaceDigestSettings {
@@ -446,15 +517,97 @@ model WorkspaceMember {
   id          String    @id @default(uuid())
   userId      String
   workspaceId String
-  role        UserRole
+  /// FK to `Role` — single-path role resolution. Built-in tiers
+  /// resolve to seeded system rows; custom roles (Phase 3 PR-2) live
+  /// in workspace-scoped rows. The legacy `role` enum column was
+  /// backfilled and dropped in migration
+  /// `20260511100000_rbac_phase3_foundation`.
+  roleId      String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   user        User      @relation("WorkspaceMembers", fields: [userId], references: [id], onDelete: Cascade)
   workspace   Workspace @relation("WorkspaceMembers", fields: [workspaceId], references: [id], onDelete: Cascade)
+  role        Role      @relation(fields: [roleId], references: [id], onDelete: Restrict)
 
   @@unique([userId, workspaceId])
   @@index([userId])
   @@index([workspaceId])
+  @@index([roleId])
+}
+
+/// RBAC Phase 3 — workspace-scoped role definition.
+///
+/// Built-ins are seeded once globally with `workspaceId=null,
+/// isSystem=true, builtinKey=<tier>`. Custom roles have
+/// `workspaceId` set, `isSystem=false`, `builtinKey=null`.
+/// `WorkspaceMember.roleId` always points at exactly one row here.
+///
+/// `@@unique([workspaceId, name])` is INTENTIONALLY NOT declared.
+/// Postgres treats NULL as distinct in unique constraints — two
+/// system roles named "Owner" with `workspaceId=NULL` would coexist.
+/// Two partial unique indexes are created via raw SQL in the
+/// migration (case-insensitive `lower(name)`):
+///   - one for system rows where `workspaceId IS NULL`
+///   - one for custom rows where `workspaceId IS NOT NULL`
+model Role {
+  id            String            @id @default(uuid())
+  workspaceId   String?
+  name          String
+  description   String?
+  isSystem      Boolean           @default(false)
+  builtinKey    WorkspaceRole?    @unique
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  createdById   String?
+  workspace     Workspace?        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy     User?             @relation("RoleCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  permissions   RolePermission[]
+  members       WorkspaceMember[]
+
+  @@index([workspaceId])
+  @@index([workspaceId, updatedAt(sort: Desc)])
+}
+
+/// RBAC Phase 3 — lookup table for permission keys.
+///
+/// Seeded by migration from the code manifest at
+/// `apps/api/prisma/seed/permissions.ts`. Adding a key in code
+/// requires a new migration; renames go through
+/// `deprecatedAt`-then-add-new (no in-place rename).
+model Permission {
+  key          String           @id
+  category     String
+  description  String
+  deprecatedAt DateTime?
+  rolePerms    RolePermission[]
+}
+
+/// RBAC Phase 3 — many-to-many join with optional scope.
+///
+/// `scopeFingerprint` is a Postgres GENERATED STORED column
+/// computed as `encode(digest(coalesce(scopeCanonical,''),'sha256'),'hex')`.
+/// `scopeCanonical` is the app-side canonical text (see
+/// `apps/api/src/auth/scope-canonical.ts`) that the caller writes;
+/// Postgres hashes it. The `@default(dbgenerated(...))` annotation
+/// makes Prisma omit the column from INSERTs so the generated
+/// expression fires.
+///
+/// `@@unique([roleId, permissionKey, scopeFingerprint])` provides
+/// OR-across-rows semantics: a role holds permission X for any
+/// scope it has a row for, evaluated as a union of scopes.
+model RolePermission {
+  id               String     @id @default(uuid())
+  roleId           String
+  permissionKey    String
+  scopeJson        Json?
+  scopeCanonical   String?
+  scopeFingerprint String     @default(dbgenerated("encode(digest(coalesce(\"scopeCanonical\",''),'sha256'),'hex')"))
+  role             Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission       Permission @relation(fields: [permissionKey], references: [key], onDelete: Restrict)
+
+  @@unique([roleId, permissionKey, scopeFingerprint])
+  @@index([permissionKey])
+  @@index([roleId])
 }
 
 model License {
@@ -575,6 +728,55 @@ model StripeWebhookEvent {
   @@index([stripeEventId], name: "webhook_stripe_event_idx")
 }
 
+/// Per-recipient dedup for "new Qarote release available" emails sent by
+/// the release-notifier cron. Prior to this table the cron used a single
+/// SystemState row as the gate, which only updated AFTER the recipient
+/// loop — a mid-loop crash (or two replicas during a rolling deploy)
+/// re-sent the email to recipients who already received it. The unique
+/// (releaseVersion, recipient) constraint makes the create() call the
+/// gate: P2002 means "this recipient was already notified for this
+/// release", and the email send is skipped silently. SystemState is kept
+/// as a fast-path early-out so the cron can skip the full recipient
+/// query once every license holder has been notified for a version.
+model ReleaseNotificationSent {
+  id             String   @id @default(uuid())
+  releaseVersion String
+  recipient      String
+  sentAt         DateTime @default(now())
+
+  @@unique([releaseVersion, recipient])
+  @@index([releaseVersion])
+}
+
+/// Outbox for transactional notifications across multiple channels (email,
+/// Slack, user webhooks). Closes dual-write hazards: handlers write the
+/// outbox row in the same transaction as the surrounding business state,
+/// and an async drain delivers per-channel. `idempotencyKey` is unique
+/// across channels — Stripe/alert/cron retries become enqueue-time no-ops.
+///
+/// `channel` chooses the dispatcher and the retry profile (email tolerates
+/// long backoff, webhooks short, Slack respects Retry-After). `target` is
+/// the channel-native delivery address (email, Slack URL, webhook URL).
+///
+/// status: PENDING -> SENT (success) | FAILED (max attempts exceeded)
+model NotificationOutbox {
+  id             String    @id @default(uuid())
+  channel        String
+  template       String
+  target         String
+  payload        Json
+  idempotencyKey String    @unique
+  status         String    @default("PENDING")
+  attempts       Int       @default(0)
+  lastError      String?
+  createdAt      DateTime  @default(now())
+  sentAt         DateTime?
+  nextAttemptAt  DateTime  @default(now())
+
+  @@index([status, nextAttemptAt], name: "notification_outbox_drain_idx")
+  @@index([channel, status], name: "notification_outbox_channel_idx")
+}
+
 model Subscription {
   id                   String             @id @default(uuid())
   stripeSubscriptionId String             @unique
@@ -658,15 +860,15 @@ model SsoProvider {
 /// Maps an organization (or the whole instance for self-hosted) to a better-auth SSO provider.
 /// organizationId = null means instance-wide (self-hosted only).
 model OrgSsoConfig {
-  id             String        @id @default(uuid())
+  id             String   @id @default(uuid())
   organizationId String?
-  providerId     String        @unique
-  autoProvision  Boolean       @default(true)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  providerId     String   @unique
+  autoProvision  Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  provider       SsoProvider   @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  provider     SsoProvider   @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@unique([organizationId])
 }
@@ -708,6 +910,15 @@ enum AlertType {
   DISK_ALARM
   DLQ_MESSAGES
   NO_CONSUMERS
+  /// Sentinel type for AlertRule rows whose evaluator is CONFIG. The
+  /// real discriminator is `configRuleKey`; `type` is required so a
+  /// stable sentinel keeps existing code paths unchanged.
+  CONFIG_RULE
+}
+
+enum AlertEvaluator {
+  METRIC
+  CONFIG
 }
 
 enum BillingInterval {
@@ -755,6 +966,7 @@ enum InvitationStatus {
   PENDING
   ACCEPTED
   EXPIRED
+  REVOKED
 }
 
 enum PaymentStatus {
@@ -781,7 +993,18 @@ enum UserPlan {
   ENTERPRISE
 }
 
-enum UserRole {
+/// Workspace-scoped role. Strictly separate from OrgRole.
+/// OWNER is workspace-only and gates `workspace:delete` and ownership transfer.
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+  READONLY
+}
+
+/// WorkspaceRole minus OWNER. Invitations cannot grant OWNER — ownership
+/// transfer is a separate, explicit flow (rbac.md §2.2).
+enum InviteRole {
   ADMIN
   MEMBER
   READONLY
@@ -806,11 +1029,12 @@ model Organization {
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
-  members       OrganizationMember[]
-  invitations   OrganizationInvitation[]
-  workspaces    Workspace[]
-  subscription  Subscription?
+  members      OrganizationMember[]
+  invitations  OrganizationInvitation[]
+  workspaces   Workspace[]
+  subscription Subscription?
   orgSsoConfig OrgSsoConfig?
+  auditLogs    AuditLog[]
 }
 
 model OrganizationMember {
@@ -830,13 +1054,15 @@ model OrganizationMember {
 }
 
 model OrganizationInvitation {
-  id             String    @id @default(uuid())
-  organizationId String
-  email          String
-  token          String    @unique
-  role           OrgRole   @default(MEMBER)
-  invitedById    String
-  expiresAt      DateTime
+  id                   String    @id @default(uuid())
+  organizationId       String
+  email                String
+  /// SHA-256 hex of the raw token. Raw token is never stored — only sent
+  /// to the invitee via email and compared on accept.
+  tokenHash            String    @unique
+  role                 OrgRole   @default(MEMBER)
+  invitedById          String
+  expiresAt            DateTime
   acceptedAt           DateTime?
   createdAt            DateTime  @default(now())
   workspaceAssignments Json      @default("[]")
@@ -882,53 +1108,85 @@ model QuizLead {
 /// Append-only log of operator-initiated actions a self-hosted admin
 /// (or compliance auditor) may want to inspect after the fact.
 ///
-/// **Scope (v1)**: capability re-checks. The first concrete consumer
-/// is `rabbitmq.recheckCapabilities` — the operator manually
-/// triggers broker introspection, which is sensitive enough to log.
-/// Future actions (license activation, alert rule edits, role changes)
-/// extend the `kind` enum.
+/// Operator-facing audit table — captures every admin-relevant
+/// mutation across the application (RabbitMQ ops, workspace/org
+/// changes, role grants, integration CRUD, etc.) plus authorization
+/// denials (R-AUDIT-1). Subsumes the v1 capability-recheck audit.
 ///
-/// **Not** a replacement for application logs — the structured logger
-/// (Pino) already records every request. AuditLog is the operator-
-/// facing surface: queryable from the UI / portal, filtered by user,
-/// scoped to admin-relevant events, and intentionally narrow.
+/// **Plan-gating**: writes only persist on Enterprise plan (the
+/// service `recordAuditLog()` no-ops for Free/Developer). Pino logs
+/// continue across all plans for ops debug.
 ///
-/// `actorUserId` is nullable to support system-triggered events later
-/// (e.g. cron-driven actions). For PR-A consumers it's always set.
+/// **Append-only**: a Postgres BEFORE UPDATE/DELETE trigger blocks
+/// ad-hoc mutations. The 90-day retention cron uses
+/// `session_replication_role = 'replica'` to bypass the trigger
+/// inside its own transaction.
+///
+/// **action**: dotted-string taxonomy `<category>.<entityType>.<verb>`.
+/// Adding an action does not require a migration.
+///
+/// **vhost**: top-level (not in metadata) so the LLM "recent config
+/// changes on this queue" query (`docs/internal/llm-situated-explanation`)
+/// hits the index directly.
 model AuditLog {
-  id           String         @id @default(uuid())
-  kind         AuditLogKind
-  actorUserId  String?
-  /// Server the action targeted, when applicable. Nullable so future
-  /// non-server-scoped actions can share the table.
-  serverId     String?
-  /// Free-form structured payload. Schema is per-`kind` — see the
-  /// `*Payload` types in `apps/api/src/services/audit/types.ts`. JSON
-  /// keeps the schema flexible for new event kinds without a migration
-  /// per shape.
-  payload      Json?
-  createdAt    DateTime       @default(now())
+  id          String      @id @default(uuid())
+  timestamp   DateTime    @default(now())
+  /// Qarote user who performed the action; null for system-triggered
+  /// events (cron-driven actions, broker_diff in Phase 2).
+  actorId     String?
+  /// Denormalized for readability after user deletion. On GDPR erasure
+  /// we overwrite to "[deleted user]" — never null after creation.
+  actorEmail  String?
+  source      AuditSource @default(qarote)
+  /// Dotted notation, e.g. "rabbitmq.queue.purge", "auth.denial.member:invite".
+  action      String
+  /// First segment of `action` for indexable category-based filtering.
+  category    String
+  entityType  String
+  entityId    String?
+  entityLabel String?
+  serverId    String?
+  vhost       String?
+  workspaceId String?
+  /// Org-level events (license / SSO / auth) carry organizationId so
+  /// the row is attributable to a tenant when no workspace exists.
+  /// Workspace-scoped events leave this null. Both can coexist —
+  /// workspace events tied to an org workspace will populate both,
+  /// letting org-wide queries surface them too.
+  organizationId String?
+  metadata    Json?
+  ipAddress   String?
+  userAgent   String?
 
-  actor        User?          @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  actor        User?         @relation(fields: [actorId], references: [id], onDelete: SetNull)
   server       RabbitMQServer? @relation(fields: [serverId], references: [id], onDelete: SetNull)
+  workspace    Workspace?    @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
 
-  // Composite indexes cover the three planned query shapes (by-actor /
-  // by-server / by-kind, all newest-first). A standalone `(createdAt)`
-  // index would be redundant and pure write amplification — Postgres
-  // already has the leading `createdAt` from any of the three composites
-  // when planning a global newest-first scan. Add it back when a
-  // concrete "all activity" feed query proves the need.
-  @@index([actorUserId, createdAt])
-  @@index([serverId, createdAt])
-  @@index([kind, createdAt])
+  // Workspace-prefixed composites for the dominant filter shapes —
+  // single-column indexes that ignore the workspaceId narrowing are
+  // not included by design.
+  @@index([workspaceId, timestamp(sort: Desc)])
+  @@index([workspaceId, source, timestamp(sort: Desc)])
+  @@index([workspaceId, category, timestamp(sort: Desc)])
+  @@index([workspaceId, actorId, timestamp(sort: Desc)])
+  // LLM PR 7 query path: "last N changes on queue X on server Y".
+  @@index([serverId, vhost, entityId, timestamp(sort: Desc)])
+  // The functional+partial index for permissionsLastSet
+  // (`audit_logs_perm_set_idx`) is created in raw SQL and not
+  // expressible in the Prisma schema. See the migration.
+  // Snake_case table name preserved from the v1 capability-recheck
+  // audit — kept to match the migration history without table renames.
   @@map("audit_logs")
 }
 
-/// Action types the AuditLog records. Add a new variant when a new
-/// operator action becomes auditable; extend the `AuditLogPayload`
-/// discriminated union accordingly.
-enum AuditLogKind {
-  CAPABILITY_RECHECK
+enum AuditSource {
+  /// Mutation performed via Qarote UI / API (the default).
+  qarote
+  /// Phase 2: detected by poll-based diffing of broker state.
+  broker_diff
+  /// R-AUDIT-1: authorization denied (failed permission check).
+  rbac_denial
 }
 
 /// Persisted diagnosis findings, deduplicated by `(serverId, fingerprint)`.
@@ -963,15 +1221,16 @@ model IncidentDiagnosisRecord {
   /// today, but a buggy rule emitting a multi-MB description would
   /// otherwise persist verbatim. 2 KB is generous for human-readable
   /// diagnostic text; larger detail belongs in linked docs.
-  description    String         @db.VarChar(2000)
-  recommendation String         @db.VarChar(2000)
+  description    String        @db.VarChar(2000)
+  recommendation String        @db.VarChar(2000)
   /// When set, another rule's firing on the same target supersedes this one.
   supersededBy   String?
   firstSeenAt    DateTime      @default(now())
   lastSeenAt     DateTime      @default(now())
   resolvedAt     DateTime?
 
-  server         RabbitMQServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  server          RabbitMQServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  llmExplanations LlmExplanation[]
 
   @@unique([serverId, fingerprint])
   @@index([workspaceId, lastSeenAt])
@@ -980,18 +1239,111 @@ model IncidentDiagnosisRecord {
   @@map("incident_diagnosis_records")
 }
 
+/// Configuration findings produced by the CONFIG evaluator. Lifecycle is
+/// upsert-on-fingerprint per scan: the evaluator sets `lastSeenAt` on every
+/// pass; rows whose `lastSeenAt` is older than the current scan timestamp
+/// are auto-resolved (`resolvedAt` set). No notifications, no acknowledge
+/// semantics — this is a stateless config catalog, not an alert stream.
+model ConfigFinding {
+  id           String        @id @default(uuid())
+  workspaceId  String
+  serverId     String
+  ruleKey      String
+  severity     AlertSeverity
+  resourceType String
+  resourceName String
+  vhost        String?
+  fingerprint  String
+  detectedAt   DateTime      @default(now())
+  lastSeenAt   DateTime      @default(now())
+  resolvedAt   DateTime?
+  details      Json?
+
+  workspace       Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  server          RabbitMQServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  llmExplanations LlmExplanation[]
+
+  @@unique([fingerprint])
+  @@index([serverId, resolvedAt])
+  @@index([workspaceId, severity])
+  @@index([ruleKey])
+}
+
 /// Per-workspace, per-rule kill switch. Default enabled (a missing row
 /// means the rule is on); support / admin tooling toggles `enabled = false`
 /// to silence a rule that's misbehaving for one tenant without a release.
 model DiagnosisRuleConfig {
   workspaceId String
   ruleId      String
-  enabled     Boolean   @default(true)
-  updatedAt   DateTime  @updatedAt
+  enabled     Boolean  @default(true)
+  updatedAt   DateTime @updatedAt
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@id([workspaceId, ruleId])
   @@index([workspaceId, enabled])
   @@map("diagnosis_rule_configs")
+}
+
+/// Persisted LLM explanation for a finding or trace event.
+/// Exactly one of incidentFindingId / configFindingId / traceEventId is non-null,
+/// enforced by a CHECK constraint added in the migration SQL.
+/// Soft-deleted on regenerate (supersededAt set) so old permalinks resolve to a
+/// banner-flagged historical version instead of 404ing.
+model LlmExplanation {
+  id                String    @id @default(uuid())
+  workspaceId       String    @map("workspace_id")
+
+  incidentFindingId String?   @map("incident_finding_id")
+  configFindingId   String?   @map("config_finding_id")
+  traceEventId      String?   @map("trace_event_id")
+
+  promptVersion     String    @map("prompt_version")
+  provider          String
+  model             String
+  content           String    @db.Text
+  inputTokens       Int       @map("input_tokens")
+  outputTokens      Int       @map("output_tokens")
+
+  createdBy         String?   @map("created_by")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  supersededBy      String?   @map("superseded_by")
+  supersededAt      DateTime? @map("superseded_at")
+
+  workspace        Workspace                @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  incidentFinding  IncidentDiagnosisRecord? @relation(fields: [incidentFindingId], references: [id], onDelete: Restrict)
+  configFinding    ConfigFinding?           @relation(fields: [configFindingId], references: [id], onDelete: Restrict)
+  traceEvent       MessageTraceEvent?       @relation(fields: [traceEventId], references: [id], onDelete: Restrict)
+  creator          User?                    @relation("LlmExplanationCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, createdAt])
+  @@index([incidentFindingId])
+  @@index([configFindingId])
+  @@index([traceEventId])
+  @@map("llm_explanations")
+}
+
+/// Monthly usage counter for Managed LLM calls. One row per workspace per
+/// calendar-month-start (UTC). Composite PK serves the only read pattern
+/// (per-workspace + current period lookup in the gate) and the UPSERT
+/// in `recordUsage`. Period rollover is implicit — a new row is created
+/// on the first call of each month, old rows are retained for analytics
+/// (no PII beyond workspaceId, which is GDPR-covered via Cascade).
+///
+/// The counter is OPERATIONAL, not billing-of-record: Stripe + the
+/// Anthropic invoice are the source-of-truth for finance reconciliation,
+/// PostHog `llm_quota_recorded` events are the audit trail.
+model LlmUsageCounter {
+  workspaceId  String   @map("workspace_id")
+  periodStart  DateTime @map("period_start")
+  inputTokens  Int      @default(0) @map("input_tokens")
+  outputTokens Int      @default(0) @map("output_tokens")
+  callCount    Int      @default(0) @map("call_count")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@id([workspaceId, periodStart])
+  @@map("llm_usage_counters")
 }

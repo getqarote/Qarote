@@ -16,7 +16,7 @@ import {
 
 import { NodeMapper, OverviewMapper } from "@/mappers/rabbitmq";
 
-import { router, workspaceProcedure } from "@/trpc/trpc";
+import { router, workspacePermissionProcedure } from "@/trpc/trpc";
 
 import { createRabbitMQClientFromServer, verifyServerAccess } from "./shared";
 
@@ -39,7 +39,7 @@ export const metricsRouter = router({
   /**
    * Get metrics for a specific server (ALL USERS)
    */
-  getMetrics: workspaceProcedure
+  getMetrics: workspacePermissionProcedure("metric:read")
     .input(ServerWorkspaceInputSchema)
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId } = input;
@@ -110,7 +110,7 @@ export const metricsRouter = router({
    * Get messages rates data for a specific server (ALL USERS)
    * Returns real-time message operation rates from RabbitMQ overview API
    */
-  getRates: workspaceProcedure
+  getRates: workspacePermissionProcedure("metric:read")
     .input(GetMetricsSchema)
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId, timeRange = "1m" } = input;
@@ -200,7 +200,7 @@ export const metricsRouter = router({
    * Get live message rates data for a specific queue (ALL USERS)
    * Returns real-time message operation rates from RabbitMQ queue API
    */
-  getQueueRates: workspaceProcedure
+  getQueueRates: workspacePermissionProcedure("metric:read")
     .input(GetQueueRatesSchema.merge(VHostRequiredQuerySchema))
     .query(async ({ input, ctx }) => {
       const {
@@ -307,7 +307,7 @@ export const metricsRouter = router({
    * Live system metrics stream — SSE subscription replacing 15s polling (ALL USERS)
    * Fetches CPU/memory/disk metrics from RabbitMQ every 10s.
    */
-  watchMetrics: workspaceProcedure
+  watchMetrics: workspacePermissionProcedure("metric:read")
     .input(ServerWorkspaceInputSchema)
     .subscription(async function* ({ input, ctx, signal }) {
       const { serverId, workspaceId } = input;
@@ -396,7 +396,7 @@ export const metricsRouter = router({
    * workspaceId is derived from session context (IDOR prevention — never trusted from input).
    * rangeHours is clamped server-side for free workspaces via resolveAllowedRange().
    */
-  getQueueHistory: workspaceProcedure
+  getQueueHistory: workspacePermissionProcedure("metric:read")
     .input(
       z.object({
         serverId: z.string(),
@@ -475,7 +475,7 @@ export const metricsRouter = router({
    * workspaceId is derived from session context (IDOR prevention).
    * rangeHours is clamped server-side for free workspaces.
    */
-  getServerQueueHistory: workspaceProcedure
+  getServerQueueHistory: workspacePermissionProcedure("metric:read")
     .input(
       z.object({
         serverId: z.string(),
@@ -561,7 +561,7 @@ export const metricsRouter = router({
    * Live message rates stream — SSE subscription replacing 4s polling (ALL USERS)
    * Fetches message rates from RabbitMQ every 4s.
    */
-  watchRates: workspaceProcedure
+  watchRates: workspacePermissionProcedure("metric:read")
     .input(GetMetricsSchema)
     .subscription(async function* ({ input, ctx, signal }) {
       const { serverId, workspaceId, timeRange = "1m" } = input;

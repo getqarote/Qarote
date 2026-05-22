@@ -45,5 +45,7 @@
   "save": "保存设置",
   "saving": "保存中...",
   "saveSuccess": "邮件设置保存成功",
-  "saveError": "保存邮件设置失败"
+  "saveError": "保存邮件设置失败",
+  "accessDeniedTitle": "需要组织管理员权限",
+  "accessDenied": "SMTP 中继配置仅限组织管理员使用。"
 }

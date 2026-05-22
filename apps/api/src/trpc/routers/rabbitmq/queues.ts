@@ -4,6 +4,7 @@ import { prisma } from "@/core/prisma";
 import { RabbitMQAmqpClient } from "@/core/rabbitmq/AmqpClient";
 import { abortableSleep } from "@/core/utils";
 
+import { recordFromContext } from "@/services/audit";
 import {
   getOrgPlan,
   getOrgResourceCounts,
@@ -24,7 +25,7 @@ import {
 
 import { BindingMapper, ConsumerMapper, QueueMapper } from "@/mappers/rabbitmq";
 
-import { authorize, router, workspaceProcedure } from "@/trpc/trpc";
+import { byServerId, router, workspacePermissionProcedure } from "@/trpc/trpc";
 
 import {
   createAmqpClient,
@@ -32,7 +33,7 @@ import {
   verifyServerAccess,
 } from "./shared";
 
-import { UserPlan, UserRole } from "@/generated/prisma/client";
+import { UserPlan } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 type RawQueue = Parameters<typeof QueueMapper.toApiResponseArray>[0][number];
@@ -142,7 +143,7 @@ export const queuesRouter = router({
   /**
    * Get all queues for a specific server (ALL USERS)
    */
-  getQueues: workspaceProcedure
+  getQueues: workspacePermissionProcedure("queue:read")
     .input(ServerWorkspaceInputSchema.merge(VHostOptionalQuerySchema))
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId, vhost: vhostParam } = input;
@@ -191,7 +192,7 @@ export const queuesRouter = router({
   /**
    * Get a specific queue by name from a server (ALL USERS)
    */
-  getQueue: workspaceProcedure
+  getQueue: workspacePermissionProcedure("queue:read")
     .input(ServerWorkspaceWithQueueNameSchema.merge(VHostRequiredQuerySchema))
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId, queueName, vhost: vhostParam } = input;
@@ -236,7 +237,7 @@ export const queuesRouter = router({
   /**
    * Get consumers for a specific queue on a server (ALL USERS)
    */
-  getQueueConsumers: workspaceProcedure
+  getQueueConsumers: workspacePermissionProcedure("queue:read")
     .input(ServerWorkspaceWithQueueNameSchema.merge(VHostRequiredQuerySchema))
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId, queueName, vhost: vhostParam } = input;
@@ -285,7 +286,7 @@ export const queuesRouter = router({
   /**
    * Get bindings for a specific queue on a server (ALL USERS)
    */
-  getQueueBindings: workspaceProcedure
+  getQueueBindings: workspacePermissionProcedure("binding:read")
     .input(ServerWorkspaceWithQueueNameSchema.merge(VHostRequiredQuerySchema))
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId, queueName, vhost: vhostParam } = input;
@@ -334,7 +335,7 @@ export const queuesRouter = router({
   /**
    * Create a new queue for a specific server (ADMIN ONLY - sensitive operation)
    */
-  createQueue: authorize([UserRole.ADMIN])
+  createQueue: workspacePermissionProcedure("queue:create", byServerId)
     .input(
       ServerWorkspaceInputSchema.merge(CreateQueueSchema).merge(
         VHostRequiredQuerySchema
@@ -433,6 +434,21 @@ export const queuesRouter = router({
           );
         }
 
+        void recordFromContext(ctx, {
+          action: "rabbitmq.queue.created",
+          category: "rabbitmq",
+          entityType: "queue",
+          entityId: name,
+          entityLabel: `${name}@${vhost}`,
+          serverId,
+          vhost,
+          metadata: {
+            durable,
+            autoDelete,
+            arguments: args,
+          },
+        });
+
         return {
           success: true,
           message: "Queue created successfully",
@@ -455,7 +471,7 @@ export const queuesRouter = router({
   /**
    * Purge queue messages for a specific server (ADMIN ONLY - dangerous operation)
    */
-  purgeQueue: authorize([UserRole.ADMIN])
+  purgeQueue: workspacePermissionProcedure("queue:purge", byServerId)
     .input(ServerWorkspaceWithQueueNameSchema.merge(VHostRequiredQuerySchema))
     .mutation(async ({ input, ctx }) => {
       const { serverId, workspaceId, queueName, vhost: vhostParam } = input;
@@ -475,6 +491,16 @@ export const queuesRouter = router({
 
         const client = createRabbitMQClientFromServer(server);
         await client.purgeQueue(queueName, vhost);
+
+        void recordFromContext(ctx, {
+          action: "rabbitmq.queue.purged",
+          category: "rabbitmq",
+          entityType: "queue",
+          entityId: queueName,
+          entityLabel: `${queueName}@${vhost}`,
+          serverId,
+          vhost,
+        });
 
         return {
           success: true,
@@ -501,7 +527,7 @@ export const queuesRouter = router({
   /**
    * Delete a queue from a specific server (ADMIN ONLY - dangerous operation)
    */
-  deleteQueue: authorize([UserRole.ADMIN])
+  deleteQueue: workspacePermissionProcedure("queue:delete", byServerId)
     .input(
       ServerWorkspaceWithQueueNameSchema.merge(DeleteQueueSchema).merge(
         VHostRequiredQuerySchema
@@ -572,6 +598,20 @@ export const queuesRouter = router({
           );
         }
 
+        void recordFromContext(ctx, {
+          action: "rabbitmq.queue.deleted",
+          category: "rabbitmq",
+          entityType: "queue",
+          entityId: queueName,
+          entityLabel: `${queueName}@${vhost}`,
+          serverId,
+          vhost,
+          metadata: {
+            ifUnused,
+            ifEmpty,
+          },
+        });
+
         return {
           success: true,
           message: `Queue "${queueName}" deleted successfully`,
@@ -596,7 +636,7 @@ export const queuesRouter = router({
   /**
    * Pause a queue using AMQP protocol for better control (ADMIN ONLY)
    */
-  pauseQueue: authorize([UserRole.ADMIN])
+  pauseQueue: workspacePermissionProcedure("queue:pause", byServerId)
     .input(ServerWorkspaceWithQueueNameSchema)
     .mutation(async ({ input, ctx }) => {
       const { serverId, workspaceId, queueName } = input;
@@ -659,7 +699,7 @@ export const queuesRouter = router({
   /**
    * Resume a queue using AMQP protocol (ADMIN ONLY)
    */
-  resumeQueue: authorize([UserRole.ADMIN])
+  resumeQueue: workspacePermissionProcedure("queue:pause", byServerId)
     .input(ServerWorkspaceWithQueueNameSchema)
     .mutation(async ({ input, ctx }) => {
       const { serverId, workspaceId, queueName } = input;
@@ -736,7 +776,7 @@ export const queuesRouter = router({
    * Live queue stream — SSE subscription replacing client polling (ALL USERS)
    * Fetches queues from RabbitMQ every 4s and pushes updates to the client.
    */
-  watchQueues: workspaceProcedure
+  watchQueues: workspacePermissionProcedure("queue:read")
     .input(ServerWorkspaceInputSchema.merge(VHostOptionalQuerySchema))
     .subscription(async function* ({ input, ctx, signal }) {
       const { serverId, workspaceId, vhost: vhostParam } = input;
@@ -800,7 +840,7 @@ export const queuesRouter = router({
   /**
    * Get pause status of a queue
    */
-  getPauseStatus: authorize([UserRole.ADMIN, UserRole.MEMBER])
+  getPauseStatus: workspacePermissionProcedure("queue:read")
     .input(ServerWorkspaceWithQueueNameSchema)
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId, queueName } = input;

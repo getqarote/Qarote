@@ -1,10 +1,18 @@
 import { z } from "zod/v4";
 
-import { UserRole } from "@/generated/prisma/client";
+import { WorkspaceRole } from "@/generated/prisma/client";
+
+// OWNER is intentionally excluded from invitation roles — ownership transfer
+// is its own flow (see docs/plans/rbac.md §3.2).
+const InvitationRoleEnum = z.enum([
+  WorkspaceRole.ADMIN,
+  WorkspaceRole.MEMBER,
+  WorkspaceRole.READONLY,
+]);
 
 export const inviteUserSchema = z.object({
   email: z.email("Invalid email address"),
-  role: z.enum(UserRole).default(UserRole.MEMBER),
+  role: InvitationRoleEnum.default(WorkspaceRole.MEMBER),
   message: z
     .string()
     .optional()

@@ -141,12 +141,16 @@ function validatePackage(pkg, enMap) {
             reason: `namespace "${ns}" not found`,
           });
         } else if (!nsKeys.has(key)) {
-          errors.push({
-            file: filePath,
-            line: lineNum + 1,
-            key: rawKey,
-            reason: `key "${key}" not found in ${ns}.json`,
-          });
+          // i18next plural convention: t("key", { count }) resolves to key_one / key_other at runtime
+          const hasPlural = nsKeys.has(`${key}_one`) || nsKeys.has(`${key}_other`);
+          if (!hasPlural) {
+            errors.push({
+              file: filePath,
+              line: lineNum + 1,
+              key: rawKey,
+              reason: `key "${key}" not found in ${ns}.json`,
+            });
+          }
         }
       }
 
@@ -166,12 +170,16 @@ function validatePackage(pkg, enMap) {
             reason: `namespace "${ns}" not found`,
           });
         } else if (!nsKeys.has(key)) {
-          errors.push({
-            file: filePath,
-            line: lineNum + 1,
-            key: rawKey,
-            reason: `key "${key}" not found in ${ns}.json`,
-          });
+          // i18next plural convention: t("key", { count }) resolves to key_one / key_other at runtime
+          const hasPlural = nsKeys.has(`${key}_one`) || nsKeys.has(`${key}_other`);
+          if (!hasPlural) {
+            errors.push({
+              file: filePath,
+              line: lineNum + 1,
+              key: rawKey,
+              reason: `key "${key}" not found in ${ns}.json`,
+            });
+          }
         }
       }
     }

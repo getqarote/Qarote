@@ -4,10 +4,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockEnsureWorkspaceMember = vi.fn();
 const mockGetUserWorkspaceRole = vi.fn();
+const mockGetUserEffectivePermissions = vi.fn();
 
 vi.mock("@/core/workspace-access", () => ({
   ensureWorkspaceMember: (...a: unknown[]) => mockEnsureWorkspaceMember(...a),
   getUserWorkspaceRole: (...a: unknown[]) => mockGetUserWorkspaceRole(...a),
+  getUserEffectivePermissions: (...a: unknown[]) =>
+    mockGetUserEffectivePermissions(...a),
 }));
 
 const mockOrgMemberFindFirst = vi.fn();
@@ -320,10 +323,20 @@ describe("applyWorkspaceAssignments", () => {
 describe("membersRouter", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Default: handle batch-array $transaction (individual tests override for callback form)
-    mockTransaction.mockImplementation((arg: unknown) =>
-      Array.isArray(arg) ? Promise.all(arg) : arg
-    );
+    // Default: handle batch-array $transaction OR callback form. The
+    // callback form is invoked with a tx that proxies the same per-model
+    // mocks (organizationInvitation.upsert) so the invite flow sees the
+    // same mocked behaviour through tx.* as it would through ctx.prisma.*
+    // Individual tests override for richer callback shapes.
+    mockTransaction.mockImplementation(async (arg: unknown) => {
+      if (Array.isArray(arg)) return Promise.all(arg);
+      if (typeof arg === "function") {
+        return (arg as (tx: unknown) => unknown)({
+          organizationInvitation: { upsert: mockOrgInvitationUpsert },
+        });
+      }
+      return arg;
+    });
   });
 
   // ─── invite ───────────────────────────────────────────────────────────────
@@ -378,6 +391,13 @@ describe("membersRouter", () => {
       mockOrgInvitationCount.mockResolvedValue(0);
       mockWorkspaceFindMany.mockResolvedValue([{ id: "ws-1" }, { id: "ws-2" }]);
       mockGetUserWorkspaceRole.mockResolvedValue("ADMIN");
+      // Effective permissions resolver (RBAC Phase 3): inviter has
+      // member:invite via the built-in ADMIN tier.
+      mockGetUserEffectivePermissions.mockResolvedValue({
+        kind: "builtin",
+        role: "ADMIN",
+        permissions: new Set(["member:invite"]),
+      });
       mockUserFindUnique.mockResolvedValue(null);
       mockOrgInvitationUpsert.mockResolvedValue({
         id: "inv-1",
@@ -438,8 +458,13 @@ describe("membersRouter", () => {
       mockOrgMemberCount.mockResolvedValue(3);
       mockOrgInvitationCount.mockResolvedValue(0);
       mockWorkspaceFindMany.mockResolvedValue([{ id: "ws-1" }]);
-      // Inviter is only MEMBER, not ADMIN
+      // Inviter is only MEMBER, not ADMIN — no member:invite.
       mockGetUserWorkspaceRole.mockResolvedValue("MEMBER");
+      mockGetUserEffectivePermissions.mockResolvedValue({
+        kind: "builtin",
+        role: "MEMBER",
+        permissions: new Set(),
+      });
 
       const ctx = makeAdminCtx();
       const caller = membersRouter.createCaller(ctx as never);
@@ -567,8 +592,24 @@ describe("membersRouter", () => {
         id: "ws-1",
         organizationId: "org-1",
       });
-      mockWorkspaceMemberDeleteMany.mockResolvedValue({ count: 1 });
-      mockUserUpdateMany.mockResolvedValue({ count: 1 });
+
+      // Interactive $transaction(callback) — invoke callback with a tx
+      // that mirrors the delete + last-OWNER invariant path. Target is
+      // a plain MEMBER, so the OWNER count check is skipped.
+      const txMemberDelete = vi.fn().mockResolvedValue({ id: "wm-1" });
+      const txUserUpdateMany = vi.fn().mockResolvedValue({ count: 1 });
+      const txMemberFindUnique = vi
+        .fn()
+        .mockResolvedValue({ id: "wm-1", role: { builtinKey: "MEMBER" } });
+      mockTransaction.mockImplementation(async (cb) =>
+        cb({
+          workspaceMember: {
+            findUnique: txMemberFindUnique,
+            delete: txMemberDelete,
+          },
+          user: { updateMany: txUserUpdateMany },
+        })
+      );
 
       const ctx = makeAdminCtx();
       const caller = membersRouter.createCaller(ctx as never);
@@ -578,13 +619,59 @@ describe("membersRouter", () => {
       });
 
       expect(result.success).toBe(true);
-      expect(mockWorkspaceMemberDeleteMany).toHaveBeenCalledWith({
-        where: { userId: "user-2", workspaceId: "ws-1" },
+      expect(txMemberFindUnique).toHaveBeenCalledWith({
+        where: {
+          userId_workspaceId: { userId: "user-2", workspaceId: "ws-1" },
+        },
+        select: {
+          id: true,
+          role: { select: { builtinKey: true } },
+        },
       });
-      expect(mockUserUpdateMany).toHaveBeenCalledWith({
+      expect(txMemberDelete).toHaveBeenCalledWith({ where: { id: "wm-1" } });
+      expect(txUserUpdateMany).toHaveBeenCalledWith({
         where: { id: "user-2", workspaceId: "ws-1" },
         data: { workspaceId: null },
       });
+    });
+
+    it("blocks removing the last OWNER (R-AUTHZ-4)", async () => {
+      mockOrgMemberFindFirst
+        .mockResolvedValueOnce({ organizationId: "org-1", role: "OWNER" })
+        .mockResolvedValueOnce({
+          userId: "user-2",
+          organizationId: "org-1",
+        });
+      mockWorkspaceFindFirst.mockResolvedValue({
+        id: "ws-1",
+        organizationId: "org-1",
+      });
+
+      // Target is OWNER and zero other OWNERs remain → expect rejection.
+      mockTransaction.mockImplementation(async (cb) =>
+        cb({
+          workspaceMember: {
+            findUnique: vi.fn().mockResolvedValue({
+              id: "wm-owner",
+              role: { builtinKey: "OWNER" },
+            }),
+            count: vi.fn().mockResolvedValue(0),
+            delete: vi.fn(),
+          },
+          $queryRaw: vi.fn().mockResolvedValue([]),
+          user: { updateMany: vi.fn() },
+        })
+      );
+
+      const ctx = makeAdminCtx();
+      const caller = membersRouter.createCaller(ctx as never);
+
+      await expect(
+        caller.removeFromWorkspace({
+          userId: "user-2",
+          workspaceId: "ws-1",
+        })
+      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     });
 
     it("throws NOT_FOUND when workspace is not in org", async () => {

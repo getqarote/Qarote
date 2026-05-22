@@ -18,6 +18,7 @@
     }
   },
   "loadingGate": "正在检查兼容性…",
+  "dismissAdvisory": "关闭提示",
   "badge": {
     "loading": "正在检查 broker 功能",
     "pending": "功能待定",

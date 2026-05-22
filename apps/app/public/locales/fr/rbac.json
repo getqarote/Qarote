@@ -1,0 +1,13 @@
+{
+  "forbidden": {
+    "title": "Accès refusé",
+    "subtitle": "Vous n'avez pas la permission d'afficher ce contenu.",
+    "workspacePermission": "Votre rôle dans cet espace de travail n'inclut pas la permission requise.",
+    "lastOwnerBlocked": "Cette action laisserait l'espace de travail sans propriétaire. Désignez d'abord un autre propriétaire.",
+    "inviterRoleInsufficient": "L'invitation ne peut plus être acceptée car le rôle de l'invitant a été modifié.",
+    "scopeDenied": "Votre rôle n'autorise cette action que sur un sous-ensemble de serveurs.",
+    "scopeDeniedWithContext": "Votre rôle n'autorise cette action que sur les portées suivantes : {{scopes}}.",
+    "contactAdmin": "Contactez un administrateur ou le propriétaire de l'espace de travail pour demander l'accès.",
+    "backToDashboard": "Retour au tableau de bord"
+  }
+}

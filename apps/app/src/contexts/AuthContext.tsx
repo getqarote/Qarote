@@ -1,7 +1,11 @@
 import React, { useCallback, useEffect, useReducer, useRef } from "react";
 
-import { usePostHog } from "@posthog/react";
-
+import {
+  identify as identifyAnalytics,
+  resetIdentity,
+  setSuperProperties,
+  setWorkspaceGroup,
+} from "@/lib/analytics";
 import { User } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
@@ -39,16 +43,42 @@ function syncSentryUser(user: User | null) {
   );
 }
 
+function syncAnalyticsUser(user: User): void {
+  setSuperProperties({ workspace_id: user.workspaceId ?? undefined });
+  // We deliberately omit `planTier` — the SPA doesn't have it on the typed
+  // `User` shape (only the API-side mapper holds the subscription plan). The
+  // backend already `$set`s the real plan tier on identify; reasserting "free"
+  // here would misclassify paid users.
+  identifyAnalytics({
+    id: user.id,
+    email: user.email,
+    workspaceId: user.workspaceId ?? undefined,
+    signupAt: user.createdAt,
+  });
+  if (user.workspaceId) {
+    setWorkspaceGroup(user.workspaceId);
+  }
+}
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [{ user, isLoading }, dispatch] = useReducer(authReducer, {
     user: null,
     isLoading: true,
   });
-  const posthog = usePostHog();
   const utils = trpc.useUtils();
   // Track whether initial session check is complete to prevent the global
   // unauthorized handler from clearing auth state during the check (race condition).
   const initialCheckDone = useRef(false);
+  // Avoid re-firing identify on every TanStack Query refetch (the user object
+  // gets a fresh reference but the same identity).
+  const lastIdentifyKey = useRef<string | null>(null);
+
+  const identifyIfChanged = useCallback((u: User) => {
+    const key = `${u.id}|${u.email}|${u.workspaceId ?? ""}`;
+    if (lastIdentifyKey.current === key) return;
+    lastIdentifyKey.current = key;
+    syncAnalyticsUser(u);
+  }, []);
 
   // Check for existing session on mount
   useEffect(() => {
@@ -65,7 +95,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             };
             dispatch({ type: "SET_USER", user: enrichedUser });
             syncSentryUser(enrichedUser);
-            posthog?.identify(enrichedUser.id, { email: enrichedUser.email });
+            identifyIfChanged(enrichedUser);
           } catch {
             // tRPC call failed but we have a valid session — use basic user data
             logger.warn("Failed to fetch enriched session, using basic data");
@@ -77,7 +107,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             } as User;
             dispatch({ type: "SET_USER", user: basicUser });
             syncSentryUser(basicUser);
-            posthog?.identify(basicUser.id, { email: basicUser.email });
+            identifyIfChanged(basicUser);
           }
         } else {
           dispatch({ type: "LOADED" });
@@ -91,12 +121,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     checkSession();
-  }, [utils, posthog]);
+  }, [utils, identifyIfChanged]);
 
-  const login = useCallback((newUser: User) => {
-    dispatch({ type: "SET_USER", user: newUser });
-    syncSentryUser(newUser);
-  }, []);
+  const login = useCallback(
+    (newUser: User) => {
+      dispatch({ type: "SET_USER", user: newUser });
+      syncSentryUser(newUser);
+      identifyIfChanged(newUser);
+    },
+    [identifyIfChanged]
+  );
 
   const logout = useCallback(async () => {
     try {
@@ -106,8 +140,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
     dispatch({ type: "CLEAR_USER" });
     syncSentryUser(null);
-    posthog?.reset();
-  }, [posthog]);
+    resetIdentity();
+    lastIdentifyKey.current = null;
+  }, []);
 
   useEffect(() => {
     const handleUnauthorized = () => {
@@ -127,10 +162,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, []);
 
-  const updateUser = useCallback((newUser: User) => {
-    dispatch({ type: "SET_USER", user: newUser });
-    syncSentryUser(newUser);
-  }, []);
+  const updateUser = useCallback(
+    (newUser: User) => {
+      dispatch({ type: "SET_USER", user: newUser });
+      syncSentryUser(newUser);
+      identifyIfChanged(newUser);
+    },
+    [identifyIfChanged]
+  );
 
   const refetchUser = useCallback(async (): Promise<User | null> => {
     try {

@@ -1,0 +1,149 @@
+{
+  "phase": {
+    "connecting": "Conectando...",
+    "topology": "Mapeando topología...",
+    "config": "Analizando configuración...",
+    "alerts": "Reglas de alertas activas",
+    "reveal": "Clúster descubierto"
+  },
+  "log": {
+    "connecting": "Conectando a {{serverName}}...",
+    "connected": "Conexión confirmada",
+    "topologyStart": "Mapeando topología...",
+    "topologyDone": "Topología mapeada · {{exchanges}} exchanges · {{queues}} colas · {{bindings}} enlaces",
+    "topologyUnavailable": "Topología no disponible — continuando análisis",
+    "topologyEmpty": "RabbitMQ limpio — no hay topología que mostrar",
+    "configStart": "Analizando configuración...",
+    "configFinding": "Encontrado: {{resourceType}}/{{resourceName}}",
+    "configDone_one": "Configuración analizada · 1 problema encontrado",
+    "configDone_other": "Configuración analizada · {{count}} problemas encontrados",
+    "configClean": "Configuración analizada · todo está correcto",
+    "alertsActive": "Reglas de alertas ahora activas",
+    "preparingReveal": "Preparando sus resultados..."
+  },
+  "reveal": {
+    "title": "Clúster descubierto",
+    "subtitle_one": "{{serverName}} · 1 nodo · RabbitMQ {{version}}",
+    "subtitle_other": "{{serverName}} · {{nodeCount}} nodos · RabbitMQ {{version}}",
+    "subtitleNoVersion_one": "{{serverName}} · 1 nodo",
+    "subtitleNoVersion_other": "{{serverName}} · {{nodeCount}} nodos",
+    "wellConfigured": "Su clúster está bien configurado — Qarote mantendrá la vigilancia.",
+    "cleanPartial": "No se encontraron problemas en las secciones analizadas — otorgue la etiqueta monitoring para cobertura completa.",
+    "findings": "Lo que encontramos",
+    "showAll": "Ver los {{count}} hallazgos",
+    "collapse": "Ver menos",
+    "explainDemo": "Probar AI Explain — demo gratuita",
+    "explainDemoFooter": "Esta demo no cuenta para su cuota mensual.",
+    "continueDashboard": "Ir al panel",
+    "exploreFindings": "Explorar hallazgos",
+    "configureAlerts": "Configurar alertas",
+    "configureNotifications": "Configurar notificaciones",
+    "promiseDigestTitle": "Resumen diario programado",
+    "promiseDigestDesc": "Su primer resumen llegará mañana a las 8:00 AM",
+    "promiseRuntimeTitle": "Monitoreo en tiempo real activo",
+    "promiseRuntimeDesc": "Verá comportamientos inusuales de colas señalados en horas",
+    "promiseTracingTitle": "Rastreo de mensajes listo",
+    "promiseTracingDesc": "Active en ajustes para ver rutas de mensajes de principio a fin",
+    "limitedScanBadge": "Análisis limitado · otorgue la etiqueta monitoring para análisis completo",
+    "fingerprint": {
+      "exchanges_one": "1 exchange",
+      "exchanges_other": "{{count}} exchanges",
+      "queues_one": "1 cola",
+      "queues_other": "{{count}} colas",
+      "bindings_one": "1 binding",
+      "bindings_other": "{{count}} bindings",
+      "vhosts_one": "1 vhost",
+      "vhosts_other": "{{count}} vhosts",
+      "nodes_one": "1 nodo",
+      "nodes_other": "{{count}} nodos",
+      "version": "RabbitMQ {{version}}"
+    },
+    "verdict": {
+      "clean_one": "Configuración saludable. Ningún anti-patrón detectado en 1 cola.",
+      "clean_other": "Configuración saludable. Ningún anti-patrón detectado en {{queues}} colas.",
+      "cleanPartial": "Sin problemas en las secciones analizadas. Otorgue la etiqueta monitoring para un análisis completo.",
+      "single": "1 problema detectado — {{rule}} en {{resource}}.",
+      "withPrimary_one": "1 problema detectado. El más crítico: {{rule}} en {{resource}}.",
+      "withPrimary_other": "{{count}} problemas detectados. El más crítico: {{rule}} en {{resource}}."
+    },
+    "aiHero": {
+      "titleWithName": "¿Por qué {{resource}} está en riesgo?",
+      "titleGeneric": "Comprenda sus señales de configuración",
+      "subtitle": "Pregunte a Qarote — la IA explica cada patrón en el contexto de su clúster.",
+      "cta": "Preguntar a Qarote"
+    },
+    "timeline": {
+      "tomorrowLabel": "Mañana 8h",
+      "tomorrowTitle": "Primer resumen",
+      "tomorrowDesc_one": "1 cola vigilada, tasa media monitorizada.",
+      "tomorrowDesc_other": "{{queues}} colas vigiladas, tasa media monitorizada.",
+      "incidentLabel": "Próximo incidente",
+      "incidentTitle": "Alerta contextual",
+      "incidentDesc": "Email/Slack con stack trace y contexto de la cola.",
+      "continuousLabel": "En continuo",
+      "continuousTitle": "Tracing listo",
+      "continuousDesc": "Active el rastreo en cualquier cola con un clic."
+    },
+    "bestPractices": {
+      "messageIdTitle": "Consejo — definir messageId en cada publish.",
+      "messageIdDesc": "Un messageId único por mensaje habilita la detección de mensajes no enrutados, la dedup en reintentos y el debug entre colas — sin coste para el broker."
+    },
+    "metrics": {
+      "queues_one": "1 cola",
+      "queues_other": "{{count}} colas",
+      "exchanges_one": "1 exchange",
+      "exchanges_other": "{{count}} exchanges",
+      "bindings_one": "1 enlace",
+      "bindings_other": "{{count}} enlaces",
+      "findings_one": "1 problema",
+      "findings_other": "{{count}} problemas",
+      "findingsNone": "0 problemas"
+    }
+  },
+  "explain": {
+    "loading": "Analizando hallazgo...",
+    "error": "No se pudo generar la explicación — verifique su conexión e inténtelo de nuevo.",
+    "errorPartial": "(parcial)",
+    "retry": "Reintentar",
+    "viewDocs": "Documentación de RabbitMQ →",
+    "llmNotConfigured": "No hay proveedor LLM configurado para este espacio de trabajo. Configure Anthropic, OpenAI u Ollama para activar las explicaciones IA.",
+    "configureLlm": "Configurar LLM →",
+    "driftHint": "El prompt se actualizó desde esta explicación",
+    "page": {
+      "headingIncident": "Explicación del hallazgo de incidente",
+      "headingConfig": "Explicación del hallazgo de configuración",
+      "headingTrace": "Explicación de traza",
+      "notFound": "Esta explicación no existe o no tienes acceso a ella.",
+      "loadError": "Error al cargar la explicación. Inténtalo de nuevo."
+    },
+    "superseded": {
+      "banner": "Esta explicación fue reemplazada por una más reciente (regenerada {{time}}).",
+      "bannerNoAuthor": "Regenerada {{time}}.",
+      "bannerWithAuthor": "Regenerada por {{name}} · {{time}}.",
+      "viewLatest": "Ver la más reciente →"
+    },
+    "sourceDeleted": "El hallazgo de origen ya no existe.",
+    "actions": {
+      "copyMarkdown": "Copiar",
+      "copyLink": "Copiar enlace",
+      "openInContext": "Abrir en contexto →",
+      "regenerate": "Regenerar",
+      "copiedMarkdown": "Copiado al portapapeles",
+      "copiedLink": "Enlace copiado",
+      "copyFailed": "Error al copiar — inténtelo manualmente"
+    },
+    "quota": {
+      "capTitle": "Límite mensual de explicaciones IA alcanzado",
+      "capBody": "Has usado las {{cap}} explicaciones incluidas en tu plan este mes. La cuota se restablece el {{resetDate}}.",
+      "disabledTitle": "Las explicaciones IA no están habilitadas en esta instancia",
+      "disabledBody": "Las explicaciones IA no están configuradas en esta instancia. Conecta tu propia clave API para continuar.",
+      "pillRemaining_one": "Queda 1 explicación este mes",
+      "pillRemaining_other": "Quedan {{count}} explicaciones este mes",
+      "actions": {
+        "upgrade": "Actualizar plan",
+        "byok": "Usar mi clave",
+        "configureKey": "Configurar clave API"
+      }
+    }
+  }
+}

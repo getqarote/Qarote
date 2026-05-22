@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { usePostHog } from "@posthog/react";
-import { ChevronRight, Loader2, Plus, Rocket } from "lucide-react";
+import { Loader2, Plus, Rocket } from "lucide-react";
 import { toast } from "sonner";
 
 import { trpc } from "@/lib/trpc/client";
@@ -242,36 +242,18 @@ const Onboarding = () => {
                 {t("successDescription")}
               </p>
             </div>
-            <ol className="text-left space-y-2">
-              {(
-                [
-                  { label: t("successStep1"), href: "/?addServer=true" },
-                  { label: t("successStep2"), href: "/settings/members" },
-                ] as const
-              ).map(({ label, href }, i) => (
-                <li key={i}>
-                  <a
-                    href={href}
-                    className="flex items-center gap-3 text-sm rounded-md px-3 py-2 hover:bg-muted transition-colors group"
-                  >
-                    <span className="flex-shrink-0 inline-flex items-center justify-center h-6 w-6 rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                      {i + 1}
-                    </span>
-                    <span className="flex-1">{label}</span>
-                    <ChevronRight
-                      className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors"
-                      aria-hidden="true"
-                    />
-                  </a>
-                </li>
-              ))}
-            </ol>
             <Button
               className="w-full h-11 font-medium"
-              onClick={() => globalThis.location.assign("/")}
+              onClick={() => navigate("/?addServer=true")}
             >
-              {t("successCta")}
+              {t("successStep1")}
             </Button>
+            <Link
+              to="/settings/members"
+              className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("successStep2")}
+            </Link>
           </div>
         </main>
       </div>

@@ -30,11 +30,11 @@ class ReleaseNotifierCronService {
   private isRunning = false;
   private isChecking = false;
   private intervalId: NodeJS.Timeout | null = null;
+  private currentCyclePromise: Promise<void> | null = null;
   private readonly checkInterval: number;
 
   private static readonly GITHUB_REPO = "getqarote/Qarote";
   private static readonly GITHUB_API_TIMEOUT = 10_000;
-  private static readonly SYSTEM_STATE_KEY = "last_notified_version";
 
   constructor() {
     // Check once per day (24 hours)
@@ -61,10 +61,15 @@ class ReleaseNotifierCronService {
       "Starting release notifier service..."
     );
 
-    // Run immediately, then at intervals
-    this.checkForUpdates();
+    // Run immediately, then at intervals. Skip re-assigning the promise
+    // when a cycle is already running — otherwise the skipped
+    // (immediately-resolved) callback would clobber the real in-flight
+    // promise and stopAndWait would await a no-op instead of the actual
+    // cycle.
+    this.currentCyclePromise = this.checkForUpdates();
     this.intervalId = setInterval(() => {
-      this.checkForUpdates();
+      if (this.isChecking) return;
+      this.currentCyclePromise = this.checkForUpdates();
     }, this.checkInterval);
   }
 
@@ -83,6 +88,24 @@ class ReleaseNotifierCronService {
       this.intervalId = null;
     }
     logger.info("Release notifier service stopped");
+  }
+
+  /**
+   * Stop and wait for the in-flight cycle to drain.
+   */
+  async stopAndWait(): Promise<void> {
+    this.stop();
+    if (this.currentCyclePromise) {
+      try {
+        await this.currentCyclePromise;
+      } catch (error) {
+        logger.error(
+          { error },
+          "Release notifier in-flight cycle errored during shutdown"
+        );
+      }
+      this.currentCyclePromise = null;
+    }
   }
 
   /**
@@ -132,26 +155,43 @@ class ReleaseNotifierCronService {
         return;
       }
 
-      // 4. Don't re-notify for the same version
-      const lastNotifiedVersion = await this.getLastNotifiedVersion();
-      if (lastNotifiedVersion === latestVersion) {
-        logger.debug(
-          { latestVersion },
-          "Already notified about this version, skipping"
-        );
-        return;
-      }
-
-      // 5. Get all active license holder emails
+      // 4. Get all active license holder emails. We do NOT short-circuit on
+      // a "last notified" stamp: that would lock out customers who acquired
+      // a license after the cron stamped — they would never receive the
+      // release email. Per-recipient dedup via ReleaseNotificationSent
+      // (P2002 below) makes the run cheap when nothing new is needed.
       const recipients = await this.getLicenseHolderEmails();
       if (recipients.length === 0) {
         logger.info("No active license holders to notify");
         return;
       }
 
-      // 6. Send email to each license holder
+      // 5. Per-recipient idempotency: claim the (version, recipient) slot
+      // BEFORE sending. The unique constraint on ReleaseNotificationSent
+      // makes the create() the gate — concurrent cycles or restarts that
+      // race past a check-then-send pattern can't both succeed here.
+      // Trade-off: a failed email send leaves the slot claimed (best-
+      // effort delivery). Acceptable for a release-availability email.
       let successCount = 0;
+      let alreadySentCount = 0;
       for (const email of recipients) {
+        try {
+          await prisma.releaseNotificationSent.create({
+            data: { releaseVersion: latestVersion, recipient: email },
+          });
+        } catch (error) {
+          if ((error as { code?: string }).code === "P2002") {
+            // This recipient already received the email for this version.
+            alreadySentCount++;
+            continue;
+          }
+          logger.error(
+            { error, email, latestVersion },
+            "Failed to claim release notification slot for recipient"
+          );
+          continue;
+        }
+
         try {
           const result = await EmailService.sendUpdateAvailableEmail({
             to: email,
@@ -165,16 +205,12 @@ class ReleaseNotifierCronService {
           } else {
             logger.warn(
               { email, error: result.error },
-              "Failed to send update notification"
+              "Failed to send update notification — slot already claimed, will not retry"
             );
           }
         } catch (error) {
           logger.error({ error, email }, "Error sending update notification");
         }
-      }
-
-      if (successCount > 0) {
-        await this.setLastNotifiedVersion(latestVersion);
       }
 
       const duration = Date.now() - startTime;
@@ -183,6 +219,7 @@ class ReleaseNotifierCronService {
           latestVersion,
           totalRecipients: recipients.length,
           successCount,
+          alreadySentCount,
           duration,
         },
         `Update check cycle completed in ${duration}ms`
@@ -191,40 +228,6 @@ class ReleaseNotifierCronService {
       logger.error({ error }, "Error in update check cycle");
     } finally {
       this.isChecking = false;
-    }
-  }
-
-  /**
-   * Get the last notified version from the database
-   */
-  private async getLastNotifiedVersion(): Promise<string | null> {
-    try {
-      const state = await prisma.systemState.findUnique({
-        where: { key: ReleaseNotifierCronService.SYSTEM_STATE_KEY },
-      });
-      return state?.value || null;
-    } catch (error) {
-      logger.error({ error }, "Failed to get last notified version");
-      return null;
-    }
-  }
-
-  /**
-   * Set the last notified version in the database
-   */
-  private async setLastNotifiedVersion(version: string): Promise<void> {
-    try {
-      await prisma.systemState.upsert({
-        where: { key: ReleaseNotifierCronService.SYSTEM_STATE_KEY },
-        update: { value: version },
-        create: {
-          key: ReleaseNotifierCronService.SYSTEM_STATE_KEY,
-          value: version,
-        },
-      });
-      logger.info({ version }, "Updated last notified version");
-    } catch (error) {
-      logger.error({ error, version }, "Failed to set last notified version");
     }
   }
 

@@ -259,6 +259,20 @@ export const auth = betterAuth({
 
           // Assign to the org's first (default) workspace
           if (targetWorkspace) {
+            // Resolve the built-in MEMBER Role row — `WorkspaceMember`
+            // now points at `Role` via `roleId` (RBAC Phase 3). This
+            // must succeed: a missing built-in is a deploy invariant,
+            // not a per-user recoverable error. Surface it loudly
+            // instead of letting the surrounding catch swallow it.
+            const memberRole = await prisma.role.findUnique({
+              where: { builtinKey: "MEMBER" },
+              select: { id: true },
+            });
+            if (!memberRole) {
+              throw new Error(
+                "Built-in MEMBER role not found — RBAC Phase 3 migration missing"
+              );
+            }
             try {
               await prisma.workspaceMember.upsert({
                 where: {
@@ -271,7 +285,7 @@ export const auth = betterAuth({
                 create: {
                   userId: user.id,
                   workspaceId: targetWorkspace.id,
-                  role: "MEMBER",
+                  roleId: memberRole.id,
                 },
               });
 

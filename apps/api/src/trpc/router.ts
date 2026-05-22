@@ -1,3 +1,4 @@
+import { auditRouter } from "./routers/audit";
 import { authRouter } from "./routers/auth/index";
 import { discordRouter } from "./routers/discord";
 import { featureGateRouter } from "./routers/feature-gate";
@@ -20,6 +21,7 @@ import { router } from "./trpc";
  * src/ee/trpc/router.ts which the server bootstrap imports instead.
  */
 export const appRouter = router({
+  audit: auditRouter,
   auth: authRouter,
   user: userRouter,
   workspace: workspaceRouter,

@@ -180,7 +180,9 @@ export const AlertItem = ({ alert, isResolved = false }: AlertItemProps) => {
       {/* Right side: badge + expand chevron */}
       <div className="flex items-center gap-2 shrink-0">
         <span className={`text-xs px-2 py-0.5 ${badgeClass}`}>
-          {alert.severity}
+          {t(`rules.severity.${alert.severity.toLowerCase()}`, {
+            defaultValue: alert.severity,
+          })}
         </span>
         {hasDetails && (
           <PixelChevronRight

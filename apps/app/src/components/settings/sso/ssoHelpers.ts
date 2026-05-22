@@ -1,5 +1,7 @@
 import { toast } from "sonner";
 
+import { getApiUrl } from "@/lib/runtimeConfig";
+
 import type { ProviderConfig, SSOFormValues, SSOProviderType } from "./types";
 
 /**
@@ -12,20 +14,6 @@ import type { ProviderConfig, SSOFormValues, SSOProviderType } from "./types";
  * REDACTED value back to "don't change".
  */
 const REDACTED = "••••••••";
-
-/**
- * Resolves the public API base URL the browser should use for
- * building SSO callback links. Checks a runtime `window.__QAROTE_CONFIG__`
- * (injected by the self-hosted container at startup) first, then
- * falls back to the build-time Vite env. Returns an empty string if
- * neither source is configured, in which case the callback URLs are
- * hidden until save.
- */
-function getApiUrl(): string {
-  const config = (window as unknown as Record<string, unknown>)
-    .__QAROTE_CONFIG__ as { apiUrl?: string } | undefined;
-  return import.meta.env.VITE_API_URL ?? config?.apiUrl ?? "";
-}
 
 /**
  * Builds the OIDC callback URL the operator needs to register at

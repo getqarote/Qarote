@@ -1,5 +1,7 @@
 import { TRPCError } from "@trpc/server";
 
+import { recordFromContext } from "@/services/audit";
+
 import {
   CreateExchangeSchema,
   DeleteExchangeSchema,
@@ -10,11 +12,10 @@ import {
 
 import { BindingMapper, ExchangeMapper, NodeMapper } from "@/mappers/rabbitmq";
 
-import { authorize, router, workspaceProcedure } from "@/trpc/trpc";
+import { byServerId, router, workspacePermissionProcedure } from "@/trpc/trpc";
 
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
-import { UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -25,7 +26,7 @@ export const infrastructureRouter = router({
   /**
    * Get all nodes for a specific server (ALL USERS)
    */
-  getNodes: workspaceProcedure
+  getNodes: workspacePermissionProcedure("broker:read")
     .input(ServerWorkspaceInputSchema)
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId } = input;
@@ -80,7 +81,7 @@ export const infrastructureRouter = router({
   /**
    * Get all connections for a specific server (ALL USERS)
    */
-  getConnections: workspaceProcedure
+  getConnections: workspacePermissionProcedure("broker:connections:read")
     .input(ServerWorkspaceInputSchema)
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId } = input;
@@ -129,7 +130,7 @@ export const infrastructureRouter = router({
   /**
    * Get all channels for a specific server (ALL USERS)
    */
-  getChannels: workspaceProcedure
+  getChannels: workspacePermissionProcedure("broker:connections:read")
     .input(ServerWorkspaceInputSchema)
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId } = input;
@@ -172,7 +173,7 @@ export const infrastructureRouter = router({
   /**
    * Get all exchanges for a specific server (ALL USERS)
    */
-  getExchanges: workspaceProcedure
+  getExchanges: workspacePermissionProcedure("exchange:read")
     .input(ServerWorkspaceInputSchema.merge(VHostOptionalQuerySchema))
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId, vhost: vhostParam } = input;
@@ -250,7 +251,7 @@ export const infrastructureRouter = router({
   /**
    * Create a new exchange (ADMIN ONLY)
    */
-  createExchange: authorize([UserRole.ADMIN])
+  createExchange: workspacePermissionProcedure("exchange:create", byServerId)
     .input(
       ServerWorkspaceInputSchema.merge(CreateExchangeSchema).merge(
         VHostRequiredQuerySchema
@@ -301,6 +302,23 @@ export const infrastructureRouter = router({
           arguments: args ?? {},
         });
 
+        void recordFromContext(ctx, {
+          action: "rabbitmq.exchange.created",
+          category: "rabbitmq",
+          entityType: "exchange",
+          entityId: name,
+          entityLabel: `${name}@${vhost}`,
+          serverId,
+          vhost,
+          metadata: {
+            type,
+            durable: durable ?? true,
+            auto_delete: auto_delete ?? false,
+            internal: internal ?? false,
+            arguments: args ?? {},
+          },
+        });
+
         return {
           success: true,
           message: `Exchange "${name}" created successfully`,
@@ -333,7 +351,7 @@ export const infrastructureRouter = router({
   /**
    * Delete an exchange (ADMIN ONLY)
    */
-  deleteExchange: authorize([UserRole.ADMIN])
+  deleteExchange: workspacePermissionProcedure("exchange:delete", byServerId)
     .input(
       ServerWorkspaceInputSchema.merge(DeleteExchangeSchema).merge(
         VHostRequiredQuerySchema
@@ -364,6 +382,17 @@ export const infrastructureRouter = router({
         const client = await createRabbitMQClient(serverId, workspaceId);
         await client.deleteExchange(exchangeName, vhost, {
           if_unused: ifUnused,
+        });
+
+        void recordFromContext(ctx, {
+          action: "rabbitmq.exchange.deleted",
+          category: "rabbitmq",
+          entityType: "exchange",
+          entityId: exchangeName,
+          entityLabel: `${exchangeName}@${vhost}`,
+          serverId,
+          vhost,
+          metadata: { ifUnused },
         });
 
         return {

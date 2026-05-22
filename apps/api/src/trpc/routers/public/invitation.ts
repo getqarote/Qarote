@@ -13,7 +13,9 @@ import {
 
 import { rateLimitedPublicProcedure, router } from "@/trpc/trpc";
 
-import { InvitationStatus, UserRole } from "@/generated/prisma/client";
+import { hashInvitationToken } from "@/auth/invitation-tokens";
+import { assertInviterStillGrantable } from "@/auth/workspace-roles";
+import { InvitationStatus } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -35,7 +37,7 @@ export const publicInvitationRouter = router({
       try {
         const invitation = await ctx.prisma.invitation.findFirst({
           where: {
-            token,
+            tokenHash: hashInvitationToken(token),
             status: InvitationStatus.PENDING,
             expiresAt: {
               gt: new Date(),
@@ -76,7 +78,6 @@ export const publicInvitationRouter = router({
             id: invitation.id,
             email: invitation.email,
             role: invitation.role,
-            token: invitation.token,
             expiresAt: invitation.expiresAt,
             workspace: {
               id: invitation.workspace.id,
@@ -111,7 +112,7 @@ export const publicInvitationRouter = router({
       try {
         const invitation = await ctx.prisma.invitation.findFirst({
           where: {
-            token,
+            tokenHash: hashInvitationToken(token),
             status: InvitationStatus.PENDING,
             expiresAt: {
               gt: new Date(),
@@ -155,7 +156,11 @@ export const publicInvitationRouter = router({
 
         const hashedPassword = await hashPassword(password);
 
+        const now = new Date();
         const newUser = await ctx.prisma.$transaction(async (tx) => {
+          // R-INV-3 inside the accept transaction.
+          await assertInviterStillGrantable(tx, invitation);
+
           const user = await tx.user.create({
             data: {
               email: invitation.email,
@@ -163,7 +168,6 @@ export const publicInvitationRouter = router({
               firstName,
               lastName,
               name: `${firstName} ${lastName}`.trim(),
-              role: UserRole.MEMBER,
               workspaceId: invitation.workspaceId,
               isActive: true,
               emailVerified: true,
@@ -187,13 +191,27 @@ export const publicInvitationRouter = router({
             tx
           );
 
-          await tx.invitation.update({
-            where: { id: invitation.id },
+          // Atomic single-use status transition (R-INV-1). expiresAt guard
+          // closes the TOCTOU window between the initial query and here.
+          const flipped = await tx.invitation.updateMany({
+            where: {
+              id: invitation.id,
+              status: InvitationStatus.PENDING,
+              expiresAt: { gt: now },
+            },
             data: {
               status: InvitationStatus.ACCEPTED,
               invitedUserId: user.id,
+              acceptedAt: now,
+              acceptedByUserId: user.id,
             },
           });
+          if (flipped.count === 0) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: te(ctx.locale, "auth.invitationAlreadyUsedOrExpired"),
+            });
+          }
 
           return user;
         });
@@ -205,7 +223,6 @@ export const publicInvitationRouter = router({
             email: newUser.email,
             firstName: newUser.firstName,
             lastName: newUser.lastName,
-            role: newUser.role,
             workspaceId: newUser.workspaceId,
           },
           workspace: {

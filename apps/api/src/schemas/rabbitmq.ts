@@ -30,6 +30,17 @@ const CreateServerSchema = z.object({
   password: z.string().min(1, "Password is required"),
   vhost: z.string().default("/"),
   useHttps: z.boolean(),
+  // RBAC Phase 3 — free-text environment tag (`prod`, `staging`, `dev`).
+  // Consumed by the `server.environment` resource-scope predicate.
+  // Trim + cap at 64 chars to keep DB rows tidy; empty string treated
+  // as null at the DB layer.
+  environment: z
+    .string()
+    .trim()
+    .max(64)
+    .nullable()
+    .optional()
+    .transform((v) => (v ? v : null)),
 });
 
 // Schema for updating a RabbitMQ server

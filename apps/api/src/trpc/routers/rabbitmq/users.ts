@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 
+import { recordFromContext } from "@/services/audit";
 import { EncryptionService } from "@/services/encryption.service";
 
 import {
@@ -12,11 +13,10 @@ import { UsernameParamSchema } from "@/schemas/vhost";
 
 import { UserMapper } from "@/mappers/rabbitmq";
 
-import { authorize, router } from "@/trpc/trpc";
+import { router, workspacePermissionProcedure } from "@/trpc/trpc";
 
 import { createRabbitMQClientFromServer, verifyServerAccess } from "./shared";
 
-import { UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -27,7 +27,7 @@ export const usersRouter = router({
   /**
    * Get all users for a server (ADMIN ONLY)
    */
-  getUsers: authorize([UserRole.ADMIN])
+  getUsers: workspacePermissionProcedure("broker_user:read")
     .input(ServerWorkspaceInputSchema)
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId } = input;
@@ -99,7 +99,7 @@ export const usersRouter = router({
   /**
    * Get specific user details (ADMIN ONLY)
    */
-  getUser: authorize([UserRole.ADMIN])
+  getUser: workspacePermissionProcedure("broker_user:read")
     .input(ServerWorkspaceInputSchema.merge(UsernameParamSchema))
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId, username } = input;
@@ -140,7 +140,7 @@ export const usersRouter = router({
   /**
    * Create new user (ADMIN ONLY)
    */
-  createUser: authorize([UserRole.ADMIN])
+  createUser: workspacePermissionProcedure("broker_user:write")
     .input(ServerWorkspaceInputSchema.merge(CreateUserSchema))
     .mutation(async ({ input, ctx }) => {
       const { serverId, workspaceId, username, password, tags } = input;
@@ -165,6 +165,19 @@ export const usersRouter = router({
           `User ${username} created on server ${serverId} by admin ${ctx.user.id}`
         );
 
+        void recordFromContext(ctx, {
+          action: "rabbitmq.user.created",
+          category: "rabbitmq",
+          entityType: "broker_user",
+          entityId: username,
+          entityLabel: username,
+          serverId,
+          metadata: {
+            tags,
+            passwordChanged: Boolean(password),
+          },
+        });
+
         return { message: "User created successfully" };
       } catch (error) {
         if (error instanceof TRPCError) {
@@ -181,7 +194,7 @@ export const usersRouter = router({
   /**
    * Update user (ADMIN ONLY)
    */
-  updateUser: authorize([UserRole.ADMIN])
+  updateUser: workspacePermissionProcedure("broker_user:write")
     .input(
       ServerWorkspaceInputSchema.merge(UsernameParamSchema).merge(
         UpdateUserSchema
@@ -246,8 +259,8 @@ export const usersRouter = router({
           {
             username,
             serverId,
-            payload,
-            updateData: input,
+            hasPasswordHash: !!payload.password_hash,
+            tags: payload.tags,
           },
           "Updating user with payload"
         );
@@ -257,6 +270,32 @@ export const usersRouter = router({
         ctx.logger.info(
           `User ${username} updated on server ${serverId} by admin ${ctx.user.id}`
         );
+
+        if (tags !== undefined) {
+          void recordFromContext(ctx, {
+            action: "rabbitmq.user.tags.set",
+            category: "rabbitmq",
+            entityType: "broker_user",
+            entityId: username,
+            entityLabel: username,
+            serverId,
+            metadata: { tags },
+          });
+        }
+        if (password || removePassword) {
+          void recordFromContext(ctx, {
+            action: "rabbitmq.user.password.changed",
+            category: "rabbitmq",
+            entityType: "broker_user",
+            entityId: username,
+            entityLabel: username,
+            serverId,
+            metadata: {
+              passwordChanged: true,
+              removed: Boolean(removePassword),
+            },
+          });
+        }
 
         return { message: "User updated successfully" };
       } catch (error) {
@@ -280,7 +319,7 @@ export const usersRouter = router({
   /**
    * Delete user (ADMIN ONLY)
    */
-  deleteUser: authorize([UserRole.ADMIN])
+  deleteUser: workspacePermissionProcedure("broker_user:delete")
     .input(ServerWorkspaceInputSchema.merge(UsernameParamSchema))
     .mutation(async ({ input, ctx }) => {
       const { serverId, workspaceId, username } = input;
@@ -313,6 +352,15 @@ export const usersRouter = router({
           `User ${username} deleted from server ${serverId} by admin ${ctx.user.id}`
         );
 
+        void recordFromContext(ctx, {
+          action: "rabbitmq.user.deleted",
+          category: "rabbitmq",
+          entityType: "broker_user",
+          entityId: username,
+          entityLabel: username,
+          serverId,
+        });
+
         return { message: "User deleted successfully" };
       } catch (error) {
         if (error instanceof TRPCError) {
@@ -329,7 +377,7 @@ export const usersRouter = router({
   /**
    * Set user permissions (ADMIN ONLY)
    */
-  setPermissions: authorize([UserRole.ADMIN])
+  setPermissions: workspacePermissionProcedure("broker_user:permissions:write")
     .input(
       ServerWorkspaceInputSchema.merge(UsernameParamSchema).merge(
         SetPermissionsSchema
@@ -361,6 +409,17 @@ export const usersRouter = router({
           `Permissions set for user ${username} on vhost ${vhost} by admin ${ctx.user.id}`
         );
 
+        void recordFromContext(ctx, {
+          action: "rabbitmq.user.permissions.set",
+          category: "rabbitmq",
+          entityType: "broker_user_permission",
+          entityId: `${username}@${vhost}`,
+          entityLabel: `${username}@${vhost}`,
+          serverId,
+          vhost,
+          metadata: { username, configure, write, read },
+        });
+
         return { message: "Permissions set successfully" };
       } catch (error) {
         if (error instanceof TRPCError) {
@@ -377,7 +436,9 @@ export const usersRouter = router({
   /**
    * Delete user permissions (ADMIN ONLY)
    */
-  deletePermissions: authorize([UserRole.ADMIN])
+  deletePermissions: workspacePermissionProcedure(
+    "broker_user:permissions:write"
+  )
     .input(
       ServerWorkspaceInputSchema.merge(UsernameParamSchema).merge(
         SetPermissionsSchema.pick({ vhost: true })
@@ -402,6 +463,17 @@ export const usersRouter = router({
         ctx.logger.info(
           `Permissions deleted for user ${username} on vhost ${vhost} by admin ${ctx.user.id}`
         );
+
+        void recordFromContext(ctx, {
+          action: "rabbitmq.user.permissions.deleted",
+          category: "rabbitmq",
+          entityType: "broker_user_permission",
+          entityId: `${username}@${vhost}`,
+          entityLabel: `${username}@${vhost}`,
+          serverId,
+          vhost,
+          metadata: { username },
+        });
 
         return { message: "Permissions deleted successfully" };
       } catch (error) {

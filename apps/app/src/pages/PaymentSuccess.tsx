@@ -3,9 +3,9 @@ import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router";
 
-import { usePostHog } from "@posthog/react";
 import { CheckCircle, CreditCard } from "lucide-react";
 
+import { track } from "@/lib/analytics";
 import { trackPurchase } from "@/lib/ga";
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
@@ -17,7 +17,6 @@ import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 const PaymentSuccess: React.FC = () => {
   const { t } = useTranslation("billing");
-  const posthog = usePostHog();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { refetchPlan, planData } = useUser();
@@ -84,7 +83,7 @@ const PaymentSuccess: React.FC = () => {
             value, // Convert from cents to currency unit
             currency: "USD", // Default currency, payment history doesn't include currency
           });
-          posthog?.capture("payment_completed", {
+          track("payment_completed", {
             transaction_id: sessionId,
             value,
             currency: "USD",
@@ -102,7 +101,7 @@ const PaymentSuccess: React.FC = () => {
             value: 0, // Will need to be updated if payment details are not available
             currency: "USD",
           });
-          posthog?.capture("payment_completed", {
+          track("payment_completed", {
             transaction_id: sessionId,
             value: 0,
             currency: "USD",
@@ -120,7 +119,7 @@ const PaymentSuccess: React.FC = () => {
           value: 0,
           currency: "USD",
         });
-        posthog?.capture("payment_completed", {
+        track("payment_completed", {
           transaction_id: sessionId,
           value: 0,
           currency: "USD",

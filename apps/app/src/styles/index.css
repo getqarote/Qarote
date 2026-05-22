@@ -309,6 +309,19 @@
   &:hover {
     background-color: hsl(var(--primary) / 92%);
   }
+
+  /* Disabled state — opacity-50 alone wasn't legible against the orange
+     primary, so we override the bg with the muted token. This makes the
+     "waiting on Turnstile" state on sign-in/sign-up obviously inert. */
+  &:disabled,
+  &[disabled] {
+    @apply bg-muted text-muted-foreground cursor-not-allowed;
+    opacity: 0.7;
+  }
+  &:disabled:hover,
+  &[disabled]:hover {
+    background-color: hsl(var(--muted));
+  }
 }
 
 @utility btn-primary-large {

@@ -21,9 +21,10 @@
  * the same way.
  */
 
+import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Info, Loader2 } from "lucide-react";
+import { Info, Loader2, X } from "lucide-react";
 
 import type { FeatureKey, GateSubject } from "@/lib/feature-gate/types";
 
@@ -35,8 +36,6 @@ import {
 } from "@/hooks/queries/useCapabilities";
 import { useFeatureGate } from "@/hooks/queries/useFeatureGate";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
-
-import type { ReactNode } from "react";
 
 interface FeatureGateProps {
   feature: FeatureKey;
@@ -69,6 +68,46 @@ export function FeatureGate({
   const capabilities = useCapabilities(serverId);
   const recheck = useRecheckCapabilities();
 
+  // Per-reasonKey dismissal for the "degraded" advisory banner. Persisted
+  // in localStorage so a dismissed warmup banner stays dismissed across
+  // reloads (it'll re-appear automatically once the gate result changes).
+  const dismissalKey = gate.result?.reasonKey
+    ? `qarote.gate.degraded.dismissed:${gate.result.reasonKey}`
+    : null;
+  const [advisoryDismissed, setAdvisoryDismissed] = useState<boolean>(() => {
+    if (typeof window === "undefined" || !dismissalKey) return false;
+    try {
+      return window.localStorage.getItem(dismissalKey) === "1";
+    } catch {
+      return false;
+    }
+  });
+  // Resync the dismissed flag whenever the gate result swaps in a different
+  // reasonKey (e.g. warmingUp → dataQualityLow on the same page). useState's
+  // lazy initialiser only fires once, so without this effect the new banner
+  // would inherit the previous reason's flag.
+  useEffect(() => {
+    if (typeof window === "undefined" || !dismissalKey) {
+      setAdvisoryDismissed(false);
+      return;
+    }
+    try {
+      setAdvisoryDismissed(window.localStorage.getItem(dismissalKey) === "1");
+    } catch {
+      setAdvisoryDismissed(false);
+    }
+  }, [dismissalKey]);
+  const dismissAdvisory = useCallback(() => {
+    setAdvisoryDismissed(true);
+    if (!dismissalKey) return;
+    try {
+      window.localStorage.setItem(dismissalKey, "1");
+    } catch {
+      // Quota / private mode — operator just sees the banner again next
+      // reload, which is the safe direction.
+    }
+  }, [dismissalKey]);
+
   // Initial load — show a skeleton instead of flashing "blocked"
   // before either query settles. We block on BOTH the gate query and
   // the capabilities query for capability blocks, so the card never
@@ -99,20 +138,32 @@ export function FeatureGate({
     // operates normally, the banner just sets expectations (e.g.
     // "diagnosis warming up — first 3h of metrics may produce
     // sparse findings"). Surfaced at the gate boundary so every
-    // gated page handles it the same way.
+    // gated page handles it the same way. Dismissible per-reasonKey
+    // so a returning user isn't lectured about the same warmup twice.
     const params = gate.result.reasonParams as
       | Record<string, string | number>
       | undefined;
     return (
       <>
-        <div
-          role="status"
-          aria-live="polite"
-          className="mx-6 mt-4 rounded-md border border-blue-500/30 bg-blue-500/5 px-4 py-2 flex items-start gap-2 text-sm text-blue-700 dark:text-blue-400"
-        >
-          <Info className="h-4 w-4 mt-0.5 shrink-0" aria-hidden />
-          <span>{t(gate.result.reasonKey, params)}</span>
-        </div>
+        {!advisoryDismissed && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="mx-6 mt-4 rounded-md border border-info/30 bg-info-muted px-4 py-2 flex items-start gap-2 text-sm text-info"
+          >
+            <Info className="h-4 w-4 mt-0.5 shrink-0" aria-hidden />
+            <span className="flex-1">{t(gate.result.reasonKey, params)}</span>
+            <button
+              type="button"
+              onClick={dismissAdvisory}
+              aria-label={t("dismissAdvisory")}
+              title={t("dismissAdvisory")}
+              className="shrink-0 -m-0.5 p-0.5 rounded text-info/60 hover:text-info"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
         {children}
       </>
     );

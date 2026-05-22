@@ -11,8 +11,8 @@ import { UserPlan } from "@/generated/prisma/client";
  */
 describe("PlanFeatures retention limits", () => {
   describe("maxTraceRetentionHours", () => {
-    it("FREE is 24h", () => {
-      expect(PLAN_FEATURES[UserPlan.FREE].maxTraceRetentionHours).toBe(24);
+    it("FREE is 6h", () => {
+      expect(PLAN_FEATURES[UserPlan.FREE].maxTraceRetentionHours).toBe(6);
     });
 
     it("DEVELOPER is 168h (7 days)", () => {
@@ -47,15 +47,15 @@ describe("PlanFeatures retention limits", () => {
       expect(PLAN_FEATURES[UserPlan.FREE].maxMetricsRetentionHours).toBe(24);
     });
 
-    it("DEVELOPER is 168h (7 days)", () => {
+    it("DEVELOPER is 336h (14 days)", () => {
       expect(PLAN_FEATURES[UserPlan.DEVELOPER].maxMetricsRetentionHours).toBe(
-        168
+        336
       );
     });
 
-    it("ENTERPRISE is 720h (30 days)", () => {
+    it("ENTERPRISE is 2160h (90 days)", () => {
       expect(PLAN_FEATURES[UserPlan.ENTERPRISE].maxMetricsRetentionHours).toBe(
-        720
+        2160
       );
     });
 

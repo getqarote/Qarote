@@ -12,8 +12,13 @@ vi.mock("@/core/prisma", () => ({
 }));
 
 // Dynamic import so the mock is in place before the module is evaluated.
-const { cacheGet, cacheSet, cacheDeletePrefix, cachePruneExpired } =
-  await import("@/core/cache");
+const {
+  cacheGet,
+  cacheSet,
+  cacheDeletePrefix,
+  cachePruneExpired,
+  cacheIncrement,
+} = await import("@/core/cache");
 
 // ─── cacheGet ─────────────────────────────────────────────────────────────────
 
@@ -149,6 +154,107 @@ describe("cacheDeletePrefix", () => {
 });
 
 // ─── cachePruneExpired ────────────────────────────────────────────────────────
+
+describe("cacheIncrement", () => {
+  beforeEach(() => {
+    mockQueryRaw.mockReset();
+    mockExecuteRaw.mockReset();
+  });
+
+  it("returns the count and windowEnd from the UPSERT RETURNING row", async () => {
+    const windowEnd = new Date("2026-05-12T12:00:00Z");
+    mockQueryRaw.mockResolvedValue([{ count: 1, window_end: windowEnd }]);
+
+    const result = await cacheIncrement("llm:regen-rl:user-1", 60_000);
+
+    expect(result).toEqual({ count: 1, windowEnd });
+  });
+
+  it("returns the incremented count on subsequent calls (mocked sequence)", async () => {
+    const windowEnd = new Date("2026-05-12T12:00:00Z");
+    mockQueryRaw
+      .mockResolvedValueOnce([{ count: 1, window_end: windowEnd }])
+      .mockResolvedValueOnce([{ count: 2, window_end: windowEnd }])
+      .mockResolvedValueOnce([{ count: 3, window_end: windowEnd }]);
+
+    const r1 = await cacheIncrement("k", 60_000);
+    const r2 = await cacheIncrement("k", 60_000);
+    const r3 = await cacheIncrement("k", 60_000);
+
+    expect([r1.count, r2.count, r3.count]).toEqual([1, 2, 3]);
+    expect(r1.windowEnd).toEqual(r2.windowEnd);
+    expect(r2.windowEnd).toEqual(r3.windowEnd);
+  });
+
+  it("treats a reset (TTL expiry) like a fresh window: count back to 1, new windowEnd", async () => {
+    const oldWindow = new Date("2026-05-12T12:00:00Z");
+    const newWindow = new Date("2026-05-12T13:00:00Z");
+    mockQueryRaw
+      .mockResolvedValueOnce([{ count: 1, window_end: oldWindow }])
+      .mockResolvedValueOnce([{ count: 1, window_end: newWindow }]);
+
+    const r1 = await cacheIncrement("k", 60_000);
+    const r2 = await cacheIncrement("k", 60_000);
+
+    expect(r1.count).toBe(1);
+    expect(r2.count).toBe(1);
+    expect(r2.windowEnd.getTime()).toBeGreaterThan(r1.windowEnd.getTime());
+  });
+
+  it("throws when RETURNING yields no row", async () => {
+    mockQueryRaw.mockResolvedValue([]);
+    await expect(cacheIncrement("k", 60_000)).rejects.toThrow(
+      "cacheIncrement: UPSERT RETURNING produced no row"
+    );
+  });
+
+  it("rejects ttlMs <= 0 without issuing any query", async () => {
+    await expect(cacheIncrement("k", 0)).rejects.toThrow(
+      /ttlMs must be a positive finite number/
+    );
+    await expect(cacheIncrement("k", -1)).rejects.toThrow(
+      /ttlMs must be a positive finite number/
+    );
+    expect(mockQueryRaw).not.toHaveBeenCalled();
+  });
+
+  it("rejects non-finite ttlMs (Infinity, NaN) without issuing any query", async () => {
+    await expect(cacheIncrement("k", Infinity)).rejects.toThrow(
+      /ttlMs must be a positive finite number/
+    );
+    await expect(cacheIncrement("k", NaN)).rejects.toThrow(
+      /ttlMs must be a positive finite number/
+    );
+    expect(mockQueryRaw).not.toHaveBeenCalled();
+  });
+
+  it("rejects ttlMs above the 24h cap without issuing any query", async () => {
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    await expect(cacheIncrement("k", oneDayMs + 1)).rejects.toThrow(
+      /exceeds the 24h cap/
+    );
+    expect(mockQueryRaw).not.toHaveBeenCalled();
+  });
+
+  it("issues exactly one $queryRaw per call (single round-trip)", async () => {
+    mockQueryRaw.mockResolvedValue([{ count: 1, window_end: new Date() }]);
+    await cacheIncrement("k", 60_000);
+    expect(mockQueryRaw).toHaveBeenCalledTimes(1);
+    expect(mockExecuteRaw).not.toHaveBeenCalled();
+  });
+
+  it("passes the key and ttlMs as interpolated parameters", async () => {
+    mockQueryRaw.mockResolvedValue([{ count: 1, window_end: new Date() }]);
+    await cacheIncrement("llm:regen-rl:user-42", 3_600_000);
+
+    // Tagged-template call: [TemplateStringsArray, ...params].
+    // The template interpolates ${key} once and ${ttlMs} twice (INSERT + UPDATE).
+    const call = mockQueryRaw.mock.calls[0];
+    expect(call[1]).toBe("llm:regen-rl:user-42");
+    expect(call[2]).toBe(3_600_000);
+    expect(call[3]).toBe(3_600_000);
+  });
+});
 
 describe("cachePruneExpired", () => {
   beforeEach(() => {

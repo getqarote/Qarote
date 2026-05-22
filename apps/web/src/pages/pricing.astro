@@ -18,3 +18,22 @@ const resources = {
 >
   <PricingIsland resources={resources} client:load />
 </BaseLayout>
+
+<script is:inline>
+  // Fire `pricing_page_viewed` at most once per browser session — Astro
+  // re-runs head scripts on every navigation, so without the sessionStorage
+  // gate we'd double-count tab-back / re-enter as fresh views.
+  (function () {
+    if (typeof window === "undefined") return;
+    if (!window.posthog || !window.posthog.capture) return;
+    try {
+      var KEY = "pricing_page_viewed_sent";
+      if (sessionStorage.getItem(KEY)) return;
+      sessionStorage.setItem(KEY, "1");
+    } catch (_) {
+      // sessionStorage may be unavailable (private mode) — fall through and
+      // accept the over-count rather than skip the event entirely.
+    }
+    window.posthog.capture("pricing_page_viewed", { app: "web" });
+  })();
+</script>

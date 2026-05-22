@@ -45,5 +45,7 @@
   "save": "Enregistrer les paramètres",
   "saving": "Enregistrement...",
   "saveSuccess": "Paramètres e-mail enregistrés avec succès",
-  "saveError": "Échec de l'enregistrement des paramètres e-mail"
+  "saveError": "Échec de l'enregistrement des paramètres e-mail",
+  "accessDeniedTitle": "Accès administrateur de l'organisation requis",
+  "accessDenied": "La configuration du relais SMTP est réservée aux administrateurs de l'organisation."
 }

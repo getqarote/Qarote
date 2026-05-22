@@ -41,6 +41,9 @@ RUN pnpm run db:generate
 # Build the application
 RUN pnpm run build
 
+# Embed Procfile so dokku git:from-image can read it from the image root
+COPY Procfile /Procfile
+
 # Expose port
 EXPOSE 3000
 

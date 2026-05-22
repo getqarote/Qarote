@@ -1,7 +1,6 @@
 import { useState } from "react";
 
-import { usePostHog } from "@posthog/react";
-
+import { identify, track } from "@/lib/analytics";
 import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
@@ -10,7 +9,6 @@ import { useAuth } from "@/contexts/AuthContextDefinition";
 
 export const useLogin = () => {
   const { login } = useAuth();
-  const posthog = usePostHog();
   const utils = trpc.useUtils();
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -63,8 +61,16 @@ export const useLogin = () => {
             workspaceId: response.user.workspace?.id,
           };
           login(user);
-          posthog?.identify(user.id, { email: user.email });
-          posthog?.capture("user_signed_in", { method: "email" });
+          // Don't claim `planTier: "free"` — we'd misclassify paid users.
+          // The backend identifies with the real plan; the frontend only
+          // refreshes mutable identity bits we know for sure.
+          identify({
+            id: user.id,
+            email: user.email,
+            workspaceId: user.workspaceId ?? undefined,
+            signupAt: user.createdAt,
+          });
+          track("user_signed_in", { method: "password" });
           setIsPending(false);
           setIsSuccess(true);
           options?.onSuccess?.();
@@ -82,8 +88,15 @@ export const useLogin = () => {
               email: baUser.email,
               name: baUser.name || "",
             } as Parameters<typeof login>[0]);
-            posthog?.identify(baUser.id, { email: baUser.email });
-            posthog?.capture("user_signed_in", { method: "email" });
+            identify({
+              id: baUser.id,
+              email: baUser.email,
+              // better-auth's session user may carry `createdAt` as a Date —
+              // include it only when present so the property key matches our
+              // other identify call sites.
+              ...(baUser.createdAt ? { signupAt: baUser.createdAt } : {}),
+            });
+            track("user_signed_in", { method: "password" });
             setIsPending(false);
             setIsSuccess(true);
             options?.onSuccess?.();

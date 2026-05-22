@@ -61,6 +61,7 @@ void i18n.init({
         features: { message_tracing: "Message Tracing" },
         lastChecked: "Last checked {{relative}}",
         checkedJustNow: "just now",
+        dismissAdvisory: "Dismiss notice",
       },
     },
   },
@@ -249,5 +250,119 @@ describe("<FeatureGate>", () => {
     renderGate();
     expect(screen.getByText("Loading feature…")).toBeInTheDocument();
     expect(screen.queryByRole("region")).toBeNull();
+  });
+});
+
+describe("<FeatureGate> — degraded advisory dismissal", () => {
+  // Each test owns its own localStorage spy lifecycle to avoid leaking
+  // state across cases. The component reads localStorage on mount via a
+  // lazy useState initializer AND resyncs on dismissalKey changes via a
+  // useEffect — the cases below pin both paths down.
+  beforeEach(() => {
+    vi.restoreAllMocks();
+
+    vi.mocked(useWorkspace).mockReturnValue({
+      workspace: { id: "ws-1" },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    } as ReturnType<typeof useWorkspace>);
+
+    vi.mocked(useCapabilities).mockReturnValue({
+      data: CAPS_DATA,
+      isLoading: false,
+    } as ReturnType<typeof useCapabilities>);
+
+    vi.mocked(useRecheckCapabilities).mockReturnValue({
+      mutate: vi.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof useRecheckCapabilities>);
+  });
+
+  function mockDegradedGate(reasonKey: string) {
+    vi.mocked(useFeatureGate).mockReturnValue({
+      result: {
+        kind: "degraded",
+        feature: "message_tracing",
+        reasonKey,
+        reasonParams: undefined,
+      },
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    });
+  }
+
+  it("shows the banner with no persisted dismissal (default state)", () => {
+    vi.spyOn(Storage.prototype, "getItem").mockReturnValue(null);
+    mockDegradedGate("capability.warmupAdvisory");
+
+    renderGate();
+
+    expect(
+      screen.getByText("Diagnosis warming up — results may be sparse.")
+    ).toBeInTheDocument();
+  });
+
+  it("hides the banner when localStorage has the matching dismissal key set to '1'", () => {
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation((key) =>
+      key === "qarote.gate.degraded.dismissed:capability.warmupAdvisory"
+        ? "1"
+        : null
+    );
+    mockDegradedGate("capability.warmupAdvisory");
+
+    renderGate();
+
+    // Banner copy is absent because the dismissal latch is on.
+    expect(
+      screen.queryByText("Diagnosis warming up — results may be sparse.")
+    ).toBeNull();
+    // Children still render so the rest of the page is unaffected.
+    expect(screen.getByText("gated content")).toBeInTheDocument();
+  });
+
+  it("resyncs the dismissed flag when the gate result swaps in a different reasonKey", () => {
+    // Persisted dismissal exists ONLY for reasonA; switching to reasonB
+    // must read the new key (missing in storage) and re-show the banner.
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation((key) =>
+      key === "qarote.gate.degraded.dismissed:reasonA" ? "1" : null
+    );
+
+    mockDegradedGate("reasonA");
+    const { rerender } = renderGate();
+
+    // reasonA is dismissed — banner not present. (reasonA's translation
+    // resolves to its key string under i18next-fallback semantics.)
+    expect(screen.queryByText("reasonA")).toBeNull();
+
+    // Swap the gate result to reasonB; the useEffect-resync must flip
+    // advisoryDismissed back to false because reasonB has no flag.
+    mockDegradedGate("reasonB");
+    rerender(
+      <I18nextProvider i18n={i18n}>
+        <MemoryRouter>
+          <FeatureGate feature="message_tracing" serverId="srv-1">
+            <p>gated content</p>
+          </FeatureGate>
+        </MemoryRouter>
+      </I18nextProvider>
+    );
+
+    // Banner for reasonB is now visible.
+    expect(screen.getByText("reasonB")).toBeInTheDocument();
+  });
+
+  it("falls back to showing the banner when localStorage throws (quota / private mode)", () => {
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new Error("SecurityError: storage unavailable");
+    });
+    mockDegradedGate("capability.warmupAdvisory");
+
+    // The component must not crash and must default to non-dismissed.
+    expect(() => renderGate()).not.toThrow();
+    expect(
+      screen.getByText("Diagnosis warming up — results may be sparse.")
+    ).toBeInTheDocument();
   });
 });

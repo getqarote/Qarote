@@ -4,18 +4,13 @@ import { useParams } from "react-router";
 
 import { toast } from "sonner";
 
-import { UserRole } from "@/lib/api";
-
 import { AddVirtualHostButton } from "@/components/AddVirtualHostButton";
 import { filterByRegex } from "@/components/filterByRegex";
 import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { PageErrorOrGate } from "@/components/PageErrorOrGate";
-import {
-  FullPageAlert,
-  NoServerSelectedCard,
-  PageShell,
-} from "@/components/PageShell";
+import { NoServerSelectedCard, PageShell } from "@/components/PageShell";
+import { PermissionDeniedCard, RequireWorkspaceAdmin } from "@/components/rbac";
 import { RegexFilterInput } from "@/components/RegexFilterInput";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { TitleWithCount } from "@/components/ui/TitleWithCount";
@@ -24,7 +19,6 @@ import { LoadingSkeleton } from "@/components/VHostsList/LoadingSkeleton";
 import { VHostsTable } from "@/components/VHostsList/VHostsTable";
 import type { VHostListItem } from "@/components/VHostsList/VHostsTableRow";
 
-import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 
 import { useDeleteVHost, useVHosts } from "@/hooks/queries/useRabbitMQVHosts";
@@ -51,9 +45,35 @@ function isTextualEventTarget(e: KeyboardEvent): boolean {
 export default function VHostsPage() {
   const { t } = useTranslation("vhosts");
   const { t: tc } = useTranslation("common");
+
+  return (
+    <RequireWorkspaceAdmin
+      loadingFallback={
+        <PageShell>
+          <LoadingSkeleton />
+        </PageShell>
+      }
+      deniedFallback={
+        <PageShell>
+          <PermissionDeniedCard
+            title={t("accessDeniedTitle")}
+            description={t("accessDenied")}
+            returnTo="/"
+            returnLabel={tc("backToDashboard")}
+          />
+        </PageShell>
+      }
+    >
+      <VHostsPageBody />
+    </RequireWorkspaceAdmin>
+  );
+}
+
+function VHostsPageBody() {
+  const { t } = useTranslation("vhosts");
+  const { t: tc } = useTranslation("common");
   const { serverId } = useParams<{ serverId: string }>();
   const { selectedServerId, hasServers } = useServerContext();
-  const { user } = useAuth();
   const { data: serversData } = useServers();
   const servers = serversData?.servers || [];
 
@@ -122,15 +142,6 @@ export default function VHostsPage() {
       toast.error(err instanceof Error ? err.message : t("deleteError"));
     }
   };
-
-  // Guard: non-admins cannot reach this page
-  if (user?.role !== UserRole.ADMIN) {
-    return (
-      <PageShell>
-        <FullPageAlert message={t("accessDenied")} />
-      </PageShell>
-    );
-  }
 
   // Guard: zero servers configured — onboarding state owns its own
   // content container, so render it bare to avoid double-wrapping.

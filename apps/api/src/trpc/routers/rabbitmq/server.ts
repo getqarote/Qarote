@@ -4,7 +4,7 @@ import { prisma } from "@/core/prisma";
 import { RabbitMQClient } from "@/core/rabbitmq";
 
 import { seedDefaultAlertRules } from "@/services/alerts/alert-seeding.service";
-import { recordCapabilityRecheck } from "@/services/audit";
+import { recordCapabilityRecheck, recordFromContext } from "@/services/audit";
 import { EncryptionService } from "@/services/encryption.service";
 import {
   getBadgeTrackedFeatures,
@@ -33,13 +33,13 @@ import {
 } from "@/schemas/rabbitmq";
 
 import {
-  adminPlanValidationProcedure,
-  authorize,
+  byServerId,
   router,
-  workspaceProcedure,
+  workspacePermissionPlanValidationProcedure,
+  workspacePermissionProcedure,
 } from "@/trpc/trpc";
 
-import { UserPlan, UserRole } from "@/generated/prisma/client";
+import { UserPlan } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -50,7 +50,7 @@ export const serverRouter = router({
   /**
    * Get all RabbitMQ servers for a workspace (ALL USERS)
    */
-  getServers: workspaceProcedure
+  getServers: workspacePermissionProcedure("server:read")
     .input(GetServersInputSchema)
     .query(async ({ input, ctx }) => {
       const { workspaceId } = input;
@@ -73,6 +73,7 @@ export const serverRouter = router({
             isOverQueueLimit: true,
             queueCountAtConnect: true,
             overLimitWarningShown: true,
+            environment: true,
             createdAt: true,
             updatedAt: true,
             workspaceId: true,
@@ -92,6 +93,7 @@ export const serverRouter = router({
           isOverQueueLimit: server.isOverQueueLimit,
           queueCountAtConnect: server.queueCountAtConnect,
           overLimitWarningShown: server.overLimitWarningShown,
+          environment: server.environment,
           createdAt: server.createdAt.toISOString(),
           updatedAt: server.updatedAt.toISOString(),
           workspaceId: server.workspaceId,
@@ -112,7 +114,7 @@ export const serverRouter = router({
   /**
    * Get a specific server by ID (ALL USERS)
    */
-  getServer: workspaceProcedure
+  getServer: workspacePermissionProcedure("server:read")
     .input(GetServerInputSchema)
     .query(async ({ input, ctx }) => {
       const { id, workspaceId } = input;
@@ -136,6 +138,7 @@ export const serverRouter = router({
             isOverQueueLimit: true,
             queueCountAtConnect: true,
             overLimitWarningShown: true,
+            environment: true,
             createdAt: true,
             updatedAt: true,
             workspaceId: true,
@@ -162,6 +165,7 @@ export const serverRouter = router({
           isOverQueueLimit: server.isOverQueueLimit,
           queueCountAtConnect: server.queueCountAtConnect,
           overLimitWarningShown: server.overLimitWarningShown,
+          environment: server.environment,
           createdAt: server.createdAt.toISOString(),
           updatedAt: server.updatedAt.toISOString(),
           workspaceId: server.workspaceId,
@@ -185,7 +189,7 @@ export const serverRouter = router({
   /**
    * Create a new server (ADMIN ONLY - sensitive operation with plan validation)
    */
-  createServer: adminPlanValidationProcedure
+  createServer: workspacePermissionPlanValidationProcedure("server:create")
     .input(CreateServerWithWorkspaceSchema)
     .mutation(async ({ input, ctx }) => {
       const { workspaceId, ...data } = input;
@@ -205,7 +209,10 @@ export const serverRouter = router({
 
         validateServerCreation(plan, resourceCounts.servers);
 
-        ctx.logger.info({ data }, "Creating server with data");
+        ctx.logger.info(
+          { data: { ...data, password: "[redacted]" } },
+          "Creating server with data"
+        );
 
         // Test connection before creating the server (use plain text for testing)
         const client = new RabbitMQClient({
@@ -237,6 +244,9 @@ export const serverRouter = router({
             password: EncryptionService.encrypt(data.password), // Encrypt password
             vhost: data.vhost,
             useHttps: data.useHttps,
+            // RBAC Phase 3 — free-text env tag for `server.environment`
+            // scope predicates. Null-coerced by the schema.
+            environment: data.environment ?? null,
             version: rabbitMqVersion, // Store full version
             versionMajorMinor: majorMinorVersion, // Store major.minor for plan validation
             // Store over-limit information
@@ -261,6 +271,29 @@ export const serverRouter = router({
           );
         });
 
+        void recordFromContext(ctx, {
+          action: "rabbitmq.server.created",
+          category: "rabbitmq",
+          entityType: "server",
+          entityId: server.id,
+          entityLabel: server.name,
+          serverId: server.id,
+          vhost: server.vhost,
+          metadata: {
+            host: data.host,
+            port: data.port,
+            amqpPort: data.amqpPort,
+            vhost: data.vhost,
+            useHttps: data.useHttps,
+            // RBAC Phase 3 — record the initial scope tag so the
+            // audit trail can reconstruct which `server.environment`
+            // scopes saw this server at creation time.
+            environment: data.environment ?? null,
+            version: rabbitMqVersion,
+            passwordChanged: true,
+          },
+        });
+
         return {
           server: {
             id: server.id,
@@ -271,6 +304,7 @@ export const serverRouter = router({
             username: data.username, // Return original (not encrypted) for UI
             vhost: server.vhost,
             useHttps: server.useHttps,
+            environment: server.environment,
             workspaceId: server.workspaceId,
             createdAt: server.createdAt.toISOString(),
             updatedAt: server.updatedAt.toISOString(),
@@ -294,7 +328,7 @@ export const serverRouter = router({
   /**
    * Update a server (ADMIN ONLY - sensitive operation)
    */
-  updateServer: authorize([UserRole.ADMIN])
+  updateServer: workspacePermissionProcedure("server:update", byServerId)
     .input(UpdateServerWithWorkspaceSchema)
     .mutation(async ({ input, ctx }) => {
       const { id, workspaceId, ...data } = input;
@@ -315,30 +349,6 @@ export const serverRouter = router({
           });
         }
 
-        // If credentials are being updated, test the connection
-        if (
-          data.host ||
-          data.port ||
-          data.username ||
-          data.password ||
-          data.vhost ||
-          data.useHttps !== undefined
-        ) {
-          const client = new RabbitMQClient({
-            host: data.host || existingServer.host,
-            port: data.port || existingServer.port,
-            amqpPort: data.amqpPort || existingServer.amqpPort,
-            username: data.username || existingServer.username,
-            password: data.password || existingServer.password,
-            vhost: data.vhost || existingServer.vhost,
-            useHttps: data.useHttps ?? existingServer.useHttps,
-            version: existingServer.version ?? undefined,
-            versionMajorMinor: existingServer.versionMajorMinor ?? undefined,
-          });
-
-          await client.getOverview();
-        }
-
         // Prepare update data with proper encryption
         const updateData: {
           name?: string;
@@ -349,7 +359,53 @@ export const serverRouter = router({
           password?: string;
           vhost?: string;
           useHttps?: boolean;
+          version?: string;
+          versionMajorMinor?: string;
+          environment?: string | null;
         } = {};
+
+        // If any connection-affecting field changed, re-test the connection
+        // and re-run plan-version validation. Existing credentials in the
+        // DB are encrypted — decrypt before passing to the client.
+        if (
+          data.host !== undefined ||
+          data.port !== undefined ||
+          data.amqpPort !== undefined ||
+          data.username !== undefined ||
+          data.password !== undefined ||
+          data.vhost !== undefined ||
+          data.useHttps !== undefined
+        ) {
+          const client = new RabbitMQClient({
+            host: data.host ?? existingServer.host,
+            port: data.port ?? existingServer.port,
+            amqpPort: data.amqpPort ?? existingServer.amqpPort,
+            username:
+              data.username ??
+              EncryptionService.decrypt(existingServer.username),
+            password:
+              data.password ??
+              EncryptionService.decrypt(existingServer.password),
+            vhost: data.vhost ?? existingServer.vhost,
+            useHttps: data.useHttps ?? existingServer.useHttps,
+            version: existingServer.version ?? undefined,
+            versionMajorMinor: existingServer.versionMajorMinor ?? undefined,
+          });
+
+          const overview = await client.getOverview();
+          const rabbitMqVersion = overview.rabbitmq_version;
+
+          // Re-validate plan version: a repointed server must satisfy the
+          // org's plan, and stale version metadata must not bypass gates.
+          const plan = ctx.organizationId
+            ? await getOrgPlan(ctx.organizationId)
+            : UserPlan.FREE;
+          validateRabbitMqVersion(plan, rabbitMqVersion);
+
+          updateData.version = rabbitMqVersion;
+          updateData.versionMajorMinor =
+            extractMajorMinorVersion(rabbitMqVersion);
+        }
 
         if (data.name !== undefined) updateData.name = data.name;
         if (data.host !== undefined) updateData.host = data.host;
@@ -361,10 +417,55 @@ export const serverRouter = router({
           updateData.password = EncryptionService.encrypt(data.password);
         if (data.vhost !== undefined) updateData.vhost = data.vhost;
         if (data.useHttps !== undefined) updateData.useHttps = data.useHttps;
+        // RBAC Phase 3 — `null` is a legitimate clear-the-tag value, so
+        // we honour `!== undefined` rather than truthy.
+        if (data.environment !== undefined) {
+          updateData.environment = data.environment;
+        }
 
         const server = await prisma.rabbitMQServer.update({
           where: { id },
           data: updateData,
+        });
+
+        // Redact secrets from audit metadata; only flag whether they changed.
+        const auditChanges: Record<
+          string,
+          string | number | boolean | { from: string | null; to: string | null }
+        > = {};
+        if (data.name !== undefined) auditChanges.name = data.name;
+        if (data.host !== undefined) auditChanges.host = data.host;
+        if (data.port !== undefined) auditChanges.port = data.port;
+        if (data.amqpPort !== undefined) auditChanges.amqpPort = data.amqpPort;
+        if (data.vhost !== undefined) auditChanges.vhost = data.vhost;
+        if (data.useHttps !== undefined) auditChanges.useHttps = data.useHttps;
+        if (data.username !== undefined) auditChanges.usernameChanged = true;
+        const passwordChanged = data.password !== undefined;
+        if (updateData.version !== undefined) {
+          auditChanges.version = updateData.version;
+        }
+        // RBAC Phase 3 — capture environment from→to so a SOC 2
+        // auditor can reconstruct which `server.environment` scope
+        // tag this server carried at each point in time.
+        if (data.environment !== undefined) {
+          auditChanges.environment = {
+            from: existingServer.environment ?? null,
+            to: data.environment ?? null,
+          };
+        }
+
+        void recordFromContext(ctx, {
+          action: "rabbitmq.server.updated",
+          category: "rabbitmq",
+          entityType: "server",
+          entityId: server.id,
+          entityLabel: server.name,
+          serverId: server.id,
+          vhost: server.vhost,
+          metadata: {
+            changes: auditChanges,
+            passwordChanged,
+          },
         });
 
         return {
@@ -377,6 +478,7 @@ export const serverRouter = router({
             username: EncryptionService.decrypt(server.username), // Decrypt for display
             vhost: server.vhost,
             useHttps: server.useHttps,
+            environment: server.environment,
             createdAt: server.createdAt.toISOString(),
             updatedAt: server.updatedAt.toISOString(),
           },
@@ -399,7 +501,7 @@ export const serverRouter = router({
   /**
    * Delete a server (ADMIN ONLY - dangerous operation)
    */
-  deleteServer: authorize([UserRole.ADMIN])
+  deleteServer: workspacePermissionProcedure("server:delete", byServerId)
     .input(DeleteServerInputSchema)
     .mutation(async ({ input, ctx }) => {
       const { id, workspaceId } = input;
@@ -424,6 +526,27 @@ export const serverRouter = router({
           where: { id },
         });
 
+        // Audit AFTER delete — bind workspaceId on the entry; the
+        // existingServer snapshot carries the label since the row is
+        // gone. Server delete cascades to alerts/traces/queues; this
+        // is the most consequential mutation in this router.
+        void recordFromContext(
+          { ...ctx, workspaceId },
+          {
+            action: "rabbitmq.server.deleted",
+            category: "rabbitmq",
+            entityType: "server",
+            entityId: existingServer.id,
+            entityLabel: existingServer.name,
+            serverId: existingServer.id,
+            vhost: existingServer.vhost,
+            metadata: {
+              host: existingServer.host,
+              port: existingServer.port,
+            },
+          }
+        );
+
         return {
           message: te(ctx.locale, "messages.serverDeletedSuccess"),
         };
@@ -442,18 +565,20 @@ export const serverRouter = router({
   /**
    * Test RabbitMQ connection (ADMIN ONLY - could expose sensitive info)
    */
-  testConnection: authorize([UserRole.ADMIN])
+  testConnection: workspacePermissionProcedure("server:test_connection")
     .input(TestConnectionWithWorkspaceSchema)
     .mutation(async ({ input, ctx }) => {
       // Extract connection credentials (exclude workspaceId which is only for validation)
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { workspaceId, ...credentials } = input;
 
-      ctx.logger.info({ credentials }, "Testing connection with credentials");
+      ctx.logger.info(
+        { credentials: { ...credentials, password: "[redacted]" } },
+        "Testing connection with credentials"
+      );
 
       try {
         const client = new RabbitMQClient(credentials);
-        ctx.logger.info({ client }, "Created RabbitMQ client");
         const overview = await client.getOverview();
 
         return {
@@ -483,7 +608,7 @@ export const serverRouter = router({
    * Returns `null` snapshot when the server has no detection yet —
    * frontend treats this as "loading" / "Re-check needed".
    */
-  getCapabilities: workspaceProcedure
+  getCapabilities: workspacePermissionProcedure("server:read")
     .input(GetServerInputSchema)
     .query(async ({ input, ctx }) => {
       const { id: serverId, workspaceId } = input;
@@ -544,7 +669,7 @@ export const serverRouter = router({
    * own broker) is low. Promote to a DB column if multi-replica becomes
    * a hard requirement.
    */
-  recheckCapabilities: workspaceProcedure
+  recheckCapabilities: workspacePermissionProcedure("server:update", byServerId)
     .input(GetServerInputSchema)
     .mutation(async ({ input, ctx }) => {
       const { id: serverId, workspaceId } = input;
@@ -595,18 +720,26 @@ export const serverRouter = router({
       // the capability refresh — the contract is "record every attempt
       // (success and failure)", which a shared TX would defeat (a
       // refresh-side rollback would also drop the audit row).
-      await recordCapabilityRecheck(serverId, ctx.user.id, {
-        success: result.snapshot !== null,
-        // Audit `changed` reflects what was actually written, not what
-        // the detector saw. `result.changed` is the detected diff
-        // computed BEFORE the optimistic CAS — a losing concurrent
-        // refresh would otherwise log `changed: true` while persisting
-        // nothing. AND-ing with `result.persisted` keeps the audit
-        // contract truthful.
-        changed: result.persisted && result.changed,
-        hadFirehoseBefore,
-        hasFirehoseAfter: result.snapshot?.hasFirehoseExchange ?? null,
-      });
+      await recordCapabilityRecheck(
+        serverId,
+        {
+          actorUserId: ctx.user.id,
+          actorEmail: ctx.user.email,
+          workspaceId: ctx.workspaceId,
+        },
+        {
+          success: result.snapshot !== null,
+          // Audit `changed` reflects what was actually written, not what
+          // the detector saw. `result.changed` is the detected diff
+          // computed BEFORE the optimistic CAS — a losing concurrent
+          // refresh would otherwise log `changed: true` while persisting
+          // nothing. AND-ing with `result.persisted` keeps the audit
+          // contract truthful.
+          changed: result.persisted && result.changed,
+          hadFirehoseBefore,
+          hasFirehoseAfter: result.snapshot?.hasFirehoseExchange ?? null,
+        }
+      );
 
       // Re-read the row so the response carries the SAME merged-shape
       // payload as `getCapabilities` — including version, productName,

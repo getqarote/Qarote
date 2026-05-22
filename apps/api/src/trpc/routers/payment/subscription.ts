@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 
 import { getUserDisplayName } from "@/core/utils";
 
-import { posthog } from "@/services/posthog";
+import { trackEvent } from "@/services/posthog";
 import { CoreStripeService } from "@/services/stripe/core.service";
 import { StripeService } from "@/services/stripe/stripe.service";
 
@@ -87,16 +87,22 @@ export const subscriptionRouter = router({
         }
 
         try {
-          posthog?.capture({
-            distinctId: user.id,
-            event: "subscription_canceled",
-            properties: {
+          trackEvent(
+            {
+              distinctId: user.id,
+              superProperties: {
+                app: "api",
+                organization_id: ctx.organizationId,
+              },
+            },
+            "subscription_canceled",
+            {
               organization_id: ctx.organizationId,
               cancel_immediately: cancelImmediately,
               reason: reason || null,
               has_feedback: !!feedback,
-            },
-          });
+            }
+          );
         } catch (analyticsError) {
           ctx.logger.warn(
             { error: analyticsError, userId: user.id },
@@ -190,15 +196,21 @@ export const subscriptionRouter = router({
         });
 
         try {
-          posthog?.capture({
-            distinctId: user.id,
-            event: "subscription_renewal_initiated",
-            properties: {
+          trackEvent(
+            {
+              distinctId: user.id,
+              superProperties: {
+                app: "api",
+                organization_id: ctx.organizationId,
+              },
+            },
+            "subscription_renewal_initiated",
+            {
               plan,
               billing_interval: interval,
               organization_id: ctx.organizationId,
-            },
-          });
+            }
+          );
         } catch (analyticsError) {
           ctx.logger.warn(
             { error: analyticsError, userId: user.id },

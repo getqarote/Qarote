@@ -186,6 +186,7 @@
   "spyError": "Failed to start spy",
   "spyMessages": "{{count}} messages",
   "spyClear": "Clear",
+  "spyResume": "Resume",
   "spyPayload": "Payload",
   "spyHeaders": "Headers",
   "spyProperties": "Properties",

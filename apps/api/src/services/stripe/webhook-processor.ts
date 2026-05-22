@@ -19,7 +19,7 @@ import {
 export async function processStripeWebhook(event: Event) {
   switch (event.type) {
     case "checkout.session.completed":
-      await handleCheckoutSessionCompleted(event.data.object);
+      await handleCheckoutSessionCompleted(event.data.object, event.id);
       break;
 
     case "customer.subscription.created":
@@ -28,7 +28,7 @@ export async function processStripeWebhook(event: Event) {
       break;
 
     case "customer.subscription.deleted":
-      await handleCustomerSubscriptionDeleted(event.data.object);
+      await handleCustomerSubscriptionDeleted(event.data.object, event.id);
       break;
 
     case "invoice.payment_succeeded":

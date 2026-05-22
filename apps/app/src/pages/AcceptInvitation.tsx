@@ -4,10 +4,10 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { usePostHog } from "@posthog/react";
 import { Building, Loader2, Mail, Users } from "lucide-react";
 import { toast } from "sonner";
 
+import { identify, track } from "@/lib/analytics";
 import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
@@ -96,7 +96,6 @@ const PLAN_DISPLAY_NAMES: Record<string, string> = {
  */
 const AcceptInvitation = () => {
   const { t } = useTranslation("auth");
-  const posthog = usePostHog();
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -175,8 +174,13 @@ const AcceptInvitation = () => {
               workspaceId: response.user.workspace?.id,
             };
             login(user);
-            posthog?.identify(user.id, { email: user.email });
-            posthog?.capture("invitation_accepted", {
+            identify({
+              id: user.id,
+              email: user.email,
+              workspaceId: user.workspaceId ?? undefined,
+              signupAt: user.createdAt,
+            });
+            track("invitation_accepted", {
               workspace_id: invitation?.workspace.id,
               workspace_name: invitation?.workspace.name,
               role: invitation?.role,

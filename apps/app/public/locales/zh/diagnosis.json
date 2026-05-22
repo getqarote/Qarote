@@ -62,7 +62,12 @@
     "helpfulYes": "有用",
     "helpfulNo": "没用",
     "copyCommand": "复制命令",
-    "copied": "已复制"
+    "copied": "已复制",
+    "explain": "解释",
+    "explaining": "正在生成解释…",
+    "retry": "重试",
+    "explainError": "无法生成解释 — 请检查您的连接后重试。",
+    "explainHelpful": "这个解释有用吗？"
   },
   "metadata": {
     "analyzedAgo": "{{time}}前分析",

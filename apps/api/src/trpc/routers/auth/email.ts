@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 
 import { comparePassword } from "@/core/auth";
 
-import { auditService } from "@/services/audit.service";
+import { recordFromContext } from "@/services/audit";
 import { EmailVerificationService } from "@/services/email/email-verification.service";
 
 import { EmailChangeRequestSchema } from "@/schemas/auth";
@@ -24,8 +24,6 @@ export const emailRouter = router({
     .mutation(async ({ input, ctx }) => {
       const { newEmail, password } = input;
       const user = ctx.user;
-      const clientIP = "unknown";
-      const userAgent = "unknown";
 
       try {
         // Check Account table first (better-auth), fall back to User.passwordHash
@@ -118,14 +116,32 @@ export const emailRouter = router({
           });
         }
 
-        await auditService.logPasswordEvent({
-          action: "email_change_requested",
-          userId: user.id,
-          email: userWithPassword.email,
-          ipAddress: clientIP,
-          userAgent: userAgent,
-          details: { newEmail },
-        });
+        // Best-effort audit — never fail the mutation if org resolution
+        // or the audit write throws. Single dotted-key emission via the
+        // `category.entity.verb` taxonomy.
+        void (async () => {
+          try {
+            const orgRes = await ctx.resolveOrg();
+            await recordFromContext(ctx, {
+              action: "auth.email.change.requested",
+              category: "auth",
+              entityType: "user",
+              entityId: user.id,
+              entityLabel: userWithPassword.email,
+              metadata: {
+                previousEmail: userWithPassword.email,
+                newEmail,
+              },
+              workspaceId: null,
+              organizationId: orgRes?.organizationId ?? null,
+            });
+          } catch (auditErr) {
+            ctx.logger.warn(
+              { error: auditErr, userId: user.id },
+              "auth.email.change.requested: audit write failed (non-fatal)"
+            );
+          }
+        })();
 
         return {
           message: te(ctx.locale, "messages.emailChangeRequested"),

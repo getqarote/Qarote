@@ -1,0 +1,112 @@
+---
+/**
+ * First-touch attribution capture. Mounted once in BaseLayout — runs on
+ * every page load and writes UTM/referrer/landing into localStorage on
+ * the very first hit, gated behind the same consent record that gates
+ * PostHog and GTM.
+ *
+ * The data is later read from localStorage by the signup form on
+ * apps/app and forwarded to the registration mutation, which `$set_once`s
+ * the values onto the new PostHog person. See
+ * `apps/api/src/trpc/routers/auth/registration.ts`.
+ *
+ * KEEP IN SYNC with apps/web/src/lib/consent.ts (canonical source).
+ */
+---
+
+<script is:inline>
+  (function () {
+    var CONSENT_KEY = "qarote_consent";
+    var CONSENT_VERSION = 1;
+    var POLICY_VERSION = "2026-04-30";
+    var CONSENT_TTL_MS = 13 * 30 * 24 * 60 * 60 * 1000;
+    var CONSENT_EVENT = "qarote:consent-changed";
+    var STORAGE_KEY = "qarote_first_touch_v1";
+
+    function hasConsent() {
+      try {
+        var raw = localStorage.getItem(CONSENT_KEY);
+        if (!raw) return false;
+        var p = JSON.parse(raw);
+        if (p.v !== CONSENT_VERSION) return false;
+        if (p.policy !== POLICY_VERSION) return false;
+        // Require a finite numeric timestamp — a corrupted record with
+        // `p.ts = "yesterday"` (or missing) yields `Date.now() - p.ts = NaN`
+        // and `NaN > CONSENT_TTL_MS` is false, which would silently keep
+        // expired / malformed records alive. Reject them up front.
+        if (typeof p.ts !== "number" || !isFinite(p.ts)) return false;
+        if (Date.now() - p.ts > CONSENT_TTL_MS) return false;
+        return p.granted === true;
+      } catch {
+        return false;
+      }
+    }
+
+    function captureFirstTouch() {
+      try {
+        if (localStorage.getItem(STORAGE_KEY)) return;
+
+        var url = new URL(window.location.href);
+        var data = { capturedAt: new Date().toISOString() };
+
+        var utmKeys = [
+          ["initialUtmSource", "utm_source"],
+          ["initialUtmMedium", "utm_medium"],
+          ["initialUtmCampaign", "utm_campaign"],
+          ["initialUtmTerm", "utm_term"],
+          ["initialUtmContent", "utm_content"],
+        ];
+        for (var i = 0; i < utmKeys.length; i++) {
+          var v = url.searchParams.get(utmKeys[i][1]);
+          if (v) data[utmKeys[i][0]] = v;
+        }
+
+        // Strip query strings — referrer and landing should never carry
+        // session tokens / oauth codes / etc. into analytics or logs.
+        // Origin compare must be strict equality on the parsed URL — string
+        // prefix lets `qarote.io.evil.tld` slip through as "internal".
+        var referrer = document.referrer || "";
+        if (referrer) {
+          try {
+            var r = new URL(referrer);
+            if (r.origin !== window.location.origin) {
+              data.initialReferrer = r.origin + r.pathname;
+            }
+          } catch {
+            // malformed referrer — drop
+          }
+        }
+
+        data.initialLandingPage = url.pathname;
+
+        var hasSignal =
+          data.initialUtmSource ||
+          data.initialUtmMedium ||
+          data.initialUtmCampaign ||
+          data.initialUtmTerm ||
+          data.initialUtmContent ||
+          data.initialReferrer;
+        if (!hasSignal) return;
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch {
+        // ignore
+      }
+    }
+
+    if (hasConsent()) {
+      captureFirstTouch();
+    } else {
+      // We must NOT use `{ once: true }` here: writeConsent(false) and the
+      // banner's "decline" / "clear" paths also dispatch CONSENT_EVENT, and
+      // a once-listener would consume that non-grant event and never hear a
+      // later grant. Named handler that self-removes only on a true grant.
+      var consentHandler = function (e) {
+        if (!e || !e.detail || e.detail.granted !== true) return;
+        captureFirstTouch();
+        window.removeEventListener(CONSENT_EVENT, consentHandler);
+      };
+      window.addEventListener(CONSENT_EVENT, consentHandler);
+    }
+  })();
+</script>

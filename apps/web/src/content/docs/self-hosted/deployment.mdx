@@ -101,10 +101,57 @@ The wizard will:
 
 The server starts on `http://localhost:3000`. Database migrations run automatically on first boot. The `migrations/` directory must stay alongside the binary.
 
-To run the alert worker (required for the alerting feature), start it in a separate terminal or as a systemd service:
+To run the background workers, start each in a separate terminal or as a systemd service:
 
 ```bash
-./qarote worker
+./qarote worker               # alert evaluation (required for alerts)
+./qarote notification-worker  # transactional emails (required if email is enabled)
+```
+
+With a Developer or Enterprise license, three additional workers unlock premium features:
+
+```bash
+./qarote digest-worker    # weekly digest emails
+./qarote metrics-worker   # queue metrics collection (run exactly 1 — multiple replicas write duplicate snapshot rows)
+./qarote firehose-worker  # message tracing (run exactly 1 — multiple replicas create duplicate consumers)
+```
+
+### Running as a system service (Linux)
+
+To keep Qarote running across reboots, create a systemd unit for each process. This assumes the binary lives at `/opt/qarote/qarote` and the `.env` at `/opt/qarote/.env`.
+
+**`/etc/systemd/system/qarote.service`**
+
+```ini
+[Unit]
+Description=Qarote RabbitMQ Dashboard
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=qarote
+WorkingDirectory=/opt/qarote
+EnvironmentFile=/opt/qarote/.env
+ExecStart=/opt/qarote/qarote
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Create one unit per worker with the same template, changing `Description` and `ExecStart`:
+
+| Unit file                            | ExecStart                                |
+| ------------------------------------ | ---------------------------------------- |
+| `qarote-alert-worker.service`        | `/opt/qarote/qarote worker`              |
+| `qarote-notification-worker.service` | `/opt/qarote/qarote notification-worker` |
+
+Then reload and enable:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now qarote qarote-alert-worker qarote-notification-worker
 ```
 
 ### Manual setup (without the wizard)
@@ -112,6 +159,7 @@ To run the alert worker (required for the alerting feature), start it in a separ
 If you prefer flags over the interactive wizard:
 
 ```bash
+# Requires openssl to generate secrets (installed by default on macOS and most Linux distros)
 ./qarote \
   --database-url postgresql://qarote:password@localhost/qarote \
   --jwt-secret $(openssl rand -hex 64) \
@@ -124,6 +172,10 @@ If you prefer flags over the interactive wizard:
 | -------------------------------- | ------------------------------------------- |
 | `./qarote setup`                 | Interactive setup wizard (generates `.env`) |
 | `./qarote worker`                | Start the alert worker process              |
+| `./qarote notification-worker`   | Start the notification worker process       |
+| `./qarote digest-worker`         | Start the digest worker (EE)                |
+| `./qarote metrics-worker`        | Start the metrics worker (EE)               |
+| `./qarote firehose-worker`       | Start the firehose worker (EE)              |
 | `--database-url <url>`           | PostgreSQL connection URL                   |
 | `--jwt-secret <secret>`          | JWT signing secret (min 32 chars)           |
 | `--encryption-key <key>`         | Encryption key (min 32 chars)               |
@@ -142,6 +194,9 @@ If you prefer flags over the interactive wizard:
 ### Updating (binary)
 
 ```bash
+# Back up the current binary before replacing it
+cp qarote qarote.backup
+
 # Stop the running instance
 kill $(pgrep -f './qarote') 2>/dev/null || true
 
@@ -159,7 +214,7 @@ Your `.env` file is preserved. To roll back, restore the backup: `mv qarote.back
 
 ## Docker Compose
 
-The Docker Compose setup bundles PostgreSQL, the backend, the alert worker, and the frontend. One command starts everything.
+The Docker Compose setup bundles PostgreSQL, the backend, the alert worker, the notification worker, and the frontend. One command starts everything.
 
 ### 1. Clone the repository
 
@@ -189,6 +244,8 @@ BACKEND_PORT=3000
 FRONTEND_PORT=8080
 
 # Frontend API URL (baked at build time — must match BACKEND_PORT)
+# Changing this after the initial build requires rebuilding the frontend container:
+#   docker compose -f docker-compose.selfhosted.yml build frontend && docker compose ... up -d
 VITE_API_URL=http://localhost:3000
 ```
 
@@ -198,14 +255,24 @@ VITE_API_URL=http://localhost:3000
 docker compose -f docker-compose.selfhosted.yml up -d
 ```
 
-This starts four containers:
+This starts five containers:
 
-| Container             | Purpose                     |
-| --------------------- | --------------------------- |
-| `qarote_postgres`     | PostgreSQL 17 database      |
-| `qarote_backend`      | API server on port 3000     |
-| `qarote_alert_worker` | Alert evaluation worker     |
-| `qarote_frontend`     | React frontend on port 8080 |
+| Container                    | Purpose                             |
+| ---------------------------- | ----------------------------------- |
+| `qarote_postgres`            | PostgreSQL 17 database              |
+| `qarote_backend`             | API server on port 3000             |
+| `qarote_alert_worker`        | Alert evaluation worker             |
+| `qarote_notification_worker` | Transactional emails (auth, Stripe) |
+| `qarote_frontend`            | React frontend on port 8080         |
+
+<Callout type="info" title="EE workers (licensed features)">
+  With a Developer or Enterprise license, uncomment `digest-worker`,
+  `metrics-worker`, and `firehose-worker` in `docker-compose.selfhosted.yml` to
+  enable weekly digests, queue metrics, and message tracing. Keep
+  `metrics-worker` and `firehose-worker` at exactly **1 replica** — Docker
+  Compose already enforces this; do not add `deploy.replicas` for these
+  services.
+</Callout>
 
 ### 4. Run database migrations
 
@@ -215,7 +282,7 @@ docker exec qarote_backend pnpm run db:migrate
 
 ### 5. Open the dashboard
 
-Navigate to [http://localhost:8080](http://localhost:8080) and create your first account.
+Navigate to [http://localhost:8080](http://localhost:8080). Use the sign-up page to create your first account — this becomes the admin account. After that, you can disable public registration and invite team members via the **Settings → Members** page.
 
 <Callout type="info" title="Ports">
   Frontend is served on `FRONTEND_PORT` (default 8080). The backend API is on
@@ -236,6 +303,36 @@ docker exec qarote_backend pnpm run db:migrate
 docker compose -f docker-compose.selfhosted.yml logs -f
 ```
 
+### Production: TLS with a reverse proxy
+
+The Docker Compose stack listens on plain HTTP. For production, put a TLS-terminating reverse proxy in front of the stack. **Caddy** is the simplest option — it fetches and renews Let's Encrypt certificates automatically.
+
+**`/etc/caddy/Caddyfile`**
+
+```caddy
+your-domain.com {
+  reverse_proxy localhost:8080
+}
+
+api.your-domain.com {
+  reverse_proxy localhost:3000
+}
+```
+
+After setting up the proxy, update `VITE_API_URL` in `.env` to your API domain and rebuild the frontend container:
+
+```bash
+docker compose -f docker-compose.selfhosted.yml build frontend
+docker compose -f docker-compose.selfhosted.yml up -d
+```
+
+<Callout type="tip">
+  Bind the Docker Compose ports to localhost only so the services aren't
+  directly reachable from the internet. In `docker-compose.selfhosted.yml`,
+  change `"${FRONTEND_PORT}:80"` to `"127.0.0.1:${FRONTEND_PORT}:80"` (and
+  similarly for the backend port).
+</Callout>
+
 ---
 
 ## Dokku
@@ -245,7 +342,8 @@ Dokku gives you git-push deploys, automatic HTTPS via Let's Encrypt, and managed
 <Callout type="info" title="Why Dokku?">
   Dokku is a lightweight self-hosted PaaS. Push your code with `git push dokku
   main` and it rebuilds and redeploys automatically. The Postgres plugin handles
-  backups and linking. Caddy handles SSL.
+  backups and linking. Let's Encrypt via the dokku-letsencrypt plugin handles
+  SSL.
 </Callout>
 
 ### 1. Install Dokku
@@ -284,7 +382,7 @@ git remote add dokku dokku@your-server:qarote
 git push dokku main
 ```
 
-Dokku builds the app from the `Procfile`, runs the `release` phase (migrations), and starts the `web` and `worker` processes.
+Dokku builds the app from the `Procfile`, runs the `release` phase (migrations), and starts the `web`, `alert-worker`, and `notification-worker` processes.
 
 ### 5. Run database migrations
 
@@ -299,13 +397,24 @@ dokku domains:set qarote your-domain.com
 dokku letsencrypt:enable qarote
 ```
 
-### Scale the alert worker
+### Scale the workers
 
 ```bash
-dokku ps:scale qarote worker=1
+dokku ps:scale qarote alert-worker=1 notification-worker=1
 ```
 
-The `worker` process handles alert evaluation. It must be running for alerts to fire.
+- `alert-worker` — alert evaluation. Required for alerts to fire.
+- `notification-worker` — transactional emails (password reset, invitations, Stripe receipts). Required if `ENABLE_EMAIL=true`.
+
+With a Developer or Enterprise license, scale these additional workers to enable premium features:
+
+```bash
+dokku ps:scale qarote digest-worker=1 metrics-worker=1 firehose-worker=1
+```
+
+- `digest-worker` — weekly digest emails.
+- `metrics-worker` — queue metrics collection. Run as exactly **1 replica** — multiple replicas write duplicate snapshot rows.
+- `firehose-worker` — message tracing. Run as exactly **1 replica** — multiple replicas create duplicate consumers.
 
 ### Updating (Dokku)
 
@@ -326,7 +435,7 @@ Email features (password reset, invitations) are disabled by default. To enable 
 SMTP can be configured three ways, in priority order:
 
 1. **Admin UI** — Settings → Email Settings (takes effect immediately, no restart)
-2. **Setup wizard** — `./qarote setup` or `./setup.sh`
+2. **Setup wizard** — `./qarote setup` (binary) or `./setup.sh` followed by editing `.env` (Docker Compose)
 3. **Environment variables** / `dokku config:set`
 
 ### Common providers
@@ -381,12 +490,82 @@ SMTP_PASS=your-ses-smtp-password
 ### Test your SMTP configuration
 
 ```bash
+# Binary
+./qarote test:smtp
+./qarote test:smtp -- --send admin@yourcompany.com
+
 # Docker Compose
 docker exec qarote_backend pnpm run test:smtp
 docker exec qarote_backend pnpm run test:smtp -- --send admin@yourcompany.com
 
 # Dokku
 dokku run qarote pnpm run test:smtp -- --send admin@yourcompany.com
+```
+
+---
+
+## SSO configuration
+
+Qarote supports Single Sign-On via OIDC and SAML 2.0. SSO can be configured through the Admin UI (Settings → SSO Settings), the setup wizard (`./qarote setup`), or environment variables.
+
+### Key variables
+
+| Variable                 | Description                                                                 | Default                 |
+| ------------------------ | --------------------------------------------------------------------------- | ----------------------- |
+| `SSO_ENABLED`            | Enable SSO                                                                  | `false`                 |
+| `SSO_TYPE`               | Protocol: `oidc` or `saml`                                                  | `oidc`                  |
+| `SSO_OIDC_DISCOVERY_URL` | OIDC discovery endpoint — must end with `/.well-known/openid-configuration` | —                       |
+| `SSO_OIDC_CLIENT_ID`     | OIDC client ID                                                              | —                       |
+| `SSO_OIDC_CLIENT_SECRET` | OIDC client secret                                                          | —                       |
+| `SSO_SAML_METADATA_URL`  | SAML IdP metadata URL                                                       | —                       |
+| `API_URL`                | Backend URL — used for the SSO callback                                     | `http://localhost:3000` |
+| `FRONTEND_URL`           | Frontend URL — used for the post-login redirect                             | `http://localhost:8080` |
+| `SSO_BUTTON_LABEL`       | Login button text                                                           | `Sign in with SSO`      |
+
+Register these URLs in your identity provider (Keycloak, Okta, Azure AD, Auth0, Google Workspace, etc.):
+
+- **OIDC callback URL:** `{API_URL}/sso/callback`
+- **SAML ACS URL:** `{API_URL}/sso/acs`
+
+### Binary
+
+Pass SSO flags at startup, or run `./qarote setup` to configure interactively:
+
+```bash
+./qarote \
+  --sso-enabled true \
+  --sso-oidc-discovery-url https://your-idp.com/.well-known/openid-configuration \
+  --sso-oidc-client-id qarote \
+  --sso-oidc-client-secret your-client-secret \
+  --api-url https://api.your-domain.com \
+  --frontend-url https://your-domain.com
+```
+
+### Docker Compose
+
+Add SSO variables to `.env`, then uncomment the SSO block in `docker-compose.selfhosted.yml` and restart the backend:
+
+```bash
+SSO_ENABLED=true
+SSO_TYPE=oidc
+SSO_OIDC_DISCOVERY_URL=https://your-idp.com/.well-known/openid-configuration
+SSO_OIDC_CLIENT_ID=qarote
+SSO_OIDC_CLIENT_SECRET=your-client-secret
+API_URL=https://api.your-domain.com
+FRONTEND_URL=https://your-domain.com
+```
+
+### Dokku
+
+```bash
+dokku config:set qarote \
+  SSO_ENABLED=true \
+  SSO_TYPE=oidc \
+  SSO_OIDC_DISCOVERY_URL=https://your-idp.com/.well-known/openid-configuration \
+  SSO_OIDC_CLIENT_ID=qarote \
+  SSO_OIDC_CLIENT_SECRET=your-client-secret \
+  API_URL=https://api.your-domain.com \
+  FRONTEND_URL=https://your-domain.com
 ```
 
 ---
@@ -410,7 +589,7 @@ Re-download the correct variant — your `.env` is preserved.
 ### Database connection refused
 
 - Verify PostgreSQL is running: `systemctl status postgresql` or `docker compose ps postgres`
-- Check the `DATABASE_URL` format: `postgres://user:password@host:port/database`
+- Check the `DATABASE_URL` format: `postgresql://user:password@host:port/database`
 - Make sure migrations have been run
 - For Docker Compose, wait for the health check to pass before the backend starts
 

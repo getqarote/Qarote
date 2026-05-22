@@ -4,8 +4,8 @@ import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { usePostHog } from "@posthog/react";
 
+import { track } from "@/lib/analytics";
 import { logger } from "@/lib/logger";
 
 import { AuthPageHeader } from "@/components/auth/AuthPageHeader";
@@ -41,7 +41,6 @@ const SignUp = () => {
   const registerMutation = useRegister();
   const location = useLocation();
   const navigate = useNavigate();
-  const posthog = usePostHog();
 
   const from = location.state?.from?.pathname || "/";
 
@@ -75,7 +74,7 @@ const SignUp = () => {
       },
       {
         onSuccess: () => {
-          posthog?.capture("user_signed_up", { method: "password" });
+          track("user_signed_up", { method: "password" });
         },
       }
     );

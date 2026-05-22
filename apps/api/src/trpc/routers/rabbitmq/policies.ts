@@ -1,5 +1,7 @@
 import { TRPCError } from "@trpc/server";
 
+import { recordFromContext } from "@/services/audit";
+
 import {
   CreateOrUpdatePolicySchema,
   DeletePolicySchema,
@@ -8,11 +10,11 @@ import {
   VHostRequiredQuerySchema,
 } from "@/schemas/rabbitmq";
 
-import { authorize, router, workspaceProcedure } from "@/trpc/trpc";
+import { byServerId, router, workspacePermissionProcedure } from "@/trpc/trpc";
 
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
-import { UserRole } from "@/generated/prisma/client";
+import type { Prisma } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -23,7 +25,7 @@ export const policiesRouter = router({
   /**
    * Get all policies for a server, optionally filtered by vhost (ALL USERS)
    */
-  getPolicies: workspaceProcedure
+  getPolicies: workspacePermissionProcedure("policy:read")
     .input(ServerWorkspaceInputSchema.merge(VHostOptionalQuerySchema))
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId, vhost: vhostParam } = input;
@@ -65,7 +67,7 @@ export const policiesRouter = router({
    * Create or update a policy (ADMIN ONLY)
    * RabbitMQ uses PUT for both create and update — idempotent upsert.
    */
-  createOrUpdatePolicy: authorize([UserRole.ADMIN])
+  createOrUpdatePolicy: workspacePermissionProcedure("policy:write", byServerId)
     .input(
       ServerWorkspaceInputSchema.merge(VHostRequiredQuerySchema).merge(
         CreateOrUpdatePolicySchema
@@ -102,6 +104,25 @@ export const policiesRouter = router({
           priority,
         });
 
+        void recordFromContext(ctx, {
+          action: "rabbitmq.policy.upserted",
+          category: "rabbitmq",
+          entityType: "policy",
+          entityId: name,
+          entityLabel: `${name}@${vhost}`,
+          serverId,
+          vhost,
+          // Zod schema constrains `definition` to `Record<string, unknown>`
+          // (RabbitMQ accepts any JSON-serializable value). Cast to Prisma's
+          // JSON type — the values are runtime-checked by the broker.
+          metadata: {
+            pattern,
+            applyTo,
+            definition: definition as Prisma.InputJsonValue,
+            priority,
+          },
+        });
+
         return {
           success: true,
         };
@@ -123,7 +144,7 @@ export const policiesRouter = router({
   /**
    * Delete a policy (ADMIN ONLY)
    */
-  deletePolicy: authorize([UserRole.ADMIN])
+  deletePolicy: workspacePermissionProcedure("policy:delete", byServerId)
     .input(
       ServerWorkspaceInputSchema.merge(VHostRequiredQuerySchema).merge(
         DeletePolicySchema
@@ -144,6 +165,16 @@ export const policiesRouter = router({
         const vhost = decodeURIComponent(vhostParam);
         const client = await createRabbitMQClient(serverId, workspaceId);
         await client.deletePolicy(vhost, policyName);
+
+        void recordFromContext(ctx, {
+          action: "rabbitmq.policy.deleted",
+          category: "rabbitmq",
+          entityType: "policy",
+          entityId: policyName,
+          entityLabel: `${policyName}@${vhost}`,
+          serverId,
+          vhost,
+        });
 
         return {
           success: true,

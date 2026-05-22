@@ -5,17 +5,12 @@ import { authConfig } from "@/config";
 
 import { prisma } from "./prisma";
 
-import {
-  SubscriptionStatus,
-  UserPlan,
-  UserRole,
-} from "@/generated/prisma/client";
+import { SubscriptionStatus, UserPlan } from "@/generated/prisma/client";
 
 // JWT Token interfaces
 interface JWTPayload {
   sub: string;
   email: string;
-  role: UserRole;
   workspaceId: string | null;
   exp?: number;
   iat?: number;
@@ -28,7 +23,6 @@ export interface SafeUser {
   email: string;
   firstName: string;
   lastName: string;
-  role: UserRole;
   workspaceId: string | null;
   isActive: boolean;
   emailVerified?: boolean;
@@ -83,7 +77,6 @@ export const extractUserFromToken = async (
         email: true,
         firstName: true,
         lastName: true,
-        role: true,
         workspaceId: true,
         isActive: true,
         emailVerified: true,

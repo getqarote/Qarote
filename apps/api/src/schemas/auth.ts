@@ -12,6 +12,16 @@ export const RegisterUserSchema = z.object({
   sourceApp: z.enum(["app", "portal"]).optional().default("app"),
   referralSource: z.string().max(500).optional(),
   discoveryQuery: z.string().trim().max(500).optional(),
+  // First-touch attribution forwarded from the marketing site / signup form.
+  // Captured at the very first hit on apps/web with consent and persisted in
+  // localStorage; sent here on signup so PostHog can `$set_once` them.
+  initialUtmSource: z.string().trim().max(255).optional(),
+  initialUtmMedium: z.string().trim().max(255).optional(),
+  initialUtmCampaign: z.string().trim().max(255).optional(),
+  initialUtmTerm: z.string().trim().max(255).optional(),
+  initialUtmContent: z.string().trim().max(255).optional(),
+  initialReferrer: z.string().trim().max(2000).optional(),
+  initialLandingPage: z.string().trim().max(2000).optional(),
   // Optional — only required when TURNSTILE_SECRET_KEY is set server-side.
   // Self-hosted deployments that omit the env var skip CAPTCHA entirely.
   turnstileToken: z.string().optional(),

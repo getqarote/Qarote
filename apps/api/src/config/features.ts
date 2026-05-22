@@ -15,7 +15,11 @@ export type PremiumFeature =
   | "digest_customization"
   | "incident_diagnosis"
   | "message_tracing"
-  | "message_spy";
+  | "message_spy"
+  | "ai_explain_inline"
+  | "ai_explain_digest"
+  | "audit_log"
+  | "rbac_advanced";
 
 /**
  * Feature definitions
@@ -34,6 +38,15 @@ export const FEATURES = {
   MESSAGE_TRACING: "message_tracing" as const,
   // Plan-gated only (not license-gated) — see plan note in preview plan doc.
   MESSAGE_SPY: "message_spy" as const,
+  // Developer+ for BYOK providers; Enterprise for Managed provider.
+  AI_EXPLAIN_INLINE: "ai_explain_inline" as const,
+  AI_EXPLAIN_DIGEST: "ai_explain_digest" as const,
+  // Operator audit log — Enterprise-only DB writes; Pino mirror runs
+  // on every plan. See docs/internal/AUDIT_LOG.md.
+  AUDIT_LOG: "audit_log" as const,
+  // RBAC Phase 3 — custom roles + resource scopes. Enterprise-only at
+  // both license + plan axes (see gate.config.ts developerBehaviour).
+  RBAC_ADVANCED: "rbac_advanced" as const,
 } as const;
 
 /**

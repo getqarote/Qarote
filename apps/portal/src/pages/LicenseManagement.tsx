@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router";
 
-import { usePostHog } from "@posthog/react";
 import { format, formatDistanceToNow } from "date-fns";
 import {
   AlertTriangle,
@@ -14,6 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { track } from "@/lib/analytics";
 import { getDateFnsLocale } from "@/lib/dateFnsLocale";
 import { type License } from "@/lib/types";
 
@@ -26,7 +26,6 @@ const LicenseManagement = () => {
   const { data, isLoading, isError, refetch } = useLicenses();
   const { t, i18n } = useTranslation("portal");
   const dateLocale = getDateFnsLocale(i18n.language);
-  const posthog = usePostHog();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
 
@@ -45,7 +44,7 @@ const LicenseManagement = () => {
       .writeText(text)
       .then(() => {
         try {
-          posthog?.capture("license_key_copied");
+          track("license_key_copied");
         } catch {
           // non-blocking analytics
         }
@@ -67,7 +66,7 @@ const LicenseManagement = () => {
       return next;
     });
     try {
-      posthog?.capture("license_key_revealed", {
+      track("license_key_revealed", {
         action: isExpanding ? "show" : "hide",
       });
     } catch {

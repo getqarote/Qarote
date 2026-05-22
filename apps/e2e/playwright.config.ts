@@ -12,9 +12,12 @@ const API_URL = process.env.API_URL || `http://localhost:${API_PORT}`;
 
 export default defineConfig({
   testDir: "./tests",
-  fullyParallel: false,
+  fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 1,
+  retries: process.env.CI ? 1 : 0,
+  // TODO: raise to >1 in CI once tests have per-worker DB isolation
+  // (global-setup currently uses a single shared DATABASE_URL, so parallel
+  // workers would collide on user/workspace/queue state).
   workers: 1,
   reporter: process.env.CI
     ? [["html", { open: "never" }], ["github"], ["list"]]
@@ -81,6 +84,7 @@ export default defineConfig({
         "auth/sso-settings.spec.ts",
         "workspace/**",
         "rabbitmq/**",
+        "rbac/**",
         "alerts/**",
         "profile/**",
         "license/**",

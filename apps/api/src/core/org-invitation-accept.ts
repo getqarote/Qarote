@@ -4,7 +4,7 @@ import { ensureWorkspaceMember } from "@/core/workspace-access";
 
 import { WorkspaceAssignmentSchema } from "@/schemas/organization";
 
-import { UserRole } from "@/generated/prisma/client";
+import { WorkspaceRole } from "@/generated/prisma/client";
 
 type PrismaTransaction = Parameters<typeof ensureWorkspaceMember>[3];
 
@@ -57,7 +57,7 @@ export async function applyWorkspaceAssignments(
   });
 
   for (const ws of orgWorkspaces) {
-    await ensureWorkspaceMember(userId, ws.id, UserRole.MEMBER, tx);
+    await ensureWorkspaceMember(userId, ws.id, WorkspaceRole.MEMBER, tx);
   }
 
   return orgWorkspaces[0]?.id ?? null;

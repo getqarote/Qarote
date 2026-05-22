@@ -6,6 +6,7 @@
 
 import type { PremiumFeature } from "@/lib/featureFlags";
 import { isCloudMode } from "@/lib/featureFlags";
+import { isDemoMode } from "@/lib/runtimeConfig";
 import { trpc } from "@/lib/trpc/client";
 
 /**
@@ -16,7 +17,7 @@ import { trpc } from "@/lib/trpc/client";
 export function useFeatureFlags() {
   // In cloud mode or demo mode, all features are enabled
   const cloudMode = isCloudMode();
-  const demoMode = import.meta.env.VITE_DEMO_MODE === "true";
+  const demoMode = isDemoMode();
   const allFeaturesEnabled = cloudMode || demoMode;
 
   // Query feature availability from server (for enterprise/community)

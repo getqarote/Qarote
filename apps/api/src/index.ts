@@ -9,18 +9,27 @@ if (
   process.exit(0);
 }
 
-if (process.argv[2] === "setup") {
+const subcommand = process.argv[2];
+
+if (subcommand === "setup") {
   const { runSetup } = await import("./cli/setup.js");
   await runSetup();
   process.exit(0);
-}
-
-if (process.argv[2] === "worker") {
-  // Run the alert monitor as a standalone process.
-  // alert-monitor.js self-starts and registers its own signal handlers.
+} else if (subcommand === "worker") {
   await import("./ee/workers/alert-monitor.js");
-  // Keep process alive until signal handlers trigger shutdown
-  await new Promise(() => {}); // Never resolves
+  await new Promise(() => {}); // Never resolves — signal handlers shut down the process
+} else if (subcommand === "notification-worker") {
+  await import("./workers/notification-worker.js");
+  await new Promise(() => {}); // Never resolves — signal handlers shut down the process
+} else if (subcommand === "digest-worker") {
+  await import("./ee/workers/digest-monitor.js");
+  await new Promise(() => {});
+} else if (subcommand === "metrics-worker") {
+  await import("./ee/workers/metrics-monitor.js");
+  await new Promise(() => {});
+} else if (subcommand === "firehose-worker") {
+  await import("./ee/workers/firehose-monitor.js");
+  await new Promise(() => {});
 }
 
 import { parseArgs } from "node:util";

@@ -60,6 +60,7 @@ export const AddServerForm = ({
   mode = "add",
   isOpen: controlledIsOpen,
   onOpenChange: controlledOnOpenChange,
+  isFirstServer = false,
 }: AddServerFormProps) => {
   const formId = useId();
   const { t } = useTranslation("dashboard");
@@ -94,6 +95,7 @@ export const AddServerForm = ({
       password: "",
       vhost: server?.vhost || "/",
       useHttps: server?.useHttps || false,
+      environment: server?.environment ?? null,
     },
   });
 
@@ -108,6 +110,7 @@ export const AddServerForm = ({
         password: "",
         vhost: server.vhost,
         useHttps: server.useHttps || false,
+        environment: server.environment ?? null,
       });
       setConnectionStatus({ status: "idle" });
       setStep(1);
@@ -211,6 +214,7 @@ export const AddServerForm = ({
           password: data.password,
           vhost: data.vhost,
           useHttps: data.useHttps,
+          environment: data.environment,
         });
 
         setIsOpen(false);
@@ -226,12 +230,18 @@ export const AddServerForm = ({
           password: data.password,
           vhost: data.vhost,
           useHttps: data.useHttps,
+          environment: data.environment,
         });
 
         setSelectedServerId(result.server.id);
         await refetchPlan();
         setIsOpen(false);
         onServerAdded?.();
+        if (isFirstServer) {
+          navigate("/scan", { state: { serverId: result.server.id } });
+        } else {
+          navigate("/", { replace: true });
+        }
       }
 
       form.reset();
@@ -283,7 +293,14 @@ export const AddServerForm = ({
           {trigger || <Button className="btn-primary">{t("addServer")}</Button>}
         </DialogTrigger>
       )}
-      <DialogContent className="sm:max-w-xl lg:max-w-2xl max-h-[90vh] flex flex-col bg-card">
+      <DialogContent
+        className="sm:max-w-xl lg:max-w-2xl max-h-[90vh] flex flex-col bg-card"
+        // Adding a server is a multi-step flow with form state the user can
+        // lose. Block accidental dismissal via outside-click or Esc — closing
+        // must be intentional (the top-right X or "Retour"/Cancel buttons).
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
         <DialogHeader className="shrink-0">
           <DialogTitle>
             {isEdit ? t("editRabbitMQServer") : t("addRabbitMQServer")}

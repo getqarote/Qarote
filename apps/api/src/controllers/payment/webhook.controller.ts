@@ -93,7 +93,7 @@ app.post("/webhook", async (c) => {
     return c.json({ received: true });
   } catch (error) {
     logger.error({ error }, "Webhook error");
-    return c.json({ message: "Webhook processing failed", error }, 400);
+    return c.json({ message: "Webhook processing failed", error }, 500);
   }
 });
 

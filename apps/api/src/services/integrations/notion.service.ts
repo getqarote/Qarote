@@ -288,7 +288,6 @@ class NotionService {
                 // - Last Name (rich_text): Last name
                 // - User ID (rich_text): Internal user ID
                 // - Email Verified (checkbox): Verification status
-                // - Role (select): User role
                 // - Created At (date): Registration date
                 // - Workspace ID (rich_text): Optional workspace ID
                 Name: {
@@ -332,11 +331,6 @@ class NotionService {
                 },
                 "Email Verified": {
                   checkbox: params.emailVerified,
-                },
-                Role: {
-                  select: {
-                    name: params.role || "USER",
-                  },
                 },
                 "Created At": {
                   date: {
@@ -471,14 +465,6 @@ class NotionService {
       if (updates.emailVerified !== undefined) {
         properties["Email Verified"] = {
           checkbox: updates.emailVerified,
-        };
-      }
-
-      if (updates.role !== undefined) {
-        properties.Role = {
-          select: {
-            name: updates.role,
-          },
         };
       }
 
@@ -631,7 +617,6 @@ class NotionService {
         lastName: user.lastName,
         emailVerified: user.emailVerified,
         createdAt: user.createdAt,
-        role: user.role,
         workspaceId: user.workspaceId,
       };
 

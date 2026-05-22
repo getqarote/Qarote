@@ -17,7 +17,6 @@ export interface CreateNotionUserParams {
   lastName: string;
   emailVerified: boolean;
   createdAt: Date;
-  role?: string;
   workspaceId?: string | null;
 }
 

@@ -8,30 +8,39 @@ import { PostHogErrorBoundary, PostHogProvider } from "@posthog/react";
 import posthog from "posthog-js";
 
 import { initializeGA } from "@/lib/ga";
+import { getDeploymentMode } from "@/lib/runtimeConfig";
 import { initSentry } from "@/lib/sentry";
 
 import App from "./App.tsx";
 
+const deploymentMode = getDeploymentMode();
+
 // Initialize Sentry only when explicitly enabled or in cloud mode
 const enableSentry =
-  import.meta.env.VITE_ENABLE_SENTRY === "true" ||
-  import.meta.env.VITE_DEPLOYMENT_MODE === "cloud";
+  import.meta.env.VITE_ENABLE_SENTRY === "true" || deploymentMode === "cloud";
 
 if (enableSentry) {
   initSentry();
 }
 
-// Initialize GA only when explicitly in cloud mode (undefined = selfhosted)
-const deploymentMode = import.meta.env.VITE_DEPLOYMENT_MODE || "selfhosted";
+// Initialize GA only when explicitly in cloud mode
 if (deploymentMode === "cloud") {
   initializeGA();
 }
 
-// Initialize PostHog when token is configured.
+// Initialize PostHog only in cloud mode AND when a token is configured.
+// Self-hosted deployments must NEVER send telemetry — mirrors the GA gate
+// above. Defense in depth: the wrapper is opt-out by default and uses
+// memory-only persistence, so an accidental token leak still wouldn't ship
+// data, but the deployment-mode gate is the primary control.
+//
 // Phase 1 of cookie-consent rollout: opt-out by default, no session replay,
 // no autocapture, no /decide call, no persistence. Phase 2 will add an
 // in-app privacy toggle that opts users in after explicit consent.
-if (import.meta.env.VITE_PUBLIC_POSTHOG_PROJECT_TOKEN) {
+if (
+  deploymentMode === "cloud" &&
+  import.meta.env.VITE_PUBLIC_POSTHOG_PROJECT_TOKEN
+) {
   posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_PROJECT_TOKEN, {
     api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
     defaults: "2026-01-30",

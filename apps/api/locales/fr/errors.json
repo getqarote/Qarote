@@ -67,6 +67,10 @@
     "userAlreadyOrgMember": "L'utilisateur est déjà membre de cette organisation",
     "orgMembershipRequired": "Appartenance à l'organisation requise",
     "orgAdminRequired": "Rôle PROPRIÉTAIRE ou ADMINISTRATEUR de l'organisation requis",
+    "workspaceAdminRequired": "Rôle PROPRIÉTAIRE ou ADMINISTRATEUR de l'espace de travail requis",
+    "workspaceOwnerRequired": "Rôle PROPRIÉTAIRE de l'espace de travail requis",
+    "workspacePermissionRequired": "Permissions insuffisantes dans l'espace de travail",
+    "cannotGrantHigherRole": "Vous ne pouvez pas attribuer un rôle supérieur ou égal au vôtre",
     "orgInvitationNotFound": "Invitation introuvable",
     "orgInvitationAlreadyAccepted": "L'invitation a déjà été acceptée",
     "orgInvitationExpired": "L'invitation a expiré"
@@ -92,6 +96,7 @@
     "userNotAuthenticatedOrNotInWorkspace": "Utilisateur non authentifié ou ne faisant pas partie de l'espace de travail",
     "userAlreadyMember": "L'utilisateur est déjà membre de cet espace de travail",
     "invitationAlreadyPending": "Une invitation est déjà en attente pour cet email",
+    "lastOwnerBlocked": "Impossible de supprimer ou rétrograder le dernier PROPRIÉTAIRE de l'espace de travail",
     "failedToFetchInvitations": "Échec de la récupération des invitations",
     "failedToSendInvitation": "Échec de l'envoi de l'invitation",
     "invitationNotFoundOrUsed": "Invitation introuvable ou déjà utilisée",
@@ -108,6 +113,7 @@
     "failedToFetchUser": "Échec de la récupération de l'utilisateur",
     "doesNotBelongToWorkspace": "L'utilisateur n'appartient pas à cet espace de travail",
     "failedToUpdateUser": "Échec de la mise à jour de l'utilisateur",
+    "failedToUpdateRole": "Échec de la mise à jour du rôle du membre",
     "isNotMemberOfWorkspace": "L'utilisateur n'est pas membre de cet espace de travail",
     "cannotRemoveSelf": "Impossible de vous retirer de l'espace de travail",
     "onlyOwnerCanRemoveAdmin": "Seuls les propriétaires de l'espace de travail peuvent retirer les administrateurs",
@@ -117,6 +123,10 @@
     "requiresEnterprise": "{{featureName}} nécessite l'édition Enterprise. Passez de l'édition Community à l'édition Enterprise pour débloquer cette fonctionnalité.",
     "notIncludedInLicense": "{{featureName}} n'est pas inclus dans votre licence ou votre licence est invalide. Veuillez vérifier votre fichier de licence.",
     "notAvailable": "{{featureName}} n'est pas disponible."
+  },
+  "audit": {
+    "failedToFetch": "Échec de la récupération du journal d'audit",
+    "failedToExport": "Échec de l'export du journal d'audit"
   },
   "billing": {
     "failedToFetchPlanInfo": "Échec de la récupération des informations sur le plan",

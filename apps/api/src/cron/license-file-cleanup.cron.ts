@@ -11,6 +11,7 @@ class LicenseFileCleanupCronService {
   private isRunning = false;
   private isCleaning = false;
   private intervalId: NodeJS.Timeout | null = null;
+  private currentCyclePromise: Promise<void> | null = null;
   private readonly checkInterval: number;
 
   constructor() {
@@ -35,10 +36,13 @@ class LicenseFileCleanupCronService {
       "Starting license file cleanup service..."
     );
 
-    // Run immediately, then at intervals
-    this.cleanup();
+    // Run immediately, then at intervals. Skip re-assigning when a cycle
+    // is still running — otherwise the immediately-resolved skip would
+    // clobber the real in-flight promise and stopAndWait would no-op.
+    this.currentCyclePromise = this.cleanup();
     this.intervalId = setInterval(() => {
-      this.cleanup();
+      if (this.isCleaning) return;
+      this.currentCyclePromise = this.cleanup();
     }, this.checkInterval);
   }
 
@@ -57,6 +61,24 @@ class LicenseFileCleanupCronService {
       this.intervalId = null;
     }
     logger.info("License file cleanup service stopped");
+  }
+
+  /**
+   * Stop and wait for the in-flight cycle to drain.
+   */
+  async stopAndWait(): Promise<void> {
+    this.stop();
+    if (this.currentCyclePromise) {
+      try {
+        await this.currentCyclePromise;
+      } catch (error) {
+        logger.error(
+          { error },
+          "License file cleanup in-flight cycle errored during shutdown"
+        );
+      }
+      this.currentCyclePromise = null;
+    }
   }
 
   /**

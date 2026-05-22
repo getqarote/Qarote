@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 
 import { getUserDisplayName } from "@/core/utils";
 
-import { posthog } from "@/services/posthog";
+import { trackEvent } from "@/services/posthog";
 import { StripeService } from "@/services/stripe/stripe.service";
 
 import { createCheckoutSessionSchema } from "@/schemas/payment";
@@ -81,15 +81,21 @@ export const checkoutRouter = router({
           customerId,
         });
 
-        posthog?.capture({
-          distinctId: user.id,
-          event: "checkout_session_created",
-          properties: {
+        trackEvent(
+          {
+            distinctId: user.id,
+            superProperties: {
+              app: "api",
+              organization_id: ctx.organizationId,
+            },
+          },
+          "checkout_session_created",
+          {
             plan,
             billing_interval: billingInterval,
             organization_id: ctx.organizationId,
-          },
-        });
+          }
+        );
 
         return { url: session.url };
       } catch (error) {

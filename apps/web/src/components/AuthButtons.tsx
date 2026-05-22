@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 
 import { track } from "@/lib/analytics";
+import { getFirstTouch } from "@/lib/attribution";
 import { trackSignUpClick } from "@/lib/gtm";
 
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,21 @@ const AuthButtons = ({ align = "center", describedById }: AuthButtonsProps) => {
       source: "auth_buttons",
       location: "landing_page",
     });
-    window.location.href = `${authBaseUrl}/auth/sign-up`;
+    // Forward first-touch attribution to the signup form via querystring so
+    // the backend can $set_once it on the new user. localStorage is per-origin,
+    // so this is the simplest cross-origin handoff that respects our
+    // memory-only PostHog persistence on apps/app.
+    const ft = getFirstTouch();
+    const qs = new URLSearchParams();
+    if (ft?.initialUtmSource) qs.set("utm_source", ft.initialUtmSource);
+    if (ft?.initialUtmMedium) qs.set("utm_medium", ft.initialUtmMedium);
+    if (ft?.initialUtmCampaign) qs.set("utm_campaign", ft.initialUtmCampaign);
+    if (ft?.initialUtmTerm) qs.set("utm_term", ft.initialUtmTerm);
+    if (ft?.initialUtmContent) qs.set("utm_content", ft.initialUtmContent);
+    if (ft?.initialReferrer) qs.set("referrer", ft.initialReferrer);
+    if (ft?.initialLandingPage) qs.set("landing", ft.initialLandingPage);
+    const suffix = qs.toString() ? `?${qs.toString()}` : "";
+    window.location.href = `${authBaseUrl}/auth/sign-up${suffix}`;
   };
 
   const alignClass =

@@ -1,7 +1,7 @@
-const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === "true";
+import { isDemoMode } from "@/lib/runtimeConfig";
 
 export function DemoBanner() {
-  if (!DEMO_MODE) return null;
+  if (!isDemoMode()) return null;
 
   return (
     <div className="bg-warning-muted text-warning text-center text-sm font-medium py-1.5 px-4">

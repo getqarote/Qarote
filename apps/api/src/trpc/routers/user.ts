@@ -1,34 +1,33 @@
 import { SUPPORTED_LOCALES } from "@qarote/i18n";
 import { TRPCError } from "@trpc/server";
 
-import { getUserWorkspaceRole } from "@/core/workspace-access";
-
+import { recordFromContext } from "@/services/audit";
 import { EmailVerificationService } from "@/services/email/email-verification.service";
 
 import { hasWorkspaceAccess } from "@/middlewares/workspace";
 
 import { paginateQuery, paginationMeta } from "@/schemas/pagination";
 import {
-  GetInvitationsSchema,
   GetUserSchema,
   GetWorkspaceUsersSchema,
   RemoveUserFromWorkspaceSchema,
   UpdateLocaleSchema,
   UpdateProfileSchema,
-  UpdateUserWithIdSchema,
 } from "@/schemas/user";
-import { UpdateWorkspaceSchema } from "@/schemas/workspace";
 
 import { UserMapper } from "@/mappers/auth";
 
 import {
-  authorize,
   rateLimitedProcedure,
   router,
-  workspaceProcedure,
+  workspacePermissionProcedure,
 } from "@/trpc/trpc";
 
-import { OrgRole, UserRole } from "@/generated/prisma/client";
+import {
+  assertCanRemoveMember,
+  assertWorkspaceWillKeepOwner,
+} from "@/auth/workspace-roles";
+import { WorkspaceRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -64,9 +63,9 @@ export const userRouter = router({
   }),
 
   /**
-   * Get users in the same workspace
+   * Get users in the same workspace (member:read).
    */
-  getWorkspaceUsers: workspaceProcedure
+  getWorkspaceUsers: workspacePermissionProcedure("member:read")
     .input(GetWorkspaceUsersSchema)
     .query(async ({ input, ctx }) => {
       const { workspaceId } = input;
@@ -90,6 +89,10 @@ export const userRouter = router({
                   updatedAt: true,
                 },
               },
+              // RBAC Phase 3: role enum field replaced by Role FK
+              // relation. Surface builtinKey for the legacy
+              // "role" field shape the frontend expects.
+              role: { select: { builtinKey: true } },
             },
             orderBy: { createdAt: "desc" },
             ...paginateQuery(input),
@@ -100,10 +103,15 @@ export const userRouter = router({
         // Format response to match expected structure
         const users = workspaceMembers.map((member) => ({
           id: member.user.id,
+          // WorkspaceMember.id — required by `workspace.role.assignRole`
+          // which addresses members by their membership row. Exposed
+          // since PR-4.1 so the team page can bulk-assign without an
+          // extra resolution round-trip.
+          memberId: member.id,
           email: member.user.email,
           firstName: member.user.firstName,
           lastName: member.user.lastName,
-          role: member.role, // Use role from WorkspaceMember
+          role: member.role.builtinKey ?? "CUSTOM",
           isActive: member.user.isActive,
           lastLogin: member.user.lastLogin?.toISOString() ?? null,
           createdAt: member.user.createdAt.toISOString(),
@@ -141,7 +149,6 @@ export const userRouter = router({
           image: true,
           firstName: true,
           lastName: true,
-          role: true,
           workspaceId: true,
           isActive: true,
           emailVerified: true,
@@ -286,7 +293,6 @@ export const userRouter = router({
               image: true,
               firstName: true,
               lastName: true,
-              role: true,
               workspaceId: true,
               isActive: true,
               emailVerified: true,
@@ -316,7 +322,6 @@ export const userRouter = router({
               image: true,
               firstName: true,
               lastName: true,
-              role: true,
               workspaceId: true,
               isActive: true,
               emailVerified: true,
@@ -350,48 +355,9 @@ export const userRouter = router({
     }),
 
   /**
-   * Get pending invitations for a workspace (ADMIN ONLY)
+   * Get a specific user by ID (member:read).
    */
-  getInvitations: authorize([UserRole.ADMIN])
-    .input(GetInvitationsSchema)
-    .query(async ({ input, ctx }) => {
-      const { workspaceId } = input;
-
-      try {
-        const invitations = await ctx.prisma.invitation.findMany({
-          where: {
-            workspaceId,
-            status: "PENDING",
-          },
-          include: {
-            invitedBy: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-              },
-            },
-          },
-        });
-
-        return { invitations };
-      } catch (error) {
-        ctx.logger.error(
-          { error },
-          `Error fetching invitations for workspace ${workspaceId}`
-        );
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: te(ctx.locale, "workspace.failedToFetchInvitations"),
-        });
-      }
-    }),
-
-  /**
-   * Get a specific user by ID
-   */
-  getUser: workspaceProcedure
+  getUser: workspacePermissionProcedure("member:read")
     .input(GetUserSchema)
     .query(async ({ input, ctx }) => {
       const { id, workspaceId } = input;
@@ -406,7 +372,6 @@ export const userRouter = router({
             image: true,
             firstName: true,
             lastName: true,
-            role: true,
             workspaceId: true,
             isActive: true,
             emailVerified: true,
@@ -429,9 +394,10 @@ export const userRouter = router({
           });
         }
 
-        // Only allow admins or users from the same workspace to access user details
-        if (currentUser.role !== UserRole.ADMIN && currentUser.id !== user.id) {
-          // Check if the user being accessed is actually a member of the workspace
+        // Caller must be the target user themselves, or the target must be
+        // a member of the same workspace. Workspace membership is already
+        // verified by workspaceProcedure for the caller.
+        if (currentUser.id !== user.id) {
           const userIsMember = await hasWorkspaceAccess(user.id, workspaceId);
           if (!userIsMember) {
             throw new TRPCError({
@@ -441,12 +407,20 @@ export const userRouter = router({
           }
         }
 
-        // Serialize date fields to ISO strings
+        // Strip platform-scoped fields (role, workspaceId, workspace) when
+        // the caller is not the target user. Workspace-scoped role lives in
+        // WorkspaceMember; the platform User.role must not leak across users.
+        const isSelf = currentUser.id === user.id;
+        const apiUser = UserMapper.toApiResponse(user);
         return {
-          user: {
-            ...UserMapper.toApiResponse(user),
-            workspace: user.workspace,
-          },
+          user: isSelf
+            ? { ...apiUser, workspace: user.workspace }
+            : {
+                ...apiUser,
+                role: undefined,
+                workspaceId: undefined,
+                workspace: undefined,
+              },
         };
       } catch (error) {
         if (error instanceof TRPCError) {
@@ -461,132 +435,9 @@ export const userRouter = router({
     }),
 
   /**
-   * Update a user (ADMIN ONLY)
+   * Remove user from workspace (member:remove).
    */
-  updateUser: authorize([UserRole.ADMIN])
-    .input(UpdateUserWithIdSchema)
-    .mutation(async ({ input, ctx }) => {
-      const { id, workspaceId, ...data } = input;
-
-      try {
-        // Check if user exists
-        const existingUser = await ctx.prisma.user.findUnique({
-          where: { id },
-        });
-
-        if (!existingUser) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: te(ctx.locale, "auth.userNotFound"),
-          });
-        }
-
-        // Verify user is actually a member of the workspace
-        const userIsMember = await hasWorkspaceAccess(
-          existingUser.id,
-          workspaceId
-        );
-        if (!userIsMember) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: te(ctx.locale, "user.doesNotBelongToWorkspace"),
-          });
-        }
-
-        const user = await ctx.prisma.user.update({
-          where: { id },
-          data,
-          select: {
-            id: true,
-            email: true,
-            image: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-            workspaceId: true,
-            isActive: true,
-            emailVerified: true,
-            lastLogin: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        });
-
-        // Serialize date fields to ISO strings
-        return {
-          user: UserMapper.toApiResponse(user),
-        };
-      } catch (error) {
-        if (error instanceof TRPCError) {
-          throw error;
-        }
-        ctx.logger.error({ error }, `Error updating user ${id}`);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: te(ctx.locale, "user.failedToUpdateUser"),
-        });
-      }
-    }),
-
-  /**
-   * Update workspace information (ADMIN ONLY)
-   */
-  updateWorkspace: authorize([UserRole.ADMIN])
-    .input(UpdateWorkspaceSchema)
-    .mutation(async ({ input, ctx }) => {
-      const data = input;
-      const user = ctx.user;
-
-      if (!user.workspaceId) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: te(ctx.locale, "workspace.noWorkspaceAssigned"),
-        });
-      }
-
-      try {
-        const updatedWorkspace = await ctx.prisma.workspace.update({
-          where: { id: user.workspaceId },
-          data,
-          select: {
-            id: true,
-            name: true,
-            contactEmail: true,
-            logoUrl: true,
-            createdAt: true,
-            updatedAt: true,
-            _count: {
-              select: {
-                users: true,
-                servers: true,
-              },
-            },
-          },
-        });
-
-        return {
-          workspace: {
-            ...updatedWorkspace,
-            createdAt: updatedWorkspace.createdAt.toISOString(),
-            updatedAt: updatedWorkspace.updatedAt.toISOString(),
-          },
-        };
-      } catch (error) {
-        ctx.logger.error(
-          { error },
-          `Error updating workspace ${user.workspaceId}`
-        );
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: te(ctx.locale, "workspace.failedToUpdateInfo"),
-        });
-      }
-    }),
-
-  /**
-   * Remove user from workspace (ADMIN ONLY)
-   */
-  removeFromWorkspace: authorize([UserRole.ADMIN])
+  removeFromWorkspace: workspacePermissionProcedure("member:remove")
     .input(RemoveUserFromWorkspaceSchema)
     .mutation(async ({ input, ctx }) => {
       const { userId: userIdToRemove, workspaceId } = input;
@@ -613,14 +464,19 @@ export const userRouter = router({
           });
         }
 
-        // Check if user is a member of this workspace
-        const workspaceRole = await getUserWorkspaceRole(
-          userIdToRemove,
-          workspaceId,
-          ctx.prisma
-        );
+        // Check if user is a member of this workspace. Test membership
+        // existence directly — `getUserWorkspaceRole` returns null for
+        // custom-role assignments, which would 404 a legitimate member.
+        // The downstream `assertCanRemoveMember` enforces the actual
+        // authorization check and returns FORBIDDEN where appropriate.
+        const targetMembership = await ctx.prisma.workspaceMember.findUnique({
+          where: {
+            userId_workspaceId: { userId: userIdToRemove, workspaceId },
+          },
+          select: { id: true },
+        });
 
-        if (!workspaceRole) {
+        if (!targetMembership) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: te(ctx.locale, "user.isNotMemberOfWorkspace"),
@@ -635,62 +491,84 @@ export const userRouter = router({
           });
         }
 
-        // Prevent removing other admins (only org owner can remove admins)
-        if (workspaceRole === UserRole.ADMIN) {
-          // Check if current user is an org owner
-          const workspace = await ctx.prisma.workspace.findUnique({
-            where: { id: workspaceId },
-            select: { organizationId: true },
+        // Remove user from workspace inside a transaction with the
+        // last-OWNER invariant (R-AUTHZ-4). The anti-escalation guard
+        // (ADMIN cannot touch ADMIN/OWNER) is enforced against the
+        // freshly-read member.role to close the TOCTOU window.
+        // Transaction returns whether a delete actually happened so
+        // the post-tx log + audit only fire on real removals (the
+        // early-return path for "already not a member" must not emit
+        // a false-positive audit row).
+        const removed = await ctx.prisma.$transaction(async (tx) => {
+          const member = await tx.workspaceMember.findUnique({
+            where: {
+              userId_workspaceId: { userId: userIdToRemove, workspaceId },
+            },
+            select: {
+              id: true,
+              role: { select: { builtinKey: true } },
+            },
           });
+          if (!member) return false; // already not a member
 
-          const isOrgOwner = workspace?.organizationId
-            ? !!(await ctx.prisma.organizationMember.findFirst({
-                where: {
-                  userId: currentUser.id,
-                  organizationId: workspace.organizationId,
-                  role: OrgRole.OWNER,
-                },
-              }))
-            : false;
-
-          if (!isOrgOwner) {
+          // Built-in tier checks fail closed when the actor or target
+          // is on a custom role. PR-2's `assertCanRemoveMemberCustom`
+          // covers the custom branch.
+          if (!ctx.workspaceRole || !member.role.builtinKey) {
             throw new TRPCError({
               code: "FORBIDDEN",
-              message: te(ctx.locale, "user.onlyOwnerCanRemoveAdmin"),
+              message: te(ctx.locale, "auth.workspacePermissionRequired"),
             });
           }
-        }
+          assertCanRemoveMember(ctx.workspaceRole, member.role.builtinKey);
 
-        // Remove user from workspace
-        await ctx.prisma.$transaction(async (tx) => {
-          // Delete the WorkspaceMember record
-          await tx.workspaceMember.deleteMany({
-            where: {
-              userId: userIdToRemove,
+          if (member.role.builtinKey === WorkspaceRole.OWNER) {
+            await assertWorkspaceWillKeepOwner(tx, {
               workspaceId,
-            },
-          });
+              affectedMemberId: member.id,
+            });
+          }
 
-          // Update user's workspaceId and reset role
-          await tx.user.update({
-            where: { id: userIdToRemove },
-            data: {
-              workspaceId: null,
-              role: UserRole.MEMBER, // Reset role to USER when removed from workspace
-            },
+          await tx.workspaceMember.delete({ where: { id: member.id } });
+
+          // Clear the user's active workspace if it points here.
+          await tx.user.updateMany({
+            where: { id: userIdToRemove, workspaceId },
+            data: { workspaceId: null },
           });
+          return true;
         });
 
+        // Concurrent-delete race: the precheck above saw the membership,
+        // but a parallel request removed it before our transaction
+        // re-read. Report NOT_FOUND consistently rather than claiming
+        // success for an operation we didn't actually perform.
+        if (!removed) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: te(ctx.locale, "user.isNotMemberOfWorkspace"),
+          });
+        }
+
+        // PII (emails) intentionally omitted — the audit row below
+        // already captures actor + target email under the writer's
+        // GDPR-erasure rules. Pino keeps only the IDs.
         ctx.logger.info(
           {
             removedUserId: userIdToRemove,
-            removedUserEmail: userToRemove.email,
             removedByUserId: currentUser.id,
-            removedByUserEmail: currentUser.email,
             workspaceId,
           },
           "User removed from workspace"
         );
+
+        void recordFromContext(ctx, {
+          action: "workspace.member.removed",
+          category: "workspace",
+          entityType: "user",
+          entityId: userIdToRemove,
+          entityLabel: userToRemove.email,
+        });
 
         return {
           message: "User removed from workspace successfully",

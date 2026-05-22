@@ -17,6 +17,28 @@ export const useCurrentOrganization = () => {
   });
 };
 
+/**
+ * Returns `true` if the current user is OWNER or ADMIN of their
+ * organization, `null` while loading, `false` otherwise (including
+ * unauthenticated, no org, or unknown role).
+ *
+ * Mirrors the tri-state convention of `useIsWorkspaceAdmin`. Note the
+ * `enabled` asymmetry: `useCurrentOrganization` is gated by
+ * `isAuthenticated` only (no resource id), so the unauthenticated +
+ * still-mounting window resolves to `false` here, whereas the
+ * workspace hook additionally waits on a `workspaceId`. Safe for the
+ * routes we guard (all auth-gated), but worth knowing.
+ *
+ * Use for ORG-scope UI gates (license, SMTP relay, billing). For
+ * workspace scope prefer `useIsWorkspaceAdmin`.
+ */
+export const useIsOrgAdmin = (): boolean | null => {
+  const { data, isLoading } = useCurrentOrganization();
+  if (isLoading) return null;
+  if (!data?.role) return false;
+  return data.role === "OWNER" || data.role === "ADMIN";
+};
+
 // Update organization
 export const useUpdateOrganization = () => {
   const utils = trpc.useUtils();
@@ -230,14 +252,15 @@ export const useUpdateWorkspaceRole = () => {
 
 // List org members who don't have access to a specific workspace
 export const useOrgMembersNotInWorkspace = (
-  workspaceId: string | undefined
+  workspaceId: string | undefined,
+  options?: { enabled?: boolean }
 ) => {
   const { isAuthenticated } = useAuth();
 
   return trpc.organization.members.listOrgMembersNotInWorkspace.useQuery(
     { workspaceId: workspaceId! },
     {
-      enabled: isAuthenticated && !!workspaceId,
+      enabled: isAuthenticated && !!workspaceId && (options?.enabled ?? true),
       staleTime: 0,
       gcTime: 60000,
       retry: (failureCount, error) => {

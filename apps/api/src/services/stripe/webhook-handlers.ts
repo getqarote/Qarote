@@ -4,10 +4,10 @@ import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 import { getUserDisplayName } from "@/core/utils";
 
-import { EmailService } from "@/services/email/email.service";
 import { licenseService } from "@/services/license/license.service";
 import { getLicenseFeaturesForTier } from "@/services/license/license-features.service";
-import { posthog } from "@/services/posthog";
+import { enqueueNotification } from "@/services/notification/notification-outbox.service";
+import { trackEvent } from "@/services/posthog";
 import { trackPaymentError } from "@/services/sentry";
 import { CoreStripeService } from "@/services/stripe/core.service";
 import {
@@ -42,7 +42,10 @@ function calculateDaysUntilExpiration(expiresAt: Date): number {
   return Math.max(0, daysUntilExpiration);
 }
 
-export async function handleCheckoutSessionCompleted(session: Session) {
+export async function handleCheckoutSessionCompleted(
+  session: Session,
+  stripeEventId?: string
+) {
   const userId = session.metadata?.userId;
   const plan = session.metadata?.plan as UserPlan;
   const billingInterval = session.metadata?.billingInterval;
@@ -61,7 +64,8 @@ export async function handleCheckoutSessionCompleted(session: Session) {
       userId,
       plan,
       billingInterval,
-      subscriptionId
+      subscriptionId,
+      stripeEventId
     );
   }
 
@@ -148,62 +152,76 @@ export async function handleCheckoutSessionCompleted(session: Session) {
       subscriptionData?.trial_end
     );
 
-    await prisma.subscription.create({
-      data: {
-        userId,
-        organizationId: org?.id ?? null,
-        stripeSubscriptionId: subscriptionId!,
-        stripePriceId: subscriptionData?.items?.data?.[0]?.price?.id || "",
-        stripeCustomerId: customerId!,
-        plan,
-        status: subscriptionStatus,
-        billingInterval: billingInterval
-          ? CoreStripeService.mapStripeBillingIntervalToBillingInterval(
-              billingInterval
-            )
-          : BillingInterval.MONTH,
-        pricePerMonth:
-          subscriptionData?.items?.data?.[0]?.price?.unit_amount || 0,
-        currentPeriodStart,
-        currentPeriodEnd,
-        // Add trial information
-        trialStart: subscriptionData?.trial_start
-          ? new Date(subscriptionData.trial_start * 1000)
-          : null,
-        trialEnd: subscriptionData?.trial_end
-          ? new Date(subscriptionData.trial_end * 1000)
-          : null,
-        cancelAtPeriodEnd: subscriptionData?.cancel_at_period_end || false,
-      },
-    });
-
-    // Send welcome email
     const billingIntervalEnum = billingInterval
       ? CoreStripeService.mapStripeBillingIntervalToBillingInterval(
           billingInterval
         )
       : BillingInterval.MONTH;
 
-    await EmailService.sendUpgradeConfirmationEmail({
-      to: user.email,
-      userName: getUserDisplayName(user),
-      workspaceName: "your workspaces", // Generic since it applies to all workspaces
-      plan,
-      billingInterval:
-        CoreStripeService.mapBillingIntervalToString(billingIntervalEnum),
+    // Outbox: subscription create + welcome email enqueue commit atomically.
+    // If we crash between them, neither is persisted and Stripe's retry
+    // re-runs the whole handler.
+    await prisma.$transaction(async (tx) => {
+      await tx.subscription.create({
+        data: {
+          userId,
+          organizationId: org?.id ?? null,
+          stripeSubscriptionId: subscriptionId!,
+          stripePriceId: subscriptionData?.items?.data?.[0]?.price?.id || "",
+          stripeCustomerId: customerId!,
+          plan,
+          status: subscriptionStatus,
+          billingInterval: billingIntervalEnum,
+          pricePerMonth:
+            subscriptionData?.items?.data?.[0]?.price?.unit_amount || 0,
+          currentPeriodStart,
+          currentPeriodEnd,
+          trialStart: subscriptionData?.trial_start
+            ? new Date(subscriptionData.trial_start * 1000)
+            : null,
+          trialEnd: subscriptionData?.trial_end
+            ? new Date(subscriptionData.trial_end * 1000)
+            : null,
+          cancelAtPeriodEnd: subscriptionData?.cancel_at_period_end || false,
+        },
+      });
+
+      await enqueueNotification(
+        {
+          channel: "email",
+          template: "upgrade_confirmation",
+          target: user.email,
+          idempotencyKey: `email:checkout_session:${session.id}:upgrade_confirmation`,
+          payload: {
+            userName: getUserDisplayName(user),
+            workspaceName: "your workspaces",
+            plan,
+            billingInterval:
+              CoreStripeService.mapBillingIntervalToString(billingIntervalEnum),
+          },
+        },
+        tx
+      );
     });
 
-    posthog?.capture({
-      distinctId: userId,
-      event: "subscription_purchased",
-      properties: {
+    trackEvent(
+      {
+        distinctId: userId,
+        superProperties: {
+          app: "api",
+          organization_id: org?.id ?? undefined,
+        },
+        insertId: stripeEventId,
+      },
+      "subscription_purchased",
+      {
         plan,
         billing_interval: billingInterval ?? null,
         organization_id: org?.id ?? null,
         stripe_subscription_id: subscriptionId ?? null,
         is_trial: subscriptionStatus !== SubscriptionStatus.ACTIVE,
-      },
-    });
+      }
+    );
 
     logger.info(`User ${userId} upgraded to ${plan}`);
   } catch (error) {
@@ -227,7 +245,8 @@ async function handleLicensePurchase(
   userId: string,
   plan: UserPlan,
   billingInterval: string | undefined,
-  subscriptionId: string | null = null
+  subscriptionId: string | null = null,
+  stripeEventId?: string
 ) {
   try {
     const customerId = StripeService.extractCustomerId(session);
@@ -269,14 +288,59 @@ async function handleLicensePurchase(
     const expiresAt =
       billingInterval === "yearly" ? addYears(now, 1) : addMonths(now, 1);
 
-    // Generate license
-    const { licenseKey, licenseId } = await licenseService.generateLicense({
-      tier: plan,
-      customerEmail: user.email,
-      workspaceId: user.workspaceId || undefined,
-      expiresAt,
-      stripeCustomerId: customerId || undefined,
-      stripeSubscriptionId: subscriptionId || undefined, // Link to subscription for renewals and idempotency
+    // Outbox: license create + JWT version save + delivery email enqueue
+    // commit atomically. Without this, a crash between the license.create
+    // and saveLicenseFileVersion would leave a License persisted with no
+    // version and no email — and the existing-license idempotency check
+    // on Stripe retry would short-circuit before recovering. Generating
+    // the JWT itself has no DB write so it stays outside the transaction.
+    const features = getLicenseFeaturesForTier(plan);
+    const { licenseId } = await prisma.$transaction(async (tx) => {
+      const created = await licenseService.generateLicense(
+        {
+          tier: plan,
+          customerEmail: user.email,
+          workspaceId: user.workspaceId || undefined,
+          expiresAt,
+          stripeCustomerId: customerId || undefined,
+          stripeSubscriptionId: subscriptionId || undefined,
+        },
+        tx
+      );
+
+      const licenseJwt = await licenseService.generateLicenseJwt({
+        licenseId: created.licenseId,
+        tier: plan,
+        features,
+        expiresAt,
+      });
+
+      await licenseService.saveLicenseFileVersion(
+        created.licenseId,
+        1,
+        licenseJwt,
+        expiresAt,
+        undefined,
+        tx
+      );
+
+      await enqueueNotification(
+        {
+          channel: "email",
+          template: "license_delivery",
+          target: user.email,
+          idempotencyKey: `email:checkout_session:${session.id}:license_delivery:${created.licenseId}`,
+          payload: {
+            userName: getUserDisplayName(user),
+            licenseKey: created.licenseKey,
+            tier: plan,
+            expiresAt: expiresAt.toISOString(),
+          },
+        },
+        tx
+      );
+
+      return created;
     });
 
     logger.info(
@@ -285,57 +349,28 @@ async function handleLicensePurchase(
         userId,
         plan,
         customerEmail: user.email,
-      },
-      "License created successfully"
-    );
-
-    // Generate and save signed license JWT (version 1)
-    const features = getLicenseFeaturesForTier(plan);
-    const licenseJwt = await licenseService.generateLicenseJwt({
-      licenseId,
-      tier: plan,
-      features,
-      expiresAt,
-    });
-
-    // Save license JWT version for download
-    await licenseService.saveLicenseFileVersion(
-      licenseId,
-      1, // Initial version
-      licenseJwt,
-      expiresAt
-    );
-
-    logger.info(
-      {
-        licenseId,
         version: 1,
         expiresAt: expiresAt.toISOString(),
       },
-      "License JWT generated and saved for initial purchase"
+      "License created + JWT saved + delivery email enqueued"
     );
 
-    // Send license delivery email
-    await EmailService.sendLicenseDeliveryEmail({
-      to: user.email,
-      userName: getUserDisplayName(user),
-      licenseKey,
-      tier: plan,
-      expiresAt,
-    });
-
     try {
-      posthog?.capture({
-        distinctId: userId,
-        event: "license_purchased",
-        properties: {
+      trackEvent(
+        {
+          distinctId: userId,
+          superProperties: { app: "api" },
+          insertId: stripeEventId,
+        },
+        "license_purchased",
+        {
           plan,
           billing_interval: billingInterval ?? null,
           license_id: licenseId,
           expires_at: expiresAt.toISOString(),
           stripe_subscription_id: subscriptionId,
-        },
-      });
+        }
+      );
     } catch (analyticsError) {
       logger.error(
         { error: analyticsError, userId, licenseId },
@@ -521,7 +556,8 @@ export async function handleSubscriptionChange(subscription: Subscription) {
 }
 
 export async function handleCustomerSubscriptionDeleted(
-  subscription: Subscription
+  subscription: Subscription,
+  stripeEventId?: string
 ) {
   try {
     const subscriptionId = subscription.id;
@@ -540,16 +576,23 @@ export async function handleCustomerSubscriptionDeleted(
       });
 
       try {
-        posthog?.capture({
-          distinctId: existingSubscription.userId,
-          event: "subscription_churned",
-          properties: {
+        trackEvent(
+          {
+            distinctId: existingSubscription.userId,
+            superProperties: {
+              app: "api",
+              organization_id: existingSubscription.organizationId ?? undefined,
+            },
+            insertId: stripeEventId,
+          },
+          "subscription_churned",
+          {
             plan: existingSubscription.plan,
             billing_interval: existingSubscription.billingInterval,
             organization_id: existingSubscription.organizationId ?? null,
             stripe_subscription_id: subscriptionId,
-          },
-        });
+          }
+        );
       } catch (analyticsError) {
         logger.error(
           { error: analyticsError, subscriptionId },
@@ -558,16 +601,6 @@ export async function handleCustomerSubscriptionDeleted(
       }
 
       logger.info({ subscriptionId }, "Subscription canceled successfully");
-
-      posthog?.capture({
-        distinctId: existingSubscription.userId,
-        event: "subscription_churned",
-        properties: {
-          plan: existingSubscription.plan,
-          stripe_subscription_id: subscriptionId,
-          organization_id: existingSubscription.organizationId,
-        },
-      });
 
       // Deactivate associated licenses (if any)
       const licenses = await prisma.license.findMany({
@@ -578,13 +611,39 @@ export async function handleCustomerSubscriptionDeleted(
       });
 
       if (licenses.length > 0) {
-        await prisma.license.updateMany({
-          where: {
-            stripeSubscriptionId: subscriptionId,
-          },
-          data: {
-            isActive: false,
-          },
+        // Outbox: deactivate + per-license cancellation enqueues commit
+        // atomically. Stripe retries hit the unique idempotencyKey on the
+        // outbox row and become enqueue no-ops.
+        await prisma.$transaction(async (tx) => {
+          await tx.license.updateMany({
+            where: {
+              stripeSubscriptionId: subscriptionId,
+            },
+            data: {
+              isActive: false,
+            },
+          });
+
+          for (const license of licenses) {
+            const gracePeriodDays = calculateDaysUntilExpiration(
+              license.expiresAt
+            );
+            await enqueueNotification(
+              {
+                channel: "email",
+                template: "license_cancellation",
+                target: license.customerEmail,
+                idempotencyKey: `email:subscription:${subscriptionId}:license_cancellation:${license.id}`,
+                payload: {
+                  licenseKey: license.licenseKey,
+                  tier: license.tier,
+                  expiresAt: license.expiresAt.toISOString(),
+                  gracePeriodDays,
+                },
+              },
+              tx
+            );
+          }
         });
 
         logger.info(
@@ -593,46 +652,8 @@ export async function handleCustomerSubscriptionDeleted(
             licenseCount: licenses.length,
             licenseIds: licenses.map((l) => l.id),
           },
-          "Licenses deactivated due to subscription cancellation"
+          "Licenses deactivated + cancellation emails enqueued"
         );
-
-        // Send cancellation email for each license
-        for (const license of licenses) {
-          try {
-            // Calculate grace period days (remaining time until expiration)
-            const gracePeriodDays = calculateDaysUntilExpiration(
-              license.expiresAt
-            );
-
-            // Send license cancellation email
-            await EmailService.sendLicenseCancellationEmail({
-              to: license.customerEmail,
-              licenseKey: license.licenseKey,
-              tier: license.tier,
-              expiresAt: license.expiresAt,
-              gracePeriodDays,
-            });
-
-            logger.info(
-              {
-                licenseId: license.id,
-                gracePeriodDays,
-                expiresAt: license.expiresAt.toISOString(),
-              },
-              "License cancellation email sent"
-            );
-          } catch (emailError) {
-            logger.error(
-              {
-                error: emailError,
-                licenseId: license.id,
-                subscriptionId,
-              },
-              "Failed to send cancellation email for individual license"
-            );
-            // Continue processing other licenses even if one fails
-          }
-        }
       }
     }
   } catch (error) {
@@ -728,13 +749,7 @@ export async function handleInvoicePaymentSucceeded(invoice: Invoice) {
           // Calculate new expiration date (1 year from now)
           const newExpiresAt = addYears(new Date(), 1);
 
-          // Renew license (updates expiresAt and increments version)
-          const { newVersion } = await licenseService.renewLicense(
-            license.id,
-            newExpiresAt
-          );
-
-          // Generate new signed license JWT
+          // Generate new signed license JWT (no DB write — safe outside tx)
           const features = getLicenseFeaturesForTier(license.tier);
           const licenseJwt = await licenseService.generateLicenseJwt({
             licenseId: license.id,
@@ -743,22 +758,42 @@ export async function handleInvoicePaymentSucceeded(invoice: Invoice) {
             expiresAt: newExpiresAt,
           });
 
-          // Save license JWT version for historical access with invoice ID for idempotency
-          await licenseService.saveLicenseFileVersion(
-            license.id,
-            newVersion,
-            licenseJwt,
-            newExpiresAt,
-            invoice.id
-          );
+          // Outbox: license update + JWT version save + renewal email all
+          // commit atomically. The licenseFileVersion row carries
+          // stripeInvoiceId, which is the second-line idempotency guard.
+          const newVersion = await prisma.$transaction(async (tx) => {
+            const { newVersion: v } = await licenseService.renewLicense(
+              license.id,
+              newExpiresAt,
+              tx
+            );
 
-          // Send license renewal email
-          await EmailService.sendLicenseRenewalEmail({
-            to: license.customerEmail,
-            licenseKey: license.licenseKey,
-            tier: license.tier,
-            previousExpiresAt: license.expiresAt,
-            newExpiresAt,
+            await licenseService.saveLicenseFileVersion(
+              license.id,
+              v,
+              licenseJwt,
+              newExpiresAt,
+              invoice.id,
+              tx
+            );
+
+            await enqueueNotification(
+              {
+                channel: "email",
+                template: "license_renewal",
+                target: license.customerEmail,
+                idempotencyKey: `email:invoice:${invoice.id}:license_renewal:${license.id}`,
+                payload: {
+                  licenseKey: license.licenseKey,
+                  tier: license.tier,
+                  previousExpiresAt: license.expiresAt.toISOString(),
+                  newExpiresAt: newExpiresAt.toISOString(),
+                },
+              },
+              tx
+            );
+
+            return v;
           });
 
           logger.info(
@@ -769,7 +804,7 @@ export async function handleInvoicePaymentSucceeded(invoice: Invoice) {
               newExpiresAt: newExpiresAt.toISOString(),
               previousExpiresAt: license.expiresAt.toISOString(),
             },
-            "License renewed, new JWT generated, and renewal email sent"
+            "License renewed, new JWT generated, and renewal email enqueued"
           );
         } catch (licenseError) {
           logger.error(
@@ -796,17 +831,40 @@ export async function handleInvoicePaymentSucceeded(invoice: Invoice) {
       );
     }
 
-    // Send payment confirmation email (skip $0 invoices from trials/free signups)
+    // Enqueue payment confirmation email (skip $0 invoices from trials/free signups).
+    // Wrapped in its own try/catch so an enqueue failure here doesn't surface
+    // as a webhook-handler crash after the renewal loop already committed.
+    // Stripe retries are idempotent (the unique idempotencyKey makes the
+    // re-attempt a no-op) so we keep observability via logs and let the
+    // renewal commits stand.
     if (subscription.user && invoice.amount_paid > 0) {
-      await EmailService.sendPaymentConfirmationEmail({
-        to: subscription.user.email,
-        userName: getUserDisplayName(subscription.user),
-        amount: invoice.amount_paid / 100, // Convert from cents
-        currency: invoice.currency.toUpperCase(),
-        // In Stripe API 2025-03-31+, payment_intent was removed from Invoice.
-        // Default to "card" since payment method details require payments expansion.
-        paymentMethod: "card",
-      });
+      try {
+        await enqueueNotification({
+          channel: "email",
+          template: "payment_confirmation",
+          target: subscription.user.email,
+          idempotencyKey: `email:invoice:${invoice.id}:payment_confirmation`,
+          payload: {
+            userName: getUserDisplayName(subscription.user),
+            amount: invoice.amount_paid / 100,
+            currency: invoice.currency.toUpperCase(),
+            // In Stripe API 2025-03-31+, payment_intent was removed from Invoice.
+            // Default to "card" since payment method details require payments expansion.
+            paymentMethod: "card",
+          },
+        });
+      } catch (error) {
+        logger.error(
+          {
+            error,
+            invoiceId: invoice.id,
+            subscriptionId,
+            recipient: subscription.user.email,
+            idempotencyKey: `email:invoice:${invoice.id}:payment_confirmation`,
+          },
+          "Failed to enqueue payment confirmation email — renewal still committed; Stripe retry will re-attempt"
+        );
+      }
     }
 
     logger.info(
@@ -885,87 +943,102 @@ export async function handleInvoicePaymentFailed(invoice: Invoice) {
       "Payment failure - grace period status"
     );
 
-    // If grace period expired, deactivate licenses
-    if (!isInGracePeriod && licenses.length > 0) {
-      await prisma.license.updateMany({
-        where: {
-          stripeSubscriptionId: subscriptionId,
-        },
-        data: {
-          isActive: false,
-        },
-      });
-
-      logger.info(
-        {
-          subscriptionId,
-          licenseCount: licenses.length,
-        },
-        "Licenses deactivated after grace period expired"
-      );
-    }
-
-    // Send payment failure email with grace period warning
+    // Outbox: deactivation (if applicable) + all email enqueues commit
+    // atomically. Stripe retries hit unique idempotencyKeys -> no-op.
     if (subscription.user) {
-      await EmailService.sendPaymentFailedEmail({
-        to: subscription.user.email,
-        userName: getUserDisplayName(subscription.user),
-        amount: invoice.amount_due / 100, // Convert from cents
-        failureReason: CoreStripeService.mapInvoiceToFailureReason(invoice),
+      const userEmail = subscription.user.email;
+      const userName = getUserDisplayName(subscription.user);
+      await prisma.$transaction(async (tx) => {
+        if (!isInGracePeriod && licenses.length > 0) {
+          await tx.license.updateMany({
+            where: { stripeSubscriptionId: subscriptionId },
+            data: { isActive: false },
+          });
+        }
+
+        await enqueueNotification(
+          {
+            channel: "email",
+            template: "payment_failed",
+            target: userEmail,
+            idempotencyKey: `email:invoice:${invoice.id}:payment_failed`,
+            payload: {
+              userName,
+              amount: invoice.amount_due / 100,
+              failureReason:
+                CoreStripeService.mapInvoiceToFailureReason(invoice),
+            },
+          },
+          tx
+        );
+
+        for (const license of licenses) {
+          if (isInGracePeriod) {
+            await enqueueNotification(
+              {
+                channel: "email",
+                template: "license_payment_failed",
+                target: userEmail,
+                idempotencyKey: `email:invoice:${invoice.id}:license_payment_failed:${license.id}`,
+                payload: {
+                  userName,
+                  licenseKey: license.licenseKey,
+                  tier: license.tier,
+                  gracePeriodDays: daysRemaining,
+                  isInGracePeriod: true,
+                  willDeactivate: true,
+                },
+              },
+              tx
+            );
+          } else {
+            await enqueueNotification(
+              {
+                channel: "email",
+                template: "license_expired",
+                target: userEmail,
+                idempotencyKey: `email:invoice:${invoice.id}:license_expired:${license.id}`,
+                payload: {
+                  userName,
+                  licenseKey: license.licenseKey,
+                  tier: license.tier,
+                  expiredAt: (license.expiresAt || now).toISOString(),
+                  renewalUrl: `${emailConfig.portalFrontendUrl}/licenses`,
+                },
+              },
+              tx
+            );
+          }
+        }
       });
 
-      // Send license-specific emails based on grace period status
-      if (licenses.length > 0) {
-        for (const license of licenses) {
-          try {
-            if (isInGracePeriod) {
-              // Still in grace period - send payment failed email with days remaining
-              await EmailService.sendLicensePaymentFailedEmail({
-                to: subscription.user.email,
-                userName: getUserDisplayName(subscription.user),
-                licenseKey: license.licenseKey,
-                tier: license.tier,
-                gracePeriodDays: daysRemaining,
-                isInGracePeriod: true,
-                willDeactivate: true,
-              });
+      if (!isInGracePeriod && licenses.length > 0) {
+        logger.info(
+          { subscriptionId, licenseCount: licenses.length },
+          "Licenses deactivated after grace period expired"
+        );
+      }
 
-              logger.info(
-                {
-                  licenseId: license.id,
-                  gracePeriodDays: daysRemaining,
-                },
-                "License payment failure email sent (in grace period)"
-              );
-            } else {
-              // Grace period expired - send license expired email
-              await EmailService.sendLicenseExpiredEmail({
-                to: subscription.user.email,
-                userName: getUserDisplayName(subscription.user),
-                licenseKey: license.licenseKey,
-                tier: license.tier,
-                expiredAt: license.expiresAt || now,
-                renewalUrl: `${emailConfig.portalFrontendUrl}/licenses`,
-              });
-
-              logger.info(
-                {
-                  licenseId: license.id,
-                },
-                "License expired email sent (grace period ended)"
-              );
-            }
-          } catch (emailError) {
-            logger.error(
-              {
-                error: emailError,
-                licenseId: license.id,
-                subscriptionId,
-              },
-              "Failed to send payment failure email for individual license"
+      // Per-license logging — kept for observability of the loop.
+      for (const license of licenses) {
+        try {
+          if (isInGracePeriod) {
+            logger.info(
+              { licenseId: license.id, gracePeriodDays: daysRemaining },
+              "License payment failure email enqueued (in grace period)"
             );
-            // Continue processing other licenses even if one fails
+          } else {
+            logger.info(
+              { licenseId: license.id },
+              "License expired email enqueued (grace period ended)"
+            );
           }
+        } catch (logError) {
+          // Logging only — enqueue already committed atomically above.
+          logger.warn(
+            { error: logError, licenseId: license.id },
+            "Trace log failed for payment-failed iteration"
+          );
         }
       }
     }
@@ -1039,18 +1112,27 @@ export async function handleTrialWillEnd(subscription: Subscription) {
     });
 
     if (dbSubscription) {
-      await EmailService.sendTrialEndingEmail({
-        to: user.email,
-        name: getUserDisplayName(user),
-        workspaceName: org.name,
-        plan: dbSubscription.plan,
-        trialEndDate: subscription.trial_end
-          ? new Date(subscription.trial_end * 1000).toISOString()
-          : new Date().toISOString(),
+      const trialEndIso = subscription.trial_end
+        ? new Date(subscription.trial_end * 1000).toISOString()
+        : new Date().toISOString();
+      // Key includes trial_end so a re-trialed subscription (rare but
+      // possible via portal) gets its own enqueue rather than collapsing
+      // into a previously-deduped key.
+      await enqueueNotification({
+        channel: "email",
+        template: "trial_ending",
+        target: user.email,
+        idempotencyKey: `email:subscription:${subscriptionId}:trial_ending:${trialEndIso}`,
+        payload: {
+          name: getUserDisplayName(user),
+          workspaceName: org.name,
+          plan: dbSubscription.plan,
+          trialEndDate: trialEndIso,
+        },
       });
       logger.info(
         { subscriptionId, organizationId: org.id },
-        "Trial ending email sent"
+        "Trial ending email enqueued"
       );
     } else {
       logger.debug(
@@ -1109,14 +1191,19 @@ export async function handlePaymentActionRequired(invoice: Invoice) {
       subscription.user.workspace &&
       invoice.hosted_invoice_url
     ) {
-      await EmailService.sendPaymentActionRequiredEmail({
-        to: subscription.user.email,
-        name: getUserDisplayName(subscription.user),
-        workspaceName: subscription.user.workspace.name,
-        plan: subscription.plan,
-        invoiceUrl: invoice.hosted_invoice_url,
-        amount: (invoice.amount_due / 100).toFixed(2),
-        currency: invoice.currency.toUpperCase(),
+      await enqueueNotification({
+        channel: "email",
+        template: "payment_action_required",
+        target: subscription.user.email,
+        idempotencyKey: `email:invoice:${invoice.id}:payment_action_required`,
+        payload: {
+          name: getUserDisplayName(subscription.user),
+          workspaceName: subscription.user.workspace.name,
+          plan: subscription.plan,
+          invoiceUrl: invoice.hosted_invoice_url,
+          amount: (invoice.amount_due / 100).toFixed(2),
+          currency: invoice.currency.toUpperCase(),
+        },
       });
     }
 

@@ -8,6 +8,7 @@ This guide covers deploying Qarote as a self-hosted application. All self-hosted
 - [Prerequisites](#prerequisites)
 - [Quick Start: Binary](#quick-start-binary)
 - [Quick Start: Docker Compose](#quick-start-docker-compose)
+- [Quick Start: Docker Compose (Enterprise Edition)](#quick-start-docker-compose-enterprise-edition)
 - [Quick Start: Dokku](#quick-start-dokku)
 - [Configuration](#configuration)
 - [SMTP Configuration](#smtp-configuration)
@@ -26,20 +27,20 @@ Qarote self-hosted provides core RabbitMQ monitoring out of the box. Premium fea
 
 ### Feature Comparison
 
-| Feature                 | Free  | Licensed |
-| ----------------------- | ----- | -------- |
-| RabbitMQ Monitoring     | ✅    | ✅       |
-| Queue Management        | ✅    | ✅       |
-| Exchange Management     | ✅    | ✅       |
-| Virtual Host Management | ✅    | ✅       |
-| User Management         | ✅    | ✅       |
-| Workspace Management    | ❌    | ✅       |
-| Team Members            | ❌    | ✅       |
-| Alerting System         | ❌    | ✅       |
-| Slack Integration       | ❌    | ✅       |
-| Webhook Integration     | ❌    | ✅       |
-| Data Export             | ❌    | ✅       |
-| Advanced Alert Rules    | ❌    | ✅       |
+| Feature                 | Free | Licensed |
+| ----------------------- | ---- | -------- |
+| RabbitMQ Monitoring     | ✅   | ✅       |
+| Queue Management        | ✅   | ✅       |
+| Exchange Management     | ✅   | ✅       |
+| Virtual Host Management | ✅   | ✅       |
+| User Management         | ✅   | ✅       |
+| Workspace Management    | ❌   | ✅       |
+| Team Members            | ❌   | ✅       |
+| Alerting System         | ✅   | ✅       |
+| Slack Integration       | ❌   | ✅       |
+| Webhook Integration     | ❌   | ✅       |
+| Data Export             | ❌   | ✅       |
+| Advanced Alert Rules    | ❌   | ✅       |
 
 ## Prerequisites
 
@@ -49,6 +50,29 @@ Requirements depend on your deployment method:
 - **Docker Compose:** Docker and Docker Compose (PostgreSQL is included)
 - **Dokku:** Dokku installed on your server
 - Minimum 2GB RAM, 10GB disk space
+
+### Why PostgreSQL specifically
+
+Qarote depends on a few PostgreSQL features that have no portable
+equivalents in MySQL, SQLite, or other engines:
+
+- **`pgcrypto` extension** (`digest`, `gen_random_uuid`) — used for
+  the append-only audit-log trigger and the RBAC scope-fingerprint
+  generated column.
+- **`GENERATED ALWAYS AS ... STORED` columns** —
+  `RolePermission.scopeFingerprint` derives a deterministic SHA-256
+  hash of the canonical scope text server-side, so two equivalent
+  scopes always compare equal regardless of insert order.
+- **Partial unique indexes** (`WHERE` clause) — `Role` uses these to
+  enforce case-insensitive name uniqueness per scope without
+  conflating `NULL` workspaceId rows (RBAC Phase 3).
+- **SERIALIZABLE isolation with `FOR UPDATE`** — RBAC Phase 3 mutation
+  paths rely on Postgres' SSI semantics to detect write-skew on
+  concurrent role edits.
+
+If you're running an internal pgbouncer, configure it for **session
+mode** (not transaction mode) so prepared statements + `SET LOCAL`
+behave as expected.
 
 ## Quick Start: Binary
 
@@ -62,6 +86,7 @@ Qarote is available as a single binary that embeds both the API and frontend. No
 > ```
 >
 > **Install PostgreSQL** if you don't have it:
+>
 > - **macOS:** `brew install postgresql@17`
 > - **Ubuntu/Debian:** `sudo apt install postgresql`
 > - **Windows (WSL2):** `sudo apt install postgresql`
@@ -99,6 +124,7 @@ curl -L "https://github.com/getqarote/Qarote/releases/latest/download/qarote-${P
 ```
 
 The `setup` command will:
+
 1. Ask for your PostgreSQL URL and verify the connection
 2. **Create an admin account** (recommended) — a pre-created user written directly to the database on first boot, so you can log in immediately without signing up
 3. **Configure public registration** — whether the `/auth/sign-up` page is open to anyone. If you created an admin account, you can safely disable this and invite team members later via invite links
@@ -136,34 +162,34 @@ To enable email, add SMTP flags:
 
 ### CLI Reference
 
-| Flag / Command | Description |
-|----------------|-------------|
-| `./qarote setup` | Interactive setup wizard (generates `.env`) |
-| `-v`, `--version` | Print version and exit |
-| `--database-url <url>` | PostgreSQL connection URL |
-| `--jwt-secret <secret>` | JWT signing secret (min 32 characters) |
-| `--encryption-key <key>` | Encryption key (min 32 characters) |
-| `-p`, `--port <port>` | Server port (default: 3000) |
-| `-h`, `--host <host>` | Server host (default: localhost) |
-| `--enable-email <bool>` | Enable email features (default: false) |
-| `--from-email <email>` | Sender email address (default: noreply@localhost) |
-| `--smtp-host <host>` | SMTP server hostname |
-| `--smtp-port <port>` | SMTP server port (default: 587) |
-| `--smtp-user <user>` | SMTP username |
-| `--smtp-pass <pass>` | SMTP password |
-| `--smtp-service <name>` | SMTP service for OAuth2 (e.g., `gmail`) |
-| `--smtp-oauth-client-id <id>` | OAuth2 client ID |
-| `--smtp-oauth-client-secret <secret>` | OAuth2 client secret |
-| `--smtp-oauth-refresh-token <token>` | OAuth2 refresh token |
-| `--sso-enabled <bool>` | Enable SSO authentication (default: false) |
-| `--sso-type <type>` | SSO type: `oidc` or `saml` (default: oidc) |
-| `--sso-oidc-discovery-url <url>` | OIDC discovery URL |
-| `--sso-oidc-client-id <id>` | OIDC client ID |
-| `--sso-oidc-client-secret <secret>` | OIDC client secret |
-| `--sso-saml-metadata-url <url>` | SAML metadata URL |
-| `--sso-button-label <label>` | SSO login button text (default: Sign in with SSO) |
-| `--api-url <url>` | Backend API URL for SSO callbacks |
-| `--frontend-url <url>` | Frontend URL for SSO redirects |
+| Flag / Command                        | Description                                       |
+| ------------------------------------- | ------------------------------------------------- |
+| `./qarote setup`                      | Interactive setup wizard (generates `.env`)       |
+| `-v`, `--version`                     | Print version and exit                            |
+| `--database-url <url>`                | PostgreSQL connection URL                         |
+| `--jwt-secret <secret>`               | JWT signing secret (min 32 characters)            |
+| `--encryption-key <key>`              | Encryption key (min 32 characters)                |
+| `-p`, `--port <port>`                 | Server port (default: 3000)                       |
+| `-h`, `--host <host>`                 | Server host (default: localhost)                  |
+| `--enable-email <bool>`               | Enable email features (default: false)            |
+| `--from-email <email>`                | Sender email address (default: noreply@localhost) |
+| `--smtp-host <host>`                  | SMTP server hostname                              |
+| `--smtp-port <port>`                  | SMTP server port (default: 587)                   |
+| `--smtp-user <user>`                  | SMTP username                                     |
+| `--smtp-pass <pass>`                  | SMTP password                                     |
+| `--smtp-service <name>`               | SMTP service for OAuth2 (e.g., `gmail`)           |
+| `--smtp-oauth-client-id <id>`         | OAuth2 client ID                                  |
+| `--smtp-oauth-client-secret <secret>` | OAuth2 client secret                              |
+| `--smtp-oauth-refresh-token <token>`  | OAuth2 refresh token                              |
+| `--sso-enabled <bool>`                | Enable SSO authentication (default: false)        |
+| `--sso-type <type>`                   | SSO type: `oidc` or `saml` (default: oidc)        |
+| `--sso-oidc-discovery-url <url>`      | OIDC discovery URL                                |
+| `--sso-oidc-client-id <id>`           | OIDC client ID                                    |
+| `--sso-oidc-client-secret <secret>`   | OIDC client secret                                |
+| `--sso-saml-metadata-url <url>`       | SAML metadata URL                                 |
+| `--sso-button-label <label>`          | SSO login button text (default: Sign in with SSO) |
+| `--api-url <url>`                     | Backend API URL for SSO callbacks                 |
+| `--frontend-url <url>`                | Frontend URL for SSO redirects                    |
 
 ## Quick Start: Docker Compose
 
@@ -186,6 +212,47 @@ docker exec qarote_backend pnpm run db:migrate
 # Backend API: http://localhost:3000
 ```
 
+## Quick Start: Docker Compose (Enterprise Edition)
+
+This path pulls signed images from GitHub Container Registry (GHCR) instead of building locally. It's the recommended deployment for Enterprise customers — no source clone, no build step, faster `up -d`.
+
+> **Prerequisites:** an active Enterprise license. Pull credentials (`GHCR_ROBOT_USERNAME` and `GHCR_ROBOT_TOKEN`) are delivered in your license activation email and visible at [portal.qarote.io](https://portal.qarote.io).
+
+```bash
+# 1. Get the compose file and example env. Both files are fetched without
+#    overwriting anything — the example lands as .env.selfhosted.example,
+#    and if an existing .env is present it is automatically renamed to
+#    .env.backup.<timestamp> before the new .env is created.
+curl -O https://raw.githubusercontent.com/getqarote/Qarote/main/docker-compose.selfhosted-ee.yml
+curl -O https://raw.githubusercontent.com/getqarote/Qarote/main/.env.selfhosted.example
+[ -e .env ] && mv .env ".env.backup.$(date +%s)"
+cp .env.selfhosted.example .env
+
+# 2. Fill in your .env. At minimum:
+#    - POSTGRES_PASSWORD, JWT_SECRET, ENCRYPTION_KEY (generate with `openssl rand -hex 32`)
+#    - VITE_API_URL, VITE_PORTAL_URL (the URLs your browser will use)
+#    - GHCR_ROBOT_USERNAME, GHCR_ROBOT_TOKEN (from your license email)
+#    - QAROTE_VERSION (e.g. v1.2.3, or `latest` to track the newest release)
+
+# 3. Authenticate Docker to GHCR (one-time per host)
+echo "${GHCR_ROBOT_TOKEN}" | docker login ghcr.io -u "${GHCR_ROBOT_USERNAME}" --password-stdin
+
+# 4. Pull and start (Docker Compose auto-loads .env from the current directory)
+docker compose -f docker-compose.selfhosted-ee.yml up -d
+
+# 5. Run migrations
+docker exec qarote_backend pnpm run db:migrate
+
+# 6. Access application
+# Frontend: http://localhost:8080
+# Backend API: http://localhost:3000
+```
+
+**Pinning a version.** Set `QAROTE_VERSION=v1.2.3` in your `.env` to pin both `qarote-ee-api` and `qarote-ee-app` to a specific release. We publish new tags for every release; `latest` always tracks the newest stable tag. For air-gapped or change-controlled environments, **always pin** rather than tracking `latest`.
+
+**Runtime configuration.** The frontend image is built without baking `VITE_API_URL` or `VITE_PORTAL_URL`, so a single published image works for any tenant's domain. At container start, the nginx entrypoint generates `/usr/share/nginx/html/config.js` from the values in your `.env`. To change either URL post-deploy, edit `.env` and `docker compose ... up -d` to restart the frontend container — no rebuild needed.
+
+**Why two compose files?** `docker-compose.selfhosted.yml` (CE) builds everything locally from the public source and is MIT-licensed. `docker-compose.selfhosted-ee.yml` (EE) pulls pre-built images that include licensed features (workspaces, alerting, integrations) which only activate when you enter a valid license key in **Settings → License**.
 
 ## Quick Start: Dokku
 
@@ -258,7 +325,13 @@ docker exec qarote_backend pnpm run db:migrate
    git push dokku main
    ```
 
-5. **Domain and SSL (optional):**
+5. **Run database migrations:**
+
+   ```bash
+   dokku run qarote pnpm run db:migrate
+   ```
+
+6. **Domain and SSL (optional):**
 
    ```bash
    dokku domains:set qarote your-domain.com
@@ -273,7 +346,7 @@ Create a `.env` file or use `./setup.sh` to generate one:
 
 ```env
 # Database
-DATABASE_URL=postgres://postgres:changeme@postgres:5432/qarote
+DATABASE_URL=postgresql://postgres:changeme@postgres:5432/qarote
 POSTGRES_PASSWORD=changeme
 
 # Security (generate with: openssl rand -hex 64)
@@ -488,17 +561,17 @@ The Admin UI settings (stored in the database) take priority over environment va
 
 ### Environment Variable Reference
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `SSO_ENABLED` | Enable SSO authentication | `false` |
-| `SSO_TYPE` | Protocol: `oidc` or `saml` | `oidc` |
-| `SSO_OIDC_DISCOVERY_URL` | OIDC discovery endpoint URL | — |
-| `SSO_OIDC_CLIENT_ID` | OIDC client ID | — |
-| `SSO_OIDC_CLIENT_SECRET` | OIDC client secret | — |
-| `SSO_SAML_METADATA_URL` | SAML IdP metadata URL | — |
-| `API_URL` | Backend URL (for SSO callback) | `http://localhost:3000` |
-| `FRONTEND_URL` | Frontend URL (for post-login redirect). In binary/single-port mode the frontend is served from the backend, so use `http://localhost:3000`. | `http://localhost:8080` |
-| `SSO_BUTTON_LABEL` | Login button text | `Sign in with SSO` |
+| Variable                 | Description                                                                                                                                 | Default                 |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| `SSO_ENABLED`            | Enable SSO authentication                                                                                                                   | `false`                 |
+| `SSO_TYPE`               | Protocol: `oidc` or `saml`                                                                                                                  | `oidc`                  |
+| `SSO_OIDC_DISCOVERY_URL` | OIDC discovery endpoint URL                                                                                                                 | —                       |
+| `SSO_OIDC_CLIENT_ID`     | OIDC client ID                                                                                                                              | —                       |
+| `SSO_OIDC_CLIENT_SECRET` | OIDC client secret                                                                                                                          | —                       |
+| `SSO_SAML_METADATA_URL`  | SAML IdP metadata URL                                                                                                                       | —                       |
+| `API_URL`                | Backend URL (for SSO callback)                                                                                                              | `http://localhost:3000` |
+| `FRONTEND_URL`           | Frontend URL (for post-login redirect). In binary/single-port mode the frontend is served from the backend, so use `http://localhost:3000`. | `http://localhost:8080` |
+| `SSO_BUTTON_LABEL`       | Login button text                                                                                                                           | `Sign in with SSO`      |
 
 ### OIDC Setup (Recommended)
 
@@ -649,7 +722,22 @@ Your `.env` file is preserved. New database migrations are applied automatically
 git pull origin main
 docker compose -f docker-compose.selfhosted.yml build
 docker compose -f docker-compose.selfhosted.yml up -d
+docker exec qarote_backend pnpm run db:migrate
 ```
+
+### Docker Compose (Enterprise Edition)
+
+No rebuild — just pull the new images and restart:
+
+```bash
+# Optionally bump QAROTE_VERSION in .env to pin a specific release.
+# Otherwise this re-resolves the `latest` tag.
+docker compose -f docker-compose.selfhosted-ee.yml pull
+docker compose -f docker-compose.selfhosted-ee.yml up -d
+docker exec qarote_backend pnpm run db:migrate
+```
+
+If `docker compose pull` fails with `unauthorized`, your `GHCR_ROBOT_TOKEN` may have rotated — check your latest license email for refreshed credentials and re-run `docker login ghcr.io -u $GHCR_ROBOT_USERNAME --password-stdin`.
 
 ### Dokku
 
@@ -663,7 +751,7 @@ If you run more than one Qarote replica behind a load balancer, schema and behav
 
 - **Database migrations apply once.** On startup, the first replica to boot the new version runs `prisma migrate deploy`. Older replicas continue serving requests against the new schema until they cycle. This works because every migration is written backward-compatible for the duration of one deploy window: new columns are nullable or have defaults, removed columns are dropped only after the code that writes them is gone, and renamed columns ship as a two-step (add new, dual-write, drop old) across two releases when needed.
 - **No long-lived "legacy mode."** Qarote does not gate features on a version flag or read both old and new wire shapes simultaneously. A given release reads/writes one shape. Rolling forward through a feature flag (PostHog) is supported; rolling forward through a wire-shape change is not — that requires a brief full-fleet restart.
-- **Tap and recording sessions reconnect.** Live message tap (`messages.tap`) holds a server-side AMQP consumer per session. When a replica restarts, in-flight tap sessions on that replica error out with `RECONNECT_REQUIRED` and the frontend reopens the subscription against the new replica. Expect a 1–3 second blank window during the cycle.
+- **Live message tap sessions reconnect.** The live message tap feature holds a server-side AMQP consumer per browser session. When a replica restarts, any active tap sessions on that replica are automatically re-established by the frontend against the new replica. Expect a 1–3 second blank window during the cycle.
 - **Cron singletons.** Daily jobs (incident-diagnosis-cleanup, queue-metrics-cron, server-capabilities-cron) are idempotent — running them twice on the same day does no harm, so the metrics-monitor worker can restart freely. They use Postgres-side `WHERE` predicates rather than in-memory locks, so concurrent execution from two replicas during the cycle is safe.
 
 The practical recommendation: deploy during low-traffic windows and let the load balancer drain connections (30s grace) before terminating each replica. This keeps tap/recording session interruptions to the cycle window itself.
@@ -702,10 +790,15 @@ curl -L https://github.com/getqarote/Qarote/releases/latest/download/qarote-linu
 
 **Error:** "Connection refused" or "Database not found"
 
-- Verify PostgreSQL is running: `docker compose ps postgres`
-- Check `DATABASE_URL` format: `postgres://user:password@host:port/database`
-- Wait for PostgreSQL to fully initialize (check health status)
-- Ensure database migrations have been run
+Check `DATABASE_URL` format: `postgresql://user:password@host:port/database`
+
+Verify PostgreSQL is running (method depends on your deployment):
+
+- **Binary:** `systemctl status postgresql` or `pg_isready -U qarote`
+- **Docker Compose:** `docker compose -f docker-compose.selfhosted.yml ps postgres`
+- **Dokku:** `dokku postgres:info qarote-db`
+
+Also ensure database migrations have been run (see [Updating](#updating) for the command for your deployment method).
 
 ### Message Rate Charts Are Blank
 
@@ -760,7 +853,6 @@ For completely offline deployments:
 
    ```env
    ENABLE_EMAIL=false
-   ENABLE_OAUTH=false
    ```
 
 2. **Configure SMTP** if email is needed (see [SMTP Configuration](#smtp-configuration))

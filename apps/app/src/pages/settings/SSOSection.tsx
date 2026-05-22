@@ -1,11 +1,8 @@
-import { UserRole } from "@/lib/api";
-
 import { LoadingState } from "@/components/settings/sso/LoadingState";
 import { SSOProviderForm } from "@/components/settings/sso/SSOProviderForm";
 import { SSOUpgradePrompt } from "@/components/settings/sso/SSOUpgradePrompt";
 
-import { useAuth } from "@/contexts/AuthContextDefinition";
-
+import { useCurrentOrganization } from "@/hooks/queries/useOrganization";
 import { useSsoProviderConfig } from "@/hooks/queries/useSsoProvider";
 import { useUser } from "@/hooks/ui/useUser";
 
@@ -24,7 +21,8 @@ import { UserPlan } from "@/types/plans";
  * (e.g. adding a new OIDC field) only have to land in one place.
  */
 const SSOSection = () => {
-  const { user } = useAuth();
+  const { data: orgData } = useCurrentOrganization();
+  const isAdmin = orgData?.role === "OWNER" || orgData?.role === "ADMIN";
   const { userPlan } = useUser();
 
   const isEnterprise = userPlan === UserPlan.ENTERPRISE;
@@ -34,13 +32,13 @@ const SSOSection = () => {
     isLoading,
     refetch,
   } = useSsoProviderConfig({
-    enabled: user?.role === UserRole.ADMIN && isEnterprise,
+    enabled: isAdmin && isEnterprise,
   });
 
   // Non-admins have no SSO surface at all. Return null rather than a
   // gate because the parent route should have prevented this anyway;
   // rendering something here would be a sibling-of-the-bug.
-  if (user?.role !== UserRole.ADMIN) {
+  if (!isAdmin) {
     return null;
   }
 

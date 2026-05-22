@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Search } from "lucide-react";
+import { parseAsString, useQueryState } from "nuqs";
 
 import { ConnectionsList } from "@/components/ConnectionsList/ConnectionsList";
 import { ConnectionsOverviewCards } from "@/components/ConnectionsList/ConnectionsOverviewCards";
@@ -22,7 +23,11 @@ import { useChannels, useConnections } from "@/hooks/queries/useRabbitMQ";
 const Connections = () => {
   const { t } = useTranslation("connections");
   const { selectedServerId, hasServers } = useServerContext();
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useQueryState(
+    "q",
+    parseAsString.withDefault(""),
+    { history: "replace" as const, clearOnDefault: true }
+  );
 
   const {
     data: connectionsData,
@@ -147,13 +152,14 @@ const Connections = () => {
           <Input
             placeholder={t("searchPlaceholder")}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => void setSearchTerm(e.target.value)}
             className="pl-9 pr-8 h-9"
           />
           {searchTerm && (
             <button
               type="button"
-              onClick={() => setSearchTerm("")}
+              aria-label={t("clearSearch")}
+              onClick={() => void setSearchTerm("")}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
               <PixelX className="h-4 w-auto shrink-0" />

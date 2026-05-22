@@ -5,6 +5,7 @@
   "noServerDescription": "Monitor system alerts and notifications",
   "alertRules": "Alert Rules",
   "notificationSettings": "Notification Settings",
+  "alerts": "Alerts",
   "activeAlerts": "Active Alerts",
   "resolvedAlerts": "Resolved Alerts",
   "active": {
@@ -70,6 +71,7 @@
   "rules.severity.medium": "Medium",
   "rules.severity.high": "High",
   "rules.severity.critical": "Critical",
+  "rules.severity.info": "Info",
   "rules.form.name": "Name",
   "rules.form.namePlaceholder": "e.g., High Queue Depth Alert",
   "rules.form.description": "Description",
@@ -145,6 +147,23 @@
       "resolved": "Resolved",
       "source": "{{type}}: {{name}}"
     }
+  },
+  "configScan": "Config Scan",
+  "scan": {
+    "allSeverities": "All severities",
+    "showResolved": "Show resolved",
+    "showActive": "Show active",
+    "runScan": "Run scan",
+    "runFirstScan": "Run first scan",
+    "scanning": "Scanning…",
+    "lastScan": "Last scan {{time}}",
+    "resolved": "Resolved",
+    "resolvedAt": "Resolved {{time}}",
+    "emptyTitle": "No findings",
+    "emptyDesc": "Run your first config scan to check for RabbitMQ configuration anti-patterns.",
+    "emptyResolvedTitle": "No resolved findings yet",
+    "emptyResolvedDesc": "Resolved findings will appear here once you fix the underlying issues in your cluster.",
+    "pageInfo": "Page {{current}} of {{total}} ({{count}} total)"
   },
   "modal": {
     "title": "Alert Notification Settings",
@@ -251,5 +270,36 @@
     "toastSlackDeleteFailed": "Failed to delete Slack configuration",
     "toastSlackEnabled": "Slack notifications enabled",
     "toastSlackDisabled": "Slack notifications disabled"
+  },
+  "ruleLabels": {
+    "config": {
+      "consumer": {
+        "prefetch_misconfig": "Consumer prefetch misconfiguration"
+      },
+      "exchange": {
+        "orphan": "Orphan exchange"
+      },
+      "node": {
+        "watermark_misconfig": "Memory watermark misconfiguration"
+      },
+      "policy": {
+        "conflicting": "Conflicting policies"
+      },
+      "queue": {
+        "classic_mirrored_deprecated": "Classic mirrored queue (deprecated)",
+        "exclusive_in_production": "Exclusive queue in production",
+        "missing_dlx": "Missing dead letter exchange",
+        "no_consumer_backlog": "No consumer backlog protection",
+        "quorum_queue_ha_policy": "HA policy on quorum queue",
+        "quorum_queue_minority_replicas": "Quorum queue minority replicas",
+        "quorum_queue_no_delivery_limit": "Quorum queue without delivery limit"
+      },
+      "user": {
+        "guest_enabled": "Guest user enabled"
+      },
+      "vhost": {
+        "default_unscoped": "Production traffic on default vhost"
+      }
+    }
   }
 }

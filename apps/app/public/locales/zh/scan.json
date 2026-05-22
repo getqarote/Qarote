@@ -1,0 +1,149 @@
+{
+  "phase": {
+    "connecting": "连接中...",
+    "topology": "正在映射拓扑...",
+    "config": "正在扫描配置...",
+    "alerts": "告警规则已激活",
+    "reveal": "集群已发现"
+  },
+  "log": {
+    "connecting": "正在连接到 {{serverName}}...",
+    "connected": "连接已确认",
+    "topologyStart": "正在映射拓扑...",
+    "topologyDone": "拓扑映射完成 · {{exchanges}} 个交换机 · {{queues}} 个队列 · {{bindings}} 个绑定",
+    "topologyUnavailable": "拓扑不可用 — 继续扫描",
+    "topologyEmpty": "RabbitMQ 干净 — 无拓扑可显示",
+    "configStart": "正在扫描配置...",
+    "configFinding": "发现：{{resourceType}}/{{resourceName}}",
+    "configDone_one": "配置扫描完成 · 发现 {{count}} 个问题",
+    "configDone_other": "配置扫描完成 · 发现 {{count}} 个问题",
+    "configClean": "配置扫描完成 · 一切正常",
+    "alertsActive": "告警规则现已激活",
+    "preparingReveal": "正在准备您的结果..."
+  },
+  "reveal": {
+    "title": "集群已发现",
+    "subtitle_one": "{{serverName}} · {{nodeCount}} 个节点 · RabbitMQ {{version}}",
+    "subtitle_other": "{{serverName}} · {{nodeCount}} 个节点 · RabbitMQ {{version}}",
+    "subtitleNoVersion_one": "{{serverName}} · {{nodeCount}} 个节点",
+    "subtitleNoVersion_other": "{{serverName}} · {{nodeCount}} 个节点",
+    "wellConfigured": "您的集群配置良好 — Qarote 将持续监控。",
+    "cleanPartial": "在已扫描的部分中未发现问题 — 授予 monitoring 标签以获得完整覆盖。",
+    "findings": "发现的问题",
+    "showAll": "显示全部 {{count}} 个发现",
+    "collapse": "收起",
+    "explainDemo": "试用 AI 解释 — 免费演示",
+    "explainDemoFooter": "此演示不计入您的月度配额。",
+    "continueDashboard": "进入控制台",
+    "exploreFindings": "立即探索发现",
+    "configureAlerts": "配置告警",
+    "configureNotifications": "配置通知",
+    "promiseDigestTitle": "每日摘要已安排",
+    "promiseDigestDesc": "您的第一份摘要将于明天上午 8:00 发送",
+    "promiseRuntimeTitle": "运行时监控已激活",
+    "promiseRuntimeDesc": "您将在数小时内看到异常队列行为的标记",
+    "promiseTracingTitle": "消息追踪已就绪",
+    "promiseTracingDesc": "在设置中启用以端到端查看消息路径",
+    "limitedScanBadge": "有限扫描 · 授予 monitoring 标签以进行完整分析",
+    "fingerprint": {
+      "exchanges_one": "{{count}} 个 exchange",
+      "exchanges_other": "{{count}} 个 exchange",
+      "queues_one": "{{count}} 个队列",
+      "queues_other": "{{count}} 个队列",
+      "bindings_one": "{{count}} 个 binding",
+      "bindings_other": "{{count}} 个 binding",
+      "vhosts_one": "{{count}} 个 vhost",
+      "vhosts_other": "{{count}} 个 vhost",
+      "nodes_one": "{{count}} 个节点",
+      "nodes_other": "{{count}} 个节点",
+      "version": "RabbitMQ {{version}}"
+    },
+    "verdict": {
+      "clean_one": "配置健康。{{queues}} 个队列未发现反模式。",
+      "clean_other": "配置健康。{{queues}} 个队列未发现反模式。",
+      "cleanPartial": "已分析的部分未发现问题。授予 monitoring 标签以进行完整扫描。",
+      "single": "发现 1 个问题 — {{resource}} 上的 {{rule}}。",
+      "withPrimary_one": "发现 1 个问题。最严重:{{resource}} 上的 {{rule}}。",
+      "withPrimary_other": "发现 {{count}} 个问题。最严重:{{resource}} 上的 {{rule}}。"
+    },
+    "aiHero": {
+      "titleWithName": "为什么 {{resource}} 存在风险?",
+      "titleGeneric": "理解您的配置信号",
+      "subtitle": "向 Qarote 提问 — AI 会在您集群的上下文中解释每个模式。",
+      "cta": "询问 Qarote"
+    },
+    "timeline": {
+      "tomorrowLabel": "明天 8:00",
+      "tomorrowTitle": "首份摘要",
+      "tomorrowDesc_one": "监控 {{queues}} 个队列,跟踪平均速率。",
+      "tomorrowDesc_other": "监控 {{queues}} 个队列,跟踪平均速率。",
+      "incidentLabel": "下次告警时",
+      "incidentTitle": "上下文告警",
+      "incidentDesc": "Email/Slack 包含堆栈跟踪和队列上下文。",
+      "continuousLabel": "持续",
+      "continuousTitle": "Tracing 就绪",
+      "continuousDesc": "一键启用任何队列的追踪。"
+    },
+    "bestPractices": {
+      "messageIdTitle": "小贴士 — 为每次 publish 设置 messageId。",
+      "messageIdDesc": "为每条消息附加唯一的 messageId 可解锁未路由检测、重试去重和跨队列调试 —— 对 broker 端零成本。"
+    },
+    "metrics": {
+      "queues_one": "{{count}} 个队列",
+      "queues_other": "{{count}} 个队列",
+      "exchanges_one": "{{count}} 个交换机",
+      "exchanges_other": "{{count}} 个交换机",
+      "bindings_one": "{{count}} 个绑定",
+      "bindings_other": "{{count}} 个绑定",
+      "findings_one": "{{count}} 个问题",
+      "findings_other": "{{count}} 个问题",
+      "findingsNone": "0 个问题"
+    }
+  },
+  "explain": {
+    "loading": "正在分析发现...",
+    "error": "无法生成解释 — 请检查您的连接后重试。",
+    "errorPartial": "（不完整）",
+    "retry": "重试",
+    "viewDocs": "RabbitMQ 文档 →",
+    "llmNotConfigured": "此工作区未配置 LLM 提供商。配置 Anthropic、OpenAI 或 Ollama 以启用 AI 解释。",
+    "configureLlm": "配置 LLM →",
+    "driftHint": "此解释生成后提示词已更新",
+    "page": {
+      "headingIncident": "故障发现解释",
+      "headingConfig": "配置发现解释",
+      "headingTrace": "追踪解释",
+      "notFound": "该解释不存在或您没有访问权限。",
+      "loadError": "加载解释失败，请重试。"
+    },
+    "superseded": {
+      "banner": "此解释已被更新的版本取代（{{time}}重新生成）。",
+      "bannerNoAuthor": "{{time}}重新生成。",
+      "bannerWithAuthor": "由 {{name}} 于 {{time}} 重新生成。",
+      "viewLatest": "查看最新版本 →"
+    },
+    "sourceDeleted": "源发现不再存在。",
+    "actions": {
+      "copyMarkdown": "复制",
+      "copyLink": "复制链接",
+      "openInContext": "在上下文中打开 →",
+      "regenerate": "重新生成",
+      "copiedMarkdown": "已复制到剪贴板",
+      "copiedLink": "链接已复制",
+      "copyFailed": "复制失败 — 请手动复制"
+    },
+    "quota": {
+      "capTitle": "已达本月 AI 解释配额上限",
+      "capBody": "您已用完本月套餐内的 {{cap}} 次解释。配额将于 {{resetDate}} 重置。",
+      "disabledTitle": "此实例未启用 AI 解释功能",
+      "disabledBody": "此实例尚未设置 AI 解释功能。请连接您自己的 API 密钥以继续。",
+      "pillRemaining_one": "本月还剩 1 次解释",
+      "pillRemaining_other": "本月还剩 {{count}} 次解释",
+      "actions": {
+        "upgrade": "升级套餐",
+        "byok": "使用我的密钥",
+        "configureKey": "配置 API 密钥"
+      }
+    }
+  }
+}

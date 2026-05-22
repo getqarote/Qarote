@@ -78,15 +78,20 @@ function makeCtx() {
         upsert: mockUpsert,
         delete: mockDelete,
       },
+      organization: {
+        findFirst: vi.fn().mockResolvedValue({ id: "org-1" }),
+      },
     },
     logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
     user: {
       id: "admin-1",
-      role: "ADMIN",
       isActive: true,
       email: "admin@test.com",
     },
     workspaceId: null,
+    organizationId: "org-1",
+    orgRole: "OWNER",
+    resolveOrg: async () => ({ organizationId: "org-1", role: "OWNER" }),
     req: {},
   };
 }
@@ -227,6 +232,17 @@ describe("selfhostedLicenseRouter", () => {
 
       const caller = selfhostedLicenseRouter.createCaller(makeCtx() as never);
       await expect(caller.deactivate()).rejects.toThrow(/self-hosted/i);
+    });
+
+    it("throws FORBIDDEN when caller is not in the bootstrap org", async () => {
+      const ctx = makeCtx();
+      ctx.prisma.organization.findFirst = vi
+        .fn()
+        .mockResolvedValue({ id: "org-bootstrap" });
+      const caller = selfhostedLicenseRouter.createCaller(ctx as never);
+      await expect(caller.deactivate()).rejects.toThrow(
+        /platform administrator/i
+      );
     });
   });
 });

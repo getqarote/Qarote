@@ -1,16 +1,5 @@
 import { z } from "zod/v4";
 
-import { UserRole } from "@/generated/prisma/client";
-
-// Schema for updating a user
-const UpdateUserSchema = z.object({
-  firstName: z.string().min(1, "First name is required").optional(),
-  lastName: z.string().min(1, "Last name is required").optional(),
-  role: z.enum(UserRole).optional(),
-  isActive: z.boolean().optional(),
-  workspaceId: z.uuid("Invalid workspace ID").optional(),
-});
-
 // Schema for updating user profile (by the user themselves)
 export const UpdateProfileSchema = z.object({
   firstName: z.string().min(1, "First name is required").optional(),
@@ -25,19 +14,8 @@ export const GetWorkspaceUsersSchema = z.object({
   limit: z.number().int().positive().max(100).optional().default(20),
 });
 
-// Schema for getting invitations
-export const GetInvitationsSchema = z.object({
-  workspaceId: z.string(),
-});
-
 // Schema for getting a user by ID
 export const GetUserSchema = z.object({
-  workspaceId: z.string(),
-  id: z.string(),
-});
-
-// Schema for updating a user with ID
-export const UpdateUserWithIdSchema = UpdateUserSchema.extend({
   workspaceId: z.string(),
   id: z.string(),
 });

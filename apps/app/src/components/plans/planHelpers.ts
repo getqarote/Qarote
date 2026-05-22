@@ -52,15 +52,29 @@ export interface ApiPlan {
   monthlyPrice: number;
   yearlyPrice: number;
   hasCommunitySupport: boolean;
+  hasEmailSupport: boolean;
   hasPrioritySupport: boolean;
   hasAdvancedAnalytics: boolean;
   hasAlerts: boolean;
   hasTopologyVisualization: boolean;
   hasRoleBasedAccess: boolean | "coming_soon";
+  hasAdvancedRoleBasedAccess: boolean | "coming_soon";
   hasSsoSamlOidc: boolean;
   hasSoc2Compliance: boolean;
   isPopular: boolean;
   ltsOnly: boolean;
+  hasDailyDigest: boolean | "limited";
+  hasMessageSpy: boolean | "limited";
+  hasMetricsPersistence: boolean | "limited";
+  hasIncidentDiagnosis: boolean | "limited";
+  hasMessageTracing: boolean | "limited";
+  hasAuditLog: boolean | "coming_soon";
+  hasLlmExplain: boolean | "coming_soon";
+  llmExplainsPerMonth: number | null;
+  hasLlmDigest: boolean | "coming_soon";
+  canUseBYOK: boolean;
+  maxMetricsRetentionHours: number;
+  maxTraceRetentionHours: number;
 }
 
 export type BillingInterval = "monthly" | "yearly";

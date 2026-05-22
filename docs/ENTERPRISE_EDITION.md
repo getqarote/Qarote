@@ -5,6 +5,7 @@ Qarote offers premium features that are unlocked by activating a license key thr
 ## Overview
 
 Licensed features are designed for organizations that need:
+
 - Team collaboration and workspace management
 - Advanced alerting and monitoring
 - Integration with external services (Slack, webhooks)
@@ -53,6 +54,17 @@ Licensed editions include all free features plus:
   - Backup and restore capabilities
   - CSV and JSON export formats
 
+## Deployment
+
+Enterprise customers deploy from pre-built images published to GitHub Container Registry — no source clone, no build step. See [Quick Start: Docker Compose (Enterprise Edition)](SELF_HOSTED_DEPLOYMENT.md#quick-start-docker-compose-enterprise-edition) for the full setup.
+
+The two images:
+
+- `ghcr.io/getqarote/qarote-ee-api` — backend (Hono + tRPC + Prisma) and all workers
+- `ghcr.io/getqarote/qarote-ee-app` — frontend SPA served by nginx
+
+Pull credentials (`GHCR_ROBOT_USERNAME` and `GHCR_ROBOT_TOKEN`) are delivered in your license activation email. The frontend image is multi-tenant — `VITE_API_URL` and `VITE_PORTAL_URL` are injected at container start from your `.env`, not baked at build time.
+
 ## Licensing
 
 ### License Types
@@ -63,6 +75,7 @@ Licensed editions include all free features plus:
 ### Annual Licensing Model
 
 **Self-hosted licenses are annual subscriptions:**
+
 - **365-day validity** - Each license is valid for one year from purchase
 - **Automatic renewal** - Subscriptions renew automatically each year
 - **New license key** - You'll receive a new license key via email after each renewal
@@ -77,6 +90,7 @@ Licensed editions include all free features plus:
 ### License Renewal Process
 
 **Before expiration:**
+
 - **30 days before**: Email reminder to prepare for renewal
 - **15 days before**: Email reminder with renewal status
 - **7 days before**: Final reminder email
@@ -84,11 +98,13 @@ Licensed editions include all free features plus:
 - **After renewal**: Email with new license key
 
 **What you need to do:**
+
 1. Receive email with new license key
 2. Go to Settings → License in Qarote
 3. Paste the new license key and click Activate
 
 **If renewal fails:**
+
 - **14-day grace period**: Your current license continues to work
 - **Payment retry**: Stripe automatically retries failed payments
 - **Warning emails**: You'll receive notifications during the grace period
@@ -97,6 +113,7 @@ Licensed editions include all free features plus:
 ### License Format
 
 Licenses are cryptographically signed JWTs that contain:
+
 - License ID (unique identifier)
 - Tier (Developer or Enterprise)
 - Expiration date (365 days from issue/renewal)
@@ -106,6 +123,7 @@ Licenses are cryptographically signed JWTs that contain:
 ### Offline Validation
 
 Qarote validates licenses **offline** (no internet required):
+
 - Validates cryptographic signature using a baked-in public key
 - Checks expiration date locally
 - Works in air-gapped environments

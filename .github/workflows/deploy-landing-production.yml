@@ -12,12 +12,19 @@ jobs:
   quality-checks:
     name: Quality Checks
     runs-on: ubuntu-latest
+    env:
+      # Turbo remote cache (Vercel free tier). Scoped to this job so the token
+      # is not exposed to the deploy job, which runs third-party SSH actions.
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
     steps:
       - name: 🔍 Checkout code
         uses: actions/checkout@v6
 
       - name: 📦 Setup pnpm
         uses: pnpm/action-setup@v6
+        with:
+          version: "9.0.0"
 
       - name: 📦 Setup Node.js
         uses: actions/setup-node@v6
@@ -39,13 +46,10 @@ jobs:
         run: pnpm run knip
 
       - name: 🧹 Lint
-        working-directory: apps/web
-        run: pnpm run lint
-        continue-on-error: false
+        run: pnpm turbo run lint --filter=qarote-web
 
       - name: 💅 Format Check
-        working-directory: apps/web
-        run: pnpm run format
+        run: pnpm turbo run format --filter=qarote-web
 
   deploy-landing:
     name: Deploy Landing to Cloudflare Pages - Production
@@ -62,6 +66,8 @@ jobs:
 
       - name: 📦 Setup pnpm
         uses: pnpm/action-setup@v6
+        with:
+          version: "9.0.0"
 
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v6
@@ -91,7 +97,7 @@ jobs:
         run: pnpm run build
 
       - name: 🚀 Deploy to Cloudflare Pages - Production
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           command: pages deploy apps/web/dist --project-name=qarote-landing-production --branch=main --commit-hash=${{ github.sha }}

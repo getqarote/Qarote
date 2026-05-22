@@ -5,14 +5,13 @@ import { Link } from "react-router";
 import { UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
-import { UserRole } from "@/lib/api";
 import { logger } from "@/lib/logger";
 import { isLocalhostUrl } from "@/lib/url-utils";
 
 import { InviteLinksDialog } from "@/components/InviteLinksDialog";
 import { EnhancedTeamTab, InviteFormState } from "@/components/profile";
+import { WorkspaceForbidden } from "@/components/rbac/WorkspaceForbidden";
 import { AddFromOrgDialog } from "@/components/settings/team/AddFromOrgDialog";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { PixelUser } from "@/components/ui/pixel-user";
 import {
@@ -27,7 +26,6 @@ import {
   useOrgMembersNotInWorkspace,
   useOrgWorkspaces,
 } from "@/hooks/queries/useOrganization";
-import { useProfile } from "@/hooks/queries/useProfile";
 import { usePublicConfig } from "@/hooks/queries/usePublicConfig";
 import {
   useInvitations,
@@ -35,6 +33,10 @@ import {
   useSendInvitation,
   useWorkspaceUsers,
 } from "@/hooks/queries/useWorkspaceApi";
+import {
+  useCurrentWorkspaceRole,
+  usePermission,
+} from "@/hooks/queries/useWorkspaceRole";
 import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 import type { InviteLink } from "@/hooks/ui/useWorkspaceInvites";
@@ -45,7 +47,6 @@ const TeamSection = () => {
   const { t } = useTranslation("profile");
   const { planData, userPlan } = useUser();
   const { workspace } = useWorkspace();
-  const { data: profileData } = useProfile();
   const { data: publicConfig } = usePublicConfig();
   const { data: orgWorkspacesData } = useOrgWorkspaces();
 
@@ -56,17 +57,32 @@ const TeamSection = () => {
   const effectiveWorkspaceId = selectedWorkspaceId || workspace?.id || "";
   const orgWorkspaces = orgWorkspacesData?.workspaces ?? [];
 
+  // Permission must be scoped to the workspace currently being managed,
+  // not the user's *active* workspace — they may differ when an org admin
+  // switches between workspaces via the selector.
+  const canManageMembers = usePermission("member:invite", effectiveWorkspaceId);
+  const { error: roleError } = useCurrentWorkspaceRole(effectiveWorkspaceId);
+  const permitted = canManageMembers === true;
+
   const { data: workspaceUsersData, isLoading: usersLoading } =
     useWorkspaceUsers({
       page: usersPage,
       limit: usersPageSize,
       workspaceId: effectiveWorkspaceId,
+      enabled: permitted,
     });
-  const { data: invitationsData } = useInvitations({ page: 1, limit: 1 });
+  const { data: invitationsData } = useInvitations({
+    page: 1,
+    limit: 1,
+    workspaceId: effectiveWorkspaceId,
+    enabled: permitted,
+  });
   const sendInvitationMutation = useSendInvitation();
   const removeUserMutation = useRemoveUserFromWorkspace();
-  const { data: orgMembersNotInWs } =
-    useOrgMembersNotInWorkspace(effectiveWorkspaceId);
+  const { data: orgMembersNotInWs } = useOrgMembersNotInWorkspace(
+    effectiveWorkspaceId,
+    { enabled: permitted }
+  );
 
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteForm, setInviteForm] = useState<InviteFormState>({
@@ -77,8 +93,7 @@ const TeamSection = () => {
   const [addFromOrgOpen, setAddFromOrgOpen] = useState(false);
   const [removingUserId, setRemovingUserId] = useState<string | null>(null);
 
-  const profile = profileData?.user;
-  const isAdmin = profile?.role === UserRole.ADMIN;
+  const isAdmin = canManageMembers === true;
   const workspaceUsers = workspaceUsersData?.users || [];
 
   const planFeatures = planData?.planFeatures;
@@ -93,14 +108,22 @@ const TeamSection = () => {
     return currentUserCount + pendingInvitationCount < planFeatures.maxUsers;
   };
 
-  if (!isAdmin) {
+  if (canManageMembers === null) return null;
+  // Distinguish a real 403 (role fetched, permission absent) from a
+  // role-fetch error so we don't show "Forbidden" when the server is down.
+  if (roleError && roleError.data?.code !== "FORBIDDEN") {
     return (
-      <Alert>
-        <AlertDescription>
-          {t("team.workspaceMembersTitle")} — {t("team.adminOnly")}
-        </AlertDescription>
-      </Alert>
+      <div className="rounded-lg border border-border p-6 text-center">
+        <p className="text-sm text-muted-foreground">
+          {t("team.toast.roleFetchFailed", {
+            defaultValue: "Couldn't load your workspace permissions.",
+          })}
+        </p>
+      </div>
     );
+  }
+  if (!canManageMembers) {
+    return <WorkspaceForbidden cause={{ code: "WORKSPACE_PERMISSION" }} />;
   }
 
   const handleInviteUser = async () => {
@@ -133,7 +156,11 @@ const TeamSection = () => {
 
     emails.forEach((email) => {
       sendInvitationMutation.mutate(
-        { email, role: inviteForm.role },
+        {
+          email,
+          role: inviteForm.role,
+          workspaceId: effectiveWorkspaceId,
+        },
         {
           onSuccess: (result) => {
             if (result.emailSent) {
@@ -174,7 +201,10 @@ const TeamSection = () => {
   const availableOrgMembers = orgMembersNotInWs?.members ?? [];
 
   const handleRemoveUser = async (userId: string, userName: string) => {
-    if (!workspace?.id) {
+    // Guard on the workspace the mutation actually targets — when an
+    // org admin has switched workspaces via the selector, `workspace`
+    // (the active workspace context) may not match `effectiveWorkspaceId`.
+    if (!effectiveWorkspaceId) {
       toast.error(t("toast.noWorkspaceFound"));
       return;
     }
@@ -264,6 +294,7 @@ const TeamSection = () => {
 
       <EnhancedTeamTab
         isAdmin={isAdmin}
+        workspaceId={effectiveWorkspaceId}
         workspaceUsers={workspaceUsers}
         usersLoading={usersLoading}
         inviteDialogOpen={inviteDialogOpen}

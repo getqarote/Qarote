@@ -1,18 +1,38 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { usePostHog } from "@posthog/react";
-import { ChevronRight, ExternalLink, ThumbsDown, ThumbsUp } from "lucide-react";
+import DOMPurify from "dompurify";
+import {
+  ChevronRight,
+  ExternalLink,
+  Loader2,
+  Sparkles,
+  ThumbsDown,
+  ThumbsUp,
+  X,
+} from "lucide-react";
+import { marked } from "marked";
 import { Line, LineChart, ResponsiveContainer, Tooltip } from "recharts";
 
+import { findingKey } from "@/lib/findingKey";
 import { formatRelativeAgo } from "@/lib/formatRelativeAgo";
 
+import { ExplanationActions } from "@/components/llm/ExplanationActions";
+import { QuotaExceededCard } from "@/components/llm/QuotaExceededCard";
+import { QuotaProgressPill } from "@/components/llm/QuotaProgressPill";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+
+import { useStreamingExplain } from "@/hooks/ui/useStreamingExplain";
+import { useUser } from "@/hooks/ui/useUser";
+import { useWorkspace } from "@/hooks/ui/useWorkspace";
+
+import { UserPlan } from "@/types/plans";
 
 import type { DiagnosisRuleType } from "./DiagnosisRuleBadge";
 import { DiagnosisRuleBadge } from "./DiagnosisRuleBadge";
@@ -23,8 +43,8 @@ interface TimelinePoint {
   timestamp: string;
   messages: number;
   consumerCount: number;
-  // publishRate / consumeRate are sent by the API but not rendered in the
-  // mini-chart — leave them out of the interface until a line is added.
+  publishRate: number;
+  consumeRate: number;
 }
 
 interface DiagnosisCardProps {
@@ -48,6 +68,14 @@ interface DiagnosisCardProps {
   supersededBy?: DiagnosisRuleType;
   /** ISO-8601 — set after the dedup pass observes the finding. */
   firstSeenAt?: string;
+  /**
+   * UUID of the persisted IncidentDiagnosisRecord. When present, the LLM
+   * explain request sends only this ID and the server builds the prompt
+   * itself. When absent (dryRun / first cycle), the explain button is hidden.
+   */
+  findingId?: string;
+  /** When true, opens the explain panel immediately on mount (deep-link). */
+  defaultExplainOpen?: boolean;
 }
 
 const SEVERITY_BADGE: Record<string, string> = {
@@ -57,6 +85,29 @@ const SEVERITY_BADGE: Record<string, string> = {
   LOW: "bg-muted text-muted-foreground border border-border",
   INFO: "bg-blue-500/10 text-blue-700 border border-blue-500/20 dark:text-blue-400",
 };
+
+const DOMPURIFY_CONFIG: Parameters<typeof DOMPurify.sanitize>[1] = {
+  ALLOWED_TAGS: [
+    "p",
+    "strong",
+    "em",
+    "ul",
+    "ol",
+    "li",
+    "code",
+    "pre",
+    "blockquote",
+    "h3",
+  ],
+  ALLOWED_ATTR: [],
+};
+
+function renderMarkdown(text: string): string {
+  return DOMPurify.sanitize(
+    marked.parse(text, { async: false }),
+    DOMPURIFY_CONFIG
+  );
+}
 
 export function DiagnosisCard({
   rule,
@@ -70,12 +121,104 @@ export function DiagnosisCard({
   detectedAt,
   supersededBy,
   firstSeenAt,
+  findingId,
+  defaultExplainOpen = false,
 }: DiagnosisCardProps) {
   const { t } = useTranslation("diagnosis");
   const posthog = usePostHog();
+  const { userPlan } = useUser();
+  const { workspace } = useWorkspace();
   const [feedbackVote, setFeedbackVote] = useState<"up" | "down" | null>(null);
+  const [explainOpen, setExplainOpen] = useState(defaultExplainOpen);
+  const [explainVote, setExplainVote] = useState<"up" | "down" | null>(null);
+  const {
+    text,
+    isStreaming,
+    error,
+    explanationId,
+    quotaExceeded,
+    quotaStatus,
+    stream,
+    reset,
+  } = useStreamingExplain();
+
+  // Explain is only available when the finding has been persisted (findingId
+  // present) and the user is on a paid plan. First-cycle findings (no id yet)
+  // show the button as soon as the next poll returns with the persisted id.
+  const canExplain =
+    !!findingId &&
+    (userPlan === UserPlan.DEVELOPER || userPlan === UserPlan.ENTERPRISE);
+
+  const workspaceId = workspace?.id;
+
+  const startExplainStream = (regenerate = false) => {
+    // canExplain guards entitlement: a deep link from a free user must not
+    // trigger a stream that the server would reject with 403.
+    if (!workspaceId || !findingId || !canExplain) return;
+    reset();
+    // Clear the prior session's vote so the thumbs UI is interactive again
+    // for the fresh explanation.
+    setExplainVote(null);
+    void stream({
+      workspaceId,
+      feature: "explain_finding",
+      findingId,
+      regenerate,
+    });
+  };
+
+  useEffect(() => {
+    if (!explainOpen || !workspaceId || !findingId || !canExplain) return;
+    startExplainStream();
+    return () => reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [explainOpen, workspaceId, findingId, canExplain]);
+
+  const handleExplainClick = () => {
+    if (posthog && !explainOpen) {
+      posthog.capture("llm_explain_requested", {
+        feature: "explain_finding",
+        ruleId: rule,
+        severity,
+        scope,
+        queueName,
+        vhost,
+      });
+    }
+    if (explainOpen) {
+      // Closing the panel: cancel any in-flight stream so the user isn't
+      // billed for tokens they will never see, and so a late chunk cannot
+      // re-open the panel via state updates.
+      reset();
+      setExplainVote(null);
+    }
+    setExplainOpen((v) => !v);
+  };
+
+  const handleExplainVote = (vote: "up" | "down") => {
+    if (explainVote !== null) return;
+    setExplainVote(vote);
+    if (posthog) {
+      posthog.capture("ai_explain_rated", {
+        feature: "explain_finding",
+        vote,
+        ruleId: rule,
+        severity,
+        queueName,
+        vhost,
+      });
+    }
+  };
+
   const badgeClass =
     SEVERITY_BADGE[severity] ?? "bg-muted text-muted-foreground";
+
+  // Use the shared findingKey helper so the panel id matches the list-level
+  // React key — both prefer the persisted UUID and fall back to a
+  // fully-qualified composite (scope+vhost+rule+queueName+detectedAt) when
+  // findingId is still pending on first cycle. Prefix with "explain-panel-" so
+  // the DOM id is unambiguous across all uses of findingKey.
+  const panelId = `explain-panel-${findingKey({ id: findingId, rule, scope, queueName, vhost, detectedAt })}`;
 
   // Broker-scoped findings (alarms, flow-control, channel leak) carry
   // empty queueName/vhost on the wire. The discriminator is the
@@ -191,28 +334,151 @@ export function DiagnosisCard({
             citation link. Hidden by default to avoid pushing the
             recommendation below the fold on mobile (rules-sourcing
             plan UX requirement). */}
-        {citationUrl && (
-          <Collapsible>
-            <CollapsibleTrigger className="group inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
-              <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]:rotate-90" />
-              {t("card.whyThisDiagnosis")}
-            </CollapsibleTrigger>
-            <CollapsibleContent className="mt-2 pl-4 border-l-2 border-border text-xs space-y-1">
-              <p className="text-muted-foreground">{t("card.citationIntro")}</p>
-              <a
-                href={citationUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-primary hover:underline"
-              >
-                {formatCitationLabel(citationUrl)}
-                <ExternalLink
-                  className="h-3 w-3"
-                  aria-label={t("card.opensInNewTab")}
+        {/* Context expansion zone — citation and AI explain share the same job */}
+        <div className="flex items-start gap-3 flex-wrap">
+          {citationUrl && (
+            <Collapsible className="flex-1">
+              <CollapsibleTrigger className="group inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]:rotate-90" />
+                {t("card.whyThisDiagnosis")}
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-2 pl-4 border-l-2 border-border text-xs space-y-1">
+                <p className="text-muted-foreground">
+                  {t("card.citationIntro")}
+                </p>
+                <a
+                  href={citationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-primary hover:underline"
+                >
+                  {formatCitationLabel(citationUrl)}
+                  <ExternalLink
+                    className="h-3 w-3"
+                    aria-label={t("card.opensInNewTab")}
+                  />
+                </a>
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+          {canExplain && (
+            <button
+              type="button"
+              onClick={handleExplainClick}
+              // Stay clickable while streaming so the user can close/cancel
+              // the panel mid-stream. Only block while the panel is closed
+              // and a stream is somehow still in flight (defensive).
+              disabled={isStreaming && !explainOpen}
+              aria-expanded={explainOpen}
+              aria-controls={panelId}
+              aria-label={`${t("card.explain")} ${rule}`}
+              className={`inline-flex items-center gap-1.5 px-2 py-1 text-xs rounded-sm border transition-colors ${
+                explainOpen
+                  ? "bg-primary/20 border-primary/40 text-primary"
+                  : "bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/40"
+              } disabled:opacity-50`}
+            >
+              {isStreaming ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : explainOpen ? (
+                <X className="h-3 w-3" />
+              ) : (
+                <Sparkles className="h-3 w-3" />
+              )}
+              {t("card.explain")}
+            </button>
+          )}
+        </div>
+
+        {/* Streaming LLM explanation panel — canExplain gate prevents
+            non-entitled users from seeing the panel via deep links. */}
+        {explainOpen && canExplain && (
+          <div
+            id={panelId}
+            className="rounded-md border border-border bg-muted/30 px-4 py-3"
+          >
+            <div className="flex items-center justify-between gap-3 mb-2">
+              {workspaceId && (
+                <QuotaProgressPill
+                  quota={quotaStatus}
+                  workspaceId={workspaceId}
+                  feature="explain_finding"
                 />
-              </a>
-            </CollapsibleContent>
-          </Collapsible>
+              )}
+              <ExplanationActions
+                explanationId={explanationId}
+                content={text}
+                disabled={isStreaming || !!quotaExceeded}
+                feature="explain_finding"
+                onRegenerate={() => startExplainStream(true)}
+              />
+            </div>
+            {quotaExceeded ? (
+              <QuotaExceededCard
+                quota={quotaExceeded}
+                feature="explain_finding"
+                billingHref="/settings/subscription"
+                llmSettingsHref="/settings/llm"
+              />
+            ) : error && !text ? (
+              <div className="space-y-2">
+                <p className="text-xs text-destructive">
+                  {t("card.explainError")}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => startExplainStream()}
+                  className="inline-flex items-center gap-1.5 px-2 py-1 text-xs rounded-sm border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+                >
+                  {t("card.retry")}
+                </button>
+              </div>
+            ) : !text && isStreaming ? (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                {t("card.explaining")}
+              </div>
+            ) : text ? (
+              <>
+                <div
+                  className="text-sm text-foreground leading-relaxed [&_p]:mb-2 [&_p:last-child]:mb-0 [&_strong]:font-semibold [&_code]:font-mono [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:space-y-1 [&_li]:text-sm [&_h3]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1"
+                  dangerouslySetInnerHTML={{ __html: renderMarkdown(text) }}
+                />
+                {/* ai_explain_rated — one vote per explain session, resets on close */}
+                <div className="flex items-center gap-2 mt-3 pt-2 border-t border-border/40">
+                  <span className="text-xs text-muted-foreground">
+                    {t("card.explainHelpful")}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleExplainVote("up")}
+                    disabled={explainVote !== null}
+                    aria-label={t("card.helpfulYes")}
+                    className={`inline-flex h-5 w-5 items-center justify-center rounded-sm border transition-colors ${
+                      explainVote === "up"
+                        ? "bg-green-500/10 border-green-500/30 text-green-600 dark:text-green-400"
+                        : "border-border text-muted-foreground hover:text-foreground disabled:opacity-50"
+                    }`}
+                  >
+                    <ThumbsUp className="h-3 w-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleExplainVote("down")}
+                    disabled={explainVote !== null}
+                    aria-label={t("card.helpfulNo")}
+                    className={`inline-flex h-5 w-5 items-center justify-center rounded-sm border transition-colors ${
+                      explainVote === "down"
+                        ? "bg-destructive/10 border-destructive/30 text-destructive"
+                        : "border-border text-muted-foreground hover:text-foreground disabled:opacity-50"
+                    }`}
+                  >
+                    <ThumbsDown className="h-3 w-3" />
+                  </button>
+                </div>
+              </>
+            ) : null}
+          </div>
         )}
 
         {supersededBy && (
@@ -222,9 +488,7 @@ export function DiagnosisCard({
           </p>
         )}
 
-        {/* Feedback thumbs — one vote per card, fires PostHog
-            `diagnosis_feedback` so we can drive the Tier C decisions
-            (ship | reject | needs more research) on real signal. */}
+        {/* Feedback thumbs — one vote per card */}
         <div className="flex items-center gap-2 pt-1">
           <span className="text-xs text-muted-foreground">
             {t("card.helpfulPrompt")}

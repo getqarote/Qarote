@@ -3,6 +3,8 @@
  * Note: These are for UI display only. All authorization is done server-side.
  */
 
+import { getDeploymentMode } from "@/lib/runtimeConfig";
+
 export type PremiumFeature =
   | "workspace_management"
   | "alerting"
@@ -14,31 +16,6 @@ export type PremiumFeature =
   | "digest_customization"
   | "incident_diagnosis"
   | "message_tracing";
-
-/**
- * Get deployment mode from environment.
- * Checks build-time env first, then runtime config (served by /config.js in binary mode).
- * Normalizes deprecated "community" and "enterprise" to "selfhosted".
- */
-function getDeploymentMode(): "cloud" | "selfhosted" {
-  const buildTime = import.meta.env.VITE_DEPLOYMENT_MODE as string | undefined;
-  if (buildTime) {
-    if (buildTime === "cloud") return "cloud";
-    return "selfhosted"; // "selfhosted", "community", "enterprise" all map here
-  }
-
-  if (typeof window !== "undefined") {
-    const runtimeConfig = window.__QAROTE_CONFIG__;
-    if (
-      runtimeConfig?.deploymentMode &&
-      runtimeConfig.deploymentMode !== "cloud"
-    ) {
-      return "selfhosted";
-    }
-  }
-
-  return "cloud";
-}
 
 /**
  * Check if running in cloud mode

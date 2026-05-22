@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 
 import { toast } from "sonner";
 
-import { UserRole } from "@/lib/api";
 import { logger } from "@/lib/logger";
 
 import { NoServerConfigured } from "@/components/NoServerConfigured";
@@ -17,17 +16,16 @@ import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { TitleWithCount } from "@/components/ui/TitleWithCount";
 
-import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
 import { useDeletePolicy, usePolicies } from "@/hooks/queries/useRabbitMQ";
+import { useIsWorkspaceAdmin } from "@/hooks/queries/useWorkspaceRole";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 const Policies = () => {
   const { t } = useTranslation("policies");
-  const { user } = useAuth();
-  const isAdmin = user?.role === UserRole.ADMIN;
+  const isAdmin = useIsWorkspaceAdmin() === true;
   const { selectedServerId, hasServers } = useServerContext();
   const { selectedVHost } = useVHostContext();
   const { workspace } = useWorkspace();

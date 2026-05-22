@@ -1,0 +1,122 @@
+{
+  "title": "Rôles",
+  "subtitle": "Définissez des rôles personnalisés qui regroupent des permissions de l'espace de travail. Assignez-les aux membres depuis la page Membres.",
+  "createButton": "Créer un rôle",
+  "builtinLegend": "4 rôles intégrés disponibles : Propriétaire · Admin · Membre · Lecture seule. Ils couvrent la plupart des espaces — les rôles personnalisés servent aux exigences de moindre privilège.",
+  "table": {
+    "name": "Nom",
+    "members": "Membres",
+    "description": "Description",
+    "updatedAt": "Dernière mise à jour",
+    "actions": "Actions"
+  },
+  "empty": {
+    "title": "Aucun rôle personnalisé pour l'instant",
+    "body": "Les rôles personnalisés permettent d'accorder un ensemble précis de permissions à une fonction métier — par exemple, un ingénieur d'astreinte qui peut purger les files en staging mais pas en production.",
+    "cta": "Créer votre premier rôle"
+  },
+  "gate": {
+    "title": "Rôles personnalisés + portées de ressources",
+    "body": "Définissez des ensembles de permissions nommés et restreints à des serveurs ou environnements spécifiques. Disponible sur le plan Enterprise.",
+    "upgradeCta": "Passer à Enterprise"
+  },
+  "planDowngradeBanner": {
+    "title": "Les rôles personnalisés sont en lecture seule sur ce plan",
+    "body": "Repassez à Enterprise pour modifier. Les attributions existantes restent en vigueur ; les mutations sont bloquées au niveau de l'API."
+  },
+  "editor": {
+    "createTitle": "Nouveau rôle",
+    "editTitle": "Modifier le rôle",
+    "nameLabel": "Nom",
+    "namePlaceholder": "ex. Ingénieur d'astreinte",
+    "descriptionLabel": "Description",
+    "descriptionHelper": "Optionnel · à quoi sert ce rôle",
+    "permissionsLabel": "Permissions",
+    "permissionsHelper": "Sélectionnez les actions autorisées pour ce rôle. Vous pouvez optionnellement restreindre chacune à des serveurs ou environnements précis.",
+    "searchPlaceholder": "Rechercher des permissions…",
+    "searchLabel": "Rechercher des permissions",
+    "selectedCount": "{{granted}} accordées · {{total}} disponibles",
+    "category": {
+      "workspace": "Espace de travail",
+      "member": "Membre",
+      "server": "Serveur",
+      "broker": "Broker",
+      "vhost": "Hôte virtuel",
+      "queue": "File",
+      "binding": "Liaison",
+      "exchange": "Échange",
+      "policy": "Politique",
+      "message": "Message",
+      "broker_user": "Utilisateur broker",
+      "definitions": "Définitions",
+      "metric": "Métrique",
+      "alerting": "Alertes",
+      "slack_config": "Intégration Slack",
+      "webhook": "Webhook",
+      "llm_config": "IA / LLM",
+      "digest": "Digest",
+      "topology": "Topologie",
+      "incident": "Incident",
+      "scan": "Analyse",
+      "audit": "Audit",
+      "role": "Gestion des rôles"
+    },
+    "scope": {
+      "any": "N'importe quel serveur",
+      "anyAria": "Aucune restriction de portée — s'applique à tous les serveurs",
+      "configure": "Configurer la portée",
+      "modeLabel": "Restreindre à",
+      "modeServers": "Serveurs spécifiques",
+      "modeEnvironments": "Environnements",
+      "serversPlaceholder": "Sélectionner des serveurs…",
+      "environmentsPlaceholder": "Tapez un environnement puis Entrée",
+      "environmentsHelper": "Étiquettes en texte libre. Doivent correspondre exactement au champ `environment` d'un serveur.",
+      "summaryServers_one": "{{count}} serveur",
+      "summaryServers_other": "{{count}} serveurs",
+      "summaryEnvironments": "{{values}}",
+      "clear": "Retirer la restriction"
+    },
+    "saving": "Enregistrement…",
+    "save": "Enregistrer le rôle",
+    "savedToast": "Rôle enregistré",
+    "createdToast": "Rôle créé",
+    "deletedToast": "Rôle supprimé",
+    "cancel": "Annuler",
+    "conflict": {
+      "title": "Le rôle a été modifié ailleurs",
+      "body": "Quelqu'un a mis à jour ce rôle depuis votre ouverture. Rechargez pour voir la dernière version ou écrasez ses modifications.",
+      "reload": "Recharger",
+      "overwrite": "Écraser"
+    },
+    "escalation": {
+      "row": "Vous ne pouvez pas accorder cette permission",
+      "tooltip": "Votre rôle ne détient pas actuellement {{permission}} à cette portée. Vous ne pouvez accorder que les permissions que vous possédez vous-même."
+    },
+    "nameTooShort": "Le nom doit comporter au moins 2 caractères",
+    "nameReserved": "Ce nom est réservé à un rôle intégré",
+    "categoryToggle": "Développer/réduire la catégorie {{category}}",
+    "categoryToggleAll": "Tout sélectionner dans {{category}}",
+    "duplicate": "Permission déjà ajoutée avec cette portée",
+    "delete": "Supprimer le rôle",
+    "deleteConfirm": {
+      "title": "Supprimer {{name}} ?",
+      "bodyZero": "Aucun membre ne détient ce rôle. Il sera supprimé.",
+      "body_one": "{{count}} membre sera réassigné au rôle intégré Membre.",
+      "body_other": "{{count}} membres seront réassignés au rôle intégré Membre.",
+      "confirm": "Supprimer le rôle",
+      "cancel": "Conserver le rôle"
+    }
+  },
+  "errors": {
+    "loadFailed": "Échec du chargement des rôles",
+    "saveFailed": "Échec de l'enregistrement du rôle",
+    "deleteFailed": "Échec de la suppression du rôle"
+  },
+  "assignment": {
+    "label": "Rôle",
+    "customBadge": "Personnalisé",
+    "lastOwnerBlocked": "Impossible de rétrograder — cela laisserait l'espace de travail sans propriétaire. Au moins un membre doit rester Propriétaire.",
+    "saved": "Rôle assigné",
+    "saveFailed": "Échec de l'assignation du rôle"
+  }
+}

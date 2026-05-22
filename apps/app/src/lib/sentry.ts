@@ -1,6 +1,30 @@
 import * as Sentry from "@sentry/react";
+import posthog from "posthog-js";
 
 import { logger } from "@/lib/logger";
+
+/**
+ * Read the current PostHog session and distinct IDs from the singleton.
+ * Returns `{}` when PostHog is the no-op shim (self-hosted, or before init).
+ * Used to tag Sentry events so an engineer triaging an error in Sentry can
+ * jump straight to the PostHog session-replay / event timeline that produced it.
+ */
+function readPostHogIds(): { session_id?: string; distinct_id?: string } {
+  try {
+    const session_id = (
+      posthog as unknown as { get_session_id?: () => string | undefined }
+    ).get_session_id?.();
+    const distinct_id = (
+      posthog as unknown as { get_distinct_id?: () => string | undefined }
+    ).get_distinct_id?.();
+    return {
+      ...(session_id ? { session_id } : {}),
+      ...(distinct_id ? { distinct_id } : {}),
+    };
+  } catch {
+    return {};
+  }
+}
 
 export function initSentry() {
   // Only initialize Sentry in production or when explicitly enabled
@@ -78,6 +102,15 @@ export function initSentry() {
             errorMessage.toLowerCase().includes("authentication required")))
       ) {
         return null;
+      }
+
+      // Tag every Sentry event with the current PostHog session + distinct
+      // IDs. With this in place, an engineer triaging an error in Sentry
+      // can pivot directly to the corresponding PostHog session timeline.
+      // Tags are no-ops when PostHog is the shim (self-hosted, opt-out).
+      const phIds = readPostHogIds();
+      if (phIds.session_id || phIds.distinct_id) {
+        event.tags = { ...(event.tags ?? {}), ...phIds };
       }
 
       return event;

@@ -6,22 +6,46 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod/v4";
 
+import { recordFromContext } from "@/services/audit";
 import { broadcastLicenseInvalidation } from "@/services/feature-gate/license-invalidation";
 import { verifyLicenseJwt } from "@/services/license/license-crypto.service";
-import { posthog } from "@/services/posthog";
+import { trackEvent } from "@/services/posthog";
 
 import { isSelfHostedMode } from "@/config/deployment";
 
-import { rateLimitedAdminProcedure, router } from "@/trpc/trpc";
+import { rateLimitedOrgAdminProcedure, router } from "@/trpc/trpc";
 
-/** Admin procedure that only runs in self-hosted mode */
-const selfHostedProcedure = rateLimitedAdminProcedure.use(async (opts) => {
+import { UserPlan } from "@/generated/prisma/client";
+
+/**
+ * Admin procedure that only runs in self-hosted mode AND only for the
+ * bootstrap organization (the first org created by `bootstrap-admin.ts`).
+ *
+ * The license JWT is a single SystemSetting row that gates platform-wide
+ * features — letting any org's admin overwrite it in a multi-org
+ * self-hosted install would be a privilege escalation. Pinning authority
+ * to the bootstrap org matches the install-time mental model: whoever
+ * provisioned the instance owns the license.
+ */
+const selfHostedProcedure = rateLimitedOrgAdminProcedure.use(async (opts) => {
   if (!isSelfHostedMode()) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "License activation is only available for self-hosted instances",
     });
   }
+
+  const bootstrapOrg = await opts.ctx.prisma.organization.findFirst({
+    orderBy: { createdAt: "asc" },
+    select: { id: true },
+  });
+  if (!bootstrapOrg || bootstrapOrg.id !== opts.ctx.organizationId) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "License management is restricted to the platform administrator",
+    });
+  }
+
   return opts.next();
 });
 
@@ -65,20 +89,41 @@ export const selfhostedLicenseRouter = router({
       );
 
       try {
-        posthog?.capture({
-          distinctId: ctx.user.id,
-          event: "selfhosted_license_activated",
-          properties: {
+        trackEvent(
+          {
+            distinctId: ctx.user.id,
+            superProperties: { app: "api" },
+          },
+          "selfhosted_license_activated",
+          {
             tier: payload.tier,
             expires_at: new Date(payload.exp * 1000).toISOString(),
-          },
-        });
+          }
+        );
       } catch (analyticsError) {
         ctx.logger.warn(
           { error: analyticsError, userId: ctx.user.id },
           "PostHog capture failed"
         );
       }
+
+      void recordFromContext(ctx, {
+        action: "license.activated",
+        category: "system",
+        entityType: "license",
+        entityId: null,
+        entityLabel: payload.tier,
+        metadata: {
+          tier: payload.tier,
+          expiresAt: new Date(payload.exp * 1000).toISOString(),
+          tokenSet: true,
+        },
+        workspaceId: null,
+        // License activation IS the gate — record unconditionally on
+        // self-hosted installs so the audit trail of plan changes is
+        // queryable regardless of which plan was active before.
+        planSnapshot: UserPlan.ENTERPRISE,
+      });
 
       return {
         tier: payload.tier,
@@ -140,17 +185,31 @@ export const selfhostedLicenseRouter = router({
     ctx.logger.info("License deactivated");
 
     try {
-      posthog?.capture({
-        distinctId: ctx.user.id,
-        event: "selfhosted_license_deactivated",
-        properties: {},
-      });
+      trackEvent(
+        {
+          distinctId: ctx.user.id,
+          superProperties: { app: "api" },
+        },
+        "selfhosted_license_deactivated",
+        {}
+      );
     } catch (analyticsError) {
       ctx.logger.warn(
         { error: analyticsError, userId: ctx.user.id },
         "PostHog capture failed"
       );
     }
+
+    void recordFromContext(ctx, {
+      action: "license.cleared",
+      category: "system",
+      entityType: "license",
+      entityId: null,
+      workspaceId: null,
+      // Clearing the license drops the install from Enterprise → Free,
+      // but the act itself must be recorded (compliance evidence).
+      planSnapshot: UserPlan.ENTERPRISE,
+    });
 
     return { success: true };
   }),

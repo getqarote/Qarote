@@ -4,8 +4,8 @@ import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { usePostHog } from "@posthog/react";
 
+import { track } from "@/lib/analytics";
 import { trackSignUp } from "@/lib/ga";
 import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
@@ -83,7 +83,6 @@ import {
  */
 const SignUp = () => {
   const { t } = useTranslation("auth");
-  const posthog = usePostHog();
   const { isAuthenticated } = useAuth();
   const registerMutation = useRegister();
   const location = useLocation();
@@ -113,9 +112,7 @@ const SignUp = () => {
   const acceptTermsValue = form.watch("acceptTerms");
 
   const referralSourceValue = form.watch("referralSource");
-  const showDiscoveryQuery =
-    referralSourceValue !== undefined &&
-    SEARCH_AI_KEYS.has(referralSourceValue);
+  const showDiscoveryQuery = referralSourceValue !== undefined;
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -133,6 +130,10 @@ const SignUp = () => {
   }, [registerMutation.isSuccess, registerMutation.data]);
 
   const onSubmit = (data: SignUpFormData) => {
+    // Forward UTM/referrer/landing first-touch attribution from the URL
+    // (set by apps/web AuthButtons) so the backend can $set_once them on
+    // the new PostHog person.
+    const search = new URLSearchParams(location.search);
     registerMutation.mutate(
       {
         email: data.email,
@@ -142,12 +143,19 @@ const SignUp = () => {
         acceptTerms: data.acceptTerms,
         referralSource: data.referralSource || undefined,
         discoveryQuery: data.discoveryQuery || undefined,
+        initialUtmSource: search.get("utm_source") || undefined,
+        initialUtmMedium: search.get("utm_medium") || undefined,
+        initialUtmCampaign: search.get("utm_campaign") || undefined,
+        initialUtmTerm: search.get("utm_term") || undefined,
+        initialUtmContent: search.get("utm_content") || undefined,
+        initialReferrer: search.get("referrer") || undefined,
+        initialLandingPage: search.get("landing") || undefined,
         turnstileToken: turnstileToken ?? undefined,
       },
       {
         onSuccess: () => {
           try {
-            posthog?.capture("user_signed_up", { method: "email" });
+            track("user_signed_up", { method: "email" });
           } catch {
             // non-blocking analytics
           }
@@ -479,13 +487,21 @@ const SignUp = () => {
 
               {/* ── Turnstile CAPTCHA ── */}
               {turnstileEnabled && (
-                <div className="su-in pt-1 [animation-delay:360ms]">
+                <div className="su-in pt-1 [animation-delay:360ms] space-y-1.5">
                   <TurnstileCaptcha
                     key={captchaKey}
                     onVerify={setTurnstileToken}
                     onExpire={() => setTurnstileToken(null)}
                     onError={() => setTurnstileToken(null)}
                   />
+                  {!turnstileToken && (
+                    <p
+                      aria-live="polite"
+                      className="text-center text-xs text-muted-foreground"
+                    >
+                      {t("turnstileWaiting")}
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -502,15 +518,18 @@ const SignUp = () => {
                   <span className="flex items-center justify-center gap-1.5">
                     {registerMutation.isPending
                       ? t("creatingAccount")
-                      : t("createAccountButton")}
-                    {!registerMutation.isPending && (
-                      <span
-                        className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
-                        aria-hidden="true"
-                      >
-                        →
-                      </span>
-                    )}
+                      : turnstileEnabled && !turnstileToken
+                        ? t("turnstileWaitingShort")
+                        : t("createAccountButton")}
+                    {!registerMutation.isPending &&
+                      !(turnstileEnabled && !turnstileToken) && (
+                        <span
+                          className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
+                          aria-hidden="true"
+                        >
+                          →
+                        </span>
+                      )}
                   </span>
                 </Button>
               </div>

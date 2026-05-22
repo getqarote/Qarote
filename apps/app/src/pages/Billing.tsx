@@ -2,10 +2,10 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { usePostHog } from "@posthog/react";
 import { AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
+import { track } from "@/lib/analytics";
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
 
@@ -43,7 +43,6 @@ interface ExtendedStripeSubscription {
  */
 const Billing: React.FC = () => {
   const { t } = useTranslation("billing");
-  const posthog = usePostHog();
   const { user } = useUser();
   const { workspace } = useWorkspace();
   const queryClient = useQueryClient();
@@ -94,7 +93,7 @@ const Billing: React.FC = () => {
   }) => {
     const result = await cancelSubscriptionMutation.mutateAsync(data);
     try {
-      posthog?.capture("subscription_canceled", {
+      track("subscription_canceled", {
         cancel_immediately: data.cancelImmediately,
         reason: data.reason,
         plan: billingData?.subscription?.plan,

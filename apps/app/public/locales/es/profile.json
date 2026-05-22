@@ -172,8 +172,34 @@
     "toast": {
       "inviteFailed": "Error al invitar",
       "removeFailed": "No se pudo eliminar al miembro",
-      "addFailed": "No se pudo agregar al miembro"
-    }
+      "addFailed": "No se pudo agregar al miembro",
+      "roleUpdateFailed": "Error al actualizar el rol",
+      "roleFetchFailed": "No se pudieron cargar los permisos del espacio de trabajo.",
+      "bulkRoleUpdated_one": "{{count}} miembro actualizado",
+      "bulkRoleUpdated_other": "{{count}} miembros actualizados",
+      "bulkRoleUpdateFailed": "Error al actualizar los miembros",
+      "scopeDenied": "Necesitas el permiso «{{permission}}» para realizar esta acción.",
+      "scopeDeniedGeneric": "No tienes permiso para realizar esta acción."
+    },
+    "selectRow": "Seleccionar miembro",
+    "selectAll": "Seleccionar todos los miembros de esta página",
+    "bulkSelected_one": "<strong>{{count}}</strong> miembro seleccionado",
+    "bulkSelected_other": "<strong>{{count}}</strong> miembros seleccionados",
+    "bulkSelectRolePlaceholder": "Asignar rol…",
+    "bulkApplying": "Asignando…",
+    "bulkDeselectAll": "Limpiar selección",
+    "bulkLastOwnerTitle": "Este cambio elimina al último Owner",
+    "bulkLastOwnerBody": "Después de este cambio, nadie podrá gestionar la facturación, eliminar el workspace ni otorgar el rol de Owner. ¿Continuar?",
+    "bulkLastOwnerCancel": "Cancelar",
+    "bulkLastOwnerConfirm": "Entiendo, continuar",
+    "roleGroupBuiltin": "Roles estándar",
+    "roleGroupCustom": "Roles personalizados",
+    "roleCustomBadge": "Personalizado",
+    "selectRowNamed": "Seleccionar a {{name}}",
+    "selectAllNamed": "Seleccionar los {{count}} miembros de esta página",
+    "bulkApply_one": "Asignar a {{count}} miembro",
+    "bulkApply_other": "Asignar a {{count}} miembros",
+    "roleLoading": "Cargando roles…"
   },
   "org": {
     "title": "Organización",

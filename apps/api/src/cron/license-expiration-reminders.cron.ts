@@ -16,6 +16,7 @@ class LicenseExpirationRemindersCronService {
   private isRunning = false;
   private isChecking = false;
   private intervalId: NodeJS.Timeout | null = null;
+  private currentCyclePromise: Promise<void> | null = null;
   private readonly checkInterval: number;
 
   constructor() {
@@ -40,10 +41,16 @@ class LicenseExpirationRemindersCronService {
       "Starting license expiration reminders service..."
     );
 
-    // Run immediately, then at intervals
-    this.checkExpiringLicenses();
+    // Run immediately, then at intervals. Track the in-flight promise so
+    // stopAndWait can drain it before Prisma disconnects on shutdown.
+    // Skip re-assigning when a cycle is already running — otherwise the
+    // skipped (immediately-resolved) callback would clobber the real
+    // in-flight promise and stopAndWait would await a no-op instead of
+    // the actual cycle.
+    this.currentCyclePromise = this.checkExpiringLicenses();
     this.intervalId = setInterval(() => {
-      this.checkExpiringLicenses();
+      if (this.isChecking) return;
+      this.currentCyclePromise = this.checkExpiringLicenses();
     }, this.checkInterval);
   }
 
@@ -62,6 +69,24 @@ class LicenseExpirationRemindersCronService {
       this.intervalId = null;
     }
     logger.info("License expiration reminders service stopped");
+  }
+
+  /**
+   * Stop and wait for the in-flight cycle to drain before returning.
+   */
+  async stopAndWait(): Promise<void> {
+    this.stop();
+    if (this.currentCyclePromise) {
+      try {
+        await this.currentCyclePromise;
+      } catch (error) {
+        logger.error(
+          { error },
+          "License expiration reminders in-flight cycle errored during shutdown"
+        );
+      }
+      this.currentCyclePromise = null;
+    }
   }
 
   /**
@@ -118,69 +143,89 @@ class LicenseExpirationRemindersCronService {
         );
 
         for (const license of licenses) {
+          const reminderType = `${days}_DAY`;
+          // Idempotency: insert the reminder row FIRST, then send the email.
+          // The unique constraint on (licenseId, reminderType) makes the
+          // insert the gate — concurrent cycles or restarts that race past
+          // a check-then-send pattern can't both succeed here. If the row
+          // already exists we skip the send entirely.
+          //
+          // Trade-off: if the email send subsequently fails, we do NOT roll
+          // back the row. The reminder is treated as best-effort delivery —
+          // a duplicate-prevention guarantee is more valuable than a retry
+          // for an expiration reminder. Stripe-driven emails (welcome,
+          // renewal) get full Outbox retry semantics in C2.
+          let claimed = false;
           try {
-            // Check if reminder already sent
-            const existingReminder =
-              await prisma.licenseRenewalEmail.findUnique({
-                where: {
-                  licenseId_reminderType: {
-                    licenseId: license.id,
-                    reminderType: `${days}_DAY`,
-                  },
-                },
+            await prisma.licenseRenewalEmail.create({
+              data: {
+                licenseId: license.id,
+                reminderType,
+              },
+            });
+            claimed = true;
+          } catch (error) {
+            if ((error as { code?: string }).code === "P2002") {
+              // Row already exists — reminder was sent (or claimed) by an
+              // earlier cycle. Skip silently.
+              continue;
+            }
+            logger.error(
+              { error, licenseId: license.id, days },
+              `Failed to claim ${days}-day reminder slot for license`
+            );
+            continue;
+          }
+
+          if (!claimed) continue;
+
+          // Wrap the send so a thrown exception for one license doesn't
+          // abort the whole cron and leave subsequent licenses unprocessed.
+          // The slot is already claimed; on throw we log and move on
+          // (best-effort delivery — same semantics as a result.success=false).
+          try {
+            const result =
+              await EmailService.sendLicenseExpirationReminderEmail({
+                to: license.customerEmail,
+                licenseKey: license.licenseKey,
+                tier: license.tier,
+                daysUntilExpiration: days,
+                expiresAt: license.expiresAt!,
+                renewalUrl: `${portalUrl}/licenses`,
               });
 
-            if (!existingReminder) {
-              const result =
-                await EmailService.sendLicenseExpirationReminderEmail({
-                  to: license.customerEmail,
-                  licenseKey: license.licenseKey,
-                  tier: license.tier,
-                  daysUntilExpiration: days,
-                  expiresAt: license.expiresAt!,
-                  renewalUrl: `${portalUrl}/licenses`,
-                });
-
-              // Only track reminder if email was successfully sent
-              if (result.success) {
-                await prisma.licenseRenewalEmail.create({
-                  data: {
-                    licenseId: license.id,
-                    reminderType: `${days}_DAY`,
-                  },
-                });
-
-                totalReminders++;
-
-                logger.info(
-                  {
-                    licenseId: license.id,
-                    customerEmail: license.customerEmail,
-                    days,
-                  },
-                  `Sent ${days}-day expiration reminder`
-                );
-              } else {
-                logger.warn(
-                  {
-                    licenseId: license.id,
-                    customerEmail: license.customerEmail,
-                    days,
-                    error: result.error,
-                  },
-                  `Failed to send ${days}-day reminder - will retry on next run`
-                );
-              }
+            if (result.success) {
+              totalReminders++;
+              logger.info(
+                {
+                  licenseId: license.id,
+                  customerEmail: license.customerEmail,
+                  days,
+                },
+                `Sent ${days}-day expiration reminder`
+              );
+            } else {
+              logger.warn(
+                {
+                  licenseId: license.id,
+                  customerEmail: license.customerEmail,
+                  days,
+                  error: result.error,
+                },
+                `Failed to send ${days}-day reminder — slot already claimed, will not retry`
+              );
             }
           } catch (error) {
-            logger.error(
+            logger.warn(
               {
                 error,
                 licenseId: license.id,
+                customerEmail: license.customerEmail,
                 days,
               },
-              `Failed to send ${days}-day reminder for license`
+              `Failed to send ${days}-day reminder — slot already claimed, will not retry`
             );
+            continue;
           }
         }
       }
@@ -206,66 +251,73 @@ class LicenseExpirationRemindersCronService {
       );
 
       for (const license of expiredLicenses) {
+        if (!license.expiresAt) continue;
+
+        // Same create-first idempotency as the reminder loop above.
+        let claimed = false;
         try {
-          // Check if expiration email already sent
-          const existingNotification =
-            await prisma.licenseRenewalEmail.findUnique({
-              where: {
-                licenseId_reminderType: {
-                  licenseId: license.id,
-                  reminderType: "EXPIRED",
-                },
+          await prisma.licenseRenewalEmail.create({
+            data: {
+              licenseId: license.id,
+              reminderType: "EXPIRED",
+            },
+          });
+          claimed = true;
+        } catch (error) {
+          if ((error as { code?: string }).code === "P2002") {
+            continue;
+          }
+          logger.error(
+            { error, licenseId: license.id },
+            "Failed to claim EXPIRED notification slot for license"
+          );
+          continue;
+        }
+
+        if (!claimed) continue;
+
+        // Same per-license isolation as the reminder loop above.
+        try {
+          const result = await EmailService.sendLicenseExpiredEmail({
+            to: license.customerEmail,
+            licenseKey: license.licenseKey,
+            tier: license.tier,
+            expiredAt: license.expiresAt,
+            renewalUrl: `${portalUrl}/purchase`,
+          });
+
+          if (result.success) {
+            totalExpiredNotifications++;
+            logger.info(
+              {
+                licenseId: license.id,
+                customerEmail: license.customerEmail,
+                expiredAt: license.expiresAt.toISOString(),
               },
-            });
-
-          if (!existingNotification && license.expiresAt) {
-            const result = await EmailService.sendLicenseExpiredEmail({
-              to: license.customerEmail,
-              licenseKey: license.licenseKey,
-              tier: license.tier,
-              expiredAt: license.expiresAt,
-              renewalUrl: `${portalUrl}/purchase`,
-            });
-
-            // Only track notification if email was successfully sent
-            if (result.success) {
-              await prisma.licenseRenewalEmail.create({
-                data: {
-                  licenseId: license.id,
-                  reminderType: "EXPIRED",
-                },
-              });
-
-              totalExpiredNotifications++;
-
-              logger.info(
-                {
-                  licenseId: license.id,
-                  customerEmail: license.customerEmail,
-                  expiredAt: license.expiresAt.toISOString(),
-                },
-                "Sent license expired notification"
-              );
-            } else {
-              logger.warn(
-                {
-                  licenseId: license.id,
-                  customerEmail: license.customerEmail,
-                  expiredAt: license.expiresAt.toISOString(),
-                  error: result.error,
-                },
-                "Failed to send expired notification - will retry on next run"
-              );
-            }
+              "Sent license expired notification"
+            );
+          } else {
+            logger.warn(
+              {
+                licenseId: license.id,
+                customerEmail: license.customerEmail,
+                expiredAt: license.expiresAt.toISOString(),
+                error: result.error,
+              },
+              "Failed to send expired notification — slot already claimed, will not retry"
+            );
           }
         } catch (error) {
-          logger.error(
+          logger.warn(
             {
               error,
               licenseId: license.id,
+              customerEmail: license.customerEmail,
+              expiredAt: license.expiresAt.toISOString(),
             },
-            "Failed to send expired notification for license"
+            "Failed to send expired notification — slot already claimed, will not retry"
           );
+          continue;
         }
       }
 

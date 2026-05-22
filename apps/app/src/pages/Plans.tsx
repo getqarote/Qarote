@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { usePostHog } from "@posthog/react";
 import { AlertCircle, Loader2 } from "lucide-react";
+
+import { track } from "@/lib/analytics";
 
 import { AppSidebar } from "@/components/AppSidebar";
 import { PlanBillingToggle } from "@/components/plans/PlanBillingToggle";
@@ -39,7 +40,6 @@ interface PlansPageProps {
  */
 export const PlansPage = ({ onUpgrade, isUpgrading }: PlansPageProps) => {
   const { t } = useTranslation("billing");
-  const posthog = usePostHog();
   const navigate = useNavigate();
   const { userPlan } = useUser();
 
@@ -145,7 +145,7 @@ export const PlansPage = ({ onUpgrade, isUpgrading }: PlansPageProps) => {
                           altPriceLabel={pricing.altPriceLabel}
                           isCurrentPlan={isCurrentPlan}
                           onUpgrade={(plan, interval) => {
-                            posthog?.capture("plan_upgrade_initiated", {
+                            track("plan_upgrade_initiated", {
                               plan,
                               billing_interval: interval,
                               current_plan: userPlan,

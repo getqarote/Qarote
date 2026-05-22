@@ -2,10 +2,6 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { ChevronDown } from "lucide-react";
-
-import { UserRole } from "@/lib/api";
-
 import { AddServerButton } from "@/components/AddServerButton";
 import { ConnectedNodes } from "@/components/ConnectedNodes";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
@@ -27,6 +23,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { PixelChevronDown } from "@/components/ui/pixel-chevron-down";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
@@ -34,6 +31,7 @@ import { useServerContext } from "@/contexts/ServerContext";
 
 import { useDiagnosis } from "@/hooks/queries/useDiagnosis";
 import { useServers } from "@/hooks/queries/useServer";
+import { useIsWorkspaceAdmin } from "@/hooks/queries/useWorkspaceRole";
 import { useDashboardData } from "@/hooks/ui/useDashboardData";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
@@ -41,6 +39,7 @@ const Index = () => {
   const { t } = useTranslation("dashboard");
   const { selectedServerId, hasServers } = useServerContext();
   const { user, isAuthenticated } = useAuth();
+  const isAdmin = useIsWorkspaceAdmin() === true;
   const navigate = useNavigate();
   const [liveRatesTimeRange, setLiveRatesTimeRange] = useState<TimeRange>("1d");
   const [activityExpanded, setActivityExpanded] = useState(false);
@@ -177,7 +176,7 @@ const Index = () => {
               <h1 className="sr-only">{t("home.title")}</h1>
             </div>
             <div className="flex items-center gap-3">
-              {user?.role === UserRole.ADMIN && <AddServerButton />}
+              {isAdmin && <AddServerButton />}
             </div>
           </div>
           <ConnectionStatus />
@@ -210,9 +209,9 @@ const Index = () => {
         <Collapsible open={activityExpanded} onOpenChange={setActivityExpanded}>
           <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-1 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
             <span>{t("home.activity.label")}</span>
-            <ChevronDown
+            <PixelChevronDown
               aria-hidden="true"
-              className={`h-3.5 w-3.5 shrink-0 transition-transform duration-200 ${activityExpanded ? "rotate-180" : ""}`}
+              className={`h-3.5 w-auto shrink-0 transition-transform duration-200 ${activityExpanded ? "rotate-180" : ""}`}
             />
           </CollapsibleTrigger>
           <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">

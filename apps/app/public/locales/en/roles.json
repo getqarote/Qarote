@@ -1,0 +1,122 @@
+{
+  "title": "Roles",
+  "subtitle": "Define custom roles that bundle workspace permissions. Assign them to members from the Members page.",
+  "createButton": "Create role",
+  "builtinLegend": "4 built-in roles available: Owner · Admin · Member · Readonly. They cover most workspaces — custom roles are for least-privilege requirements.",
+  "table": {
+    "name": "Name",
+    "members": "Members",
+    "description": "Description",
+    "updatedAt": "Last updated",
+    "actions": "Actions"
+  },
+  "empty": {
+    "title": "No custom roles yet",
+    "body": "Custom roles let you grant a precise bundle of permissions to a job function — for example, an on-call engineer who can purge queues on staging but not production.",
+    "cta": "Create your first role"
+  },
+  "gate": {
+    "title": "Custom Roles + Resource Scopes",
+    "body": "Define named permission bundles scoped to specific servers or environments. Available on the Enterprise plan.",
+    "upgradeCta": "Upgrade to Enterprise"
+  },
+  "planDowngradeBanner": {
+    "title": "Custom roles are read-only on this plan",
+    "body": "Re-upgrade to Enterprise to edit. Existing assignments remain in effect; mutations are blocked at the API layer."
+  },
+  "editor": {
+    "createTitle": "New role",
+    "editTitle": "Edit role",
+    "nameLabel": "Name",
+    "namePlaceholder": "e.g. On-call Engineer",
+    "descriptionLabel": "Description",
+    "descriptionHelper": "Optional · what this role is for",
+    "permissionsLabel": "Permissions",
+    "permissionsHelper": "Pick the actions this role can perform. Optionally restrict each to specific servers or environments.",
+    "searchPlaceholder": "Search permissions…",
+    "searchLabel": "Search permissions",
+    "selectedCount": "{{granted}} granted · {{total}} available",
+    "category": {
+      "workspace": "Workspace",
+      "member": "Member",
+      "server": "Server",
+      "broker": "Broker",
+      "vhost": "Virtual host",
+      "queue": "Queue",
+      "binding": "Binding",
+      "exchange": "Exchange",
+      "policy": "Policy",
+      "message": "Message",
+      "broker_user": "Broker user",
+      "definitions": "Definitions",
+      "metric": "Metric",
+      "alerting": "Alerting",
+      "slack_config": "Slack integration",
+      "webhook": "Webhook",
+      "llm_config": "AI / LLM",
+      "digest": "Digest",
+      "topology": "Topology",
+      "incident": "Incident",
+      "scan": "Scan",
+      "audit": "Audit",
+      "role": "Role management"
+    },
+    "scope": {
+      "any": "Any server",
+      "anyAria": "No scope restriction — applies to every server in the workspace",
+      "configure": "Configure scope",
+      "modeLabel": "Restrict to",
+      "modeServers": "Specific servers",
+      "modeEnvironments": "Environments",
+      "serversPlaceholder": "Select servers…",
+      "environmentsPlaceholder": "Type an environment and press Enter",
+      "environmentsHelper": "Free-text tags. Must match the `environment` field on a server exactly.",
+      "summaryServers_one": "{{count}} server",
+      "summaryServers_other": "{{count}} servers",
+      "summaryEnvironments": "{{values}}",
+      "clear": "Remove restriction"
+    },
+    "saving": "Saving…",
+    "save": "Save role",
+    "savedToast": "Role saved",
+    "createdToast": "Role created",
+    "deletedToast": "Role deleted",
+    "cancel": "Cancel",
+    "conflict": {
+      "title": "Role was modified elsewhere",
+      "body": "Someone updated this role since you opened it. Reload to see the latest, or overwrite their changes.",
+      "reload": "Reload",
+      "overwrite": "Overwrite"
+    },
+    "escalation": {
+      "row": "You can't grant this permission",
+      "tooltip": "Your role doesn't currently hold {{permission}} at this scope. You can only grant permissions you yourself hold."
+    },
+    "nameTooShort": "Name must be at least 2 characters",
+    "nameReserved": "That name is reserved for a built-in role",
+    "categoryToggle": "Toggle {{category}} category",
+    "categoryToggleAll": "Toggle all {{category}} permissions",
+    "duplicate": "Permission already added with this scope",
+    "delete": "Delete role",
+    "deleteConfirm": {
+      "title": "Delete {{name}}?",
+      "bodyZero": "No members hold this role. It will be removed.",
+      "body_one": "{{count}} member will be reassigned to the Member built-in role.",
+      "body_other": "{{count}} members will be reassigned to the Member built-in role.",
+      "confirm": "Delete role",
+      "cancel": "Keep role"
+    }
+  },
+  "errors": {
+    "loadFailed": "Failed to load roles",
+    "saveFailed": "Failed to save role",
+    "deleteFailed": "Failed to delete role"
+  },
+  "assignment": {
+    "label": "Role",
+    "customBadge": "Custom",
+    "lastOwnerBlocked": "Can't demote — this would leave the workspace without an Owner. At least one member must remain Owner.",
+    "saved": "Role assigned",
+    "saveFailed": "Failed to assign role"
+  }
+}

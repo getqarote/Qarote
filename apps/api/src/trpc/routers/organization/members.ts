@@ -5,17 +5,17 @@ import { applyWorkspaceAssignments } from "@/core/org-invitation-accept";
 import { getUserDisplayName } from "@/core/utils";
 import {
   ensureWorkspaceMember,
-  getUserWorkspaceRole,
+  getUserEffectivePermissions,
 } from "@/core/workspace-access";
 
+import { recordFromContext } from "@/services/audit";
 import { CoreEmailService } from "@/services/email/core-email.service";
-import { EmailService } from "@/services/email/email.service";
-import { EncryptionService } from "@/services/encryption.service";
+import { enqueueNotification } from "@/services/notification/notification-outbox.service";
 import {
   getOrgPlan,
   validateUserInvitation,
 } from "@/services/plan/plan.service";
-import { posthog } from "@/services/posthog";
+import { trackEvent } from "@/services/posthog";
 
 import {
   AcceptOrgInvitationSchema,
@@ -41,7 +41,16 @@ import {
   router,
 } from "@/trpc/trpc";
 
-import { OrgRole, UserRole } from "@/generated/prisma/client";
+import { effectiveHasPermission } from "@/auth/effective-permissions";
+import {
+  generateInvitationToken,
+  hashInvitationToken,
+} from "@/auth/invitation-tokens";
+import {
+  assertCanGrantRole,
+  assertWorkspaceWillKeepOwner,
+} from "@/auth/workspace-roles";
+import { OrgRole, WorkspaceRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /** Invitation validity period: 7 days */
@@ -132,24 +141,9 @@ export const membersRouter = router({
     .mutation(async ({ input, ctx }) => {
       const { organizationId } = ctx;
 
-      // Validate plan limits
-      const orgPlan = await getOrgPlan(organizationId);
-      const memberCount = await ctx.prisma.organizationMember.count({
-        where: { organizationId },
-      });
-      const pendingCount = await ctx.prisma.organizationInvitation.count({
-        where: {
-          organizationId,
-          acceptedAt: null,
-          expiresAt: { gt: new Date() },
-          // Exclude the invitation being refreshed so re-inviting the same
-          // email doesn't count against the plan limit.
-          email: { not: input.email },
-        },
-      });
-      validateUserInvitation(orgPlan, memberCount, pendingCount);
-
-      // Validate workspace assignments if provided
+      // Validate workspace assignments first so a caller without
+      // member:invite gets FORBIDDEN before paying for the plan-limit
+      // queries (and before any plan-state info ends up in their error).
       const assignments = input.workspaceAssignments ?? [];
       if (assignments.length > 0) {
         // Verify each workspace belongs to the caller's org
@@ -171,21 +165,74 @@ export const membersRouter = router({
             });
           }
 
-          // Verify the inviter has ADMIN role in the target workspace
-          const inviterRole = await getUserWorkspaceRole(
+          // Verify the inviter holds member:invite in the target workspace.
+          // Cross-workspace check: the request is org-scoped but each
+          // assignment requires the inviter to have invite rights in
+          // that specific target workspace. RBAC Phase 3 H4 — switched
+          // from the legacy enum check to the resolver-backed helper
+          // so this site honors custom-role permissions once PR-2
+          // lands. Anti-escalation for built-ins still uses the
+          // canonical enum because `assertCanGrantRole` operates on
+          // the built-in tier; PR-2 adds `assertCanGrantCustomRole`
+          // for the custom branch.
+          const inviterResolution = await getUserEffectivePermissions(
             ctx.user.id,
-            assignment.workspaceId,
-            ctx.prisma
+            assignment.workspaceId
           );
-          if (inviterRole !== UserRole.ADMIN) {
+          if (
+            !inviterResolution ||
+            !effectiveHasPermission(inviterResolution, "member:invite")
+          ) {
             throw new TRPCError({
               code: "FORBIDDEN",
               message:
-                "You must be an ADMIN in each selected workspace to assign members to it",
+                "You do not have permission to invite members to one of the selected workspaces",
+              cause: {
+                code: "WORKSPACE_PERMISSION",
+                // String literal here, not WorkspaceRole.ADMIN: the ESLint
+                // gate (eslint.config.cjs) bans the enum form in routers
+                // because it usually marks a permission *decision*. This
+                // is just a payload field — the runtime JSON is identical.
+                required: "ADMIN",
+                actual:
+                  inviterResolution?.kind === "builtin"
+                    ? inviterResolution.role
+                    : null,
+                permission: "member:invite",
+              },
             });
           }
+          // Anti-escalation: inviter cannot assign a role above their
+          // own built-in tier. PR-1 only ships built-in roles, so the
+          // custom branch is dead code until PR-2 enables CRUD; we
+          // bail with FORBIDDEN until `assertCanGrantCustomRole` lands.
+          if (inviterResolution.kind !== "builtin") {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message:
+                "Custom-role inviters cannot assign roles until Phase 3 PR-2 lands assertCanGrantCustomRole",
+            });
+          }
+          assertCanGrantRole(inviterResolution.role, assignment.role);
         }
       }
+
+      // Plan / seat-limit check after authorization passes.
+      const orgPlan = await getOrgPlan(organizationId);
+      const memberCount = await ctx.prisma.organizationMember.count({
+        where: { organizationId },
+      });
+      const pendingCount = await ctx.prisma.organizationInvitation.count({
+        where: {
+          organizationId,
+          acceptedAt: null,
+          expiresAt: { gt: new Date() },
+          // Exclude the invitation being refreshed so re-inviting the same
+          // email doesn't count against the plan limit.
+          email: { not: input.email },
+        },
+      });
+      validateUserInvitation(orgPlan, memberCount, pendingCount);
 
       // Check if already a member (by email)
       const existingUser = await ctx.prisma.user.findUnique({
@@ -212,8 +259,9 @@ export const membersRouter = router({
         }
       }
 
-      // Generate invitation token
-      const token = EncryptionService.generateEncryptionKey();
+      // Generate raw invitation token; only its hash is persisted (R-INV-1).
+      const token = generateInvitationToken();
+      const tokenHash = hashInvitationToken(token);
 
       // Get organization name for the email
       const organization = await ctx.prisma.organization.findUnique({
@@ -221,75 +269,83 @@ export const membersRouter = router({
         select: { name: true },
       });
 
-      // Upsert invitation (replaces expired/pending invitations for same email)
-      const invitation = await ctx.prisma.organizationInvitation.upsert({
-        where: {
-          organizationId_email: {
-            organizationId,
-            email: input.email,
-          },
-        },
-        create: {
-          organizationId,
-          email: input.email,
-          token,
-          role: input.role as OrgRole,
-          invitedById: ctx.user.id,
-          expiresAt: new Date(Date.now() + INVITATION_EXPIRY_MS),
-          workspaceAssignments: assignments,
-        },
-        update: {
-          token,
-          role: input.role as OrgRole,
-          invitedById: ctx.user.id,
-          expiresAt: new Date(Date.now() + INVITATION_EXPIRY_MS),
-          acceptedAt: null,
-          workspaceAssignments: assignments,
-        },
-      });
-
-      // Build invite URL for sharing (useful when email is disabled)
-      const inviteUrl = `${emailConfig.frontendUrl}/org-invite/${token}`;
-
-      // Send invitation email (only attempt if email is enabled)
-      let emailSent = false;
+      // Resolve SMTP availability before opening the transaction.
       let emailIsEnabled = false;
       try {
         const effectiveEmail = await CoreEmailService.loadEffectiveConfig();
         emailIsEnabled = effectiveEmail.enabled;
       } catch (configError) {
         ctx.logger.error(
-          { error: configError, invitationId: invitation.id },
+          { error: configError },
           "Failed to load effective email config, skipping email"
         );
       }
-      if (emailIsEnabled) {
-        try {
-          await EmailService.sendOrgInvitationEmail({
-            to: input.email,
-            invitationToken: token,
-            orgName: organization?.name ?? "Organization",
-            inviterName: getUserDisplayName(ctx.user),
-            inviterEmail: ctx.user.email,
-            locale: ctx.locale,
-          });
-          emailSent = true;
-          ctx.logger.info(
-            { invitationId: invitation.id, email: input.email },
-            "Organization invitation email sent successfully"
-          );
-        } catch (emailError) {
-          ctx.logger.error(
-            {
-              error: emailError,
-              invitationId: invitation.id,
+
+      // Upsert invitation + outbox row commit atomically. The upsert reuses
+      // the same row by (organizationId, email), so a re-invite gets a NEW
+      // tokenHash on the same row id. Idempotency must therefore key on
+      // tokenHash (not invitation.id) — otherwise a re-invite collides on
+      // the prior row's outbox key and skips the new email.
+      let emailSent = false;
+      const invitation = await ctx.prisma.$transaction(async (tx) => {
+        const upserted = await tx.organizationInvitation.upsert({
+          where: {
+            organizationId_email: {
+              organizationId,
               email: input.email,
             },
-            "Failed to send organization invitation email"
+          },
+          create: {
+            organizationId,
+            email: input.email,
+            tokenHash,
+            role: input.role as OrgRole,
+            invitedById: ctx.user.id,
+            expiresAt: new Date(Date.now() + INVITATION_EXPIRY_MS),
+            workspaceAssignments: assignments,
+          },
+          update: {
+            tokenHash,
+            role: input.role as OrgRole,
+            invitedById: ctx.user.id,
+            expiresAt: new Date(Date.now() + INVITATION_EXPIRY_MS),
+            acceptedAt: null,
+            workspaceAssignments: assignments,
+          },
+        });
+
+        if (emailIsEnabled) {
+          const enqueued = await enqueueNotification(
+            {
+              channel: "email",
+              template: "org_invitation",
+              target: input.email,
+              idempotencyKey: `email:org_invitation:${tokenHash}`,
+              payload: {
+                invitationToken: token,
+                orgName: organization?.name ?? "Organization",
+                inviterName: getUserDisplayName(ctx.user),
+                inviterEmail: ctx.user.email,
+                locale: ctx.locale,
+              },
+            },
+            tx
           );
-          // Don't fail the request if email sending fails
+          emailSent = enqueued;
         }
+
+        return upserted;
+      });
+
+      if (emailSent) {
+        ctx.logger.info(
+          { invitationId: invitation.id, email: input.email },
+          "Organization invitation email enqueued"
+        );
       }
+
+      // Build invite URL for sharing (useful when email is disabled)
+      const inviteUrl = `${emailConfig.frontendUrl}/org-invite/${token}`;
 
       ctx.logger.info(
         {
@@ -302,15 +358,35 @@ export const membersRouter = router({
         "Organization invitation created"
       );
 
-      posthog?.capture({
-        distinctId: ctx.user.id,
-        event: "org_member_invited",
-        properties: {
+      trackEvent(
+        {
+          distinctId: ctx.user.id,
+          superProperties: {
+            app: "api",
+            organization_id: organizationId,
+          },
+        },
+        "org_member_invited",
+        {
           organization_id: organizationId,
           invited_role: input.role,
           workspace_assignments_count: assignments.length,
           email_sent: emailSent,
+        }
+      );
+
+      void recordFromContext(ctx, {
+        action: "org.member.invited",
+        category: "org",
+        entityType: "invitation",
+        entityId: invitation.id,
+        entityLabel: input.email,
+        metadata: {
+          role: input.role,
+          workspaceAssignmentsCount: assignments.length,
+          emailSent,
         },
+        workspaceId: null,
       });
 
       return {
@@ -528,6 +604,20 @@ export const membersRouter = router({
         "Organization invitation accepted"
       );
 
+      void recordFromContext(ctx, {
+        action: "org.member.invitation.accepted",
+        category: "org",
+        entityType: "user",
+        entityId: ctx.user.id,
+        entityLabel: ctx.user.email,
+        metadata: {
+          invitationId: input.invitationId,
+          organizationId: invitation.organizationId,
+          role: invitation.role,
+        },
+        workspaceId: null,
+      });
+
       return { success: true };
     }),
 
@@ -684,6 +774,19 @@ export const membersRouter = router({
         "Organization member role updated"
       );
 
+      void recordFromContext(ctx, {
+        action: "org.member.role.updated",
+        category: "org",
+        entityType: "user",
+        entityId: target.userId,
+        metadata: {
+          previousRole: target.role,
+          newRole: input.role,
+          memberId: input.memberId,
+        },
+        workspaceId: null,
+      });
+
       return { success: true };
     }),
 
@@ -700,6 +803,7 @@ export const membersRouter = router({
           organizationId: true,
           role: true,
           userId: true,
+          user: { select: { email: true } },
         },
       });
 
@@ -734,6 +838,33 @@ export const membersRouter = router({
               code: "BAD_REQUEST",
               message:
                 "Cannot leave the organization as the last owner. Transfer ownership first.",
+            });
+          }
+        }
+
+        // Per-workspace last-OWNER invariant (R-AUTHZ-4): if the target
+        // is the sole OWNER of any workspace in this org, abort. The
+        // caller must transfer ownership first. Done before any deletes
+        // so the transaction is observably atomic.
+        const targetWorkspaceMemberships = await tx.workspaceMember.findMany({
+          where: {
+            userId: target.userId,
+            workspace: { organizationId: target.organizationId },
+          },
+          select: {
+            id: true,
+            workspaceId: true,
+            role: { select: { builtinKey: true } },
+          },
+          // Deterministic lock order prevents deadlocks when two concurrent
+          // member-removals affect overlapping workspace sets.
+          orderBy: { workspaceId: "asc" },
+        });
+        for (const m of targetWorkspaceMemberships) {
+          if (m.role.builtinKey === WorkspaceRole.OWNER) {
+            await assertWorkspaceWillKeepOwner(tx, {
+              workspaceId: m.workspaceId,
+              affectedMemberId: m.id,
             });
           }
         }
@@ -775,6 +906,19 @@ export const membersRouter = router({
         },
         "Organization member removed"
       );
+
+      void recordFromContext(ctx, {
+        action: "org.member.removed",
+        category: "org",
+        entityType: "user",
+        entityId: target.userId,
+        entityLabel: target.user.email,
+        metadata: {
+          memberId: input.memberId,
+          previousRole: target.role,
+        },
+        workspaceId: null,
+      });
 
       return { success: true };
     }),
@@ -821,7 +965,7 @@ export const membersRouter = router({
         await ensureWorkspaceMember(
           input.userId,
           input.workspaceId,
-          input.role as UserRole,
+          input.role as WorkspaceRole,
           tx
         );
       });
@@ -843,6 +987,18 @@ export const membersRouter = router({
         },
         "User assigned to workspace"
       );
+
+      void recordFromContext(ctx, {
+        action: "org.member.workspace.assigned",
+        category: "org",
+        entityType: "user",
+        entityId: input.userId,
+        metadata: {
+          assignedWorkspaceId: input.workspaceId,
+          role: input.role,
+        },
+        workspaceId: input.workspaceId,
+      });
 
       return { success: true };
     }),
@@ -887,6 +1043,7 @@ export const membersRouter = router({
         },
         include: {
           workspace: { select: { id: true, name: true } },
+          role: { select: { builtinKey: true } },
         },
       });
 
@@ -894,7 +1051,7 @@ export const membersRouter = router({
         memberships: memberships.map((m) => ({
           workspaceId: m.workspace.id,
           workspaceName: m.workspace.name,
-          role: m.role,
+          role: m.role.builtinKey ?? "CUSTOM",
         })),
       };
     }),
@@ -936,22 +1093,41 @@ export const membersRouter = router({
         });
       }
 
-      // Delete workspace membership and clear active workspace atomically
-      await ctx.prisma.$transaction([
-        ctx.prisma.workspaceMember.deleteMany({
+      // Delete workspace membership and clear active workspace atomically.
+      // The last-OWNER invariant runs inside the transaction so concurrent
+      // removals cannot both pass the count check (R-AUTHZ-4).
+      await ctx.prisma.$transaction(async (tx) => {
+        const member = await tx.workspaceMember.findUnique({
           where: {
-            userId: input.userId,
-            workspaceId: input.workspaceId,
+            userId_workspaceId: {
+              userId: input.userId,
+              workspaceId: input.workspaceId,
+            },
           },
-        }),
-        ctx.prisma.user.updateMany({
+          select: {
+            id: true,
+            role: { select: { builtinKey: true } },
+          },
+        });
+
+        if (!member) return; // already not a member; nothing to do
+
+        if (member.role.builtinKey === WorkspaceRole.OWNER) {
+          await assertWorkspaceWillKeepOwner(tx, {
+            workspaceId: input.workspaceId,
+            affectedMemberId: member.id,
+          });
+        }
+
+        await tx.workspaceMember.delete({ where: { id: member.id } });
+        await tx.user.updateMany({
           where: {
             id: input.userId,
             workspaceId: input.workspaceId,
           },
           data: { workspaceId: null },
-        }),
-      ]);
+        });
+      });
 
       await invalidateUserSessions(
         ctx.prisma,
@@ -969,6 +1145,17 @@ export const membersRouter = router({
         },
         "User removed from workspace"
       );
+
+      void recordFromContext(ctx, {
+        action: "org.member.workspace.removed",
+        category: "org",
+        entityType: "user",
+        entityId: input.userId,
+        metadata: {
+          workspaceId: input.workspaceId,
+        },
+        workspaceId: input.workspaceId,
+      });
 
       return { success: true };
     }),
@@ -1001,7 +1188,9 @@ export const membersRouter = router({
         });
       }
 
-      // Verify workspace belongs to the org and update role atomically
+      // Verify workspace belongs to the org and update role atomically.
+      // If the target is currently OWNER and the new role is not, the
+      // last-OWNER invariant must hold (R-AUTHZ-4).
       await ctx.prisma.$transaction(async (tx) => {
         const workspace = await tx.workspace.findFirst({
           where: {
@@ -1018,10 +1207,29 @@ export const membersRouter = router({
           });
         }
 
+        const existing = await tx.workspaceMember.findUnique({
+          where: {
+            userId_workspaceId: {
+              userId: input.userId,
+              workspaceId: input.workspaceId,
+            },
+          },
+          select: {
+            id: true,
+            role: { select: { builtinKey: true } },
+          },
+        });
+        if (existing && existing.role.builtinKey === WorkspaceRole.OWNER) {
+          await assertWorkspaceWillKeepOwner(tx, {
+            workspaceId: input.workspaceId,
+            affectedMemberId: existing.id,
+          });
+        }
+
         await ensureWorkspaceMember(
           input.userId,
           input.workspaceId,
-          input.role as UserRole,
+          input.role as WorkspaceRole,
           tx
         );
       });

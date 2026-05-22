@@ -1,0 +1,73 @@
+{
+  "title": "Audit log",
+  "description": "Forensic trail of admin-relevant changes (RBAC denials, RabbitMQ destructive operations, member changes, settings updates). Retention: {{retentionDays}} days. Enterprise plan only.",
+  "tab": {
+    "activity": "Activity",
+    "denials": "Denials"
+  },
+  "col": {
+    "timestamp": "When",
+    "action": "Action",
+    "actor": "Actor",
+    "entity": "Entity",
+    "source": "Source"
+  },
+  "source": {
+    "all": "All sources",
+    "qarote": "Qarote",
+    "rbac_denial": "Denial",
+    "broker_diff": "Broker diff"
+  },
+  "category": {
+    "all": "All categories",
+    "rabbitmq": "RabbitMQ",
+    "workspace": "Workspace",
+    "org": "Organization",
+    "alert": "Alerts",
+    "auth": "Auth",
+    "system": "System"
+  },
+  "filter": {
+    "category": { "placeholder": "Category" },
+    "source": { "placeholder": "Source" },
+    "from": { "label": "From date" },
+    "to": { "label": "To date" },
+    "actor": { "placeholder": "Actor — email or user ID" },
+    "clear": "Clear filters"
+  },
+  "status": {
+    "loading": "Loading…",
+    "refreshing": "Refreshing…",
+    "empty": "No matching events",
+    "range": "Showing {{start}}–{{end}} of {{total}} events"
+  },
+  "empty": {
+    "filtered": "No audit events match the filters.",
+    "none": "No audit events recorded yet. Admin-relevant changes will appear here.",
+    "quiet": "The journal is quiet",
+    "quietDetail": "No privileged operations recorded. Admin-relevant changes will appear here as they happen."
+  },
+  "shortcuts": {
+    "label": "Keyboard shortcuts",
+    "focusActor": "Focus actor search",
+    "clear": "Clear filters",
+    "refresh": "Refresh"
+  },
+  "error": {
+    "title": "Could not load audit log",
+    "message": "The server returned an error. Try again or refine the filters.",
+    "retry": "Retry"
+  },
+  "pagination": {
+    "first": "First page",
+    "next": "Next",
+    "more_one": "{{count}} more event",
+    "more_other": "{{count}} more events"
+  },
+  "export": {
+    "button": "Export CSV",
+    "success": "Exported {{count}} rows",
+    "truncated": "Result was truncated to the row cap. Refine filters to capture older history.",
+    "failed": "Export failed"
+  }
+}

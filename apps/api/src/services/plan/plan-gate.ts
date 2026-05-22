@@ -2,7 +2,7 @@
  * Convert thrown plan validation errors into the unified BlockedGate
  * wire shape (ADR-002).
  *
- * The `planValidationProcedure` and `adminPlanValidationProcedure`
+ * The `planValidationProcedure` and `workspaceAdminPlanValidationProcedure`
  * middlewares in `trpc.ts` are the only production callers. Extracting
  * the conversion lets us unit-test the mapping without standing up
  * the entire tRPC chain.

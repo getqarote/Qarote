@@ -12,7 +12,7 @@
 
 import { getOrgPlan } from "@/services/plan/plan.service";
 
-import { getFeatureGateConfig, isPaidPlan } from "./gate.config";
+import { getFeatureGateConfig } from "./gate.config";
 import type { FeatureGateResult, FeatureKey, UpgradeInfo } from "./types";
 
 import { UserPlan } from "@/generated/prisma/client";
@@ -50,8 +50,25 @@ export async function resolvePlanAxis(
     ? await getOrgPlan(organizationId)
     : UserPlan.FREE;
 
-  // Paid plans bypass FREE-tier behaviour for any feature in this config.
-  if (isPaidPlan(plan)) return { kind: "ok" };
+  // Enterprise always passes.
+  if (plan === UserPlan.ENTERPRISE) return { kind: "ok" };
+
+  // Developer: passes unless the feature explicitly blocks it via
+  // `developerBehaviour`. Enterprise-only features (audit log,
+  // advanced governance) opt into the block.
+  if (plan === UserPlan.DEVELOPER) {
+    if (config.developerBehaviour?.mode === "block") {
+      return {
+        kind: "blocked",
+        blockedBy: "plan",
+        feature,
+        reasonKey: "plan.featureRequiresUpgrade",
+        reasonParams: { feature, currentPlan: plan },
+        upgrade: planUpgradeInfo(plan),
+      };
+    }
+    return { kind: "ok" };
+  }
 
   // FREE: behaviour determined per-feature.
   switch (config.freeBehaviour.mode) {

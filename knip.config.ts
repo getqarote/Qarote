@@ -19,6 +19,8 @@ const config: KnipConfig = {
     },
     "apps/web": {
       project: ["src/**/*.{ts,tsx}"],
+      // react-dom is a peer dep of @astrojs/react — not directly imported but required
+      ignoreDependencies: ["react-dom"],
       // .astro files import these but knip can't scan .astro syntax
       entry: [
         ...DEFAULT_ENTRY,
@@ -31,6 +33,8 @@ const config: KnipConfig = {
     },
     "apps/portal": {
       project: ["src/**/*.{ts,tsx}"],
+      // i18next is a peer dep of react-i18next — not directly imported but required
+      ignoreDependencies: ["i18next"],
     },
     "apps/api": {
       project: ["src/**/*.ts"],
@@ -52,6 +56,16 @@ const config: KnipConfig = {
         // Migration scripts run manually via `npx tsx`
         "src/core/migrations/org-migration.ts",
         "src/core/migrations/org-verification.ts",
+        // LLM eval harness — adapters are referenced from
+        // promptfooconfig.yaml (file:// imports), which knip cannot trace
+        // through YAML. types.ts is imported only by the adapters; listing
+        // it explicitly ensures knip credits its exports.
+        "src/ee/services/llm/__evals__/prompt.adapter.ts",
+        "src/ee/services/llm/__evals__/rubric.adapter.ts",
+        "src/ee/services/llm/__evals__/types.ts",
+        // Audit analyzer — standalone CLI invoked via `tsx audits/analyzer.ts`
+        // for periodic eval audits. Not imported anywhere.
+        "src/ee/services/llm/__evals__/audits/analyzer.ts",
       ],
     },
     "packages/i18n": {
@@ -123,11 +137,22 @@ const config: KnipConfig = {
     // Tailwind v4 dependencies referenced via CSS @plugin/@import directives
     "tailwindcss",
     "tailwindcss-animate",
+    // Used only via the eval:llm CLI script; knip can't trace YAML imports
+    "promptfoo",
     // i18n transitive deps required by @qarote/i18n but needed as direct deps for pnpm strict hoisting
     "i18next-browser-languagedetector",
     "i18next-http-backend",
   ],
-  ignoreBinaries: ["stripe", "act"],
+  ignoreBinaries: [
+    "stripe",
+    "act",
+    "promptfoo",
+    // Called from package.json scripts / CI but resolved via workspace node_modules
+    "playwright",
+    "vite",
+    "astro",
+    "vitest",
+  ],
 };
 
 export default config;

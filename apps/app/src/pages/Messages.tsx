@@ -1,16 +1,21 @@
 /**
- * Messages page — unified Live (Spy) + Recorded (Firehose) experience.
+ * Messages page — unified Spy + Tracing experience.
  *
  * Top-level modes (URL ?mode=):
- *   live     — QueueSpy per-queue tap (no firehose required).
+ *   live     — Spy per-queue tap (no firehose required).
  *              Queue pre-selected via ?queue=<name>&vhost=<vh> deep-link
  *              from QueueDetail. Default when firehose is inactive.
- *   recorded — Firehose-based stream + history query. Default when firehose
- *              is active. Gated by FeatureGate(message_tracing).
+ *   recorded — Tracing (firehose-based) live tail + history query.
+ *              Default when firehose is active. Gated by
+ *              FeatureGate(message_tracing).
  *
- * Within Recorded mode:
- *   Stream   — live tail of firehose events (requires firehose active)
- *   History  — cursor-based query over a time range
+ * Within Tracing mode:
+ *   Live tail — current capture (requires firehose active)
+ *   History   — cursor-based query over a time range
+ *
+ * The internal mode values (`live`, `recorded`, `query`) are kept as URL
+ * tokens so deep-links from older clients still resolve. Only the
+ * user-visible labels were renamed (Spy / Tracing / Live tail / History).
  *
  * Default mode: ?mode= absent → "recorded" if firehose active, else "live".
  * Back/Forward: topMode derived from URL, no local state needed.
@@ -24,6 +29,7 @@ import {
   AlertTriangle,
   ArrowDown,
   Database,
+  HelpCircle,
   Info,
   Loader2,
   Pause,
@@ -34,12 +40,14 @@ import {
   Zap,
 } from "lucide-react";
 
+import { TRACING_VS_SPY_DOCS_URL } from "@/lib/docsUrls";
 import { SentryErrorBoundary } from "@/lib/sentry";
+import { TRACE_RETENTION_DAYS } from "@/lib/tracingConfig";
 
 import { FeatureGate } from "@/components/feature-gate/FeatureGate";
 import { QueueSpy } from "@/components/messages/QueueSpy";
 import { PageShell } from "@/components/PageShell";
-import { FirehoseDisabledState } from "@/components/tracing/FirehoseDisabledState";
+import { TracingDisabledState } from "@/components/tracing/TracingDisabledState";
 import {
   TracingFiltersBar,
   useTracingFilters,
@@ -94,34 +102,47 @@ function StatsBar({ serverId }: { serverId: string }) {
   if (!data) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-6 px-4 py-2 bg-muted/20 border-b border-border text-xs">
-      <span className="flex items-baseline gap-1.5">
-        <span className="font-mono font-medium text-foreground tabular-nums">
+    <dl
+      aria-label={t("stats.label")}
+      className="flex flex-wrap items-center gap-x-6 gap-y-1 px-4 py-2 bg-muted/20 border-b border-border text-xs"
+    >
+      {/* HTML5 spec requires <dt> before <dd> within a <dl>-grouped
+          <div>. We keep that DOM order and use `order-last` on <dt> to
+          flip the visual layout to "number then label". Screen readers
+          announce DOM order ("Published, 1,234"); sighted users still
+          see "1,234 Published". */}
+      <div className="flex items-baseline gap-1.5">
+        <dt className="text-muted-foreground order-last">
+          {t("stats.published")}
+        </dt>
+        <dd className="font-mono font-medium text-foreground tabular-nums">
           {data.publishCount.toLocaleString()}
-        </span>
-        <span className="text-muted-foreground">{t("stats.published")}</span>
-      </span>
-      <span className="flex items-baseline gap-1.5">
-        <span className="font-mono font-medium text-foreground tabular-nums">
+        </dd>
+      </div>
+      <div className="flex items-baseline gap-1.5">
+        <dt className="text-muted-foreground order-last">
+          {t("stats.delivered")}
+        </dt>
+        <dd className="font-mono font-medium text-foreground tabular-nums">
           {data.deliverCount.toLocaleString()}
-        </span>
-        <span className="text-muted-foreground">{t("stats.delivered")}</span>
-      </span>
+        </dd>
+      </div>
       {data.topQueues.length > 0 && (
-        <span className="hidden sm:flex items-baseline gap-1.5 text-muted-foreground">
-          {t("stats.topQueues")}:{" "}
-          <span className="font-mono">
+        <div className="hidden sm:flex items-baseline gap-1.5 text-muted-foreground">
+          <dt>{t("stats.topQueues")}</dt>
+          <dd className="font-mono">
             {data.topQueues
               .slice(0, 3)
               .map((q) => `${q.queueName} (${q.count})`)
               .join(", ")}
-          </span>
-        </span>
+          </dd>
+        </div>
       )}
-      <span className="ml-auto text-muted-foreground/60">
-        {t("stats.retention")}
-      </span>
-    </div>
+      <div className="flex items-baseline gap-1.5 ml-auto text-muted-foreground/60">
+        <dt>{t("stats.retention")}</dt>
+        <dd>{t("stats.retentionValue", { days: TRACE_RETENTION_DAYS })}</dd>
+      </div>
+    </dl>
   );
 }
 
@@ -275,7 +296,14 @@ function LiveTail({
               : t("live.showing", { count: displayedEvents.length })}
           </span>
           {dropped > 0 && (
-            <Badge variant="outline" className="text-xs text-warning">
+            // role="status" implies aria-live=polite, and the live region
+            // announces visible text changes, not aria-label changes — so
+            // we let the interpolated count drive the announcement.
+            <Badge
+              variant="outline"
+              role="status"
+              className="text-xs text-warning"
+            >
               {t("live.dropped", { count: dropped })}
             </Badge>
           )}
@@ -289,7 +317,13 @@ function LiveTail({
             className="h-7 px-2 text-xs gap-1"
             onClick={paused ? handleResume : handlePause}
             disabled={!paused && events.length === 0}
-            aria-label={paused ? t("live.resume") : t("live.pause")}
+            aria-label={
+              paused
+                ? t("live.resume")
+                : events.length === 0
+                  ? t("live.pauseAriaIdle")
+                  : t("live.pause")
+            }
           >
             {paused ? (
               <Play className="w-3 h-3" />
@@ -511,6 +545,8 @@ function QueryView({ serverId }: { serverId: string }) {
 // LiveSpyContent — queue picker + per-queue spy (no firehose required)
 // ---------------------------------------------------------------------------
 
+const SPY_BANNER_DISMISSED_KEY = "qarote.messages.spyBanner.dismissed-v1";
+
 function LiveSpyContent({
   serverId,
   initialQueueName,
@@ -526,6 +562,27 @@ function LiveSpyContent({
     initialQueueName ?? ""
   );
 
+  // Dismissal of the Spy explainer banner — persisted so a returning user
+  // doesn't have to dismiss it on every session. Same pattern as the
+  // mode-switch advisory below.
+  const [spyBannerDismissed, setSpyBannerDismissed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return window.localStorage.getItem(SPY_BANNER_DISMISSED_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+  const dismissSpyBanner = useCallback(() => {
+    setSpyBannerDismissed(true);
+    try {
+      window.localStorage.setItem(SPY_BANNER_DISMISSED_KEY, "1");
+    } catch {
+      // Quota / private mode — operator just sees the banner again next
+      // session, which is the safe direction.
+    }
+  }, []);
+
   // Reset selection when vhost changes — the queue may not exist on the new vhost.
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -536,6 +593,37 @@ function LiveSpyContent({
 
   return (
     <div>
+      {/* Spy explanation banner — Spy is the default tab when firehose is
+          inactive, and most operators arrive here without knowing what a
+          "spy" actually does. One short paragraph + docs link removes the
+          guesswork and converts confusion into confidence. Dismissible
+          (per-user, persisted) so returning operators aren't lectured. */}
+      {!spyBannerDismissed && (
+        <div className="flex items-start gap-2 px-4 py-2.5 border-b border-border bg-blue-500/5 text-xs text-blue-700 dark:text-blue-400">
+          <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" aria-hidden />
+          <p className="flex-1 leading-relaxed">
+            {t("spy.aboutDesc")}{" "}
+            <a
+              href={TRACING_VS_SPY_DOCS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:no-underline"
+            >
+              {t("spy.aboutLink")}
+            </a>
+          </p>
+          <button
+            type="button"
+            onClick={dismissSpyBanner}
+            aria-label={t("mode.dismissTip")}
+            title={t("mode.dismissTip")}
+            className="shrink-0 -m-0.5 p-0.5 rounded text-blue-700/60 hover:text-blue-700 dark:text-blue-400/60 dark:hover:text-blue-400"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* Queue picker */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-muted/30">
         <span className="text-sm text-muted-foreground shrink-0">
@@ -581,9 +669,23 @@ function LiveSpyContent({
           />
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center gap-2 py-16 text-muted-foreground">
+        <div className="flex flex-col items-center justify-center gap-3 py-16 text-muted-foreground">
           <Radio className="w-5 h-5" />
           <span className="text-sm">{t("spy.selectQueueHint")}</span>
+          {/* Cross-feature pointer — users who land here looking for
+              broker-wide history can pivot to Tracing without first
+              having to discover it in the toggle. */}
+          <p className="text-xs flex flex-wrap items-center justify-center gap-1.5 mt-2">
+            <span>{t("docs.tracingAlternativeIntro")}</span>
+            <a
+              href={TRACING_VS_SPY_DOCS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              {t("docs.tracingAlternativeLink")}
+            </a>
+          </p>
         </div>
       )}
     </div>
@@ -674,30 +776,25 @@ function RecordedContent({
 
   return (
     <>
-      {/* Recorded sub-mode header: Stream | History */}
+      {/* Tracing sub-mode header: Live tail | History — same toggle
+          convention as the top-level switcher (gradient when checked). */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-border">
         <div className="flex items-center gap-1 rounded-md border border-border p-0.5">
           <button
             type="button"
             aria-pressed={mode === "live"}
+            data-state={mode === "live" ? "checked" : "unchecked"}
             onClick={() => setMode("live")}
-            className={`px-3 py-1 text-xs rounded transition-colors ${
-              mode === "live"
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+            className="px-3 py-1 text-xs rounded transition-colors text-muted-foreground hover:text-foreground data-[state=checked]:bg-primary data-[state=checked]:hover:bg-primary/90 data-[state=checked]:text-primary-foreground"
           >
             {t("mode.live")}
           </button>
           <button
             type="button"
             aria-pressed={mode === "query"}
+            data-state={mode === "query" ? "checked" : "unchecked"}
             onClick={() => setMode("query")}
-            className={`px-3 py-1 text-xs rounded transition-colors ${
-              mode === "query"
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+            className="px-3 py-1 text-xs rounded transition-colors text-muted-foreground hover:text-foreground data-[state=checked]:bg-primary data-[state=checked]:hover:bg-primary/90 data-[state=checked]:text-primary-foreground"
           >
             {t("mode.query")}
           </button>
@@ -754,7 +851,7 @@ function RecordedContent({
       ) : firehoseActive ? (
         <QueryView serverId={serverId} />
       ) : (
-        <FirehoseDisabledState
+        <TracingDisabledState
           vhosts={firehoseVhosts}
           isEnabling={isEnablingFirehose}
           onEnable={onEnableFirehose}
@@ -818,36 +915,54 @@ function MessagesContent({
 
   return (
     <div className="rounded-lg border border-border overflow-hidden">
-      {/* Top-level header: title + Live | Recorded switcher */}
+      {/* Top-level header: title + Spy | Tracing switcher + docs help */}
       <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
         <h1 className="title-section">{t("page.title")}</h1>
-        <div className="flex items-center gap-1 rounded-md border border-border p-0.5">
-          <button
-            type="button"
-            aria-pressed={topMode === "live"}
-            onClick={() => switchMode("live")}
-            className={`flex items-center gap-1.5 px-3 py-1 text-xs rounded transition-colors ${
-              topMode === "live"
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+        <div className="flex items-center gap-2">
+          <div
+            role="group"
+            aria-label={t("page.title")}
+            className="flex items-center gap-1 rounded-md border border-border p-0.5"
           >
-            <Radio className="h-3 w-3" aria-hidden />
-            {t("mode.spy")}
-          </button>
-          <button
-            type="button"
-            aria-pressed={topMode === "recorded"}
-            onClick={() => switchMode("recorded")}
-            className={`flex items-center gap-1.5 px-3 py-1 text-xs rounded transition-colors ${
-              topMode === "recorded"
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+            {/* Toggle styling follows the project's switch convention
+                (.claude/skills/development-guide.md:629-630):
+                data-state=checked + data-[state=checked]:bg-gradient-button.
+                aria-pressed stays for SR semantics — data-state is purely
+                a CSS hook. */}
+            <button
+              type="button"
+              aria-pressed={topMode === "live"}
+              data-state={topMode === "live" ? "checked" : "unchecked"}
+              onClick={() => switchMode("live")}
+              className="flex items-center gap-1.5 px-3 py-1 text-xs rounded transition-colors text-muted-foreground hover:text-foreground data-[state=checked]:bg-primary data-[state=checked]:hover:bg-primary/90 data-[state=checked]:text-primary-foreground"
+            >
+              <Radio className="h-3 w-3" aria-hidden />
+              {t("mode.spy")}
+            </button>
+            <button
+              type="button"
+              aria-pressed={topMode === "recorded"}
+              data-state={topMode === "recorded" ? "checked" : "unchecked"}
+              onClick={() => switchMode("recorded")}
+              className="flex items-center gap-1.5 px-3 py-1 text-xs rounded transition-colors text-muted-foreground hover:text-foreground data-[state=checked]:bg-primary data-[state=checked]:hover:bg-primary/90 data-[state=checked]:text-primary-foreground"
+            >
+              <Database className="h-3 w-3" aria-hidden />
+              {t("mode.recorded")}
+            </button>
+          </div>
+          {/* Docs link: lets users disambiguate Spy from Tracing without
+              forcing them to read both UI flows. Opens in a new tab so the
+              current capture / mode is preserved. */}
+          <a
+            href={TRACING_VS_SPY_DOCS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={t("docs.helpLabel")}
+            title={t("docs.helpLabel")}
+            className="inline-flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
-            <Database className="h-3 w-3" aria-hidden />
-            {t("mode.recorded")}
-          </button>
+            <HelpCircle className="h-4 w-4" aria-hidden />
+          </a>
         </div>
       </div>
 

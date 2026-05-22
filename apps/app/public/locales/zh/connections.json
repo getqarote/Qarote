@@ -43,5 +43,6 @@
   "stateFlowTooltip": "流控已激活 — broker 正在限制此连接以防止过载。",
   "stateClosingTooltip": "连接正在关闭。无需操作。",
   "maxChannelsTooltip": "单个连接上最高的通道数。50+ 可能表示资源争用；100+ 属于严重级别。",
-  "searchPlaceholder": "按名称、用户、vhost 或节点过滤..."
+  "searchPlaceholder": "按名称、用户、vhost 或节点过滤...",
+  "clearSearch": "清除搜索"
 }

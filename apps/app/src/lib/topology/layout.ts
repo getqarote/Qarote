@@ -66,6 +66,7 @@ interface BuildOptions {
   showOrphanQueues?: boolean;
   hiddenExchanges?: Set<string>;
   hiddenQueues?: Set<string>;
+  includeDefaultExchanges?: boolean;
 }
 
 const NODE_WIDTH = 200;
@@ -106,6 +107,7 @@ export function buildTopologyGraph(
     showOrphanQueues = true,
     hiddenExchanges = new Set<string>(),
     hiddenQueues = new Set<string>(),
+    includeDefaultExchanges = false,
   } = options;
 
   const g = new dagre.graphlib.Graph();
@@ -122,11 +124,18 @@ export function buildTopologyGraph(
   const nodes: Node[] = [];
   const edges: Edge[] = [];
 
-  // Filter out default exchange, internal amq.* exchanges, and user-hidden ones
+  // The unnamed exchange (e.name === "") is the RabbitMQ default exchange —
+  // it ships with every vhost, has no semantic name, and would render as a
+  // floating "(default)" node that adds noise. Always exclude it.
+  //
+  // `amq.*` exchanges are RabbitMQ's pre-declared set (amq.direct, amq.fanout,
+  // …). They're hidden by default but `includeDefaultExchanges` relaxes that
+  // for the /scan discovery canvas where surfacing them helps the user see
+  // their cluster's bindings.
   const visibleExchanges = exchanges.filter(
     (e) =>
       e.name !== "" &&
-      !e.name.startsWith("amq.") &&
+      (includeDefaultExchanges || !e.name.startsWith("amq.")) &&
       !hiddenExchanges.has(e.name)
   );
 

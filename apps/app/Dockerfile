@@ -27,14 +27,14 @@ RUN cd packages/i18n && npx tsc
 # Copy app source code
 COPY apps/app ./apps/app
 
-# Build the application
-# Accept build arguments (Vite embeds env vars at build time, not runtime)
-ARG DEPLOYMENT_MODE=selfhosted
-ARG VITE_API_URL
-ARG VITE_PORTAL_URL
-ARG VITE_DEMO_MODE
+# Build the SPA without baking VITE_* values. Vite would otherwise inline
+# them into the bundle, which would lock the image to a single tenant's
+# domain. Instead the SPA reads `window.__QAROTE_CONFIG__` at runtime —
+# the nginx entrypoint regenerates `/config.js` from container env vars
+# (see docker/nginx/docker-entrypoint.d/10-runtime-config.sh) so a single
+# published image can serve any deployment.
 WORKDIR /app/apps/app
-RUN VITE_DEPLOYMENT_MODE=${DEPLOYMENT_MODE} VITE_API_URL=${VITE_API_URL} VITE_PORTAL_URL=${VITE_PORTAL_URL} VITE_DEMO_MODE=${VITE_DEMO_MODE} pnpm run build
+RUN pnpm run build
 
 # Production stage
 FROM nginx:alpine
@@ -43,10 +43,14 @@ FROM nginx:alpine
 COPY docker/nginx/nginx.conf /etc/nginx/conf.d/default.conf
 COPY docker/nginx/security-headers.conf /etc/nginx/conf.d/security-headers.conf
 
+# Runtime config writer — nginx:alpine runs every executable in
+# /docker-entrypoint.d/ before launching nginx, in name order.
+COPY docker/nginx/docker-entrypoint.d/10-runtime-config.sh /docker-entrypoint.d/10-runtime-config.sh
+RUN chmod +x /docker-entrypoint.d/10-runtime-config.sh
+
 # Copy built files
 COPY --from=builder /app/apps/app/dist /usr/share/nginx/html
 
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
-

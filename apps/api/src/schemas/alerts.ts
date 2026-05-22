@@ -25,8 +25,18 @@ const AlertsQuerySchema = z.object({
   severity: AlertSeveritySchema.optional(),
   category: AlertCategorySchema.optional(),
   resolved: z.enum(["true", "false"]).optional(),
-  limit: z.string().regex(/^\d+$/).transform(Number).optional(),
-  offset: z.string().regex(/^\d+$/).transform(Number).optional(),
+  limit: z
+    .string()
+    .regex(/^\d+$/)
+    .transform(Number)
+    .pipe(z.number().int().min(1).max(200))
+    .optional(),
+  offset: z
+    .string()
+    .regex(/^\d+$/)
+    .transform(Number)
+    .pipe(z.number().int().min(0))
+    .optional(),
   vhost: z.string(),
 });
 

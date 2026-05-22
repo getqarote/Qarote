@@ -1,0 +1,105 @@
+---
+/**
+ * Render a Mermaid diagram on the client.
+ *
+ * The library bundle is ~500 KB minified — large for a generic component,
+ * acceptable for occasional use in long-form docs pages where the diagram
+ * is the focus. Only loads on pages that actually use the component.
+ *
+ * Usage in MDX:
+ *   import Mermaid from "@/components/Mermaid.astro";
+ *   <Mermaid code={`graph LR; A --> B`} />
+ */
+interface Props {
+  /** Raw Mermaid source. Multi-line template literals are fine. */
+  code: string;
+  /** Optional accessible label for screen readers. Falls back to a generic
+   *  diagram description. */
+  ariaLabel?: string;
+}
+
+const { code, ariaLabel = "Diagram" } = Astro.props;
+---
+
+<figure class="mermaid-figure" aria-label={ariaLabel}>
+  <pre class="mermaid">{code}</pre>
+</figure>
+
+<script>
+  import mermaid from "mermaid";
+
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: "neutral",
+    securityLevel: "strict",
+    flowchart: { curve: "basis" },
+  });
+
+  // Progressive enhancement:
+  // - Initial markup has no role="img" on the <figure>, so the inner
+  //   <pre> source remains in the accessibility tree as a usable
+  //   fallback when JS hasn't loaded, parses fail, or the network drops.
+  // - On successful mermaid.run(), the <svg> replaces the <pre> content.
+  //   At that point we set role="img" so AT announces the diagram via
+  //   aria-label and skips the SVG's internal text (which is layout
+  //   metadata, not meaningful prose).
+  // - On failure, the <pre> source stays accessible AND the figure's
+  //   aria-label is rewritten to flag the failed state.
+  //
+  // Multiple <Mermaid> components on the same page render in a single
+  // batch. A mixed-success batch is handled by inspecting each node's
+  // dataset.processed in the .finally branch — mermaid sets that flag
+  // only on rendered nodes.
+  const nodes = document.querySelectorAll<HTMLElement>("pre.mermaid");
+  if (nodes.length > 0) {
+    mermaid
+      .run({ nodes })
+      .catch((error: unknown) => {
+        console.error("Mermaid render failed:", error);
+      })
+      .finally(() => {
+        for (const node of nodes) {
+          const figure = node.closest<HTMLElement>(".mermaid-figure");
+          if (!figure) continue;
+          if (node.dataset.processed === "true") {
+            // Render succeeded — promote the figure to an opaque image.
+            figure.setAttribute("role", "img");
+          } else {
+            // Render failed (parse error, mixed-success batch, etc.).
+            // Leave role unset so the source <pre> remains the
+            // accessible fallback, and rewrite aria-label so the
+            // announcement matches what's actually on screen.
+            node.dataset.mermaidError = "true";
+            const original = figure.getAttribute("aria-label") ?? "Diagram";
+            figure.setAttribute(
+              "aria-label",
+              `${original} — failed to render; source shown below`
+            );
+          }
+        }
+      });
+  }
+</script>
+
+<style>
+  .mermaid-figure :global(pre.mermaid[data-mermaid-error="true"]) {
+    border: 1px dashed var(--color-warning, #d97706);
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    color: var(--color-fg-muted, #555);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+  }
+</style>
+
+<style>
+  .mermaid-figure {
+    margin: 1.5rem 0;
+    overflow-x: auto;
+  }
+  .mermaid-figure :global(svg) {
+    max-width: 100%;
+    height: auto;
+  }
+</style>

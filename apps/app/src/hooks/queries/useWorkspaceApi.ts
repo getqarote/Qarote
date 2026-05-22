@@ -32,6 +32,7 @@ export const useWorkspaceUsers = (options?: {
   page?: number;
   limit?: number;
   workspaceId?: string;
+  enabled?: boolean;
 }) => {
   const { workspace } = useWorkspace();
   const effectiveId = options?.workspaceId || workspace?.id || "";
@@ -43,7 +44,7 @@ export const useWorkspaceUsers = (options?: {
       limit: options?.limit ?? 20,
     },
     {
-      enabled: !!effectiveId,
+      enabled: (options?.enabled ?? true) && !!effectiveId,
       staleTime: 60000, // 1 minute
     }
   );
@@ -52,13 +53,24 @@ export const useWorkspaceUsers = (options?: {
 };
 
 // New invitation hooks
-export const useInvitations = (options?: { page?: number; limit?: number }) => {
+export const useInvitations = (options?: {
+  page?: number;
+  limit?: number;
+  workspaceId?: string;
+  enabled?: boolean;
+}) => {
   const { isAuthenticated } = useAuth();
+  const { workspace } = useWorkspace();
+  const effectiveId = options?.workspaceId || workspace?.id || "";
 
   return trpc.workspace.invitation.getInvitations.useQuery(
-    { page: options?.page ?? 1, limit: options?.limit ?? 20 },
     {
-      enabled: isAuthenticated,
+      workspaceId: effectiveId,
+      page: options?.page ?? 1,
+      limit: options?.limit ?? 20,
+    },
+    {
+      enabled: isAuthenticated && !!effectiveId && (options?.enabled ?? true),
       staleTime: 30000, // 30 seconds
     }
   );
@@ -86,6 +98,65 @@ export const useRemoveUserFromWorkspace = () => {
   });
 
   return mutation;
+};
+
+/**
+ * Bulk-assign a target role to N workspace members.
+ *
+ * Single mutation path for both built-in and custom roles — the backend
+ * branches on `targetRoleId`. Replaces the legacy `user.updateMemberRole`,
+ * which only handled built-ins and was broken for custom-role actors.
+ */
+export const useAssignRole = () => {
+  const utils = trpc.useUtils();
+
+  return trpc.workspace.role.assignRole.useMutation({
+    onSuccess: () => {
+      utils.user.getWorkspaceUsers.invalidate();
+      // The actor may have demoted themselves (last-OWNER guard
+      // notwithstanding) — refresh `getMyRole` so the UI's permission
+      // gates reflect the change immediately.
+      utils.workspace.core.getMyRole.invalidate();
+    },
+  });
+};
+
+/**
+ * List the workspace's custom roles. Returns at most 100 in one page;
+ * Enterprise workspaces with more than that need to clean up roles
+ * rather than have the dropdown paginate (see `docs/plans/rbac.md` §9.4).
+ */
+export const useWorkspaceRoles = (
+  workspaceId: string,
+  options?: { enabled?: boolean }
+) => {
+  return trpc.workspace.role.list.useQuery(
+    { workspaceId, limit: 100 },
+    {
+      enabled: (options?.enabled ?? true) && !!workspaceId,
+      staleTime: 60_000,
+    }
+  );
+};
+
+/**
+ * Return the four system Role UUIDs (`OWNER`, `ADMIN`, `MEMBER`,
+ * `READONLY`) so the team-page Select can address built-ins via
+ * `assignRole.targetRoleId` just like custom roles.
+ *
+ * System roles are immutable — long stale time is safe.
+ */
+export const useBuiltinRoles = (
+  workspaceId: string,
+  options?: { enabled?: boolean }
+) => {
+  return trpc.workspace.role.builtins.useQuery(
+    { workspaceId },
+    {
+      enabled: (options?.enabled ?? true) && !!workspaceId,
+      staleTime: 24 * 60 * 60 * 1000,
+    }
+  );
 };
 
 // Get user's workspaces

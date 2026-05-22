@@ -7,6 +7,7 @@ import { auth } from "@/core/better-auth";
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
+import { createEffectivePermissionsLoader } from "@/auth/effective-permissions";
 import type { OrgRole } from "@/generated/prisma/client";
 
 export interface OrgResolution {
@@ -31,6 +32,19 @@ export interface Context extends Record<string, unknown> {
   /** Client IP resolved at context creation. Prefers CF-Connecting-IP (Cloudflare proxy),
    *  falls back to X-Forwarded-For. Null in environments without a reverse proxy. */
   remoteIp: string | null;
+  /** Client User-Agent header — captured for audit-log forensics. Null when absent. */
+  userAgent: string | null;
+  /**
+   * Per-request DataLoader for `loadEffectivePermissions(memberId)`
+   * (RBAC Phase 3). Memoizes within the request so a single mutation
+   * never reloads the same role; cross-request invalidation is
+   * version-aware via `Role.updatedAt`. PR-2 wires `workspaceProcedure`
+   * to populate `ctx.effectivePermissions` from this loader once
+   * `ctx.workspaceMember` has been resolved.
+   */
+  effectivePermissionsLoader: ReturnType<
+    typeof createEffectivePermissionsLoader
+  >;
 }
 
 /**
@@ -85,7 +99,6 @@ export async function createContext(opts: {
         email: baUser.email as string,
         firstName: (baUser.firstName as string) || "",
         lastName: (baUser.lastName as string) || "",
-        role: baUser.role as SafeUser["role"],
         workspaceId: (baUser.workspaceId as string) || null,
         isActive: baUser.isActive !== false,
         emailVerified: (baUser.emailVerified as boolean) ?? false,
@@ -161,6 +174,8 @@ export async function createContext(opts: {
     req.header("X-Forwarded-For")?.split(",")[0]?.trim() ??
     null;
 
+  const userAgent = req.header("User-Agent") ?? null;
+
   return {
     user,
     workspaceId,
@@ -171,6 +186,12 @@ export async function createContext(opts: {
     prisma,
     logger,
     remoteIp,
+    userAgent,
+    // Per-request DataLoader — short-lived so post-mutation reads
+    // on the same request can still see stale data; cross-request
+    // freshness is handled by `Role.updatedAt` revalidation inside
+    // `loadEffectivePermissions` itself.
+    effectivePermissionsLoader: createEffectivePermissionsLoader(),
   };
 }
 

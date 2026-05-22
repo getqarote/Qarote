@@ -2,6 +2,8 @@ import { lazy, Suspense, useEffect } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 
+import { NuqsAdapter } from "nuqs/adapters/react-router/v7";
+
 import { queryClient } from "@/lib/queryClient";
 import { SentryErrorBoundary, withSentryProfiling } from "@/lib/sentry";
 import { TRPCProvider } from "@/lib/trpc/provider";
@@ -9,8 +11,10 @@ import { TRPCProvider } from "@/lib/trpc/provider";
 import { ConfusedRabbit } from "@/components/ConfusedRabbit";
 import { Layout } from "@/components/Layout";
 import { PageLoader } from "@/components/PageLoader";
+import { PageTracker } from "@/components/PageTracker";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { PublicRoute } from "@/components/PublicRoute";
+import { ScopeDeniedToastListener } from "@/components/rbac/ScopeDeniedToastListener";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { TawkTo } from "@/components/TawkTo";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -87,8 +91,28 @@ const DigestSection = lazy(() =>
     default: m.default,
   }))
 );
+const LlmSection = lazy(() =>
+  import("./pages/settings/LlmSection").then((m) => ({
+    default: m.default,
+  }))
+);
 const FeedbackSection = lazy(() =>
   import("./pages/settings/FeedbackSection").then((m) => ({
+    default: m.default,
+  }))
+);
+const AuditSection = lazy(() =>
+  import("./pages/settings/AuditSection").then((m) => ({
+    default: m.default,
+  }))
+);
+const RolesSection = lazy(() =>
+  import("./pages/settings/RolesSection").then((m) => ({
+    default: m.default,
+  }))
+);
+const RoleEditor = lazy(() =>
+  import("./pages/settings/RoleEditor").then((m) => ({
     default: m.default,
   }))
 );
@@ -117,10 +141,12 @@ const AcceptInvitation = lazy(() => import("./pages/AcceptInvitation"));
 const AcceptOrgInvitation = lazy(() => import("./pages/AcceptOrgInvitation"));
 const SSOCallback = lazy(() => import("./pages/SSOCallback"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
+const ScanDiscovery = lazy(() => import("./pages/ScanDiscovery"));
 const Definitions = lazy(() => import("./pages/Definitions"));
 const Diagnosis = lazy(() => import("./pages/Diagnosis"));
 const Messages = lazy(() => import("./pages/Messages"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Explanation = lazy(() => import("./pages/Explanation"));
 
 const AppCore = () => (
   <TRPCProvider>
@@ -133,330 +159,385 @@ const AppCore = () => (
                 <VHostProvider>
                   <TooltipProvider>
                     <Sonner />
+                    <ScopeDeniedToastListener />
                     <BrowserRouter>
-                      <TawkTo />
-                      <ScrollToTop />
-                      <Suspense fallback={<PageLoader />}>
-                        <Routes>
-                          {/* Public authentication routes */}
-                          <Route
-                            path="/auth/sign-in"
-                            element={
-                              <PublicRoute>
-                                <SignIn />
-                              </PublicRoute>
-                            }
-                          />
-                          <Route
-                            path="/auth/sign-up"
-                            element={
-                              <PublicRoute>
-                                <SignUp />
-                              </PublicRoute>
-                            }
-                          />
-                          <Route
-                            path="/auth/sso/callback"
-                            element={<SSOCallback />}
-                          />
-                          <Route
-                            path="/verify-email"
-                            element={<VerifyEmail />}
-                          />
-                          <Route
-                            path="/terms-of-service"
-                            element={
-                              <ExternalRedirect to="https://qarote.io/terms-of-service/" />
-                            }
-                          />
-                          <Route
-                            path="/privacy-policy"
-                            element={
-                              <ExternalRedirect to="https://qarote.io/privacy-policy/" />
-                            }
-                          />
-                          <Route
-                            path="/forgot-password"
-                            element={
-                              <PublicRoute>
-                                <ForgotPassword />
-                              </PublicRoute>
-                            }
-                          />
-                          <Route
-                            path="/reset-password"
-                            element={
-                              <PublicRoute>
-                                <ResetPassword />
-                              </PublicRoute>
-                            }
-                          />
-                          <Route
-                            path="/invite/:token"
-                            element={
-                              <PublicRoute>
-                                <AcceptInvitation />
-                              </PublicRoute>
-                            }
-                          />
-                          {/* org-invite is NOT wrapped in PublicRoute because
+                      <NuqsAdapter>
+                        <TawkTo />
+                        <ScrollToTop />
+                        <PageTracker />
+                        <Suspense fallback={<PageLoader />}>
+                          <Routes>
+                            {/* Public authentication routes */}
+                            <Route
+                              path="/auth/sign-in"
+                              element={
+                                <PublicRoute>
+                                  <SignIn />
+                                </PublicRoute>
+                              }
+                            />
+                            <Route
+                              path="/auth/sign-up"
+                              element={
+                                <PublicRoute>
+                                  <SignUp />
+                                </PublicRoute>
+                              }
+                            />
+                            <Route
+                              path="/auth/sso/callback"
+                              element={<SSOCallback />}
+                            />
+                            <Route
+                              path="/verify-email"
+                              element={<VerifyEmail />}
+                            />
+                            <Route
+                              path="/terms-of-service"
+                              element={
+                                <ExternalRedirect to="https://qarote.io/terms-of-service/" />
+                              }
+                            />
+                            <Route
+                              path="/privacy-policy"
+                              element={
+                                <ExternalRedirect to="https://qarote.io/privacy-policy/" />
+                              }
+                            />
+                            <Route
+                              path="/forgot-password"
+                              element={
+                                <PublicRoute>
+                                  <ForgotPassword />
+                                </PublicRoute>
+                              }
+                            />
+                            <Route
+                              path="/reset-password"
+                              element={
+                                <PublicRoute>
+                                  <ResetPassword />
+                                </PublicRoute>
+                              }
+                            />
+                            <Route
+                              path="/invite/:token"
+                              element={
+                                <PublicRoute>
+                                  <AcceptInvitation />
+                                </PublicRoute>
+                              }
+                            />
+                            {/* org-invite is NOT wrapped in PublicRoute because
                               PublicRoute redirects authenticated users to "/".
                               This page must work for both authenticated and
                               unauthenticated users (dual-mode acceptance). */}
-                          <Route
-                            path="/org-invite/:token"
-                            element={<AcceptOrgInvitation />}
-                          />
+                            <Route
+                              path="/org-invite/:token"
+                              element={<AcceptOrgInvitation />}
+                            />
 
-                          {/* Protected routes */}
-                          <Route
-                            path="/onboarding"
-                            element={
-                              <ProtectedRoute>
-                                <Onboarding />
-                              </ProtectedRoute>
-                            }
-                          />
-                          {/* Legacy redirect: /workspace → /onboarding */}
-                          <Route
-                            path="/workspace"
-                            element={
-                              <ProtectedRoute>
-                                <Navigate to="/onboarding" replace />
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <Index />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/queues"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <Queues />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/queues/:queueName"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <QueueDetail />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/channels"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <Channels />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/connections"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <Connections />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/nodes"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <Nodes />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/exchanges"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <Exchanges />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/policies"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <Policies />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/topology"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <Topology />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/definitions"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <Definitions />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/vhosts"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <VHosts />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/vhosts/:vhostName"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <VHostDetails />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/users"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <Users />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/users/:username"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <UserDetails />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/alerts"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <Alerts />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/diagnosis"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <Diagnosis />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/messages"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <Messages />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/settings"
-                            element={
-                              <ProtectedRoute>
-                                <Settings />
-                              </ProtectedRoute>
-                            }
-                          >
+                            {/* Protected routes */}
                             <Route
-                              index
+                              path="/onboarding"
                               element={
-                                <Navigate to="/settings/profile" replace />
+                                <ProtectedRoute>
+                                  <Onboarding />
+                                </ProtectedRoute>
                               }
                             />
                             <Route
-                              path="profile"
-                              element={<ProfileSection />}
-                            />
-                            <Route
-                              path="appearance"
-                              element={<AppearanceSection />}
-                            />
-                            <Route
-                              path="workspace"
-                              element={<WorkspaceSection />}
-                            />
-                            <Route
-                              path="members"
-                              element={<MembersSection />}
-                            />
-                            {/* Redirects for old routes */}
-                            <Route
-                              path="plans"
+                              path="/scan"
                               element={
-                                <Navigate to="/settings/subscription" replace />
+                                <ProtectedRoute>
+                                  <ScanDiscovery />
+                                </ProtectedRoute>
+                              }
+                            />
+                            {/* Legacy redirect: /workspace → /onboarding */}
+                            <Route
+                              path="/workspace"
+                              element={
+                                <ProtectedRoute>
+                                  <Navigate to="/onboarding" replace />
+                                </ProtectedRoute>
                               }
                             />
                             <Route
-                              path="team"
+                              path="/"
                               element={
-                                <Navigate to="/settings/members" replace />
+                                <ProtectedRoute>
+                                  <Layout>
+                                    <Index />
+                                  </Layout>
+                                </ProtectedRoute>
                               }
                             />
                             <Route
-                              path="license"
-                              element={<LicenseSection />}
+                              path="/queues"
+                              element={
+                                <ProtectedRoute>
+                                  <Layout>
+                                    <Queues />
+                                  </Layout>
+                                </ProtectedRoute>
+                              }
                             />
                             <Route
-                              path="organization"
-                              element={<OrganizationSection />}
+                              path="/queues/:queueName"
+                              element={
+                                <ProtectedRoute>
+                                  <Layout>
+                                    <QueueDetail />
+                                  </Layout>
+                                </ProtectedRoute>
+                              }
                             />
                             <Route
-                              path="subscription"
-                              element={<SubscriptionSection />}
+                              path="/channels"
+                              element={
+                                <ProtectedRoute>
+                                  <Layout>
+                                    <Channels />
+                                  </Layout>
+                                </ProtectedRoute>
+                              }
                             />
                             <Route
-                              path="subscription/billing"
-                              element={<Billing />}
+                              path="/connections"
+                              element={
+                                <ProtectedRoute>
+                                  <Layout>
+                                    <Connections />
+                                  </Layout>
+                                </ProtectedRoute>
+                              }
                             />
                             <Route
-                              path="billing"
+                              path="/nodes"
+                              element={
+                                <ProtectedRoute>
+                                  <Layout>
+                                    <Nodes />
+                                  </Layout>
+                                </ProtectedRoute>
+                              }
+                            />
+                            <Route
+                              path="/exchanges"
+                              element={
+                                <ProtectedRoute>
+                                  <Layout>
+                                    <Exchanges />
+                                  </Layout>
+                                </ProtectedRoute>
+                              }
+                            />
+                            <Route
+                              path="/policies"
+                              element={
+                                <ProtectedRoute>
+                                  <Layout>
+                                    <Policies />
+                                  </Layout>
+                                </ProtectedRoute>
+                              }
+                            />
+                            <Route
+                              path="/topology"
+                              element={
+                                <ProtectedRoute>
+                                  <Layout>
+                                    <Topology />
+                                  </Layout>
+                                </ProtectedRoute>
+                              }
+                            />
+                            <Route
+                              path="/definitions"
+                              element={
+                                <ProtectedRoute>
+                                  <Layout>
+                                    <Definitions />
+                                  </Layout>
+                                </ProtectedRoute>
+                              }
+                            />
+                            <Route
+                              path="/vhosts"
+                              element={
+                                <ProtectedRoute>
+                                  <Layout>
+                                    <VHosts />
+                                  </Layout>
+                                </ProtectedRoute>
+                              }
+                            />
+                            <Route
+                              path="/vhosts/:vhostName"
+                              element={
+                                <ProtectedRoute>
+                                  <Layout>
+                                    <VHostDetails />
+                                  </Layout>
+                                </ProtectedRoute>
+                              }
+                            />
+                            <Route
+                              path="/users"
+                              element={
+                                <ProtectedRoute>
+                                  <Layout>
+                                    <Users />
+                                  </Layout>
+                                </ProtectedRoute>
+                              }
+                            />
+                            <Route
+                              path="/users/:username"
+                              element={
+                                <ProtectedRoute>
+                                  <Layout>
+                                    <UserDetails />
+                                  </Layout>
+                                </ProtectedRoute>
+                              }
+                            />
+                            <Route
+                              path="/alerts"
+                              element={
+                                <ProtectedRoute>
+                                  <Layout>
+                                    <Alerts />
+                                  </Layout>
+                                </ProtectedRoute>
+                              }
+                            />
+                            <Route
+                              path="/diagnosis"
+                              element={
+                                <ProtectedRoute>
+                                  <Layout>
+                                    <Diagnosis />
+                                  </Layout>
+                                </ProtectedRoute>
+                              }
+                            />
+                            <Route
+                              path="/messages"
+                              element={
+                                <ProtectedRoute>
+                                  <Layout>
+                                    <Messages />
+                                  </Layout>
+                                </ProtectedRoute>
+                              }
+                            />
+                            <Route
+                              path="/settings"
+                              element={
+                                <ProtectedRoute>
+                                  <Settings />
+                                </ProtectedRoute>
+                              }
+                            >
+                              <Route
+                                index
+                                element={
+                                  <Navigate to="/settings/profile" replace />
+                                }
+                              />
+                              <Route
+                                path="profile"
+                                element={<ProfileSection />}
+                              />
+                              <Route
+                                path="appearance"
+                                element={<AppearanceSection />}
+                              />
+                              <Route
+                                path="workspace"
+                                element={<WorkspaceSection />}
+                              />
+                              <Route
+                                path="members"
+                                element={<MembersSection />}
+                              />
+                              {/* Redirects for old routes */}
+                              <Route
+                                path="plans"
+                                element={
+                                  <Navigate
+                                    to="/settings/subscription"
+                                    replace
+                                  />
+                                }
+                              />
+                              <Route
+                                path="team"
+                                element={
+                                  <Navigate to="/settings/members" replace />
+                                }
+                              />
+                              <Route
+                                path="license"
+                                element={<LicenseSection />}
+                              />
+                              <Route
+                                path="organization"
+                                element={<OrganizationSection />}
+                              />
+                              <Route
+                                path="subscription"
+                                element={<SubscriptionSection />}
+                              />
+                              <Route
+                                path="subscription/billing"
+                                element={<Billing />}
+                              />
+                              <Route
+                                path="billing"
+                                element={
+                                  <Navigate
+                                    to="/settings/subscription/billing"
+                                    replace
+                                  />
+                                }
+                              />
+                              <Route path="sso" element={<SSOSection />} />
+                              <Route path="smtp" element={<SMTPSection />} />
+                              <Route
+                                path="digest"
+                                element={<DigestSection />}
+                              />
+                              <Route path="llm" element={<LlmSection />} />
+                              <Route
+                                path="feedback"
+                                element={<FeedbackSection />}
+                              />
+                              <Route path="audit" element={<AuditSection />} />
+                              <Route path="roles" element={<RolesSection />} />
+                              <Route
+                                path="roles/new"
+                                element={<RoleEditor />}
+                              />
+                              <Route
+                                path="roles/:roleId"
+                                element={<RoleEditor />}
+                              />
+                            </Route>
+                            <Route
+                              path="/plans"
+                              element={
+                                <ProtectedRoute>
+                                  <Layout>
+                                    <Plans />
+                                  </Layout>
+                                </ProtectedRoute>
+                              }
+                            />
+                            <Route
+                              path="/billing"
                               element={
                                 <Navigate
                                   to="/settings/subscription/billing"
@@ -464,73 +545,59 @@ const AppCore = () => (
                                 />
                               }
                             />
-                            <Route path="sso" element={<SSOSection />} />
-                            <Route path="smtp" element={<SMTPSection />} />
-                            <Route path="digest" element={<DigestSection />} />
                             <Route
-                              path="feedback"
-                              element={<FeedbackSection />}
+                              path="/payment/success"
+                              element={
+                                <ProtectedRoute>
+                                  <PaymentSuccess />
+                                </ProtectedRoute>
+                              }
                             />
-                          </Route>
-                          <Route
-                            path="/plans"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <Plans />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/billing"
-                            element={
-                              <Navigate
-                                to="/settings/subscription/billing"
-                                replace
-                              />
-                            }
-                          />
-                          <Route
-                            path="/payment/success"
-                            element={
-                              <ProtectedRoute>
-                                <PaymentSuccess />
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/payment/cancelled"
-                            element={
-                              <ProtectedRoute>
-                                <PaymentCancelled />
-                              </ProtectedRoute>
-                            }
-                          />
-                          <Route
-                            path="/help"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <HelpSupport />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
+                            <Route
+                              path="/payment/cancelled"
+                              element={
+                                <ProtectedRoute>
+                                  <PaymentCancelled />
+                                </ProtectedRoute>
+                              }
+                            />
+                            <Route
+                              path="/help"
+                              element={
+                                <ProtectedRoute>
+                                  <Layout>
+                                    <HelpSupport />
+                                  </Layout>
+                                </ProtectedRoute>
+                              }
+                            />
 
-                          {/* Protected 404 route - catches all other paths */}
-                          <Route
-                            path="*"
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <NotFound />
-                                </Layout>
-                              </ProtectedRoute>
-                            }
-                          />
-                        </Routes>
-                      </Suspense>
+                            {/* LLM explanation permalink */}
+                            <Route
+                              path="/explanations/:id"
+                              element={
+                                <ProtectedRoute>
+                                  <Layout>
+                                    <Explanation />
+                                  </Layout>
+                                </ProtectedRoute>
+                              }
+                            />
+
+                            {/* Protected 404 route - catches all other paths */}
+                            <Route
+                              path="*"
+                              element={
+                                <ProtectedRoute>
+                                  <Layout>
+                                    <NotFound />
+                                  </Layout>
+                                </ProtectedRoute>
+                              }
+                            />
+                          </Routes>
+                        </Suspense>
+                      </NuqsAdapter>
                     </BrowserRouter>
                   </TooltipProvider>
                 </VHostProvider>

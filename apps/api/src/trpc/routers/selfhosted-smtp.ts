@@ -16,18 +16,39 @@ import {
 import { emailConfig } from "@/config";
 import { isSelfHostedMode } from "@/config/deployment";
 
-import { rateLimitedAdminProcedure, router } from "@/trpc/trpc";
+import { rateLimitedOrgAdminProcedure, router } from "@/trpc/trpc";
 
 const REDACTED = "••••••••";
 
-/** Admin procedure that only runs in self-hosted mode */
-const selfHostedProcedure = rateLimitedAdminProcedure.use(async (opts) => {
+/**
+ * Admin procedure that only runs in self-hosted mode AND only for the
+ * bootstrap organization (the first org created by `bootstrap-admin.ts`).
+ *
+ * SMTP config is a single SystemSetting row shared by the whole instance —
+ * letting any org's admin overwrite it would let them redirect all
+ * password-reset/invitation emails for every tenant to an attacker-controlled
+ * relay. Pinning authority to the bootstrap org matches the install-time
+ * mental model: whoever provisioned the instance owns the SMTP config.
+ */
+const selfHostedProcedure = rateLimitedOrgAdminProcedure.use(async (opts) => {
   if (!isSelfHostedMode()) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "SMTP settings are only available for self-hosted instances",
     });
   }
+
+  const bootstrapOrg = await opts.ctx.prisma.organization.findFirst({
+    orderBy: { createdAt: "asc" },
+    select: { id: true },
+  });
+  if (!bootstrapOrg || bootstrapOrg.id !== opts.ctx.organizationId) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "SMTP configuration is restricted to the platform administrator",
+    });
+  }
+
   return opts.next();
 });
 

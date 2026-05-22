@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 import { AlertCircle, Check, Key, Loader2, Zap } from "lucide-react";
 
 import { isSelfHostedMode } from "@/lib/featureFlags";
+import { openPortalPath } from "@/lib/runtimeConfig";
 
 import { PixelX } from "@/components/ui/pixel-x";
 
@@ -80,13 +81,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
               <button
                 type="button"
                 className="py-2 px-4 rounded-lg font-medium border border-border hover:bg-muted"
-                onClick={() =>
-                  window.open(
-                    `${import.meta.env.VITE_PORTAL_URL}/purchase`,
-                    "_blank",
-                    "noopener,noreferrer"
-                  )
-                }
+                onClick={() => openPortalPath("/purchase")}
               >
                 {t("upgradeModal.purchase")}
               </button>

@@ -1,0 +1,211 @@
+name: LLM Eval Harness
+
+# Runs the situated-explanation eval suite on PRs that touch LLM code, on
+# every merge to main, and on manual dispatch.
+# Plan: docs/plans/llm-situated-explanation.md.
+#
+# Cost control:
+# - Path filters scope runs to LLM-relevant changes only.
+# - `concurrency` cancels superseded PR runs so N pushes don't pay N times.
+# - Promptfoo cache is disabled so the gate cannot mask regressions through
+#   stale judge results (each run re-evaluates from scratch).
+#
+# Security: this workflow uses the ANTHROPIC_API_KEY secret. The repo is
+# private so PR forks are not a concern.
+
+on:
+  # `ready_for_review` so the eval kicks off the moment a draft is promoted,
+  # without paying for it during draft iterations. Combined with the
+  # job-level `if` guard below that excludes drafts from synchronize events.
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - "apps/api/src/ee/services/llm/**"
+      - "apps/api/src/ee/routers/llm.router.ts"
+      - ".github/workflows/llm-eval.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/api/src/ee/services/llm/**"
+      - "apps/api/src/ee/routers/llm.router.ts"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  DATABASE_URL: postgresql://localhost:5432/dummy
+
+jobs:
+  eval:
+    name: LLM Situated-Explanation Eval
+    runs-on: ubuntu-latest
+    # Skip on draft PRs — eval costs ~$2.50/run (Haiku target + Sonnet
+    # judge × 30+ fixtures × repeat: 3). Authors iterate freely on a draft;
+    # the eval kicks in only when the PR is marked ready-for-review.
+    # `pull_request.draft` is unset on push / workflow_dispatch events, so
+    # the `!= true` form correctly allows those through.
+    if: ${{ github.event.pull_request.draft != true }}
+    # contents:read is enough to clone and read the workflow; pull-requests:
+    # write is required by the regression-gate step which posts/edits a
+    # sticky comment on the PR. Issues:write is required because GitHub
+    # treats PR comments as issue comments under the hood (the `gh api
+    # repos/.../issues/<pr>/comments` endpoint we use). Without it, the
+    # POST/PATCH would 403.
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+      issues: write
+    # Skip when the API key isn't configured. The eval is a quality gate,
+    # not a security gate — this lets the workflow pass silently if the
+    # secret is removed or rotated without a corresponding code change.
+    # Expose the secret at job level so the step-level `if:` can read it via
+    # the env context — `secrets.*` is not an allowed context for step-level
+    # conditionals on every actions runner version.
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v6
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: "9.0.0"
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "pnpm"
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🤖 Run eval suite (no cache — gate cannot mask regressions)
+        # Skip when the secret isn't configured: an empty key would surface
+        # as a 401 mid-run rather than a clear "not configured" signal.
+        # The job-level if already restricts to same-repo PRs, but a same-repo
+        # PR opened before the secret is added would otherwise produce a
+        # false failure.
+        #
+        # Secret name follows the prod stack: MANAGED_LLM_API_KEY (already
+        # wired in deploy workflows). promptfoo's Anthropic provider reads
+        # ANTHROPIC_API_KEY, so we re-export it under that name for the step.
+        #
+        # continue-on-error is intentional: promptfoo exits 100 whenever any
+        # rubric assertion lands below threshold (normal during prompt
+        # iteration). We let the eval step pass and defer the real
+        # block/allow decision to the regression-gate step below, which
+        # compares this run to the latest main artifact.
+        continue-on-error: true
+        if: ${{ env.ANTHROPIC_API_KEY != '' }}
+        working-directory: apps/api
+        env:
+          ANTHROPIC_API_KEY: ${{ env.ANTHROPIC_API_KEY }}
+          PROMPTFOO_DISABLE_TELEMETRY: "1"
+        run: pnpm run eval:llm
+
+      - name: 📤 Upload eval result
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: llm-eval-result
+          path: apps/api/src/ee/services/llm/__evals__/eval-result.json
+          # 7-day retention — fixtures must remain synthetic (a fixture-test
+          # asserts no real customer data sneaks in), but shorter retention
+          # limits exposure of judge rationale and full prompt content.
+          retention-days: 7
+
+      - name: 📥 Download main baseline artifact
+        # Only relevant on PR runs — on push:main the upload above IS the
+        # baseline; nothing to compare against. We download via gh CLI
+        # rather than actions/download-artifact because the latter needs
+        # a run-id input and the action-context's matching of "latest
+        # successful run on main" is awkward to express declaratively.
+        # gh CLI is direct.
+        #
+        # `|| true` so a missing baseline (first run after the gate
+        # lands, retention expired, etc.) is non-fatal — the gate step
+        # detects the empty directory and degrades to a "skipped" comment.
+        if: github.event_name == 'pull_request' && env.ANTHROPIC_API_KEY != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p /tmp/baseline
+          latest_main_run=$(gh run list \
+            --workflow=llm-eval.yml \
+            --branch=main \
+            --status=success \
+            --event=push \
+            --limit=1 \
+            --json databaseId \
+            --jq '.[0].databaseId' || true)
+          if [ -n "$latest_main_run" ]; then
+            echo "Downloading baseline from main run $latest_main_run"
+            gh run download "$latest_main_run" \
+              --name llm-eval-result \
+              --dir /tmp/baseline/ || true
+          else
+            echo "No successful main run found — gate will be skipped"
+          fi
+          ls -la /tmp/baseline/ || true
+
+      - name: 🚦 Regression gate
+        # Compares this PR's eval to the main baseline (downloaded
+        # above) and fails the job ONLY on demonstrable regression.
+        # See compareEvals in apps/api/src/.../gate/compare.ts for the
+        # exact rules. Posts a sticky markdown comment to the PR with
+        # per-fixture deltas regardless of pass/fail so improvements
+        # are visible too.
+        if: github.event_name == 'pull_request' && env.ANTHROPIC_API_KEY != ''
+        working-directory: apps/api
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASELINE_PATH: /tmp/baseline/eval-result.json
+          # Working-directory is apps/api, so CURRENT_PATH is relative to it.
+          CURRENT_PATH: src/ee/services/llm/__evals__/eval-result.json
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          # Tolerate up to N single-fixture PASS → FAIL flips on rule 1.
+          # The suite shows ±0.4 score swings on borderline fixtures at
+          # `repeat: 3` (see audits/2026-05.md §"variance observée").
+          # The borderline cohort widened after Phase 2: two consecutive
+          # identical-prompt CI runs on PR #146 flipped 4 different
+          # fixtures (channel-leak-broker, memory-alarm-active,
+          # partition-detected-quorum, publish-rate-spike-cascading) on
+          # the second run that had been at 1.0 on the first — pure judge
+          # noise. Bumped from 3 → 5 to absorb the post-Phase-2 cohort
+          # while keeping rules 2 (pass-count drop) and 3 (avg-score
+          # drop within 5 pts) as independent guards on the aggregates.
+          # Drop this back to 0 once `repeat: 5` lands and noise floor
+          # recedes.
+          MAX_REGRESSED_FIXTURES: "5"
+          # Bloat regression guard (rule 4) for the firehose-evidence plan.
+          # Each fixture in this set contains no firehose data — the renderer
+          # omits every Firehose section — so its rendered prompt is byte-
+          # identical to main. A score drop on any of them is the cleanest
+          # signal that the new STRICT-rules block eroded attention globally.
+          # See docs/internal/llm-firehose-evidence-phase-2.md §"Bloat
+          # regression check renforcé" for the rationale.
+          #
+          # Phase 2 hardening: 5 → 7 fixtures (added partition-detected-
+          # quorum and consumer-crash-repeated — distinct rule families,
+          # still firehose-empty).
+          #
+          # Tolerance walk: 0.03 (Phase 1) → 0.02 (Phase 2 PR 5a-i, when
+          # we thought variance was tight) → 0.05 (post #146, after two
+          # back-to-back CI runs on identical code showed single-fixture
+          # judge swings of 0.17 between runs — well over the 0.02 we
+          # were enforcing). The new threshold still catches a real
+          # bloat-erosion shape (the Phase 2 incident had two fixtures
+          # at -16.7 pts each, an order of magnitude above this tolerance)
+          # without flapping on judge variance. Tighten back when
+          # `repeat: 5` lands.
+          PROTECTED_FIXTURES: "queue-depth-high,queue-depth-high-cascading,queue-depth-high-superseded,queue-depth-high-after-policy-applied,queue-depth-high-stale-policy-change,partition-detected-quorum,consumer-crash-repeated"
+          PROTECTED_SCORE_DROP_TOLERANCE: "0.05"
+        run: pnpm exec tsx scripts/llm-eval/run-gate.ts

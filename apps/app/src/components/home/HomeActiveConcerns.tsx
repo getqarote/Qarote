@@ -1,6 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
+import { findingKey } from "@/lib/findingKey";
+
 import { DiagnosisCard } from "@/components/diagnosis/DiagnosisCard";
 
 import type { useDiagnosis } from "@/hooks/queries/useDiagnosis";
@@ -81,9 +83,7 @@ export function HomeActiveConcerns({
       </div>
       <div className="space-y-3">
         {visible.map((d) => (
-          <div
-            key={`${d.rule}-${d.scope}-${d.queueName}-${d.vhost}-${d.detectedAt}`}
-          >
+          <div key={findingKey(d)}>
             <DiagnosisCard
               rule={d.rule}
               severity={d.severity}
@@ -96,6 +96,7 @@ export function HomeActiveConcerns({
               detectedAt={d.detectedAt}
               supersededBy={d.supersededBy}
               firstSeenAt={d.firstSeenAt}
+              findingId={d.id}
             />
             <div className="flex justify-end mt-1.5">
               <Link

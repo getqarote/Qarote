@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
+import type { Event } from "@/services/stripe/stripe.service";
+
 import { processStripeWebhook } from "../webhook-processor";
 
 // Mock all webhook handlers
@@ -24,15 +26,21 @@ vi.mock("@/core/logger", () => ({
 // Import handlers after mocking so we get the mocked versions
 const handlers = await import("../webhook-handlers");
 
-function makeEvent(type: string, data: unknown = {}) {
-  return { type, data: { object: data } } as any;
+function makeEvent(type: string, data: unknown = {}, id = "evt_test"): Event {
+  // Stripe's `Event` is a discriminated union over `type`; constructing a
+  // valid representative for arbitrary string types in tests requires this
+  // narrow cast at the boundary only.
+  return { id, type, data: { object: data } } as unknown as Event;
 }
 
 describe("processStripeWebhook", () => {
   it("routes checkout.session.completed", async () => {
     const data = { id: "cs_123" };
     await processStripeWebhook(makeEvent("checkout.session.completed", data));
-    expect(handlers.handleCheckoutSessionCompleted).toHaveBeenCalledWith(data);
+    expect(handlers.handleCheckoutSessionCompleted).toHaveBeenCalledWith(
+      data,
+      "evt_test"
+    );
   });
 
   it("routes customer.subscription.created to handleSubscriptionChange", async () => {
@@ -57,7 +65,8 @@ describe("processStripeWebhook", () => {
       makeEvent("customer.subscription.deleted", data)
     );
     expect(handlers.handleCustomerSubscriptionDeleted).toHaveBeenCalledWith(
-      data
+      data,
+      "evt_test"
     );
   });
 

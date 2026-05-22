@@ -1,0 +1,122 @@
+{
+  "title": "角色",
+  "subtitle": "定义打包工作区权限的自定义角色。从「成员」页面将其分配给成员。",
+  "createButton": "创建角色",
+  "builtinLegend": "提供 4 个内置角色:所有者 · 管理员 · 成员 · 只读。它们覆盖大多数工作区——自定义角色用于最小权限要求。",
+  "table": {
+    "name": "名称",
+    "members": "成员",
+    "description": "说明",
+    "updatedAt": "最后更新",
+    "actions": "操作"
+  },
+  "empty": {
+    "title": "尚未创建自定义角色",
+    "body": "自定义角色让您将一组精确的权限授予某个职能——例如,值班工程师可以清空 staging 中的队列,但无法操作生产环境。",
+    "cta": "创建第一个角色"
+  },
+  "gate": {
+    "title": "自定义角色 + 资源范围",
+    "body": "定义具名的权限组合,并将其限定到特定的服务器或环境。Enterprise 套餐可用。",
+    "upgradeCta": "升级到 Enterprise"
+  },
+  "planDowngradeBanner": {
+    "title": "在当前套餐下,自定义角色为只读",
+    "body": "请重新升级到 Enterprise 以进行编辑。现有分配仍然有效;变更将在 API 层被拦截。"
+  },
+  "editor": {
+    "createTitle": "新建角色",
+    "editTitle": "编辑角色",
+    "nameLabel": "名称",
+    "namePlaceholder": "例如:值班工程师",
+    "descriptionLabel": "说明",
+    "descriptionHelper": "可选 · 该角色的用途",
+    "permissionsLabel": "权限",
+    "permissionsHelper": "选择此角色可执行的操作。可选地将每项权限限定到特定服务器或环境。",
+    "searchPlaceholder": "搜索权限…",
+    "searchLabel": "搜索权限",
+    "selectedCount": "已授予 {{granted}} 个 · 共 {{total}} 个",
+    "category": {
+      "workspace": "工作区",
+      "member": "成员",
+      "server": "服务器",
+      "broker": "Broker",
+      "vhost": "虚拟主机",
+      "queue": "队列",
+      "binding": "绑定",
+      "exchange": "交换机",
+      "policy": "策略",
+      "message": "消息",
+      "broker_user": "Broker 用户",
+      "definitions": "定义",
+      "metric": "指标",
+      "alerting": "告警",
+      "slack_config": "Slack 集成",
+      "webhook": "Webhook",
+      "llm_config": "AI / LLM",
+      "digest": "摘要",
+      "topology": "拓扑",
+      "incident": "事件",
+      "scan": "扫描",
+      "audit": "审计",
+      "role": "角色管理"
+    },
+    "scope": {
+      "any": "任何服务器",
+      "anyAria": "无范围限制——适用于工作区中的所有服务器",
+      "configure": "配置范围",
+      "modeLabel": "限定到",
+      "modeServers": "指定服务器",
+      "modeEnvironments": "环境",
+      "serversPlaceholder": "选择服务器…",
+      "environmentsPlaceholder": "输入环境名称后按回车",
+      "environmentsHelper": "自由文本标签。必须与服务器的 `environment` 字段完全一致。",
+      "summaryServers_one": "{{count}} 个服务器",
+      "summaryServers_other": "{{count}} 个服务器",
+      "summaryEnvironments": "{{values}}",
+      "clear": "移除限制"
+    },
+    "saving": "保存中…",
+    "save": "保存角色",
+    "savedToast": "角色已保存",
+    "createdToast": "角色已创建",
+    "deletedToast": "角色已删除",
+    "cancel": "取消",
+    "conflict": {
+      "title": "该角色在别处被修改",
+      "body": "在您打开之后,有人已更新此角色。请重新加载查看最新版本,或覆盖他们的更改。",
+      "reload": "重新加载",
+      "overwrite": "覆盖"
+    },
+    "escalation": {
+      "row": "您无权授予此权限",
+      "tooltip": "您的角色当前在此范围内并不持有 {{permission}}。您只能授予您自己拥有的权限。"
+    },
+    "nameTooShort": "名称至少需要 2 个字符",
+    "nameReserved": "该名称已被内置角色占用",
+    "categoryToggle": "展开/折叠 {{category}} 分类",
+    "categoryToggleAll": "全选/取消 {{category}} 下所有权限",
+    "duplicate": "该范围下的此权限已添加",
+    "delete": "删除角色",
+    "deleteConfirm": {
+      "title": "删除 {{name}}?",
+      "bodyZero": "没有成员持有此角色。将直接删除。",
+      "body_one": "{{count}} 位成员将被重新分配到内置「成员」角色。",
+      "body_other": "{{count}} 位成员将被重新分配到内置「成员」角色。",
+      "confirm": "删除角色",
+      "cancel": "保留角色"
+    }
+  },
+  "errors": {
+    "loadFailed": "加载角色失败",
+    "saveFailed": "保存角色失败",
+    "deleteFailed": "删除角色失败"
+  },
+  "assignment": {
+    "label": "角色",
+    "customBadge": "自定义",
+    "lastOwnerBlocked": "无法降级——这将导致工作区没有所有者。至少需要一名成员保留所有者角色。",
+    "saved": "角色已分配",
+    "saveFailed": "分配角色失败"
+  }
+}

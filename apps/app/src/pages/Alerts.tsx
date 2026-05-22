@@ -1,16 +1,22 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useSearchParams } from "react-router";
 
-import { usePostHog } from "@posthog/react";
 import { AlertTriangle, Loader2 } from "lucide-react";
+import {
+  parseAsBoolean,
+  parseAsInteger,
+  parseAsStringEnum,
+  useQueryStates,
+} from "nuqs";
 
-import { UserRole } from "@/lib/api";
+import { track } from "@/lib/analytics";
 
 import { ActiveAlertsList } from "@/components/alerts/ActiveAlertsList";
 import { AlertNotificationSettingsModal } from "@/components/alerts/AlertNotificationSettingsModal";
 import { AlertRulesModal } from "@/components/alerts/AlertRulesModal";
 import { AlertsSummary } from "@/components/alerts/AlertsSummary";
+import { ConfigFindingsList } from "@/components/alerts/ConfigFindingsList";
 import { ResolvedAlertsList } from "@/components/alerts/ResolvedAlertsList";
 import { FeatureGate } from "@/components/FeatureGate";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
@@ -29,46 +35,65 @@ import {
   useRabbitMQAlerts,
   useResolvedAlerts,
 } from "@/hooks/queries/useAlerts";
+import { useIsWorkspaceAdmin } from "@/hooks/queries/useWorkspaceRole";
 import { useBrowserNotifications } from "@/hooks/ui/useBrowserNotifications";
 import { useUser } from "@/hooks/ui/useUser";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 const Alerts = () => {
   const { t } = useTranslation("alerts");
-  const posthog = usePostHog();
   const { serverId } = useParams<{ serverId: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const { selectedServerId, hasServers, setSelectedServerId } =
     useServerContext();
   const { selectedVHost, setSelectedVHost } = useVHostContext();
-  const { userPlan, user, isLoading: isUserLoading } = useUser();
-  const isAdmin = user?.role === UserRole.ADMIN;
+  const { userPlan, isLoading: isUserLoading } = useUser();
+  const isAdmin = useIsWorkspaceAdmin() === true;
   const { hasFeature: hasAlertingFeature, isLoading: featureFlagsLoading } =
     useFeatureFlags();
   const [showNotificationSettingsModal, setShowNotificationSettingsModal] =
     useState(false);
   const [showAlertRulesModal, setShowAlertRulesModal] = useState(false);
 
-  const shouldOpenNotificationSettingsFromUrl = useMemo(() => {
-    if (isUserLoading) return false;
-    if (!isAdmin) return false;
-    return searchParams.get("openNotificationSettings") === "true";
-  }, [isAdmin, isUserLoading, searchParams]);
-
+  // Deep-link: `?openNotificationSettings=true` auto-opens the modal.
+  //
+  // We *latch* the open state into local state on first detection, then strip
+  // the param from the URL. A previous implementation derived this from
+  // searchParams via useMemo, but the same effect that stripped the param
+  // also made the memo flip back to false on the next render — closing the
+  // modal immediately. Hence the latch.
   useEffect(() => {
-    if (!shouldOpenNotificationSettingsFromUrl) return;
+    if (isUserLoading || !isAdmin) return;
+    if (searchParams.get("openNotificationSettings") !== "true") return;
+    setShowNotificationSettingsModal(true);
     searchParams.delete("openNotificationSettings");
     setSearchParams(searchParams, { replace: true });
-  }, [searchParams, setSearchParams, shouldOpenNotificationSettingsFromUrl]);
+  }, [isAdmin, isUserLoading, searchParams, setSearchParams]);
 
-  const isNotificationSettingsOpen =
-    showNotificationSettingsModal || shouldOpenNotificationSettingsFromUrl;
-  const [viewMode, setViewMode] = useState<"active" | "resolved">("active");
-
-  const [activeAlertsPage, setActiveAlertsPage] = useState(1);
-  const [activeAlertsPageSize, setActiveAlertsPageSize] = useState(25);
-  const [resolvedAlertsPage, setResolvedAlertsPage] = useState(1);
-  const [resolvedAlertsPageSize, setResolvedAlertsPageSize] = useState(25);
+  const [
+    {
+      view: viewMode,
+      resolved: showResolvedAlerts,
+      ap: activeAlertsPage,
+      aps: activeAlertsPageSize,
+      rp: resolvedAlertsPage,
+      rps: resolvedAlertsPageSize,
+    },
+    setFilters,
+  ] = useQueryStates(
+    {
+      view: parseAsStringEnum<"alerts" | "config">([
+        "alerts",
+        "config",
+      ]).withDefault("alerts"),
+      resolved: parseAsBoolean.withDefault(false),
+      ap: parseAsInteger.withDefault(1),
+      aps: parseAsInteger.withDefault(25),
+      rp: parseAsInteger.withDefault(1),
+      rps: parseAsInteger.withDefault(25),
+    },
+    { history: "replace" as const, clearOnDefault: true }
+  );
 
   useEffect(() => {
     const queryServerId = searchParams.get("serverId");
@@ -168,7 +193,7 @@ const Alerts = () => {
               <>
                 <Button
                   onClick={() => {
-                    posthog?.capture("alert_rule_modal_opened");
+                    track("alert_rule_modal_opened");
                     setShowAlertRulesModal(true);
                   }}
                   className="btn-primary"
@@ -215,59 +240,84 @@ const Alerts = () => {
               <Tabs
                 value={viewMode}
                 onValueChange={(value) =>
-                  setViewMode(value as "active" | "resolved")
+                  void setFilters({
+                    view: value as "alerts" | "config",
+                    ap: 1,
+                    rp: 1,
+                  })
                 }
               >
-                <div className="px-4 py-2 border-b border-border">
+                <div className="px-4 py-2 border-b border-border flex items-center justify-between gap-3 flex-wrap">
                   <TabsList className="grid w-full max-w-xs grid-cols-2">
-                    <TabsTrigger value="active">
-                      {t("activeAlerts")}
-                    </TabsTrigger>
-                    <TabsTrigger value="resolved">
-                      {t("resolvedAlerts")}
-                    </TabsTrigger>
+                    <TabsTrigger value="alerts">{t("alerts")}</TabsTrigger>
+                    <TabsTrigger value="config">{t("configScan")}</TabsTrigger>
                   </TabsList>
+                  {viewMode === "alerts" && (
+                    <Button
+                      variant={showResolvedAlerts ? "default" : "outline"}
+                      size="sm"
+                      className="h-8 text-sm"
+                      onClick={() =>
+                        void setFilters({
+                          resolved: !showResolvedAlerts,
+                          ap: 1,
+                          rp: 1,
+                        })
+                      }
+                      aria-pressed={showResolvedAlerts}
+                    >
+                      {/* Toggle label reflects the *next* action so the
+                          button verb-form stays accurate in either state. */}
+                      {showResolvedAlerts
+                        ? t("scan.showActive", { ns: "alerts" })
+                        : t("scan.showResolved", { ns: "alerts" })}
+                    </Button>
+                  )}
                 </div>
 
-                <TabsContent value="active" className="m-0">
-                  <ActiveAlertsList
-                    alerts={alertsData?.alerts || []}
-                    summary={
-                      alertsData?.summary || {
-                        total: 0,
-                        critical: 0,
-                        high: 0,
-                        medium: 0,
-                        low: 0,
-                        info: 0,
+                <TabsContent value="alerts" className="m-0">
+                  {showResolvedAlerts ? (
+                    <ResolvedAlertsList
+                      alerts={resolvedAlertsData?.alerts || []}
+                      isLoading={resolvedAlertsLoading && !resolvedAlertsData}
+                      error={resolvedAlertsError}
+                      total={resolvedAlertsData?.total || 0}
+                      page={resolvedAlertsPage}
+                      pageSize={resolvedAlertsPageSize}
+                      onPageChange={(p) => void setFilters({ rp: p })}
+                      onPageSizeChange={(s) =>
+                        void setFilters({ rps: s, rp: 1 })
                       }
-                    }
-                    userPlan={userPlan}
-                    total={alertsData?.total || 0}
-                    page={activeAlertsPage}
-                    pageSize={activeAlertsPageSize}
-                    onPageChange={setActiveAlertsPage}
-                    onPageSizeChange={(size) => {
-                      setActiveAlertsPageSize(size);
-                      setActiveAlertsPage(1);
-                    }}
-                  />
+                    />
+                  ) : (
+                    <ActiveAlertsList
+                      alerts={alertsData?.alerts || []}
+                      summary={
+                        alertsData?.summary || {
+                          total: 0,
+                          critical: 0,
+                          high: 0,
+                          medium: 0,
+                          low: 0,
+                          info: 0,
+                        }
+                      }
+                      userPlan={userPlan}
+                      total={alertsData?.total || 0}
+                      page={activeAlertsPage}
+                      pageSize={activeAlertsPageSize}
+                      onPageChange={(p) => void setFilters({ ap: p })}
+                      onPageSizeChange={(s) =>
+                        void setFilters({ aps: s, ap: 1 })
+                      }
+                    />
+                  )}
                 </TabsContent>
 
-                <TabsContent value="resolved" className="m-0">
-                  <ResolvedAlertsList
-                    alerts={resolvedAlertsData?.alerts || []}
-                    isLoading={resolvedAlertsLoading && !resolvedAlertsData}
-                    error={resolvedAlertsError}
-                    total={resolvedAlertsData?.total || 0}
-                    page={resolvedAlertsPage}
-                    pageSize={resolvedAlertsPageSize}
-                    onPageChange={setResolvedAlertsPage}
-                    onPageSizeChange={(size) => {
-                      setResolvedAlertsPageSize(size);
-                      setResolvedAlertsPage(1);
-                    }}
-                  />
+                <TabsContent value="config" className="m-0 p-4">
+                  {currentServerId && (
+                    <ConfigFindingsList serverId={currentServerId} />
+                  )}
                 </TabsContent>
               </Tabs>
             </div>
@@ -278,7 +328,7 @@ const Alerts = () => {
       {/* Notification Settings Modal */}
       {isAdmin && (
         <AlertNotificationSettingsModal
-          isOpen={isNotificationSettingsOpen}
+          isOpen={showNotificationSettingsModal}
           onClose={() => setShowNotificationSettingsModal(false)}
         />
       )}

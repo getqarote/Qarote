@@ -1,0 +1,73 @@
+{
+  "title": "Journal d'audit",
+  "description": "Trace forensique des changements sensibles (refus RBAC, opérations destructives RabbitMQ, changements de membres, mises à jour de paramètres). Rétention : {{retentionDays}} jours. Plan Enterprise uniquement.",
+  "tab": {
+    "activity": "Activité",
+    "denials": "Refus"
+  },
+  "col": {
+    "timestamp": "Quand",
+    "action": "Action",
+    "actor": "Acteur",
+    "entity": "Entité",
+    "source": "Source"
+  },
+  "source": {
+    "all": "Toutes les sources",
+    "qarote": "Qarote",
+    "rbac_denial": "Refus",
+    "broker_diff": "Diff broker"
+  },
+  "category": {
+    "all": "Toutes les catégories",
+    "rabbitmq": "RabbitMQ",
+    "workspace": "Espace de travail",
+    "org": "Organisation",
+    "alert": "Alertes",
+    "auth": "Authentification",
+    "system": "Système"
+  },
+  "filter": {
+    "category": { "placeholder": "Catégorie" },
+    "source": { "placeholder": "Source" },
+    "from": { "label": "Date de début" },
+    "to": { "label": "Date de fin" },
+    "actor": { "placeholder": "Acteur — email ou ID utilisateur" },
+    "clear": "Effacer les filtres"
+  },
+  "status": {
+    "loading": "Chargement…",
+    "refreshing": "Actualisation…",
+    "empty": "Aucun évènement correspondant",
+    "range": "Affichage de {{start}}–{{end}} sur {{total}} évènements"
+  },
+  "empty": {
+    "filtered": "Aucun évènement d'audit ne correspond aux filtres.",
+    "none": "Aucun évènement d'audit pour le moment. Les changements sensibles s'afficheront ici.",
+    "quiet": "Le journal est silencieux",
+    "quietDetail": "Aucune opération privilégiée enregistrée. Les changements sensibles apparaîtront ici en temps réel."
+  },
+  "shortcuts": {
+    "label": "Raccourcis clavier",
+    "focusActor": "Focus sur la recherche d'acteur",
+    "clear": "Effacer les filtres",
+    "refresh": "Actualiser"
+  },
+  "error": {
+    "title": "Impossible de charger le journal d'audit",
+    "message": "Le serveur a renvoyé une erreur. Réessayez ou affinez les filtres.",
+    "retry": "Réessayer"
+  },
+  "pagination": {
+    "first": "Première page",
+    "next": "Suivant",
+    "more_one": "{{count}} évènement de plus",
+    "more_other": "{{count}} évènements de plus"
+  },
+  "export": {
+    "button": "Exporter CSV",
+    "success": "{{count}} lignes exportées",
+    "truncated": "Le résultat a été tronqué à la limite. Affinez les filtres pour capturer l'historique plus ancien.",
+    "failed": "Échec de l'export"
+  }
+}

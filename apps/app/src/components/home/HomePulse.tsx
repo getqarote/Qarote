@@ -1,13 +1,11 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
-import { UserRole } from "@/lib/api";
 import { trpc } from "@/lib/trpc/client";
 
 import { PixelEmail } from "@/components/ui/pixel-email";
 
-import { useAuth } from "@/contexts/AuthContextDefinition";
-
+import { usePermission } from "@/hooks/queries/useWorkspaceRole";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 /**
@@ -29,19 +27,17 @@ import { useWorkspace } from "@/hooks/ui/useWorkspace";
 export function HomePulse() {
   const { t } = useTranslation("dashboard");
   const { workspace } = useWorkspace();
-  const { user } = useAuth();
-  const isAdmin = user?.role === UserRole.ADMIN;
+  const canManageDigest = usePermission("workspace:update");
 
   const { data: settings, isSuccess } =
     trpc.workspace.digest.getSettings.useQuery(undefined, {
-      enabled: isAdmin && !!workspace?.id,
+      enabled: canManageDigest === true && !!workspace?.id,
       staleTime: 60_000,
     });
 
-  // Hide for non-admins, while loading, on error, and when workspace
-  // context isn't resolved — a teaser for an unknown destination is
-  // just noise, and an error response leaves `settings` undefined.
-  if (!isAdmin || !workspace || !isSuccess) return null;
+  // Hide while loading (null), when denied (false), on error, and when
+  // workspace context isn't resolved.
+  if (canManageDigest !== true || !workspace || !isSuccess) return null;
 
   const isEnabled = settings?.enabled === true;
   // Translated fallback so the rendered copy never reads "Daily digest

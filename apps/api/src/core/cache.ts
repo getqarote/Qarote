@@ -122,6 +122,86 @@ export async function cacheDelete(key: string): Promise<void> {
 }
 
 /**
+ * Atomically increment a numeric counter under `key` and return the new value.
+ *
+ * - First call (no row): row is created with `value = 1` and the given `ttlMs`.
+ * - Subsequent calls within TTL: `value` is incremented by 1; `expires_at` is
+ *   left untouched (absolute window from first call, not sliding).
+ * - Call after TTL has expired: row is reset to `value = 1` with a fresh
+ *   `expires_at` — atomically, inside the same statement.
+ *
+ * Multi-instance safety: PostgreSQL serialises `ON CONFLICT DO UPDATE` per
+ * key, so concurrent callers from different API instances produce a sequential
+ * count without lost updates.
+ *
+ * **Contract:** the stored value at `key` MUST be a JSON number. Cross-namespace
+ * collisions are the caller's responsibility — never reuse a key that was set
+ * via `cacheSet(..., "non-numeric")` because the `(value)::numeric` cast in
+ * the UPDATE branch will fail loudly (`cannot cast jsonb string to type numeric`).
+ * Register the namespace as a top-level `const` prefix in the caller module and
+ * keep prefixes distinct.
+ *
+ * **Window semantics:** fixed window from first call, not sliding. A request
+ * arriving just before expiry and another just after both get a fresh budget —
+ * i.e. up to `2 × cap` requests can land within a single TTL span at the
+ * boundary. This is standard fixed-window rate limiting and acceptable for an
+ * anti-abuse cap (vs. a strict billing meter, which would need a sliding window).
+ *
+ * Throws if the UPSERT RETURNING somehow yields no row (should never happen
+ * with `ON CONFLICT DO UPDATE`, included for defence in depth).
+ */
+/** Largest TTL accepted by `cacheIncrement` — 24h. Any caller wanting a longer
+ *  window almost certainly wants a different mechanism (durable counter, not
+ *  the ephemeral UNLOGGED cache). */
+const CACHE_INCREMENT_MAX_TTL_MS = 24 * 60 * 60 * 1000;
+
+export async function cacheIncrement(
+  key: string,
+  ttlMs: number
+): Promise<{ count: number; windowEnd: Date }> {
+  // Sanitize `ttlMs` so the `${ttlMs}::int * interval '1 ms'` expression in
+  // the raw SQL always receives a sane positive integer. The cast itself
+  // throws on non-numeric, but zero/negative/Infinity values would silently
+  // produce an immediate-expiry row.
+  const ttlInt = Math.floor(Number(ttlMs));
+  if (!Number.isFinite(ttlInt) || ttlInt <= 0) {
+    throw new Error(
+      `cacheIncrement: ttlMs must be a positive finite number (got ${ttlMs})`
+    );
+  }
+  if (ttlInt > CACHE_INCREMENT_MAX_TTL_MS) {
+    throw new Error(
+      `cacheIncrement: ttlMs ${ttlInt} exceeds the 24h cap (${CACHE_INCREMENT_MAX_TTL_MS})`
+    );
+  }
+
+  // Bind ttlMs as the numeric milliseconds and let PG build the interval —
+  // multiplying NOW() by an `interval '1 ms' * ${ttlMs}` keeps the parameter
+  // an integer instead of trusting a stringified-and-parsed format.
+  const rows = await prisma.$queryRaw<{ count: number; window_end: Date }[]>`
+    INSERT INTO cache (key, value, expires_at)
+    VALUES (${key}, '1'::jsonb, NOW() + (${ttlInt}::int * interval '1 ms'))
+    ON CONFLICT (key) DO UPDATE
+    SET value = CASE
+          WHEN cache.expires_at <= NOW() THEN '1'::jsonb
+          ELSE ((cache.value)::numeric + 1)::text::jsonb
+        END,
+        expires_at = CASE
+          WHEN cache.expires_at <= NOW() THEN NOW() + (${ttlInt}::int * interval '1 ms')
+          ELSE cache.expires_at
+        END
+    RETURNING (value::text)::int AS count, expires_at AS window_end
+  `;
+  const row = rows[0];
+  if (!row) {
+    throw new Error(
+      "cacheIncrement: UPSERT RETURNING produced no row (should be unreachable)"
+    );
+  }
+  return { count: row.count, windowEnd: row.window_end };
+}
+
+/**
  * Count non-expired entries whose key starts with `prefix`. Uses the
  * `idx_cache_key_pattern` index for a range scan independent of
  * collation.

@@ -3,9 +3,14 @@ import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 
 import { AlertTriangle } from "lucide-react";
+import {
+  parseAsNumberLiteral,
+  parseAsStringEnum,
+  useQueryState,
+  useQueryStates,
+} from "nuqs";
 import { toast } from "sonner";
 
-import { UserRole } from "@/lib/api";
 import { getUpgradePath } from "@/lib/featureFlags";
 import { logger } from "@/lib/logger";
 
@@ -40,7 +45,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
@@ -54,6 +58,7 @@ import {
   useQueueConsumers,
   useQueueLiveRates,
 } from "@/hooks/queries/useRabbitMQ";
+import { useIsWorkspaceAdmin } from "@/hooks/queries/useWorkspaceRole";
 import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
@@ -66,8 +71,7 @@ const QueueDetail = () => {
   const { queueName } = useParams<{ queueName: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const isAdmin = user?.role === UserRole.ADMIN;
+  const isAdmin = useIsWorkspaceAdmin() === true;
   const { selectedServerId } = useServerContext();
   const { selectedVHost } = useVHostContext();
   // When navigating from DiagnosisCard the target vhost is encoded in the
@@ -77,9 +81,38 @@ const QueueDetail = () => {
   const vhost = searchParams.get("vhost") ?? selectedVHost;
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
-  const [timeRange, setTimeRange] = useState<TimeRange>("1m");
-  const [histRange, setHistRange] = useState<HistoricalRange>(6);
-  const [activeTab, setActiveTab] = useState("health");
+
+  // Tab uses history:"push" so the browser Back button navigates between tabs.
+  // parseAsStringEnum silently returns the default for any value outside the
+  // enum, so an out-of-range ?tab= param just lands on "health" — no crash.
+  const [activeTab, setActiveTab] = useQueryState(
+    "tab",
+    parseAsStringEnum([
+      "health",
+      "history",
+      "configuration",
+      "bindings",
+    ]).withDefault("health"),
+    { history: "push" }
+  );
+
+  const [{ tr, hr }, setChartFilters] = useQueryStates(
+    {
+      tr: parseAsStringEnum<TimeRange>([
+        "1m",
+        "10m",
+        "1h",
+        "8h",
+        "1d",
+      ]).withDefault("1m"),
+      hr: parseAsNumberLiteral<HistoricalRange>([
+        6, 24, 72, 168, 720,
+      ]).withDefault(6),
+    },
+    { history: "replace" as const, clearOnDefault: true }
+  );
+  const timeRange = tr;
+  const histRange = hr;
   const { userPlan } = useUser();
   const isPremium =
     userPlan === UserPlan.DEVELOPER || userPlan === UserPlan.ENTERPRISE;
@@ -260,7 +293,7 @@ const QueueDetail = () => {
             {/* Tabbed content */}
             <Tabs
               value={activeTab}
-              onValueChange={setActiveTab}
+              onValueChange={(v) => void setActiveTab(v)}
               className="space-y-6"
             >
               <TabsList>
@@ -294,7 +327,7 @@ const QueueDetail = () => {
                   isLoading={liveRatesLoading}
                   error={null}
                   timeRange={timeRange}
-                  onTimeRangeChange={setTimeRange}
+                  onTimeRangeChange={(v) => void setChartFilters({ tr: v })}
                 />
 
                 <QueuedMessagesChart
@@ -302,7 +335,7 @@ const QueueDetail = () => {
                   isLoading={liveRatesLoading}
                   error={null}
                   timeRange={timeRange}
-                  onTimeRangeChange={setTimeRange}
+                  onTimeRangeChange={(v) => void setChartFilters({ tr: v })}
                 />
               </TabsContent>
 
@@ -330,7 +363,7 @@ const QueueDetail = () => {
                       )}
                       <HistoricalRangeSelector
                         value={histRange}
-                        onValueChange={setHistRange}
+                        onValueChange={(v) => void setChartFilters({ hr: v })}
                         maxRangeHours={maxRangeHours}
                       />
                     </div>

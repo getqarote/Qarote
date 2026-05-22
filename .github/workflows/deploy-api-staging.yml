@@ -18,12 +18,19 @@ jobs:
   quality-checks:
     name: Quality Checks
     runs-on: ubuntu-latest
+    env:
+      # Turbo remote cache (Vercel free tier). Scoped to this job so the token
+      # is not exposed to the deploy job, which runs third-party SSH actions.
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
     steps:
       - name: 🔍 Checkout code
         uses: actions/checkout@v6
 
       - name: 📦 Setup pnpm
         uses: pnpm/action-setup@v6
+        with:
+          version: "9.0.0"
 
       - name: 📦 Setup Node.js
         uses: actions/setup-node@v6
@@ -45,16 +52,13 @@ jobs:
         run: pnpm run knip
 
       - name: 🧹 Lint
-        working-directory: apps/api
-        run: pnpm run lint
+        run: pnpm turbo run lint --filter=qarote-api
 
       - name: 💅 Format Check
-        working-directory: apps/api
-        run: pnpm run format
+        run: pnpm turbo run format --filter=qarote-api
 
       - name: 🧪 Run Tests
-        working-directory: apps/api
-        run: pnpm run test:run
+        run: pnpm turbo run test:run --filter=qarote-api
 
   deploy-backend:
     name: Deploy Backend to Dokku - Staging
@@ -86,6 +90,11 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ vars.DOKKU_HOST_APP1 }} >> ~/.ssh/known_hosts
 
+      - name: 🔗 Ensure database is linked
+        run: |
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} postgres:link rabbit-hq-db ${{ env.APP_NAME }} || \
+            echo "Database link may already exist (this is OK)"
+
       # should be done once
       - name: 📝 Configure Environment Variables
         run: |
@@ -101,6 +110,8 @@ jobs:
             LOG_LEVEL=${{ vars.LOG_LEVEL }} \
             JWT_SECRET=${{ secrets.JWT_SECRET }} \
             ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }} \
+            MANAGED_LLM_API_KEY=${{ secrets.MANAGED_LLM_API_KEY }} \
+            MANAGED_LLM_ENABLED=${{ vars.MANAGED_LLM_ENABLED }} \
             CORS_ORIGIN=${{ vars.CORS_ORIGIN }} \
             FRONTEND_URL=${{ vars.FRONTEND_URL }} \
             PORTAL_FRONTEND_URL=${{ vars.PORTAL_FRONTEND_URL }} \

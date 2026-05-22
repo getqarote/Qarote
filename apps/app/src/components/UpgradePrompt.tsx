@@ -13,6 +13,7 @@ import {
   isCloudMode,
   type PremiumFeature,
 } from "@/lib/featureFlags";
+import { isDemoMode, openPortalPath } from "@/lib/runtimeConfig";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -39,7 +40,7 @@ export function UpgradePrompt({
   const navigate = useNavigate();
   const featureName = getFeatureDescription(feature);
   const cloud = isCloudMode();
-  const demo = import.meta.env.VITE_DEMO_MODE === "true";
+  const demo = isDemoMode();
   const defaultMessage = demo
     ? `Deploy your own Qarote to unlock ${featureName}.`
     : cloud
@@ -110,13 +111,7 @@ export function UpgradePrompt({
               </Button>
               <Button
                 variant="outline"
-                onClick={() => {
-                  window.open(
-                    `${import.meta.env.VITE_PORTAL_URL}/purchase`,
-                    "_blank",
-                    "noopener,noreferrer"
-                  );
-                }}
+                onClick={() => openPortalPath("/purchase")}
               >
                 Purchase License
               </Button>

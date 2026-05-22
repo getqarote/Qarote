@@ -5,7 +5,6 @@ import { useNavigate } from "react-router";
 import { Carrot, User } from "lucide-react";
 import { toast } from "sonner";
 
-import { UserRole } from "@/lib/api";
 import { getUpgradePath } from "@/lib/featureFlags";
 import { logger } from "@/lib/logger";
 
@@ -20,13 +19,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-import { useAuth } from "@/contexts/AuthContextDefinition";
-
 import { useMyOrganizations } from "@/hooks/queries/useMyOrganizations";
 import {
   useSwitchWorkspace,
   useUserWorkspaces,
 } from "@/hooks/queries/useWorkspaceApi";
+import { useIsWorkspaceAdmin } from "@/hooks/queries/useWorkspaceRole";
 import { SESSION_TOAST_KEY, useSessionToast } from "@/hooks/ui/useSessionToast";
 import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
@@ -37,8 +35,7 @@ import { CreateWorkspaceForm } from "./CreateWorkspaceForm";
 
 export function WorkspaceSelector() {
   const { t } = useTranslation("sidebar");
-  const { user } = useAuth();
-  const isAdmin = user?.role === UserRole.ADMIN;
+  const isAdmin = useIsWorkspaceAdmin() === true;
   const { canCreateWorkspace, userPlan } = useUser();
   const { workspace } = useWorkspace();
   const navigate = useNavigate();

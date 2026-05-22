@@ -45,5 +45,7 @@
   "save": "Save settings",
   "saving": "Saving...",
   "saveSuccess": "Email settings saved successfully",
-  "saveError": "Failed to save email settings"
+  "saveError": "Failed to save email settings",
+  "accessDeniedTitle": "Organization admin required",
+  "accessDenied": "SMTP relay configuration is reserved for organization admins."
 }

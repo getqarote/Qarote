@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 
-import { posthog } from "@/services/posthog";
+import { trackEvent } from "@/services/posthog";
 
 import {
   FeedbackIdSchema,
@@ -12,9 +12,8 @@ import {
 
 import { FeedbackMapper } from "@/mappers/feedback";
 
-import { authorize, rateLimitedProcedure, router } from "@/trpc/trpc";
+import { orgAdminProcedure, rateLimitedProcedure, router } from "@/trpc/trpc";
 
-import { UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -63,16 +62,22 @@ export const feedbackRouter = router({
         });
 
         try {
-          posthog?.capture({
-            distinctId: user.id,
-            event: "feedback_submitted",
-            properties: {
+          trackEvent(
+            {
+              distinctId: user.id,
+              superProperties: {
+                app: "api",
+                workspace_id: user.workspaceId ?? undefined,
+              },
+            },
+            "feedback_submitted",
+            {
               feedback_type: data.type,
               feedback_category: data.category ?? null,
               feedback_priority: data.priority ?? null,
               workspace_id: user.workspaceId ?? null,
-            },
-          });
+            }
+          );
         } catch (analyticsError) {
           ctx.logger.warn(
             { error: analyticsError, userId: user.id },
@@ -96,7 +101,7 @@ export const feedbackRouter = router({
   /**
    * Get all feedback (admin only)
    */
-  getAll: authorize([UserRole.ADMIN])
+  getAll: orgAdminProcedure
     .input(GetAllFeedbackQuerySchema)
     .query(async ({ input, ctx }) => {
       const { page, limit, status, type, priority, workspaceId } = input;
@@ -166,7 +171,7 @@ export const feedbackRouter = router({
   /**
    * Get feedback by ID (admin only)
    */
-  getById: authorize([UserRole.ADMIN])
+  getById: orgAdminProcedure
     .input(FeedbackIdSchema)
     .query(async ({ input, ctx }) => {
       const { id } = input;
@@ -223,7 +228,7 @@ export const feedbackRouter = router({
   /**
    * Update feedback (admin only)
    */
-  update: authorize([UserRole.ADMIN])
+  update: orgAdminProcedure
     .input(UpdateFeedbackWithIdSchema)
     .mutation(async ({ input, ctx }) => {
       const { id, ...data } = input;
@@ -283,7 +288,7 @@ export const feedbackRouter = router({
   /**
    * Delete feedback (admin only)
    */
-  delete: authorize([UserRole.ADMIN])
+  delete: orgAdminProcedure
     .input(FeedbackIdSchema)
     .mutation(async ({ input, ctx }) => {
       const { id } = input;
@@ -306,7 +311,7 @@ export const feedbackRouter = router({
   /**
    * Get feedback statistics
    */
-  getStats: authorize([UserRole.ADMIN])
+  getStats: orgAdminProcedure
     .input(GetFeedbackStatsQuerySchema)
     .query(async ({ input, ctx }) => {
       const { workspaceId } = input;

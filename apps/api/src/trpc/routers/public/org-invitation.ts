@@ -11,6 +11,7 @@ import {
 
 import { rateLimitedPublicProcedure, router } from "@/trpc/trpc";
 
+import { hashInvitationToken } from "@/auth/invitation-tokens";
 import { te } from "@/i18n";
 
 /**
@@ -31,7 +32,7 @@ export const publicOrgInvitationRouter = router({
       try {
         const invitation = await ctx.prisma.organizationInvitation.findFirst({
           where: {
-            token,
+            tokenHash: hashInvitationToken(token),
             acceptedAt: null,
             expiresAt: {
               gt: new Date(),
@@ -110,7 +111,7 @@ export const publicOrgInvitationRouter = router({
       try {
         const invitation = await ctx.prisma.organizationInvitation.findFirst({
           where: {
-            token,
+            tokenHash: hashInvitationToken(token),
             acceptedAt: null,
             expiresAt: {
               gt: new Date(),
@@ -162,7 +163,6 @@ export const publicOrgInvitationRouter = router({
               firstName,
               lastName,
               name: `${firstName} ${lastName}`.trim(),
-              role: "MEMBER",
               isActive: true,
               emailVerified: true,
               emailVerifiedAt: new Date(),
@@ -221,7 +221,6 @@ export const publicOrgInvitationRouter = router({
             email: newUser.email,
             firstName: newUser.firstName,
             lastName: newUser.lastName,
-            role: newUser.role,
             workspaceId: newUser.workspaceId,
           },
           organization: {

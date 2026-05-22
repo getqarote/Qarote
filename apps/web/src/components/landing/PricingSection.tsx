@@ -5,6 +5,12 @@ import { trackSignUpClick } from "@/lib/gtm";
 
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const FeatureItem = ({ children }: { children: React.ReactNode }) => (
   <li className="flex items-start gap-3">
@@ -21,6 +27,54 @@ const FeatureItem = ({ children }: { children: React.ReactNode }) => (
     <div className="flex-1 flex items-center gap-2">{children}</div>
   </li>
 );
+
+type IntelligenceRow = {
+  name: string;
+  detailKey?: string;
+  tooltipKey?: string;
+  soon?: boolean;
+};
+
+function intelligenceRowsFor(planId: string): IntelligenceRow[] {
+  if (planId === "FREE") {
+    return [
+      { name: "dailyDigest", detailKey: "detailWeekly" },
+      {
+        name: "messageSpy",
+        detailKey: "detail5Messages",
+        tooltipKey: "featureNames.messageSpyLimitedHint",
+      },
+      { name: "metricsPersistence", detailKey: "detail24h" },
+      {
+        name: "incidentDiagnosis",
+        detailKey: "detailPreview",
+        tooltipKey: "featureNames.incidentDiagnosisLimitedHint",
+      },
+      { name: "messageTracing", detailKey: "detail6h" },
+      { name: "aiExplanations", detailKey: "detail5PerMonth", soon: true },
+    ];
+  }
+  if (planId === "DEVELOPER") {
+    return [
+      { name: "dailyDigest", detailKey: "detailDaily" },
+      { name: "messageSpy", detailKey: "detailUnlimitedMessages" },
+      { name: "metricsPersistence", detailKey: "detail14Days" },
+      { name: "incidentDiagnosis", detailKey: "detailFullResults" },
+      { name: "messageTracing", detailKey: "detail7Days" },
+      { name: "aiExplanations", detailKey: "detail50PerMonth", soon: true },
+    ];
+  }
+  // ENTERPRISE
+  return [
+    { name: "dailyDigest", detailKey: "detailDailyCustom" },
+    { name: "messageSpy", detailKey: "detailUnlimitedMessages" },
+    { name: "metricsPersistence", detailKey: "detail90Days" },
+    { name: "incidentDiagnosis", detailKey: "detailFullResults" },
+    { name: "messageTracing", detailKey: "detail30Days" },
+    { name: "aiExplanations", detailKey: "detailUnlimited", soon: true },
+    { name: "aiEnhancedDigest", soon: true },
+  ];
+}
 
 const PricingSection = () => {
   const { t: tPricing, i18n } = useTranslation("pricing");
@@ -99,6 +153,7 @@ const PricingSection = () => {
       bgColor: "bg-gray-50",
       borderColor: "border-orange-200",
       features: {
+        auditLog: false as const,
         servers: "upTo1" as const,
         rabbitMQVersionSupport: tPricing("featureNames.onlyLTS"),
         workspaces: "upTo1" as const,
@@ -109,15 +164,12 @@ const PricingSection = () => {
         rabbitMQUserManagement: true,
         alertsNotification: false,
         communitySupport: true,
+        emailSupport: false,
         prioritySupport: false,
         emailAlerts: false,
         topologyVisualization: false,
-        roleBasedAccess: "soon",
-        dailyDigest: "limited",
-        messageSpy: "limited",
-        metricsPersistence: "limited",
-        incidentDiagnosis: "limited",
-        messageTracing: "limited",
+        roleBasedAccess: false,
+        advancedRoleBasedAccess: false,
       },
     },
     {
@@ -129,6 +181,7 @@ const PricingSection = () => {
       borderColor: "border-gray-200",
       isPopular: true,
       features: {
+        auditLog: false as const,
         servers: "upTo3" as const,
         rabbitMQVersionSupport: tPricing("featureNames.allVersions"),
         workspaces: "upTo3" as const,
@@ -139,15 +192,12 @@ const PricingSection = () => {
         rabbitMQUserManagement: true,
         alertsNotification: true,
         communitySupport: true,
-        prioritySupport: true,
+        emailSupport: true,
+        prioritySupport: false,
         emailAlerts: true,
         topologyVisualization: true,
-        roleBasedAccess: "soon",
-        dailyDigest: true,
-        messageSpy: true,
-        metricsPersistence: true,
-        incidentDiagnosis: true,
-        messageTracing: true,
+        roleBasedAccess: true,
+        advancedRoleBasedAccess: false,
       },
     },
     {
@@ -158,6 +208,7 @@ const PricingSection = () => {
       bgColor: "bg-gray-50",
       borderColor: "border-gray-200",
       features: {
+        auditLog: "soon" as const,
         servers: "unlimited" as const,
         rabbitMQVersionSupport: tPricing("featureNames.allVersions"),
         workspaces: "unlimited" as const,
@@ -168,15 +219,12 @@ const PricingSection = () => {
         rabbitMQUserManagement: true,
         alertsNotification: true,
         communitySupport: true,
+        emailSupport: false,
         prioritySupport: true,
         emailAlerts: true,
         topologyVisualization: true,
-        roleBasedAccess: "soon",
-        dailyDigest: true,
-        messageSpy: true,
-        metricsPersistence: true,
-        incidentDiagnosis: true,
-        messageTracing: true,
+        roleBasedAccess: true,
+        advancedRoleBasedAccess: "soon" as const,
       },
     },
   ];
@@ -235,7 +283,12 @@ const PricingSection = () => {
           </div>
 
           {/* Billing Toggle — right on desktop, centered on mobile */}
-          <div className="sm:absolute sm:right-0 flex items-center gap-3 min-h-[44px]">
+          <div className="sm:absolute sm:right-0 flex items-center gap-2 min-h-[44px]">
+            <span
+              className={`text-sm font-medium ${billingPeriod === "monthly" ? "text-foreground" : "text-muted-foreground"}`}
+            >
+              {tPricing("billedMonthly")}
+            </span>
             <Switch
               checked={billingPeriod === "yearly"}
               onCheckedChange={(checked) =>
@@ -243,13 +296,17 @@ const PricingSection = () => {
               }
               disabled={hostingMode === "selfhost"}
               aria-label={tPricing("billedYearly")}
-              className="data-[state=checked]:bg-gradient-button"
             />
             <span
               className={`text-sm font-medium ${billingPeriod === "yearly" ? "text-foreground" : "text-muted-foreground"}`}
             >
               {tPricing("billedYearly")}
             </span>
+            {billingPeriod === "yearly" && hostingMode !== "selfhost" && (
+              <span className="text-xs font-medium px-1.5 py-0.5 bg-primary/10 text-primary border border-primary/20">
+                −20%
+              </span>
+            )}
           </div>
         </div>
 
@@ -377,11 +434,24 @@ const PricingSection = () => {
                             </span>
                           </FeatureItem>
                           <FeatureItem>
-                            <span className="text-sm text-foreground">
-                              {tPricing(
-                                `featureNames.workspace_${plan.features.workspaces}`
-                              )}
-                            </span>
+                            {plan.id === "DEVELOPER" ? (
+                              <div>
+                                <span className="text-sm text-foreground">
+                                  {tPricing(
+                                    `featureNames.workspace_${plan.features.workspaces}`
+                                  )}
+                                </span>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  {tPricing("featureNames.singleOrganization")}
+                                </p>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-foreground">
+                                {tPricing(
+                                  `featureNames.workspace_${plan.features.workspaces}`
+                                )}
+                              </span>
+                            )}
                           </FeatureItem>
                           <FeatureItem>
                             <span className="text-sm text-foreground">
@@ -413,18 +483,6 @@ const PricingSection = () => {
                               </span>
                             </FeatureItem>
                           )}
-                          {plan.features.roleBasedAccess && (
-                            <FeatureItem>
-                              <span className="text-sm text-foreground">
-                                {tPricing("featureNames.roleBasedAccess")}
-                              </span>
-                              {plan.features.roleBasedAccess === "soon" && (
-                                <span className="font-medium px-1 border border-border text-muted-foreground text-[0.65rem]">
-                                  {tPricing("soon")}
-                                </span>
-                              )}
-                            </FeatureItem>
-                          )}
                         </ul>
                       </div>
 
@@ -433,37 +491,55 @@ const PricingSection = () => {
                           {tPricing("intelligenceDiagnostics")}
                         </h4>
                         <ul className="space-y-2">
-                          {(
-                            [
-                              ["dailyDigest", "featureNames.dailyDigest"],
-                              ["messageSpy", "featureNames.messageSpy"],
-                              [
-                                "metricsPersistence",
-                                "featureNames.metricsPersistence",
-                              ],
-                              [
-                                "incidentDiagnosis",
-                                "featureNames.incidentDiagnosis",
-                              ],
-                              ["messageTracing", "featureNames.messageTracing"],
-                            ] as const
-                          ).map(([key, nameKey]) => {
-                            const val =
-                              plan.features[key as keyof typeof plan.features];
-                            if (!val) return null;
-                            return (
-                              <FeatureItem key={key}>
-                                <span className="text-sm text-foreground">
-                                  {tPricing(nameKey)}
+                          {intelligenceRowsFor(plan.id).map((row) => (
+                            <FeatureItem key={row.name}>
+                              <div>
+                                <span className="text-sm text-foreground flex items-center gap-2">
+                                  {tPricing(`featureNames.${row.name}`)}
+                                  {row.soon && (
+                                    <span className="font-medium px-1 border border-border text-muted-foreground text-[0.65rem]">
+                                      {tPricing("soon")}
+                                    </span>
+                                  )}
+                                  {row.tooltipKey && (
+                                    <TooltipProvider delayDuration={150}>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <button
+                                            type="button"
+                                            className="cursor-help inline-flex items-center font-medium text-muted-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                            aria-label={tPricing(
+                                              row.tooltipKey
+                                            )}
+                                          >
+                                            <svg
+                                              className="w-2.5 h-2.5 shrink-0"
+                                              viewBox="0 0 16 16"
+                                              fill="currentColor"
+                                              aria-hidden="true"
+                                            >
+                                              <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm0 3a.75.75 0 1 1 0 1.5A.75.75 0 0 1 8 4Zm-.25 2.75a.75.75 0 0 1 1.5 0v4a.75.75 0 0 1-1.5 0v-4Z" />
+                                            </svg>
+                                          </button>
+                                        </TooltipTrigger>
+                                        <TooltipContent
+                                          side="top"
+                                          className="max-w-[220px] text-xs"
+                                        >
+                                          {tPricing(row.tooltipKey)}
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                  )}
                                 </span>
-                                {val === "limited" && (
-                                  <span className="font-medium px-1 border border-border text-muted-foreground text-[0.65rem]">
-                                    {tPricing("limited")}
-                                  </span>
+                                {row.detailKey && (
+                                  <p className="text-xs text-muted-foreground mt-0.5">
+                                    {tPricing(`featureNames.${row.detailKey}`)}
+                                  </p>
                                 )}
-                              </FeatureItem>
-                            );
-                          })}
+                              </div>
+                            </FeatureItem>
+                          ))}
                         </ul>
                       </div>
 
@@ -477,6 +553,52 @@ const PricingSection = () => {
                               <span className="text-sm text-foreground">
                                 {tPricing("featureNames.ssoSamlOidc")}
                               </span>
+                            </FeatureItem>
+                          )}
+                          {plan.features.advancedRoleBasedAccess && (
+                            <FeatureItem>
+                              <div>
+                                <span className="text-sm text-foreground flex items-center gap-2">
+                                  {tPricing(
+                                    "featureNames.advancedRoleBasedAccess"
+                                  )}
+                                  {plan.features.advancedRoleBasedAccess ===
+                                    "soon" && (
+                                    <span className="font-medium px-1 border border-border text-muted-foreground text-[0.65rem]">
+                                      {tPricing("soon")}
+                                    </span>
+                                  )}
+                                </span>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  {tPricing(
+                                    "featureNames.advancedRoleBasedAccessDesc"
+                                  )}
+                                </p>
+                              </div>
+                            </FeatureItem>
+                          )}
+                          {plan.features.roleBasedAccess && (
+                            <FeatureItem>
+                              <div>
+                                <span className="text-sm text-foreground">
+                                  {tPricing("featureNames.roleBasedAccess")}
+                                </span>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  {tPricing("featureNames.roleBasedAccessDesc")}
+                                </p>
+                              </div>
+                            </FeatureItem>
+                          )}
+                          {plan.features.auditLog && (
+                            <FeatureItem>
+                              <span className="text-sm text-foreground">
+                                {tPricing("featureNames.auditLog")}
+                              </span>
+                              {plan.features.auditLog === "soon" && (
+                                <span className="font-medium px-1 border border-border text-muted-foreground text-[0.65rem]">
+                                  {tPricing("soon")}
+                                </span>
+                              )}
                             </FeatureItem>
                           )}
                           <FeatureItem>
@@ -532,11 +654,21 @@ const PricingSection = () => {
                           {tPricing("support")}
                         </h4>
                         <ul className="space-y-2">
-                          <FeatureItem>
-                            <span className="text-sm text-foreground">
-                              {tPricing("featureNames.communitySupport")}
-                            </span>
-                          </FeatureItem>
+                          {!plan.features.emailSupport &&
+                            !plan.features.prioritySupport && (
+                              <FeatureItem>
+                                <span className="text-sm text-foreground">
+                                  {tPricing("featureNames.communitySupport")}
+                                </span>
+                              </FeatureItem>
+                            )}
+                          {plan.features.emailSupport && (
+                            <FeatureItem>
+                              <span className="text-sm text-foreground">
+                                {tPricing("featureNames.emailSupport")}
+                              </span>
+                            </FeatureItem>
+                          )}
                           {plan.features.prioritySupport && (
                             <FeatureItem>
                               <span className="text-sm text-foreground">

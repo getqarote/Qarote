@@ -30,6 +30,9 @@ export const corsMiddleware = cors({
     "Authorization",
     "x-workspace-id",
     "X-Turnstile-Token",
+    // Required by the streaming `/api/llm/explain` endpoint — the header
+    // gates the SSE route so unauthenticated probes get a 401 fast.
+    "x-qarote-explain",
   ],
   exposeHeaders: ["Content-Length"],
   maxAge: 600, // 10 minutes

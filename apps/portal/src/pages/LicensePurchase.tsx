@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { usePostHog } from "@posthog/react";
-
+import { track } from "@/lib/analytics";
 import { trpc } from "@/lib/trpc/client";
 
 import { Button } from "@/components/ui/button";
@@ -34,7 +33,6 @@ const LicensePurchase = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const { t } = useTranslation("portal");
-  const posthog = usePostHog();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const attemptIdRef = useRef(0);
 
@@ -42,7 +40,7 @@ const LicensePurchase = () => {
 
   useEffect(() => {
     try {
-      posthog?.capture("purchase_page_viewed");
+      track("purchase_page_viewed");
     } catch {
       // non-blocking analytics
     }
@@ -52,23 +50,20 @@ const LicensePurchase = () => {
     };
   }, []);
 
-  const handleTierSelect = useCallback(
-    (tier) => {
-      setSelectedTier(tier);
-      try {
-        posthog?.capture("license_plan_selected", { tier });
-      } catch {
-        // non-blocking analytics
-      }
-    },
-    [posthog]
-  );
+  const handleTierSelect = useCallback((tier) => {
+    setSelectedTier(tier);
+    try {
+      track("license_plan_selected", { tier });
+    } catch {
+      // non-blocking analytics
+    }
+  }, []);
 
   const handlePurchase = useCallback(() => {
     setPurchaseError(null);
     setIsLoading(true);
     try {
-      posthog?.capture("license_purchase_initiated", { tier: selectedTier });
+      track("license_purchase_initiated", { tier: selectedTier });
     } catch {
       // non-blocking analytics
     }
@@ -87,7 +82,7 @@ const LicensePurchase = () => {
       setIsLoading(false);
       setPurchaseError(t("licensePurchase.purchaseFailed"));
       try {
-        posthog?.capture("license_purchase_failed", {
+        track("license_purchase_failed", {
           tier: selectedTier,
           reason: "timeout",
         });
@@ -117,7 +112,7 @@ const LicensePurchase = () => {
             error.message || t("licensePurchase.purchaseFailed")
           );
           try {
-            posthog?.capture("license_purchase_failed", {
+            track("license_purchase_failed", {
               tier: selectedTier,
               reason: "api_error",
             });
@@ -128,7 +123,7 @@ const LicensePurchase = () => {
         },
       }
     );
-  }, [selectedTier, purchaseLicenseMutation, t, posthog]);
+  }, [selectedTier, purchaseLicenseMutation, t]);
 
   const handleCardKeyDown = useCallback(
     (e: React.KeyboardEvent, tier: "DEVELOPER" | "ENTERPRISE") => {

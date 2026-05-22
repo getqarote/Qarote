@@ -15,6 +15,12 @@ import {
   useNodesState,
 } from "@xyflow/react";
 import { Eye, EyeOff, ListFilter, Network } from "lucide-react";
+import {
+  parseAsArrayOf,
+  parseAsBoolean,
+  parseAsString,
+  useQueryStates,
+} from "nuqs";
 
 import { buildTopologyGraph } from "@/lib/topology/layout";
 
@@ -51,12 +57,35 @@ const Topology = () => {
   const isTopologyEnabled = hasFeature("topology_visualization");
 
   const reactFlowRef = useRef<ReactFlowInstance | null>(null);
-  const [showOrphanQueues, setShowOrphanQueues] = useState(true);
   const [showFilterPanel, setShowFilterPanel] = useState(true);
-  const [hiddenExchanges, setHiddenExchanges] = useState<Set<string>>(
-    new Set()
+
+  const [
+    {
+      showOrphans: showOrphanQueues,
+      hiddenExchanges: hiddenExchangesArr,
+      hiddenQueues: hiddenQueuesArr,
+    },
+    setFilters,
+  ] = useQueryStates(
+    {
+      showOrphans: parseAsBoolean.withDefault(true),
+      hiddenExchanges: parseAsArrayOf(parseAsString).withDefault([]),
+      hiddenQueues: parseAsArrayOf(parseAsString).withDefault([]),
+    },
+    { history: "replace" as const, clearOnDefault: true }
   );
-  const [hiddenQueues, setHiddenQueues] = useState<Set<string>>(new Set());
+
+  // Derive Sets from the URL-backed arrays so the rest of the component
+  // (buildTopologyGraph, has() calls, isFiltering) stays unchanged.
+  // Slice to 500 as a defense-in-depth cap against crafted URLs with huge arrays.
+  const hiddenExchanges = useMemo(
+    () => new Set(hiddenExchangesArr.slice(0, 500)),
+    [hiddenExchangesArr]
+  );
+  const hiddenQueues = useMemo(
+    () => new Set(hiddenQueuesArr.slice(0, 500)),
+    [hiddenQueuesArr]
+  );
 
   const {
     data: topologyData,
@@ -126,44 +155,46 @@ const Topology = () => {
     topologyData?.bindings?.filter((b) => b.source !== "").length ?? 0;
   const isFiltering = hiddenExchanges.size > 0 || hiddenQueues.size > 0;
 
-  const toggleExchange = useCallback((name: string) => {
-    setHiddenExchanges((prev) => {
-      const next = new Set(prev);
-      if (next.has(name)) next.delete(name);
-      else next.add(name);
-      return next;
-    });
-  }, []);
+  // Partial functional updater: only the mutated key is returned so nuqs
+  // merges it with the existing state rather than replacing it wholesale.
+  const toggleExchange = useCallback(
+    (name: string) => {
+      void setFilters((prev) => ({
+        hiddenExchanges: prev.hiddenExchanges.includes(name)
+          ? prev.hiddenExchanges.filter((n) => n !== name)
+          : [...prev.hiddenExchanges, name],
+      }));
+    },
+    [setFilters]
+  );
 
-  const toggleQueue = useCallback((name: string) => {
-    setHiddenQueues((prev) => {
-      const next = new Set(prev);
-      if (next.has(name)) next.delete(name);
-      else next.add(name);
-      return next;
-    });
-  }, []);
+  const toggleQueue = useCallback(
+    (name: string) => {
+      void setFilters((prev) => ({
+        hiddenQueues: prev.hiddenQueues.includes(name)
+          ? prev.hiddenQueues.filter((n) => n !== name)
+          : [...prev.hiddenQueues, name],
+      }));
+    },
+    [setFilters]
+  );
 
   const toggleAllExchanges = useCallback(
     (visible: boolean) => {
-      if (visible) {
-        setHiddenExchanges(new Set());
-      } else {
-        setHiddenExchanges(new Set(panelExchanges.map((e) => e.name)));
-      }
+      void setFilters({
+        hiddenExchanges: visible ? [] : panelExchanges.map((e) => e.name),
+      });
     },
-    [panelExchanges]
+    [panelExchanges, setFilters]
   );
 
   const toggleAllQueues = useCallback(
     (visible: boolean) => {
-      if (visible) {
-        setHiddenQueues(new Set());
-      } else {
-        setHiddenQueues(new Set(panelQueues.map((q) => q.name)));
-      }
+      void setFilters({
+        hiddenQueues: visible ? [] : panelQueues.map((q) => q.name),
+      });
     },
-    [panelQueues]
+    [panelQueues, setFilters]
   );
 
   if (!hasServers) {
@@ -273,7 +304,9 @@ const Topology = () => {
                 <Button
                   variant={showOrphanQueues ? "secondary" : "ghost"}
                   size="sm"
-                  onClick={() => setShowOrphanQueues(!showOrphanQueues)}
+                  onClick={() =>
+                    void setFilters({ showOrphans: !showOrphanQueues })
+                  }
                   className="flex items-center gap-1.5 text-xs"
                 >
                   {showOrphanQueues ? (

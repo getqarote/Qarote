@@ -7,11 +7,10 @@ import {
   VHostRequiredQuerySchema,
 } from "@/schemas/rabbitmq";
 
-import { authorize, router } from "@/trpc/trpc";
+import { byServerId, router, workspacePermissionProcedure } from "@/trpc/trpc";
 
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
-import { UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -22,7 +21,7 @@ export const messagesRouter = router({
   /**
    * Send message to queue for a specific server (ADMIN ONLY - sensitive operation)
    */
-  publishMessage: authorize([UserRole.ADMIN])
+  publishMessage: workspacePermissionProcedure("message:publish", byServerId)
     .input(PublishMessageWithQueueSchema.merge(VHostRequiredQuerySchema))
     .mutation(async ({ input, ctx }) => {
       const {

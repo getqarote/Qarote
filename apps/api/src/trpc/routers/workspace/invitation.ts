@@ -3,9 +3,9 @@ import { addDays } from "date-fns";
 
 import { formatInvitedBy, getUserDisplayName } from "@/core/utils";
 
+import { recordFromContext } from "@/services/audit";
 import { CoreEmailService } from "@/services/email/core-email.service";
-import { EmailService } from "@/services/email/email.service";
-import { EncryptionService } from "@/services/encryption.service";
+import { enqueueNotification } from "@/services/notification/notification-outbox.service";
 import {
   getWorkspacePlan,
   validateUserInvitation,
@@ -18,16 +18,24 @@ import {
   PaginationInputSchema,
   paginationMeta,
 } from "@/schemas/pagination";
-import { InvitationIdParamSchema } from "@/schemas/workspace";
+import {
+  InvitationIdParamSchema,
+  WorkspaceIdParamSchema,
+} from "@/schemas/workspace";
 
 import { emailConfig } from "@/config";
 
 import {
-  adminPlanValidationProcedure,
-  rateLimitedAdminProcedure,
   router,
+  workspacePermissionPlanValidationProcedure,
+  workspacePermissionProcedure,
 } from "@/trpc/trpc";
 
+import {
+  generateInvitationToken,
+  hashInvitationToken,
+} from "@/auth/invitation-tokens";
+import { assertCanGrantRole } from "@/auth/workspace-roles";
 import { InvitationStatus } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
@@ -37,35 +45,14 @@ import { te } from "@/i18n";
  */
 export const invitationRouter = router({
   /**
-   * Get all pending invitations for workspace (PROTECTED)
+   * List pending invitations for the active workspace (member:read).
    */
-  getInvitations: rateLimitedAdminProcedure
-    .input(PaginationInputSchema)
+  getInvitations: workspacePermissionProcedure("member:read")
+    .input(WorkspaceIdParamSchema.merge(PaginationInputSchema))
     .query(async ({ ctx, input }) => {
-      const user = ctx.user;
-
       try {
-        // Read workspaceId fresh from DB — better-auth caches session data for
-        // up to 5 minutes, so ctx.user.workspaceId may be stale immediately after
-        // workspace creation.
-        const freshUser = await ctx.prisma.user.findUnique({
-          where: { id: user.id },
-          select: { workspaceId: true },
-        });
-        const workspaceId = freshUser?.workspaceId;
-
-        if (!workspaceId) {
-          throw new TRPCError({
-            code: "FORBIDDEN", // authenticated but no workspace — must not trigger sign-out
-            message: te(
-              ctx.locale,
-              "workspace.userNotAuthenticatedOrNotInWorkspace"
-            ),
-          });
-        }
-
         const where = {
-          workspaceId,
+          workspaceId: ctx.workspaceId,
           status: InvitationStatus.PENDING,
           expiresAt: { gt: new Date() },
         };
@@ -76,7 +63,6 @@ export const invitationRouter = router({
               id: true,
               email: true,
               role: true,
-              token: true,
               expiresAt: true,
               createdAt: true,
               invitedBy: {
@@ -118,33 +104,28 @@ export const invitationRouter = router({
     }),
 
   /**
-   * Send invitation (PROTECTED with plan validation)
+   * Send invitation (member:invite + plan validation)
    */
-  sendInvitation: adminPlanValidationProcedure
-    .input(inviteUserSchema)
+  sendInvitation: workspacePermissionPlanValidationProcedure("member:invite")
+    .input(WorkspaceIdParamSchema.merge(inviteUserSchema))
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;
       const { email, role } = input;
+      const { workspaceId, workspaceRole } = ctx;
 
       try {
-        // Read workspaceId fresh from DB — better-auth caches session data for
-        // up to 5 minutes, so ctx.user.workspaceId may be stale immediately after
-        // workspace creation (e.g. sending invites right after creating a workspace).
-        const freshUser = await ctx.prisma.user.findUnique({
-          where: { id: user.id },
-          select: { workspaceId: true },
-        });
-        const workspaceId = freshUser?.workspaceId;
-
-        if (!workspaceId) {
+        // Anti-escalation (R-AUTHZ-3): the inviter cannot grant a role
+        // greater than or equal to their own (OWNER → OWNER excepted,
+        // but inviteUserSchema rejects OWNER anyway). Custom-role
+        // inviters (no built-in tier) fall through to PR-2's
+        // `assertCanGrantCustomRole`; PR-1 fails closed.
+        if (!workspaceRole) {
           throw new TRPCError({
-            code: "FORBIDDEN", // authenticated but no workspace — must not trigger sign-out
-            message: te(
-              ctx.locale,
-              "workspace.userNotAuthenticatedOrNotInWorkspace"
-            ),
+            code: "FORBIDDEN",
+            message: te(ctx.locale, "auth.cannotGrantRole"),
           });
         }
+        assertCanGrantRole(workspaceRole, role);
 
         // Get workspace basic info
         const workspace = await ctx.prisma.workspace.findUnique({
@@ -168,7 +149,7 @@ export const invitationRouter = router({
         });
 
         // Get plan via workspace → organization
-        const ownerPlan = await getWorkspacePlan(workspaceId!);
+        const ownerPlan = await getWorkspacePlan(workspaceId);
 
         // Validate invitation against plan limits
         validateUserInvitation(ownerPlan, memberCount);
@@ -212,75 +193,96 @@ export const invitationRouter = router({
           }
         }
 
-        // Generate invitation token
-        const token = EncryptionService.generateEncryptionKey();
+        // Generate invitation token. The long-term store (Invitation row)
+        // only persists the SHA-256 hash. The raw token is *temporarily*
+        // present in the NotificationOutbox payload (JSONB) until the
+        // notification worker delivers the email or the retention sweep
+        // removes the row. Mitigations: 7-day token expiry on the
+        // Invitation row, and notification-retention drops SENT
+        // rows > 30d. RBAC §2.5 / R-INV-1.
+        const token = generateInvitationToken();
+        const tokenHash = hashInvitationToken(token);
 
         // Set expiration (7 days from now)
         const expiresAt = addDays(new Date(), 7);
 
-        // Create invitation
-        const invitation = await ctx.prisma.invitation.create({
-          data: {
-            email,
-            role,
-            token,
-            expiresAt,
-            workspaceId,
-            invitedById: user.id,
-          },
-          include: {
-            invitedBy: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-              },
-            },
-          },
-        });
-
-        // Build invite URL for sharing (useful when email is disabled)
-        const inviteUrl = `${emailConfig.frontendUrl}/invite/${token}`;
-
-        // Send invitation email (only attempt if email is enabled)
-        // Use effective config (DB smtp_config > env) so SMTP configured
-        // via the admin settings page is respected.
-        let emailSent = false;
+        // Resolve SMTP availability before opening the transaction so we
+        // don't hold pg locks across the network call.
         let emailIsEnabled = false;
         try {
           const effectiveEmail = await CoreEmailService.loadEffectiveConfig();
           emailIsEnabled = effectiveEmail.enabled;
         } catch (configError) {
           ctx.logger.error(
-            { error: configError, invitationId: invitation.id },
+            { error: configError },
             "Failed to load effective email config, skipping email"
           );
         }
-        if (emailIsEnabled) {
-          try {
-            await EmailService.sendInvitationEmail({
-              to: email,
-              invitationToken: token,
-              workspaceName: workspace.name,
-              inviterName: getUserDisplayName(user),
-              inviterEmail: user.email,
-              plan: ownerPlan,
-              locale: ctx.locale,
-            });
-            emailSent = true;
-            ctx.logger.info(
-              { invitationId: invitation.id, email },
-              "Invitation email sent successfully"
+
+        // Invitation row + outbox row commit atomically — never a token
+        // in DB without a delivery job, never a job without a token.
+        let emailSent = false;
+        const invitation = await ctx.prisma.$transaction(async (tx) => {
+          const created = await tx.invitation.create({
+            data: {
+              email,
+              role,
+              tokenHash,
+              expiresAt,
+              workspaceId,
+              invitedById: user.id,
+            },
+            include: {
+              invitedBy: {
+                select: {
+                  id: true,
+                  email: true,
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+            },
+          });
+
+          if (emailIsEnabled) {
+            // Capture the actual enqueue boolean: it returns false when
+            // P2002 collapses on the unique idempotencyKey (Stripe-style
+            // retry from the request layer). Treat that as "not newly
+            // enqueued" so the response shape matches reality.
+            emailSent = await enqueueNotification(
+              {
+                channel: "email",
+                template: "workspace_invitation",
+                target: email,
+                // Tied to tokenHash so a re-invite (which generates a new
+                // token, but reuses unique-on-email upserts in the future)
+                // gets its own outbox row and email.
+                idempotencyKey: `email:workspace_invitation:${tokenHash}`,
+                payload: {
+                  invitationToken: token,
+                  workspaceName: workspace.name,
+                  inviterName: getUserDisplayName(user),
+                  inviterEmail: user.email,
+                  plan: ownerPlan,
+                  locale: ctx.locale,
+                },
+              },
+              tx
             );
-          } catch (emailError) {
-            ctx.logger.error(
-              { error: emailError, invitationId: invitation.id, email },
-              "Failed to send invitation email"
-            );
-            // Don't fail the request if email sending fails
           }
+
+          return created;
+        });
+
+        if (emailSent) {
+          ctx.logger.info(
+            { invitationId: invitation.id, email },
+            "Invitation email enqueued"
+          );
         }
+
+        // Build invite URL for sharing (useful when email is disabled)
+        const inviteUrl = `${emailConfig.frontendUrl}/invite/${token}`;
 
         posthog?.capture({
           distinctId: user.id,
@@ -292,6 +294,15 @@ export const invitationRouter = router({
           },
         });
 
+        void recordFromContext(ctx, {
+          action: "workspace.invitation.sent",
+          category: "workspace",
+          entityType: "invitation",
+          entityId: invitation.id,
+          entityLabel: email,
+          metadata: { role, invitedEmail: email },
+        });
+
         return {
           message: "Invitation sent successfully",
           invitation: {
@@ -299,8 +310,11 @@ export const invitationRouter = router({
             expiresAt: invitation.expiresAt.toISOString(),
             createdAt: invitation.createdAt.toISOString(),
             invitedBy: formatInvitedBy(invitation.invitedBy),
+            // Raw token exposed only when email delivery was skipped so the
+            // inviter can share the link manually. Never returned when email
+            // was sent — the hash is stored server-side and not retrievable.
+            ...(emailSent ? {} : { token, inviteUrl }),
           },
-          inviteUrl,
           emailSent,
         };
       } catch (error) {
@@ -316,58 +330,60 @@ export const invitationRouter = router({
     }),
 
   /**
-   * Revoke invitation (PROTECTED)
+   * Revoke a pending invitation. Requires OWNER or ADMIN in the workspace.
+   * Atomic single-use status transition (rbac.md §2.5, R-INV-1):
+   * status flips PENDING → REVOKED via a conditional update; if the row
+   * is already accepted/expired, the update is a no-op and we 404.
    */
-  revokeInvitation: rateLimitedAdminProcedure
-    .input(InvitationIdParamSchema)
+  revokeInvitation: workspacePermissionProcedure("member:invite")
+    .input(WorkspaceIdParamSchema.merge(InvitationIdParamSchema))
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;
       const { invitationId } = input;
+      const { workspaceId } = ctx;
 
       try {
-        // Read workspaceId fresh from DB — better-auth caches session data for
-        // up to 5 minutes, so ctx.user.workspaceId may be stale immediately after
-        // workspace creation.
-        const freshUser = await ctx.prisma.user.findUnique({
-          where: { id: user.id },
-          select: { workspaceId: true },
-        });
-        const workspaceId = freshUser?.workspaceId;
-
-        if (!workspaceId) {
-          throw new TRPCError({
-            code: "FORBIDDEN", // authenticated but no workspace — must not trigger sign-out
-            message: te(
-              ctx.locale,
-              "workspace.userNotAuthenticatedOrNotInWorkspace"
-            ),
-          });
-        }
-
-        // Find and delete the invitation
-        const invitation = await ctx.prisma.invitation.findFirst({
+        // IDOR guard (R-IDOR-1): updateMany over (id, workspaceId, status)
+        // ensures we cannot mutate an invitation belonging to another
+        // workspace, and the conditional status transition is atomic.
+        const result = await ctx.prisma.invitation.updateMany({
           where: {
             id: invitationId,
             workspaceId,
             status: InvitationStatus.PENDING,
           },
+          data: {
+            status: InvitationStatus.REVOKED,
+            revokedAt: new Date(),
+          },
         });
 
-        if (!invitation) {
+        if (result.count === 0) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: te(ctx.locale, "workspace.invitationNotFoundOrUsed"),
           });
         }
 
-        await ctx.prisma.invitation.delete({
+        // Fetch the invitation email for the audit entry label. Best-effort —
+        // the row exists at this point because the updateMany above succeeded.
+        const revokedInvitation = await ctx.prisma.invitation.findUnique({
           where: { id: invitationId },
+          select: { email: true },
         });
 
         ctx.logger.info(
-          { invitationId, userId: user.id },
+          { invitationId, userId: user.id, workspaceId },
           "Invitation revoked successfully"
         );
+
+        void recordFromContext(ctx, {
+          action: "workspace.invitation.revoked",
+          category: "workspace",
+          entityType: "invitation",
+          entityId: invitationId,
+          entityLabel: revokedInvitation?.email ?? null,
+        });
 
         return { message: "Invitation revoked successfully" };
       } catch (error) {

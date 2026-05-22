@@ -42,7 +42,10 @@ Qarote stores the following in its own PostgreSQL database:
 | Alert rules and notification channels | For the alerting feature                  |
 | Metrics snapshots                     | For trend charts (configurable retention) |
 
-Qarote does **not** store message bodies, routing keys, or queue contents. The only time message data appears in Qarote is transiently during a live spy session — it is displayed in your browser and never written to disk.
+Qarote does **not** store message bodies. Two features touch message-level data, and they handle it differently:
+
+- **[Tracing](/docs/tracing-vs-spy/)** captures broker metadata for every published and delivered message — routing key, exchange, queue, content-type, payload size, and timestamp — and persists it in your PostgreSQL database for the configured retention window (7 days by default). The body itself is never read or stored.
+- **Spy** displays full message bodies live in your browser only. They are never written to disk. When the spy session ends, the captured data is gone.
 
 <Callout type="warning" title="Protect your database">
   The PostgreSQL database contains your RabbitMQ credentials. Apply standard

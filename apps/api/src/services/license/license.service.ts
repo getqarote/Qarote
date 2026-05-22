@@ -20,14 +20,17 @@ import type {
 } from "./license.interfaces";
 import { signLicenseJwt } from "./license-crypto.service";
 
-import { UserPlan } from "@/generated/prisma/client";
+import { Prisma, UserPlan } from "@/generated/prisma/client";
+
+type DbClient = Prisma.TransactionClient | typeof prisma;
 
 class LicenseService {
   /**
    * Generate a new license key
    */
   async generateLicense(
-    options: GenerateLicenseOptions
+    options: GenerateLicenseOptions,
+    tx: DbClient = prisma
   ): Promise<{ licenseKey: string; licenseId: string }> {
     try {
       // Generate a secure license key
@@ -43,8 +46,13 @@ class LicenseService {
 
       const licenseKey = `RABBIT-${tierPrefix}-${randomBytes.toUpperCase()}-${checksum}`;
 
-      // Create license record
-      const license = await prisma.license.create({
+      // Create license record. When a tx is provided the create participates
+      // in the caller's transaction so license + file version + outbox row
+      // commit atomically — without it, a crash between license create and
+      // saveLicenseFileVersion would leave the License persisted and the
+      // existing-license idempotency check on retry would short-circuit
+      // before recovering the missing version + delivery email.
+      const license = await tx.license.create({
         data: {
           licenseKey,
           tier: options.tier,
@@ -59,15 +67,8 @@ class LicenseService {
         },
       });
 
-      logger.info(
-        {
-          licenseId: license.id,
-          tier: options.tier,
-          customerEmail: options.customerEmail,
-        },
-        "License generated successfully"
-      );
-
+      // Caller logs the successful outcome after the surrounding
+      // transaction commits.
       return { licenseKey, licenseId: license.id };
     } catch (error) {
       logger.error({ error }, "Failed to generate license");
@@ -188,11 +189,12 @@ class LicenseService {
    */
   async renewLicense(
     licenseId: string,
-    newExpiresAt: Date
+    newExpiresAt: Date,
+    tx: DbClient = prisma
   ): Promise<RenewLicenseResult> {
     try {
       // Get current license
-      const currentLicense = await prisma.license.findUnique({
+      const currentLicense = await tx.license.findUnique({
         where: { id: licenseId },
       });
 
@@ -203,7 +205,7 @@ class LicenseService {
       const newVersion = currentLicense.currentVersion + 1;
 
       // Update license with new expiration and version
-      const updatedLicense = await prisma.license.update({
+      const updatedLicense = await tx.license.update({
         where: { id: licenseId },
         data: {
           expiresAt: newExpiresAt,
@@ -212,16 +214,9 @@ class LicenseService {
         },
       });
 
-      logger.info(
-        {
-          licenseId,
-          newVersion,
-          newExpiresAt: newExpiresAt.toISOString(),
-          previousExpiresAt: currentLicense.expiresAt.toISOString(),
-        },
-        "License renewed successfully"
-      );
-
+      // Caller logs the successful outcome after the surrounding
+      // transaction commits — logging inside the tx would be misleading
+      // if the outer write fails and rolls back.
       return {
         license: updatedLicense,
         newVersion,
@@ -241,13 +236,14 @@ class LicenseService {
     version: number,
     fileContent: string,
     expiresAt: Date,
-    stripeInvoiceId?: string
+    stripeInvoiceId?: string,
+    tx: DbClient = prisma
   ): Promise<void> {
     try {
       // Calculate deletion date (30 days from now)
       const deletesAt = addDays(new Date(), 30);
 
-      await prisma.licenseFileVersion.create({
+      await tx.licenseFileVersion.create({
         data: {
           licenseId,
           version,
@@ -258,15 +254,7 @@ class LicenseService {
         },
       });
 
-      logger.info(
-        {
-          licenseId,
-          version,
-          stripeInvoiceId,
-          deletesAt: deletesAt.toISOString(),
-        },
-        "License file version saved with 30-day grace period"
-      );
+      // Caller logs after the surrounding transaction commits.
     } catch (error) {
       logger.error(
         { error, licenseId, version },

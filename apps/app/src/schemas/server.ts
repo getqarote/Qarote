@@ -16,6 +16,19 @@ export const addServerSchema = z.object({
   password: z.string().min(1, "Password is required"),
   vhost: z.string().default("/"),
   useHttps: z.boolean(),
+  /**
+   * Free-text environment tag (`prod`, `staging`, `dev`, …) consumed
+   * by the RBAC Phase 3 `server.environment` resource-scope predicate
+   * (apps/api/src/auth/scope-evaluator.ts). Optional; empty input
+   * stored as `null` so it's never treated as a literal "" tag.
+   */
+  environment: z
+    .string()
+    .trim()
+    .max(64)
+    .nullable()
+    .optional()
+    .transform((v) => (v ? v : null)),
 });
 
 export type AddServerFormData = z.infer<typeof addServerSchema>;

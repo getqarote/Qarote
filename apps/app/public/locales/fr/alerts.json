@@ -5,6 +5,7 @@
   "noServerDescription": "Surveiller les alertes et notifications système",
   "alertRules": "Règles d'alerte",
   "notificationSettings": "Paramètres de notification",
+  "alerts": "Alertes",
   "activeAlerts": "Alertes actives",
   "resolvedAlerts": "Alertes résolues",
   "active": {
@@ -70,6 +71,7 @@
   "rules.severity.medium": "Moyen",
   "rules.severity.high": "Élevé",
   "rules.severity.critical": "Critique",
+  "rules.severity.info": "Info",
   "rules.form.name": "Nom",
   "rules.form.namePlaceholder": "ex., Alerte de profondeur de file élevée",
   "rules.form.description": "Description",
@@ -145,6 +147,23 @@
       "resolved": "Résolu",
       "source": "{{type}} : {{name}}"
     }
+  },
+  "configScan": "Scan config",
+  "scan": {
+    "allSeverities": "Toutes les sévérités",
+    "showResolved": "Voir résolus",
+    "showActive": "Voir actifs",
+    "runScan": "Lancer le scan",
+    "runFirstScan": "Lancer le premier scan",
+    "scanning": "Scan en cours…",
+    "lastScan": "Dernier scan {{time}}",
+    "resolved": "Résolu",
+    "resolvedAt": "Résolu {{time}}",
+    "emptyTitle": "Aucun problème détecté",
+    "emptyDesc": "Lancez votre premier scan de configuration pour détecter les anti-patterns RabbitMQ.",
+    "emptyResolvedTitle": "Aucun problème résolu",
+    "emptyResolvedDesc": "Les problèmes résolus apparaîtront ici une fois corrigés sur votre cluster.",
+    "pageInfo": "Page {{current}} sur {{total}} ({{count}} au total)"
   },
   "modal": {
     "title": "Paramètres de notification d'alertes",
@@ -251,5 +270,36 @@
     "toastSlackDeleteFailed": "Échec de la suppression de la configuration Slack",
     "toastSlackEnabled": "Notifications Slack activées",
     "toastSlackDisabled": "Notifications Slack désactivées"
+  },
+  "ruleLabels": {
+    "config": {
+      "consumer": {
+        "prefetch_misconfig": "Préchargement consommateur mal configuré"
+      },
+      "exchange": {
+        "orphan": "Échange orphelin"
+      },
+      "node": {
+        "watermark_misconfig": "Seuil mémoire mal configuré"
+      },
+      "policy": {
+        "conflicting": "Politiques en conflit"
+      },
+      "queue": {
+        "classic_mirrored_deprecated": "File miroir classique (obsolète)",
+        "exclusive_in_production": "File exclusive en production",
+        "missing_dlx": "Échange de lettres mortes manquant",
+        "no_consumer_backlog": "Pas de protection contre l'accumulation",
+        "quorum_queue_ha_policy": "Politique HA sur file quorum",
+        "quorum_queue_minority_replicas": "Répliques minoritaires de file quorum",
+        "quorum_queue_no_delivery_limit": "File quorum sans limite de livraison"
+      },
+      "user": {
+        "guest_enabled": "Utilisateur invité activé"
+      },
+      "vhost": {
+        "default_unscoped": "Trafic de production sur le vhost par défaut"
+      }
+    }
   }
 }

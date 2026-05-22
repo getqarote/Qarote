@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 
+import { recordFromContext } from "@/services/audit";
 import { EmailVerificationService } from "@/services/email/email-verification.service";
 import { notionService } from "@/services/integrations/notion.service";
 
@@ -50,7 +51,6 @@ export const verificationRouter = router({
             email: true,
             firstName: true,
             lastName: true,
-            role: true,
             workspaceId: true,
             isActive: true,
             emailVerified: true,
@@ -86,6 +86,33 @@ export const verificationRouter = router({
             code: "NOT_FOUND",
             message: te(ctx.locale, "auth.userNotFound"),
           });
+        }
+
+        if (result.type === "EMAIL_CHANGE") {
+          // Best-effort audit — org resolution failures must not fail
+          // the verifyEmail mutation.
+          void (async () => {
+            try {
+              const orgRes = await ctx.resolveOrg();
+              await recordFromContext(ctx, {
+                action: "auth.email.change.confirmed",
+                category: "auth",
+                entityType: "user",
+                entityId: updatedUser.id,
+                entityLabel: updatedUser.email,
+                metadata: {
+                  newEmail: result.email ?? updatedUser.email,
+                },
+                workspaceId: null,
+                organizationId: orgRes?.organizationId ?? null,
+              });
+            } catch (auditErr) {
+              ctx.logger.warn(
+                { error: auditErr, userId: updatedUser.id },
+                "auth.email.change.confirmed: audit write failed (non-fatal)"
+              );
+            }
+          })();
         }
 
         return {

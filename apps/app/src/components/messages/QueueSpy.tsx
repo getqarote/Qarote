@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { AlertTriangle, ArrowDown, Loader2, Radio, Zap } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowDown,
+  Loader2,
+  Pause,
+  Play,
+  Radio,
+  Zap,
+} from "lucide-react";
 
 import { queueSubject } from "@/lib/feature-gate/types";
 
@@ -53,6 +61,10 @@ function QueueSpyInner({
   /** Must match FREE_SPY_PREVIEW_COUNT in queues.ts */
   const FREE_SPY_PREVIEW_COUNT = 5;
 
+  // Stop/Resume — closes the subscription on stop so no further messages
+  // arrive. Messages already received stay visible until cleared.
+  const [stopped, setStopped] = useState(false);
+
   const {
     messages,
     error,
@@ -62,7 +74,7 @@ function QueueSpyInner({
     isLoading,
     clearMessages,
     isPreviewLimited,
-  } = useSpyOnQueue(serverId, queueName, vhost, true);
+  } = useSpyOnQueue(serverId, queueName, vhost, !stopped);
 
   // Auto-scroll via IntersectionObserver.
   //
@@ -178,9 +190,15 @@ function QueueSpyInner({
     <div className="rounded-lg border border-border overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
         <h2 className="title-section flex items-center gap-2">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-success" />
+          <span className="relative flex h-2.5 w-2.5" aria-hidden>
+            {!stopped && (
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
+            )}
+            <span
+              className={`relative inline-flex h-2.5 w-2.5 rounded-full transition-colors ${
+                stopped ? "bg-muted-foreground" : "bg-success"
+              }`}
+            />
           </span>
           {t("spyTitle")}
 
@@ -203,6 +221,21 @@ function QueueSpyInner({
               {t("spyStarted", { count: spyInfo.bindingCount })}
             </span>
           )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs gap-1"
+            onClick={() => setStopped((v) => !v)}
+            aria-pressed={stopped}
+            aria-label={stopped ? t("spyResume") : t("stopSpy")}
+          >
+            {stopped ? (
+              <Play className="h-3 w-3" />
+            ) : (
+              <Pause className="h-3 w-3" />
+            )}
+            {stopped ? t("spyResume") : t("stopSpy")}
+          </Button>
           <Button
             variant="ghost"
             size="sm"

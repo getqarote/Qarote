@@ -99,15 +99,20 @@ function makeCtx() {
         findUnique: mockFindUnique,
         upsert: mockUpsert,
       },
+      organization: {
+        findFirst: vi.fn().mockResolvedValue({ id: "org-1" }),
+      },
     },
     logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
     user: {
       id: "admin-1",
-      role: "ADMIN",
       isActive: true,
       email: "admin@test.com",
     },
     workspaceId: null,
+    organizationId: "org-1",
+    orgRole: "OWNER",
+    resolveOrg: async () => ({ organizationId: "org-1", role: "OWNER" }),
     req: {},
   };
 }
@@ -378,6 +383,18 @@ describe("selfhostedSmtpRouter", () => {
       await expect(
         caller.testConnection({ recipientEmail: "admin@example.com" })
       ).rejects.toThrow(/self-hosted/i);
+    });
+
+    it("throws FORBIDDEN when caller is not in the bootstrap org", async () => {
+      // Bootstrap org has id "org-bootstrap" but caller is in "org-1"
+      const ctx = makeCtx();
+      ctx.prisma.organization.findFirst = vi
+        .fn()
+        .mockResolvedValue({ id: "org-bootstrap" });
+      const caller = selfhostedSmtpRouter.createCaller(ctx as never);
+      await expect(
+        caller.testConnection({ recipientEmail: "admin@example.com" })
+      ).rejects.toThrow(/platform administrator/i);
     });
   });
 });

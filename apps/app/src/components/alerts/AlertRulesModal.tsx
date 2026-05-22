@@ -534,7 +534,11 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
   const [ruleToDelete, setRuleToDelete] = useState<AlertRule | null>(null);
   const [query, setQuery] = useState("");
 
-  const { data: alertRules, isLoading } = useAlertRules();
+  // Gate on `isOpen` — `useAlertRules` is called unconditionally because hooks
+  // can't be conditional, but the underlying query stays paused while the
+  // modal is closed. Prevents the page-load workspace-id toast when the user
+  // hasn't asked to see alert rules yet.
+  const { data: alertRules, isLoading } = useAlertRules(isOpen);
   const deleteMutation = useDeleteAlertRule();
   const toggleMutation = useUpdateAlertRule();
 

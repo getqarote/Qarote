@@ -27,7 +27,6 @@ export const sessionRouter = router({
           image: true,
           firstName: true,
           lastName: true,
-          role: true,
           workspaceId: true,
           isActive: true,
           emailVerified: true,

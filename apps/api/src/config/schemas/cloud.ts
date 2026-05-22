@@ -83,6 +83,23 @@ export const cloudSchema = baseSchema.extend({
   POSTHOG_API_KEY: z.string().optional(),
   POSTHOG_HOST: z.string().url().default("https://eu.i.posthog.com"),
 
+  // GHCR pull credentials — shared robot account for EE self-hosters
+  // Optional: absence disables the Docker login command in license delivery emails.
+  // DO NOT log these values.
+  GHCR_ROBOT_USERNAME: z
+    .string()
+    .regex(
+      /^[a-zA-Z0-9_-]+$/,
+      "must contain only alphanumeric, dash, or underscore"
+    )
+    .optional(),
+  GHCR_ROBOT_TOKEN: z
+    .string()
+    .regex(/^[A-Za-z0-9_\-.]+$/, "must not contain shell metacharacters")
+    .optional(),
+  // ISO date string (YYYY-MM-DD). Used for expiry warning monitoring.
+  GHCR_PAT_EXPIRY_DATE: z.string().date().optional(),
+
   // Notion Configuration - Optional
   NOTION_API_KEY: z.string().optional(),
   NOTION_DATABASE_ID: z.string().optional(),

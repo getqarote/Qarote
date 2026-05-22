@@ -5,8 +5,9 @@ import { prisma } from "@/core/prisma";
 import { formatInvitedBy } from "@/core/utils";
 import { ensureWorkspaceMember } from "@/core/workspace-access";
 
+import { recordFromContext } from "@/services/audit";
 import { getWorkspacePlan } from "@/services/plan/plan.service";
-import { posthog } from "@/services/posthog";
+import { identifyUser, posthog, trackEvent } from "@/services/posthog";
 
 import {
   AcceptInvitationSchema,
@@ -19,7 +20,9 @@ import { WorkspaceMapper } from "@/mappers/workspace";
 
 import { rateLimitedPublicProcedure, router } from "@/trpc/trpc";
 
-import { InvitationStatus, UserRole } from "@/generated/prisma/client";
+import { hashInvitationToken } from "@/auth/invitation-tokens";
+import { assertInviterStillGrantable } from "@/auth/workspace-roles";
+import { InvitationStatus } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -43,7 +46,7 @@ export const invitationRouter = router({
       try {
         const invitation = await ctx.prisma.invitation.findFirst({
           where: {
-            token,
+            tokenHash: hashInvitationToken(token),
             status: InvitationStatus.PENDING,
             expiresAt: {
               gt: new Date(),
@@ -84,7 +87,6 @@ export const invitationRouter = router({
             id: invitation.id,
             email: invitation.email,
             role: invitation.role,
-            token: invitation.token,
             expiresAt: invitation.expiresAt.toISOString(),
             workspace: {
               id: invitation.workspace.id,
@@ -118,7 +120,7 @@ export const invitationRouter = router({
 
       try {
         const invitation = await ctx.prisma.invitation.findUnique({
-          where: { token },
+          where: { tokenHash: hashInvitationToken(token) },
           include: { workspace: true },
         });
 
@@ -138,13 +140,29 @@ export const invitationRouter = router({
 
         const now = new Date();
         if (invitation.expiresAt < now) {
-          await ctx.prisma.invitation.update({
-            where: { id: invitation.id },
+          // Conditional update: only flips PENDING rows so a concurrent
+          // accept that already won the race won't be clobbered.
+          await ctx.prisma.invitation.updateMany({
+            where: { id: invitation.id, status: InvitationStatus.PENDING },
             data: { status: InvitationStatus.EXPIRED },
           });
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: te(ctx.locale, "auth.invitationExpired"),
+          });
+        }
+
+        // R-INV-2: when the request is already authenticated, the
+        // session's verified email MUST equal the invitation email. A
+        // logged-in user cannot accept an invitation for someone else.
+        if (
+          ctx.user &&
+          ctx.user.email.toLowerCase().trim() !==
+            invitation.email.toLowerCase().trim()
+        ) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: te(ctx.locale, "auth.invitationNotForYourAccount"),
           });
         }
 
@@ -156,7 +174,6 @@ export const invitationRouter = router({
             passwordHash: true,
             firstName: true,
             lastName: true,
-            role: true,
             workspaceId: true,
             isActive: true,
             emailVerified: true,
@@ -215,6 +232,11 @@ export const invitationRouter = router({
         const needsAccountMigration = user && !hasCredentialAccount;
 
         const result = await ctx.prisma.$transaction(async (tx) => {
+          // R-INV-3 inside the accept transaction: inviter's current
+          // workspace role MUST still allow granting the invited role.
+          // Auto-revokes the invitation if not.
+          await assertInviterStillGrantable(tx, invitation);
+
           if (user) {
             user = await tx.user.update({
               where: { id: user.id },
@@ -245,7 +267,6 @@ export const invitationRouter = router({
                 lastName: lastName!,
                 name: `${firstName} ${lastName}`.trim(),
                 workspaceId: invitation.workspaceId,
-                role: UserRole.MEMBER,
                 isActive: true,
                 emailVerified: true,
                 emailVerifiedAt: new Date(),
@@ -271,13 +292,29 @@ export const invitationRouter = router({
             tx
           );
 
-          await tx.invitation.update({
-            where: { id: invitation.id },
+          // Atomic single-use status transition (R-INV-1): the conditional
+          // updateMany only flips PENDING → ACCEPTED. If two concurrent
+          // accepts race, exactly one wins. expiresAt guard closes the
+          // TOCTOU window between the pre-transaction expiry check and here.
+          const flipped = await tx.invitation.updateMany({
+            where: {
+              id: invitation.id,
+              status: InvitationStatus.PENDING,
+              expiresAt: { gt: now },
+            },
             data: {
               status: InvitationStatus.ACCEPTED,
               invitedUserId: user.id,
+              acceptedAt: now,
+              acceptedByUserId: user.id,
             },
           });
+          if (flipped.count === 0) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: te(ctx.locale, "auth.invitationAlreadyUsedOrExpired"),
+            });
+          }
 
           return user;
         });
@@ -298,14 +335,38 @@ export const invitationRouter = router({
             $set: { email: result.email, workspaceId: invitation.workspaceId },
           },
         });
-        posthog?.capture({
-          distinctId: result.id,
-          event: "invitation_accepted",
-          properties: {
+        trackEvent(
+          {
+            distinctId: result.id,
+            superProperties: {
+              app: "api",
+              workspace_id: invitation.workspaceId,
+            },
+          },
+          "invitation_accepted",
+          {
             workspace_id: invitation.workspaceId,
             invited_role: invitation.role,
+          }
+        );
+
+        // Actor is the invitee (result). Bind workspaceId from the invitation
+        // because ctx.workspaceId may not be set during cross-workspace accept.
+        void recordFromContext(
+          {
+            user: { id: result.id, email: result.email },
+            workspaceId: invitation.workspaceId,
+            remoteIp: ctx.remoteIp,
+            userAgent: ctx.userAgent,
           },
-        });
+          {
+            action: "workspace.invitation.accepted",
+            category: "workspace",
+            entityType: "invitation",
+            entityId: invitation.id,
+            entityLabel: result.email,
+          }
+        );
 
         return {
           user: UserMapper.toApiResponse(result),
@@ -337,7 +398,7 @@ export const invitationRouter = router({
       try {
         const invitation = await ctx.prisma.invitation.findFirst({
           where: {
-            token,
+            tokenHash: hashInvitationToken(token),
             status: InvitationStatus.PENDING,
             expiresAt: {
               gt: new Date(),
@@ -381,7 +442,11 @@ export const invitationRouter = router({
 
         const hashedPassword = await hashPassword(password);
 
+        const now = new Date();
         const newUser = await ctx.prisma.$transaction(async (tx) => {
+          // R-INV-3 inside the accept transaction.
+          await assertInviterStillGrantable(tx, invitation);
+
           const user = await tx.user.create({
             data: {
               email: invitation.email,
@@ -389,7 +454,6 @@ export const invitationRouter = router({
               firstName,
               lastName,
               name: `${firstName} ${lastName}`.trim(),
-              role: UserRole.MEMBER,
               workspaceId: invitation.workspaceId,
               isActive: true,
               emailVerified: true,
@@ -400,7 +464,6 @@ export const invitationRouter = router({
               email: true,
               firstName: true,
               lastName: true,
-              role: true,
               workspaceId: true,
               isActive: true,
               emailVerified: true,
@@ -427,13 +490,26 @@ export const invitationRouter = router({
             tx
           );
 
-          await tx.invitation.update({
-            where: { id: invitation.id },
+          // Atomic single-use status transition (R-INV-1).
+          const flipped = await tx.invitation.updateMany({
+            where: {
+              id: invitation.id,
+              status: InvitationStatus.PENDING,
+              expiresAt: { gt: now },
+            },
             data: {
               status: InvitationStatus.ACCEPTED,
               invitedUserId: user.id,
+              acceptedAt: now,
+              acceptedByUserId: user.id,
             },
           });
+          if (flipped.count === 0) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: te(ctx.locale, "auth.invitationAlreadyUsedOrExpired"),
+            });
+          }
 
           return user;
         });
@@ -449,25 +525,28 @@ export const invitationRouter = router({
             );
           });
 
-        posthog?.identify({
-          distinctId: newUser.id,
-          properties: {
-            $set: {
-              email: newUser.email,
-              firstName: newUser.firstName,
-              lastName: newUser.lastName,
-            },
-            $set_once: { first_registered_at: newUser.createdAt },
-          },
+        identifyUser({
+          id: newUser.id,
+          email: newUser.email,
+          planTier: "free",
+          workspaceId: invitation.workspaceId,
+          signupAt: newUser.createdAt,
         });
-        posthog?.capture({
-          distinctId: newUser.id,
-          event: "invitation_registration_completed",
-          properties: {
+        trackEvent(
+          {
+            distinctId: newUser.id,
+            superProperties: {
+              app: "api",
+              plan_tier: "free",
+              workspace_id: invitation.workspaceId,
+            },
+          },
+          "invitation_registration_completed",
+          {
             workspace_id: invitation.workspaceId,
             invited_role: invitation.role,
-          },
-        });
+          }
+        );
 
         return {
           message: te(ctx.locale, "messages.invitationAccepted"),

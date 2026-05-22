@@ -4,8 +4,8 @@ import { Link, useNavigate } from "react-router";
 
 import { ExternalLink, Loader2 } from "lucide-react";
 
-import { UserRole } from "@/lib/api";
 import { isSelfHostedMode } from "@/lib/featureFlags";
+import { openPortalPath } from "@/lib/runtimeConfig";
 import { formatDate } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,7 @@ import { PixelServer } from "@/components/ui/pixel-server";
 import { PixelUser } from "@/components/ui/pixel-user";
 import { PixelZap } from "@/components/ui/pixel-zap";
 
+import { useCurrentOrganization } from "@/hooks/queries/useOrganization";
 import { useAllPlans } from "@/hooks/queries/usePlans";
 import { usePlanUpgrade } from "@/hooks/ui/usePlanUpgrade";
 import { useUser } from "@/hooks/ui/useUser";
@@ -60,8 +61,9 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
 }) => {
   const { t } = useTranslation("billing");
   const { handleUpgrade, isUpgrading } = usePlanUpgrade();
-  const { planData, user } = useUser();
+  const { planData } = useUser();
   const { data: allPlansData } = useAllPlans();
+  const { data: orgData } = useCurrentOrganization();
 
   const isTrialing = planData?.user?.subscriptionStatus === "TRIALING";
   const trialEndDate = planData?.user?.trialEnd
@@ -92,7 +94,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
 
   const navigate = useNavigate();
   const selfHosted = isSelfHostedMode();
-  const isAdmin = user.role === UserRole.ADMIN;
+  const isAdmin = orgData?.role === "OWNER" || orgData?.role === "ADMIN";
   const currentPlanStyle = PLAN_STYLE[currentPlan] ?? PLAN_STYLE[UserPlan.FREE];
   const currentBenefits = getBenefits(currentPlan);
   const nextPlan = getNextPlan(currentPlan);
@@ -191,13 +193,7 @@ export const PlansSummaryTab: React.FC<PlansSummaryTabProps> = ({
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() =>
-                    window.open(
-                      `${import.meta.env.VITE_PORTAL_URL}/purchase`,
-                      "_blank",
-                      "noopener,noreferrer"
-                    )
-                  }
+                  onClick={() => openPortalPath("/purchase")}
                 >
                   {t("plansSummary.purchase")}
                 </Button>

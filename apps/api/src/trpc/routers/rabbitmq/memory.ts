@@ -4,7 +4,7 @@ import { RabbitMQNode } from "@/core/rabbitmq/rabbitmq.interfaces";
 
 import { ServerWorkspaceWithNodeNameSchema } from "@/schemas/rabbitmq";
 
-import { router, workspaceProcedure } from "@/trpc/trpc";
+import { router, workspacePermissionProcedure } from "@/trpc/trpc";
 
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
@@ -18,7 +18,7 @@ export const memoryRouter = router({
   /**
    * Get detailed memory metrics for a specific node for a specific server (ALL USERS)
    */
-  getNodeMemory: workspaceProcedure
+  getNodeMemory: workspacePermissionProcedure("broker:read")
     .input(ServerWorkspaceWithNodeNameSchema)
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId, nodeName } = input;

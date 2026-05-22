@@ -102,6 +102,52 @@ export default tseslint.config(
       "simple-import-sort/exports": "error",
     },
   },
+  // Block server-only @api subtrees from being imported in the frontend.
+  // Only @api/ee/services/llm/context-builders/** and @api/ee/services/llm/llm.interfaces
+  // are safe (pure TS, no Node deps). The API-side ESLint config enforces
+  // purity on those files themselves. Every other @api/ee/services/* subdir
+  // is enumerated explicitly because no-restricted-imports' minimatch group
+  // does not honor `!` negations as exceptions.
+  {
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: [
+                "@api/core/**",
+                "@api/services/**",
+                "@api/middlewares/**",
+                "@api/mappers/**",
+                "@api/schemas/**",
+                "@api/ee/trpc/**",
+                "@api/ee/routers/**",
+                "@api/ee/workers/**",
+                "@api/ee/cron/**",
+                // @api/ee/services/* — block every subdir EXCEPT
+                // @api/ee/services/llm/{context-builders,llm.interfaces}.
+                "@api/ee/services/alerts/**",
+                "@api/ee/services/digest/**",
+                "@api/ee/services/email/**",
+                "@api/ee/services/incident/**",
+                "@api/ee/services/metrics/**",
+                "@api/ee/services/slack/**",
+                "@api/ee/services/tracing/**",
+                "@api/ee/services/webhook/**",
+                // Inside llm/, block the server-only files individually:
+                "@api/ee/services/llm/backends/**",
+                "@api/ee/services/llm/llm.service",
+                "@api/ee/services/llm/llm-encryption.service",
+              ],
+              message:
+                "Server-only @api code cannot be imported in the frontend. Only @api/ee/services/llm/context-builders/** and @api/ee/services/llm/llm.interfaces are safe to use.",
+            },
+          ],
+        },
+      ],
+    },
+  },
   // shadcn UI primitives and contexts legitimately export both
   // components and named utility constants (variant objects,
   // context references, provider+hook pairs). The react-refresh

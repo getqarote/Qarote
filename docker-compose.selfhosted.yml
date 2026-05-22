@@ -9,7 +9,7 @@
 
 services:
   postgres:
-    image: postgres:15-alpine
+    image: postgres:17-alpine
     container_name: qarote_postgres
     restart: unless-stopped
     environment:
@@ -94,6 +94,101 @@ services:
         condition: service_healthy
     networks:
       - qarote_network
+
+  notification-worker:
+    build:
+      context: .
+      dockerfile: ./apps/api/Dockerfile
+    container_name: qarote_notification_worker
+    restart: unless-stopped
+    command: ["pnpm", "run", "start:notification"]
+    environment:
+      TZ: UTC
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/qarote
+      DATABASE_POOL_SIZE: ${DATABASE_POOL_SIZE:-10}
+      JWT_SECRET: ${JWT_SECRET}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      ENABLE_EMAIL: ${ENABLE_EMAIL:-false}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      FROM_EMAIL: ${FROM_EMAIL}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - qarote_network
+
+  # ---------------------------------------------------------------------------
+  # EE workers — uncomment to enable licensed features (Developer / Enterprise)
+  # These workers start fine without a license but premium features are gated.
+  # ---------------------------------------------------------------------------
+
+  # digest-worker:
+  #   build:
+  #     context: .
+  #     dockerfile: ./apps/api/Dockerfile
+  #   container_name: qarote_digest_worker
+  #   restart: unless-stopped
+  #   command: ["pnpm", "run", "start:digest"]
+  #   environment:
+  #     TZ: UTC
+  #     DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/qarote
+  #     DATABASE_POOL_SIZE: ${DATABASE_POOL_SIZE:-10}
+  #     JWT_SECRET: ${JWT_SECRET}
+  #     ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+  #     ENABLE_EMAIL: ${ENABLE_EMAIL:-false}
+  #     SMTP_HOST: ${SMTP_HOST}
+  #     SMTP_PORT: ${SMTP_PORT:-587}
+  #     SMTP_USER: ${SMTP_USER}
+  #     SMTP_PASS: ${SMTP_PASS}
+  #     FROM_EMAIL: ${FROM_EMAIL}
+  #     FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   networks:
+  #     - qarote_network
+
+  # metrics-worker:
+  #   build:
+  #     context: .
+  #     dockerfile: ./apps/api/Dockerfile
+  #   container_name: qarote_metrics_worker
+  #   restart: unless-stopped
+  #   command: ["pnpm", "run", "start:metrics"]
+  #   environment:
+  #     TZ: UTC
+  #     DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/qarote
+  #     DATABASE_POOL_SIZE: ${DATABASE_POOL_SIZE:-10}
+  #     JWT_SECRET: ${JWT_SECRET}
+  #     ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   networks:
+  #     - qarote_network
+
+  # firehose-worker:
+  #   build:
+  #     context: .
+  #     dockerfile: ./apps/api/Dockerfile
+  #   container_name: qarote_firehose_worker
+  #   restart: unless-stopped
+  #   command: ["pnpm", "run", "start:firehose"]
+  #   environment:
+  #     TZ: UTC
+  #     DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/qarote
+  #     DATABASE_POOL_SIZE: ${DATABASE_POOL_SIZE:-10}
+  #     JWT_SECRET: ${JWT_SECRET}
+  #     ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   networks:
+  #     - qarote_network
 
   frontend:
     build:

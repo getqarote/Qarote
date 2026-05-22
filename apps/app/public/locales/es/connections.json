@@ -43,5 +43,6 @@
   "stateFlowTooltip": "Control de flujo activo — el broker está limitando esta conexión para evitar sobrecarga.",
   "stateClosingTooltip": "La conexión se está cerrando. No se requiere acción.",
   "maxChannelsTooltip": "Mayor cantidad de canales en una sola conexión. 50+ puede indicar contención de recursos; 100+ es crítico.",
-  "searchPlaceholder": "Filtrar por nombre, usuario, vhost o nodo..."
+  "searchPlaceholder": "Filtrar por nombre, usuario, vhost o nodo...",
+  "clearSearch": "Limpiar búsqueda"
 }

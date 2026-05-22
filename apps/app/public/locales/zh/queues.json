@@ -186,6 +186,7 @@
   "spyError": "启动监听失败",
   "spyMessages": "{{count}} 条消息",
   "spyClear": "清除",
+  "spyResume": "恢复",
   "spyPayload": "消息体",
   "spyHeaders": "头信息",
   "spyProperties": "属性",

@@ -4,10 +4,9 @@ import { Link, useLocation } from "react-router";
 
 import { Plus } from "lucide-react";
 
-import { UserRole } from "@/lib/api";
-
 import { AddServerForm } from "@/components/AddServerFormComponent";
 import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
+import { RequirePermission } from "@/components/rbac/RequirePermission";
 import { ServerManagement } from "@/components/ServerManagement";
 import { Button } from "@/components/ui/button";
 import {
@@ -61,6 +60,7 @@ import { useVHostContext } from "@/contexts/VHostContextDefinition";
 import { useDiagnosis } from "@/hooks/queries/useDiagnosis";
 import { useOverview } from "@/hooks/queries/useRabbitMQ";
 import { useServers } from "@/hooks/queries/useServer";
+import { useIsWorkspaceAdmin } from "@/hooks/queries/useWorkspaceRole";
 import { useLogout } from "@/hooks/ui/useAuth";
 import { useUser } from "@/hooks/ui/useUser";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
@@ -153,15 +153,15 @@ const BROWSE_ITEMS: NavItem[] = [
 const BROWSE_STORAGE_KEY = "qarote.sidebar.browse.expanded";
 
 /**
- * Persist the BROWSE collapse state across sessions. Default expanded so
- * users coming from the old flat menu don't lose discoverability — they
- * have to opt into the collapsed view.
+ * Persist the BROWSE collapse state across sessions. Default collapsed to
+ * keep the sidebar focused on OVERVIEW; users opt into the power-user
+ * object views by expanding the section.
  */
 function useBrowseExpanded(): [boolean, (next: boolean) => void] {
   const [expanded, setExpanded] = useState<boolean>(() => {
-    if (typeof window === "undefined") return true;
+    if (typeof window === "undefined") return false;
     const stored = window.localStorage.getItem(BROWSE_STORAGE_KEY);
-    return stored === null ? true : stored === "1";
+    return stored === null ? false : stored === "1";
   });
 
   useEffect(() => {
@@ -322,13 +322,13 @@ export function AppSidebar() {
   const logoutMutation = useLogout();
   const { data: serversData } = useServers();
   const servers = serversData?.servers || [];
+  const isAdmin = useIsWorkspaceAdmin() === true;
 
   // Plan checking
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // Sidebar nav state
   const [browseExpanded, setBrowseExpanded] = useBrowseExpanded();
-  const isAdmin = user?.role === UserRole.ADMIN;
   const { count: diagnosisActiveCount, maxSeverity: diagnosisSeverity } =
     useDiagnosisActiveCount(selectedServerId, hasFeature("incident_diagnosis"));
 
@@ -433,8 +433,8 @@ export function AppSidebar() {
                           </div>
                         </SelectItem>
                       ))}
-                      {user?.role === UserRole.ADMIN && canAddServer && (
-                        <>
+                      {canAddServer && (
+                        <RequirePermission permission="server:create">
                           <div className="-mx-1 my-1 h-px bg-muted" />
                           <SelectItem
                             value="__add_server__"
@@ -446,12 +446,12 @@ export function AppSidebar() {
                               </span>
                             </div>
                           </SelectItem>
-                        </>
+                        </RequirePermission>
                       )}
                     </SelectContent>
                   </Select>
                 </div>
-                {user?.role === UserRole.ADMIN && (
+                {isAdmin && (
                   <ServerManagement
                     trigger={
                       <Button
@@ -480,6 +480,7 @@ export function AppSidebar() {
                 {t("noServersConfigured")}
               </p>
               <AddServerForm
+                isFirstServer={true}
                 trigger={
                   <Button size="sm" variant="outline" className="text-xs">
                     <Plus className="h-3 w-3 mr-1" />
@@ -538,7 +539,7 @@ export function AppSidebar() {
                           </div>
                         </SelectItem>
                       ))}
-                      {user?.role === UserRole.ADMIN && (
+                      {isAdmin && (
                         <>
                           <div className="-mx-1 my-1 h-px bg-muted" />
                           <SelectItem
@@ -562,7 +563,7 @@ export function AppSidebar() {
                   <p className="text-xs text-sidebar-foreground/70 mb-2">
                     {t("noVhostsAvailable")}
                   </p>
-                  {user?.role === UserRole.ADMIN && (
+                  {isAdmin && (
                     <Button
                       size="sm"
                       variant="outline"

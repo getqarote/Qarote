@@ -51,6 +51,7 @@ export function NoServerConfigured({
             </h2>
             <p className="text-muted-foreground mb-4">{description}</p>
             <AddServerForm
+              isFirstServer={true}
               trigger={
                 <Button ref={triggerRef} className="btn-primary">
                   {t("addServer")}

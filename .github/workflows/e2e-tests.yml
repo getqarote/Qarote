@@ -4,7 +4,20 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
-      - "apps/**"
+      - "apps/api/**"
+      - "apps/app/**"
+      - "apps/portal/**"
+      - "apps/e2e/**"
+      - "packages/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/e2e-tests.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/api/**"
+      - "apps/app/**"
+      - "apps/portal/**"
+      - "apps/e2e/**"
       - "packages/**"
       - "pnpm-lock.yaml"
       - ".github/workflows/e2e-tests.yml"
@@ -13,7 +26,7 @@ on:
       mode:
         description: "Deployment mode to test"
         required: false
-        default: "selfhosted"
+        default: "all"
         type: choice
         options:
           - selfhosted
@@ -26,136 +39,57 @@ on:
         default: "@p0"
         type: string
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
   DATABASE_URL: postgres://postgres:password@localhost:5433/qarote_e2e
   # Test RSA public key for license JWT verification (matches E2E private key in helpers/license.ts)
   LICENSE_PUBLIC_KEY: "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA00/Ccc/s9iVDqJNRD8Pe\njGZzAi5zec5Hqe8y0H9XysdfU5+QI/PvjuqXaMfbknMTEoKnJcxKAde18DrqIVG3\nrme8rajl9TzeaasXXzSO/hLkKECzepOdiZnuOGyaqGiBoz1D38xpXHc7EsXQbGLx\nJY/LFiql6MVYGeC4qEMmYlIYJoNuWHTvKktuC6Khme6nUcy7MvRDBj9OxoWiPgEw\nJJeXVMwz6XnWvK8x1TvqiV5juvvBcXjOuzr8IZaMcz5cSZlKsSwLKvqHJas+8nUM\nmNruFlJuOeSEkGS8VlhSdAKd1Hyq2z1KKSdlZ1U9lmNAqUrmuwUnPbOIntDCl8Ou\nawIDAQAB\n-----END PUBLIC KEY-----"
 
 jobs:
-  e2e-selfhosted:
-    name: "E2E - Self-Hosted Mode"
+  # Compute which modes to run based on event:
+  # - pull_request: selfhosted only (smoke coverage; full matrix runs on merge to main)
+  # - push to main: all three modes
+  # - workflow_dispatch: user-selected mode (or all)
+  determine-modes:
+    name: "Determine modes"
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    if: >-
-      github.event_name != 'workflow_dispatch' ||
-      github.event.inputs.mode == 'selfhosted' ||
-      github.event.inputs.mode == 'all'
-
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_DB: qarote_e2e
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-        ports:
-          - 5433:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d qarote_e2e"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      rabbitmq:
-        image: rabbitmq:3.12-management-alpine
-        env:
-          RABBITMQ_DEFAULT_USER: admin
-          RABBITMQ_DEFAULT_PASS: admin123
-        ports:
-          - 5682:5672
-          - 15682:15672
-        options: >-
-          --health-cmd "rabbitmq-diagnostics -q ping"
-          --health-interval 15s
-          --health-timeout 10s
-          --health-retries 10
-
+    outputs:
+      modes: ${{ steps.set.outputs.modes }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: "24"
-          cache: "pnpm"
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build i18n package
-        run: pnpm turbo run build --filter=@qarote/i18n
-
-      - name: Install Playwright browsers
-        working-directory: apps/e2e
-        run: pnpm exec playwright install --with-deps chromium
-
-      - name: Run Prisma migrations
-        working-directory: apps/api
-        run: pnpm exec prisma migrate deploy
+      - id: set
         env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
+          INPUT_MODE: ${{ github.event.inputs.mode }}
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo 'modes=["selfhosted"]' >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            case "$INPUT_MODE" in
+              all)
+                echo 'modes=["selfhosted","cloud","selfhosted-licensed"]' >> "$GITHUB_OUTPUT" ;;
+              selfhosted|cloud|selfhosted-licensed)
+                echo "modes=[\"$INPUT_MODE\"]" >> "$GITHUB_OUTPUT" ;;
+              *)
+                echo "::error::Unexpected mode value: $INPUT_MODE" && exit 1 ;;
+            esac
+          else
+            echo 'modes=["selfhosted","cloud","selfhosted-licensed"]' >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Run E2E tests (Self-Hosted)
-        working-directory: apps/e2e
-        run: pnpm exec playwright test --project=selfhosted --grep "${{ github.event.inputs.grep || '@p0' }}"
-        env:
-          DEPLOYMENT_MODE: selfhosted
-          VITE_DEPLOYMENT_MODE: selfhosted
-          NODE_ENV: test
-          PORT: "3001"
-          HOST: localhost
-          LOG_LEVEL: warn
-          JWT_SECRET: e2e-test-jwt-secret-key-at-least-32-chars
-          ENCRYPTION_KEY: e2e-test-encryption-key-32-chars-long!
-          CORS_ORIGIN: "*"
-          FRONTEND_URL: http://localhost:8081
-          PORTAL_FRONTEND_URL: http://localhost:8082
-          # Note: ENABLE_EMAIL, ENABLE_OAUTH, SENTRY_ENABLED, ENABLE_NOTION
-          # are NOT set here — they default to false in the selfhosted Zod schema.
-          # Setting them to "false" would coerce to true via z.coerce.boolean().
-          EMAIL_PROVIDER: smtp
-          FROM_EMAIL: noreply@test.local
-          API_URL: http://localhost:3001
-          VITE_API_URL: http://localhost:3001
-          E2E_RABBITMQ_HOST: localhost
-          E2E_RABBITMQ_MGMT_PORT: "15682"
-          E2E_RABBITMQ_AMQP_PORT: "5682"
-          E2E_RABBITMQ_USER: admin
-          E2E_RABBITMQ_PASS: admin123
-          # TURNSTILE_SECRET_KEY is intentionally absent: Cloudflare's widget cannot
-          # auto-pass in headless Chromium, so enabling it would block all sign-in/sign-up
-          # UI tests. Turnstile is covered by unit tests; E2E API tests skip when unset.
-          CI: "true"
-
-      - name: Upload test report
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: playwright-report-selfhosted
-          path: apps/e2e/playwright-report/
-          retention-days: 7
-
-      - name: Upload traces on failure
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: playwright-traces-selfhosted
-          path: apps/e2e/test-results/
-          retention-days: 3
-
-  e2e-cloud:
-    name: "E2E - Cloud Mode"
+  e2e:
+    name: "E2E - ${{ matrix.mode }}"
+    needs: determine-modes
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    if: >-
-      github.event_name != 'workflow_dispatch' ||
-      github.event.inputs.mode == 'cloud' ||
-      github.event.inputs.mode == 'all'
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: ${{ fromJSON(needs.determine-modes.outputs.modes) }}
 
     services:
       postgres:
@@ -186,6 +120,8 @@ jobs:
           --health-timeout 10s
           --health-retries 10
 
+      # Mailpit is only consumed by cloud mode tests, but running it for every
+      # mode is cheaper than duplicating jobs to vary the services block.
       mailpit:
         image: axllent/mailpit:latest
         ports:
@@ -203,6 +139,8 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
+        with:
+          version: "9.0.0"
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -217,136 +155,11 @@ jobs:
       - name: Build i18n package
         run: pnpm turbo run build --filter=@qarote/i18n
 
-      - name: Install Playwright browsers
-        working-directory: apps/e2e
-        run: pnpm exec playwright install --with-deps chromium
-
-      - name: Run Prisma migrations
-        working-directory: apps/api
-        run: pnpm exec prisma migrate deploy
-        env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
-
-      - name: Run E2E tests (Cloud)
-        working-directory: apps/e2e
-        run: pnpm exec playwright test --project=cloud --grep "${{ github.event.inputs.grep || '@p0' }}"
-        env:
-          DEPLOYMENT_MODE: cloud
-          VITE_DEPLOYMENT_MODE: cloud
-          NODE_ENV: test
-          PORT: "3001"
-          HOST: localhost
-          LOG_LEVEL: warn
-          JWT_SECRET: e2e-test-jwt-secret-key-at-least-32-chars
-          ENCRYPTION_KEY: e2e-test-encryption-key-32-chars-long!
-          CORS_ORIGIN: "*"
-          FRONTEND_URL: http://localhost:8081
-          PORTAL_FRONTEND_URL: http://localhost:8082
-          ENABLE_EMAIL: "true"
-          EMAIL_PROVIDER: smtp
-          SMTP_HOST: localhost
-          SMTP_PORT: "1025"
-          FROM_EMAIL: noreply@test.local
-          ENABLE_OAUTH: "true"
-          GOOGLE_CLIENT_ID: "test-google-client-id.apps.googleusercontent.com"
-          GOOGLE_CLIENT_SECRET: "test-google-client-secret"
-          VITE_GOOGLE_CLIENT_ID: "test-google-client-id.apps.googleusercontent.com"
-          # Cloud mode requires these for Zod validation.
-          # Dummy values — Stripe/Sentry/Resend/Google OAuth are not exercised in E2E tests.
-          RESEND_API_KEY: e2e-test-resend-key
-          STRIPE_SECRET_KEY: sk_test_e2e_dummy
-          STRIPE_WEBHOOK_SECRET: whsec_e2e_dummy
-          STRIPE_DEVELOPER_MONTHLY_PRICE_ID: price_e2e_dev_monthly
-          STRIPE_DEVELOPER_YEARLY_PRICE_ID: price_e2e_dev_yearly
-          STRIPE_ENTERPRISE_MONTHLY_PRICE_ID: price_e2e_ent_monthly
-          STRIPE_ENTERPRISE_YEARLY_PRICE_ID: price_e2e_ent_yearly
-          SENTRY_DSN: https://e2e@sentry.test/0
-          LICENSE_PRIVATE_KEY: e2e-test-private-key
-          API_URL: http://localhost:3001
-          VITE_API_URL: http://localhost:3001
-          E2E_RABBITMQ_HOST: localhost
-          E2E_RABBITMQ_MGMT_PORT: "15682"
-          E2E_RABBITMQ_AMQP_PORT: "5682"
-          E2E_RABBITMQ_USER: admin
-          E2E_RABBITMQ_PASS: admin123
-          # TURNSTILE_SECRET_KEY is intentionally absent: Cloudflare's widget cannot
-          # auto-pass in headless Chromium, so enabling it would block all sign-in/sign-up
-          # UI tests. Turnstile is covered by unit tests; E2E API tests skip when unset.
-          CI: "true"
-
-      - name: Upload test report
-        if: always()
-        uses: actions/upload-artifact@v7
+      - name: Cache Playwright browsers
+        uses: actions/cache@v5
         with:
-          name: playwright-report-cloud
-          path: apps/e2e/playwright-report/
-          retention-days: 7
-
-      - name: Upload traces on failure
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: playwright-traces-cloud
-          path: apps/e2e/test-results/
-          retention-days: 3
-
-  e2e-selfhosted-licensed:
-    name: "E2E - Self-Hosted Licensed Mode"
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    if: >-
-      github.event_name != 'workflow_dispatch' ||
-      github.event.inputs.mode == 'selfhosted-licensed' ||
-      github.event.inputs.mode == 'all'
-
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_DB: qarote_e2e
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-        ports:
-          - 5433:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d qarote_e2e"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      rabbitmq:
-        image: rabbitmq:3.12-management-alpine
-        env:
-          RABBITMQ_DEFAULT_USER: admin
-          RABBITMQ_DEFAULT_PASS: admin123
-        ports:
-          - 5682:5672
-          - 15682:15672
-        options: >-
-          --health-cmd "rabbitmq-diagnostics -q ping"
-          --health-interval 15s
-          --health-timeout 10s
-          --health-retries 10
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: "24"
-          cache: "pnpm"
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build i18n package
-        run: pnpm turbo run build --filter=@qarote/i18n
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Install Playwright browsers
         working-directory: apps/e2e
@@ -358,12 +171,35 @@ jobs:
         env:
           DATABASE_URL: ${{ env.DATABASE_URL }}
 
-      - name: Run E2E tests (Self-Hosted Licensed)
-        working-directory: apps/e2e
-        run: pnpm exec playwright test --project=selfhosted-licensed --grep "${{ github.event.inputs.grep || '@p0' }}"
+      - name: Compute grep filter
+        id: grep
         env:
-          DEPLOYMENT_MODE: selfhosted
-          VITE_DEPLOYMENT_MODE: selfhosted
+          INPUT_GREP: ${{ github.event.inputs.grep }}
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "value=@p0" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # Heredoc form avoids shell-quoting injection from the grep input.
+            printf 'value<<EOF\n%s\nEOF\n' "${INPUT_GREP:-@p0}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run E2E tests
+        working-directory: apps/e2e
+        run: |
+          if [ -n "$GREP_FILTER" ]; then
+            pnpm exec playwright test --project="$MATRIX_MODE" --grep "$GREP_FILTER"
+          else
+            pnpm exec playwright test --project="$MATRIX_MODE"
+          fi
+        env:
+          GREP_FILTER: ${{ steps.grep.outputs.value }}
+          MATRIX_MODE: ${{ matrix.mode }}
+          # DEPLOYMENT_MODE drives the API's Zod config schema. selfhosted-licensed
+          # uses the selfhosted schema but with a baked license JWT.
+          DEPLOYMENT_MODE: ${{ matrix.mode == 'cloud' && 'cloud' || 'selfhosted' }}
+          VITE_DEPLOYMENT_MODE: ${{ matrix.mode == 'cloud' && 'cloud' || 'selfhosted' }}
           NODE_ENV: test
           PORT: "3001"
           HOST: localhost
@@ -373,12 +209,10 @@ jobs:
           CORS_ORIGIN: "*"
           FRONTEND_URL: http://localhost:8081
           PORTAL_FRONTEND_URL: http://localhost:8082
-          # ENABLE_EMAIL, ENABLE_OAUTH, SENTRY_ENABLED, ENABLE_NOTION
-          # omitted — default to false in the selfhosted Zod schema.
-          EMAIL_PROVIDER: smtp
-          FROM_EMAIL: noreply@test.local
           API_URL: http://localhost:3001
           VITE_API_URL: http://localhost:3001
+          EMAIL_PROVIDER: smtp
+          FROM_EMAIL: noreply@test.local
           E2E_RABBITMQ_HOST: localhost
           E2E_RABBITMQ_MGMT_PORT: "15682"
           E2E_RABBITMQ_AMQP_PORT: "5682"
@@ -388,12 +222,31 @@ jobs:
           # auto-pass in headless Chromium, so enabling it would block all sign-in/sign-up
           # UI tests. Turnstile is covered by unit tests; E2E API tests skip when unset.
           CI: "true"
+          # Cloud-only env. The selfhosted Zod schema treats these as unknown and ignores
+          # them; setting them to "" would coerce flags like ENABLE_OAUTH to true via
+          # z.coerce.boolean(), so we gate the entire block on matrix.mode == 'cloud'.
+          ENABLE_EMAIL: ${{ matrix.mode == 'cloud' && 'true' || '' }}
+          SMTP_HOST: ${{ matrix.mode == 'cloud' && 'localhost' || '' }}
+          SMTP_PORT: ${{ matrix.mode == 'cloud' && '1025' || '' }}
+          ENABLE_OAUTH: ${{ matrix.mode == 'cloud' && 'true' || '' }}
+          GOOGLE_CLIENT_ID: ${{ matrix.mode == 'cloud' && 'test-google-client-id.apps.googleusercontent.com' || '' }}
+          GOOGLE_CLIENT_SECRET: ${{ matrix.mode == 'cloud' && 'test-google-client-secret' || '' }}
+          VITE_GOOGLE_CLIENT_ID: ${{ matrix.mode == 'cloud' && 'test-google-client-id.apps.googleusercontent.com' || '' }}
+          RESEND_API_KEY: ${{ matrix.mode == 'cloud' && 'e2e-test-resend-key' || '' }}
+          STRIPE_SECRET_KEY: ${{ matrix.mode == 'cloud' && 'sk_test_e2e_dummy' || '' }}
+          STRIPE_WEBHOOK_SECRET: ${{ matrix.mode == 'cloud' && 'whsec_e2e_dummy' || '' }}
+          STRIPE_DEVELOPER_MONTHLY_PRICE_ID: ${{ matrix.mode == 'cloud' && 'price_e2e_dev_monthly' || '' }}
+          STRIPE_DEVELOPER_YEARLY_PRICE_ID: ${{ matrix.mode == 'cloud' && 'price_e2e_dev_yearly' || '' }}
+          STRIPE_ENTERPRISE_MONTHLY_PRICE_ID: ${{ matrix.mode == 'cloud' && 'price_e2e_ent_monthly' || '' }}
+          STRIPE_ENTERPRISE_YEARLY_PRICE_ID: ${{ matrix.mode == 'cloud' && 'price_e2e_ent_yearly' || '' }}
+          SENTRY_DSN: ${{ matrix.mode == 'cloud' && 'https://e2e@sentry.test/0' || '' }}
+          LICENSE_PRIVATE_KEY: ${{ matrix.mode == 'cloud' && 'e2e-test-private-key' || '' }}
 
       - name: Upload test report
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-report-selfhosted-licensed
+          name: playwright-report-${{ matrix.mode }}
           path: apps/e2e/playwright-report/
           retention-days: 7
 
@@ -401,6 +254,6 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-traces-selfhosted-licensed
+          name: playwright-traces-${{ matrix.mode }}
           path: apps/e2e/test-results/
           retention-days: 3

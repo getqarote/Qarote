@@ -50,6 +50,7 @@ export function getI18n(
     defaultNS: "common",
     interpolation: { escapeValue: false },
     react: { useSuspense: false },
+    showSupportNotice: false,
   };
 
   if (resources) {

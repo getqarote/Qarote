@@ -186,6 +186,7 @@
   "spyError": "Échec du démarrage de l'espion",
   "spyMessages": "{{count}} messages",
   "spyClear": "Effacer",
+  "spyResume": "Reprendre",
   "spyPayload": "Contenu",
   "spyHeaders": "En-têtes",
   "spyProperties": "Propriétés",

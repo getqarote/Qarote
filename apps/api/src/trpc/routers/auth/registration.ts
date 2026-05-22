@@ -1,10 +1,11 @@
+import { deriveAcquisitionChannel } from "@qarote/analytics";
 import { TRPCError } from "@trpc/server";
 
 import { hashPassword } from "@/core/auth";
 
 import { EmailVerificationService } from "@/services/email/email-verification.service";
 import { notionService } from "@/services/integrations/notion.service";
-import { posthog } from "@/services/posthog";
+import { identifyUser, trackEvent } from "@/services/posthog";
 import { trackSignUpError } from "@/services/sentry";
 import { StripeCustomerService } from "@/services/stripe/customer.service";
 import {
@@ -46,6 +47,13 @@ export const registrationRouter = router({
         sourceApp,
         referralSource,
         discoveryQuery,
+        initialUtmSource,
+        initialUtmMedium,
+        initialUtmCampaign,
+        initialUtmTerm,
+        initialUtmContent,
+        initialReferrer,
+        initialLandingPage,
       } = input;
 
       // Check if public registration is enabled
@@ -125,7 +133,6 @@ export const registrationRouter = router({
               email: true,
               firstName: true,
               lastName: true,
-              role: true,
               workspaceId: true,
               isActive: true,
               emailVerified: true,
@@ -155,12 +162,34 @@ export const registrationRouter = router({
             email,
             name: `${firstName} ${lastName}`.trim(),
             prisma: ctx.prisma,
-          }).catch((error) => {
-            ctx.logger.warn(
-              { error, userId: user.id },
-              "Failed to auto-start trial at registration"
-            );
-          });
+          })
+            .then((subscription) => {
+              if (!subscription) return;
+              const trialEndMs = subscription.trialEnd?.getTime() ?? 0;
+              const days = Math.max(
+                0,
+                Math.round((trialEndMs - Date.now()) / 86_400_000)
+              );
+              trackEvent(
+                {
+                  distinctId: user.id,
+                  superProperties: {
+                    app: "api",
+                    plan_tier: "free",
+                    is_trial: true,
+                    organization_id: subscription.organizationId ?? undefined,
+                  },
+                },
+                "trial_started",
+                { trial_days_remaining: days }
+              );
+            })
+            .catch((error) => {
+              ctx.logger.warn(
+                { error, userId: user.id },
+                "Failed to auto-start trial at registration"
+              );
+            });
         }
 
         // Generate verification token and send email (skip if email is disabled)
@@ -196,25 +225,43 @@ export const registrationRouter = router({
         }
 
         try {
-          posthog?.identify({
-            distinctId: user.id,
-            properties: {
-              $set: {
-                email: user.email,
-                firstName: user.firstName,
-                lastName: user.lastName,
+          identifyUser({
+            id: user.id,
+            email: user.email,
+            planTier: "free",
+            isTrial: isCloudMode(),
+            signupReferralSource: referralSource ?? null,
+            signupDiscoveryQuery: discoveryQuery ?? null,
+            signupAt: user.createdAt,
+            initialUtmSource: initialUtmSource ?? null,
+            initialUtmMedium: initialUtmMedium ?? null,
+            initialUtmCampaign: initialUtmCampaign ?? null,
+            initialUtmTerm: initialUtmTerm ?? null,
+            initialUtmContent: initialUtmContent ?? null,
+            initialReferrer: initialReferrer ?? null,
+            initialLandingPage: initialLandingPage ?? null,
+            acquisitionChannel: deriveAcquisitionChannel({
+              utmMedium: initialUtmMedium,
+              utmSource: initialUtmSource,
+              referrer: initialReferrer,
+            }),
+            isSelfHosted: !isCloudMode(),
+          });
+          trackEvent(
+            {
+              distinctId: user.id,
+              superProperties: {
+                app: "api",
+                plan_tier: "free",
+                is_trial: isCloudMode(),
               },
-              $set_once: { first_registered_at: user.createdAt },
             },
-          });
-          posthog?.capture({
-            distinctId: user.id,
-            event: "user_registered",
-            properties: {
-              auto_verified: autoVerify,
-              source_app: sourceApp ?? null,
-            },
-          });
+            "user_registered",
+            {
+              referral_source: referralSource ?? null,
+              discovery_query: discoveryQuery ?? null,
+            }
+          );
         } catch (analyticsError) {
           ctx.logger.warn(
             { error: analyticsError, userId: user.id },

@@ -1,3 +1,5 @@
+import dns from "node:dns/promises";
+
 /**
  * Returns true if the given IP address belongs to a private, loopback,
  * or link-local range (RFC 1918 / RFC 4193 / RFC 3927 / RFC 5735).
@@ -33,4 +35,39 @@ export function isPrivateIP(ip: string): boolean {
     normalized.startsWith("fea") ||
     normalized.startsWith("feb")
   );
+}
+
+/**
+ * Returns true if the URL is safe to use as an external HTTP endpoint.
+ *
+ * Resolves DNS and validates every returned IP against isPrivateIP —
+ * this protects against DNS rebinding (public IP at validation time,
+ * private IP at call time). Must be called both at save time AND at
+ * every fetch() call in adapters that use user-supplied endpoints.
+ */
+export async function isSafeEndpoint(url: string): Promise<boolean> {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return false;
+  }
+
+  if (!["http:", "https:"].includes(parsed.protocol)) return false;
+
+  try {
+    const [v4, v6] = await Promise.allSettled([
+      dns.resolve4(parsed.hostname),
+      dns.resolve6(parsed.hostname),
+    ]);
+    const addresses = [
+      ...(v4.status === "fulfilled" ? v4.value : []),
+      ...(v6.status === "fulfilled" ? v6.value : []),
+    ];
+    // Fail closed: no DNS records means unresolvable → unsafe
+    if (addresses.length === 0) return false;
+    return addresses.every((ip) => !isPrivateIP(ip));
+  } catch {
+    return false;
+  }
 }

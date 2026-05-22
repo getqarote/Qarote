@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router";
 
 import { RefreshCw, Zap } from "lucide-react";
 
+import { findingKey } from "@/lib/findingKey";
 import { formatRelativeAgo } from "@/lib/formatRelativeAgo";
 
 import { DiagnosisCard } from "@/components/diagnosis/DiagnosisCard";
@@ -27,6 +29,29 @@ import { useDiagnosis } from "@/hooks/queries/useDiagnosis";
 export default function Diagnosis() {
   const { t } = useTranslation("diagnosis");
   const { selectedServerId } = useServerContext();
+  const [searchParams, setSearchParams] = useSearchParams();
+  // Captured once at mount — DiagnosisCard only reads defaultExplainOpen on
+  // initial render, so this stays valid until the next page navigation even
+  // after we clear the URL param.
+  const [deepLinkFindingId] = useState<string | null>(() =>
+    searchParams.get("findingId")
+  );
+
+  useEffect(() => {
+    if (!searchParams.get("findingId")) return;
+    // Drop ?findingId= via React Router so a refresh doesn't re-open the
+    // panel. We don't clear deepLinkFindingId here: clearing on a timer
+    // races with the diagnosis fetch (the card may not have mounted yet);
+    // since defaultExplainOpen is captured at card mount, the state can
+    // persist until unmount without blocking subsequent manual opens.
+    setSearchParams(
+      (prev) => {
+        prev.delete("findingId");
+        return prev;
+      },
+      { replace: true }
+    );
+  }, [searchParams, setSearchParams]);
 
   if (!selectedServerId) {
     return (
@@ -43,7 +68,10 @@ export default function Diagnosis() {
   return (
     <PageShell bare>
       <FeatureGate feature="incident_diagnosis" serverId={selectedServerId}>
-        <DiagnosisContent serverId={selectedServerId} />
+        <DiagnosisContent
+          serverId={selectedServerId}
+          deepLinkFindingId={deepLinkFindingId}
+        />
       </FeatureGate>
     </PageShell>
   );
@@ -55,7 +83,13 @@ export default function Diagnosis() {
  * resolves to OK — a blocked server never hits the diagnosis endpoint.
  * Mirrors the `TracingFeatureGated` pattern (legacy page, same shape).
  */
-function DiagnosisContent({ serverId }: { serverId: string }) {
+function DiagnosisContent({
+  serverId,
+  deepLinkFindingId,
+}: {
+  serverId: string;
+  deepLinkFindingId: string | null;
+}) {
   const { t } = useTranslation("diagnosis");
 
   const WINDOW_OPTIONS = [
@@ -246,7 +280,7 @@ function DiagnosisContent({ serverId }: { serverId: string }) {
             <DiagnosisSummary summary={summary} />
             {diagnoses.map((d) => (
               <DiagnosisCard
-                key={`${d.scope}-${d.queueName}-${d.vhost}-${d.rule}-${d.detectedAt}`}
+                key={findingKey(d)}
                 rule={d.rule}
                 severity={d.severity}
                 scope={d.scope}
@@ -258,6 +292,8 @@ function DiagnosisContent({ serverId }: { serverId: string }) {
                 detectedAt={d.detectedAt}
                 supersededBy={d.supersededBy}
                 firstSeenAt={d.firstSeenAt}
+                findingId={d.id}
+                defaultExplainOpen={deepLinkFindingId === d.id}
               />
             ))}
           </div>

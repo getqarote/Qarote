@@ -3,8 +3,10 @@ import "../styles/index.css";
 
 import { SUPPORTED_LOCALES } from "@qarote/i18n";
 
-import { ConsentBanner } from "../components/consent/ConsentBanner";
+import { ConsentBannerIsland } from "../components/consent/ConsentBannerIsland";
+import AttributionCapture from "../components/AttributionCapture.astro";
 import PostHog from "../components/posthog.astro";
+import { loadTranslations } from "../lib/i18n-static";
 
 interface Props {
   title: string;
@@ -21,6 +23,8 @@ const {
   canonicalPath = "/",
   image = "https://qarote.io/images/qarote_card.jpg",
 } = Astro.props;
+
+const consentResources = { common: loadTranslations(locale, "common") };
 
 const baseUrl = "https://qarote.io";
 const canonicalUrl =
@@ -267,6 +271,9 @@ const isProd = import.meta.env.PROD;
     <!-- PostHog analytics -->
     <PostHog />
 
+    <!-- First-touch marketing attribution capture -->
+    <AttributionCapture />
+
     <!-- Google Tag Manager — production + consent only.
          No <noscript> fallback: without JS we cannot read consent state.
          KEEP IN SYNC with apps/web/src/lib/consent.ts (canonical source) and
@@ -331,6 +338,6 @@ const isProd = import.meta.env.PROD;
   </head>
   <body>
     <slot />
-    <ConsentBanner client:load />
+    <ConsentBannerIsland locale={locale} resources={consentResources} client:load />
   </body>
 </html>

@@ -6,15 +6,14 @@ import {
   VHostOptionalQuerySchema,
 } from "@/schemas/rabbitmq";
 
-import { authorize, router } from "@/trpc/trpc";
+import { router, workspacePermissionProcedure } from "@/trpc/trpc";
 
 import { createRabbitMQClientFromServer, verifyServerAccess } from "./shared";
 
-import { UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 export const definitionsRouter = router({
-  getDefinitions: authorize([UserRole.ADMIN])
+  getDefinitions: workspacePermissionProcedure("definitions:export")
     .input(ServerWorkspaceInputSchema.merge(VHostOptionalQuerySchema))
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId, vhost: vhostParam } = input;
@@ -48,7 +47,7 @@ export const definitionsRouter = router({
       }
     }),
 
-  importDefinitions: authorize([UserRole.ADMIN])
+  importDefinitions: workspacePermissionProcedure("definitions:import")
     .input(
       ServerWorkspaceInputSchema.merge(VHostOptionalQuerySchema).extend({
         definitions: z.unknown(),

@@ -4,10 +4,9 @@ import { useNavigate, useParams } from "react-router";
 
 import { toast } from "sonner";
 
-import { UserRole } from "@/lib/api";
-
 import { PageErrorOrGate } from "@/components/PageErrorOrGate";
 import { FullPageAlert, PageShell } from "@/components/PageShell";
+import { PermissionDeniedCard, RequireWorkspaceAdmin } from "@/components/rbac";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +20,6 @@ import { VHostPermissionsTable } from "@/components/VHostDetail/VHostPermissions
 import { VHostStats } from "@/components/VHostDetail/VHostStats";
 import { EditVHostModal } from "@/components/vhosts/EditVHostModal";
 
-import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 
 import { useUsers } from "@/hooks/queries/useRabbitMQUsers";
@@ -38,12 +36,38 @@ import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 export default function VHostDetailsPage() {
   const { t } = useTranslation("vhosts");
+  const { t: tc } = useTranslation("common");
+
+  return (
+    <RequireWorkspaceAdmin
+      loadingFallback={
+        <PageShell>
+          <LoadingSkeleton />
+        </PageShell>
+      }
+      deniedFallback={
+        <PageShell>
+          <PermissionDeniedCard
+            title={t("accessDeniedTitle")}
+            description={t("accessDenied")}
+            returnTo="/"
+            returnLabel={tc("backToDashboard")}
+          />
+        </PageShell>
+      }
+    >
+      <VHostDetailsPageBody />
+    </RequireWorkspaceAdmin>
+  );
+}
+
+function VHostDetailsPageBody() {
+  const { t } = useTranslation("vhosts");
   const { serverId, vhostName } = useParams<{
     serverId?: string;
     vhostName: string;
   }>();
   const { selectedServerId } = useServerContext();
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [showEditModal, setShowEditModal] = useState(false);
@@ -255,15 +279,6 @@ export default function VHostDetailsPage() {
       toast.error(t("thresholdSaveError"));
     }
   };
-
-  // Guard: non-admins cannot reach this page at all
-  if (user?.role !== UserRole.ADMIN) {
-    return (
-      <PageShell>
-        <FullPageAlert message={t("accessDenied")} />
-      </PageShell>
-    );
-  }
 
   if (!currentServerId) {
     return (

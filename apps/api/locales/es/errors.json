@@ -67,6 +67,10 @@
     "userAlreadyOrgMember": "El usuario ya es miembro de esta organización",
     "orgMembershipRequired": "Se requiere membresía en la organización",
     "orgAdminRequired": "Se requiere rol de PROPIETARIO o ADMINISTRADOR de la organización",
+    "workspaceAdminRequired": "Se requiere rol de PROPIETARIO o ADMINISTRADOR del espacio de trabajo",
+    "workspaceOwnerRequired": "Se requiere rol de PROPIETARIO del espacio de trabajo",
+    "workspacePermissionRequired": "Permisos insuficientes en el espacio de trabajo",
+    "cannotGrantHigherRole": "No puedes otorgar un rol mayor o igual al tuyo",
     "orgInvitationNotFound": "Invitación no encontrada",
     "orgInvitationAlreadyAccepted": "La invitación ya ha sido aceptada",
     "orgInvitationExpired": "La invitación ha expirado"
@@ -92,6 +96,7 @@
     "userNotAuthenticatedOrNotInWorkspace": "Usuario no autenticado o no pertenece al espacio de trabajo",
     "userAlreadyMember": "El usuario ya es miembro de este espacio de trabajo",
     "invitationAlreadyPending": "Ya existe una invitación pendiente para este correo electrónico",
+    "lastOwnerBlocked": "No se puede eliminar ni degradar al último PROPIETARIO del espacio de trabajo",
     "failedToFetchInvitations": "Error al obtener las invitaciones",
     "failedToSendInvitation": "Error al enviar la invitación",
     "invitationNotFoundOrUsed": "Invitación no encontrada o ya utilizada",
@@ -108,6 +113,7 @@
     "failedToFetchUser": "Error al obtener el usuario",
     "doesNotBelongToWorkspace": "El usuario no pertenece a este espacio de trabajo",
     "failedToUpdateUser": "Error al actualizar el usuario",
+    "failedToUpdateRole": "Error al actualizar el rol del miembro",
     "isNotMemberOfWorkspace": "El usuario no es miembro de este espacio de trabajo",
     "cannotRemoveSelf": "No puede eliminarse a sí mismo del espacio de trabajo",
     "onlyOwnerCanRemoveAdmin": "Solo los propietarios del espacio de trabajo pueden eliminar usuarios administradores",
@@ -117,6 +123,10 @@
     "requiresEnterprise": "{{featureName}} requiere la edición Enterprise. Actualice desde la edición Community para desbloquear esta funcionalidad.",
     "notIncludedInLicense": "{{featureName}} no está incluido en su licencia o su licencia no es válida. Por favor, verifique su archivo de licencia.",
     "notAvailable": "{{featureName}} no está disponible."
+  },
+  "audit": {
+    "failedToFetch": "Error al obtener el registro de auditoría",
+    "failedToExport": "Error al exportar el registro de auditoría"
   },
   "billing": {
     "failedToFetchPlanInfo": "Error al obtener la información del plan",

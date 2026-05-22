@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Navigate } from "react-router";
 
 import { usePostHog } from "@posthog/react";
@@ -11,15 +12,14 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { UserRole } from "@/lib/api";
 import { isSelfHostedMode } from "@/lib/featureFlags";
+import { getPortalUrl } from "@/lib/runtimeConfig";
 
+import { PermissionDeniedCard, RequireOrgAdmin } from "@/components/rbac";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-
-import { useAuth } from "@/contexts/AuthContextDefinition";
 
 import {
   useActivateLicense,
@@ -28,9 +28,53 @@ import {
 } from "@/hooks/queries/useLicenseManagement";
 
 const LicenseSection = () => {
-  const { user } = useAuth();
+  const { t } = useTranslation("settings");
+  const { t: tc } = useTranslation("common");
+
+  // Cloud mode has no per-instance license — bail synchronously so
+  // cloud users never see a role-resolution spinner.
+  if (!isSelfHostedMode()) {
+    return <Navigate to="/settings/profile" replace />;
+  }
+
+  return (
+    <RequireOrgAdmin
+      loadingFallback={<LicenseLoadingSkeleton />}
+      deniedFallback={
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <PermissionDeniedCard
+            title={t("license.accessDeniedTitle")}
+            description={t("license.accessDenied")}
+            returnTo="/settings/profile"
+            returnLabel={tc("backToSettings")}
+          />
+        </div>
+      }
+    >
+      <LicenseSectionBody />
+    </RequireOrgAdmin>
+  );
+};
+
+export default LicenseSection;
+
+function LicenseLoadingSkeleton() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-8 w-48" />
+      <Skeleton className="h-32 w-full" />
+    </div>
+  );
+}
+
+/**
+ * Mounted only after RequireOrgAdmin proves the caller is an org
+ * admin — the license status query runs unconditionally here.
+ */
+function LicenseSectionBody() {
   const posthog = usePostHog();
   const [licenseKey, setLicenseKey] = useState("");
+  const portalUrl = getPortalUrl();
 
   const { data: status, isLoading } = useLicenseStatus();
 
@@ -67,17 +111,8 @@ const LicenseSection = () => {
     deactivateMutation.mutate();
   };
 
-  if (!isSelfHostedMode() || (user && user.role !== UserRole.ADMIN)) {
-    return <Navigate to="/settings/profile" replace />;
-  }
-
   if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-32 w-full" />
-      </div>
-    );
+    return <LicenseLoadingSkeleton />;
   }
 
   const hasLicense = status?.active && status.license;
@@ -173,17 +208,23 @@ const LicenseSection = () => {
             {hasLicense ? "Replace License" : "Activate License"}
           </h2>
           <p className="text-sm text-muted-foreground">
-            Paste your license key below. You can get one from the{" "}
-            <a
-              href={`${import.meta.env.VITE_PORTAL_URL}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline inline-flex items-center gap-1"
-            >
-              Qarote Portal
-              <ExternalLink className="h-3 w-3" />
-            </a>
-            .
+            Paste your license key below.
+            {portalUrl ? (
+              <>
+                {" "}
+                You can get one from the{" "}
+                <a
+                  href={portalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline inline-flex items-center gap-1"
+                >
+                  Qarote Portal
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+                .
+              </>
+            ) : null}
           </p>
         </div>
         <div className="p-4">
@@ -215,6 +256,4 @@ const LicenseSection = () => {
       </div>
     </div>
   );
-};
-
-export default LicenseSection;
+}

@@ -172,8 +172,34 @@
     "toast": {
       "inviteFailed": "邀请失败",
       "removeFailed": "移除成员失败",
-      "addFailed": "添加成员失败"
-    }
+      "addFailed": "添加成员失败",
+      "roleUpdateFailed": "更新角色失败",
+      "roleFetchFailed": "无法加载工作区权限。",
+      "bulkRoleUpdated_one": "已更新 {{count}} 名成员",
+      "bulkRoleUpdated_other": "已更新 {{count}} 名成员",
+      "bulkRoleUpdateFailed": "成员更新失败",
+      "scopeDenied": "您需要「{{permission}}」权限才能执行此操作。",
+      "scopeDeniedGeneric": "您没有执行此操作的权限。"
+    },
+    "selectRow": "选择该成员",
+    "selectAll": "选择本页所有成员",
+    "bulkSelected_one": "已选择 <strong>{{count}}</strong> 名成员",
+    "bulkSelected_other": "已选择 <strong>{{count}}</strong> 名成员",
+    "bulkSelectRolePlaceholder": "指派角色…",
+    "bulkApplying": "指派中…",
+    "bulkDeselectAll": "清除选择",
+    "bulkLastOwnerTitle": "此操作将移除最后一位 Owner",
+    "bulkLastOwnerBody": "此操作完成后，将无人能够管理计费、删除工作空间或授予 Owner 角色。仍要继续吗？",
+    "bulkLastOwnerCancel": "取消",
+    "bulkLastOwnerConfirm": "我已了解，继续",
+    "roleGroupBuiltin": "标准角色",
+    "roleGroupCustom": "自定义角色",
+    "roleCustomBadge": "自定义",
+    "selectRowNamed": "选择 {{name}}",
+    "selectAllNamed": "选择本页全部 {{count}} 名成员",
+    "bulkApply_one": "指派给 {{count}} 名成员",
+    "bulkApply_other": "指派给 {{count}} 名成员",
+    "roleLoading": "正在加载角色…"
   },
   "org": {
     "title": "组织",

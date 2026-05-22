@@ -26,6 +26,12 @@ interface Server {
   username: string;
   vhost: string;
   useHttps: boolean;
+  /**
+   * Free-text environment tag (`prod`, `staging`, `dev`, …) consumed
+   * by the RBAC Phase 3 `server.environment` resource-scope predicate.
+   * Nullable — empty means "no environment tag set".
+   */
+  environment?: string | null;
 }
 
 export interface AddServerFormProps {
@@ -36,4 +42,5 @@ export interface AddServerFormProps {
   mode?: "add" | "edit";
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
+  isFirstServer?: boolean;
 }

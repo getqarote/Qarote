@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { prisma } from "@/core/prisma";
 
-import { EmailService } from "@/services/email/email.service";
+import { enqueueNotification } from "@/services/notification/notification-outbox.service";
 
 import {
   handleCheckoutSessionCompleted,
@@ -14,8 +14,8 @@ import {
 
 // --- Mocks ---
 
-vi.mock("@/core/prisma", () => ({
-  prisma: {
+vi.mock("@/core/prisma", () => {
+  const prismaMock = {
     user: {
       update: vi.fn(),
       findUnique: vi.fn(),
@@ -38,8 +38,13 @@ vi.mock("@/core/prisma", () => ({
     licenseFileVersion: {
       findFirst: vi.fn(),
     },
-  },
-}));
+    // $transaction passes the same mock back as the tx client so handler
+    // code that does `tx.subscription.create(...)` exercises the same
+    // mocked methods.
+    $transaction: vi.fn(async (cb: (tx: unknown) => unknown) => cb(prismaMock)),
+  };
+  return { prisma: prismaMock };
+});
 
 vi.mock("@/services/license/license.service", () => ({
   licenseService: {
@@ -54,16 +59,8 @@ vi.mock("@/services/license/license-features.service", () => ({
   getLicenseFeaturesForTier: vi.fn().mockReturnValue(["feature1"]),
 }));
 
-vi.mock("@/services/email/email.service", () => ({
-  EmailService: {
-    sendUpgradeConfirmationEmail: vi.fn().mockResolvedValue(undefined),
-    sendPaymentConfirmationEmail: vi.fn().mockResolvedValue(undefined),
-    sendLicenseCancellationEmail: vi.fn().mockResolvedValue(undefined),
-    sendPaymentFailedEmail: vi.fn().mockResolvedValue(undefined),
-    sendLicensePaymentFailedEmail: vi.fn().mockResolvedValue(undefined),
-    sendLicenseExpiredEmail: vi.fn().mockResolvedValue(undefined),
-    sendLicenseDeliveryEmail: vi.fn().mockResolvedValue(undefined),
-  },
+vi.mock("@/services/notification/notification-outbox.service", () => ({
+  enqueueNotification: vi.fn().mockResolvedValue(true),
 }));
 
 vi.mock("@/services/sentry", () => ({
@@ -175,8 +172,11 @@ describe("handleCheckoutSessionCompleted", () => {
       })
     );
 
-    // Welcome email sent
-    expect(EmailService.sendUpgradeConfirmationEmail).toHaveBeenCalled();
+    // Welcome email enqueued via outbox
+    expect(enqueueNotification).toHaveBeenCalledWith(
+      expect.objectContaining({ template: "upgrade_confirmation" }),
+      expect.anything()
+    );
   });
 
   it("skips duplicate when subscription already exists (idempotency)", async () => {
@@ -256,13 +256,17 @@ describe("handleCustomerSubscriptionDeleted", () => {
       })
     );
 
-    // Cancellation email sent
-    expect(EmailService.sendLicenseCancellationEmail).toHaveBeenCalledWith(
+    // Cancellation email enqueued via outbox
+    expect(enqueueNotification).toHaveBeenCalledWith(
       expect.objectContaining({
-        to: "user@test.com",
-        licenseKey: "KEY-001",
-        tier: "ENTERPRISE",
-      })
+        template: "license_cancellation",
+        target: "user@test.com",
+        payload: expect.objectContaining({
+          licenseKey: "KEY-001",
+          tier: "ENTERPRISE",
+        }),
+      }),
+      expect.anything()
     );
   });
 
@@ -281,7 +285,10 @@ describe("handleCustomerSubscriptionDeleted", () => {
 
     expect(prisma.subscription.update).toHaveBeenCalled();
     expect(prisma.license.updateMany).not.toHaveBeenCalled();
-    expect(EmailService.sendLicenseCancellationEmail).not.toHaveBeenCalled();
+    expect(enqueueNotification).not.toHaveBeenCalledWith(
+      expect.objectContaining({ template: "license_cancellation" }),
+      expect.anything()
+    );
   });
 
   it("handles missing subscription gracefully", async () => {
@@ -371,11 +378,13 @@ describe("handleInvoicePaymentFailed", () => {
     // Licenses NOT deactivated (still in grace period)
     expect(prisma.license.updateMany).not.toHaveBeenCalled();
 
-    // Grace period warning email sent
-    expect(EmailService.sendLicensePaymentFailedEmail).toHaveBeenCalledWith(
+    // Grace period warning email enqueued via outbox
+    expect(enqueueNotification).toHaveBeenCalledWith(
       expect.objectContaining({
-        isInGracePeriod: true,
-      })
+        template: "license_payment_failed",
+        payload: expect.objectContaining({ isInGracePeriod: true }),
+      }),
+      expect.anything()
     );
   });
 
@@ -419,9 +428,15 @@ describe("handleInvoicePaymentFailed", () => {
       })
     );
 
-    // Expired email sent (not grace period warning)
-    expect(EmailService.sendLicenseExpiredEmail).toHaveBeenCalled();
-    expect(EmailService.sendLicensePaymentFailedEmail).not.toHaveBeenCalled();
+    // Expired email enqueued via outbox (not grace period warning)
+    expect(enqueueNotification).toHaveBeenCalledWith(
+      expect.objectContaining({ template: "license_expired" }),
+      expect.anything()
+    );
+    expect(enqueueNotification).not.toHaveBeenCalledWith(
+      expect.objectContaining({ template: "license_payment_failed" }),
+      expect.anything()
+    );
   });
 
   it("returns early when no subscription ID in invoice", async () => {

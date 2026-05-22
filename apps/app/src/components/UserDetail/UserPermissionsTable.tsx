@@ -29,14 +29,48 @@ interface UserPermissionsTableProps {
   permissions: UserPermission[];
   pendingVhost: string | null;
   onClear: (vhost: string) => void;
+  /** When provided, renders a "set by X · 12m ago" cell per row. */
+  lastSet?: Record<
+    string,
+    { timestamp: string; actorEmail: string | null }
+  > | null;
+}
+
+/**
+ * Relative time, localized via `Intl.RelativeTimeFormat`. Sub-60s
+ * renders the localized "now" form (numeric: auto picks the idiomatic
+ * variant per locale). See AuditSection for the duplicate.
+ */
+function relativeTime(
+  iso: string,
+  language: string,
+  now: Date = new Date()
+): string {
+  const diffSec = Math.floor((now.getTime() - new Date(iso).getTime()) / 1000);
+  if (diffSec < 60) {
+    return new Intl.RelativeTimeFormat(language, { numeric: "auto" }).format(
+      0,
+      "minute"
+    );
+  }
+  const rtf = new Intl.RelativeTimeFormat(language, { numeric: "always" });
+  const min = Math.floor(diffSec / 60);
+  if (min < 60) return rtf.format(-min, "minute");
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return rtf.format(-hr, "hour");
+  const day = Math.floor(hr / 24);
+  if (day < 30) return rtf.format(-day, "day");
+  const mo = Math.floor(day / 30);
+  return rtf.format(-mo, "month");
 }
 
 export function UserPermissionsTable({
   permissions,
   pendingVhost,
   onClear,
+  lastSet,
 }: UserPermissionsTableProps) {
-  const { t } = useTranslation("users");
+  const { t, i18n } = useTranslation("users");
   const [clearConfirmVhost, setClearConfirmVhost] = useState<string | null>(
     null
   );
@@ -96,15 +130,36 @@ export function UserPermissionsTable({
                 <tbody className="divide-y divide-border">
                   {paginatedPermissions.map((permission) => {
                     const isPending = pendingVhost === permission.vhost;
+                    const lastSetEntry = lastSet?.[permission.vhost];
                     return (
                       <tr
                         key={permission.vhost}
                         className="hover:bg-accent transition-colors"
                       >
                         <td className="px-4 py-3 font-mono text-sm font-medium truncate">
-                          {permission.vhost === "/"
-                            ? t("defaultVhost")
-                            : permission.vhost}
+                          <div>
+                            {permission.vhost === "/"
+                              ? t("defaultVhost")
+                              : permission.vhost}
+                          </div>
+                          {lastSetEntry && (
+                            <div
+                              className="mt-0.5 text-[11px] font-sans font-normal text-muted-foreground/70"
+                              title={new Date(
+                                lastSetEntry.timestamp
+                              ).toLocaleString()}
+                            >
+                              {t("setByActorAgo", {
+                                actor:
+                                  lastSetEntry.actorEmail ?? t("anonymous"),
+                                ago: relativeTime(
+                                  lastSetEntry.timestamp,
+                                  i18n.language
+                                ),
+                                defaultValue: "Set by {{actor}} · {{ago}}",
+                              })}
+                            </div>
+                          )}
                         </td>
                         <td className="w-32 px-4 py-3 text-right font-mono text-sm tabular-nums text-muted-foreground">
                           {permission.configure}

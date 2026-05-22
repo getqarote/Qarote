@@ -72,7 +72,7 @@ export const AddServerButton = () => {
   };
 
   if (canAddServer) {
-    return <AddServerForm />;
+    return <AddServerForm isFirstServer={serverUsage.current === 0} />;
   }
 
   const buttonConfig = getServerButtonConfig();

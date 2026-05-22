@@ -19,7 +19,6 @@ export type PrismaUserWithDates = {
   image?: string | null;
   firstName: string | null;
   lastName: string | null;
-  role: string;
   workspaceId: string | null;
   isActive: boolean;
   emailVerified: boolean;
@@ -37,7 +36,6 @@ export type UserApiResponse = {
   image?: string | null;
   firstName: string | null;
   lastName: string | null;
-  role: string;
   workspaceId: string | null;
   isActive: boolean;
   emailVerified: boolean;

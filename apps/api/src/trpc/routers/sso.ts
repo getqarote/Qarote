@@ -19,6 +19,7 @@ import { z } from "zod/v4";
 
 import { isPrivateIP } from "@/core/network";
 
+import { recordFromContext } from "@/services/audit";
 import { isFeatureEnabled } from "@/services/feature-gate";
 import { getOrgPlan } from "@/services/plan/plan.service";
 
@@ -217,7 +218,7 @@ export const ssoRouter = router({
         });
       }
 
-      await ctx.prisma.$transaction(async (tx) => {
+      const persistedProvider = await ctx.prisma.$transaction(async (tx) => {
         const provider = await tx.ssoProvider.upsert({
           where: { providerId },
           update: {
@@ -247,12 +248,32 @@ export const ssoRouter = router({
             autoProvision: true,
           },
         });
+
+        return provider;
       });
 
       ctx.logger.info(
         { providerId, type: input.type },
         "SSO provider registered"
       );
+
+      void recordFromContext(ctx, {
+        action: "sso.provider.created",
+        category: "auth",
+        entityType: "ssoProvider",
+        entityId: persistedProvider.id,
+        entityLabel: persistedProvider.providerId,
+        metadata: {
+          type: input.type,
+          domain: persistedProvider.domain,
+          organizationId,
+        },
+        workspaceId: null,
+        // SSO is org-scoped — resolve plan-gate against the org
+        // (Enterprise installs persist; Free/Developer Pino-only).
+        organizationId,
+      });
+
       return { success: true, providerId };
     }),
 
@@ -334,7 +355,7 @@ export const ssoRouter = router({
         });
       }
 
-      await ctx.prisma.ssoProvider.update({
+      const updated = await ctx.prisma.ssoProvider.update({
         where: { providerId },
         data: {
           issuer,
@@ -345,6 +366,44 @@ export const ssoRouter = router({
       });
 
       ctx.logger.info({ providerId }, "SSO provider updated");
+
+      // Metadata derived from the *persisted* updated row, not the
+      // input — matches what's actually stored after the prisma
+      // update commits. `enabled` is omitted (the SsoProvider model
+      // has no `enabled` column). `oidcSecretSet` is derived by
+      // parsing `updated.oidcConfig`; reflects whether the persisted
+      // row carries a non-empty client secret post-update. For SAML
+      // providers (no oidcConfig) the field is omitted.
+      let oidcSecretSet: boolean | undefined;
+      if (updated.oidcConfig) {
+        try {
+          const parsed = JSON.parse(updated.oidcConfig) as {
+            clientSecret?: unknown;
+          };
+          oidcSecretSet =
+            typeof parsed.clientSecret === "string" &&
+            parsed.clientSecret.length > 0;
+        } catch {
+          // Malformed config — leave undefined rather than guess.
+        }
+      }
+      void recordFromContext(ctx, {
+        action: "sso.provider.updated",
+        category: "auth",
+        entityType: "ssoProvider",
+        entityId: updated.id,
+        entityLabel: updated.providerId,
+        metadata: {
+          type: input.type,
+          domain: updated.domain,
+          oidcSecretSet,
+        },
+        workspaceId: null,
+        // Instance-wide providers (self-hosted) have no org scope —
+        // don't attribute the audit row to the caller's org.
+        organizationId: isCloudMode() ? ctx.organizationId : null,
+      });
+
       return { success: true };
     }),
 
@@ -357,9 +416,28 @@ export const ssoRouter = router({
       : INSTANCE_PROVIDER_ID;
 
     // OrgSsoConfig is deleted via cascade on SsoProvider
+    const existing = await ctx.prisma.ssoProvider.findUnique({
+      where: { providerId },
+      select: { id: true, providerId: true, domain: true },
+    });
     await ctx.prisma.ssoProvider.deleteMany({ where: { providerId } });
 
     ctx.logger.info({ providerId }, "SSO provider deleted");
+
+    if (existing) {
+      void recordFromContext(ctx, {
+        action: "sso.provider.deleted",
+        category: "auth",
+        entityType: "ssoProvider",
+        entityId: existing.id,
+        entityLabel: existing.providerId,
+        metadata: { domain: existing.domain },
+        workspaceId: null,
+        // Instance-wide providers have no org scope.
+        organizationId: isCloudMode() ? ctx.organizationId : null,
+      });
+    }
+
     return { success: true };
   }),
 

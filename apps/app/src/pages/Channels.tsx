@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Search } from "lucide-react";
+import { parseAsString, parseAsStringEnum, useQueryStates } from "nuqs";
 
 import { ChannelsList } from "@/components/ChannelsList/ChannelsList";
 import { ChannelsOverviewCards } from "@/components/ChannelsList/ChannelsOverviewCards";
@@ -32,8 +33,21 @@ const STATE_FILTERS: { value: StateFilter; labelKey: string }[] = [
 const Channels = () => {
   const { t } = useTranslation("channels");
   const { selectedServerId, hasServers } = useServerContext();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [activeStateFilter, setActiveStateFilter] = useState<StateFilter>(null);
+  const [{ q: searchTerm, state }, setFilters] = useQueryStates(
+    {
+      q: parseAsString.withDefault(""),
+      // No .withDefault() — null means "show all", which is the desired
+      // initial state and keeps the URL clean when no filter is active.
+      state: parseAsStringEnum<NonNullable<StateFilter>>([
+        "running",
+        "idle",
+        "blocked",
+        "flow",
+      ]),
+    },
+    { history: "replace" as const, clearOnDefault: true }
+  );
+  const activeStateFilter: StateFilter = state;
 
   const {
     data: channelsData,
@@ -133,7 +147,7 @@ const Channels = () => {
         channels={channels}
         isLoading={isLoading}
         activeFilter={activeStateFilter}
-        onStateFilter={setActiveStateFilter}
+        onStateFilter={(v) => void setFilters({ state: v })}
       />
 
       {/* State filter pills */}
@@ -146,7 +160,7 @@ const Channels = () => {
                 key={String(value)}
                 type="button"
                 aria-pressed={isActive}
-                onClick={() => setActiveStateFilter(value)}
+                onClick={() => void setFilters({ state: value })}
                 className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
                   isActive
                     ? "bg-primary text-primary-foreground border-primary"
@@ -167,14 +181,14 @@ const Channels = () => {
           <Input
             placeholder={t("searchPlaceholder")}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => void setFilters({ q: e.target.value })}
             className="pl-9 pr-8 h-9"
           />
           {searchTerm && (
             <button
               type="button"
               aria-label={t("clearSearch")}
-              onClick={() => setSearchTerm("")}
+              onClick={() => void setFilters({ q: "" })}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
               <PixelX className="h-4 w-auto shrink-0" />

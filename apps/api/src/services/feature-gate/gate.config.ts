@@ -44,6 +44,13 @@ export type FreePlanBehaviour =
   | { mode: "none" };
 
 /**
+ * Behaviour on the DEVELOPER plan. Optional — when omitted, Developer
+ * passes the plan axis (the historical default). Set to `{ mode:
+ * "block" }` for features that are exclusively Enterprise.
+ */
+export type DeveloperPlanBehaviour = { mode: "block" };
+
+/**
  * How `<ServerCapabilityBadge>` decides whether a feature is "ready"
  * for a given broker snapshot. Discriminated string so the badge stays
  * data-driven — adding a new capability-gated feature only requires
@@ -67,13 +74,19 @@ export interface FeatureGateConfig {
   licenseRequired: boolean;
 
   /**
-   * Plan gate: behaviour on the FREE plan. Paid plans (DEVELOPER, ENTERPRISE)
-   * always pass the plan axis for any feature listed here — granular
-   * tier-locking lives in the per-feature business logic, not the gate.
+   * Plan gate: behaviour on the FREE plan. ENTERPRISE always passes;
+   * DEVELOPER passes by default unless `developerBehaviour` overrides.
    *
    * `freeBehaviour: { mode: "none" }` means "no plan restriction".
    */
   freeBehaviour: FreePlanBehaviour;
+
+  /**
+   * Optional override for DEVELOPER plan. Use for Enterprise-only
+   * features (audit log, advanced governance) so the gate blocks
+   * Cloud Developer in addition to FREE.
+   */
+  developerBehaviour?: DeveloperPlanBehaviour;
 
   /**
    * Capability axis is implemented in the version-and-capability-gating plan.
@@ -180,6 +193,34 @@ export const FEATURE_GATE_CONFIG: Record<FeatureKey, FeatureGateConfig> = {
     // targeted queue is a stream.
     capabilityRequired: true,
     badgeReadiness: "snapshot-present",
+  },
+  // BYOK providers (Ollama, Anthropic, OpenAI) available on Developer+.
+  // Managed provider (Qarote-hosted inference) is Enterprise cloud only —
+  // enforced at the service layer, not the gate (gate only sees plan tier).
+  [FEATURES.AI_EXPLAIN_INLINE]: {
+    licenseRequired: true,
+    freeBehaviour: { mode: "block" },
+  },
+  [FEATURES.AI_EXPLAIN_DIGEST]: {
+    licenseRequired: true,
+    freeBehaviour: { mode: "block" },
+  },
+  // Audit log: Enterprise-only — both Free AND Developer are blocked
+  // at the gate. License axis covers self-hosted (license must list
+  // audit_log); plan axis blocks Cloud Developer where the license
+  // axis is bypassed.
+  [FEATURES.AUDIT_LOG]: {
+    licenseRequired: true,
+    freeBehaviour: { mode: "block" },
+    developerBehaviour: { mode: "block" },
+  },
+  // Custom roles + resource scopes (RBAC Phase 3) — Enterprise-only
+  // at both license axis (self-hosted: license must list
+  // rbac_advanced) and plan axis (Cloud Developer blocked too).
+  [FEATURES.RBAC_ADVANCED]: {
+    licenseRequired: true,
+    freeBehaviour: { mode: "block" },
+    developerBehaviour: { mode: "block" },
   },
 };
 

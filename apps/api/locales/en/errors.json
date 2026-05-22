@@ -67,6 +67,10 @@
     "userAlreadyOrgMember": "User is already a member of this organization",
     "orgMembershipRequired": "Organization membership required",
     "orgAdminRequired": "Organization OWNER or ADMIN role required",
+    "workspaceAdminRequired": "Workspace OWNER or ADMIN role required",
+    "workspaceOwnerRequired": "Workspace OWNER role required",
+    "workspacePermissionRequired": "Insufficient workspace permissions",
+    "cannotGrantHigherRole": "You cannot grant a role greater than or equal to your own",
     "orgInvitationNotFound": "Invitation not found",
     "orgInvitationAlreadyAccepted": "Invitation has already been accepted",
     "orgInvitationExpired": "Invitation has expired"
@@ -92,12 +96,31 @@
     "userNotAuthenticatedOrNotInWorkspace": "User not authenticated or not in workspace",
     "userAlreadyMember": "User is already a member of this workspace",
     "invitationAlreadyPending": "An invitation is already pending for this email",
+    "lastOwnerBlocked": "Cannot remove or demote the last OWNER of the workspace",
     "failedToFetchInvitations": "Failed to fetch invitations",
     "failedToSendInvitation": "Failed to send invitation",
     "invitationNotFoundOrUsed": "Invitation not found or already used",
     "failedToRevokeInvitation": "Failed to revoke invitation",
     "traceRetentionNotConfigurableOnFree": "Trace retention is not configurable on the Free plan. Upgrade to Developer or Enterprise.",
     "traceRetentionExceedsPlanMax": "Trace retention cannot exceed {{planMax}} hours on the {{plan}} plan."
+  },
+  "role": {
+    "notFound": "Role not found",
+    "nameTooShort": "Role name must be at least 2 characters",
+    "nameTooLong": "Role name must be at most 64 characters",
+    "nameInvalidChars": "Role name may only contain letters, numbers, spaces, underscores, and hyphens",
+    "nameReserved": "Role name is reserved for built-in roles",
+    "descriptionTooLong": "Role description must be at most 280 characters",
+    "permissionsEmpty": "Role must include at least one permission",
+    "permissionsTooMany": "Role exceeds the maximum number of permissions",
+    "memberIdsEmpty": "At least one member must be selected",
+    "memberIdsTooMany": "Too many members in a single assignment (max 100)",
+    "unknownPermissionKey": "Unknown permission key",
+    "duplicatePermissionEntry": "Duplicate permission entry — the same (permission, scope) pair appears more than once",
+    "updateRequiresAtLeastOneField": "Role update requires at least one field",
+    "staleUpdate": "Role was modified by another request — please reload and try again",
+    "memberNotInWorkspace": "One or more members do not belong to this workspace",
+    "deleteFailed": "Failed to delete role"
   },
   "user": {
     "failedToFetchUsers": "Failed to fetch users",
@@ -108,6 +131,7 @@
     "failedToFetchUser": "Failed to fetch user",
     "doesNotBelongToWorkspace": "User does not belong to this workspace",
     "failedToUpdateUser": "Failed to update user",
+    "failedToUpdateRole": "Failed to update member role",
     "isNotMemberOfWorkspace": "User is not a member of this workspace",
     "cannotRemoveSelf": "Cannot remove yourself from the workspace",
     "onlyOwnerCanRemoveAdmin": "Only workspace owners can remove admin users",
@@ -116,6 +140,10 @@
   "feature": {
     "requiresLicense": "{{featureName}} requires an active license. Activate a license in Settings to unlock this feature.",
     "notAvailable": "{{featureName}} is not available."
+  },
+  "audit": {
+    "failedToFetch": "Failed to fetch audit log",
+    "failedToExport": "Failed to export audit log"
   },
   "billing": {
     "failedToFetchPlanInfo": "Failed to fetch plan information",

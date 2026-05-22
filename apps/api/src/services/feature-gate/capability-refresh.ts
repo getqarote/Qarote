@@ -18,7 +18,7 @@ import type { RabbitMQApiClient } from "@/core/rabbitmq/ApiClient";
 import { detectServerCapabilities } from "@/core/rabbitmq/capabilities";
 
 import { EncryptionService } from "@/services/encryption.service";
-import { posthog } from "@/services/posthog";
+import { trackEvent } from "@/services/posthog";
 
 import type { CapabilitySnapshot } from "./capability-snapshot";
 import {
@@ -110,10 +110,13 @@ export async function refreshServerCapabilities(
       // without log-trawling. Distinct ID is the serverId because there is
       // no acting user (cron / lifecycle event).
       try {
-        posthog?.capture({
-          distinctId: serverId,
-          event: "capability_changed",
-          properties: {
+        trackEvent(
+          {
+            distinctId: serverId,
+            superProperties: { app: "api" },
+          },
+          "capability_changed",
+          {
             server_id: serverId,
             had_firehose_before:
               observability.before?.hasFirehoseExchange ?? null,
@@ -121,8 +124,8 @@ export async function refreshServerCapabilities(
             plugin_count_before:
               observability.before?.enabledPluginsCount ?? null,
             plugin_count_after: snapshot.enabledPlugins.length,
-          },
-        });
+          }
+        );
       } catch (analyticsErr) {
         logger.warn(
           { error: analyticsErr, serverId },

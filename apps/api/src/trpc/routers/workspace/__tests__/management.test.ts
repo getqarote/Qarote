@@ -1,7 +1,35 @@
 import { TRPCError } from "@trpc/server";
+import DataLoader from "dataloader";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { UpdateWorkspaceSchema } from "@/schemas/workspace";
+
+import { permissionsForRole } from "@/auth/permissions";
+import type { WorkspaceRole } from "@/generated/prisma/client";
+
+function memberRowForRole(role: WorkspaceRole) {
+  return {
+    id: `m-${String(role).toLowerCase()}`,
+    roleId: `role-${String(role).toLowerCase()}`,
+    role: {
+      id: `role-${String(role).toLowerCase()}`,
+      isSystem: true,
+      builtinKey: role,
+      updatedAt: new Date("2026-05-11T10:00:00Z"),
+    },
+    workspace: { organizationId: "org-1", licenseTier: "ENTERPRISE" },
+  };
+}
+
+function makeFakePermissionsLoader(role: WorkspaceRole) {
+  return new DataLoader<string, unknown>(async (ids) =>
+    ids.map(() => ({
+      kind: "builtin" as const,
+      role,
+      permissions: new Set(permissionsForRole(role)),
+    }))
+  );
+}
 
 // --- Mocks ---
 
@@ -13,6 +41,7 @@ const mockWorkspaceCount = vi.fn();
 const mockUserFindUnique = vi.fn();
 const mockUserUpdateMany = vi.fn();
 const mockTransaction = vi.fn();
+const mockWorkspaceMemberFindFirst = vi.fn();
 
 vi.mock("@/core/prisma", () => ({
   prisma: {
@@ -22,6 +51,9 @@ vi.mock("@/core/prisma", () => ({
       findMany: (...a: unknown[]) => mockWorkspaceFindMany(...a),
       update: (...a: unknown[]) => mockWorkspaceUpdate(...a),
       count: (...a: unknown[]) => mockWorkspaceCount(...a),
+    },
+    workspaceMember: {
+      findFirst: (...a: unknown[]) => mockWorkspaceMemberFindFirst(...a),
     },
     user: {
       findUnique: (...a: unknown[]) => mockUserFindUnique(...a),
@@ -110,6 +142,9 @@ function makeCtx(overrides: Record<string, unknown> = {}) {
       role: "OWNER",
     }),
     req: {},
+    effectivePermissionsLoader: makeFakePermissionsLoader(
+      "ADMIN" as WorkspaceRole
+    ),
     ...overrides,
   };
 }
@@ -194,6 +229,11 @@ describe("UpdateWorkspaceSchema", () => {
 describe("managementRouter.update", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // workspaceProcedure resolves membership + role from prisma — default
+    // mock makes the caller a workspace ADMIN of ws-1 with org ws-org-1.
+    mockWorkspaceMemberFindFirst.mockResolvedValue(
+      memberRowForRole("ADMIN" as WorkspaceRole)
+    );
   });
 
   it("rejects empty string contactEmail with BAD_REQUEST", async () => {
@@ -261,13 +301,13 @@ describe("managementRouter.update", () => {
     expect(result.workspace.tags).toEqual(["production", "eu-west"]);
   });
 
-  it("throws NOT_FOUND when workspace does not belong to user", async () => {
-    mockWorkspaceFindUnique.mockResolvedValue(null);
+  it("throws FORBIDDEN when caller is not a member of the workspace", async () => {
+    mockWorkspaceMemberFindFirst.mockResolvedValueOnce(null);
 
     const caller = managementRouter.createCaller(makeCtx() as never);
     await expect(
       caller.update({ workspaceId: "ws-other", name: "My Workspace" })
-    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
 
     expect(mockWorkspaceUpdate).not.toHaveBeenCalled();
   });

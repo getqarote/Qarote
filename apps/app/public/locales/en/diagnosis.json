@@ -62,7 +62,12 @@
     "helpfulYes": "Helpful",
     "helpfulNo": "Not helpful",
     "copyCommand": "Copy command",
-    "copied": "Copied"
+    "copied": "Copied",
+    "explain": "Explain",
+    "explaining": "Generating explanation…",
+    "retry": "Retry",
+    "explainError": "Couldn't generate explanation — check your connection and try again.",
+    "explainHelpful": "Was this explanation helpful?"
   },
   "metadata": {
     "analyzedAgo": "Analyzed {{time}}",

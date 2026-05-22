@@ -1,0 +1,13 @@
+{
+  "forbidden": {
+    "title": "Access denied",
+    "subtitle": "You don't have permission to view this content.",
+    "workspacePermission": "Your role in this workspace doesn't include the required permission.",
+    "lastOwnerBlocked": "This action would leave the workspace without an owner. Assign another owner first.",
+    "inviterRoleInsufficient": "The invitation could no longer be accepted because the inviter's role was changed.",
+    "scopeDenied": "Your role allows this action only on a subset of servers.",
+    "scopeDeniedWithContext": "Your role allows this only on the following scopes: {{scopes}}.",
+    "contactAdmin": "Contact a workspace admin or owner to request access.",
+    "backToDashboard": "Back to dashboard"
+  }
+}

@@ -67,6 +67,7 @@ skills-lock.json
 
 # Local-only docs
 docs/SEO_STRATEGY.md
+docs/plans/rbac-phase3.md
 
 # License files
 qarote-license-*.json
@@ -77,3 +78,11 @@ scripts/sync-prod-db.sh
 
 # TS incremental build artefacts (per-tsconfig, regenerated on build)
 *.tsbuildinfo
+
+# Prisma client (generated on postinstall via `prisma generate`)
+apps/api/src/generated/
+
+# LLM eval harness — promptfoo per-run output and local cache.
+# eval-result.json is uploaded as a CI artifact; not committed.
+apps/api/src/ee/services/llm/__evals__/eval-result.json
+apps/api/src/ee/services/llm/__evals__/.promptfoo/

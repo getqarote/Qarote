@@ -1,5 +1,7 @@
 import { TRPCError } from "@trpc/server";
 
+import { recordFromContext } from "@/services/audit";
+
 import {
   ServerWorkspaceInputSchema,
   ServerWorkspaceWithVHostNameSchema,
@@ -15,11 +17,10 @@ import {
 
 import { VHostMapper } from "@/mappers/rabbitmq";
 
-import { authorize, router } from "@/trpc/trpc";
+import { router, workspacePermissionProcedure } from "@/trpc/trpc";
 
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
-import { UserRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -30,7 +31,7 @@ export const vhostRouter = router({
   /**
    * Get all virtual hosts for a server
    */
-  getVHosts: authorize([UserRole.ADMIN, UserRole.MEMBER])
+  getVHosts: workspacePermissionProcedure("vhost:read")
     .input(ServerWorkspaceInputSchema)
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId } = input;
@@ -134,7 +135,7 @@ export const vhostRouter = router({
   /**
    * Get a specific virtual host details
    */
-  getVHost: authorize([UserRole.ADMIN, UserRole.MEMBER])
+  getVHost: workspacePermissionProcedure("vhost:read")
     .input(ServerWorkspaceWithVHostNameSchema)
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId, vhostName } = input;
@@ -216,7 +217,7 @@ export const vhostRouter = router({
   /**
    * Delete a virtual host (ADMIN ONLY)
    */
-  deleteVHost: authorize([UserRole.ADMIN])
+  deleteVHost: workspacePermissionProcedure("vhost:delete")
     .input(ServerWorkspaceWithVHostNameSchema)
     .mutation(async ({ input, ctx }) => {
       const { serverId, workspaceId, vhostName } = input;
@@ -246,6 +247,16 @@ export const vhostRouter = router({
           `VHost ${vhostName} deleted by user ${ctx.user.id} on server ${serverId}`
         );
 
+        void recordFromContext(ctx, {
+          action: "rabbitmq.vhost.deleted",
+          category: "rabbitmq",
+          entityType: "vhost",
+          entityId: vhostName,
+          entityLabel: vhostName,
+          serverId,
+          vhost: vhostName,
+        });
+
         return {
           success: true,
           message: `Virtual host "${vhostName}" deleted successfully`,
@@ -268,7 +279,7 @@ export const vhostRouter = router({
   /**
    * Set user permissions for a virtual host (ADMIN ONLY)
    */
-  setPermissions: authorize([UserRole.ADMIN])
+  setPermissions: workspacePermissionProcedure("vhost:permissions:write")
     .input(
       ServerWorkspaceWithVHostNameSchema.merge(UsernameParamSchema).merge(
         SetPermissionSchema
@@ -307,6 +318,17 @@ export const vhostRouter = router({
           `Permissions set for user ${username} on vhost ${vhostName} by admin ${ctx.user.id}`
         );
 
+        void recordFromContext(ctx, {
+          action: "rabbitmq.vhost.permission.set",
+          category: "rabbitmq",
+          entityType: "vhost_permission",
+          entityId: `${username}@${vhostName}`,
+          entityLabel: `${username}@${vhostName}`,
+          serverId,
+          vhost: vhostName,
+          metadata: { username, configure, write, read },
+        });
+
         return {
           success: true,
           message: `Permissions set for user "${username}" on virtual host "${vhostName}"`,
@@ -329,7 +351,7 @@ export const vhostRouter = router({
   /**
    * Delete user permissions for a virtual host (ADMIN ONLY)
    */
-  deletePermissions: authorize([UserRole.ADMIN])
+  deletePermissions: workspacePermissionProcedure("vhost:permissions:write")
     .input(ServerWorkspaceWithVHostNameSchema.merge(UsernameParamSchema))
     .mutation(async ({ input, ctx }) => {
       const { serverId, workspaceId, vhostName, username } = input;
@@ -350,6 +372,17 @@ export const vhostRouter = router({
         ctx.logger.info(
           `Permissions deleted for user ${username} on vhost ${vhostName} by admin ${ctx.user.id}`
         );
+
+        void recordFromContext(ctx, {
+          action: "rabbitmq.vhost.permission.deleted",
+          category: "rabbitmq",
+          entityType: "vhost_permission",
+          entityId: `${username}@${vhostName}`,
+          entityLabel: `${username}@${vhostName}`,
+          serverId,
+          vhost: vhostName,
+          metadata: { username },
+        });
 
         return {
           success: true,
@@ -373,7 +406,7 @@ export const vhostRouter = router({
   /**
    * Create a new virtual host (ADMIN ONLY)
    */
-  createVHost: authorize([UserRole.ADMIN])
+  createVHost: workspacePermissionProcedure("vhost:create")
     .input(ServerWorkspaceInputSchema.merge(CreateVHostSchema))
     .mutation(async ({ input, ctx }) => {
       const {
@@ -407,6 +440,17 @@ export const vhostRouter = router({
           `VHost ${name} created by user ${ctx.user.id} on server ${serverId}`
         );
 
+        void recordFromContext(ctx, {
+          action: "rabbitmq.vhost.created",
+          category: "rabbitmq",
+          entityType: "vhost",
+          entityId: name,
+          entityLabel: name,
+          serverId,
+          vhost: name,
+          metadata: { description, default_queue_type, tracing },
+        });
+
         return {
           success: true,
           message: `Virtual host "${name}" created successfully`,
@@ -435,7 +479,7 @@ export const vhostRouter = router({
   /**
    * Update a virtual host (ADMIN ONLY)
    */
-  updateVHost: authorize([UserRole.ADMIN])
+  updateVHost: workspacePermissionProcedure("vhost:update")
     .input(ServerWorkspaceWithVHostNameSchema.merge(UpdateVHostSchema))
     .mutation(async ({ input, ctx }) => {
       const { serverId, workspaceId, vhostName, ...updateData } = input;
@@ -456,6 +500,17 @@ export const vhostRouter = router({
         ctx.logger.info(
           `VHost ${vhostName} updated by user ${ctx.user.id} on server ${serverId}`
         );
+
+        void recordFromContext(ctx, {
+          action: "rabbitmq.vhost.updated",
+          category: "rabbitmq",
+          entityType: "vhost",
+          entityId: vhostName,
+          entityLabel: vhostName,
+          serverId,
+          vhost: vhostName,
+          metadata: { changes: updateData },
+        });
 
         return {
           success: true,
@@ -479,7 +534,7 @@ export const vhostRouter = router({
   /**
    * Set virtual host limit (ADMIN ONLY)
    */
-  setLimit: authorize([UserRole.ADMIN])
+  setLimit: workspacePermissionProcedure("vhost:limits:write")
     .input(
       ServerWorkspaceWithVHostNameSchema.extend({
         limitType: VHostLimitTypeSchema,
@@ -508,6 +563,17 @@ export const vhostRouter = router({
           `Limit ${limitType} set to ${value} for vhost ${vhostName} by admin ${ctx.user.id}`
         );
 
+        void recordFromContext(ctx, {
+          action: "rabbitmq.vhost.limit.set",
+          category: "rabbitmq",
+          entityType: "vhost_limit",
+          entityId: `${limitType}@${vhostName}`,
+          entityLabel: `${limitType}@${vhostName}`,
+          serverId,
+          vhost: vhostName,
+          metadata: { limitType, value },
+        });
+
         return {
           success: true,
           message: `Limit "${limitType}" set to ${value} for virtual host "${vhostName}"`,
@@ -530,7 +596,7 @@ export const vhostRouter = router({
   /**
    * Delete virtual host limit (ADMIN ONLY)
    */
-  deleteLimit: authorize([UserRole.ADMIN])
+  deleteLimit: workspacePermissionProcedure("vhost:limits:write")
     .input(
       ServerWorkspaceWithVHostNameSchema.extend({
         limitType: VHostLimitTypeSchema,
@@ -555,6 +621,17 @@ export const vhostRouter = router({
         ctx.logger.info(
           `Limit ${limitType} deleted for vhost ${vhostName} by admin ${ctx.user.id}`
         );
+
+        void recordFromContext(ctx, {
+          action: "rabbitmq.vhost.limit.deleted",
+          category: "rabbitmq",
+          entityType: "vhost_limit",
+          entityId: `${limitType}@${vhostName}`,
+          entityLabel: `${limitType}@${vhostName}`,
+          serverId,
+          vhost: vhostName,
+          metadata: { limitType },
+        });
 
         return {
           success: true,

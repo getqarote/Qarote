@@ -1,0 +1,73 @@
+{
+  "title": "Registro de auditoría",
+  "description": "Rastro forense de cambios sensibles (denegaciones RBAC, operaciones destructivas de RabbitMQ, cambios de miembros, actualizaciones de configuración). Retención: {{retentionDays}} días. Solo plan Enterprise.",
+  "tab": {
+    "activity": "Actividad",
+    "denials": "Denegaciones"
+  },
+  "col": {
+    "timestamp": "Cuándo",
+    "action": "Acción",
+    "actor": "Actor",
+    "entity": "Entidad",
+    "source": "Origen"
+  },
+  "source": {
+    "all": "Todos los orígenes",
+    "qarote": "Qarote",
+    "rbac_denial": "Denegación",
+    "broker_diff": "Diff del broker"
+  },
+  "category": {
+    "all": "Todas las categorías",
+    "rabbitmq": "RabbitMQ",
+    "workspace": "Espacio de trabajo",
+    "org": "Organización",
+    "alert": "Alertas",
+    "auth": "Autenticación",
+    "system": "Sistema"
+  },
+  "filter": {
+    "category": { "placeholder": "Categoría" },
+    "source": { "placeholder": "Origen" },
+    "from": { "label": "Fecha desde" },
+    "to": { "label": "Fecha hasta" },
+    "actor": { "placeholder": "Actor — correo o ID de usuario" },
+    "clear": "Limpiar filtros"
+  },
+  "status": {
+    "loading": "Cargando…",
+    "refreshing": "Actualizando…",
+    "empty": "Ningún evento coincide",
+    "range": "Mostrando {{start}}–{{end}} de {{total}} eventos"
+  },
+  "empty": {
+    "filtered": "Ningún evento de auditoría coincide con los filtros.",
+    "none": "Aún no hay eventos de auditoría. Los cambios sensibles aparecerán aquí.",
+    "quiet": "El registro está en silencio",
+    "quietDetail": "No se registraron operaciones privilegiadas. Los cambios sensibles aparecerán aquí en tiempo real."
+  },
+  "shortcuts": {
+    "label": "Atajos de teclado",
+    "focusActor": "Enfocar búsqueda de actor",
+    "clear": "Limpiar filtros",
+    "refresh": "Actualizar"
+  },
+  "error": {
+    "title": "No se pudo cargar el registro de auditoría",
+    "message": "El servidor devolvió un error. Reintenta o refina los filtros.",
+    "retry": "Reintentar"
+  },
+  "pagination": {
+    "first": "Primera página",
+    "next": "Siguiente",
+    "more_one": "{{count}} evento más",
+    "more_other": "{{count}} eventos más"
+  },
+  "export": {
+    "button": "Exportar CSV",
+    "success": "{{count}} filas exportadas",
+    "truncated": "El resultado se truncó al límite. Refine los filtros para capturar el histórico anterior.",
+    "failed": "La exportación falló"
+  }
+}

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { parseAsStringEnum, useQueryState } from "nuqs";
 import { toast } from "sonner";
 
-import { UserRole } from "@/lib/api";
 import { logger } from "@/lib/logger";
 
 import { AddExchangeButton } from "@/components/AddExchangeButton";
@@ -19,23 +19,32 @@ import { NoServerSelectedCard, PageShell } from "@/components/PageShell";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { TitleWithCount } from "@/components/ui/TitleWithCount";
 
-import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
 import { useDeleteExchange, useExchanges } from "@/hooks/queries/useRabbitMQ";
+import { useIsWorkspaceAdmin } from "@/hooks/queries/useWorkspaceRole";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { ApiErrorWithCode } from "@/types/apiErrors";
 
 const Exchanges = () => {
   const { t } = useTranslation("exchanges");
-  const { user } = useAuth();
-  const isAdmin = user?.role === UserRole.ADMIN;
+  const isAdmin = useIsWorkspaceAdmin() === true;
   const { selectedServerId, hasServers } = useServerContext();
   const { selectedVHost } = useVHostContext();
   const [selectedExchangeType, setSelectedExchangeType] =
-    useState<ExchangeTypeFilterValue>("all");
+    useQueryState<ExchangeTypeFilterValue>(
+      "state",
+      parseAsStringEnum<ExchangeTypeFilterValue>([
+        "all",
+        "direct",
+        "fanout",
+        "topic",
+        "headers",
+      ]).withDefault("all"),
+      { history: "replace" as const, clearOnDefault: true }
+    );
   const [exchangeToDelete, setExchangeToDelete] =
     useState<ExchangeListItem | null>(null);
 
@@ -182,7 +191,7 @@ const Exchanges = () => {
         exchanges={filteredExchanges}
         isLoading={exchangesLoading}
         typeFilter={selectedExchangeType}
-        onTypeFilterChange={setSelectedExchangeType}
+        onTypeFilterChange={(v) => void setSelectedExchangeType(v)}
         onDelete={isAdmin ? (e) => setExchangeToDelete(e) : undefined}
         isDeleting={deleteExchangeMutation.isPending}
       />

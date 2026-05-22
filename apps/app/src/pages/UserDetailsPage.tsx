@@ -4,10 +4,11 @@ import { useNavigate, useParams } from "react-router";
 
 import { toast } from "sonner";
 
-import { UserRole } from "@/lib/api";
+import { trpc } from "@/lib/trpc/client";
 
 import { PageErrorOrGate } from "@/components/PageErrorOrGate";
 import { FullPageAlert, PageShell } from "@/components/PageShell";
+import { PermissionDeniedCard, RequireWorkspaceAdmin } from "@/components/rbac";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LoadingSkeleton } from "@/components/UserDetail/LoadingSkeleton";
 import { SetUserPermissionsForm } from "@/components/UserDetail/SetUserPermissionsForm";
@@ -17,7 +18,6 @@ import { UserLimits } from "@/components/UserDetail/UserLimits";
 import { UserPermissionsTable } from "@/components/UserDetail/UserPermissionsTable";
 import { EditUserModal } from "@/components/users/EditUserModal";
 
-import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 
 import {
@@ -32,12 +32,38 @@ import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 export default function UserDetailsPage() {
   const { t } = useTranslation("users");
+  const { t: tc } = useTranslation("common");
+
+  return (
+    <RequireWorkspaceAdmin
+      loadingFallback={
+        <PageShell>
+          <LoadingSkeleton />
+        </PageShell>
+      }
+      deniedFallback={
+        <PageShell>
+          <PermissionDeniedCard
+            title={t("accessDeniedTitle")}
+            description={t("accessDenied")}
+            returnTo="/"
+            returnLabel={tc("backToDashboard")}
+          />
+        </PageShell>
+      }
+    >
+      <UserDetailsPageBody />
+    </RequireWorkspaceAdmin>
+  );
+}
+
+function UserDetailsPageBody() {
+  const { t } = useTranslation("users");
   const { serverId, username } = useParams<{
     serverId?: string;
     username: string;
   }>();
   const { selectedServerId } = useServerContext();
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [showEditModal, setShowEditModal] = useState(false);
@@ -103,6 +129,24 @@ export default function UserDetailsPage() {
   const setPermissionsMutation = useSetUserPermissions();
   const clearPermissionsMutation = useDeleteUserPermissions();
   const { workspace } = useWorkspace();
+
+  // Latest `rabbitmq.user.permissions.set` audit row per vhost — drives
+  // the inline "set by X · 12m ago" line in UserPermissionsTable. The
+  // procedure 403s on non-Enterprise; we silently fall back to no-data
+  // so the table renders unchanged for those tenants.
+  const { data: lastSetData } = trpc.audit.permissionsLastSet.useQuery(
+    {
+      workspaceId: workspace?.id ?? "",
+      serverId: currentServerId ?? "",
+      rabbitmqUsername: decodedUsername,
+    },
+    {
+      enabled:
+        !!workspace?.id && !!currentServerId && decodedUsername.length > 0,
+      staleTime: 30_000,
+      retry: false,
+    }
+  );
 
   const handleSetPermissions = async () => {
     if (!workspace?.id) {
@@ -172,15 +216,6 @@ export default function UserDetailsPage() {
     }
   };
 
-  // Guard: non-admins cannot reach this page at all
-  if (user?.role !== UserRole.ADMIN) {
-    return (
-      <PageShell>
-        <FullPageAlert message={t("accessDenied")} />
-      </PageShell>
-    );
-  }
-
   if (!currentServerId) {
     return (
       <PageShell>
@@ -237,6 +272,7 @@ export default function UserDetailsPage() {
           permissions={permissions}
           pendingVhost={pendingClearVhost}
           onClear={handleClearPermissions}
+          lastSet={lastSetData?.lastSet}
         />
 
         <SetUserPermissionsForm

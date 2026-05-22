@@ -6,9 +6,11 @@ import { licenseService } from "@/services/license/license.service";
 
 import { handleInvoicePaymentSucceeded } from "../webhook-handlers";
 
-// Mock the Prisma client
-vi.mock("@/core/prisma", () => ({
-  prisma: {
+// Mock the Prisma client. $transaction passes the same mock back as the
+// tx client so handler code that does `tx.subscription.update(...)` and
+// licenseService(..., tx) exercises the same mocked methods.
+vi.mock("@/core/prisma", () => {
+  const prismaMock = {
     subscription: {
       findUnique: vi.fn(),
       update: vi.fn(),
@@ -19,8 +21,10 @@ vi.mock("@/core/prisma", () => ({
     licenseFileVersion: {
       findFirst: vi.fn(),
     },
-  },
-}));
+    $transaction: vi.fn(async (cb: (tx: unknown) => unknown) => cb(prismaMock)),
+  };
+  return { prisma: prismaMock };
+});
 
 // Mock license service (renewLicense, generateLicenseJwt, saveLicenseFileVersion)
 vi.mock("@/services/license/license.service", () => ({
@@ -36,12 +40,9 @@ vi.mock("@/services/license/license-features.service", () => ({
   getLicenseFeaturesForTier: vi.fn().mockReturnValue(["feature1"]),
 }));
 
-// Mock email service
-vi.mock("@/services/email/email.service", () => ({
-  EmailService: {
-    sendLicenseRenewalEmail: vi.fn().mockResolvedValue(undefined),
-    sendPaymentConfirmationEmail: vi.fn().mockResolvedValue(undefined),
-  },
+// Mock email outbox
+vi.mock("@/services/notification/notification-outbox.service", () => ({
+  enqueueNotification: vi.fn().mockResolvedValue(true),
 }));
 
 // Mock sentry
@@ -272,7 +273,8 @@ describe("Webhook Idempotency - License Renewal", () => {
       2,
       "test-jwt-token",
       expect.any(Date),
-      invoiceId // ← Key assertion: invoice ID saved for audit trail
+      invoiceId, // ← Key assertion: invoice ID saved for audit trail
+      expect.anything() // tx client for atomic outbox enqueue
     );
   });
 });

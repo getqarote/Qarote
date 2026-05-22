@@ -33,6 +33,7 @@ interface LicenseDeliveryEmailProps {
   expiresAt: Date;
   portalUrl: string;
   locale?: string;
+  ghcrLoginCommand?: string;
 }
 
 export default function LicenseDeliveryEmail({
@@ -42,6 +43,7 @@ export default function LicenseDeliveryEmail({
   expiresAt,
   portalUrl,
   locale = "en",
+  ghcrLoginCommand,
 }: LicenseDeliveryEmailProps): JSX.Element {
   const tierDisplay = tier.charAt(0) + tier.slice(1).toLowerCase();
   const expiryDate = expiresAt.toLocaleDateString(locale, {
@@ -113,6 +115,30 @@ export default function LicenseDeliveryEmail({
                 3. Paste and save — active immediately
               </Text>
             </Section>
+
+            {ghcrLoginCommand && (
+              <Section style={sectionStyles.featuresSection}>
+                <Text style={contentStyles.heading}>
+                  Docker Image Access (Self-Hosting)
+                </Text>
+                <Text style={textStyles.featureText}>
+                  Authenticate your Docker daemon to pull the EE image:
+                </Text>
+                <Text style={codeStyles.commandBlock}>{ghcrLoginCommand}</Text>
+                <Text style={codeStyles.commandBlock}>
+                  docker compose -f docker-compose.selfhosted-ee.yml up -d
+                </Text>
+                <Text style={textStyles.infoText}>
+                  These credentials are shared and rotate ~annually. You will
+                  receive an email before any rotation. The canonical source is
+                  always your{" "}
+                  <Link href={`${portalUrl}/licenses`} style={textStyles.link}>
+                    license portal
+                  </Link>
+                  .
+                </Text>
+              </Section>
+            )}
 
             <Text style={contentStyles.paragraph}>
               Manage your licenses anytime from your{" "}

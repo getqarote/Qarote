@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router";
 
-import { UserRole } from "@/lib/api";
 import { isCloudMode } from "@/lib/featureFlags";
 
 import { Badge } from "@/components/ui/badge";
@@ -11,9 +10,8 @@ import { PixelEmail } from "@/components/ui/pixel-email";
 import { PixelKey } from "@/components/ui/pixel-key";
 import { PixelPalette } from "@/components/ui/pixel-palette";
 import { PixelShield } from "@/components/ui/pixel-shield";
+import { PixelStar } from "@/components/ui/pixel-star";
 import { PixelUser } from "@/components/ui/pixel-user";
-
-import { useAuth } from "@/contexts/AuthContextDefinition";
 
 import { useCurrentOrganization } from "@/hooks/queries/useOrganization";
 import { useIsMobile } from "@/hooks/ui/useMobile";
@@ -75,11 +73,34 @@ const navGroups: NavGroup[] = [
         adminOnly: true,
       },
       {
+        key: "roles",
+        path: "/settings/roles",
+        icon: PixelKey,
+        labelKey: "settings:nav.roles",
+        adminOnly: true,
+        enterpriseOnly: true,
+      },
+      {
         key: "digest",
         path: "/settings/digest",
         icon: PixelEmail,
         labelKey: "settings:nav.digest",
         adminOnly: true,
+      },
+      {
+        key: "llm",
+        path: "/settings/llm",
+        icon: PixelStar,
+        labelKey: "settings:nav.llm",
+        adminOnly: true,
+      },
+      {
+        key: "audit",
+        path: "/settings/audit",
+        icon: PixelShield,
+        labelKey: "settings:nav.audit",
+        adminOnly: true,
+        enterpriseOnly: true,
       },
     ],
   },
@@ -146,14 +167,11 @@ const navGroups: NavGroup[] = [
 export const SettingsSidebar = () => {
   const { t } = useTranslation();
   const location = useLocation();
-  const { user } = useAuth();
   const isMobile = useIsMobile();
   const { userPlan } = useUser();
   const { data: orgData } = useCurrentOrganization();
   const orgRole = orgData?.role;
-  const isOrgAdmin = orgRole === "OWNER" || orgRole === "ADMIN";
-  const isGlobalAdmin = user?.role === UserRole.ADMIN;
-  const isAdmin = isGlobalAdmin || isOrgAdmin;
+  const isAdmin = orgRole === "OWNER" || orgRole === "ADMIN";
   const isEnterprise = userPlan === UserPlan.ENTERPRISE;
   const cloudMode = isCloudMode();
 

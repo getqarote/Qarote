@@ -1,0 +1,149 @@
+{
+  "phase": {
+    "connecting": "Connecting...",
+    "topology": "Mapping topology...",
+    "config": "Scanning configuration...",
+    "alerts": "Alert rules active",
+    "reveal": "Cluster discovered"
+  },
+  "log": {
+    "connecting": "Connecting to {{serverName}}...",
+    "connected": "Connection confirmed",
+    "topologyStart": "Mapping topology...",
+    "topologyDone": "Topology mapped · {{exchanges}} exchanges · {{queues}} queues · {{bindings}} bindings",
+    "topologyUnavailable": "Topology unavailable — continuing scan",
+    "topologyEmpty": "Clean RabbitMQ — no topology to display",
+    "configStart": "Scanning configuration...",
+    "configFinding": "Found: {{resourceType}}/{{resourceName}}",
+    "configDone_one": "Configuration scanned · 1 issue found",
+    "configDone_other": "Configuration scanned · {{count}} issues found",
+    "configClean": "Configuration scanned · everything clean",
+    "alertsActive": "Alert rules now active",
+    "preparingReveal": "Preparing your results..."
+  },
+  "reveal": {
+    "title": "Cluster discovered",
+    "subtitle_one": "{{serverName}} · 1 node · RabbitMQ {{version}}",
+    "subtitle_other": "{{serverName}} · {{nodeCount}} nodes · RabbitMQ {{version}}",
+    "subtitleNoVersion_one": "{{serverName}} · 1 node",
+    "subtitleNoVersion_other": "{{serverName}} · {{nodeCount}} nodes",
+    "wellConfigured": "Your cluster is well-configured — Qarote will keep watch.",
+    "cleanPartial": "No issues found in the scanned sections — grant the monitoring tag for complete coverage.",
+    "findings": "What we found",
+    "showAll": "Show all {{count}} findings",
+    "collapse": "Show fewer",
+    "explainDemo": "Try AI Explain — free demo",
+    "explainDemoFooter": "This demo doesn't count toward your monthly quota.",
+    "continueDashboard": "Continue to dashboard",
+    "exploreFindings": "Explore findings now",
+    "configureAlerts": "Configure alerts",
+    "configureNotifications": "Configure notifications",
+    "promiseDigestTitle": "Daily digest scheduled",
+    "promiseDigestDesc": "Your first digest will arrive tomorrow at 8:00 AM",
+    "promiseRuntimeTitle": "Runtime monitoring active",
+    "promiseRuntimeDesc": "You'll see unusual queue behavior flagged within hours",
+    "promiseTracingTitle": "Message tracing ready",
+    "promiseTracingDesc": "Enable in settings to see message paths end-to-end",
+    "limitedScanBadge": "Limited scan · grant monitoring tag for full analysis",
+    "fingerprint": {
+      "exchanges_one": "1 exchange",
+      "exchanges_other": "{{count}} exchanges",
+      "queues_one": "1 queue",
+      "queues_other": "{{count}} queues",
+      "bindings_one": "1 binding",
+      "bindings_other": "{{count}} bindings",
+      "vhosts_one": "1 vhost",
+      "vhosts_other": "{{count}} vhosts",
+      "nodes_one": "1 node",
+      "nodes_other": "{{count}} nodes",
+      "version": "RabbitMQ {{version}}"
+    },
+    "verdict": {
+      "clean_one": "Configuration looks healthy. No anti-patterns detected across 1 queue.",
+      "clean_other": "Configuration looks healthy. No anti-patterns detected across {{queues}} queues.",
+      "cleanPartial": "No issues in the sections analyzed. Grant the monitoring tag for a full sweep.",
+      "single": "1 issue found — {{rule}} on {{resource}}.",
+      "withPrimary_one": "1 issue found. Most critical: {{rule}} on {{resource}}.",
+      "withPrimary_other": "{{count}} issues found. Most critical: {{rule}} on {{resource}}."
+    },
+    "aiHero": {
+      "titleWithName": "Why is {{resource}} at risk?",
+      "titleGeneric": "Understand your configuration signals",
+      "subtitle": "Ask Qarote — AI explains each pattern in the context of your cluster.",
+      "cta": "Ask Qarote"
+    },
+    "timeline": {
+      "tomorrowLabel": "Tomorrow 8am",
+      "tomorrowTitle": "First digest",
+      "tomorrowDesc_one": "1 queue watched, average rate tracked.",
+      "tomorrowDesc_other": "{{queues}} queues watched, average rate tracked.",
+      "incidentLabel": "Next incident",
+      "incidentTitle": "Contextual alert",
+      "incidentDesc": "Email/Slack with stack trace and queue context.",
+      "continuousLabel": "Continuously",
+      "continuousTitle": "Tracing ready",
+      "continuousDesc": "Enable tracing on any queue with one click."
+    },
+    "bestPractices": {
+      "messageIdTitle": "Tip — set messageId on every publish.",
+      "messageIdDesc": "A unique messageId per message unlocks unrouted-message detection, dedup on retries, and cross-queue debugging — no broker-side cost."
+    },
+    "metrics": {
+      "queues_one": "1 queue",
+      "queues_other": "{{count}} queues",
+      "exchanges_one": "1 exchange",
+      "exchanges_other": "{{count}} exchanges",
+      "bindings_one": "1 binding",
+      "bindings_other": "{{count}} bindings",
+      "findings_one": "1 issue",
+      "findings_other": "{{count}} issues",
+      "findingsNone": "0 issues"
+    }
+  },
+  "explain": {
+    "loading": "Analyzing finding...",
+    "error": "Couldn't generate explanation — check your connection and try again.",
+    "errorPartial": "(partial)",
+    "retry": "Retry",
+    "viewDocs": "RabbitMQ documentation →",
+    "llmNotConfigured": "No LLM provider is configured for this workspace. Set up Anthropic, OpenAI, or Ollama to enable AI explanations.",
+    "configureLlm": "Configure LLM →",
+    "driftHint": "Prompt updated since this explanation",
+    "page": {
+      "headingIncident": "Incident finding explanation",
+      "headingConfig": "Configuration finding explanation",
+      "headingTrace": "Trace explanation",
+      "notFound": "This explanation doesn't exist or you don't have access to it.",
+      "loadError": "Failed to load explanation. Please try again."
+    },
+    "superseded": {
+      "banner": "This explanation was superseded by a newer one (regenerated {{time}}).",
+      "bannerNoAuthor": "Regenerated {{time}}.",
+      "bannerWithAuthor": "Regenerated by {{name}} · {{time}}.",
+      "viewLatest": "View latest →"
+    },
+    "sourceDeleted": "Source finding no longer exists.",
+    "actions": {
+      "copyMarkdown": "Copy",
+      "copyLink": "Copy link",
+      "openInContext": "Open in context →",
+      "regenerate": "Regenerate",
+      "copiedMarkdown": "Copied to clipboard",
+      "copiedLink": "Link copied",
+      "copyFailed": "Copy failed — please try manually"
+    },
+    "quota": {
+      "capTitle": "Monthly AI explanation cap reached",
+      "capBody": "You've used all {{cap}} explanations included with your plan this month. Quota resets on {{resetDate}}.",
+      "disabledTitle": "AI explanations aren't enabled on this instance",
+      "disabledBody": "AI explanations aren't set up on this instance. Connect your own API key to continue.",
+      "pillRemaining_one": "1 explanation left this month",
+      "pillRemaining_other": "{{count}} explanations left this month",
+      "actions": {
+        "upgrade": "Upgrade plan",
+        "byok": "Use my own key",
+        "configureKey": "Configure API key"
+      }
+    }
+  }
+}

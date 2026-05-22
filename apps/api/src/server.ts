@@ -33,7 +33,7 @@ import {
 } from "@/middlewares/request";
 import { turnstileMiddleware } from "@/middlewares/turnstile";
 
-import { config, serverConfig } from "@/config";
+import { appConfig, config, serverConfig } from "@/config";
 import { isCloudMode } from "@/config/deployment";
 
 import { createContext } from "@/trpc/context";
@@ -94,6 +94,101 @@ app.use(
     },
   })
 );
+
+
+// OG unfurl route for /explanations/:id — registered BEFORE the SPA catch-all
+// and outside the !isCloudMode() gate so it works in both cloud and self-hosted.
+// Bot UAs get dynamic OG tags; humans fall through to the SPA via next().
+app.get("/explanations/:id", async (c, next) => {
+  const ua = c.req.header("user-agent") ?? "";
+  const BOT_UA_PATTERNS = [
+    "Slackbot-LinkExpanding",
+    "Twitterbot",
+    "facebookexternalhit",
+    "LinkedInBot",
+    "Discordbot",
+    "WhatsApp",
+    "TelegramBot",
+  ];
+  const isBot = BOT_UA_PATTERNS.some((pattern) => ua.includes(pattern));
+  if (!isBot) return next(); // humans fall through to SPA
+
+  const id = c.req.param("id");
+  // appConfig.baseUrl is validated at startup (FRONTEND_URL — required in
+  // cloud mode, defaults to http://localhost:8080 in selfhosted), so it's
+  // always a non-empty absolute URL. Relative og:url/og:image would break
+  // LinkedIn/Slack unfurl.
+  const appBaseUrl = appConfig.baseUrl;
+
+  // HTML-escape values before interpolating into OG tag attributes.
+  const escHtml = (s: string) =>
+    s
+      .replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+
+  const genericShell = () =>
+    c.html(`<!doctype html><html><head>
+<meta property="og:title" content="RabbitMQ diagnosis — Qarote" />
+<meta property="og:description" content="View this RabbitMQ diagnosis in Qarote." />
+<meta property="og:image" content="${escHtml(appBaseUrl)}/og-default.png" />
+</head></html>`);
+
+  try {
+    const row = await prisma.llmExplanation.findUnique({
+      where: { id },
+      select: { incidentFindingId: true, configFindingId: true },
+    });
+    if (!row) return genericShell();
+
+    let ruleKey: string | null = null;
+    let severity: string | null = null;
+
+    if (row.incidentFindingId) {
+      const r = await prisma.incidentDiagnosisRecord.findUnique({
+        where: { id: row.incidentFindingId },
+        select: { ruleId: true, severity: true },
+      });
+      ruleKey = r?.ruleId ?? null;
+      severity = r?.severity ?? null;
+    } else if (row.configFindingId) {
+      const r = await prisma.configFinding.findUnique({
+        where: { id: row.configFindingId },
+        select: { ruleKey: true, severity: true },
+      });
+      ruleKey = r?.ruleKey ?? null;
+      severity = r?.severity ?? null;
+    }
+
+    if (!ruleKey) return genericShell();
+
+    // Humanize rule key: "QUEUE_DEPTH_HIGH" → "Queue depth high"
+    const humanRule =
+      ruleKey
+        .replace(/^[a-z]+\./, "") // strip "config." prefix
+        .replace(/_/g, " ")
+        .replace(/\b\w/, (c) => c.toUpperCase())
+        .toLowerCase()
+        .replace(/^\w/, (c) => c.toUpperCase()) ?? ruleKey;
+
+    const title = severity ? `${humanRule} · ${severity} severity` : humanRule;
+    const permalink = `${appBaseUrl}/explanations/${id}`;
+
+    return c.html(`<!doctype html><html><head>
+<meta property="og:title" content="${escHtml(title)}" />
+<meta property="og:description" content="View this RabbitMQ diagnosis in Qarote." />
+<meta property="og:image" content="${escHtml(appBaseUrl)}/og-default.png" />
+<meta property="og:url" content="${escHtml(permalink)}" />
+</head></html>`);
+  } catch (err) {
+    logger.error(
+      { err, explanationId: id },
+      "Failed to generate OG metadata for explanation"
+    );
+    return genericShell();
+  }
+});
 
 // Quiz lead capture (public, unauthenticated)
 app.route("/api/quiz", quizController);
@@ -194,6 +289,7 @@ async function startServer() {
     // Initialize deployment method detection for update notifications
     await DeploymentService.initialize();
 
+
     serve(
       {
         fetch: app.fetch,
@@ -206,15 +302,26 @@ async function startServer() {
     );
   } catch (error) {
     logger.error({ error }, "Failed to start server");
-    if (dbConnected) {
-      await prisma.$disconnect();
-    }
+    // Tear down anything we may have partially started so we don't leak
+    // PG sockets or background timers when the process exits. Each helper
+    // is idempotent and safe to call even if its setup never completed.
+    await Promise.allSettled([
+      stopLicenseInvalidationListener(),
+      dbConnected ? prisma.$disconnect() : Promise.resolve(),
+    ]);
     process.exit(1);
   }
 }
 
 const shutdown = async (signal: string) => {
-  logger.info({ signal }, "Shutting down server...");
+  // Log how many LLM streams are still in flight at shutdown — gives us a
+  // metric on the bounded "SIGTERM during stream completion" risk
+  // documented in docs/internal/llm-managed-quota.md (Risks). Cheap, no
+  // attempt to drain — racing the LLM SDK abort path is not worth it.
+  logger.info(
+    { signal },
+    "Shutting down server..."
+  );
   const results = await Promise.allSettled([
     stopLicenseInvalidationListener(),
     prisma.$disconnect(),

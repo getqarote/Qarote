@@ -18,6 +18,7 @@
     }
   },
   "loadingGate": "Comprobando compatibilidad…",
+  "dismissAdvisory": "Descartar aviso",
   "badge": {
     "loading": "Comprobando capacidades del broker",
     "pending": "Capacidades pendientes",

@@ -1,7 +1,6 @@
 import { useState } from "react";
 
-import posthog from "posthog-js";
-
+import { identify, track } from "@/lib/analytics";
 import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
@@ -51,8 +50,11 @@ export const useLogin = () => {
         try {
           const response = await utils.user.getProfile.fetch();
           login(response.profile);
-          posthog.identify(response.profile.id);
-          posthog.capture("user_signed_in", { method: "password" });
+          identify({
+            id: response.profile.id,
+            email: response.profile.email,
+          });
+          track("user_signed_in", { method: "password" });
           setIsPending(false);
           setIsSuccess(true);
           options?.onSuccess?.();
@@ -70,8 +72,11 @@ export const useLogin = () => {
               email: baUser.email,
               name: baUser.name || "",
             } as Parameters<typeof login>[0]);
-            posthog.identify(baUser.id);
-            posthog.capture("user_signed_in", { method: "password" });
+            identify({
+              id: baUser.id,
+              email: baUser.email,
+            });
+            track("user_signed_in", { method: "password" });
             setIsPending(false);
             setIsSuccess(true);
             options?.onSuccess?.();

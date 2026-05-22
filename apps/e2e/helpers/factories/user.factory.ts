@@ -14,7 +14,6 @@ export async function createUser(
     password: string;
     firstName: string;
     lastName: string;
-    role: "ADMIN" | "MEMBER" | "READONLY";
     emailVerified: boolean;
     workspaceId: string | null;
   }> = {}
@@ -24,6 +23,9 @@ export async function createUser(
 
   const passwordHash = hashSync(password, 1);
 
+  // `User.role` was removed in the UserRole cleanup. Workspace authority
+  // now lives on `WorkspaceMember.roleId`; callers that need a specific
+  // workspace role should create the WorkspaceMember row separately.
   const user = await prisma.user.create({
     data: {
       email,
@@ -31,7 +33,6 @@ export async function createUser(
       firstName: overrides.firstName || "Test",
       lastName: overrides.lastName || "User",
       name: `${overrides.firstName || "Test"} ${overrides.lastName || "User"}`,
-      role: overrides.role || "MEMBER",
       emailVerified: overrides.emailVerified ?? true,
       emailVerifiedAt:
         overrides.emailVerified !== false ? new Date() : undefined,

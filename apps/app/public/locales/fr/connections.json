@@ -43,5 +43,6 @@
   "stateFlowTooltip": "Contrôle de flux actif — le broker limite cette connexion pour éviter la surcharge.",
   "stateClosingTooltip": "La connexion est en cours de fermeture. Aucune action requise.",
   "maxChannelsTooltip": "Nombre de canaux le plus élevé sur une seule connexion. 50+ peut indiquer un conflit de ressources ; 100+ est critique.",
-  "searchPlaceholder": "Filtrer par nom, utilisateur, vhost ou nœud..."
+  "searchPlaceholder": "Filtrer par nom, utilisateur, vhost ou nœud...",
+  "clearSearch": "Effacer la recherche"
 }

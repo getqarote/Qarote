@@ -256,6 +256,40 @@ export const posthogConfig = {
     "POSTHOG_HOST" in config ? config.POSTHOG_HOST : "https://eu.i.posthog.com",
 } as const;
 
+/**
+ * Canonical app base URL — the origin where the SPA is served.
+ * Used for OG meta tags on shared explanation permalinks and for the
+ * CSRF Origin check on the Hono POST routes.
+ *
+ * Reuses FRONTEND_URL (validated by both schemas; selfhosted defaults to
+ * http://localhost:8080) instead of a parallel APP_BASE_URL env var.
+ */
+export const appConfig = {
+  baseUrl: config.FRONTEND_URL,
+} as const;
+
+/**
+ * Managed LLM credentials. `enabled` collapses the two-env-var contract
+ * (MANAGED_LLM_ENABLED=true AND MANAGED_LLM_API_KEY set) into a single
+ * boolean so callers don't have to repeat the AND themselves. When
+ * `enabled` is false, requests resolving to `LlmProvider.MANAGED` MUST
+ * throw at the backend resolver — no silent fallback.
+ */
+export const managedLlmConfig = {
+  enabled: config.MANAGED_LLM_ENABLED && !!config.MANAGED_LLM_API_KEY,
+  apiKey: config.MANAGED_LLM_API_KEY,
+} as const;
+
+// DO NOT log ghcrConfig — contains pull secret
+export const ghcrConfig = {
+  robotUsername:
+    "GHCR_ROBOT_USERNAME" in config ? config.GHCR_ROBOT_USERNAME : undefined,
+  robotToken:
+    "GHCR_ROBOT_TOKEN" in config ? config.GHCR_ROBOT_TOKEN : undefined,
+  patExpiryDate:
+    "GHCR_PAT_EXPIRY_DATE" in config ? config.GHCR_PAT_EXPIRY_DATE : undefined,
+} as const;
+
 export const deploymentConfig = {
   mode: config.DEPLOYMENT_MODE,
   isCloud: () => config.DEPLOYMENT_MODE === "cloud",

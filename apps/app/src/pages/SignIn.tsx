@@ -6,6 +6,7 @@ import { Link, useNavigate, useSearchParams } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { logger } from "@/lib/logger";
+import { isDemoMode } from "@/lib/runtimeConfig";
 
 import { AuthPageWrapper } from "@/components/auth/AuthPageWrapper";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
@@ -79,7 +80,7 @@ const SignIn = () => {
   // in the dashboard instead of forcing them to type credentials.
   useEffect(() => {
     if (
-      import.meta.env.VITE_DEMO_MODE === "true" &&
+      isDemoMode() &&
       !demoAutoLoginAttempted.current &&
       !loginMutation.isPending
     ) {
@@ -202,13 +203,21 @@ const SignIn = () => {
 
             {/* ── Turnstile CAPTCHA ── */}
             {turnstileEnabled && (
-              <div className="si-in [animation-delay:180ms]">
+              <div className="si-in [animation-delay:180ms] space-y-1.5">
                 <TurnstileCaptcha
                   key={captchaKey}
                   onVerify={setTurnstileToken}
                   onExpire={() => setTurnstileToken(null)}
                   onError={() => setTurnstileToken(null)}
                 />
+                {!turnstileToken && (
+                  <p
+                    aria-live="polite"
+                    className="text-center text-xs text-muted-foreground"
+                  >
+                    {t("turnstileWaiting")}
+                  </p>
+                )}
               </div>
             )}
 
@@ -223,15 +232,20 @@ const SignIn = () => {
                 }
               >
                 <span className="flex items-center justify-center gap-1.5">
-                  {loginMutation.isPending ? t("signingIn") : t("signIn")}
-                  {!loginMutation.isPending && (
-                    <span
-                      className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
-                      aria-hidden="true"
-                    >
-                      →
-                    </span>
-                  )}
+                  {loginMutation.isPending
+                    ? t("signingIn")
+                    : turnstileEnabled && !turnstileToken
+                      ? t("turnstileWaitingShort")
+                      : t("signIn")}
+                  {!loginMutation.isPending &&
+                    !(turnstileEnabled && !turnstileToken) && (
+                      <span
+                        className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
+                        aria-hidden="true"
+                      >
+                        →
+                      </span>
+                    )}
                 </span>
               </Button>
             </div>

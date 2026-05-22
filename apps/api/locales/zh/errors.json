@@ -67,6 +67,10 @@
     "userAlreadyOrgMember": "该用户已经是此组织的成员",
     "orgMembershipRequired": "需要组织成员资格",
     "orgAdminRequired": "需要组织所有者或管理员角色",
+    "workspaceAdminRequired": "需要工作区所有者或管理员角色",
+    "workspaceOwnerRequired": "需要工作区所有者角色",
+    "workspacePermissionRequired": "工作区权限不足",
+    "cannotGrantHigherRole": "不能授予高于或等于自己的角色",
     "orgInvitationNotFound": "未找到邀请",
     "orgInvitationAlreadyAccepted": "邀请已被接受",
     "orgInvitationExpired": "邀请已过期"
@@ -92,6 +96,7 @@
     "userNotAuthenticatedOrNotInWorkspace": "用户未认证或不在工作区中",
     "userAlreadyMember": "用户已是此工作区的成员",
     "invitationAlreadyPending": "该邮箱已有待处理的邀请",
+    "lastOwnerBlocked": "无法移除或降级工作区的最后一位所有者",
     "failedToFetchInvitations": "获取邀请列表失败",
     "failedToSendInvitation": "发送邀请失败",
     "invitationNotFoundOrUsed": "未找到邀请或邀请已被使用",
@@ -108,6 +113,7 @@
     "failedToFetchUser": "获取用户信息失败",
     "doesNotBelongToWorkspace": "用户不属于此工作区",
     "failedToUpdateUser": "更新用户信息失败",
+    "failedToUpdateRole": "更新成员角色失败",
     "isNotMemberOfWorkspace": "用户不是此工作区的成员",
     "cannotRemoveSelf": "无法将自己从工作区中移除",
     "onlyOwnerCanRemoveAdmin": "只有工作区所有者才能移除管理员用户",
@@ -117,6 +123,10 @@
     "requiresEnterprise": "{{featureName}} 需要企业版。请从社区版升级以解锁此功能。",
     "notIncludedInLicense": "{{featureName}} 未包含在您的许可证中，或您的许可证无效。请检查您的许可证文件。",
     "notAvailable": "{{featureName}} 不可用。"
+  },
+  "audit": {
+    "failedToFetch": "获取审计日志失败",
+    "failedToExport": "导出审计日志失败"
   },
   "billing": {
     "failedToFetchPlanInfo": "获取套餐信息失败",

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { UserRole } from "@/generated/prisma/client";
+import { WorkspaceRole } from "@/generated/prisma/client";
 
 export const UpdateOrganizationSchema = z.object({
   name: z
@@ -12,9 +12,15 @@ export const UpdateOrganizationSchema = z.object({
   logoUrl: z.string().url("Invalid URL").optional().nullable(),
 });
 
+// OWNER is intentionally excluded — workspace assignments via org invitation
+// cannot promote to OWNER (ownership transfer is its own flow).
 export const WorkspaceAssignmentSchema = z.object({
   workspaceId: z.string(),
-  role: z.nativeEnum(UserRole),
+  role: z.enum([
+    WorkspaceRole.ADMIN,
+    WorkspaceRole.MEMBER,
+    WorkspaceRole.READONLY,
+  ]),
 });
 
 export const InviteOrgMemberSchema = z.object({

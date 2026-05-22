@@ -12,10 +12,18 @@ import { useWorkspace } from "../ui/useWorkspace";
 
 // Alert Rules hooks
 export const useAlertRules = (enabled: boolean = true) => {
-  const query = trpc.alerts.rules.getRules.useQuery(undefined, {
-    enabled: enabled,
-    staleTime: 30000, // 30 seconds
-  });
+  const { workspace } = useWorkspace();
+  // Pass workspaceId explicitly so the server doesn't have to fall back to
+  // ctx.workspaceId / ctx.user.workspaceId — that fallback path races with
+  // workspace-switch transitions and surfaces a "Workspace ID is required"
+  // toast on otherwise-valid sessions.
+  const query = trpc.alerts.rules.getRules.useQuery(
+    { workspaceId: workspace?.id ?? "" },
+    {
+      enabled: enabled && !!workspace?.id,
+      staleTime: 30000, // 30 seconds
+    }
+  );
 
   return query;
 };

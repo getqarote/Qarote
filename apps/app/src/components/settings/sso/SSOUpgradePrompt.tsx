@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import { AlertCircle, Lock } from "lucide-react";
 
 import { isCloudMode } from "@/lib/featureFlags";
+import { openPortalPath } from "@/lib/runtimeConfig";
 
 import { Button } from "@/components/ui/button";
 
@@ -72,13 +73,7 @@ export function SSOUpgradePrompt() {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() =>
-                    window.open(
-                      `${import.meta.env.VITE_PORTAL_URL}/purchase`,
-                      "_blank",
-                      "noopener,noreferrer"
-                    )
-                  }
+                  onClick={() => openPortalPath("/purchase")}
                 >
                   {t("settings:sso.purchaseLicense")}
                 </Button>

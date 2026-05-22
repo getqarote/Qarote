@@ -20,6 +20,11 @@
     },
     "types": ["node"]
   },
-  "include": ["src/**/*", "vitest.setup.ts", "prisma.config.ts"],
+  "include": [
+    "src/**/*",
+    "vitest.setup.ts",
+    "prisma.config.ts",
+    "prisma/seed/**/*"
+  ],
   "exclude": ["node_modules", "dist"]
 }

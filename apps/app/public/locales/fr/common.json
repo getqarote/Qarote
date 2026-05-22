@@ -107,5 +107,8 @@
   },
   "updating": "Mise à jour…",
   "updatedAgo": "Mis à jour il y a {{seconds}}s",
-  "justUpdated": "À l'instant"
+  "justUpdated": "À l'instant",
+  "backToDashboard": "Retour au tableau de bord",
+  "backToSettings": "Retour aux paramètres",
+  "loadingPermissions": "Vérification des permissions…"
 }

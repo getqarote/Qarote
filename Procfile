@@ -1,7 +1,14 @@
 web: pnpm --filter=qarote-api run start
-worker: pnpm --filter=qarote-api run start:alert
+alert-worker: pnpm --filter=qarote-api run start:alert
+# Cloud-only: license-worker and release-notifier run exclusively in Qarote's
+# managed cloud. Self-hosted Dokku deployments should NOT scale these processes
+# (they exit 0 immediately when DEPLOYMENT_MODE != cloud).
 license-worker: pnpm --filter=qarote-api run start:license
 release-notifier: pnpm --filter=qarote-api run start:release-notifier
+# notification-worker drains the NotificationOutbox table (Stripe webhook
+# emails, auth emails, future Slack/webhook fanout). The pg advisory lock
+# enforces a single drainer across replicas — safe to keep at 1.
+notification-worker: pnpm --filter=qarote-api run start:notification
 digest-worker: pnpm --filter=qarote-api run start:digest
 # IMPORTANT: metrics-worker must run as exactly 1 replica — no horizontal scaling.
 # Multiple replicas write duplicate snapshot rows (no cross-process dedup guard).

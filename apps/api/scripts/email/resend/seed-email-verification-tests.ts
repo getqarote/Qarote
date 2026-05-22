@@ -17,11 +17,7 @@ import { getDirname } from "../../../src/core/utils";
 import { EmailVerificationService } from "../../../src/services/email/email-verification.service";
 import { subHours } from "date-fns";
 import { PrismaPg } from "@prisma/adapter-pg";
-import {
-  PrismaClient,
-  UserPlan,
-  UserRole,
-} from "../../../src/generated/prisma/client";
+import { PrismaClient, UserPlan } from "../../../src/generated/prisma/client";
 
 const __dirname = getDirname(import.meta.url);
 
@@ -172,7 +168,6 @@ async function createEmailVerificationScenario(
         passwordHash: hashedPassword,
         firstName: scenario.firstName,
         lastName: scenario.lastName,
-        role: UserRole.ADMIN,
         workspaceId: workspace.id,
         emailVerified: scenario.emailVerified,
         emailVerifiedAt: scenario.emailVerified ? new Date() : null,
@@ -236,19 +231,16 @@ async function createEmailVerificationScenario(
         {
           email: `team1.${scenario.email}`,
           verified: true,
-          role: UserRole.MEMBER,
           name: "Team Member 1",
         },
         {
           email: `team2.${scenario.email}`,
           verified: false,
-          role: UserRole.MEMBER,
           name: "Team Member 2",
         },
         {
           email: `readonly.${scenario.email}`,
           verified: true,
-          role: UserRole.READONLY,
           name: "Readonly User",
         },
       ];
@@ -261,7 +253,6 @@ async function createEmailVerificationScenario(
             passwordHash: memberPassword,
             firstName: member.name.split(" ")[0],
             lastName: member.name.split(" ")[1] || "User",
-            role: member.role,
             workspaceId: workspace.id,
             emailVerified: member.verified,
             emailVerifiedAt: member.verified ? new Date() : null,

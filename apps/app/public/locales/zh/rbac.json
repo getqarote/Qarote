@@ -1,0 +1,13 @@
+{
+  "forbidden": {
+    "title": "访问被拒绝",
+    "subtitle": "您没有权限查看此内容。",
+    "workspacePermission": "您在此工作区中的角色不包含所需权限。",
+    "lastOwnerBlocked": "此操作将导致工作区没有所有者。请先指定其他所有者。",
+    "inviterRoleInsufficient": "由于邀请者的角色已被更改，该邀请无法再被接受。",
+    "scopeDenied": "您的角色仅允许在部分服务器上执行此操作。",
+    "scopeDeniedWithContext": "您的角色仅允许在以下范围内执行此操作:{{scopes}}。",
+    "contactAdmin": "请联系工作区管理员或所有者以申请访问权限。",
+    "backToDashboard": "返回仪表板"
+  }
+}

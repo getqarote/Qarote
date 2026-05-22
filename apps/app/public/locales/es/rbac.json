@@ -1,0 +1,13 @@
+{
+  "forbidden": {
+    "title": "Acceso denegado",
+    "subtitle": "No tienes permiso para ver este contenido.",
+    "workspacePermission": "Tu rol en este espacio de trabajo no incluye el permiso requerido.",
+    "lastOwnerBlocked": "Esta acción dejaría el espacio de trabajo sin propietario. Asigna otro propietario primero.",
+    "inviterRoleInsufficient": "La invitación ya no puede aceptarse porque el rol del invitador fue modificado.",
+    "scopeDenied": "Tu rol solo permite esta acción en un subconjunto de servidores.",
+    "scopeDeniedWithContext": "Tu rol solo permite esto en los siguientes ámbitos: {{scopes}}.",
+    "contactAdmin": "Contacta a un administrador o al propietario del espacio de trabajo para solicitar acceso.",
+    "backToDashboard": "Volver al panel"
+  }
+}

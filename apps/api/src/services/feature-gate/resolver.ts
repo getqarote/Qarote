@@ -15,7 +15,7 @@
 
 import { logger } from "@/core/logger";
 
-import { posthog } from "@/services/posthog";
+import { trackEvent } from "@/services/posthog";
 
 import { resolveCapabilityAxis } from "./capability-axis";
 import { getFeatureGateConfig } from "./gate.config";
@@ -62,16 +62,22 @@ export async function resolveFeatureGate(
   // `distinctId` to attribute the event to.
   if (blockedBy && context?.organizationId) {
     try {
-      posthog?.capture({
-        distinctId: context.organizationId,
-        event: "gate_evaluated",
-        properties: {
+      trackEvent(
+        {
+          distinctId: context.organizationId,
+          superProperties: {
+            app: "api",
+            organization_id: context.organizationId,
+          },
+        },
+        "gate_evaluated",
+        {
           feature,
           kind: result.kind,
           blocked_by: blockedBy,
           server_id: context.serverId,
-        },
-      });
+        }
+      );
     } catch (analyticsErr) {
       logger.warn(
         { error: analyticsErr },

@@ -33,6 +33,5 @@
   "successTitle": "You're all set!",
   "successDescription": "Your workspace is ready. Here's what you can do next:",
   "successStep1": "Add your first RabbitMQ connection",
-  "successStep2": "Invite your team",
-  "successCta": "Go to dashboard"
+  "successStep2": "Invite your team"
 }

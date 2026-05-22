@@ -1,4 +1,23 @@
-import { logger } from "@/core/logger";
+/**
+ * Legacy password-event audit shim. Delegates to `recordAuditLog()`
+ * (`docs/internal/AUDIT_LOG.md`).
+ *
+ * Kept as a class facade so existing call sites in `auth/password.ts`
+ * and `auth/email.ts` don't have to change shape — but every method
+ * now routes through the unified writer (Pino mirror + plan-gated
+ * DB row).
+ *
+ * Password events are user-scoped, not workspace-scoped, so callers
+ * pass `organizationId` (resolved via `ctx.resolveOrg()`) for plan-
+ * gating. When the user has an org and the org is on Enterprise, the
+ * row lands in the DB; otherwise only the Pino mirror runs.
+ *
+ * Prefer `recordFromContext` / `recordAuditLog` directly in new code.
+ */
+
+import { recordAuditLog } from "@/services/audit";
+
+import type { Prisma } from "@/generated/prisma/client";
 
 interface AuditEvent {
   action: string;
@@ -6,100 +25,95 @@ interface AuditEvent {
   email?: string;
   ipAddress?: string;
   userAgent?: string;
-  timestamp: Date;
-  details?: Record<string, unknown>;
+  /** Org for plan-gating. Pass null for unauth paths (failed token, etc.). */
+  organizationId?: string | null;
+  /**
+   * JSON-serializable event detail. Typed against the Prisma input
+   * shape so the writer's metadata column accepts it without unsafe
+   * casts.
+   */
+  details?: Prisma.InputJsonValue;
 }
 
 class AuditService {
   /**
-   * Log password-related security events
+   * Generic password / auth event entry point. Delegates to
+   * `recordAuditLog`, which handles Pino + plan-gated DB write.
    */
-  static async logPasswordEvent(
-    event: Omit<AuditEvent, "timestamp">
-  ): Promise<void> {
-    const auditEvent: AuditEvent = {
-      ...event,
-      timestamp: new Date(),
-    };
-
-    // Log to structured logger for audit trail
-    logger.info(
-      {
-        audit: true,
-        action: auditEvent.action,
-        userId: auditEvent.userId,
-        email: auditEvent.email,
-        ipAddress: auditEvent.ipAddress,
-        userAgent: auditEvent.userAgent,
-        details: auditEvent.details,
-      },
-      `[AUDIT] ${auditEvent.action}`
-    );
-
-    // In production, you might also want to:
-    // 1. Store in a separate audit database
-    // 2. Send to a SIEM system
-    // 3. Create alerts for suspicious patterns
+  static async logPasswordEvent(event: AuditEvent): Promise<void> {
+    await recordAuditLog({
+      actorId: event.userId ?? null,
+      actorEmail: event.email ?? null,
+      action: event.action,
+      category: "auth",
+      entityType: "user",
+      entityId: event.userId ?? null,
+      entityLabel: event.email ?? null,
+      ipAddress: event.ipAddress ?? null,
+      userAgent: event.userAgent ?? null,
+      workspaceId: null,
+      organizationId: event.organizationId ?? null,
+      metadata: event.details ?? null,
+    });
   }
 
-  /**
-   * Log password reset request
-   */
   static async logPasswordResetRequest(
     email: string,
     ipAddress?: string,
     userAgent?: string,
-    success: boolean = true
+    success: boolean = true,
+    organizationId?: string | null
   ): Promise<void> {
     await this.logPasswordEvent({
       action: success
-        ? "password_reset_requested"
-        : "password_reset_request_failed",
+        ? "auth.password.reset.requested"
+        : "auth.password.reset.request_failed",
       email,
       ipAddress,
       userAgent,
+      organizationId,
       details: { success },
     });
   }
 
-  /**
-   * Log password reset completion
-   */
   static async logPasswordResetCompleted(
     userId: string,
     email: string,
     ipAddress?: string,
-    userAgent?: string
+    userAgent?: string,
+    organizationId?: string | null
   ): Promise<void> {
     await this.logPasswordEvent({
-      action: "password_reset_completed",
+      action: "auth.password.reset.completed",
       userId,
       email,
       ipAddress,
       userAgent,
+      organizationId,
     });
   }
 
-  /**
-   * Log password change
-   */
   static async logPasswordChange(
     userId: string,
     email: string,
     ipAddress?: string,
-    userAgent?: string
+    userAgent?: string,
+    organizationId?: string | null
   ): Promise<void> {
     await this.logPasswordEvent({
-      action: "password_changed",
+      action: "auth.password.changed",
       userId,
       email,
       ipAddress,
       userAgent,
+      organizationId,
     });
   }
 
   /**
-   * Log failed password reset attempts
+   * Failed reset attempts have no user identity (unauthenticated).
+   * Token is truncated to its prefix to avoid leaking secrets into logs.
+   * Org cannot be resolved on the unauth path — Pino-only by design.
    */
   static async logPasswordResetFailed(
     token: string,
@@ -108,11 +122,11 @@ class AuditService {
     userAgent?: string
   ): Promise<void> {
     await this.logPasswordEvent({
-      action: "password_reset_failed",
+      action: "auth.password.reset.failed",
       ipAddress,
       userAgent,
       details: {
-        tokenPrefix: token.substring(0, 8) + "...", // Don't log full token
+        tokenPrefix: token.substring(0, 8) + "...",
         reason,
       },
     });

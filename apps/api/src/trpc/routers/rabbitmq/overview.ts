@@ -13,11 +13,11 @@ import {
 
 import { OverviewMapper } from "@/mappers/rabbitmq";
 
-import { authorize, router, workspaceProcedure } from "@/trpc/trpc";
+import { router, workspacePermissionProcedure } from "@/trpc/trpc";
 
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
-import { UserPlan, UserRole } from "@/generated/prisma/client";
+import { UserPlan } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -28,7 +28,7 @@ export const overviewRouter = router({
   /**
    * Get overview for a specific server (ALL USERS)
    */
-  getOverview: workspaceProcedure
+  getOverview: workspacePermissionProcedure("broker:read")
     .input(ServerWorkspaceInputSchema)
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId } = input;
@@ -110,7 +110,7 @@ export const overviewRouter = router({
       }
     }),
 
-  setClusterName: authorize([UserRole.ADMIN])
+  setClusterName: workspacePermissionProcedure("broker:update")
     .input(SetClusterNameSchema)
     .mutation(async ({ input, ctx }) => {
       const { serverId, workspaceId, name } = input;

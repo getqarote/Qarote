@@ -24,7 +24,7 @@ import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import { UserPlan } from "@/types/plans";
 
 export const RecentAlerts = () => {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation(["dashboard", "alerts"]);
   const navigate = useNavigate();
   const { selectedServerId } = useServerContext();
   const { selectedVHost } = useVHostContext();
@@ -200,7 +200,12 @@ export const RecentAlerts = () => {
                   <span
                     className={`text-xs px-2 py-0.5 shrink-0 ${badgeClass}`}
                   >
-                    {alert.severity}
+                    {t(
+                      `alerts:rules.severity.${alert.severity.toLowerCase()}`,
+                      {
+                        defaultValue: alert.severity,
+                      }
+                    )}
                   </span>
                 </div>
               );

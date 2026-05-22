@@ -4,17 +4,15 @@ import { useNavigate } from "react-router";
 
 import { toast } from "sonner";
 
-import { UserRole } from "@/lib/api";
-
 import { WorkspaceFormState, WorkspaceInfoTab } from "@/components/profile";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
-import { useProfile } from "@/hooks/queries/useProfile";
 import {
   useDeleteWorkspace,
   useUpdateWorkspace,
 } from "@/hooks/queries/useWorkspaceApi";
+import { useIsWorkspaceAdmin } from "@/hooks/queries/useWorkspaceRole";
 import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
@@ -24,7 +22,6 @@ const WorkspaceSection = () => {
   const { t } = useTranslation("profile");
   const { workspace, refetch: refetchWorkspace } = useWorkspace();
   const { user, updateUser, refetchUser } = useAuth();
-  const { data: profileData } = useProfile();
   const navigate = useNavigate();
   const updateWorkspaceMutation = useUpdateWorkspace();
   const deleteWorkspaceMutation = useDeleteWorkspace();
@@ -51,8 +48,7 @@ const WorkspaceSection = () => {
     traceRetentionHours: undefined,
   });
 
-  const profile = profileData?.user;
-  const isAdmin = profile?.role === UserRole.ADMIN;
+  const isAdmin = useIsWorkspaceAdmin() === true;
 
   const resetFormFromWorkspace = () => {
     setWorkspaceForm({

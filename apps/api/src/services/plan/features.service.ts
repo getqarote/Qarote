@@ -18,6 +18,7 @@ export interface PlanFeatures {
 
   // Support features
   hasCommunitySupport: boolean;
+  hasEmailSupport: boolean;
   hasPrioritySupport: boolean;
   hasEmailAlerts: boolean;
 
@@ -26,9 +27,27 @@ export interface PlanFeatures {
   hasAlerts: boolean;
   hasTopologyVisualization: boolean;
   hasRoleBasedAccess: boolean | "coming_soon";
+  hasAdvancedRoleBasedAccess: boolean | "coming_soon";
   hasSsoSamlOidc: boolean;
   hasSoc2Compliance: boolean;
   isPopular: boolean;
+
+  // Intelligence & Diagnostics display features
+  // "limited" = feature exists on FREE but with enforced quotas
+  hasDailyDigest: boolean | "limited";
+  hasMessageSpy: boolean | "limited";
+  hasMetricsPersistence: boolean | "limited";
+  hasIncidentDiagnosis: boolean | "limited";
+  hasMessageTracing: boolean | "limited";
+
+  // Security display features
+  hasAuditLog: boolean | "coming_soon";
+
+  // LLM display features (cloud managed by default, BYOK optional on Enterprise)
+  hasLlmExplain: boolean | "coming_soon";
+  llmExplainsPerMonth: number | null; // 5 / 50 / null (unlimited)
+  hasLlmDigest: boolean | "coming_soon";
+  canUseBYOK: boolean;
 
   // Retention limits (in hours)
   // Note: these are operational quotas, not billing/display features.
@@ -71,6 +90,7 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
 
     // Support features
     hasCommunitySupport: true,
+    hasEmailSupport: false,
     hasPrioritySupport: false,
     hasEmailAlerts: false,
 
@@ -79,12 +99,29 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
     hasAlerts: false,
     hasTopologyVisualization: false,
     hasRoleBasedAccess: false,
+    hasAdvancedRoleBasedAccess: false,
     hasSsoSamlOidc: false,
     hasSoc2Compliance: true,
     isPopular: false,
 
+    // Security
+    hasAuditLog: false,
+
+    // LLM (Community: 5 explains / month — wow factor at first-time experience)
+    hasLlmExplain: "coming_soon",
+    llmExplainsPerMonth: 5,
+    hasLlmDigest: false,
+    canUseBYOK: false,
+
+    // Intelligence & Diagnostics (limited on FREE)
+    hasDailyDigest: "limited", // weekly digest only on Community
+    hasMessageSpy: "limited", // 5 messages / capture (FREE_SPY_PREVIEW_COUNT)
+    hasMetricsPersistence: "limited", // 24 h retention
+    hasIncidentDiagnosis: "limited", // 2-finding preview per run
+    hasMessageTracing: "limited", // 6 h retention — wow factor without storage burden
+
     // Retention limits
-    maxTraceRetentionHours: 24, // 1 day — fixed, not user-configurable on FREE
+    maxTraceRetentionHours: 6, // 6 h — wow factor without storage cost on Community
     maxMetricsRetentionHours: 24, // 1 day (queryable range is further clamped to 6h)
 
     // RabbitMQ support
@@ -129,21 +166,39 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
 
     // Support features
     hasCommunitySupport: true,
-    hasPrioritySupport: true,
+    hasEmailSupport: true,
+    hasPrioritySupport: false,
     hasEmailAlerts: true,
 
     // Display features
     hasAdvancedAnalytics: true,
     hasAlerts: true,
     hasTopologyVisualization: true,
-    hasRoleBasedAccess: "coming_soon",
+    hasRoleBasedAccess: true,
+    hasAdvancedRoleBasedAccess: false,
     hasSsoSamlOidc: false,
     hasSoc2Compliance: true,
     isPopular: true,
 
+    // Security
+    hasAuditLog: false,
+
+    // LLM (Developer: 50 explains / month included, managed by Qarote)
+    hasLlmExplain: "coming_soon",
+    llmExplainsPerMonth: 50,
+    hasLlmDigest: false,
+    canUseBYOK: false,
+
+    // Intelligence & Diagnostics (full access on Developer)
+    hasDailyDigest: true, // daily digest
+    hasMessageSpy: true,
+    hasMetricsPersistence: true,
+    hasIncidentDiagnosis: true,
+    hasMessageTracing: true,
+
     // Retention limits
     maxTraceRetentionHours: 168, // 7 days — user-configurable within this bound
-    maxMetricsRetentionHours: 168, // 7 days
+    maxMetricsRetentionHours: 336, // 14 days
 
     // RabbitMQ support
     supportedRabbitMqVersions: [
@@ -181,7 +236,7 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
       "3 users",
       "Queue, Exchange, VHost & User management",
       "Alerts & webhooks",
-      "Priority support",
+      "Email support",
       "Email alerts for critical and warning notifications",
     ],
   },
@@ -204,6 +259,7 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
 
     // Support features
     hasCommunitySupport: true,
+    hasEmailSupport: false,
     hasPrioritySupport: true,
     hasEmailAlerts: true,
 
@@ -211,14 +267,31 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
     hasAdvancedAnalytics: true,
     hasAlerts: true,
     hasTopologyVisualization: true,
-    hasRoleBasedAccess: "coming_soon",
+    hasRoleBasedAccess: true,
+    hasAdvancedRoleBasedAccess: "coming_soon",
     hasSsoSamlOidc: true,
     hasSoc2Compliance: true,
     isPopular: false,
 
+    // Security
+    hasAuditLog: true,
+
+    // LLM (Enterprise: unlimited explains + LLM digest + BYOK option)
+    hasLlmExplain: "coming_soon",
+    llmExplainsPerMonth: null, // unlimited
+    hasLlmDigest: "coming_soon",
+    canUseBYOK: true,
+
+    // Intelligence & Diagnostics (full access on Enterprise)
+    hasDailyDigest: true, // daily + custom schedule (Soon)
+    hasMessageSpy: true,
+    hasMetricsPersistence: true,
+    hasIncidentDiagnosis: true,
+    hasMessageTracing: true,
+
     // Retention limits
-    maxTraceRetentionHours: 720, // 30 days — user-configurable within this bound
-    maxMetricsRetentionHours: 720, // 30 days
+    maxTraceRetentionHours: 720, // 30 days
+    maxMetricsRetentionHours: 2160, // 90 days — quarterly capacity planning
 
     // RabbitMQ support
     supportedRabbitMqVersions: [

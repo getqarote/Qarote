@@ -2,6 +2,13 @@ import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { PixelCheck } from "@/components/ui/pixel-check";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import { UserPlan } from "@/types/plans";
 
@@ -78,17 +85,16 @@ export function PlanCard({
               />
               <PlanFeatureItem
                 label={t("plans.features.workspaces")}
-                detail={formatLimit(plan.maxWorkspaces, t)}
+                detail={
+                  plan.maxWorkspaces !== null && plan.maxWorkspaces > 1
+                    ? `${formatLimit(plan.maxWorkspaces, t)} · ${t("plans.features.singleOrganization")}`
+                    : formatLimit(plan.maxWorkspaces, t)
+                }
               />
               <PlanFeatureItem
                 label={t("plans.features.teamMembers")}
                 detail={formatLimit(plan.maxUsers, t)}
               />
-              {plan.hasAdvancedAnalytics && (
-                <PlanFeatureItem
-                  label={t("plans.features.advancedAnalytics")}
-                />
-              )}
               <PlanFeatureItem label={t("plans.features.queueManagement")} />
               {plan.hasAlerts && (
                 <PlanFeatureItem label={t("plans.features.alertsWebhooks")} />
@@ -98,16 +104,70 @@ export function PlanCard({
                   label={t("plans.features.topologyVisualization")}
                 />
               )}
-              {plan.hasRoleBasedAccess && (
-                <PlanFeatureItem
-                  label={t("plans.features.roleBasedAccess")}
-                  soonLabel={
-                    plan.hasRoleBasedAccess === "coming_soon"
-                      ? soonLabel
-                      : undefined
-                  }
-                />
-              )}
+            </ul>
+          </section>
+
+          {/* Intelligence & Diagnostics */}
+          <section>
+            <h4 className="font-semibold text-foreground mb-3 text-xs sm:text-sm uppercase tracking-wide whitespace-nowrap">
+              {t("plans.features.intelligenceDiagnostics")}
+            </h4>
+            <ul className="space-y-2">
+              {intelligenceRowsFromPlan(plan).map((row) => (
+                <li key={row.name} className="flex items-start gap-3">
+                  <div className="mt-1.5 w-3.5 shrink-0 flex items-start">
+                    <PixelCheck
+                      className="h-[0.7rem] w-auto shrink-0 text-success"
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <span className="text-sm text-foreground flex items-center gap-2">
+                      {t(`plans.features.${row.name}`)}
+                      {row.soon && (
+                        <span className="font-medium px-1 border border-border text-muted-foreground text-[0.65rem]">
+                          {soonLabel}
+                        </span>
+                      )}
+                      {row.tooltipKey && (
+                        <TooltipProvider delayDuration={150}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                className="cursor-help inline-flex items-center font-medium text-muted-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                aria-label={t(
+                                  `plans.features.${row.tooltipKey}`
+                                )}
+                              >
+                                <svg
+                                  className="w-2.5 h-2.5 shrink-0"
+                                  viewBox="0 0 16 16"
+                                  fill="currentColor"
+                                  aria-hidden="true"
+                                >
+                                  <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm0 3a.75.75 0 1 1 0 1.5A.75.75 0 0 1 8 4Zm-.25 2.75a.75.75 0 0 1 1.5 0v4a.75.75 0 0 1-1.5 0v-4Z" />
+                                </svg>
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent
+                              side="top"
+                              className="max-w-[220px] text-xs"
+                            >
+                              {t(`plans.features.${row.tooltipKey}`)}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                    </span>
+                    {row.detailKey && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {t(`plans.features.${row.detailKey}`)}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              ))}
             </ul>
           </section>
 
@@ -119,6 +179,36 @@ export function PlanCard({
             <ul className="space-y-2">
               {plan.hasSsoSamlOidc && (
                 <PlanFeatureItem label={t("plans.features.ssoSamlOidc")} />
+              )}
+              {plan.hasAdvancedRoleBasedAccess && (
+                <PlanFeatureItem
+                  label={t("plans.features.advancedRoleBasedAccess")}
+                  detail={t("plans.features.advancedRoleBasedAccessDesc")}
+                  soonLabel={
+                    plan.hasAdvancedRoleBasedAccess === "coming_soon"
+                      ? soonLabel
+                      : undefined
+                  }
+                />
+              )}
+              {plan.hasRoleBasedAccess && (
+                <PlanFeatureItem
+                  label={t("plans.features.roleBasedAccess")}
+                  detail={t("plans.features.roleBasedAccessDesc")}
+                  soonLabel={
+                    plan.hasRoleBasedAccess === "coming_soon"
+                      ? soonLabel
+                      : undefined
+                  }
+                />
+              )}
+              {plan.hasAuditLog && (
+                <PlanFeatureItem
+                  label={t("plans.features.auditLog")}
+                  soonLabel={
+                    plan.hasAuditLog === "coming_soon" ? soonLabel : undefined
+                  }
+                />
               )}
               {plan.hasSoc2Compliance && (
                 <PlanFeatureItem label={t("plans.features.soc2Compliance")} />
@@ -136,8 +226,15 @@ export function PlanCard({
               {t("plans.features.support")}
             </h4>
             <ul className="space-y-2">
-              {plan.hasCommunitySupport && (
-                <PlanFeatureItem label={t("plans.features.communitySupport")} />
+              {plan.hasCommunitySupport &&
+                !plan.hasEmailSupport &&
+                !plan.hasPrioritySupport && (
+                  <PlanFeatureItem
+                    label={t("plans.features.communitySupport")}
+                  />
+                )}
+              {plan.hasEmailSupport && (
+                <PlanFeatureItem label={t("plans.features.emailSupport")} />
               )}
               {plan.hasPrioritySupport && (
                 <PlanFeatureItem label={t("plans.features.prioritySupport")} />
@@ -245,4 +342,93 @@ function PlanHeader({
       </div>
     </div>
   );
+}
+
+type IntelligenceRow = {
+  name: string;
+  detailKey?: string;
+  tooltipKey?: string;
+  soon?: boolean;
+};
+
+function formatRetentionKey(hours: number): string {
+  if (hours <= 6) return "detail6h";
+  if (hours <= 24) return "detail24h";
+  if (hours <= 168) return "detail7Days";
+  if (hours <= 336) return "detail14Days";
+  if (hours <= 720) return "detail30Days";
+  return "detail90Days";
+}
+
+function intelligenceRowsFromPlan(plan: ApiPlan): IntelligenceRow[] {
+  const isFree = plan.plan === "FREE";
+  const isEnterprise = plan.plan === "ENTERPRISE";
+  const rows: IntelligenceRow[] = [];
+
+  if (plan.hasDailyDigest) {
+    rows.push({
+      name: "dailyDigest",
+      detailKey: isFree
+        ? "detailWeekly"
+        : isEnterprise
+          ? "detailDailyCustom"
+          : "detailDaily",
+    });
+  }
+  if (plan.hasMessageSpy) {
+    rows.push({
+      name: "messageSpy",
+      detailKey:
+        plan.hasMessageSpy === "limited"
+          ? "detail5Messages"
+          : "detailUnlimitedMessages",
+      tooltipKey:
+        plan.hasMessageSpy === "limited" ? "messageSpyLimitedHint" : undefined,
+    });
+  }
+  if (plan.hasMetricsPersistence) {
+    rows.push({
+      name: "metricsPersistence",
+      detailKey: formatRetentionKey(plan.maxMetricsRetentionHours),
+    });
+  }
+  if (plan.hasIncidentDiagnosis) {
+    rows.push({
+      name: "incidentDiagnosis",
+      detailKey:
+        plan.hasIncidentDiagnosis === "limited"
+          ? "detailPreview"
+          : "detailFullResults",
+      tooltipKey:
+        plan.hasIncidentDiagnosis === "limited"
+          ? "incidentDiagnosisLimitedHint"
+          : undefined,
+    });
+  }
+  if (plan.hasMessageTracing) {
+    rows.push({
+      name: "messageTracing",
+      detailKey: formatRetentionKey(plan.maxTraceRetentionHours),
+    });
+  }
+  if (plan.hasLlmExplain) {
+    rows.push({
+      name: "aiExplanations",
+      detailKey:
+        plan.llmExplainsPerMonth === null
+          ? "detailUnlimited"
+          : plan.llmExplainsPerMonth === 5
+            ? "detail5PerMonth"
+            : "detail50PerMonth",
+      soon: plan.hasLlmExplain === "coming_soon",
+    });
+  }
+  if (plan.hasLlmDigest) {
+    rows.push({
+      name: "aiEnhancedDigest",
+      soon: plan.hasLlmDigest === "coming_soon",
+    });
+  }
+
+  return rows;
 }

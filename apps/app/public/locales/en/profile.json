@@ -172,8 +172,34 @@
     "toast": {
       "inviteFailed": "Invite failed",
       "removeFailed": "Failed to remove member",
-      "addFailed": "Failed to add member"
-    }
+      "addFailed": "Failed to add member",
+      "roleUpdateFailed": "Failed to update role",
+      "roleFetchFailed": "Couldn't load your workspace permissions.",
+      "bulkRoleUpdated_one": "{{count}} member updated",
+      "bulkRoleUpdated_other": "{{count}} members updated",
+      "bulkRoleUpdateFailed": "Failed to update members",
+      "scopeDenied": "You need the \"{{permission}}\" permission to do this.",
+      "scopeDeniedGeneric": "You don't have permission to do this."
+    },
+    "selectRow": "Select member",
+    "selectAll": "Select all members on this page",
+    "bulkSelected_one": "<strong>{{count}}</strong> member selected",
+    "bulkSelected_other": "<strong>{{count}}</strong> members selected",
+    "bulkSelectRolePlaceholder": "Assign role…",
+    "bulkApplying": "Assigning…",
+    "bulkDeselectAll": "Clear selection",
+    "bulkLastOwnerTitle": "This change removes the last Owner",
+    "bulkLastOwnerBody": "No one will be able to manage billing, delete the workspace, or grant Owner access after this change. Continue anyway?",
+    "bulkLastOwnerCancel": "Cancel",
+    "bulkLastOwnerConfirm": "I understand, continue",
+    "roleGroupBuiltin": "Standard roles",
+    "roleGroupCustom": "Custom roles",
+    "roleCustomBadge": "Custom",
+    "selectRowNamed": "Select {{name}}",
+    "selectAllNamed": "Select all {{count}} members on this page",
+    "bulkApply_one": "Assign to {{count}} member",
+    "bulkApply_other": "Assign to {{count}} members",
+    "roleLoading": "Loading roles…"
   },
   "org": {
     "title": "Organization",

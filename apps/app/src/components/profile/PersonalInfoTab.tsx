@@ -81,9 +81,12 @@ export const PersonalInfoTab = ({
                 <h2 className="title-section truncate">
                   {profile.firstName} {profile.lastName}
                 </h2>
-                <Badge variant="soft-primary">
-                  {profile.role.charAt(0) + profile.role.slice(1).toLowerCase()}
-                </Badge>
+                {profile.role && (
+                  <Badge variant="soft-primary">
+                    {profile.role.charAt(0) +
+                      profile.role.slice(1).toLowerCase()}
+                  </Badge>
+                )}
               </div>
               <p className="text-sm text-muted-foreground truncate">
                 {profile.email}

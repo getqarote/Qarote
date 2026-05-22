@@ -5,13 +5,15 @@ import {
   getUserWorkspaceRole,
 } from "@/core/workspace-access";
 
+import { recordFromContext } from "@/services/audit";
+import { isFeatureEnabled } from "@/services/feature-gate/license";
 import {
   getOrgPlan,
   getOrgResourceCounts,
   getPlanFeatures,
   validateWorkspaceCreation,
 } from "@/services/plan/plan.service";
-import { posthog } from "@/services/posthog";
+import { trackEvent } from "@/services/posthog";
 
 import {
   CreateWorkspaceSchema,
@@ -19,16 +21,25 @@ import {
   WorkspaceIdParamSchema,
 } from "@/schemas/workspace";
 
+import { managedLlmConfig } from "@/config";
+import { FEATURES } from "@/config/features";
+
 import { WorkspaceMapper } from "@/mappers/workspace";
 
 import {
   planValidationProcedure,
   rateLimitedProcedure,
   router,
+  workspacePermissionProcedure,
   workspaceProcedure,
 } from "@/trpc/trpc";
 
-import { OrgRole, UserPlan, UserRole } from "@/generated/prisma/client";
+import {
+  LlmProvider,
+  OrgRole,
+  UserPlan,
+  WorkspaceRole,
+} from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -86,22 +97,29 @@ export const managementRouter = router({
         orderBy: { createdAt: "desc" },
       });
 
-      // Format the response with user role from WorkspaceMember
-      const workspaces = await Promise.all(
-        allUserWorkspaces.map(async (workspace) => {
-          const userRole =
-            (await getUserWorkspaceRole(user.id, workspace.id, ctx.prisma)) ||
-            UserRole.MEMBER;
-          const isOwner = workspace.ownerId === user.id;
-
-          const mappedWorkspace = WorkspaceMapper.toApiResponse(workspace);
-          return {
-            ...mappedWorkspace,
-            isOwner,
-            userRole,
-          };
-        })
-      );
+      // Format the response with user role from WorkspaceMember.
+      // If membership disappeared between the findMany and this lookup
+      // (concurrent removal), skip the workspace rather than 500 — the
+      // user is genuinely no longer entitled to see it in the list.
+      const workspaces = (
+        await Promise.all(
+          allUserWorkspaces.map(async (workspace) => {
+            const userRole = await getUserWorkspaceRole(
+              user.id,
+              workspace.id,
+              ctx.prisma
+            );
+            if (!userRole) return null;
+            const isOwner = userRole === WorkspaceRole.OWNER;
+            const mappedWorkspace = WorkspaceMapper.toApiResponse(workspace);
+            return {
+              ...mappedWorkspace,
+              isOwner,
+              userRole,
+            };
+          })
+        )
+      ).filter((w): w is NonNullable<typeof w> => w !== null);
 
       return { workspaces };
     } catch (error) {
@@ -172,13 +190,19 @@ export const managementRouter = router({
           } catch (orgError) {
             // P2002: unique constraint on slug — concurrent request already created the org
             if ((orgError as { code?: string }).code === "P2002") {
-              const existing = await ctx.prisma.organizationMember.findFirst({
-                where: { userId: user.id },
-                select: { organizationId: true, role: true },
+              const existingOrg = await ctx.prisma.organization.findUnique({
+                where: { slug: orgSlug },
+                select: { id: true },
               });
-              if (existing) {
-                organizationId = existing.organizationId;
-                orgRole = existing.role;
+              const membership = existingOrg
+                ? await ctx.prisma.organizationMember.findFirst({
+                    where: { userId: user.id, organizationId: existingOrg.id },
+                    select: { role: true },
+                  })
+                : null;
+              if (existingOrg && membership) {
+                organizationId = existingOrg.id;
+                orgRole = membership.role;
               } else {
                 throw new TRPCError({
                   code: "INTERNAL_SERVER_ERROR",
@@ -222,6 +246,36 @@ export const managementRouter = router({
           });
         }
 
+        // Should this workspace get a pre-provisioned MANAGED LLM config?
+        // True only when the platform itself offers managed LLM (env vars
+        // present) AND the AI-explain feature is part of the licensed/cloud
+        // surface. Computed before the transaction so we don't add latency
+        // inside the tx; the result is a plain boolean that flows in.
+        //
+        // Treat any `isFeatureEnabled` rejection as `false` rather than
+        // propagating it — a license/cache failure must not block workspace
+        // creation. The cost of a missing seed is a one-time "configure LLM"
+        // toast for the user; the cost of failing create is they can't
+        // onboard at all.
+        //
+        // Follow-up: seed on plan upgrade for workspaces created while the
+        // feature was disabled. Tracked separately — out of scope here.
+        // Short-circuit when the platform itself doesn't offer managed LLM —
+        // no point in paying the license/cache lookup if the seed would
+        // always be skipped. The vast majority of self-hosted instances
+        // land here.
+        let seedManagedLlm = false;
+        if (managedLlmConfig.enabled) {
+          try {
+            seedManagedLlm = await isFeatureEnabled(FEATURES.AI_EXPLAIN_INLINE);
+          } catch (err) {
+            ctx.logger.warn(
+              { err },
+              "isFeatureEnabled threw during workspace create — degrading LLM auto-seed to false"
+            );
+          }
+        }
+
         // Create the new workspace and assign user to it
         const newWorkspace = await ctx.prisma.$transaction(async (tx) => {
           // Create the workspace linked to the user's organization
@@ -243,22 +297,42 @@ export const managementRouter = router({
             },
           });
 
-          // Add owner to WorkspaceMember table with ADMIN role
+          // Workspace creator becomes its OWNER.
           await ensureWorkspaceMember(
             user.id,
             workspace.id,
-            UserRole.ADMIN,
+            WorkspaceRole.OWNER,
             tx
           );
 
-          // If this is the user's first workspace (they don't have a workspaceId), assign them to it
+          // If this is the user's first workspace (they don't have a
+          // workspaceId), assign them to it. Do NOT touch User.role —
+          // that's the platform-scoped role used to gate Qarote-staff
+          // features (feedback triage, self-hosted setup). Granting
+          // platform ADMIN to every signup would let regular users hit
+          // those cross-tenant endpoints (rbac.md §2.3, §10 carve-out).
           if (!user.workspaceId) {
             await tx.user.update({
               where: { id: user.id },
               data: {
                 workspaceId: workspace.id,
-                role: UserRole.ADMIN, // Owner becomes admin of their workspace
                 onboardingCompletedAt: new Date(),
+              },
+            });
+          }
+
+          // Pre-provision a MANAGED LLM config so AI Explain works on the
+          // first attempt without the user visiting Settings → LLM first.
+          // `updatedById: null` is the schema-supported marker for
+          // system-created rows (the column is intentionally nullable);
+          // the next user save overwrites it to ctx.user.id. Same tx so
+          // there's no window where a workspace exists without its seed.
+          if (seedManagedLlm) {
+            await tx.workspaceLlmConfig.create({
+              data: {
+                workspaceId: workspace.id,
+                provider: LlmProvider.MANAGED,
+                enabled: true,
               },
             });
           }
@@ -287,22 +361,48 @@ export const managementRouter = router({
           "Workspace created successfully"
         );
 
-        posthog?.capture({
-          distinctId: user.id,
-          event: "workspace_created",
-          properties: {
+        trackEvent(
+          {
+            distinctId: user.id,
+            superProperties: {
+              app: "api",
+              workspace_id: newWorkspace.id,
+              organization_id: organizationId,
+            },
+          },
+          "workspace_created",
+          {
             workspace_id: newWorkspace.id,
-            workspace_name: name,
             organization_id: organizationId,
             is_first_workspace: !user.workspaceId,
-          },
-        });
+            name_length: name.length,
+            // Observability for the managed-LLM auto-seed path. Lets us
+            // confirm cloud signups land in the "explain works first try"
+            // bucket and spot regressions if the feature flag flips.
+            llm_auto_seeded: seedManagedLlm,
+          }
+        );
+
+        void recordFromContext(
+          { ...ctx, workspaceId: newWorkspace.id },
+          {
+            action: "workspace.created",
+            category: "workspace",
+            entityType: "workspace",
+            entityId: newWorkspace.id,
+            entityLabel: newWorkspace.name,
+            metadata: {
+              organizationId,
+              isFirstWorkspace: !user.workspaceId,
+            },
+          }
+        );
 
         return {
           workspace: {
             ...WorkspaceMapper.toApiResponse(newWorkspace),
             isOwner: true,
-            userRole: UserRole.ADMIN,
+            userRole: WorkspaceRole.OWNER,
           },
         };
       } catch (error) {
@@ -318,28 +418,16 @@ export const managementRouter = router({
     }),
 
   /**
-   * Update workspace (PROTECTED - owner only)
+   * Update workspace (workspace:update).
    */
-  update: rateLimitedProcedure
+  update: workspacePermissionProcedure("workspace:update")
     .input(WorkspaceIdParamSchema.merge(UpdateWorkspaceSchema))
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;
       const { workspaceId, ...updateData } = input;
+      const role = ctx.workspaceRole;
 
       try {
-        // Check if user has ADMIN role in this workspace
-        const role = await getUserWorkspaceRole(
-          user.id,
-          workspaceId,
-          ctx.prisma
-        );
-        if (role !== UserRole.ADMIN) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: te(ctx.locale, "workspace.notFoundOrNoPermissionUpdate"),
-          });
-        }
-
         const workspace = await ctx.prisma.workspace.findUnique({
           where: { id: workspaceId },
         });
@@ -426,11 +514,20 @@ export const managementRouter = router({
           "Workspace updated successfully"
         );
 
+        void recordFromContext(ctx, {
+          action: "workspace.updated",
+          category: "workspace",
+          entityType: "workspace",
+          entityId: workspaceId,
+          entityLabel: updatedWorkspace.name,
+          metadata: { changes: updateData },
+        });
+
         return {
           workspace: {
             ...WorkspaceMapper.toApiResponse(updatedWorkspace),
-            isOwner: user.id === updatedWorkspace.ownerId,
-            userRole: UserRole.ADMIN,
+            isOwner: role === WorkspaceRole.OWNER,
+            userRole: role,
           },
         };
       } catch (error) {
@@ -446,28 +543,15 @@ export const managementRouter = router({
     }),
 
   /**
-   * Delete workspace (PROTECTED - owner only)
+   * Delete workspace (workspace:delete — OWNER only per the catalog).
    */
-  delete: rateLimitedProcedure
+  delete: workspacePermissionProcedure("workspace:delete")
     .input(WorkspaceIdParamSchema)
     .mutation(async ({ input, ctx }) => {
       const user = ctx.user;
       const { workspaceId } = input;
 
       try {
-        // Check if user has ADMIN role in this workspace
-        const role = await getUserWorkspaceRole(
-          user.id,
-          workspaceId,
-          ctx.prisma
-        );
-        if (role !== UserRole.ADMIN) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: te(ctx.locale, "workspace.notFoundOrNoPermissionDelete"),
-          });
-        }
-
         const workspace = await ctx.prisma.workspace.findUnique({
           where: { id: workspaceId },
         });
@@ -477,6 +561,35 @@ export const managementRouter = router({
             code: "NOT_FOUND",
             message: te(ctx.locale, "workspace.notFoundOrNoPermissionDelete"),
           });
+        }
+
+        // Snapshot the plan BEFORE delete — the audit emits after the
+        // row is gone and `getWorkspacePlan` would otherwise return
+        // FREE for the missing workspace, dropping the audit row on
+        // every plan including Enterprise. Resolve via the org so the
+        // snapshot survives the cascade.
+        //
+        // On lookup failure, log loudly (silent audit-gate failure is
+        // its own compliance issue) but proceed — the workspace.delete
+        // mutation must not be blocked by an audit-side error. Null
+        // snapshot falls through to the writer's normal plan path,
+        // which will see the deleted workspace and skip the row; we
+        // accept that loss in exchange for the user being able to
+        // delete their workspace.
+        let planSnapshot: UserPlan | null = null;
+        if (workspace.organizationId) {
+          try {
+            planSnapshot = await getOrgPlan(workspace.organizationId);
+          } catch (planErr) {
+            ctx.logger.warn(
+              {
+                err: planErr,
+                workspaceId,
+                organizationId: workspace.organizationId,
+              },
+              "workspace.delete: plan-snapshot lookup failed; audit row may be skipped"
+            );
+          }
         }
 
         // Delete the workspace in a transaction:
@@ -508,14 +621,11 @@ export const managementRouter = router({
           const wasActive = user.workspaceId === workspaceId;
 
           if (wasActive) {
-            // Check both ownership and membership (same logic as getUserWorkspaces)
+            // Membership in WorkspaceMember now covers both regular members
+            // and OWNER (the legacy Workspace.ownerId is deprecated under the
+            // RBAC model — TODO: drop the column once all reads migrate).
             const next = await tx.workspace.findFirst({
-              where: {
-                OR: [
-                  { ownerId: user.id },
-                  { members: { some: { userId: user.id } } },
-                ],
-              },
+              where: { members: { some: { userId: user.id } } },
               orderBy: { createdAt: "desc" },
               select: { id: true },
             });
@@ -557,13 +667,36 @@ export const managementRouter = router({
           "Workspace deleted successfully"
         );
 
-        posthog?.capture({
-          distinctId: user.id,
-          event: "workspace_deleted",
-          properties: {
-            workspace_id: workspaceId,
+        trackEvent(
+          {
+            distinctId: user.id,
+            superProperties: {
+              app: "api",
+              workspace_id: workspaceId,
+            },
           },
-        });
+          "workspace_deleted",
+          { workspace_id: workspaceId }
+        );
+
+        // Audit AFTER the row is gone — bind workspaceId + planSnapshot
+        // on the entry; the writer would otherwise resolve plan against
+        // a now-deleted workspace and silently skip the row.
+        void recordFromContext(
+          { ...ctx, workspaceId },
+          {
+            action: "workspace.deleted",
+            category: "workspace",
+            entityType: "workspace",
+            entityId: workspaceId,
+            entityLabel: workspace.name,
+            planSnapshot,
+            metadata: {
+              organizationId: workspace.organizationId,
+              switchedTo: nextWorkspace?.id ?? null,
+            },
+          }
+        );
 
         return {
           message: te(ctx.locale, "messages.workspaceDeletedSuccess"),

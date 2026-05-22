@@ -4,18 +4,14 @@ import { useParams } from "react-router";
 
 import { toast } from "sonner";
 
-import { UserRole } from "@/lib/api";
 import { RabbitMQUser } from "@/lib/api/userTypes";
 
 import { filterByRegex } from "@/components/filterByRegex";
 import { KeyboardShortcutsDialog } from "@/components/KeyboardShortcutsDialog";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { PageErrorOrGate } from "@/components/PageErrorOrGate";
-import {
-  FullPageAlert,
-  NoServerSelectedCard,
-  PageShell,
-} from "@/components/PageShell";
+import { NoServerSelectedCard, PageShell } from "@/components/PageShell";
+import { PermissionDeniedCard, RequireWorkspaceAdmin } from "@/components/rbac";
 import { RegexFilterInput } from "@/components/RegexFilterInput";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { TitleWithCount } from "@/components/ui/TitleWithCount";
@@ -25,7 +21,6 @@ import { DeleteUserModal } from "@/components/users/DeleteUserModal";
 import { LoadingSkeleton } from "@/components/UsersList/LoadingSkeleton";
 import { UsersTable } from "@/components/UsersList/UsersTable";
 
-import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 
 import { useDeleteUser, useUsers } from "@/hooks/queries/useRabbitMQUsers";
@@ -52,9 +47,35 @@ function isTextualEventTarget(e: KeyboardEvent): boolean {
 export default function UsersPage() {
   const { t } = useTranslation("users");
   const { t: tc } = useTranslation("common");
+
+  return (
+    <RequireWorkspaceAdmin
+      loadingFallback={
+        <PageShell>
+          <LoadingSkeleton />
+        </PageShell>
+      }
+      deniedFallback={
+        <PageShell>
+          <PermissionDeniedCard
+            title={t("accessDeniedTitle")}
+            description={t("accessDenied")}
+            returnTo="/"
+            returnLabel={tc("backToDashboard")}
+          />
+        </PageShell>
+      }
+    >
+      <UsersPageBody />
+    </RequireWorkspaceAdmin>
+  );
+}
+
+function UsersPageBody() {
+  const { t } = useTranslation("users");
+  const { t: tc } = useTranslation("common");
   const { serverId } = useParams<{ serverId: string }>();
   const { selectedServerId, hasServers } = useServerContext();
-  const { user } = useAuth();
   const { data: serversData } = useServers();
   const servers = serversData?.servers || [];
 
@@ -149,15 +170,6 @@ export default function UsersPage() {
     }
     setBulkDeleteUsers([]);
   };
-
-  // Guard: non-admins cannot reach this page
-  if (user?.role !== UserRole.ADMIN) {
-    return (
-      <PageShell>
-        <FullPageAlert message={t("accessDenied")} />
-      </PageShell>
-    );
-  }
 
   // Guard: zero servers configured — onboarding state owns its own
   // content container, so render it bare to avoid double-wrapping.

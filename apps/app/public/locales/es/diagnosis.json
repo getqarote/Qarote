@@ -62,7 +62,12 @@
     "helpfulYes": "Útil",
     "helpfulNo": "No útil",
     "copyCommand": "Copiar comando",
-    "copied": "Copiado"
+    "copied": "Copiado",
+    "explain": "Explicar",
+    "explaining": "Generando explicación…",
+    "retry": "Reintentar",
+    "explainError": "No se pudo generar la explicación — verifique su conexión e inténtelo de nuevo.",
+    "explainHelpful": "¿Esta explicación fue útil?"
   },
   "metadata": {
     "analyzedAgo": "Analizado {{time}}",

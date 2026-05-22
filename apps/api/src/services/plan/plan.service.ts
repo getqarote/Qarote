@@ -13,7 +13,7 @@ export { getPlanFeatures, PLAN_FEATURES } from "./features.service";
 // surfaced over tRPC via the unified `gate` wire shape (ADR-002).
 // Translation into a `BlockedGate` and use of `throwGateError` is
 // restricted to the validation-middleware layer (`planValidationProcedure`,
-// `adminPlanValidationProcedure` in `trpc.ts`, plus any future
+// `workspaceAdminPlanValidationProcedure` in `trpc.ts`, plus any future
 // gate-translation middleware that uses the same helper). Direct
 // catch-and-rethrow in router or service code is a smell — let the
 // middleware do it so every call site emits the same wire shape.
@@ -223,18 +223,32 @@ export async function getOrgPlan(orgId: string): Promise<UserPlan> {
 
 /**
  * Get the plan for a workspace by resolving its organization.
+ *
+ * Single roundtrip via a nested-select join: previously this did two
+ * sequential queries (workspace.findUnique + subscription.findUnique),
+ * paying that cost on every audit emission. The audit hot path can
+ * fire dozens of these in a bulk op; one roundtrip cuts ~50% of the
+ * latency tax for Free / Developer tenants who get nothing from it.
  */
 export async function getWorkspacePlan(workspaceId: string): Promise<UserPlan> {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
-    select: { organizationId: true },
-  });
-
-  if (workspace?.organizationId) {
-    return getOrgPlan(workspace.organizationId);
+  if (isDemoMode()) {
+    return UserPlan.ENTERPRISE;
   }
 
-  return UserPlan.FREE;
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: workspaceId },
+    select: {
+      organization: {
+        select: {
+          subscription: {
+            select: { plan: true },
+          },
+        },
+      },
+    },
+  });
+
+  return workspace?.organization?.subscription?.plan ?? UserPlan.FREE;
 }
 
 /**

@@ -90,6 +90,10 @@ describe("getPlanFeatures", () => {
     it("returns isPopular as false", () => {
       expect(getPlanFeatures(UserPlan.FREE).isPopular).toBe(false);
     });
+
+    it("returns hasAuditLog as false (Enterprise-only)", () => {
+      expect(getPlanFeatures(UserPlan.FREE).hasAuditLog).toBe(false);
+    });
   });
 
   describe("DEVELOPER plan", () => {
@@ -115,6 +119,16 @@ describe("getPlanFeatures", () => {
 
     it("returns hasEmailAlerts as true", () => {
       expect(getPlanFeatures(UserPlan.DEVELOPER).hasEmailAlerts).toBe(true);
+    });
+
+    it("returns hasEmailSupport as true", () => {
+      expect(getPlanFeatures(UserPlan.DEVELOPER).hasEmailSupport).toBe(true);
+    });
+
+    it("returns hasPrioritySupport as false", () => {
+      expect(getPlanFeatures(UserPlan.DEVELOPER).hasPrioritySupport).toBe(
+        false
+      );
     });
 
     it("supports older RabbitMQ versions including 3.0", () => {
@@ -162,10 +176,14 @@ describe("getPlanFeatures", () => {
       );
     });
 
-    it("returns hasRoleBasedAccess as coming_soon", () => {
-      expect(getPlanFeatures(UserPlan.DEVELOPER).hasRoleBasedAccess).toBe(
-        "coming_soon"
-      );
+    it("returns hasRoleBasedAccess as true (basic RBAC shipped)", () => {
+      expect(getPlanFeatures(UserPlan.DEVELOPER).hasRoleBasedAccess).toBe(true);
+    });
+
+    it("returns hasAdvancedRoleBasedAccess as false (Enterprise-only)", () => {
+      expect(
+        getPlanFeatures(UserPlan.DEVELOPER).hasAdvancedRoleBasedAccess
+      ).toBe(false);
     });
 
     it("returns hasSoc2Compliance as true", () => {
@@ -183,6 +201,10 @@ describe("getPlanFeatures", () => {
       expect(descriptions).toContain("3 RabbitMQ servers");
       expect(descriptions).toContain("3 workspaces");
       expect(descriptions).toContain("3 users");
+    });
+
+    it("returns hasAuditLog as false (Enterprise-only)", () => {
+      expect(getPlanFeatures(UserPlan.DEVELOPER).hasAuditLog).toBe(false);
     });
   });
 
@@ -209,6 +231,10 @@ describe("getPlanFeatures", () => {
 
     it("returns hasEmailAlerts as true", () => {
       expect(getPlanFeatures(UserPlan.ENTERPRISE).hasEmailAlerts).toBe(true);
+    });
+
+    it("returns hasEmailSupport as false (superseded by priority support)", () => {
+      expect(getPlanFeatures(UserPlan.ENTERPRISE).hasEmailSupport).toBe(false);
     });
 
     it("returns hasPrioritySupport as true", () => {
@@ -260,10 +286,24 @@ describe("getPlanFeatures", () => {
       ).toBe(true);
     });
 
-    it("returns hasRoleBasedAccess as coming_soon", () => {
+    it("returns hasRoleBasedAccess as true", () => {
       expect(getPlanFeatures(UserPlan.ENTERPRISE).hasRoleBasedAccess).toBe(
-        "coming_soon"
+        true
       );
+    });
+
+    it("returns hasAdvancedRoleBasedAccess as coming_soon", () => {
+      expect(
+        getPlanFeatures(UserPlan.ENTERPRISE).hasAdvancedRoleBasedAccess
+      ).toBe("coming_soon");
+    });
+
+    it("returns hasAuditLog as true (Enterprise feature shipped)", () => {
+      expect(getPlanFeatures(UserPlan.ENTERPRISE).hasAuditLog).toBe(true);
+    });
+
+    it("returns canUseBYOK as true", () => {
+      expect(getPlanFeatures(UserPlan.ENTERPRISE).canUseBYOK).toBe(true);
     });
 
     it("returns hasSoc2Compliance as true", () => {

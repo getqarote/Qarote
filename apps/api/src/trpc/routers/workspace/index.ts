@@ -4,6 +4,7 @@ import { coreRouter } from "./core";
 import { dataRouter } from "./data.ce";
 import { invitationRouter } from "./invitation";
 import { managementRouter } from "./management";
+import { roleRouter } from "./role";
 
 /**
  * CE workspace router — no EE imports.
@@ -15,4 +16,5 @@ export const workspaceRouter = router({
   management: managementRouter,
   invitation: invitationRouter,
   data: dataRouter,
+  role: roleRouter,
 });

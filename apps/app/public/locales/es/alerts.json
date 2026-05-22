@@ -5,6 +5,7 @@
   "noServerDescription": "Monitorea alertas y notificaciones del sistema",
   "alertRules": "Reglas de alertas",
   "notificationSettings": "Configuración de notificaciones",
+  "alerts": "Alertas",
   "activeAlerts": "Alertas activas",
   "resolvedAlerts": "Alertas resueltas",
   "active": {
@@ -70,6 +71,7 @@
   "rules.severity.medium": "Media",
   "rules.severity.high": "Alta",
   "rules.severity.critical": "Crítica",
+  "rules.severity.info": "Info",
   "rules.form.name": "Nombre",
   "rules.form.namePlaceholder": "ej., Alerta de profundidad de cola alta",
   "rules.form.description": "Descripción",
@@ -145,6 +147,23 @@
       "resolved": "Resuelto",
       "source": "{{type}}: {{name}}"
     }
+  },
+  "configScan": "Escaneo de config",
+  "scan": {
+    "allSeverities": "Todas las severidades",
+    "showResolved": "Ver resueltos",
+    "showActive": "Ver activos",
+    "runScan": "Ejecutar escaneo",
+    "runFirstScan": "Ejecutar primer escaneo",
+    "scanning": "Escaneando…",
+    "lastScan": "Último escaneo {{time}}",
+    "resolved": "Resuelto",
+    "resolvedAt": "Resuelto {{time}}",
+    "emptyTitle": "Sin hallazgos",
+    "emptyDesc": "Ejecuta tu primer escaneo de configuración para detectar anti-patrones de RabbitMQ.",
+    "emptyResolvedTitle": "No hay hallazgos resueltos",
+    "emptyResolvedDesc": "Los hallazgos resueltos aparecerán aquí una vez que corrijas los problemas en tu clúster.",
+    "pageInfo": "Página {{current}} de {{total}} ({{count}} en total)"
   },
   "modal": {
     "title": "Configuración de notificaciones de alertas",
@@ -251,5 +270,36 @@
     "toastSlackDeleteFailed": "Error al eliminar la configuración de Slack",
     "toastSlackEnabled": "Notificaciones de Slack habilitadas",
     "toastSlackDisabled": "Notificaciones de Slack deshabilitadas"
+  },
+  "ruleLabels": {
+    "config": {
+      "consumer": {
+        "prefetch_misconfig": "Prefetch de consumidor mal configurado"
+      },
+      "exchange": {
+        "orphan": "Exchange huérfano"
+      },
+      "node": {
+        "watermark_misconfig": "Marca de agua de memoria mal configurada"
+      },
+      "policy": {
+        "conflicting": "Políticas en conflicto"
+      },
+      "queue": {
+        "classic_mirrored_deprecated": "Cola clásica reflejada (obsoleta)",
+        "exclusive_in_production": "Cola exclusiva en producción",
+        "missing_dlx": "Dead letter exchange faltante",
+        "no_consumer_backlog": "Sin protección de acumulación",
+        "quorum_queue_ha_policy": "Política HA en cola quórum",
+        "quorum_queue_minority_replicas": "Réplicas minoritarias en cola quórum",
+        "quorum_queue_no_delivery_limit": "Cola quórum sin límite de entrega"
+      },
+      "user": {
+        "guest_enabled": "Usuario invitado habilitado"
+      },
+      "vhost": {
+        "default_unscoped": "Tráfico de producción en el vhost predeterminado"
+      }
+    }
   }
 }

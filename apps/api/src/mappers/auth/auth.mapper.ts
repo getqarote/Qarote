@@ -20,7 +20,6 @@ export class UserMapper {
       image: user.image ?? null,
       firstName: user.firstName,
       lastName: user.lastName,
-      role: user.role,
       workspaceId: user.workspaceId,
       isActive: user.isActive,
       emailVerified: user.emailVerified,

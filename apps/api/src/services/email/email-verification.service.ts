@@ -3,8 +3,10 @@ import { addHours } from "date-fns";
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
+import { enqueueNotification } from "@/services/notification/notification-outbox.service";
+
 import { EncryptionService } from "../encryption.service";
-import { EmailService } from "./email.service";
+import { CoreEmailService } from "./core-email.service";
 
 import type { User } from "@/generated/prisma/client";
 
@@ -73,38 +75,44 @@ export class EmailVerificationService {
         "Sending verification email"
       );
 
-      const result = await EmailService.sendVerificationEmail({
-        to: email,
-        userName,
-        verificationToken: token,
-        type,
-        sourceApp,
-        locale,
-      });
-
-      if (!result.success) {
-        logger.error(
-          {
-            email,
-            type,
-            error: result.error,
-          },
-          "Failed to send verification email"
+      // In self-hosted deployments without SMTP configured, skip enqueue
+      // entirely. Otherwise the outbox accumulates FAILED rows that no one
+      // ever drains successfully, drowning real ops alerts.
+      const effectiveEmail = await CoreEmailService.loadEffectiveConfig();
+      if (!effectiveEmail.enabled) {
+        logger.info(
+          { email, type },
+          "Verification email skipped — SMTP not enabled"
         );
-        return {
-          success: false,
-          error: result.error || "Failed to send verification email",
-        };
+        return { success: false, error: "Email is not enabled" };
       }
 
-      logger.info(
-        {
-          email,
+      // Idempotency key tied to the token: a re-send (resend button)
+      // generates a new token via generateVerificationToken (which deletes
+      // the old one), so each token gets exactly one outbox row. Stripe-
+      // style retries from the request layer collapse on the unique key.
+      const enqueued = await enqueueNotification({
+        channel: "email",
+        template: "verification",
+        target: email,
+        idempotencyKey: `email:verification:${token}`,
+        payload: {
+          userName,
+          verificationToken: token,
           type,
-          messageId: result.messageId,
+          sourceApp,
+          locale,
         },
-        "Verification email sent successfully"
-      );
+      });
+
+      if (!enqueued) {
+        logger.debug(
+          { email, type },
+          "Verification email already enqueued — skipping"
+        );
+      }
+
+      logger.info({ email, type, enqueued }, "Verification email enqueued");
 
       return { success: true };
     } catch (error) {
@@ -255,30 +263,41 @@ export class EmailVerificationService {
           );
         }
 
-        // Send welcome email after successful email verification
+        // Enqueue welcome email after successful email verification.
+        // Idempotency key tied to user — once-per-user verification path.
         try {
-          await EmailService.sendWelcomeEmail({
-            to: updatedUser.email,
-            name: updatedUser.firstName || updatedUser.email,
-            plan: updatedUser.subscription?.plan || "FREE",
-            trialDaysRemaining,
-            trialEndDate,
-            locale,
-          });
+          const welcomeEmailConfig =
+            await CoreEmailService.loadEffectiveConfig();
+          if (!welcomeEmailConfig.enabled) {
+            logger.debug(
+              { userId: updatedUser.id },
+              "Welcome email skipped — SMTP not enabled"
+            );
+          } else {
+            await enqueueNotification({
+              channel: "email",
+              template: "auth_welcome",
+              target: updatedUser.email,
+              idempotencyKey: `email:user:${updatedUser.id}:auth_welcome`,
+              payload: {
+                name: updatedUser.firstName || updatedUser.email,
+                plan: updatedUser.subscription?.plan || "FREE",
+                trialDaysRemaining,
+                trialEndDate,
+                locale,
+              },
+            });
 
-          logger.info(
-            {
-              userId: updatedUser.id,
-              email: updatedUser.email,
-            },
-            "Welcome email sent after email verification"
-          );
+            logger.info(
+              { userId: updatedUser.id, email: updatedUser.email },
+              "Welcome email enqueued after email verification"
+            );
+          }
         } catch (emailError) {
           logger.error(
             { error: emailError, userId: updatedUser.id },
-            "Failed to send welcome email after email verification"
+            "Failed to enqueue welcome email after email verification"
           );
-          // Don't fail the verification if welcome email fails
         }
       } else if (type === "EMAIL_CHANGE") {
         // Update user's email to the new verified email

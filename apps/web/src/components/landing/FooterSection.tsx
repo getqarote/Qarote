@@ -86,12 +86,69 @@ const FooterSection = ({ currentLocale = "en" }: FooterSectionProps) => {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log(
-      "%c Qarote %c built by devs, for RabbitMQ operators. We're hiring → getqarote/careers",
-      "background:#c2410c;color:#fff;padding:3px 8px;border-radius:3px;font-weight:600",
-      "color:#888;padding:3px 6px"
-    );
+    if (!import.meta.env.DEV) return;
+
+    const style =
+      "color:#c2410c;font-family:monospace;line-height:1.4;font-size:13px";
+    const arm = [
+      [
+        "    /\\ /\\   ",
+        "   ( o.o )  ",
+        "   =( Y )=  ",
+        "    )   (\\  ",
+        "   (_)-(_)  ",
+      ],
+      [
+        "    /\\ /\\  o/",
+        "   ( o.o )/  ",
+        "   =( Y )=   ",
+        "    )   (    ",
+        "   (_)-(_)   ",
+      ],
+    ];
+    const sequence = [0, 1, 0, 1, 0, 1, 0, 1];
+
+    let fi = 0;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const id = setInterval(() => {
+      console.clear(); // eslint-disable-line no-console
+      console.log("%c" + ["", ...arm[sequence[fi]], ""].join("\n"), style); // eslint-disable-line no-console
+      fi++;
+      if (fi >= sequence.length) {
+        clearInterval(id);
+        timeoutId = setTimeout(() => {
+          console.clear(); // eslint-disable-line no-console
+          // eslint-disable-next-line no-console
+          console.log(
+            "%c" +
+              [
+                "",
+                "    /\\ /\\  ",
+                "   ( ^.^ ) ",
+                "   =( Y )= ",
+                "    )   (  ",
+                "   (_)-(_) ",
+                "",
+                "      Hi! 👋",
+                "",
+              ].join("\n"),
+            style
+          );
+          // eslint-disable-next-line no-console
+          console.log(
+            "%c Qarote %c built by devs, for RabbitMQ operators. Star us on GitHub ↓",
+            "background:#c2410c;color:#fff;padding:3px 8px;border-radius:3px;font-weight:600",
+            "color:#888;padding:3px 6px"
+          );
+          console.log("https://github.com/getqarote/qarote"); // eslint-disable-line no-console
+        }, 300);
+      }
+    }, 200);
+
+    return () => {
+      clearInterval(id);
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   return (
