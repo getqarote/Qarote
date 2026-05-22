@@ -49,13 +49,37 @@ test.describe("RBAC — Sidebar server actions @p1", () => {
     adminPage,
     db,
   }) => {
-    // Seed a server so the sidebar renders the server-selector <Select>
-    // instead of the no-server empty-state button. The RequirePermission
-    // ("server:create") gate only lives inside the combobox.
+    // Seed a DEVELOPER-plan Subscription so canAddServer=true after adding the
+    // server below. FREE plan caps maxServers at 1; with 1 server already
+    // seeded, canAddServer=false and the {canAddServer && <RequirePermission>}
+    // block never renders — making the assertion vacuous for both roles.
+    // getOrgPlan() reads Subscription directly (no API-side cache).
     const prisma = await db.getClient();
+    const admin = await prisma.user.findUnique({
+      where: { email: "admin@e2e-test.local" },
+    });
+    expect(admin, "Seeded admin user not found").toBeTruthy();
     const workspace = await prisma.workspace.findFirst({
       where: { name: "E2E Test Workspace" },
     });
+    expect(workspace, "Seeded E2E workspace not found").toBeTruthy();
+    const subscription = await prisma.subscription.create({
+      data: {
+        stripeSubscriptionId: `sub_e2e_rbac_admin_${Date.now()}`,
+        stripePriceId: "price_e2e_developer",
+        stripeCustomerId: "cus_e2e_test",
+        status: "ACTIVE",
+        billingInterval: "YEAR",
+        pricePerMonth: "29",
+        currentPeriodStart: new Date("2025-01-01"),
+        currentPeriodEnd: new Date("2099-12-31"),
+        userId: admin!.id,
+        organizationId: workspace!.organizationId,
+        plan: "DEVELOPER",
+      },
+    });
+    db.track("Subscription", subscription.id);
+
     const server = await prisma.rabbitMQServer.create({
       data: {
         name: "RBAC Test Server",
@@ -90,14 +114,35 @@ test.describe("RBAC — Sidebar server actions @p1", () => {
     readonlyPage,
     db,
   }) => {
-    // Seed a server so the sidebar renders the server-selector <Select>.
-    // Without a server the combobox never mounts and the assertion would be
-    // vacuously true — seeding here ensures RequirePermission is actually
-    // exercised and gatekeeping the SelectItem for READONLY.
+    // Same DEVELOPER Subscription + server seed as the admin test above.
+    // Without it the combobox never mounts (no servers) or the Add Server
+    // option never renders (FREE plan cap), and the assertion is vacuous.
     const prisma = await db.getClient();
+    const admin = await prisma.user.findUnique({
+      where: { email: "admin@e2e-test.local" },
+    });
+    expect(admin, "Seeded admin user not found").toBeTruthy();
     const workspace = await prisma.workspace.findFirst({
       where: { name: "E2E Test Workspace" },
     });
+    expect(workspace, "Seeded E2E workspace not found").toBeTruthy();
+    const subscription = await prisma.subscription.create({
+      data: {
+        stripeSubscriptionId: `sub_e2e_rbac_readonly_${Date.now()}`,
+        stripePriceId: "price_e2e_developer",
+        stripeCustomerId: "cus_e2e_test",
+        status: "ACTIVE",
+        billingInterval: "YEAR",
+        pricePerMonth: "29",
+        currentPeriodStart: new Date("2025-01-01"),
+        currentPeriodEnd: new Date("2099-12-31"),
+        userId: admin!.id,
+        organizationId: workspace!.organizationId,
+        plan: "DEVELOPER",
+      },
+    });
+    db.track("Subscription", subscription.id);
+
     const server = await prisma.rabbitMQServer.create({
       data: {
         name: "RBAC Test Server",
@@ -140,7 +185,9 @@ test.describe("RBAC — Team tab: member list @p2", () => {
   test("admin sees both seeded members in the member list", async ({
     adminPage,
   }) => {
-    await adminPage.goto("/settings/team");
+    // Use the canonical URL — /settings/team is a client-side redirect that
+    // only resolves after React hydrates, making it unreliable under load.
+    await adminPage.goto("/settings/members");
     await adminPage.waitForLoadState("domcontentloaded");
 
     await expect(
@@ -153,7 +200,7 @@ test.describe("RBAC — Team tab: member list @p2", () => {
   });
 
   test("admin sees role badges for members", async ({ adminPage }) => {
-    await adminPage.goto("/settings/team");
+    await adminPage.goto("/settings/members");
     await adminPage.waitForLoadState("domcontentloaded");
 
     // Narrow to the dedicated test id so we don't false-pass on any badge
