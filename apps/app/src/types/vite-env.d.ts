@@ -18,6 +18,6 @@ interface Window {
     apiUrl?: string;
     portalUrl?: string;
     demoMode?: string;
-    deploymentMode?: "cloud" | "selfhosted" | "";
+    deploymentMode?: string;
   };
 }

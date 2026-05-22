@@ -232,23 +232,21 @@ cp .env.selfhosted.example .env
 #    - POSTGRES_PASSWORD, JWT_SECRET, ENCRYPTION_KEY (generate with `openssl rand -hex 32`)
 #    - VITE_API_URL, VITE_PORTAL_URL (the URLs your browser will use)
 #    - GHCR_ROBOT_USERNAME, GHCR_ROBOT_TOKEN (from your license email)
-#    - QAROTE_VERSION (e.g. v1.2.3, or `latest` to track the newest release)
+#    - QAROTE_VERSION (e.g. 1.2.3, or `latest` to track the newest release)
 
 # 3. Authenticate Docker to GHCR (one-time per host)
 echo "${GHCR_ROBOT_TOKEN}" | docker login ghcr.io -u "${GHCR_ROBOT_USERNAME}" --password-stdin
 
 # 4. Pull and start (Docker Compose auto-loads .env from the current directory)
+#    Migrations apply automatically on backend startup — no manual step needed.
 docker compose -f docker-compose.selfhosted-ee.yml up -d
 
-# 5. Run migrations
-docker exec qarote_backend pnpm run db:migrate
-
-# 6. Access application
+# 5. Access application
 # Frontend: http://localhost:8080
 # Backend API: http://localhost:3000
 ```
 
-**Pinning a version.** Set `QAROTE_VERSION=v1.2.3` in your `.env` to pin both `qarote-ee-api` and `qarote-ee-app` to a specific release. We publish new tags for every release; `latest` always tracks the newest stable tag. For air-gapped or change-controlled environments, **always pin** rather than tracking `latest`.
+**Pinning a version.** Set `QAROTE_VERSION=1.2.3` in your `.env` to pin both `qarote-ee-api` and `qarote-ee-app` to a specific release. We publish new tags for every release; `latest` always tracks the newest stable tag. For air-gapped or change-controlled environments, **always pin** rather than tracking `latest`.
 
 **Runtime configuration.** The frontend image is built without baking `VITE_API_URL` or `VITE_PORTAL_URL`, so a single published image works for any tenant's domain. At container start, the nginx entrypoint generates `/usr/share/nginx/html/config.js` from the values in your `.env`. To change either URL post-deploy, edit `.env` and `docker compose ... up -d` to restart the frontend container — no rebuild needed.
 
@@ -734,10 +732,14 @@ No rebuild — just pull the new images and restart:
 # Otherwise this re-resolves the `latest` tag.
 docker compose -f docker-compose.selfhosted-ee.yml pull
 docker compose -f docker-compose.selfhosted-ee.yml up -d
-docker exec qarote_backend pnpm run db:migrate
+# Migrations apply automatically on backend startup.
 ```
 
-If `docker compose pull` fails with `unauthorized`, your `GHCR_ROBOT_TOKEN` may have rotated — check your latest license email for refreshed credentials and re-run `docker login ghcr.io -u $GHCR_ROBOT_USERNAME --password-stdin`.
+If `docker compose pull` fails with `unauthorized`, your `GHCR_ROBOT_TOKEN` may have rotated — check your latest license email for refreshed credentials and re-run:
+
+```bash
+echo "${GHCR_ROBOT_TOKEN}" | docker login ghcr.io -u "${GHCR_ROBOT_USERNAME}" --password-stdin
+```
 
 ### Dokku
 
