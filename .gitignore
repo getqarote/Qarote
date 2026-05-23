@@ -86,3 +86,6 @@ apps/api/src/generated/
 # eval-result.json is uploaded as a CI artifact; not committed.
 apps/api/src/ee/services/llm/__evals__/eval-result.json
 apps/api/src/ee/services/llm/__evals__/.promptfoo/
+
+# graphify — knowledge graph outputs (large, rebuilt on demand).
+graphify-out/
