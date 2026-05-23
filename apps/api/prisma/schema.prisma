@@ -472,6 +472,21 @@ model MessageTraceEvent {
   /// lets Postgres seek by the leading equality+range and apply ANY() as an
   /// index-only filter — no heap visits unless the messageId matches.
   @@index([serverId, vhost, direction, timestamp, messageId])
+  /// NOTE: A PARTIAL sibling index `MessageTraceEvent_unrouted_partial_idx`
+  /// supporting unrouted-publishes Query B (#firehose-evidence Phase 3 #4)
+  /// is created via raw SQL in the migration
+  /// `20260523130000_add_unrouted_publishes_index`:
+  ///   CREATE INDEX "MessageTraceEvent_unrouted_partial_idx"
+  ///     ON "MessageTraceEvent" ("serverId","vhost","direction","messageId","timestamp")
+  ///     WHERE "messageId" IS NOT NULL;
+  /// Prisma cannot express partial indexes via `@@index`, and we want the
+  /// WHERE clause to skip the cost of indexing untagged firehose rows
+  /// (which the per-row NOT EXISTS subquery never seeks). This sibling
+  /// of the #12 index reverses the column order so messageId leads the
+  /// seek (single-value equality per outer row) with timestamp trailing
+  /// as a range. Both indexes coexist because each supports a distinct
+  /// production access pattern. Mirrors the partial-index documentation
+  /// pattern used for Alert + Role above.
   @@index([timestamp])
 }
 
