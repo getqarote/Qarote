@@ -1,0 +1,22 @@
+-- Composite index supporting the pipeline-inference fetcher's step-2
+-- access pattern (firehose-evidence Phase 3 #12). The query takes a
+-- bounded set of recent publish messageIds (≤ 200) and counts deliver
+-- events on the same server+vhost grouped by source queue, within the
+-- last 10 minutes.
+--
+-- The 5 existing MessageTraceEvent indexes do NOT cover this access
+-- pattern: none has messageId in the key. Without this index Postgres
+-- range-scans [serverId, direction, timestamp] (~600 k rows at 1000
+-- deliver/s × 600 s on a busy server), heap-fetches each row, and
+-- applies messageId = ANY(...) as a post-filter — blowing the 300 ms
+-- statement_timeout in production.
+--
+-- The trailing messageId column lets the planner seek by
+-- (serverId, vhost, direction, timestamp range) and evaluate
+-- messageId = ANY(...) as an index-only filter — no heap visits unless
+-- the messageId actually matches.
+--
+-- Write cost: one btree insert per firehose row, same shape as the 5
+-- existing MessageTraceEvent composite indexes.
+CREATE INDEX "MessageTraceEvent_serverId_vhost_direction_timestamp_messageId_idx"
+  ON "MessageTraceEvent" ("serverId", "vhost", "direction", "timestamp", "messageId");

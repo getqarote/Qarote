@@ -466,6 +466,12 @@ model MessageTraceEvent {
   /// back to a heap sort of the queue+direction filtered rowset, which
   /// blows the 300ms statement_timeout on busy queues.
   @@index([serverId, vhost, queueName, direction, cursorId])
+  /// Supports pipeline-inference step-2 (#firehose-evidence Phase 3 #12):
+  /// `WHERE serverId = ? AND vhost = ? AND direction = 'deliver' AND
+  ///  timestamp >= now() - 10min AND messageId = ANY(?)`. Trailing messageId
+  /// lets Postgres seek by the leading equality+range and apply ANY() as an
+  /// index-only filter — no heap visits unless the messageId matches.
+  @@index([serverId, vhost, direction, timestamp, messageId])
   @@index([timestamp])
 }
 
