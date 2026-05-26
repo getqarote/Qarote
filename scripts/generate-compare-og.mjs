@@ -21,6 +21,17 @@ const FONT_URL = "https://fonts.gstatic.com/s/bricolagegrotesque/v7/3y9U6as8bTXq
 
 const cards = [
   {
+    // Default OG / social-share card for the whole site (referenced by
+    // BaseLayout as the fallback `image`). V2 wedge tagline — replaces the
+    // old "modern monitoring console" V1 pitch.
+    title: "Stop debugging RabbitMQ at 3 AM",
+    subtitle:
+      "The AI that diagnoses your incidents · No SRE required · Self-hosted",
+    badge: "AI Diagnostics",
+    accent: "#FF691B",
+    out: "qarote_card.jpg",
+  },
+  {
     title: "Qarote vs Datadog",
     subtitle: "RabbitMQ-native monitoring · Free & open-source core · Self-hosted",
     badge: "Datadog Alternative",
