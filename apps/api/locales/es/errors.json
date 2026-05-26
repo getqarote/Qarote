@@ -241,14 +241,6 @@
     "failedToUpdateSlackConfig": "Error al actualizar la configuración de Slack",
     "failedToDeleteSlackConfig": "Error al eliminar la configuración de Slack"
   },
-  "feedback": {
-    "failedToSubmit": "Error al enviar los comentarios",
-    "failedToFetch": "Error al obtener los comentarios",
-    "notFound": "Comentarios no encontrados",
-    "failedToUpdate": "Error al actualizar los comentarios",
-    "failedToDelete": "Error al eliminar los comentarios",
-    "failedToGetStats": "Error al obtener las estadísticas de comentarios"
-  },
   "discord": {
     "failedToUpdateStatus": "Error al actualizar el estado de Discord",
     "failedToFetchStatus": "Error al obtener el estado de Discord"

@@ -33,10 +33,6 @@ test.describe("Settings Navigation @p2", () => {
     await expect(adminPage.getByRole("link", { name: /sso/i })).toBeVisible();
     await expect(adminPage.getByRole("link", { name: /email/i })).toBeVisible();
 
-    // Feedback
-    await expect(
-      adminPage.getByRole("link", { name: /feedback/i })
-    ).toBeVisible();
   });
 
   test("should hide admin-only sections for readonly user", async ({
@@ -88,9 +84,6 @@ test.describe("Settings Navigation @p2", () => {
     await adminPage.getByRole("link", { name: /team/i }).click();
     await expect(adminPage).toHaveURL(/\/settings\/team/);
 
-    // Click feedback link
-    await adminPage.getByRole("link", { name: /feedback/i }).click();
-    await expect(adminPage).toHaveURL(/\/settings\/feedback/);
   });
 
   test("should highlight active section in sidebar", async ({ adminPage }) => {

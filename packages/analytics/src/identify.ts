@@ -7,7 +7,7 @@
  * attribution like signup_referral_source).
  */
 
-import type { AcquisitionChannel, PlanTier } from "./events";
+import type { AcquisitionChannel, PlanTier } from "./events.js";
 
 export interface IdentifyUserInput {
   id: string;

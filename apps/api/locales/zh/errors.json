@@ -241,14 +241,6 @@
     "failedToUpdateSlackConfig": "更新 Slack 配置失败",
     "failedToDeleteSlackConfig": "删除 Slack 配置失败"
   },
-  "feedback": {
-    "failedToSubmit": "提交反馈失败",
-    "failedToFetch": "获取反馈失败",
-    "notFound": "未找到反馈",
-    "failedToUpdate": "更新反馈失败",
-    "failedToDelete": "删除反馈失败",
-    "failedToGetStats": "获取反馈统计数据失败"
-  },
   "discord": {
     "failedToUpdateStatus": "更新 Discord 状态失败",
     "failedToFetchStatus": "获取 Discord 状态失败"

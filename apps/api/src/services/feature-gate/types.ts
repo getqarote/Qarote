@@ -8,19 +8,19 @@
  * gated UI surface. Resolution order is fixed: capability → license → plan.
  */
 
-import type { PremiumFeature } from "@/config/features";
+import type { CapabilityOnlyFeature, PremiumFeature } from "@/config/features";
 
 import type { UserPlan } from "@/generated/prisma/client";
 
 /**
- * Logical product features that can be gated. Aliased to the existing
- * `PremiumFeature` set so the gate system covers the same surface as the
- * legacy `isFeatureEnabled` / `requirePremiumFeature` helpers.
- *
- * Capability-only features (without a license-tier requirement) still use
- * this enum — their per-feature config simply marks `licenseRequired: false`.
+ * Logical product features that can be gated. The superset of EE-licensed
+ * features (`PremiumFeature`) and capability-only features
+ * (`CapabilityOnlyFeature` — free, but still capability-gated, e.g.
+ * `incident_diagnosis`). The license/plan axes only act on `PremiumFeature`
+ * members; capability-only keys resolve to `licenseRequired: false` in the
+ * gate config and are gated purely on the capability axis.
  */
-export type FeatureKey = PremiumFeature;
+export type FeatureKey = PremiumFeature | CapabilityOnlyFeature;
 
 /**
  * Per-broker-object subject the gate is being evaluated against.

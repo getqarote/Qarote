@@ -37,8 +37,5 @@ test.describe("Workspace Member Management @p1", () => {
     ).toBeVisible();
     await expect(adminPage.getByRole("link", { name: /plans/i })).toBeVisible();
     await expect(adminPage.getByRole("link", { name: /team/i })).toBeVisible();
-    await expect(
-      adminPage.getByRole("link", { name: /feedback/i })
-    ).toBeVisible();
   });
 });

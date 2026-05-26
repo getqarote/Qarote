@@ -258,14 +258,6 @@
     "failedToUpdateSlackConfig": "Failed to update Slack configuration",
     "failedToDeleteSlackConfig": "Failed to delete Slack configuration"
   },
-  "feedback": {
-    "failedToSubmit": "Failed to submit feedback",
-    "failedToFetch": "Failed to fetch feedback",
-    "notFound": "Feedback not found",
-    "failedToUpdate": "Failed to update feedback",
-    "failedToDelete": "Failed to delete feedback",
-    "failedToGetStats": "Failed to get feedback stats"
-  },
   "discord": {
     "failedToUpdateStatus": "Failed to update Discord status",
     "failedToFetchStatus": "Failed to fetch Discord status"

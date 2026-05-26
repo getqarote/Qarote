@@ -247,5 +247,26 @@
   "versionSupportFreeHint": "升级到 Developer 或 Enterprise，即可连接 3.0 到 4.x 的所有版本，包括非 LTS 版本。",
   "versionSupportUnsupportedHint": "连接到不支持的版本将被拒绝。",
   "managementPluginRequired": "需要 Management 插件",
-  "managementPluginRequiredHint": "请确保已启用 RabbitMQ Management 插件。Management API 端口（默认 15672）与 AMQP 端口（5672）不同。"
+  "managementPluginRequiredHint": "请确保已启用 RabbitMQ Management 插件。Management API 端口（默认 15672）与 AMQP 端口（5672）不同。",
+  "messageIdCoverage": {
+    "label": "messageId 覆盖率",
+    "whyThisMatters": "为什么这很重要",
+    "whyAriaLabel": "为什么这很重要：messageId 覆盖率层级",
+    "popover": {
+      "heading": "messageId 覆盖率层级",
+      "tier1": {
+        "range": "0–30%",
+        "desc": "仅基础诊断引擎"
+      },
+      "tier2": {
+        "range": "30–70%",
+        "desc": "+ 排队延迟百分位数"
+      },
+      "tier3": {
+        "range": "70%+",
+        "desc": "+ 管道推断、投递时延、未路由消息检测"
+      },
+      "footer": "更高的覆盖率可解锁更深入的诊断。"
+    }
+  }
 }

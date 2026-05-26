@@ -241,14 +241,6 @@
     "failedToUpdateSlackConfig": "Échec de la mise à jour de la configuration Slack",
     "failedToDeleteSlackConfig": "Échec de la suppression de la configuration Slack"
   },
-  "feedback": {
-    "failedToSubmit": "Échec de l'envoi du retour d'expérience",
-    "failedToFetch": "Échec de la récupération des retours d'expérience",
-    "notFound": "Retour d'expérience introuvable",
-    "failedToUpdate": "Échec de la mise à jour du retour d'expérience",
-    "failedToDelete": "Échec de la suppression du retour d'expérience",
-    "failedToGetStats": "Échec de la récupération des statistiques de retours d'expérience"
-  },
   "discord": {
     "failedToUpdateStatus": "Échec de la mise à jour du statut Discord",
     "failedToFetchStatus": "Échec de la récupération du statut Discord"

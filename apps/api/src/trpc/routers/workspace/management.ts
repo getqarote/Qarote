@@ -308,7 +308,7 @@ export const managementRouter = router({
           // If this is the user's first workspace (they don't have a
           // workspaceId), assign them to it. Do NOT touch User.role —
           // that's the platform-scoped role used to gate Qarote-staff
-          // features (feedback triage, self-hosted setup). Granting
+          // features (self-hosted setup). Granting
           // platform ADMIN to every signup would let regular users hit
           // those cross-tenant endpoints (rbac.md §2.3, §10 carve-out).
           if (!user.workspaceId) {
@@ -602,9 +602,6 @@ export const managementRouter = router({
             data: { workspaceId: null },
           });
           await tx.rabbitMQServer.deleteMany({
-            where: { workspaceId },
-          });
-          await tx.feedback.deleteMany({
             where: { workspaceId },
           });
           await tx.workspace.delete({

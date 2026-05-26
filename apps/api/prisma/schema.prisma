@@ -125,34 +125,6 @@ model EmailVerificationToken {
   @@index([userId])
 }
 
-model Feedback {
-  id            String           @id @default(uuid())
-  type          FeedbackType
-  category      FeedbackCategory
-  title         String           @db.VarChar(100)
-  description   String
-  priority      FeedbackPriority @default(MEDIUM)
-  status        FeedbackStatus   @default(OPEN)
-  email         String?          @db.VarChar(255)
-  metadata      Json?
-  userId        String?
-  workspaceId   String?
-  response      String?
-  respondedById String?
-  respondedAt   DateTime?
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  respondedBy   User?            @relation("Feedback_respondedByIdToUser", fields: [respondedById], references: [id])
-  user          User?            @relation("Feedback_userIdToUser", fields: [userId], references: [id])
-  workspace     Workspace?       @relation(fields: [workspaceId], references: [id])
-
-  @@index([createdAt], map: "feedback_created_at_idx")
-  @@index([priority], map: "feedback_priority_idx")
-  @@index([status], map: "feedback_status_idx")
-  @@index([type], map: "feedback_type_idx")
-  @@index([workspaceId], map: "feedback_workspace_idx")
-}
-
 model Invitation {
   id               String           @id @default(uuid())
   email            String
@@ -311,8 +283,6 @@ model User {
   alerts                  Alert[]
   alertRules              AlertRule[]
   emailVerificationTokens EmailVerificationToken[]
-  feedbackRespondedBy     Feedback[]               @relation("Feedback_respondedByIdToUser")
-  feedback                Feedback[]               @relation("Feedback_userIdToUser")
   invitationsSent         Invitation[]             @relation("Invitation_invitedByIdToUser")
   invitationsReceived     Invitation[]             @relation("Invitation_invitedUserIdToUser")
   invitationsAccepted     Invitation[]             @relation("Invitation_acceptedByIdToUser")
@@ -406,7 +376,6 @@ model Workspace {
   licenseTier                   UserPlan?
   alerts                        Alert[]
   alertRules                    AlertRule[]
-  feedback                      Feedback[]
   invitations                   Invitation[]
   servers                       RabbitMQServer[]
   users                         User[]
@@ -952,35 +921,6 @@ enum ComparisonOperator {
   LESS_THAN
   EQUALS
   NOT_EQUALS
-}
-
-enum FeedbackCategory {
-  UI_UX
-  PERFORMANCE
-  SECURITY
-  FUNCTIONALITY
-  DOCUMENTATION
-  OTHER
-}
-
-enum FeedbackPriority {
-  LOW
-  MEDIUM
-  HIGH
-}
-
-enum FeedbackStatus {
-  OPEN
-  IN_PROGRESS
-  RESOLVED
-  CLOSED
-}
-
-enum FeedbackType {
-  BUG
-  FEATURE
-  GENERAL
-  IMPROVEMENT
 }
 
 enum InvitationStatus {

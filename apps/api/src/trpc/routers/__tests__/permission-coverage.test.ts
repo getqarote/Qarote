@@ -56,8 +56,8 @@ const PERMISSION_EXEMPT_PROCEDURES: ReadonlyMap<string, string> = new Map([
  *   separately by org role
  * - planValidationProcedure: org-level plan check
  * - rateLimitedAdminProcedure / strictRateLimitedAdminProcedure /
- *   billingRateLimitedAdminProcedure: platform-staff features (feedback,
- *   selfhosted-*) — kept until staffSupportProcedure ships
+ *   billingRateLimitedAdminProcedure: platform-staff features (selfhosted-*)
+ *   — kept until staffSupportProcedure ships
  * - rateLimitedPublicProcedure: public auth flows
  * - rateLimitedOrgProcedure / strictRateLimitedOrgProcedure /
  *   rateLimitedOrgAdminProcedure / strictRateLimitedOrgAdminProcedure /
@@ -93,7 +93,6 @@ const WORKSPACE_PERMISSION_BASES = new Set([
  * staffSupportProcedure ships (rbac.md §4 / §10).
  */
 const SKIPPED_FILES = new Set([
-  join(REPO_ROOT, "src", "trpc", "routers", "feedback.ts"),
   join(REPO_ROOT, "src", "trpc", "routers", "selfhosted-license.ts"),
   join(REPO_ROOT, "src", "trpc", "routers", "selfhosted-smtp.ts"),
   join(REPO_ROOT, "src", "trpc", "routers", "sso.ts"),

@@ -2,7 +2,6 @@ import { auditRouter } from "./routers/audit";
 import { authRouter } from "./routers/auth/index";
 import { discordRouter } from "./routers/discord";
 import { featureGateRouter } from "./routers/feature-gate";
-import { feedbackRouter } from "./routers/feedback";
 import { organizationRouter } from "./routers/organization/index";
 import { paymentRouter } from "./routers/payment/index";
 import { licenseRouter } from "./routers/portal/license";
@@ -26,7 +25,6 @@ export const appRouter = router({
   user: userRouter,
   workspace: workspaceRouter,
   organization: organizationRouter,
-  feedback: feedbackRouter,
   featureGate: featureGateRouter,
   license: licenseRouter,
   payment: paymentRouter,

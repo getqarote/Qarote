@@ -84,23 +84,17 @@ jobs:
           ssh dokku@${{ vars.DOKKU_HOST_APP1 }} apps:create ${{ env.APP_NAME }} || \
             echo "App already exists or creation failed"
 
-      - name: 🔗 Link to staging database
+      # All config is applied with --no-restart, and env vars are set BEFORE
+      # the database link. This job only stages config; the worker is actually
+      # booted once by the deploy-worker job's git push, with the complete
+      # config in place. Restarting here (the old behaviour) booted the
+      # container with a partial env — every config:set restarted it before
+      # JWT_SECRET/HOST/PORT were set, so it crash-looped the healthcheck.
+      # Batching also stops the env-injection image from stacking a layer per
+      # config:set, which is what produced the earlier "max depth exceeded".
+      - name: 📝 Configure Environment Variables (no restart)
         run: |
-          echo "Removing any stale DATABASE_URL..."
-          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} config:unset ${{ env.APP_NAME }} DATABASE_URL || \
-            echo "DATABASE_URL not set (this is OK)"
-          echo "Linking worker app to staging database (rabbit-hq-db)..."
-          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} postgres:link rabbit-hq-db ${{ env.APP_NAME }} || \
-            echo "Database link may already exist (this is OK)"
-          echo "Ensuring DATABASE_URL is set from postgres link..."
-          DATABASE_URL=$(ssh dokku@${{ vars.DOKKU_HOST_APP1 }} config:get ${{ env.APP_NAME }} DOKKU_POSTGRES_AQUA_URL)
-          if [ -n "$DATABASE_URL" ]; then
-            ssh dokku@${{ vars.DOKKU_HOST_APP1 }} config:set ${{ env.APP_NAME }} DATABASE_URL="$DATABASE_URL"
-          fi
-
-      - name: 📝 Configure Environment Variables
-        run: |
-          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} config:set ${{ env.APP_NAME }} \
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} config:set --no-restart ${{ env.APP_NAME }} \
             DEPLOYMENT_MODE=${{ vars.DEPLOYMENT_MODE }} \
             DOMAIN_BACKEND=${{ vars.DOMAIN_BACKEND }} \
             DOMAIN_FRONTEND=${{ vars.DOMAIN_FRONTEND }} \
@@ -136,6 +130,18 @@ jobs:
             POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }} \
             POSTHOG_HOST=${{ vars.POSTHOG_HOST }}
           ssh dokku@${{ vars.DOKKU_HOST_APP1 }} "config:set --no-restart ${{ env.APP_NAME }} FROM_EMAIL='${{ vars.FROM_EMAIL }}'"
+
+      - name: 🔗 Link to staging database (no restart)
+        run: |
+          # postgres:link exposes DATABASE_URL on the app directly, so no
+          # re-derivation is needed. The previous code read
+          # DOKKU_POSTGRES_AQUA_URL — a var that does not exist for this
+          # service — which returned non-zero and aborted the step under
+          # `bash -e` once the earlier (env-ordering / max-depth) failures
+          # stopped masking it.
+          echo "Ensuring worker app is linked to staging database (rabbit-hq-db)..."
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} postgres:link rabbit-hq-db ${{ env.APP_NAME }} --no-restart || \
+            echo "Database already linked (this is OK)"
 
       - name: 🚫 Configure worker app to use app.worker.json
         run: |

@@ -116,6 +116,10 @@ const config: KnipConfig = {
     ".claire/**",
     // In-progress blog section component — not yet wired into the landing page
     "apps/web/src/components/landing/BlogSection.tsx",
+    // Daily Digest teaser — gated out of the frontend at launch (T5), kept in
+    // the tree (hide-don't-delete) for when Digest returns. Not rendered, so
+    // knip flags it; ignore until it's re-wired into Home.
+    "apps/app/src/components/home/HomePulse.tsx",
     // Feature-gate frontend primitives — wired via CapabilityGate +
     // ServerCapabilityBadge as of PR-B. The barrel + readGateError are
     // imported by error-driven render paths that knip can't trace; the

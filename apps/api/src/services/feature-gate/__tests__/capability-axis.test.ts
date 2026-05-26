@@ -11,7 +11,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { CapabilitySnapshot } from "@/services/feature-gate/capability-snapshot";
 
-import { FEATURES } from "@/config/features";
+import { CAPABILITY_FEATURES, FEATURES } from "@/config/features";
 
 // ── Mocks ────────────────────────────────────────────────────────────
 const mockGetServerCapabilities = vi.fn();
@@ -182,9 +182,12 @@ describe("resolveCapabilityAxis — INCIDENT_DIAGNOSIS", () => {
   it("returns degraded when no snapshot is older than the warmup window", async () => {
     mockGetServerCapabilities.mockResolvedValue(RMQ_3_12_OSS);
     mockSnapshotFindFirst.mockResolvedValueOnce(null);
-    const result = await resolveCapabilityAxis(FEATURES.INCIDENT_DIAGNOSIS, {
-      serverId: "srv_1",
-    });
+    const result = await resolveCapabilityAxis(
+      CAPABILITY_FEATURES.INCIDENT_DIAGNOSIS,
+      {
+        serverId: "srv_1",
+      }
+    );
     expect(result.kind).toBe("degraded");
     if (result.kind === "degraded") {
       expect(result.reasonKey).toBe("capability.diagnosis.warmingUp");
@@ -195,9 +198,12 @@ describe("resolveCapabilityAxis — INCIDENT_DIAGNOSIS", () => {
   it("returns ok once a snapshot older than the warmup window exists", async () => {
     mockGetServerCapabilities.mockResolvedValue(RMQ_3_12_OSS);
     mockSnapshotFindFirst.mockResolvedValueOnce({ id: "snap_old" });
-    const result = await resolveCapabilityAxis(FEATURES.INCIDENT_DIAGNOSIS, {
-      serverId: "srv_1",
-    });
+    const result = await resolveCapabilityAxis(
+      CAPABILITY_FEATURES.INCIDENT_DIAGNOSIS,
+      {
+        serverId: "srv_1",
+      }
+    );
     expect(result.kind).toBe("ok");
   });
 
@@ -206,9 +212,12 @@ describe("resolveCapabilityAxis — INCIDENT_DIAGNOSIS", () => {
     mockSnapshotFindFirst.mockRejectedValueOnce(
       new Error("connection refused")
     );
-    const result = await resolveCapabilityAxis(FEATURES.INCIDENT_DIAGNOSIS, {
-      serverId: "srv_1",
-    });
+    const result = await resolveCapabilityAxis(
+      CAPABILITY_FEATURES.INCIDENT_DIAGNOSIS,
+      {
+        serverId: "srv_1",
+      }
+    );
     expect(result.kind).toBe("ok");
   });
 });
@@ -241,10 +250,13 @@ describe("resolveCapabilityAxis — subject ignored for non-subject rules", () =
   it("INCIDENT_DIAGNOSIS ignores subject", async () => {
     mockGetServerCapabilities.mockResolvedValue(RMQ_3_12_OSS);
     mockSnapshotFindFirst.mockResolvedValueOnce({ id: "snap_old" });
-    const result = await resolveCapabilityAxis(FEATURES.INCIDENT_DIAGNOSIS, {
-      serverId: "srv_1",
-      subject: { kind: "queue", queueType: "stream" },
-    });
+    const result = await resolveCapabilityAxis(
+      CAPABILITY_FEATURES.INCIDENT_DIAGNOSIS,
+      {
+        serverId: "srv_1",
+        subject: { kind: "queue", queueType: "stream" },
+      }
+    );
     expect(result.kind).toBe("ok");
   });
 });

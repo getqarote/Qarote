@@ -69,6 +69,12 @@
     "explainError": "Impossible de générer l'explication — vérifiez votre connexion et réessayez.",
     "explainHelpful": "Cette explication était-elle utile ?"
   },
+  "step": {
+    "brokerRead": "Lecture de la topologie du broker…",
+    "queuesAnalyze": "Analyse des métriques de files…",
+    "firehose": "Corrélation des indices Firehose…",
+    "promptBuild": "Assemblage du contexte de diagnostic…"
+  },
   "metadata": {
     "analyzedAgo": "Analysé {{time}}",
     "snapshots": "{{count}} instantanés",
@@ -76,8 +82,9 @@
     "window": "Fenêtre de {{minutes}} min"
   },
   "empty": {
-    "title": "Aucune anomalie détectée",
-    "description": "Aucun schéma trouvé dans les {{minutes}} dernières minutes. Vos files semblent saines.",
+    "title": "Tout va bien — aucun incident en cours",
+    "description": "Quand quelque chose casse, Qarote diagnostique la cause racine et l'explique en clair — instantanément.",
+    "exploreDemo": "Explorer la démo avec des cas réalistes",
     "noSnapshots": "Pas encore d'historique de métriques",
     "noSnapshotsDescription": "Les instantanés sont collectés toutes les 5 minutes. Revenez dans quelques instants."
   },

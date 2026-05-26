@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
 
-import { RefreshCw, Zap } from "lucide-react";
+import { ExternalLink, RefreshCw, Zap } from "lucide-react";
 
 import { findingKey } from "@/lib/findingKey";
 import { formatRelativeAgo } from "@/lib/formatRelativeAgo";
@@ -116,7 +116,6 @@ function DiagnosisContent({
   });
 
   const isPreconditionFailed = errorCode === "PRECONDITION_FAILED";
-  const isForbidden = errorCode === "FORBIDDEN";
 
   const diagnoses = data?.diagnoses ?? [];
   // Backend reports failed Management API endpoints when the
@@ -214,15 +213,6 @@ function DiagnosisContent({
           </div>
         )}
 
-        {/* Forbidden — plan upgrade required (legacy — now soft-previewed) */}
-        {!isLoading && isForbidden && (
-          <div className="rounded-lg border border-border bg-card px-6 py-10 text-center space-y-2">
-            <p className="font-medium text-foreground">
-              {t("error.forbidden")}
-            </p>
-          </div>
-        )}
-
         {/* Precondition failed — no snapshots yet */}
         {!isLoading && isPreconditionFailed && (
           <div className="rounded-lg border border-border bg-card px-6 py-10 text-center space-y-2">
@@ -236,7 +226,7 @@ function DiagnosisContent({
         )}
 
         {/* Generic error */}
-        {!isLoading && error && !isPreconditionFailed && !isForbidden && (
+        {!isLoading && error && !isPreconditionFailed && (
           <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-6 py-8 text-center space-y-3">
             <p className="text-sm text-destructive">{t("error.generic")}</p>
             <Button variant="outline" size="sm" onClick={() => refetch()}>
@@ -266,11 +256,20 @@ function DiagnosisContent({
           diagnoses.length === 0 &&
           data &&
           !isPreview && (
-            <div className="rounded-lg border border-border bg-card px-6 py-10 text-center space-y-2">
+            <div className="rounded-lg border border-border bg-card px-6 py-10 text-center space-y-3">
               <p className="font-medium text-foreground">{t("empty.title")}</p>
-              <p className="text-sm text-muted-foreground">
-                {t("empty.description", { minutes: windowMinutes })}
+              <p className="mx-auto max-w-md text-sm text-muted-foreground">
+                {t("empty.description")}
               </p>
+              <a
+                href="https://demo.qarote.io"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline focus-visible:underline focus-visible:outline-none"
+              >
+                {t("empty.exploreDemo")}
+                <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+              </a>
             </div>
           )}
 

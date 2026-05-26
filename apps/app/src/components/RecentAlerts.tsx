@@ -19,7 +19,6 @@ import { useVHostContext } from "@/contexts/VHostContextDefinition";
 import { useRabbitMQAlerts } from "@/hooks/queries/useAlerts";
 import { useDiagnosis } from "@/hooks/queries/useDiagnosis";
 import { useUser } from "@/hooks/ui/useUser";
-import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 import { UserPlan } from "@/types/plans";
 
@@ -29,11 +28,11 @@ export const RecentAlerts = () => {
   const { selectedServerId } = useServerContext();
   const { selectedVHost } = useVHostContext();
   const { userPlan } = useUser();
-  const { hasFeature } = useFeatureFlags();
-  const hasDiagnosisFeature = hasFeature("incident_diagnosis");
 
+  // Diagnosis detection is free on every plan (CE/EE split) — fetch whenever
+  // a server is selected; only the AI Explain layer is gated elsewhere.
   const { data: diagnosisData } = useDiagnosis(selectedServerId, 120, {
-    enabled: hasDiagnosisFeature,
+    enabled: !!selectedServerId,
   });
   const diagnosisCount = diagnosisData?.diagnoses?.length ?? 0;
 
@@ -215,7 +214,7 @@ export const RecentAlerts = () => {
         {/* Diagnosis teaser — only shown when anomalies are active so that
             the link only appears when there is something actionable. Hiding it
             in the healthy-zero case keeps "color/links mean something" intact. */}
-        {hasDiagnosisFeature && diagnosisCount > 0 && (
+        {diagnosisCount > 0 && (
           <div className="mt-3 pt-3 border-t border-border">
             <Link
               to="/diagnosis"

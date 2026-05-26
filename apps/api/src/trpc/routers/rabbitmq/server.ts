@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 
 import { prisma } from "@/core/prisma";
 import { RabbitMQClient } from "@/core/rabbitmq";
@@ -774,7 +775,96 @@ export const serverRouter = router({
           : null,
       };
     }),
+
+  /**
+   * messageIdCoverage — passive UI stat for the server dashboard.
+   *
+   * Returns a discriminated union so the client narrows cleanly between
+   * "firehose off" (no signal possible) and "firehose on" (counts always
+   * present, defaulting to 0/0 for an idle broker per the helper contract
+   * in PR #163). The gate lives INSIDE the resolver — auth stays at
+   * `server:read` and EE-gated branches return the typed false shape
+   * instead of throwing, so the hook's error state surfaces real errors
+   * (auth, 500s) instead of masking them as "firehose off".
+   *
+   * Single-flight via `coverageInflight` Map: 100 concurrent requests
+   * for the same serverId fan to 1 helper call, not 100 DB hits. The
+   * helper itself only caches at Postgres (no in-process dedup) — see
+   * Backend Architect B2 in docs/internal/server-messageid-coverage-stat.md.
+   */
+  messageIdCoverage: workspacePermissionProcedure("server:read")
+    .input(GetServerInputSchema)
+    .output(
+      z.discriminatedUnion("firehoseEnabled", [
+        z.object({ firehoseEnabled: z.literal(false) }),
+        z.object({
+          firehoseEnabled: z.literal(true),
+          taggedPublishes: z.number().int().nonnegative(),
+          totalPublishes: z.number().int().nonnegative(),
+        }),
+      ])
+    )
+    .query(async ({ input, ctx }) => {
+      const { id: serverId, workspaceId } = input;
+
+      // Verify the server belongs to this workspace BEFORE invoking the
+      // coverage helper. `workspacePermissionProcedure("server:read")`
+      // only checks the caller has `server:read` on `workspaceId` — it
+      // does NOT validate that `serverId` is owned by that workspace.
+      // Without this check, a member of workspace A could pass a
+      // serverId from workspace B and read its coverage signal. Same
+      // ownership-check pattern as `getServer` above.
+      const server = await prisma.rabbitMQServer.findFirst({
+        where: { id: serverId, workspaceId },
+        select: { id: true },
+      });
+      if (!server) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: te(ctx.locale, "rabbitmq.serverNotFoundOrAccessDenied"),
+        });
+      }
+
+      return getMessageIdCoverageSingleFlight(serverId);
+    }),
 });
+
+/** Single-flight map for the messageId-coverage procedure. Collapses
+ * concurrent requests for the same serverId to a single helper call —
+ * the helper has Postgres caching only, no in-process deduplication. */
+const coverageInflight = new Map<
+  string,
+  Promise<
+    | { firehoseEnabled: false }
+    | { firehoseEnabled: true; taggedPublishes: number; totalPublishes: number }
+  >
+>();
+
+// Exported solely so the unit test can exercise the single-flight
+// behaviour without standing up the full tRPC harness. Not part of
+// the public router surface.
+export async function getMessageIdCoverageSingleFlight(
+  serverId: string
+): Promise<
+  | { firehoseEnabled: false }
+  | { firehoseEnabled: true; taggedPublishes: number; totalPublishes: number }
+> {
+  const existing = coverageInflight.get(serverId);
+  if (existing) return existing;
+
+  // CE has no firehose pipeline — message-ID coverage is EE-only.
+  const promise = Promise.resolve({ firehoseEnabled: false as const });
+
+  coverageInflight.set(serverId, promise);
+  try {
+    return await promise;
+  } finally {
+    // Always evict — keeping a resolved promise in the Map would serve
+    // stale results forever; the helper's Postgres cache handles the
+    // longer-lived freshness window (60 s).
+    coverageInflight.delete(serverId);
+  }
+}
 
 /** Rate-limit window for manual capability rechecks (per replica, in-memory). */
 const RECHECK_COOLDOWN_MS = 60_000;

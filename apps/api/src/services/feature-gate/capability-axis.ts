@@ -29,7 +29,7 @@
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
-import { FEATURES } from "@/config/features";
+import { CAPABILITY_FEATURES, FEATURES } from "@/config/features";
 
 import type { CapabilitySnapshot } from "./capability-snapshot";
 import { getServerCapabilities } from "./capability-snapshot";
@@ -111,7 +111,7 @@ export async function resolveCapabilityAxis(
       return { kind: "ok" };
     }
 
-    case FEATURES.INCIDENT_DIAGNOSIS: {
+    case CAPABILITY_FEATURES.INCIDENT_DIAGNOSIS: {
       // Diagnosis is "warm" once the broker has been collecting
       // metrics long enough for windowed rules (e.g. 30-min backlog
       // growth) to actually trigger. We test for the existence of a

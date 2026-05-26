@@ -5,6 +5,7 @@ import { Link } from "react-router";
 import { usePostHog } from "@posthog/react";
 import DOMPurify from "dompurify";
 import {
+  AlertCircle,
   ChevronRight,
   ExternalLink,
   Loader2,
@@ -22,6 +23,7 @@ import { formatRelativeAgo } from "@/lib/formatRelativeAgo";
 import { ExplanationActions } from "@/components/llm/ExplanationActions";
 import { QuotaExceededCard } from "@/components/llm/QuotaExceededCard";
 import { QuotaProgressPill } from "@/components/llm/QuotaProgressPill";
+import { ScanLogStream } from "@/components/scan/ScanLogStream";
 import {
   Collapsible,
   CollapsibleContent,
@@ -31,6 +33,7 @@ import {
 import { useStreamingExplain } from "@/hooks/ui/useStreamingExplain";
 import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 import { UserPlan } from "@/types/plans";
 
@@ -128,12 +131,14 @@ export function DiagnosisCard({
   const posthog = usePostHog();
   const { userPlan } = useUser();
   const { workspace } = useWorkspace();
+  const { hasFeature } = useFeatureFlags();
   const [feedbackVote, setFeedbackVote] = useState<"up" | "down" | null>(null);
   const [explainOpen, setExplainOpen] = useState(defaultExplainOpen);
   const [explainVote, setExplainVote] = useState<"up" | "down" | null>(null);
   const {
     text,
     isStreaming,
+    steps,
     error,
     explanationId,
     quotaExceeded,
@@ -141,13 +146,20 @@ export function DiagnosisCard({
     stream,
     reset,
   } = useStreamingExplain();
+  // At most one step is in-flight at a time (the hook marks priors done on
+  // each new step), so the first not-done step is the active one.
+  const activeStep = steps.find((s) => !s.done);
 
   // Explain is only available when the finding has been persisted (findingId
-  // present) and the user is on a paid plan. First-cycle findings (no id yet)
-  // show the button as soon as the next poll returns with the persisted id.
+  // present), the user is on a paid plan, AND the AI Explain feature is
+  // licensed. The feature check (defense-in-depth, matching the backend
+  // license gate in llm.router) is what keeps the premium AI layer EE-only
+  // now that diagnosis detection itself is free (CE/EE split). First-cycle
+  // findings (no id yet) show the button once the next poll persists the id.
   const canExplain =
     !!findingId &&
-    (userPlan === UserPlan.DEVELOPER || userPlan === UserPlan.ENTERPRISE);
+    (userPlan === UserPlan.DEVELOPER || userPlan === UserPlan.ENTERPRISE) &&
+    hasFeature("ai_explain_inline");
 
   const workspaceId = workspace?.id;
 
@@ -422,7 +434,14 @@ export function DiagnosisCard({
               />
             ) : error && !text ? (
               <div className="space-y-2">
-                <p className="text-xs text-destructive">
+                <p
+                  className="flex items-center gap-1.5 text-xs text-destructive"
+                  role="alert"
+                >
+                  <AlertCircle
+                    className="h-3.5 w-3.5 shrink-0"
+                    aria-hidden="true"
+                  />
                   {t("card.explainError")}
                 </p>
                 <button
@@ -434,10 +453,15 @@ export function DiagnosisCard({
                 </button>
               </div>
             ) : !text && isStreaming ? (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                {t("card.explaining")}
-              </div>
+              <ScanLogStream
+                announce={false}
+                entries={steps
+                  .filter((s) => s.done)
+                  .map((s) => ({ id: s.id, text: t(s.i18nKey), done: true }))}
+                activeText={
+                  activeStep ? t(activeStep.i18nKey) : t("card.explaining")
+                }
+              />
             ) : text ? (
               <>
                 <div

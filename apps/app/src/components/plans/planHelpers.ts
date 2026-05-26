@@ -66,7 +66,8 @@ export interface ApiPlan {
   hasDailyDigest: boolean | "limited";
   hasMessageSpy: boolean | "limited";
   hasMetricsPersistence: boolean | "limited";
-  hasIncidentDiagnosis: boolean | "limited";
+  // Diagnosis detection is free and full on every plan (CE/EE split).
+  hasIncidentDiagnosis: boolean;
   hasMessageTracing: boolean | "limited";
   hasAuditLog: boolean | "coming_soon";
   hasLlmExplain: boolean | "coming_soon";

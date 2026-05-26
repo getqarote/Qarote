@@ -17,7 +17,7 @@ import type { LicenseJwtPayload } from "@/services/license/license.interfaces";
 import { verifyLicenseJwt } from "@/services/license/license-crypto.service";
 
 import { isCloudMode, isDemoMode } from "@/config/deployment";
-import { type PremiumFeature } from "@/config/features";
+import { isPremiumFeature, type PremiumFeature } from "@/config/features";
 
 import { getFeatureGateConfig } from "./gate.config";
 import type { FeatureGateResult, FeatureKey } from "./types";
@@ -171,6 +171,20 @@ export async function resolveLicenseAxis(
 
   if (!config.licenseRequired) {
     return { kind: "ok" };
+  }
+
+  // Only premium (license-bearing) features reach here; capability-only keys
+  // always have licenseRequired:false and short-circuit above. Reaching this
+  // branch means a non-premium feature was configured with licenseRequired:true
+  // — a gate-config contradiction. Fail CLOSED (throw) rather than returning
+  // "ok": silently granting a license-gated feature on a misconfig is the worst
+  // failure mode for the monetization boundary. (Fail Fast.)
+  if (!isPremiumFeature(feature)) {
+    throw new Error(
+      `Feature gate misconfiguration: "${feature}" has licenseRequired:true but ` +
+        `is not a PremiumFeature. A capability-only feature cannot require a ` +
+        `license — set licenseRequired:false in gate.config.ts.`
+    );
   }
 
   const enabled = await isFeatureEnabled(feature);

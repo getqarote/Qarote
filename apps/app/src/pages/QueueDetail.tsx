@@ -61,7 +61,6 @@ import {
 import { useIsWorkspaceAdmin } from "@/hooks/queries/useWorkspaceRole";
 import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
-import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 import { UserPlan } from "@/types/plans";
 
@@ -173,9 +172,10 @@ const QueueDetail = () => {
 
   const deleteQueueMutation = useDeleteQueue();
   const { workspace } = useWorkspace();
-  const { hasFeature } = useFeatureFlags();
-  const isDiagnosisEnabled = hasFeature("incident_diagnosis");
 
+  // Diagnosis detection is free on every plan (CE/EE split) — gate only on a
+  // selected server; the AI Explain layer is gated separately on the card.
+  const isDiagnosisEnabled = !!selectedServerId;
   const { data: diagnosisData } = useDiagnosis(selectedServerId, 120, {
     enabled: isDiagnosisEnabled,
   });

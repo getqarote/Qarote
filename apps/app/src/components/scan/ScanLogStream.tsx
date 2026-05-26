@@ -11,9 +11,17 @@ export interface LogEntry {
 interface ScanLogStreamProps {
   entries: LogEntry[];
   activeText?: string;
+  // When the stream lives inside another aria-live region (e.g. the explain
+  // panel), set announce={false} so screen readers don't double-announce each
+  // step. Defaults to true for the standalone scan page.
+  announce?: boolean;
 }
 
-export function ScanLogStream({ entries, activeText }: ScanLogStreamProps) {
+export function ScanLogStream({
+  entries,
+  activeText,
+  announce = true,
+}: ScanLogStreamProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -22,8 +30,8 @@ export function ScanLogStream({ entries, activeText }: ScanLogStreamProps) {
 
   return (
     <div
-      role="log"
-      aria-live="polite"
+      {...(announce ? { role: "log" } : {})}
+      aria-live={announce ? "polite" : "off"}
       aria-atomic="false"
       className="font-mono text-xs leading-relaxed space-y-1 overflow-y-auto max-h-full pr-1"
     >

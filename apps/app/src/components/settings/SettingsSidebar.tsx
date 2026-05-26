@@ -149,19 +149,6 @@ const navGroups: NavGroup[] = [
       },
     ],
   },
-  // Feedback section hidden for now — backend kept for future use
-  // {
-  //   labelKey: null,
-  //   items: [
-  //     {
-  //       key: "feedback",
-  //       path: "/settings/feedback",
-  //       icon: MessageSquare,
-  //       labelKey: "settings:nav.feedback",
-  //       cloudOnly: true,
-  //     },
-  //   ],
-  // },
 ];
 
 export const SettingsSidebar = () => {

@@ -63,7 +63,6 @@ import { useServers } from "@/hooks/queries/useServer";
 import { useIsWorkspaceAdmin } from "@/hooks/queries/useWorkspaceRole";
 import { useLogout } from "@/hooks/ui/useAuth";
 import { useUser } from "@/hooks/ui/useUser";
-import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 function ServerStatusDot({ serverId }: { serverId: string }) {
   const { data, isLoading, isError } = useOverview(serverId);
@@ -318,7 +317,6 @@ export function AppSidebar() {
   } = useVHostContext();
   const { user } = useAuth();
   const { canAddServer } = useUser();
-  const { hasFeature } = useFeatureFlags();
   const logoutMutation = useLogout();
   const { data: serversData } = useServers();
   const servers = serversData?.servers || [];
@@ -329,8 +327,10 @@ export function AppSidebar() {
 
   // Sidebar nav state
   const [browseExpanded, setBrowseExpanded] = useBrowseExpanded();
+  // Diagnosis detection is free on every plan (CE/EE split) — the sidebar
+  // badge fetches whenever a server is selected.
   const { count: diagnosisActiveCount, maxSeverity: diagnosisSeverity } =
-    useDiagnosisActiveCount(selectedServerId, hasFeature("incident_diagnosis"));
+    useDiagnosisActiveCount(selectedServerId, !!selectedServerId);
 
   const renderItem = (item: NavItem) => {
     if (item.adminOnly && !isAdmin) return null;

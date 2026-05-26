@@ -247,5 +247,26 @@
   "versionSupportFreeHint": "Upgrade to Developer or Enterprise to connect to any version from 3.0 to 4.x, including non-LTS releases.",
   "versionSupportUnsupportedHint": "Connecting to an unsupported version will be rejected.",
   "managementPluginRequired": "Management plugin required",
-  "managementPluginRequiredHint": "Make sure the RabbitMQ Management plugin is enabled. The Management API port (default 15672) is different from the AMQP port (5672)."
+  "managementPluginRequiredHint": "Make sure the RabbitMQ Management plugin is enabled. The Management API port (default 15672) is different from the AMQP port (5672).",
+  "messageIdCoverage": {
+    "label": "messageId coverage",
+    "whyThisMatters": "why this matters",
+    "whyAriaLabel": "Why this matters: messageId coverage tiers",
+    "popover": {
+      "heading": "messageId coverage tiers",
+      "tier1": {
+        "range": "0–30%",
+        "desc": "Diagnosis Engine basics only"
+      },
+      "tier2": {
+        "range": "30–70%",
+        "desc": "+ drain lag percentiles"
+      },
+      "tier3": {
+        "range": "70%+",
+        "desc": "+ pipeline inference, time-to-delivery, unrouted detection"
+      },
+      "footer": "Higher coverage unlocks deeper diagnosis."
+    }
+  }
 }

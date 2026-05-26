@@ -38,14 +38,6 @@ test.describe("Profile Management @p2", () => {
     ).toBeVisible({ timeout: 10_000 });
   });
 
-  test("should navigate to feedback section", async ({ adminPage }) => {
-    await adminPage.goto("/settings/feedback");
-    await adminPage.waitForLoadState("domcontentloaded");
-
-    // Feedback form should be visible
-    await expect(adminPage.locator("form, textarea").first()).toBeVisible({ timeout: 10_000 });
-  });
-
   test("readonly user should see profile section", async ({ readonlyPage }) => {
     await readonlyPage.goto("/settings/profile");
     await readonlyPage.waitForLoadState("domcontentloaded");

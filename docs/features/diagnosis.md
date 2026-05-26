@@ -9,6 +9,12 @@ queue metadata) and emits zero or more `IncidentDiagnosis` rows.
 This page is the operator-facing rule catalogue. For the architecture and
 slicing strategy, see `docs/plans/diagnosis-rules-sourcing.md`.
 
+> **Editions:** the rules-based detection engine — the findings, severities,
+> and the Diagnosis page itself — is **free** in the Community Edition and on
+> every plan. Only the AI-powered **"Explain this finding"** layer
+> (`ai_explain_inline`) is an Enterprise/licensed feature. In short: **CE
+> detects, EE explains with AI.**
+
 ## How rules fire
 
 Every rule has a citation (`meta.sourceUrl`) on a small allowlist of

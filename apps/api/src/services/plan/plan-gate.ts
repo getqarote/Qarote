@@ -28,9 +28,8 @@ import { PlanLimitExceededError, PlanValidationError } from "./plan.service";
  *
  * Pass `featureKeyOverride` to `planErrorToBlockedGate` from a call
  * site whose plan error doesn't fit the workspace bucket — e.g. a
- * future per-recording or per-diagnosis plan check should pass
- * `"message_tracing"` or `"incident_diagnosis"` so the upgrade CTA
- * routes correctly.
+ * future per-recording plan check should pass `"message_tracing"` so
+ * the upgrade CTA routes correctly. (Diagnosis is no longer plan-gated.)
  */
 const DEFAULT_PLAN_QUOTA_FEATURE: FeatureKey = "workspace_management";
 

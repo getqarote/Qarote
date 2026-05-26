@@ -393,16 +393,11 @@ function intelligenceRowsFromPlan(plan: ApiPlan): IntelligenceRow[] {
     });
   }
   if (plan.hasIncidentDiagnosis) {
+    // Full detection on every plan (CE/EE split) — the AI Explain layer is the
+    // premium differentiator, surfaced via its own aiExplanations row.
     rows.push({
       name: "incidentDiagnosis",
-      detailKey:
-        plan.hasIncidentDiagnosis === "limited"
-          ? "detailPreview"
-          : "detailFullResults",
-      tooltipKey:
-        plan.hasIncidentDiagnosis === "limited"
-          ? "incidentDiagnosisLimitedHint"
-          : undefined,
+      detailKey: "detailFullResults",
     });
   }
   if (plan.hasMessageTracing) {

@@ -39,8 +39,6 @@ const BLOCKED_PATHS = new Set([
   "alerts.rules.createRule",
   "alerts.rules.updateRule",
   "alerts.rules.deleteRule",
-  // Feedback
-  "feedback.submit",
   // Payment (payment.*)
   "payment.checkout.createCheckoutSession",
   "payment.subscription.cancelSubscription",

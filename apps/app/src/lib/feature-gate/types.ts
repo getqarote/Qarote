@@ -12,10 +12,18 @@
  * the backend's Prisma client surface.
  */
 
-import type { PremiumFeature } from "@api/config/features";
+import type {
+  CapabilityOnlyFeature,
+  PremiumFeature,
+} from "@api/config/features";
 
-/** Aliased to the backend's source-of-truth feature enum. */
-export type FeatureKey = PremiumFeature;
+/**
+ * The full gatable feature space — backend's `PremiumFeature` (EE-licensed)
+ * plus `CapabilityOnlyFeature` (free but capability-gated, e.g.
+ * `incident_diagnosis`). Mirrors the backend `FeatureKey` so `<FeatureGate>`
+ * and `FEATURE_PATHS` can reference capability-only features.
+ */
+export type FeatureKey = PremiumFeature | CapabilityOnlyFeature;
 
 export type BlockedBy = "license" | "plan" | "capability";
 

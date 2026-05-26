@@ -69,6 +69,12 @@
     "explainError": "无法生成解释 — 请检查您的连接后重试。",
     "explainHelpful": "这个解释有用吗？"
   },
+  "step": {
+    "brokerRead": "正在读取 broker 拓扑…",
+    "queuesAnalyze": "正在分析队列指标…",
+    "firehose": "正在关联 Firehose 证据…",
+    "promptBuild": "正在组装诊断上下文…"
+  },
   "metadata": {
     "analyzedAgo": "{{time}}前分析",
     "snapshots": "{{count}} 个快照",
@@ -76,8 +82,9 @@
     "window": "{{minutes}} 分钟窗口"
   },
   "empty": {
-    "title": "未检测到异常",
-    "description": "在过去 {{minutes}} 分钟内未发现任何模式。您的队列看起来运行正常。",
+    "title": "一切正常 — 当前无故障",
+    "description": "一旦出现问题，Qarote 会诊断根本原因并用通俗易懂的语言即时解释。",
+    "exploreDemo": "浏览演示，查看真实案例",
     "noSnapshots": "暂无指标历史",
     "noSnapshotsDescription": "指标快照每 5 分钟收集一次，请稍后查看。"
   },

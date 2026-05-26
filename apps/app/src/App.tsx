@@ -96,11 +96,6 @@ const LlmSection = lazy(() =>
     default: m.default,
   }))
 );
-const FeedbackSection = lazy(() =>
-  import("./pages/settings/FeedbackSection").then((m) => ({
-    default: m.default,
-  }))
-);
 const AuditSection = lazy(() =>
   import("./pages/settings/AuditSection").then((m) => ({
     default: m.default,
@@ -511,10 +506,6 @@ const AppCore = () => (
                                 element={<DigestSection />}
                               />
                               <Route path="llm" element={<LlmSection />} />
-                              <Route
-                                path="feedback"
-                                element={<FeedbackSection />}
-                              />
                               <Route path="audit" element={<AuditSection />} />
                               <Route path="roles" element={<RolesSection />} />
                               <Route

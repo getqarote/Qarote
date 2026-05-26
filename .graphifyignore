@@ -1,0 +1,44 @@
+# graphify ignore — keep the knowledge graph focused on code architecture.
+#
+# NOTE: graphify reads .graphifyignore *instead of* .gitignore at a given
+# directory (not in addition). So this file intentionally restates the
+# graph-relevant .gitignore exclusions, then adds the noise that .gitignore
+# does NOT exclude but which drowns code queries (i18n key dumps, generated
+# clients). node_modules/dist/build/.turbo/coverage/graphify-out etc. are
+# already hard-skipped by graphify's built-in _SKIP_DIRS, so they're omitted.
+# Keep roughly in sync with .gitignore for the entries below.
+
+# ── The actual problem: i18n locale files ───────────────────────────────
+# Each locale JSON is a flat dump of translation keys; graphify turns every
+# key into a node, so a handful of namespaces × 4 locales = hundreds of
+# low-value nodes that dominate BFS/explain and bury real TS symbols.
+apps/*/public/locales/
+apps/api/locales/
+packages/i18n/locales/
+
+# ── Generated code (huge, not authored) ─────────────────────────────────
+apps/api/src/generated/
+
+# ── Restated from .gitignore (graph-relevant) ───────────────────────────
+logs
+*.log
+.env
+.env.*
+!.env.*.example
+infrastructure/
+_bmad/
+_bmad-output/
+.bmad/
+.bmad-method/
+**/bmad-*.md
+**/BMAD-*.md
+docs/architecture
+docs/development
+.claude/skills/
+.claude/worktrees/
+.impeccable.md
+qarote-license-*.json
+license.json
+*.tsbuildinfo
+apps/api/src/ee/services/llm/__evals__/eval-result.json
+apps/api/src/ee/services/llm/__evals__/.promptfoo/

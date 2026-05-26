@@ -6,7 +6,6 @@ import { AddServerButton } from "@/components/AddServerButton";
 import { ConnectedNodes } from "@/components/ConnectedNodes";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
 import { HomeActiveConcerns } from "@/components/home/HomeActiveConcerns";
-import { HomePulse } from "@/components/home/HomePulse";
 import { HomeStatusBanner } from "@/components/home/HomeStatusBanner";
 import { MessagesRatesChart } from "@/components/MessagesRatesChart";
 import { MetricsStatusStrip } from "@/components/MetricsStatusStrip";
@@ -30,10 +29,10 @@ import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 
 import { useDiagnosis } from "@/hooks/queries/useDiagnosis";
+import { useMessageIdCoverage } from "@/hooks/queries/useMessageIdCoverage";
 import { useServers } from "@/hooks/queries/useServer";
 import { useIsWorkspaceAdmin } from "@/hooks/queries/useWorkspaceRole";
 import { useDashboardData } from "@/hooks/ui/useDashboardData";
-import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 const Index = () => {
   const { t } = useTranslation("dashboard");
@@ -68,8 +67,10 @@ const Index = () => {
     nodesError,
   } = useDashboardData(selectedServerId, liveRatesTimeRange);
 
-  const { hasFeature } = useFeatureFlags();
-  const hasDiagnosis = hasFeature("incident_diagnosis");
+  // Diagnosis detection is free on every plan (CE/EE split) — the only gate
+  // left is "is there a server to diagnose?". The AI Explain layer is gated
+  // separately on the DiagnosisCard.
+  const hasDiagnosis = !!selectedServerId;
   const { data: diagnosisData, isFetched: isDiagnosisFetched } = useDiagnosis(
     selectedServerId,
     120,
@@ -90,6 +91,26 @@ const Index = () => {
     : [];
   const rootDiagnosisCount =
     hasDiagnosis && isDiagnosisFetched ? rootDiagnoses.length : undefined;
+
+  // messageId coverage stat for the MetricsStatusStrip — passive ambient
+  // surface complementing the LOW_MESSAGE_ID_COVERAGE finding (#163).
+  // Hook returns `isHidden: true` when the firehose is off, when data
+  // hasn't loaded yet, or when the query errored — we treat all three
+  // identically: don't render the cell. The suppressMessageIdPopover
+  // flag prevents the popover from competing with the finding's
+  // "why this matters" surface when both are visible at the same time
+  // on this page (anti-dup per UX review B4).
+  const { data: coverageData, isHidden: coverageHidden } =
+    useMessageIdCoverage(selectedServerId);
+  const messageIdCoverage =
+    !coverageHidden && coverageData && coverageData.firehoseEnabled
+      ? {
+          taggedPublishes: coverageData.taggedPublishes,
+          totalPublishes: coverageData.totalPublishes,
+        }
+      : null;
+  const suppressMessageIdPopover =
+    diagnoses?.some((d) => d.rule === "LOW_MESSAGE_ID_COVERAGE") ?? false;
   const bannerCounts =
     hasDiagnosis && isDiagnosisFetched
       ? {
@@ -155,11 +176,13 @@ const Index = () => {
   return (
     <PageShell bare>
       {/*
-        Home rhythm — 4 zones per docs/plans/sidebar-redesign.md § Home:
+        Home rhythm — 3 zones per docs/plans/sidebar-redesign.md § Home:
           1. STATUS    — calm/amber/red banner, lead-with-state
           2. CONCERNS  — Diagnosis cards (root only) + recent alerts
           3. ACTIVITY  — KPI strip, totals, throughput, depths, nodes
-          4. PULSE     — Daily Digest teaser
+        (PULSE / Daily Digest teaser is hidden at launch — the Digest
+        feature is gated out of the frontend; a calm STATUS banner in
+        zone 1 already carries the "all quiet" signal.)
         Generous separation between zones (gap-10), tight rhythm within.
         Incident-mode hierarchy lives in the banner; the rest stays calm.
       */}
@@ -203,7 +226,7 @@ const Index = () => {
         {(bannerCounts?.critical ?? 0) === 0 && <RecentAlerts />}
 
         {/* ZONE 3 — ACTIVITY. Collapsed by default so Home delivers on its
-            "answer in <3 seconds" promise (zones 1+2+4). Operators who want
+            "answer in <3 seconds" promise (zones 1+2). Operators who want
             the full KPI/chart view expand once and the state persists for
             the session. */}
         <Collapsible open={activityExpanded} onOpenChange={setActivityExpanded}>
@@ -222,6 +245,8 @@ const Index = () => {
                 metricsError={metricsError}
                 nodesError={nodesError}
                 diagnosisCount={rootDiagnosisCount}
+                messageIdCoverage={messageIdCoverage}
+                suppressMessageIdPopover={suppressMessageIdPopover}
               />
 
               <ResourceUsage overview={overview} overviewError={null} />
@@ -254,11 +279,6 @@ const Index = () => {
             </div>
           </CollapsibleContent>
         </Collapsible>
-
-        {/* ZONE 4 — PULSE. Soft teaser for Daily Digest, contextualised
-            to the active workspace. Hides itself while loading and when
-            workspace context isn't resolved. */}
-        <HomePulse />
       </div>
     </PageShell>
   );

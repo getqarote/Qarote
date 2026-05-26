@@ -45,11 +45,7 @@ function intelligenceRowsFor(planId: string): IntelligenceRow[] {
         tooltipKey: "featureNames.messageSpyLimitedHint",
       },
       { name: "metricsPersistence", detailKey: "detail24h" },
-      {
-        name: "incidentDiagnosis",
-        detailKey: "detailPreview",
-        tooltipKey: "featureNames.incidentDiagnosisLimitedHint",
-      },
+      { name: "incidentDiagnosis", detailKey: "detailFullResults" },
       { name: "messageTracing", detailKey: "detail6h" },
       { name: "aiExplanations", detailKey: "detail5PerMonth", soon: true },
     ];

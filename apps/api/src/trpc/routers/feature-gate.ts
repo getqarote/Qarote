@@ -8,7 +8,7 @@ import {
   resolveFeatureGate,
 } from "@/services/feature-gate";
 
-import { FEATURES } from "@/config/features";
+import { getAllFeatureKeys } from "@/config/features";
 
 import { rateLimitedProcedure, router } from "../trpc";
 
@@ -19,8 +19,12 @@ import { rateLimitedProcedure, router } from "../trpc";
  * proactively (page entry, sidebar badges) instead of waiting for a gated
  * procedure to throw. The resolver is the same one used inside throw-paths,
  * so proactive and reactive views never disagree.
+ *
+ * Spans the full FeatureKey space (premium + capability-only), so
+ * capability-only features like `incident_diagnosis` remain evaluable by the
+ * proactive frontend call — omitting them would 400 the gate query at runtime.
  */
-const FEATURE_KEYS = Object.values(FEATURES) as [FeatureKey, ...FeatureKey[]];
+const FEATURE_KEYS = getAllFeatureKeys() as [FeatureKey, ...FeatureKey[]];
 
 export const featureGateRouter = router({
   // Rate-limited (vs unbound protectedProcedure) — pages can mount multiple

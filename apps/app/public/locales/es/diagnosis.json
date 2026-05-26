@@ -69,6 +69,12 @@
     "explainError": "No se pudo generar la explicación — verifique su conexión e inténtelo de nuevo.",
     "explainHelpful": "¿Esta explicación fue útil?"
   },
+  "step": {
+    "brokerRead": "Leyendo la topología del broker…",
+    "queuesAnalyze": "Analizando métricas de colas…",
+    "firehose": "Correlacionando evidencias de Firehose…",
+    "promptBuild": "Ensamblando el contexto del diagnóstico…"
+  },
   "metadata": {
     "analyzedAgo": "Analizado {{time}}",
     "snapshots": "{{count}} instantáneas",
@@ -76,8 +82,9 @@
     "window": "Ventana de {{minutes}} min"
   },
   "empty": {
-    "title": "No se detectaron anomalías",
-    "description": "No se encontraron patrones en los últimos {{minutes}} minutos. Tus colas parecen saludables.",
+    "title": "Todo en orden — sin incidentes activos",
+    "description": "Cuando algo falla, Qarote diagnostica la causa raíz y la explica en lenguaje claro — al instante.",
+    "exploreDemo": "Explora la demo con casos realistas",
     "noSnapshots": "Aún no hay historial de métricas",
     "noSnapshotsDescription": "Las instantáneas se recopilan cada 5 minutos. Vuelve pronto."
   },

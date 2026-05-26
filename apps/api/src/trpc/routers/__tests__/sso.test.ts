@@ -55,7 +55,8 @@ vi.mock("@/services/feature-gate/license", () => ({
   isFeatureEnabled: (...a: unknown[]) => mockIsFeatureEnabled(...a),
 }));
 
-vi.mock("@/config/features", () => ({
+vi.mock("@/config/features", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/config/features")>()),
   FEATURES: { SSO: "sso" },
   getAllPremiumFeatures: () => ["sso"],
   FEATURE_DESCRIPTIONS: { sso: "SSO / SAML / OIDC" },

@@ -14,8 +14,8 @@ export type PremiumFeature =
   | "advanced_alert_rules"
   | "topology_visualization"
   | "digest_customization"
-  | "incident_diagnosis"
-  | "message_tracing";
+  | "message_tracing"
+  | "ai_explain_inline";
 
 /**
  * Check if running in cloud mode
@@ -51,8 +51,8 @@ const FEATURE_DESCRIPTIONS: Record<PremiumFeature, string> = {
   advanced_alert_rules: "Advanced Alert Rules",
   topology_visualization: "Topology Visualization",
   digest_customization: "Daily Digest Customization",
-  incident_diagnosis: "Incident Diagnosis Engine",
   message_tracing: "Message Tracing",
+  ai_explain_inline: "AI Explain",
 };
 
 /**

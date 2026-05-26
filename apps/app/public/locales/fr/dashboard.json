@@ -247,5 +247,26 @@
   "versionSupportFreeHint": "Passez à Developer ou Enterprise pour vous connecter à toutes les versions de 3.0 à 4.x, y compris les versions non-LTS.",
   "versionSupportUnsupportedHint": "Les connexions à une version non prise en charge seront rejetées.",
   "managementPluginRequired": "Plugin Management requis",
-  "managementPluginRequiredHint": "Assurez-vous que le plugin RabbitMQ Management est activé. Le port de l'API Management (par défaut 15672) est différent du port AMQP (5672)."
+  "managementPluginRequiredHint": "Assurez-vous que le plugin RabbitMQ Management est activé. Le port de l'API Management (par défaut 15672) est différent du port AMQP (5672).",
+  "messageIdCoverage": {
+    "label": "Couverture messageId",
+    "whyThisMatters": "pourquoi c'est important",
+    "whyAriaLabel": "Pourquoi c'est important : niveaux de couverture messageId",
+    "popover": {
+      "heading": "Niveaux de couverture messageId",
+      "tier1": {
+        "range": "0–30 %",
+        "desc": "Moteur de diagnostic basique uniquement"
+      },
+      "tier2": {
+        "range": "30–70 %",
+        "desc": "+ percentiles de latence de drain"
+      },
+      "tier3": {
+        "range": "70 %+",
+        "desc": "+ inférence de pipeline, time-to-delivery, détection de messages non routés"
+      },
+      "footer": "Une couverture plus élevée débloque un diagnostic plus précis."
+    }
+  }
 }

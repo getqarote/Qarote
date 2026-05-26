@@ -13,13 +13,23 @@ export type PremiumFeature =
   | "topology_visualization"
   | "sso"
   | "digest_customization"
-  | "incident_diagnosis"
   | "message_tracing"
   | "message_spy"
   | "ai_explain_inline"
   | "ai_explain_digest"
   | "audit_log"
   | "rbac_advanced";
+
+/**
+ * Capability-only features: NOT EE-licensed (free in CE and on every plan),
+ * but still gated on the capability axis — "does this feature work on THIS
+ * broker?". `incident_diagnosis` is the rules-based detection engine: free
+ * everywhere, yet degraded until ~3h of metric snapshots exist. Kept in a
+ * separate type from `PremiumFeature` so "is this EE-licensed?" and "can this
+ * be gated?" are answered by different types (SoC — T21 CE/EE split). The AI
+ * Explain layer (`ai_explain_inline` / `ai_explain_digest`) stays premium.
+ */
+export type CapabilityOnlyFeature = "incident_diagnosis";
 
 /**
  * Feature definitions
@@ -34,7 +44,6 @@ export const FEATURES = {
   TOPOLOGY_VISUALIZATION: "topology_visualization" as const,
   SSO: "sso" as const,
   DIGEST_CUSTOMIZATION: "digest_customization" as const,
-  INCIDENT_DIAGNOSIS: "incident_diagnosis" as const,
   MESSAGE_TRACING: "message_tracing" as const,
   // Plan-gated only (not license-gated) — see plan note in preview plan doc.
   MESSAGE_SPY: "message_spy" as const,
@@ -50,12 +59,46 @@ export const FEATURES = {
 } as const;
 
 /**
- * Get all premium features.
+ * Capability-only feature constants — gatable (capability axis) but not
+ * EE-licensed. Mirror of {@link CapabilityOnlyFeature}.
+ */
+export const CAPABILITY_FEATURES = {
+  INCIDENT_DIAGNOSIS: "incident_diagnosis" as const,
+} as const;
+
+/**
+ * Get all premium (EE-licensed) features.
  *
- * Used for the gate config completeness invariant test. Human-readable
+ * Drives license/plan resolution and the EE feature wire surface. Human-readable
  * descriptions live in the frontend `gate.json` namespace; the backend
  * deals only in the keys.
  */
 export function getAllPremiumFeatures(): PremiumFeature[] {
   return Object.values(FEATURES);
+}
+
+/**
+ * Get every gatable feature key — premium (license-bearing) plus
+ * capability-only (free but capability-gated). This is the key space the
+ * gate config Record must cover; the gate-config completeness invariant
+ * test asserts against it.
+ */
+export function getAllFeatureKeys(): (
+  | PremiumFeature
+  | CapabilityOnlyFeature
+)[] {
+  return [...Object.values(FEATURES), ...Object.values(CAPABILITY_FEATURES)];
+}
+
+/**
+ * Type guard: is this feature key EE-licensed (vs capability-only)?
+ *
+ * Lets the license axis narrow a `FeatureKey` to `PremiumFeature` before
+ * consulting the license, instead of casting. Capability-only keys
+ * (`incident_diagnosis`) are never license-bearing.
+ */
+export function isPremiumFeature(
+  feature: PremiumFeature | CapabilityOnlyFeature
+): feature is PremiumFeature {
+  return (Object.values(FEATURES) as string[]).includes(feature);
 }

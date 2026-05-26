@@ -24,7 +24,7 @@
  * rename pending. Empty alias maps with no consumers are over-engineering.
  */
 
-import { FEATURES } from "@/config/features";
+import { CAPABILITY_FEATURES, FEATURES } from "@/config/features";
 
 import type { CapabilitySnapshot } from "./capability-snapshot";
 import type { FeatureKey } from "./types";
@@ -120,7 +120,6 @@ export interface FeatureGateConfig {
  */
 export const FREE_PREVIEW_COUNTS = {
   ALERT: 2,
-  DIAGNOSIS: 2,
   TRACE: 10,
   SPY: 5,
 } as const;
@@ -162,12 +161,11 @@ export const FEATURE_GATE_CONFIG: Record<FeatureKey, FeatureGateConfig> = {
     licenseRequired: true,
     freeBehaviour: { mode: "block" },
   },
-  [FEATURES.INCIDENT_DIAGNOSIS]: {
-    licenseRequired: true,
-    freeBehaviour: {
-      mode: "preview",
-      previewCount: FREE_PREVIEW_COUNTS.DIAGNOSIS,
-    },
+  [CAPABILITY_FEATURES.INCIDENT_DIAGNOSIS]: {
+    // CE/EE split (T21): the rules-based detection engine is free everywhere —
+    // no license, no plan restriction. Only the AI Explain layer is premium.
+    licenseRequired: false,
+    freeBehaviour: { mode: "none" },
     // Diagnosis warmup is a UX hint surfaced via a separate channel,
     // not a hard block — but the axis still needs to be evaluated when
     // the snapshot is missing so we can return "unknown" rather than

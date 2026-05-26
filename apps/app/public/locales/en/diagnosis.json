@@ -69,6 +69,12 @@
     "explainError": "Couldn't generate explanation — check your connection and try again.",
     "explainHelpful": "Was this explanation helpful?"
   },
+  "step": {
+    "brokerRead": "Reading broker topology…",
+    "queuesAnalyze": "Analyzing queue metrics…",
+    "firehose": "Correlating Firehose evidence…",
+    "promptBuild": "Assembling diagnosis context…"
+  },
   "metadata": {
     "analyzedAgo": "Analyzed {{time}}",
     "snapshots": "{{count}} snapshots",
@@ -76,8 +82,9 @@
     "window": "{{minutes}}-min window"
   },
   "empty": {
-    "title": "No anomalies detected",
-    "description": "No patterns found in the last {{minutes}} minutes. Your queues appear healthy.",
+    "title": "All clear — no active incidents",
+    "description": "When something breaks, Qarote diagnoses the root cause and explains it in plain English — instantly.",
+    "exploreDemo": "Explore the demo with realistic findings",
     "noSnapshots": "No metric history yet",
     "noSnapshotsDescription": "Metric snapshots are collected every 5 minutes. Check back shortly."
   },

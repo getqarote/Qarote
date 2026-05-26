@@ -49,6 +49,20 @@ interface UseStreamingExplainState {
    * session yet OR the workspace is BYOK / unlimited.
    */
   quotaStatus: QuotaPayload | null;
+  /**
+   * Progressive step events emitted by the server while assembling the
+   * incident prompt (broker / firehose context fetch). Rendered as a
+   * ScanLogStream checklist during the pre-LLM wait. `i18nKey` is resolved
+   * by the consumer via i18next.
+   */
+  steps: ExplainStep[];
+}
+
+/** A progress step in the explain pipeline (server `step` SSE event). */
+export interface ExplainStep {
+  id: string;
+  i18nKey: string;
+  done: boolean;
 }
 
 type StreamOpts =
@@ -92,12 +106,13 @@ const QUOTA_VALID_REASONS: ReadonlySet<string> = new Set([
  * SSE events are separated by blank lines; each event may have an
  * `event:` field and one or more `data:` fields.
  */
-function parseEventBlocks(
+export function parseEventBlocks(
   buffer: string,
   onText: (text: string) => void,
   onMeta: (meta: MetaPayload) => void,
   onQuota: (quota: QuotaPayload) => void,
-  onError: (message: string) => void
+  onError: (message: string) => void,
+  onStep: (step: ExplainStep) => void
 ): string {
   // Normalize line endings so a CRLF that gets split across two TCP reads
   // (one ending in '\r', next starting with '\n') doesn't confuse the
@@ -125,6 +140,26 @@ function parseEventBlocks(
     }
 
     const data = dataLines.join("\n");
+
+    if (eventName === "step") {
+      try {
+        const parsed = JSON.parse(data) as {
+          id?: unknown;
+          i18nKey?: unknown;
+          done?: unknown;
+        };
+        if (
+          typeof parsed.id === "string" &&
+          typeof parsed.i18nKey === "string" &&
+          typeof parsed.done === "boolean"
+        ) {
+          onStep({ id: parsed.id, i18nKey: parsed.i18nKey, done: parsed.done });
+        }
+      } catch {
+        // Malformed step — ignore.
+      }
+      continue;
+    }
 
     if (eventName === "meta") {
       try {
@@ -193,6 +228,7 @@ export function useStreamingExplain(): UseStreamingExplainReturn {
     fromCache: false,
     quotaExceeded: null,
     quotaStatus: null,
+    steps: [],
   });
 
   const abortRef = useRef<AbortController | null>(null);
@@ -212,6 +248,9 @@ export function useStreamingExplain(): UseStreamingExplainReturn {
       // accurate after the drawer closes. Clear only the at-cap flag.
       quotaExceeded: null,
       quotaStatus: s.quotaStatus,
+      // Clear steps so a Retry in an open panel doesn't show stale
+      // checkmarks above the fresh stream.
+      steps: [],
     }));
   }, []);
 
@@ -244,6 +283,7 @@ export function useStreamingExplain(): UseStreamingExplainReturn {
       quotaExceeded: null,
       quotaStatus:
         prevStatusWorkspace === opts.workspaceId ? s.quotaStatus : null,
+      steps: [],
     }));
 
     // 65s client-side guard — 5s margin over the 60s server timeout.
@@ -293,7 +333,16 @@ export function useStreamingExplain(): UseStreamingExplainReturn {
       let receivedMeta = false;
 
       const onText = (text: string) => {
-        safeSetState((s) => ({ ...s, text: s.text + text }));
+        safeSetState((s) => ({
+          ...s,
+          text: s.text + text,
+          // First text chunk = LLM started responding → mark any in-flight
+          // step done (3A: client auto-deduces the last step's completion).
+          // Idempotent: only rewrites when an active step still exists.
+          steps: s.steps.some((st) => !st.done)
+            ? s.steps.map((st) => ({ ...st, done: true }))
+            : s.steps,
+        }));
       };
       const onMeta = (meta: MetaPayload) => {
         receivedMeta = true;
@@ -337,18 +386,45 @@ export function useStreamingExplain(): UseStreamingExplainReturn {
       const onError = (message: string) => {
         safeSetState((s) => ({ ...s, isStreaming: false, error: message }));
       };
+      const onStep = (step: ExplainStep) => {
+        safeSetState((s) => {
+          // Idempotent: ignore a re-emitted step id.
+          if (s.steps.some((st) => st.id === step.id)) return s;
+          // New step arrives → mark all prior steps done, append the new
+          // active one. The server emits each step with done:false; the
+          // client derives the "previous done" transition.
+          return {
+            ...s,
+            steps: [...s.steps.map((st) => ({ ...st, done: true })), step],
+          };
+        });
+      };
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
-        buffer = parseEventBlocks(buffer, onText, onMeta, onQuota, onError);
+        buffer = parseEventBlocks(
+          buffer,
+          onText,
+          onMeta,
+          onQuota,
+          onError,
+          onStep
+        );
       }
 
       // Flush any remaining incomplete block on connection close.
       if (buffer.trim()) {
-        parseEventBlocks(buffer + "\n\n", onText, onMeta, onQuota, onError);
+        parseEventBlocks(
+          buffer + "\n\n",
+          onText,
+          onMeta,
+          onQuota,
+          onError,
+          onStep
+        );
       }
 
       if (!receivedMeta) {

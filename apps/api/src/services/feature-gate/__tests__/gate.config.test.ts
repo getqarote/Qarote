@@ -16,13 +16,28 @@ import {
   isFeatureReadyOnSnapshot,
 } from "@/services/feature-gate";
 
-import { FEATURES, getAllPremiumFeatures } from "@/config/features";
+import {
+  FEATURES,
+  getAllFeatureKeys,
+  getAllPremiumFeatures,
+} from "@/config/features";
 
 describe("FEATURE_GATE_CONFIG", () => {
-  it("has an entry for every PremiumFeature", () => {
-    const featureKeys = getAllPremiumFeatures().sort();
+  it("has an entry for every gatable feature key (premium + capability-only)", () => {
+    const featureKeys = getAllFeatureKeys().sort();
     const configKeys = Object.keys(FEATURE_GATE_CONFIG).sort();
     expect(configKeys).toEqual(featureKeys);
+  });
+
+  it("incident_diagnosis is capability-only, NOT premium (CE/EE split)", () => {
+    // Locks the T21 decoupling: the rules engine is free (not in the EE
+    // license surface) but still appears in the gate config for its
+    // capability (warm-up) axis.
+    expect(getAllPremiumFeatures()).not.toContain("incident_diagnosis");
+    expect(getAllFeatureKeys()).toContain("incident_diagnosis");
+    expect(FEATURE_GATE_CONFIG["incident_diagnosis"].licenseRequired).toBe(
+      false
+    );
   });
 
   it("getFeatureGateConfig throws on an unknown feature", () => {

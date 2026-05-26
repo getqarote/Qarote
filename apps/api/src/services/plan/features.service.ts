@@ -37,7 +37,9 @@ export interface PlanFeatures {
   hasDailyDigest: boolean | "limited";
   hasMessageSpy: boolean | "limited";
   hasMetricsPersistence: boolean | "limited";
-  hasIncidentDiagnosis: boolean | "limited";
+  // Diagnosis detection is free and full on every plan (CE/EE split) — never
+  // "limited". The premium differentiator is the AI Explain layer.
+  hasIncidentDiagnosis: boolean;
   hasMessageTracing: boolean | "limited";
 
   // Security display features
@@ -117,7 +119,7 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
     hasDailyDigest: "limited", // weekly digest only on Community
     hasMessageSpy: "limited", // 5 messages / capture (FREE_SPY_PREVIEW_COUNT)
     hasMetricsPersistence: "limited", // 24 h retention
-    hasIncidentDiagnosis: "limited", // 2-finding preview per run
+    hasIncidentDiagnosis: true, // full detection — free on every plan (CE/EE split)
     hasMessageTracing: "limited", // 6 h retention — wow factor without storage burden
 
     // Retention limits
