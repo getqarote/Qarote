@@ -14,6 +14,12 @@ interface Props {
   locale?: string;
   canonicalPath?: string;
   image?: string;
+  /**
+   * When true, emit `noindex, follow` so the page is reachable by direct URL
+   * but kept out of search indexes. Used for features hidden at launch
+   * (Daily Digest, Message Spy, Firehose Tracing) until they return.
+   */
+  noindex?: boolean;
 }
 
 const {
@@ -22,6 +28,7 @@ const {
   locale = "en",
   canonicalPath = "/",
   image = "https://qarote.io/images/qarote_card.jpg",
+  noindex = false,
 } = Astro.props;
 
 const consentResources = { common: loadTranslations(locale, "common") };
@@ -198,8 +205,8 @@ const isProd = import.meta.env.PROD;
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <meta name="author" content="Qarote Team" />
-    <meta name="robots" content="index, follow" />
-    <meta name="googlebot" content="index, follow" />
+    <meta name="robots" content={noindex ? "noindex, follow" : "index, follow"} />
+    <meta name="googlebot" content={noindex ? "noindex, follow" : "index, follow"} />
 
     <!-- Favicon and App Manifest -->
     <link rel="icon" type="image/svg+xml" href="/images/new_icon.svg" />

@@ -13,8 +13,16 @@ export default defineConfig({
       shikiConfig: { theme: "min-light" },
     }),
     sitemap({
-      // Exclude docs — managed separately via dedicated doc tooling.
-      filter: (page) => !page.includes("/docs/"),
+      // Exclude docs (managed separately) + the features hidden at launch
+      // (Daily Digest, Message Spy, Firehose Tracing). Those routes stay alive
+      // for direct URLs but are kept out of the sitemap + noindex'd so search
+      // engines aren't pushed to crawl them as primary features. Matches the
+      // `noindex` pages in src/pages/features/. Restore when V2.x ships them.
+      filter: (page) =>
+        !page.includes("/docs/") &&
+        !page.includes("/features/digest") &&
+        !page.includes("/features/message-spy") &&
+        !page.includes("/features/message-tracing"),
       i18n: {
         defaultLocale: "en",
         locales: {
