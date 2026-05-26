@@ -1,9 +1,9 @@
 {
   "hero": {
-    "titleBefore": "你的 RabbitMQ 正在运行。你真的知道",
-    "titleHighlight": "里面发生了什么",
-    "titleAfter": "吗？",
-    "subtitle": "管理插件从未被设计成的 RabbitMQ 监控智能层。队列历史、消费者健康告警与故障诊断 — 2 分钟内完成接入。无需 Prometheus。无需 YAML。",
+    "titleBefore": "别再在凌晨三点排查 ",
+    "titleHighlight": "RabbitMQ",
+    "titleAfter": " 故障",
+    "subtitle": "AI 诊断你的事故并准确告诉你该修什么 — 无需 SRE。自托管，2 分钟内完成部署。",
     "noCreditCard": "2 分钟配置 · 无需信用卡 · 免费版永不过期 · Developer+ 从 $29/月起"
   },
   "cta": {

@@ -1,9 +1,9 @@
 {
   "hero": {
-    "titleBefore": "Your RabbitMQ is running. Do you actually know",
-    "titleHighlight": "what's happening",
-    "titleAfter": " inside it?",
-    "subtitle": "The RabbitMQ monitoring layer your management plugin was never built to be. Queue history, consumer health alerts, and incident diagnosis — connected in under 2 minutes. No Prometheus. No YAML.",
+    "titleBefore": "Stop debugging",
+    "titleHighlight": "RabbitMQ",
+    "titleAfter": " at 3 AM",
+    "subtitle": "The AI that diagnoses your incidents and tells you exactly what to fix — no SRE required. Self-hosted, set up in under 2 minutes.",
     "noCreditCard": "2-minute setup · No credit card · Free tier, no time limit · Developer+ from $29/mo"
   },
   "cta": {

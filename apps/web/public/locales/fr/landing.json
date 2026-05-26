@@ -1,9 +1,9 @@
 {
   "hero": {
-    "titleBefore": "Votre RabbitMQ tourne. Savez-vous vraiment",
-    "titleHighlight": "ce qui se passe",
-    "titleAfter": " à l'intérieur ?",
-    "subtitle": "La couche d'intelligence que votre plugin de gestion RabbitMQ n'a jamais été conçu pour être. Historique des files, alertes de santé des consommateurs, et diagnostic d'incidents — connecté en moins de 2 minutes. Sans Prometheus. Sans YAML.",
+    "titleBefore": "Arrêtez de déboguer",
+    "titleHighlight": "RabbitMQ",
+    "titleAfter": " à 3 h du matin",
+    "subtitle": "L'IA qui diagnostique vos incidents et vous dit exactement quoi corriger — sans SRE. Auto-hébergé, opérationnel en moins de 2 minutes.",
     "noCreditCard": "Configuration en 2 min · Sans CB · Offre gratuite, sans limite de durée · Developer+ à partir de 29 $/mois"
   },
   "cta": {
