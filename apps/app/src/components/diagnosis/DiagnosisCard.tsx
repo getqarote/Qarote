@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
@@ -77,8 +77,20 @@ interface DiagnosisCardProps {
    * itself. When absent (dryRun / first cycle), the explain button is hidden.
    */
   findingId?: string;
-  /** When true, opens the explain panel immediately on mount (deep-link). */
-  defaultExplainOpen?: boolean;
+  /**
+   * When true, the explain panel starts visually open on mount — WITHOUT
+   * triggering the LLM stream. Used to pre-expand the top finding so a fresh
+   * visitor sees the explain affordance, at zero token cost.
+   */
+  defaultPanelOpen?: boolean;
+  /**
+   * When true, auto-trigger the LLM stream on mount. Reserved for the
+   * deep-link path (`?findingId=`), where streaming immediately is the
+   * intended behavior. Kept separate from `defaultPanelOpen` so opening the
+   * panel never implies spending tokens (cost control — CQS: opening is a
+   * query, streaming is a command).
+   */
+  autoStream?: boolean;
 }
 
 const SEVERITY_BADGE: Record<string, string> = {
@@ -125,7 +137,8 @@ export function DiagnosisCard({
   supersededBy,
   firstSeenAt,
   findingId,
-  defaultExplainOpen = false,
+  defaultPanelOpen = false,
+  autoStream = false,
 }: DiagnosisCardProps) {
   const { t } = useTranslation("diagnosis");
   const posthog = usePostHog();
@@ -133,7 +146,8 @@ export function DiagnosisCard({
   const { workspace } = useWorkspace();
   const { hasFeature } = useFeatureFlags();
   const [feedbackVote, setFeedbackVote] = useState<"up" | "down" | null>(null);
-  const [explainOpen, setExplainOpen] = useState(defaultExplainOpen);
+  const [explainOpen, setExplainOpen] = useState(defaultPanelOpen);
+  const panelRef = useRef<HTMLDivElement>(null);
   const [explainVote, setExplainVote] = useState<"up" | "down" | null>(null);
   const {
     text,
@@ -179,15 +193,44 @@ export function DiagnosisCard({
     });
   };
 
+  // Auto-stream ONLY on the deep-link path. Pre-expanding the top finding
+  // (defaultPanelOpen without autoStream) opens the panel visually but spends
+  // no tokens — opening is a query, streaming is a command (CQS / cost control).
   useEffect(() => {
-    if (!explainOpen || !workspaceId || !findingId || !canExplain) return;
+    if (!autoStream || !workspaceId || !findingId || !canExplain) return;
     startExplainStream();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoStream, workspaceId, findingId, canExplain]);
+
+  // Cancel any in-flight stream when the card unmounts (navigation away or
+  // list reorder) so the user isn't billed for tokens they'll never see.
+  // Separate from the auto-stream effect so cleanup runs regardless of how the
+  // stream was started (deep-link or manual click).
+  useEffect(() => {
     return () => reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [explainOpen, workspaceId, findingId, canExplain]);
+  }, []);
+
+  // Deep-link only: move focus to the freshly-opened panel so keyboard/SR
+  // users land on the content they navigated to. Not done for the top-finding
+  // pre-expand — stealing focus on a normal page load would be disorienting.
+  useEffect(() => {
+    if (autoStream && explainOpen) panelRef.current?.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleExplainClick = () => {
-    if (posthog && !explainOpen) {
+    if (explainOpen) {
+      // Closing the panel: cancel any in-flight stream so the user isn't
+      // billed for tokens they will never see, and so a late chunk cannot
+      // re-open the panel via state updates.
+      reset();
+      setExplainVote(null);
+      setExplainOpen(false);
+      return;
+    }
+    // Opening via explicit user action — this is the intent to stream.
+    if (posthog) {
       posthog.capture("llm_explain_requested", {
         feature: "explain_finding",
         ruleId: rule,
@@ -197,14 +240,8 @@ export function DiagnosisCard({
         vhost,
       });
     }
-    if (explainOpen) {
-      // Closing the panel: cancel any in-flight stream so the user isn't
-      // billed for tokens they will never see, and so a late chunk cannot
-      // re-open the panel via state updates.
-      reset();
-      setExplainVote(null);
-    }
-    setExplainOpen((v) => !v);
+    setExplainOpen(true);
+    startExplainStream();
   };
 
   const handleExplainVote = (vote: "up" | "down") => {
@@ -407,7 +444,9 @@ export function DiagnosisCard({
         {explainOpen && canExplain && (
           <div
             id={panelId}
-            className="rounded-md border border-border bg-muted/30 px-4 py-3"
+            ref={panelRef}
+            tabIndex={-1}
+            className="rounded-md border border-border bg-muted/30 px-4 py-3 focus:outline-none"
           >
             <div className="flex items-center justify-between gap-3 mb-2">
               {workspaceId && (

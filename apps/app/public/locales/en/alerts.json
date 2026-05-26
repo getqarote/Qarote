@@ -1,7 +1,7 @@
 {
-  "pageTitle": "Alerts",
+  "pageTitle": "Notifications",
   "pageSubtitle": "Monitor system alerts and notifications",
-  "noServerTitle": "Alerts",
+  "noServerTitle": "Notifications",
   "noServerDescription": "Monitor system alerts and notifications",
   "alertRules": "Alert Rules",
   "notificationSettings": "Notification Settings",

@@ -20,6 +20,7 @@
   "virtualHosts": "虚拟主机",
   "users": "用户",
   "alerts": "告警",
+  "notifications": "通知",
   "diagnosis": "故障诊断",
   "messages": "消息",
   "definitions": "定义",

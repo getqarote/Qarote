@@ -1,7 +1,7 @@
 {
-  "pageTitle": "Alertas",
+  "pageTitle": "Notificaciones",
   "pageSubtitle": "Monitorea alertas y notificaciones del sistema",
-  "noServerTitle": "Alertas",
+  "noServerTitle": "Notificaciones",
   "noServerDescription": "Monitorea alertas y notificaciones del sistema",
   "alertRules": "Reglas de alertas",
   "notificationSettings": "Configuración de notificaciones",

@@ -18,6 +18,7 @@
     "smtp": "E-mail",
     "digest": "Digest quotidien",
     "llm": "IA / LLM",
+    "integrations": "Intégrations",
     "audit": "Journal d'audit",
     "enterprise": "Enterprise"
   },

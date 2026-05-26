@@ -1,6 +1,10 @@
 {
   "page.title": "Messages",
   "page.selectServer": "Sélectionnez un serveur pour afficher les messages.",
+  "integrations.title": "Firehose Tracing",
+  "integrations.description": "Enrichissez le diagnostic d'incident par IA avec des preuves en temps réel du flux de messages — amplification fanout, pics de dead-letter, variations de payload. Optionnel, activation en un clic.",
+  "integrations.noServer": "Sélectionnez un serveur pour gérer le Firehose Tracing.",
+  "integrations.active": "Le Firehose Tracing est actif — le diagnostic IA est enrichi par les preuves de flux de messages en temps réel.",
   "mode.spy": "Spy",
   "mode.recorded": "Tracing",
   "mode.live": "Suivi en direct",

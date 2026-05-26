@@ -10,8 +10,6 @@ import {
   useQueryStates,
 } from "nuqs";
 
-import { track } from "@/lib/analytics";
-
 import { ActiveAlertsList } from "@/components/alerts/ActiveAlertsList";
 import { AlertNotificationSettingsModal } from "@/components/alerts/AlertNotificationSettingsModal";
 import { AlertRulesModal } from "@/components/alerts/AlertRulesModal";
@@ -189,24 +187,17 @@ const Alerts = () => {
             {alertsLoading && (
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
             )}
+            {/* Advanced Smart Alerting (custom metric-threshold rules) is
+                hidden at launch — keep only the 3-channel notification setup
+                (Email / Slack / Webhook). AlertRulesModal stays in the tree
+                for when advanced rules return. */}
             {isAdmin && (
-              <>
-                <Button
-                  onClick={() => {
-                    track("alert_rule_modal_opened");
-                    setShowAlertRulesModal(true);
-                  }}
-                  className="btn-primary"
-                >
-                  {t("alertRules")}
-                </Button>
-                <Button
-                  onClick={() => setShowNotificationSettingsModal(true)}
-                  className="btn-primary"
-                >
-                  {t("notificationSettings")}
-                </Button>
-              </>
+              <Button
+                onClick={() => setShowNotificationSettingsModal(true)}
+                className="btn-primary"
+              >
+                {t("notificationSettings")}
+              </Button>
             )}
           </div>
         </div>

@@ -26,7 +26,6 @@ import { PixelKey } from "@/components/ui/pixel-key";
 import { PixelLayers } from "@/components/ui/pixel-layers";
 import { PixelLogout } from "@/components/ui/pixel-logout";
 import { PixelMessage } from "@/components/ui/pixel-message";
-import { PixelMonitor } from "@/components/ui/pixel-monitor";
 import { PixelNetwork } from "@/components/ui/pixel-network";
 import { PixelServer } from "@/components/ui/pixel-server";
 import { PixelSettings } from "@/components/ui/pixel-settings";
@@ -97,7 +96,9 @@ type NavItem = {
  * OVERVIEW — jobs-to-be-done. The killer features that define what Qarote
  * does that the RabbitMQ Management UI does not. Order matters: Home is
  * the calm landing surface, then Diagnosis (most likely incident-mode
- * entry point), Alerts, Messages, and the Qarote-original Topology.
+ * entry point), Notifications, and the Qarote-original Topology.
+ * (Messages / Message Spy + Firehose Tracing is hidden from nav at launch;
+ * the /messages route stays alive for deep-link backward compat.)
  *
  * No plan / capability badges here on purpose: ADR-002 makes gating
  * multi-axis (Plan × License × Capability), and a static badge would lie
@@ -111,8 +112,7 @@ const OVERVIEW_ITEMS: NavItem[] = [
     icon: PixelAlert,
     badge: "diagnosis",
   },
-  { titleKey: "sidebar:alerts", url: "/alerts", icon: PixelFlag },
-  { titleKey: "sidebar:messages", url: "/messages", icon: PixelMonitor },
+  { titleKey: "sidebar:notifications", url: "/alerts", icon: PixelFlag },
   { titleKey: "sidebar:topology", url: "/topology", icon: PixelNetwork },
 ];
 

@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router";
 import { isCloudMode } from "@/lib/featureFlags";
 
 import { Badge } from "@/components/ui/badge";
+import { PixelActivity } from "@/components/ui/pixel-activity";
 import { PixelBuilding } from "@/components/ui/pixel-building";
 import { PixelCreditCard } from "@/components/ui/pixel-credit-card";
 import { PixelEmail } from "@/components/ui/pixel-email";
@@ -92,6 +93,13 @@ const navGroups: NavGroup[] = [
         path: "/settings/llm",
         icon: PixelStar,
         labelKey: "settings:nav.llm",
+        adminOnly: true,
+      },
+      {
+        key: "integrations",
+        path: "/settings/integrations",
+        icon: PixelActivity,
+        labelKey: "settings:nav.integrations",
         adminOnly: true,
       },
       {

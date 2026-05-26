@@ -85,6 +85,7 @@
     "title": "一切正常 — 当前无故障",
     "description": "一旦出现问题，Qarote 会诊断根本原因并用通俗易懂的语言即时解释。",
     "exploreDemo": "浏览演示，查看真实案例",
+    "enableFirehose": "想要更精准的诊断？启用 Firehose 追踪",
     "noSnapshots": "暂无指标历史",
     "noSnapshotsDescription": "指标快照每 5 分钟收集一次，请稍后查看。"
   },

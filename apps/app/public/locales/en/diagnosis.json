@@ -85,6 +85,7 @@
     "title": "All clear — no active incidents",
     "description": "When something breaks, Qarote diagnoses the root cause and explains it in plain English — instantly.",
     "exploreDemo": "Explore the demo with realistic findings",
+    "enableFirehose": "Want sharper diagnoses? Enable Firehose Tracing",
     "noSnapshots": "No metric history yet",
     "noSnapshotsDescription": "Metric snapshots are collected every 5 minutes. Check back shortly."
   },

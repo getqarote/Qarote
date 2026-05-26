@@ -255,22 +255,8 @@ const QueueDetail = () => {
             {/* Stats — always visible at top */}
             <QueueStats queue={queue} />
 
-            {/* Spy CTA — navigates to Messages page in Live mode, pre-scoped to this queue */}
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                onClick={() =>
-                  navigate(
-                    `/messages?mode=live&queue=${encodeURIComponent(queueName)}&vhost=${encodeURIComponent(vhost || "/")}`
-                  )
-                }
-              >
-                <span className="relative flex h-2 w-2 mr-2">
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
-                </span>
-                {t("spyOnQueue")}
-              </Button>
-            </div>
+            {/* Spy CTA hidden at launch — Message Spy / Live tap lives under the
+                hidden /messages route. Diagnosis is the queue's primary surface. */}
 
             {/* Diagnosis banner — only when anomalies detected */}
             {isDiagnosisEnabled && queueDiagnoses.length > 0 && (

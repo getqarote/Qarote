@@ -371,7 +371,9 @@ export function ScanReveal({
                   posthog?.capture("scan_findings_explored", {
                     findings_count: unresolvedFindings.length,
                   });
-                  navigate("/alerts", { replace: true });
+                  // Findings ARE diagnosis findings — land the user on the
+                  // wedge surface, not the notifications page.
+                  navigate("/diagnosis", { replace: true });
                 }}
               >
                 <AlertTriangle className="h-4 w-4" />

@@ -1,6 +1,10 @@
 {
   "page.title": "消息",
   "page.selectServer": "请选择服务器以查看消息。",
+  "integrations.title": "Firehose 追踪",
+  "integrations.description": "用实时消息流证据增强 AI 故障诊断 — 扇出放大、死信激增、负载变化。可选，一键启用。",
+  "integrations.noServer": "请选择服务器以管理 Firehose 追踪。",
+  "integrations.active": "Firehose 追踪已启用 — AI 诊断已通过实时消息流证据得到增强。",
   "mode.spy": "Spy",
   "mode.recorded": "Tracing",
   "mode.live": "实时追踪",

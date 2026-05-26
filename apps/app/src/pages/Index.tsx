@@ -14,7 +14,6 @@ import { PageErrorOrGate } from "@/components/PageErrorOrGate";
 import { NoServerSelectedCard, PageShell } from "@/components/PageShell";
 import { QueueDepthsChart } from "@/components/QueueDepthsChart";
 import { QueuedMessagesChart } from "@/components/QueuedMessagesChart";
-import { RecentAlerts } from "@/components/RecentAlerts";
 import { ResourceUsage } from "@/components/ResourceUsage";
 import { TimeRange } from "@/components/TimeRangeSelector";
 import {
@@ -216,14 +215,13 @@ const Index = () => {
           signalErrorCount={signalErrorCount}
         />
 
-        {/* ZONE 2 — CONCERNS. RecentAlerts is suppressed in incident mode
-            (banner red) — three competing "look here" surfaces dilute the
-            signal. When calm, the compact thin bar keeps the zone light. */}
+        {/* ZONE 2 — CONCERNS. HomeActiveConcerns (diagnosis findings) is the
+            single concern surface at launch; the RecentAlerts strip is hidden
+            to keep the wedge (diagnosis) as the one "look here" signal. */}
         <HomeActiveConcerns
           diagnoses={diagnoses}
           isFetched={isDiagnosisFetched}
         />
-        {(bannerCounts?.critical ?? 0) === 0 && <RecentAlerts />}
 
         {/* ZONE 3 — ACTIVITY. Collapsed by default so Home delivers on its
             "answer in <3 seconds" promise (zones 1+2). Operators who want

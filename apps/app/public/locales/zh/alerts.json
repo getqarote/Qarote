@@ -1,7 +1,7 @@
 {
-  "pageTitle": "告警",
+  "pageTitle": "通知",
   "pageSubtitle": "监控系统告警和通知",
-  "noServerTitle": "告警",
+  "noServerTitle": "通知",
   "noServerDescription": "监控系统告警和通知",
   "alertRules": "告警规则",
   "notificationSettings": "通知设置",

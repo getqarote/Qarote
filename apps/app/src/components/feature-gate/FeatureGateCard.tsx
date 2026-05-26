@@ -89,7 +89,9 @@ interface FeatureGateCardProps {
  * Keep in sync with `apps/app/src/App.tsx` route definitions.
  */
 const FEATURE_PATHS: Partial<Record<FeatureKey, string>> = {
-  message_tracing: "/messages",
+  // message_tracing intentionally omitted at launch — /messages is hidden from
+  // nav. A message_tracing gate falls through to a no-op CTA until T19 gives
+  // Firehose Tracing a home under Settings.
   message_spy: "/queues",
   incident_diagnosis: "/diagnosis",
 };

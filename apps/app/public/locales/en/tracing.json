@@ -1,6 +1,10 @@
 {
   "page.title": "Messages",
   "page.selectServer": "Select a server to view messages.",
+  "integrations.title": "Firehose Tracing",
+  "integrations.description": "Enrich AI incident diagnostics with live message-flow evidence — fanout amplification, dead-letter spikes, payload shifts. Opt-in, one-click setup.",
+  "integrations.noServer": "Select a server to manage Firehose Tracing.",
+  "integrations.active": "Firehose Tracing is active — AI diagnostics are enriched with live message-flow evidence.",
   "mode.spy": "Spy",
   "mode.recorded": "Tracing",
   "mode.live": "Live tail",

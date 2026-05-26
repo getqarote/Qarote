@@ -20,6 +20,7 @@
   "virtualHosts": "Virtual Hosts",
   "users": "Users",
   "alerts": "Alerts",
+  "notifications": "Notifications",
   "diagnosis": "Incident Diagnosis",
   "messages": "Messages",
   "definitions": "Definitions",

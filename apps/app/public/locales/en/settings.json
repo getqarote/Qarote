@@ -18,6 +18,7 @@
     "smtp": "Email",
     "digest": "Daily Digest",
     "llm": "AI / LLM",
+    "integrations": "Integrations",
     "audit": "Audit Log",
     "enterprise": "Enterprise"
   },

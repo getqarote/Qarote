@@ -70,7 +70,12 @@ const config: KnipConfig = {
     },
     "packages/i18n": {
       project: ["src/**/*.ts"],
-      entry: [...DEFAULT_ENTRY, "src/index.ts", "src/react.ts", "src/server.ts"],
+      entry: [
+        ...DEFAULT_ENTRY,
+        "src/index.ts",
+        "src/react.ts",
+        "src/server.ts",
+      ],
       ignoreDependencies: ["i18next", "react-i18next", "react"],
     },
     ".": {
@@ -120,6 +125,10 @@ const config: KnipConfig = {
     // the tree (hide-don't-delete) for when Digest returns. Not rendered, so
     // knip flags it; ignore until it's re-wired into Home.
     "apps/app/src/components/home/HomePulse.tsx",
+    // Recent-alerts dashboard strip — removed from Home Zone 2 at launch (T7)
+    // so diagnosis findings are the single concern surface. Kept in the tree
+    // (hide-don't-delete) for when the notifications surface expands.
+    "apps/app/src/components/RecentAlerts.tsx",
     // Feature-gate frontend primitives — wired via CapabilityGate +
     // ServerCapabilityBadge as of PR-B. The barrel + readGateError are
     // imported by error-driven render paths that knip can't trace; the

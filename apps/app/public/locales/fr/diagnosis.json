@@ -85,6 +85,7 @@
     "title": "Tout va bien — aucun incident en cours",
     "description": "Quand quelque chose casse, Qarote diagnostique la cause racine et l'explique en clair — instantanément.",
     "exploreDemo": "Explorer la démo avec des cas réalistes",
+    "enableFirehose": "Des diagnostics plus précis ? Activez le Firehose Tracing",
     "noSnapshots": "Pas encore d'historique de métriques",
     "noSnapshotsDescription": "Les instantanés sont collectés toutes les 5 minutes. Revenez dans quelques instants."
   },

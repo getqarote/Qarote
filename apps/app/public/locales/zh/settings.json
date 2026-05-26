@@ -18,6 +18,7 @@
     "smtp": "邮件",
     "digest": "每日摘要",
     "llm": "AI / LLM",
+    "integrations": "集成",
     "audit": "审计日志",
     "enterprise": "企业版"
   },

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSearchParams } from "react-router";
+import { Link, useSearchParams } from "react-router";
 
-import { ExternalLink, RefreshCw, Zap } from "lucide-react";
+import { ChevronRight, ExternalLink, RefreshCw, Zap } from "lucide-react";
 
 import { findingKey } from "@/lib/findingKey";
 import { formatRelativeAgo } from "@/lib/formatRelativeAgo";
@@ -26,13 +26,17 @@ import { useServerContext } from "@/contexts/ServerContext";
 
 import { useDiagnosis } from "@/hooks/queries/useDiagnosis";
 
+/** sessionStorage key: marks that the top-finding auto-expand has fired this
+ * browser session, so it happens at most once (no surprise re-expands). */
+const AUTO_EXPAND_SESSION_KEY = "qarote:diagnosis:autoExpanded";
+
 export default function Diagnosis() {
   const { t } = useTranslation("diagnosis");
   const { selectedServerId } = useServerContext();
   const [searchParams, setSearchParams] = useSearchParams();
-  // Captured once at mount — DiagnosisCard only reads defaultExplainOpen on
-  // initial render, so this stays valid until the next page navigation even
-  // after we clear the URL param.
+  // Captured once at mount — DiagnosisCard only reads defaultPanelOpen /
+  // autoStream on initial render, so this stays valid until the next page
+  // navigation even after we clear the URL param.
   const [deepLinkFindingId] = useState<string | null>(() =>
     searchParams.get("findingId")
   );
@@ -42,8 +46,8 @@ export default function Diagnosis() {
     // Drop ?findingId= via React Router so a refresh doesn't re-open the
     // panel. We don't clear deepLinkFindingId here: clearing on a timer
     // races with the diagnosis fetch (the card may not have mounted yet);
-    // since defaultExplainOpen is captured at card mount, the state can
-    // persist until unmount without blocking subsequent manual opens.
+    // since defaultPanelOpen / autoStream are captured at card mount, the
+    // state can persist until unmount without blocking subsequent manual opens.
     setSearchParams(
       (prev) => {
         prev.delete("findingId");
@@ -118,6 +122,34 @@ function DiagnosisContent({
   const isPreconditionFailed = errorCode === "PRECONDITION_FAILED";
 
   const diagnoses = data?.diagnoses ?? [];
+
+  // Pre-expand the top finding's panel once per session (visual only — no LLM
+  // stream), unless the user deep-linked to a specific finding. A single
+  // session-scoped latch (in-memory ref seeded from sessionStorage) guarantees
+  // exactly one auto-expand: it survives poll-refetch reorders so a *different*
+  // finding becoming index 0 never opens a second panel (would double-open and
+  // surprise the user — F-CRIT-2), and it stays consumed across return visits
+  // within the browser session (A11y: returning visitor isn't surprised).
+  const [autoExpandConsumed, setAutoExpandConsumed] = useState(
+    () => sessionStorage.getItem(AUTO_EXPAND_SESSION_KEY) === "1"
+  );
+  const topFindingId = diagnoses[0]?.id;
+  const autoExpandFindingId =
+    !deepLinkFindingId && !autoExpandConsumed && topFindingId
+      ? topFindingId
+      : null;
+  useEffect(() => {
+    if (!autoExpandFindingId) return;
+    // One-shot latch: the target finding isn't known until the async diagnosis
+    // fetch resolves, so the decision must land in an effect, not at mount.
+    // Flipping this state immediately recomputes autoExpandFindingId → null,
+    // so this runs exactly once. (react-hooks/set-state-in-effect false positive
+    // for derive-once-from-async-data.)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setAutoExpandConsumed(true);
+    sessionStorage.setItem(AUTO_EXPAND_SESSION_KEY, "1");
+  }, [autoExpandFindingId]);
+
   // Backend reports failed Management API endpoints when the
   // best-effort signal fetch couldn't reach the broker. Surface a
   // banner so the operator doesn't read "no broker findings" as
@@ -270,6 +302,15 @@ function DiagnosisContent({
                 {t("empty.exploreDemo")}
                 <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
               </a>
+              <div className="mx-auto max-w-md border-t border-border/60 pt-3">
+                <Link
+                  to="/settings/integrations"
+                  className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground focus-visible:underline focus-visible:outline-none"
+                >
+                  {t("empty.enableFirehose")}
+                  <ChevronRight className="h-3 w-3" aria-hidden="true" />
+                </Link>
+              </div>
             </div>
           )}
 
@@ -292,7 +333,10 @@ function DiagnosisContent({
                 supersededBy={d.supersededBy}
                 firstSeenAt={d.firstSeenAt}
                 findingId={d.id}
-                defaultExplainOpen={deepLinkFindingId === d.id}
+                defaultPanelOpen={
+                  deepLinkFindingId === d.id || d.id === autoExpandFindingId
+                }
+                autoStream={deepLinkFindingId === d.id}
               />
             ))}
           </div>
