@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { trackSignUpClick } from "@/lib/gtm";
+import { LAUNCH_HIDDEN_FEATURE_KEYS } from "@/lib/launchFlags";
 
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -487,7 +488,12 @@ const PricingSection = () => {
                           {tPricing("intelligenceDiagnostics")}
                         </h4>
                         <ul className="space-y-2">
-                          {intelligenceRowsFor(plan.id).map((row) => (
+                          {intelligenceRowsFor(plan.id)
+                            .filter(
+                              (row) =>
+                                !LAUNCH_HIDDEN_FEATURE_KEYS.includes(row.name)
+                            )
+                            .map((row) => (
                             <FeatureItem key={row.name}>
                               <div>
                                 <span className="text-sm text-foreground flex items-center gap-2">

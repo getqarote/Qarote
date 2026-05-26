@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { trackSignUpClick } from "@/lib/gtm";
+import { LAUNCH_HIDDEN_FEATURE_KEYS } from "@/lib/launchFlags";
 
 import { Button } from "@/components/ui/button";
 
@@ -58,9 +59,10 @@ const FeaturesSection = () => {
           transition: `opacity 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
         };
 
-  const features = [
+  const allFeatures = [
     // Hero — killer feature: Queue History
     {
+      key: "metricsPersistence",
       iconKey: "Database",
       icon: Database,
       title: t("features.metricsPersistence.title"),
@@ -69,6 +71,7 @@ const FeaturesSection = () => {
     },
     // Secondary (large cards) — Incident Diagnosis + Message Spy
     {
+      key: "incidentDiagnosis",
       iconKey: "Zap",
       icon: Zap,
       title: t("features.incidentDiagnosis.title"),
@@ -76,6 +79,7 @@ const FeaturesSection = () => {
       isPro: true,
     },
     {
+      key: "messageSpy",
       iconKey: "Eye",
       icon: Eye,
       title: t("features.messageSpy.title"),
@@ -84,6 +88,7 @@ const FeaturesSection = () => {
     },
     // Compact grid — remaining killer features first, then core
     {
+      key: "messageTracing",
       iconKey: "GitBranch",
       icon: GitBranch,
       title: t("features.messageTracing.title"),
@@ -91,6 +96,7 @@ const FeaturesSection = () => {
       isPro: true,
     },
     {
+      key: "smartAlertingSystem",
       iconKey: "Shield",
       icon: Shield,
       title: t("features.smartAlertingSystem.title"),
@@ -98,6 +104,7 @@ const FeaturesSection = () => {
       isPro: true,
     },
     {
+      key: "dailyDigest",
       iconKey: "Mail",
       icon: Mail,
       title: t("features.dailyDigest.title"),
@@ -105,6 +112,7 @@ const FeaturesSection = () => {
       isPro: true,
     },
     {
+      key: "liveQueueMonitoring",
       iconKey: "Activity",
       icon: Activity,
       title: t("features.liveQueueMonitoring.title"),
@@ -112,6 +120,7 @@ const FeaturesSection = () => {
       isPro: false,
     },
     {
+      key: "queueManagement",
       iconKey: "MessageSquare",
       icon: MessageSquare,
       title: t("features.queueManagement.title"),
@@ -119,6 +128,7 @@ const FeaturesSection = () => {
       isPro: false,
     },
     {
+      key: "performanceAnalytics",
       iconKey: "BarChart3",
       icon: BarChart3,
       title: t("features.performanceAnalytics.title"),
@@ -126,6 +136,7 @@ const FeaturesSection = () => {
       isPro: false,
     },
     {
+      key: "multiServerSupport",
       iconKey: "Settings",
       icon: Settings,
       title: t("features.multiServerSupport.title"),
@@ -133,6 +144,7 @@ const FeaturesSection = () => {
       isPro: false,
     },
     {
+      key: "messagePublishing",
       iconKey: "Rocket",
       icon: Rocket,
       title: t("features.messagePublishing.title"),
@@ -140,6 +152,10 @@ const FeaturesSection = () => {
       isPro: false,
     },
   ];
+
+  const features = allFeatures.filter(
+    (f) => !LAUNCH_HIDDEN_FEATURE_KEYS.includes(f.key)
+  );
 
   const hero = features[0];
   const secondary = features.slice(1, 3);
