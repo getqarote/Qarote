@@ -44,6 +44,7 @@ import healthcheckController from "@/controllers/healthcheck.controller";
 import webhookController from "@/controllers/payment/webhook.controller";
 import quizController from "@/controllers/quiz.controller";
 import { appRouter } from "@/trpc/router";
+import { mcpRouter } from "@/mcp/route";
 
 const app = new Hono();
 
@@ -95,6 +96,12 @@ app.use(
   })
 );
 
+
+// MCP agent surface — in-process Model Context Protocol endpoint (PR-3).
+// Rate-limited like every other API route: the endpoint runs verifyApiKey +
+// DB lookups per POST, so throttle key brute-force / DoS at the edge.
+app.use("/api/mcp/*", standardRateLimiter);
+app.route("/api/mcp", mcpRouter);
 
 // OG unfurl route for /explanations/:id — registered BEFORE the SPA catch-all
 // and outside the !isCloudMode() gate so it works in both cloud and self-hosted.
