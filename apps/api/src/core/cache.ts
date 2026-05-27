@@ -14,6 +14,7 @@
  * avoid collisions across features (e.g. `"diagnosis:{workspaceId}:..."`).
  */
 
+import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
 interface CacheRow {
@@ -26,14 +27,22 @@ interface CacheRow {
  * periodically by the metrics cron via {@link cachePruneExpired}.
  */
 export async function cacheGet<T>(key: string): Promise<T | null> {
-  const rows = await prisma.$queryRaw<CacheRow[]>`
-    SELECT value FROM cache
-    WHERE key = ${key}
-      AND expires_at > NOW()
-  `;
-  if (!rows[0]) return null;
-  // pg (via Prisma) automatically deserialises JSONB columns to JS values.
-  return rows[0].value as T;
+  try {
+    const rows = await prisma.$queryRaw<CacheRow[]>`
+      SELECT value FROM cache
+      WHERE key = ${key}
+        AND expires_at > NOW()
+    `;
+    if (!rows[0]) return null;
+    // pg (via Prisma) automatically deserialises JSONB columns to JS values.
+    return rows[0].value as T;
+  } catch (error) {
+    // The UNLOGGED cache table can be absent (fresh DB / reset) or briefly
+    // unavailable. A miss is always a correct fallback, so never let a cache
+    // read hard-fail the caller (e.g. diagnoseServer).
+    logger.warn({ error, key }, "cacheGet failed — treating as cache miss");
+    return null;
+  }
 }
 
 /**
@@ -63,13 +72,20 @@ export async function cacheSet(
   // Serialise to a JSON string, then cast to jsonb in SQL so PostgreSQL stores
   // it as a native JSONB value rather than a plain text string.
   const valueJson = JSON.stringify(value);
-  await prisma.$executeRaw`
-    INSERT INTO cache (key, value, expires_at)
-    VALUES (${key}, ${valueJson}::jsonb, ${expiresAt}::timestamptz)
-    ON CONFLICT (key) DO UPDATE
-    SET value      = EXCLUDED.value,
-        expires_at = EXCLUDED.expires_at
-  `;
+  try {
+    await prisma.$executeRaw`
+      INSERT INTO cache (key, value, expires_at)
+      VALUES (${key}, ${valueJson}::jsonb, ${expiresAt}::timestamptz)
+      ON CONFLICT (key) DO UPDATE
+      SET value      = EXCLUDED.value,
+          expires_at = EXCLUDED.expires_at
+    `;
+  } catch (error) {
+    // A failed cache write is non-fatal — the value just isn't cached and the
+    // next read recomputes. Don't propagate (e.g. when the UNLOGGED table is
+    // absent on a fresh/reset DB).
+    logger.warn({ error, key }, "cacheSet failed — value not cached");
+  }
 }
 
 /**
@@ -95,9 +111,13 @@ export async function cacheDeletePrefix(prefix: string): Promise<void> {
     .replace(/%/g, "\\%")
     .replace(/_/g, "\\_");
   const pattern = `${escaped}%`;
-  await prisma.$executeRaw`
-    DELETE FROM cache WHERE key LIKE ${pattern} ESCAPE '\\'
-  `;
+  try {
+    await prisma.$executeRaw`
+      DELETE FROM cache WHERE key LIKE ${pattern} ESCAPE '\\'
+    `;
+  } catch (error) {
+    logger.warn({ error, prefix }, "cacheDeletePrefix failed — ignored");
+  }
 }
 
 /**
@@ -106,9 +126,13 @@ export async function cacheDeletePrefix(prefix: string): Promise<void> {
  * cache write, to avoid adding a DELETE to the hot request path.
  */
 export async function cachePruneExpired(): Promise<void> {
-  await prisma.$executeRaw`
-    DELETE FROM cache WHERE expires_at <= NOW()
-  `;
+  try {
+    await prisma.$executeRaw`
+      DELETE FROM cache WHERE expires_at <= NOW()
+    `;
+  } catch (error) {
+    logger.warn({ error }, "cachePruneExpired failed — ignored");
+  }
 }
 
 /**
@@ -118,7 +142,11 @@ export async function cachePruneExpired(): Promise<void> {
  * release path needs to drop the entry deterministically.
  */
 export async function cacheDelete(key: string): Promise<void> {
-  await prisma.$executeRaw`DELETE FROM cache WHERE key = ${key}`;
+  try {
+    await prisma.$executeRaw`DELETE FROM cache WHERE key = ${key}`;
+  } catch (error) {
+    logger.warn({ error, key }, "cacheDelete failed — ignored");
+  }
 }
 
 /**
@@ -216,10 +244,15 @@ export async function cacheCountPrefix(prefix: string): Promise<number> {
     .replace(/%/g, "\\%")
     .replace(/_/g, "\\_");
   const pattern = `${escaped}%`;
-  const rows = await prisma.$queryRaw<[{ count: bigint }]>`
-    SELECT COUNT(*)::bigint AS count FROM cache
-    WHERE key LIKE ${pattern} ESCAPE '\\'
-      AND expires_at > NOW()
-  `;
-  return Number(rows[0]?.count ?? 0n);
+  try {
+    const rows = await prisma.$queryRaw<[{ count: bigint }]>`
+      SELECT COUNT(*)::bigint AS count FROM cache
+      WHERE key LIKE ${pattern} ESCAPE '\\'
+        AND expires_at > NOW()
+    `;
+    return Number(rows[0]?.count ?? 0n);
+  } catch (error) {
+    logger.warn({ error, prefix }, "cacheCountPrefix failed — returning 0");
+    return 0;
+  }
 }
