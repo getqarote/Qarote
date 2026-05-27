@@ -111,14 +111,18 @@ export const ActiveAlertsList = ({
         ))}
       </div>
 
-      <PaginationControls
-        total={total}
-        page={page}
-        pageSize={pageSize}
-        onPageChange={onPageChange}
-        onPageSizeChange={onPageSizeChange}
-        itemLabel="alerts"
-      />
+      {/* px matches AlertItem rows (px-4) + pb so the footer isn't flush to
+          the card edge. */}
+      <div className="px-4 pb-4">
+        <PaginationControls
+          total={total}
+          page={page}
+          pageSize={pageSize}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+          itemLabel="alerts"
+        />
+      </div>
     </div>
   );
 };

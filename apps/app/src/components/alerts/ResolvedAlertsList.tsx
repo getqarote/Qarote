@@ -94,14 +94,16 @@ export const ResolvedAlertsList = ({
       </div>
 
       {total > pageSize && (
-        <PaginationControls
-          total={total}
-          page={page}
-          pageSize={pageSize}
-          onPageChange={onPageChange}
-          onPageSizeChange={onPageSizeChange}
-          itemLabel={t("resolvedAlertsLabel")}
-        />
+        <div className="px-4 pb-4">
+          <PaginationControls
+            total={total}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={onPageChange}
+            onPageSizeChange={onPageSizeChange}
+            itemLabel={t("resolvedAlertsLabel")}
+          />
+        </div>
       )}
     </div>
   );

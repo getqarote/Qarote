@@ -453,8 +453,12 @@ async function seedDemoSnapshots(
       consumerCount: 4,
     });
 
+    // Depth held flat so this queue trips ONLY CONSUMER_CRASH. A rising depth
+    // would also trip QUEUE_BACKLOG (which CONSUMER_CRASH supersedes) — that
+    // shows a dimmed 4th "caused-by" card and mismatches the sidebar's
+    // primary-finding count.
     const crashed = i >= 20;
-    const notifMsgs = crashed ? lerp(600, 1902, i - 20) : lerp(50, 80, i);
+    const notifMsgs = 770;
     data.push({
       ...base,
       queueName: "notifications.email",
