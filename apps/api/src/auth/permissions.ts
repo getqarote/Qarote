@@ -118,7 +118,9 @@ export type WorkspacePermission =
   // role:manage — create / update / delete / setPermissions / assignRole (OWNER-tier)
   | "role:read"
   | "role:read:assignments"
-  | "role:manage";
+  | "role:manage"
+  // --- API keys (machine credentials for the MCP agent surface) ---
+  | "apikey:manage";
 
 /**
  * Minimum WorkspaceRole required for each permission. A role implicitly
@@ -249,6 +251,10 @@ export const WORKSPACE_PERMISSION_REQUIREMENTS: Record<
   // escalation surface (a malicious ADMIN with role:manage could
   // grant themselves new permissions otherwise).
   "role:manage": WorkspaceRole.OWNER,
+  // Minting/revoking machine API keys is credential issuance — OWNER-tier,
+  // conservative (a key grants programmatic workspace access). Can loosen to
+  // ADMIN later if needed.
+  "apikey:manage": WorkspaceRole.OWNER,
 };
 
 const ALL_PERMISSIONS = Object.keys(

@@ -1,3 +1,4 @@
+import { apiKey } from "@better-auth/api-key";
 import { sso } from "@better-auth/sso";
 import bcrypt from "bcryptjs";
 import { betterAuth } from "better-auth";
@@ -147,6 +148,19 @@ export const auth = betterAuth({
   },
 
   plugins: [
+    // Machine credentials for the MCP agent surface. Scope (workspaceId +
+    // read/explain mode) is stored in each key's `metadata` and enforced by
+    // our own clamp (see protectedProcedure), so `enableMetadata` is required.
+    // Per-key rate limiting is on so agent traffic is metered independently of
+    // the user's session bucket.
+    apiKey({
+      enableMetadata: true,
+      rateLimit: {
+        enabled: true,
+        timeWindow: 1000 * 60,
+        maxRequests: 120,
+      },
+    }),
     sso({
       provisionUser: async ({ user, userInfo, provider }) => {
         // Enforce enterprise entitlement before allowing SSO login

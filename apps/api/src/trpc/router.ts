@@ -1,3 +1,4 @@
+import { apiKeysRouter } from "./routers/api-keys";
 import { auditRouter } from "./routers/audit";
 import { authRouter } from "./routers/auth/index";
 import { discordRouter } from "./routers/discord";
@@ -20,6 +21,7 @@ import { router } from "./trpc";
  * src/ee/trpc/router.ts which the server bootstrap imports instead.
  */
 export const appRouter = router({
+  apiKeys: apiKeysRouter,
   audit: auditRouter,
   auth: authRouter,
   user: userRouter,

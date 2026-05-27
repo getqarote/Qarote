@@ -29,6 +29,14 @@ interface ContextLike {
   workspaceId: string | null;
   remoteIp: string | null;
   userAgent: string | null;
+  /**
+   * Id of the machine API key that authenticated the request, or null for
+   * cookie sessions. Merged into the audit row's `metadata.apiKeyId` so agent
+   * actions are distinguishable from human actions in the trail. Optional so
+   * synthetic call sites that build a minimal ctx-like object (e.g. invitation
+   * flows) need not supply it — absence simply means "not an API-key request".
+   */
+  apiKeyId?: string | null;
 }
 
 /**
@@ -76,6 +84,23 @@ export async function recordFromContext(
   // `void recordFromContext(...)` without risking an unhandled
   // rejection on any unexpected throw path. Audit failure must never
   // surface to the caller.
+  // Tag agent-initiated actions with the API key id (merged into metadata so
+  // a row written by a machine credential is distinguishable from a human's).
+  const base =
+    entry.metadata &&
+    typeof entry.metadata === "object" &&
+    !Array.isArray(entry.metadata)
+      ? entry.metadata
+      : undefined;
+  let metadata: Prisma.InputJsonValue | null | undefined = entry.metadata;
+  if (ctx.apiKeyId) {
+    metadata = base
+      ? { ...base, apiKeyId: ctx.apiKeyId }
+      : // Non-object metadata (array/primitive) can't be merged without losing
+        // it — nest it so both the value and the attribution survive.
+        { apiKeyId: ctx.apiKeyId, originalMetadata: entry.metadata ?? null };
+  }
+
   try {
     await recordAuditLog({
       actorId: ctx.user?.id ?? null,
@@ -93,7 +118,7 @@ export async function recordFromContext(
       entityLabel: entry.entityLabel,
       serverId: entry.serverId,
       vhost: entry.vhost,
-      metadata: entry.metadata,
+      metadata,
     });
   } catch (error) {
     logger.error(

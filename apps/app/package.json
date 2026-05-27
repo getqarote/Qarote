@@ -29,7 +29,7 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
-    "@better-auth/sso": "^1.5.4",
+    "@better-auth/sso": "^1.6.11",
     "@dagrejs/dagre": "^2.0.4",
     "@hookform/resolvers": "^5.2.2",
     "@marsidev/react-turnstile": "^1.5.1",
@@ -63,7 +63,7 @@
     "@trpc/react-query": "^11.11.0",
     "@trpc/server": "^11.11.0",
     "@xyflow/react": "^12.10.1",
-    "better-auth": "^1.6.2",
+    "better-auth": "^1.6.11",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",

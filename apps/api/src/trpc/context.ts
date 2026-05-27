@@ -6,6 +6,7 @@ import { auth } from "@/core/better-auth";
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
 
+import { type ApiKeyScope, parseApiKeyScope } from "@/auth/api-key-scope";
 import { createEffectivePermissionsLoader } from "@/auth/effective-permissions";
 import type { OrgRole } from "@/generated/prisma/client";
 
@@ -33,6 +34,17 @@ export interface Context extends Record<string, unknown> {
   remoteIp: string | null;
   /** Client User-Agent header — captured for audit-log forensics. Null when absent. */
   userAgent: string | null;
+  /**
+   * Scope of the machine API key that authenticated this request, or null for
+   * cookie-session (human) requests. Drives the read-only clamp and the
+   * workspace-match check.
+   */
+  apiKeyScope: ApiKeyScope | null;
+  /**
+   * Id of the API key that authenticated this request (for audit attribution
+   * via `metadata.apiKeyId`). Null for cookie-session requests.
+   */
+  apiKeyId: string | null;
   /**
    * Per-request DataLoader for `loadEffectivePermissions(memberId)`
    * (RBAC Phase 3). Memoizes within the request so a single mutation
@@ -123,6 +135,69 @@ export async function createContext(opts: {
     throw error;
   }
 
+  // Machine API-key auth (MCP agent surface). Only attempted when there is no
+  // cookie session: agents present an `x-api-key` header, never a cookie.
+  let apiKeyScope: ApiKeyScope | null = null;
+  let apiKeyId: string | null = null;
+  if (!user) {
+    const apiKeyHeader = req.header("x-api-key");
+    if (apiKeyHeader) {
+      // A throw from verifyApiKey is a backend failure — better-auth returns
+      // `{ valid: false }` for invalid/expired/disabled keys, it does not
+      // throw. So surface it as a server error rather than silently
+      // downgrading to an unauthenticated request (mirrors the cookie branch).
+      const result = await auth.api
+        .verifyApiKey({ body: { key: apiKeyHeader } })
+        .catch((error) => {
+          logger.error({ error }, "verifyApiKey failed");
+          throw error;
+        });
+      if (result?.valid && result.key) {
+        // `referenceId` holds the creating user's id (plugin uses the default
+        // `references: "user"`). Load the user fresh so `isActive` reflects
+        // current DB state — a deactivated creator's key must stop working
+        // (enforced by protectedProcedure). Failing to resolve the user leaves
+        // `user` null, so the request is treated as unauthenticated.
+        const dbUser = await prisma.user.findUnique({
+          where: { id: result.key.referenceId },
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            workspaceId: true,
+            isActive: true,
+            emailVerified: true,
+            pendingEmail: true,
+            lastLogin: true,
+            createdAt: true,
+            updatedAt: true,
+            locale: true,
+          },
+        });
+        if (dbUser) {
+          user = {
+            id: dbUser.id,
+            email: dbUser.email,
+            firstName: dbUser.firstName,
+            lastName: dbUser.lastName,
+            workspaceId: dbUser.workspaceId,
+            isActive: dbUser.isActive !== false,
+            emailVerified: dbUser.emailVerified ?? false,
+            pendingEmail: dbUser.pendingEmail,
+            lastLogin: dbUser.lastLogin,
+            createdAt: dbUser.createdAt,
+            updatedAt: dbUser.updatedAt,
+            locale: dbUser.locale ?? undefined,
+            subscription: null,
+          };
+          apiKeyScope = parseApiKeyScope(result.key.metadata);
+          apiKeyId = result.key.id;
+        }
+      }
+    }
+  }
+
   // Extract workspace ID
   const workspaceId = extractWorkspaceId(req);
 
@@ -163,6 +238,8 @@ export async function createContext(opts: {
     logger,
     remoteIp,
     userAgent,
+    apiKeyScope,
+    apiKeyId,
     // Per-request DataLoader — short-lived so post-mutation reads
     // on the same request can still see stale data; cross-request
     // freshness is handled by `Role.updatedAt` revalidation inside

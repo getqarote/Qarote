@@ -8,8 +8,10 @@
     "strict": true,
     "outDir": "dist",
     "sourceMap": false,
-    "declaration": true,
-    "declarationMap": true,
+    // `declaration`/`declarationMap` intentionally OFF: better-auth's inferred
+    // `auth` type (>=1.6.11) exceeds tsc's serialization limit (TS7056/TS2742).
+    // Nothing consumes this package's .d.ts — the frontend imports API source
+    // via the `@api/*` path alias — so emitting declarations is unnecessary.
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,

@@ -23,6 +23,10 @@ import {
 } from "./middlewares/rateLimiter";
 
 import {
+  apiKeyMutationBlocked,
+  apiKeyWorkspaceMismatch,
+} from "@/auth/api-key-scope";
+import {
   WORKSPACE_PERMISSION_REQUIREMENTS,
   type WorkspacePermission,
 } from "@/auth/permissions";
@@ -137,6 +141,9 @@ function logAuthorizationDenial(
      *  attacker's IP / UA, not just the user-id. */
     ipAddress: string | null;
     userAgent: string | null;
+    /** Id of the API key behind the request, when the denial is for a machine
+     *  credential rather than a human session. */
+    apiKeyId?: string | null;
   }
 ): void {
   logger.warn(
@@ -169,6 +176,7 @@ function logAuthorizationDenial(
         requiredRole: details.requiredRole,
         actualRole: details.actualRole,
         reason: details.reason,
+        apiKeyId: details.apiKeyId ?? null,
       },
     });
   }
@@ -205,6 +213,30 @@ export const protectedProcedure = publicProcedure.use(async (opts) => {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: te(ctx.locale, "auth.accountInactive"),
+    });
+  }
+
+  // Read-only floor for machine API keys. A `read`-scoped key may only run
+  // queries — never mutations or subscriptions. This lives in
+  // `protectedProcedure` (the chokepoint every authenticated procedure
+  // descends from, including orgScoped/workspace) so it cannot be bypassed,
+  // and it is a floor independent of the creator's live role: a later
+  // promotion of the creating user never escalates the key.
+  if (apiKeyMutationBlocked(ctx.apiKeyScope, opts.type)) {
+    logAuthorizationDenial(opts, {
+      userId: ctx.user.id,
+      userEmail: ctx.user.email,
+      workspaceId: ctx.workspaceId,
+      requiredRole: "QUERY_ONLY",
+      actualRole: null,
+      reason: "api_key_read_only",
+      ipAddress: ctx.remoteIp,
+      userAgent: ctx.userAgent,
+      apiKeyId: ctx.apiKeyId,
+    });
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: te(ctx.locale, "auth.apiKeyReadOnly"),
     });
   }
 
@@ -331,12 +363,40 @@ export const workspaceProcedure = rateLimitedProcedure.use(async (opts) => {
   const workspaceId =
     typeof inputWorkspaceId === "string" && inputWorkspaceId.trim() !== ""
       ? inputWorkspaceId
-      : ctx.workspaceId || ctx.user.workspaceId || null;
+      : // For machine API keys, fall back to the key's bound workspace before
+        // the user's active workspace, so an agent that omits workspaceId still
+        // resolves to its key's scope (not the creator's drifting active one).
+        ctx.workspaceId ||
+        ctx.apiKeyScope?.workspaceId ||
+        ctx.user.workspaceId ||
+        null;
 
   if (!workspaceId) {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: te(ctx.locale, "workspace.idRequired"),
+    });
+  }
+
+  // Workspace-match for machine API keys. A key is bound to exactly one
+  // workspace (its metadata scope); the resolved workspaceId must equal it.
+  // A leaked key can never reach another workspace — not even one the
+  // creating user is also a member of.
+  if (apiKeyWorkspaceMismatch(ctx.apiKeyScope, workspaceId)) {
+    logAuthorizationDenial(opts, {
+      userId: ctx.user.id,
+      userEmail: ctx.user.email,
+      workspaceId,
+      requiredRole: "WORKSPACE_MATCH",
+      actualRole: null,
+      reason: "api_key_workspace_mismatch",
+      ipAddress: ctx.remoteIp,
+      userAgent: ctx.userAgent,
+      apiKeyId: ctx.apiKeyId,
+    });
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: te(ctx.locale, "workspace.cannotAccessResources"),
     });
   }
 
