@@ -2,7 +2,6 @@ import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from "@qarote/i18n";
 import type { HonoRequest } from "hono";
 
 import type { SafeUser } from "@/core/auth";
-import { extractUserFromToken } from "@/core/auth";
 import { auth } from "@/core/better-auth";
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
@@ -77,7 +76,7 @@ function extractWorkspaceId(req: HonoRequest): string | null {
 
 /**
  * Create tRPC context from request
- * Extracts user from Authorization header and workspace from various sources
+ * Resolves the user from the better-auth cookie session and workspace from various sources
  */
 export async function createContext(opts: {
   req: HonoRequest;
@@ -86,7 +85,9 @@ export async function createContext(opts: {
 
   let user: SafeUser | null = null;
 
-  // 1. Try better-auth cookie-based session first (new auth system)
+  // Resolve the user from the better-auth cookie-based session.
+  // Both app and portal authenticate exclusively via cookies (sent with
+  // credentials: include / withCredentials, including SSE subscriptions).
   try {
     const session = await auth.api.getSession({
       headers: req.raw.headers,
@@ -113,38 +114,13 @@ export async function createContext(opts: {
         subscription: null,
       };
     }
-  } catch {
-    // Cookie session not found or invalid — fall through to Bearer token
-  }
-
-  // 2. Fallback to legacy Bearer token (transition period)
-  if (!user) {
-    const authHeader = req.header("Authorization");
-    let token: string | null = null;
-
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      token = authHeader.slice(7).trim();
-    }
-
-    // For httpSubscriptionLink (SSE), auth is passed via connectionParams query param.
-    if (!token) {
-      const url = new URL(req.url);
-      const connectionParamsStr = url.searchParams.get("connectionParams");
-      if (connectionParamsStr) {
-        try {
-          const params = JSON.parse(decodeURIComponent(connectionParamsStr));
-          if (typeof params.token === "string") {
-            token = params.token;
-          }
-        } catch {
-          // ignore malformed connectionParams
-        }
-      }
-    }
-
-    if (token) {
-      user = await extractUserFromToken(token);
-    }
+  } catch (error) {
+    // getSession returns null for a missing/invalid/expired cookie, so an
+    // unauthenticated request simply leaves `user` null. A throw here means a
+    // genuine backend failure (e.g. the session store is unavailable) — surface
+    // it instead of silently masking an outage as a logged-out request.
+    logger.error({ error }, "Failed to resolve better-auth session");
+    throw error;
   }
 
   // Extract workspace ID
