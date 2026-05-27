@@ -14,15 +14,26 @@ COPY apps/app/package.json ./apps/app/
 COPY apps/web/package.json ./apps/web/
 COPY apps/portal/package.json ./apps/portal/
 COPY packages/i18n/package.json ./packages/i18n/
+COPY packages/analytics/package.json ./packages/analytics/
 
 # Install all dependencies (monorepo) - skip scripts to avoid issues
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Copy shared packages (required by app)
 COPY packages/i18n ./packages/i18n
+COPY packages/analytics ./packages/analytics
 
-# Build shared packages first
+# Build shared packages first (both emit to dist/, consumed by the app)
 RUN cd packages/i18n && npx tsc
+RUN cd packages/analytics && npx tsc
+
+# The SPA imports a few browser-safe constants from the API source via the
+# `@api` alias (vite: @api -> ../api/src) — e.g. the *_PROMPT_VERSION values
+# in ee/services/llm/context-builders/*.context. Those files are deliberately
+# self-contained (no backend deps), but the source tree must be present for
+# Vite to resolve the alias. Builder-stage only; the final nginx image ships
+# just the built dist.
+COPY apps/api/src ./apps/api/src
 
 # Copy app source code
 COPY apps/app ./apps/app

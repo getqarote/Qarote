@@ -1,0 +1,15 @@
+# Docker builds install dependencies and generate artifacts inside the image,
+# so host copies of these must never enter the build context. Besides being
+# wasteful, copying them breaks builds run from a worktree where node_modules /
+# generated are symlinks (COPY cannot replace a dir with a symlink).
+**/node_modules
+**/dist
+**/.turbo
+**/generated
+.git
+**/*.log
+**/.env
+**/.env.*
+**/playwright-report
+**/test-results
+**/coverage
