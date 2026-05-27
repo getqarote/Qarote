@@ -76,6 +76,7 @@ async function seedDemo(): Promise<void> {
     if (alertCount === 0) {
       await seedDemoAlerts(workspace.id, existing.id, vhost || "/");
     }
+    await seedDemoSnapshots(workspace.id, existing.id, vhost || "/");
     await seedDemoDiagnostics(workspace.id, existing.id, vhost || "/");
     return;
   }
@@ -102,7 +103,9 @@ async function seedDemo(): Promise<void> {
   await seedDemoAlerts(workspace.id, server.id, vhost || "/");
 
   // Seed diagnosis findings + cached AI explanations so the wedge
-  // (Incident Diagnosis + AI Explain) is populated for visitors.
+  // (Incident Diagnosis + AI Explain) is populated for visitors. Snapshots
+  // are the engine's input; the records carry the explanation cache.
+  await seedDemoSnapshots(workspace.id, server.id, vhost || "/");
   await seedDemoDiagnostics(workspace.id, server.id, vhost || "/");
 }
 
@@ -301,12 +304,19 @@ async function seedDemoDiagnostics(
   const now = Date.now();
   const minutesAgo = (m: number) => new Date(now - m * 60_000);
 
+  // Each finding is seeded as an IncidentDiagnosisRecord whose fingerprint
+  // matches what the rules engine computes from the seeded snapshots (see
+  // seedDemoSnapshots). On the first /diagnosis run the engine upserts by
+  // (serverId, fingerprint) — preserving this row's id — so the pre-written
+  // LlmExplanation (linked by id) keeps serving as a cache hit. The engine
+  // overwrites description/recommendation/severity with its computed text;
+  // only firstSeenAt and the explanation content are ours.
   const findings = [
     {
       ruleId: "QUEUE_BACKLOG",
       scope: "queue" as const,
       queueName: "orders.processing",
-      severity: AlertSeverity.CRITICAL,
+      severity: AlertSeverity.HIGH,
       description:
         "orders.processing is holding 12,847 ready messages and climbing — publish rate (1,240 msg/s) has outpaced consumer throughput (310 msg/s) for the last 38 minutes.",
       recommendation:
@@ -319,88 +329,41 @@ async function seedDemoDiagnostics(
       ruleId: "CONSUMER_CRASH",
       scope: "queue" as const,
       queueName: "notifications.email",
-      severity: AlertSeverity.HIGH,
+      severity: AlertSeverity.CRITICAL,
       description:
-        "notifications.email dropped from 3 consumers to 0 at 02:41. 1,902 messages are now accumulating with nothing draining them.",
+        "notifications.email dropped from 3 consumers to 0. 1,902 messages are now accumulating with nothing draining them.",
       recommendation:
-        "Restart the email worker and inspect its logs around 02:41 for an unhandled exception or OOM. Messages are durable and will drain once a consumer reconnects.",
+        "Restart the email worker and inspect its logs for an unhandled exception or OOM. Messages are durable and will drain once a consumer reconnects.",
       ageMin: 19,
       explanation:
-        "**Root cause: the consumer fleet died, not RabbitMQ.**\n\nAll 3 consumers on `notifications.email` disconnected within the same second (02:41) and none reconnected. A simultaneous drop across every consumer points to a single shared failure — a deploy that crash-loops, an unhandled exception killing the process, or an OOM — rather than independent network blips.\n\nThe queue itself is healthy: messages are durable and simply queuing up safely. The risk is purely latency (emails are delayed), and it grows until a consumer returns.\n\n**What to do:** check the email worker's logs at 02:41 for the exit reason. If it's crash-looping on a poison message, the redelivery will keep killing new consumers — move the offending message to a dead-letter queue before bringing workers back.",
+        "**Root cause: the consumer fleet died, not RabbitMQ.**\n\nAll 3 consumers on `notifications.email` disconnected within the same window and none reconnected. A simultaneous drop across every consumer points to a single shared failure — a deploy that crash-loops, an unhandled exception killing the process, or an OOM — rather than independent network blips.\n\nThe queue itself is healthy: messages are durable and simply queuing up safely. The risk is purely latency (emails are delayed), and it grows until a consumer returns.\n\n**What to do:** check the email worker's logs for the exit reason. If it's crash-looping on a poison message, the redelivery will keep killing new consumers — move the offending message to a dead-letter queue before bringing workers back.",
     },
     {
       ruleId: "SLOW_CONSUMER",
       scope: "queue" as const,
       queueName: "payments.capture",
-      severity: AlertSeverity.MEDIUM,
-      description:
-        "payments.capture has consumers attached but ack latency has risen to 4.2s/msg (was ~280ms). The queue is draining, but far slower than it's filling.",
-      recommendation:
-        "Profile the capture handler — a 15x latency jump usually means a downstream call (payment gateway, DB lock) regressed. Check gateway response times first.",
-      ageMin: 52,
-      explanation:
-        "**Root cause: the consumer is alive but slow — a downstream regression.**\n\n`payments.capture` consumers are still acking, so this isn't a crash. But per-message ack time jumped from ~280ms to ~4.2s — a 15x regression. RabbitMQ is delivering fine; the time is being spent inside the handler.\n\nA jump this sharp and this uniform almost always traces to a single downstream dependency: a payment-gateway call that started timing out and retrying, a database row-lock under contention, or a connection pool exhausted by the slower calls backing up.\n\n**What to do:** correlate the latency step-change with downstream metrics. Start with the payment gateway's p95 — if it regressed at the same timestamp, that's your cause and RabbitMQ is just the messenger.",
-    },
-    {
-      ruleId: "MEMORY_ALARM_ACTIVE",
-      scope: "broker" as const,
-      queueName: "",
       severity: AlertSeverity.HIGH,
       description:
-        "Node rabbit@demo has tripped its memory high-watermark alarm (3.8 GB / 4 GB). Publishers are now flow-controlled cluster-wide.",
+        "payments.capture has consumers attached but is draining slower than it fills — consume rate has trailed publish rate for several consecutive samples.",
       recommendation:
-        "Find what's resident in memory — usually a large unacked backlog or a queue without a length limit. Draining the biggest queue will clear the alarm.",
-      ageMin: 7,
+        "Profile the capture handler — a sustained consume<publish gap usually means a downstream call (payment gateway, DB lock) regressed, or prefetch is too low. Check gateway response times first.",
+      ageMin: 52,
       explanation:
-        "**Root cause: memory pressure is back-pressuring the whole broker.**\n\n`rabbit@demo` crossed its memory high-watermark (3.8 GB of a 4 GB limit), so RabbitMQ did exactly what it's designed to do: it blocked publishers across the node to protect itself from running out of memory entirely. Every connection that's publishing will see this as stalled `basic.publish` calls.\n\nThe memory is almost always held by message bodies — a large unacked backlog (messages delivered but not yet acked stay in RAM) or an unbounded queue that's grown huge. It's a symptom of one of the other findings, not an independent fault.\n\n**What to do:** identify the largest queue by memory and drain or cap it. Clearing the backlog drops resident memory below the watermark and lifts the publish block automatically — no node restart needed.",
-    },
-    {
-      ruleId: "QUEUE_DRAIN_STALL",
-      scope: "queue" as const,
-      queueName: "analytics.events",
-      severity: AlertSeverity.MEDIUM,
-      description:
-        "analytics.events stopped draining 11 minutes ago — depth flat at 6,204, consumers connected but ack rate is 0 msg/s.",
-      recommendation:
-        "Consumers are attached but idle — likely stuck on a blocking call or waiting on a lock. Restart the consumer group if no progress resumes.",
-      ageMin: 11,
-      explanation:
-        "**Root cause: consumers are connected but wedged — not consuming.**\n\n`analytics.events` shows the tell-tale signature of a drain stall: depth is perfectly flat (6,204), consumers are still registered, but the ack rate is a hard zero. If consumers had crashed you'd see the count drop; if they were merely slow you'd see a trickle. Zero acks with live connections means the consumer threads are blocked.\n\nThe usual culprits are a synchronous call inside the handler that's hung (a downstream service not responding and no timeout set), or a deadlock on a shared resource. The consumers will sit there indefinitely holding their prefetched messages.\n\n**What to do:** capture a thread dump from a consumer to see where it's parked. If you need to restore flow immediately, restart the consumer group — but the stall will recur until the blocking call gets a timeout.",
-    },
-    {
-      ruleId: "NO_CONSUMER_PERSISTENT_QUEUE",
-      scope: "queue" as const,
-      queueName: "audit.log",
-      severity: AlertSeverity.LOW,
-      description:
-        "audit.log is durable and accumulating (842 messages) but has had 0 consumers for over 6 hours. Persistent messages with no consumer grow unbounded.",
-      recommendation:
-        "Confirm a consumer is supposed to be running. If audit events are no longer consumed, add a TTL or length limit so the queue can't grow without bound.",
-      ageMin: 372,
-      explanation:
-        "**Root cause: an orphaned durable queue — a slow leak, not an incident.**\n\n`audit.log` is declared durable and has been collecting persistent messages for 6+ hours with no consumer ever attached. Nothing is acutely broken, which is exactly why this is easy to miss: there's no alarm, just steady, unbounded growth backed to disk.\n\nThis pattern means one of two things — a consumer that was supposed to be deployed never was (or was decommissioned without removing the queue), or the queue is genuinely write-only and simply lacks a retention policy.\n\n**What to do:** decide if anything is meant to read `audit.log`. If yes, the consumer is missing — deploy it. If the queue is intentionally unconsumed, give it a `x-message-ttl` or `x-max-length` so it self-trims instead of eventually pressuring node memory or disk.",
+        "**Root cause: the consumer is alive but slow — a downstream regression.**\n\n`payments.capture` consumers are still acking, so this isn't a crash. But the consume rate has trailed the publish rate for several consecutive samples — RabbitMQ is delivering fine; the time is being spent inside the handler.\n\nA gap this sustained almost always traces to a single downstream dependency: a payment-gateway call that started timing out and retrying, a database row-lock under contention, or a connection pool exhausted by the slower calls backing up.\n\n**What to do:** correlate the slowdown with downstream metrics. Start with the payment gateway's p95 — if it regressed at the same time, that's your cause and RabbitMQ is just the messenger. If the handler is healthy, raise `prefetch_count` so idle consumers pull more work.",
     },
   ];
 
   for (const f of findings) {
     const seenAt = minutesAgo(f.ageMin);
-    // Broker-scoped findings carry empty queueName/vhost on the wire; the
-    // fingerprint must hash the same values that are persisted.
-    const effectiveVhost = f.scope === "broker" ? "" : vhost;
     const record = await prisma.incidentDiagnosisRecord.create({
       data: {
         serverId,
         workspaceId,
-        fingerprint: demoFingerprint(
-          f.ruleId,
-          f.scope,
-          f.queueName,
-          effectiveVhost
-        ),
+        fingerprint: demoFingerprint(f.ruleId, f.scope, f.queueName, vhost),
         scope: f.scope,
         ruleId: f.ruleId,
         queueName: f.queueName,
-        vhost: effectiveVhost,
+        vhost,
         severity: f.severity,
         description: f.description,
         recommendation: f.recommendation,
@@ -424,4 +387,97 @@ async function seedDemoDiagnostics(
   }
 
   logger.info({ count: findings.length }, "Demo diagnosis findings seeded");
+}
+
+/**
+ * Seed the metric-snapshot history the diagnosis engine reads (the /diagnosis
+ * page recomputes findings live from QueueMetricSnapshot — it does not display
+ * persisted records). Each queue's 2-hour series is shaped to trip exactly one
+ * visible rule, matching the seeded findings above so their explanations
+ * cache-hit:
+ *   - orders.processing  → QUEUE_BACKLOG  (depth climbs; publishRate=0 on the
+ *     final sample so SLOW_CONSUMER's idle-end guard suppresses it)
+ *   - notifications.email → CONSUMER_CRASH (consumers drop to 0 within the last
+ *     30 min while messages pile up; this supersedes its own backlog)
+ *   - payments.capture   → SLOW_CONSUMER  (consume<publish every sample, depth
+ *     creeps up only ~10% so QUEUE_BACKLOG's 20% threshold stays quiet)
+ */
+async function seedDemoSnapshots(
+  workspaceId: string,
+  serverId: string,
+  vhost: string
+): Promise<void> {
+  const existing = await prisma.queueMetricSnapshot.count({
+    where: { serverId },
+  });
+  if (existing > 0) return;
+
+  const POINTS = 24;
+  const STEP_MS = 5 * 60 * 1000;
+  const now = Date.now();
+  const ts = (i: number) => new Date(now - (POINTS - 1 - i) * STEP_MS);
+  const lerp = (a: number, b: number, i: number) =>
+    Math.round(a + ((b - a) * i) / (POINTS - 1));
+
+  const data: {
+    serverId: string;
+    workspaceId: string;
+    queueName: string;
+    vhost: string;
+    messages: bigint;
+    messagesReady: bigint;
+    messagesUnack: bigint;
+    publishRate: number;
+    consumeRate: number;
+    consumerCount: number;
+    timestamp: Date;
+  }[] = [];
+
+  for (let i = 0; i < POINTS; i++) {
+    const isLast = i === POINTS - 1;
+    const base = { serverId, workspaceId, vhost, timestamp: ts(i) };
+
+    const ordersMsgs = lerp(300, 12000, i);
+    data.push({
+      ...base,
+      queueName: "orders.processing",
+      messages: BigInt(ordersMsgs),
+      messagesReady: BigInt(ordersMsgs - 50),
+      messagesUnack: BigInt(50),
+      publishRate: isLast ? 0 : 1240,
+      consumeRate: 310,
+      consumerCount: 4,
+    });
+
+    const crashed = i >= 20;
+    const notifMsgs = crashed ? lerp(600, 1902, i - 20) : lerp(50, 80, i);
+    data.push({
+      ...base,
+      queueName: "notifications.email",
+      messages: BigInt(notifMsgs),
+      messagesReady: BigInt(notifMsgs),
+      messagesUnack: BigInt(0),
+      publishRate: isLast ? 0 : 400,
+      consumeRate: crashed ? 0 : 400,
+      consumerCount: crashed ? 0 : 3,
+    });
+
+    const payMsgs = lerp(4000, 4400, i);
+    data.push({
+      ...base,
+      queueName: "payments.capture",
+      messages: BigInt(payMsgs),
+      messagesReady: BigInt(payMsgs - 30),
+      messagesUnack: BigInt(30),
+      publishRate: 100,
+      consumeRate: 90,
+      consumerCount: 2,
+    });
+  }
+
+  await prisma.queueMetricSnapshot.createMany({ data });
+  logger.info(
+    { count: data.length, queues: 3 },
+    "Demo metric snapshots seeded"
+  );
 }
