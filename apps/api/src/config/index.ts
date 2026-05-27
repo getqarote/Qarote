@@ -250,6 +250,21 @@ export const metricsConfig = {
   perServerTimeoutMs: config.METRICS_PER_SERVER_TIMEOUT_MS,
 } as const;
 
+/** @public Used by the incident diagnosis dedup/resolve pass */
+export const diagnosisConfig = {
+  resolveTtlMs: config.DIAGNOSIS_RESOLVE_TTL_MS,
+} as const;
+
+/** @public Demo broker connection seeded by bootstrap-demo (DEMO_MODE only) */
+export const demoConfig = {
+  rabbitmqHost: config.DEMO_RABBITMQ_HOST,
+  rabbitmqPort: config.DEMO_RABBITMQ_PORT,
+  rabbitmqAmqpPort: config.DEMO_RABBITMQ_AMQP_PORT,
+  rabbitmqUser: config.DEMO_RABBITMQ_USER,
+  rabbitmqPass: config.DEMO_RABBITMQ_PASS,
+  rabbitmqVhost: config.DEMO_RABBITMQ_VHOST,
+} as const;
+
 export const posthogConfig = {
   apiKey: "POSTHOG_API_KEY" in config ? config.POSTHOG_API_KEY : undefined,
   host:

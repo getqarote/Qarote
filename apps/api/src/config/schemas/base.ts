@@ -53,6 +53,26 @@ export const baseSchema = z
       .positive()
       .default(30_000),
 
+    // Incident diagnosis: a finding that hasn't re-fired for this long is
+    // marked resolved on the next diagnose pass. Defaults to one poll cycle
+    // (5 min). Operators wanting findings to linger (e.g. a long-lived demo
+    // showcasing seeded findings) can raise it.
+    DIAGNOSIS_RESOLVE_TTL_MS: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(300_000),
+
+    // Demo mode RabbitMQ connection. Only set when DEMO_MODE=true; bootstrap-demo
+    // seeds a server connection pointing at the demo broker container. Host/user/
+    // pass are optional (their absence skips the seed); ports/vhost have defaults.
+    DEMO_RABBITMQ_HOST: z.string().optional(),
+    DEMO_RABBITMQ_PORT: z.coerce.number().int().positive().default(15672),
+    DEMO_RABBITMQ_AMQP_PORT: z.coerce.number().int().positive().default(5672),
+    DEMO_RABBITMQ_USER: z.string().optional(),
+    DEMO_RABBITMQ_PASS: z.string().optional(),
+    DEMO_RABBITMQ_VHOST: z.string().default("/"),
+
     // NPM package version (for Sentry releases)
     npm_package_version: z.string().default("0.0.0"),
 

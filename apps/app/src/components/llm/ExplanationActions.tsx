@@ -5,6 +5,7 @@ import { Check, Copy, ExternalLink, Link, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 import { track } from "@/lib/analytics";
+import { isDemoMode } from "@/lib/runtimeConfig";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -161,27 +162,31 @@ export function ExplanationActions({
           </Tooltip>
         )}
 
-        {/* Regenerate — ghost, disabled while streaming */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={disabled}
-              onClick={handleRegenerate}
-              aria-label={t("explain.actions.regenerate")}
-              className="h-7 gap-1.5 px-2.5"
-            >
-              <RefreshCw className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">
-                {t("explain.actions.regenerate")}
-              </span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent className="sm:hidden">
-            {t("explain.actions.regenerate")}
-          </TooltipContent>
-        </Tooltip>
+        {/* Regenerate — ghost, disabled while streaming. Hidden in the
+            public demo: there is no LLM key, so regenerating (which bypasses
+            the seeded cache) would surface a backend error. */}
+        {!isDemoMode() && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={disabled}
+                onClick={handleRegenerate}
+                aria-label={t("explain.actions.regenerate")}
+                className="h-7 gap-1.5 px-2.5"
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">
+                  {t("explain.actions.regenerate")}
+                </span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="sm:hidden">
+              {t("explain.actions.regenerate")}
+            </TooltipContent>
+          </Tooltip>
+        )}
       </div>
     </TooltipProvider>
   );
