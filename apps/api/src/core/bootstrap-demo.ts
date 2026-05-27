@@ -6,7 +6,7 @@ import { prisma } from "@/core/prisma";
 import { demoConfig } from "@/config";
 import { isDemoMode } from "@/config/deployment";
 
-import { AlertSeverity, LlmProvider } from "@/generated/prisma/client";
+import { AlertSeverity, LlmProvider, Prisma } from "@/generated/prisma/client";
 
 /**
  * Bootstrap demo environment on first boot.
@@ -78,6 +78,7 @@ async function seedDemo(): Promise<void> {
     }
     await seedDemoSnapshots(workspace.id, existing.id, vhost || "/");
     await seedDemoDiagnostics(workspace.id, existing.id, vhost || "/");
+    await seedDemoConfigFindings(workspace.id, existing.id, vhost || "/");
     return;
   }
 
@@ -107,6 +108,7 @@ async function seedDemo(): Promise<void> {
   // are the engine's input; the records carry the explanation cache.
   await seedDemoSnapshots(workspace.id, server.id, vhost || "/");
   await seedDemoDiagnostics(workspace.id, server.id, vhost || "/");
+  await seedDemoConfigFindings(workspace.id, server.id, vhost || "/");
 }
 
 async function seedDemoAlerts(
@@ -251,6 +253,8 @@ const DEMO_LLM_MODEL = "claude-haiku-4-5";
 // CE-safe core file free of EE imports. A sync test pins it to the canonical
 // value (a mismatch would silently break the demo's explanation cache hits).
 export const DEMO_FINDING_PROMPT_VERSION = "1.1";
+// Mirrors CONFIG_FINDING_PROMPT_VERSION in the same context-builders dir.
+export const DEMO_CONFIG_PROMPT_VERSION = "1.0";
 
 /**
  * Mirrors computeFingerprint() in ee/services/incident/dedup.ts. Inlined so
@@ -480,4 +484,112 @@ async function seedDemoSnapshots(
     { count: data.length, queues: 3 },
     "Demo metric snapshots seeded"
   );
+}
+
+/**
+ * Seed Config Scan findings. Unlike diagnosis, the Config Scan page lists
+ * persisted ConfigFinding rows directly (no live recompute), so seeding the
+ * rows is enough for them to show. Each gets a pre-written LlmExplanation so
+ * "Explain with AI" cache-hits, matching the diagnosis experience.
+ */
+async function seedDemoConfigFindings(
+  workspaceId: string,
+  serverId: string,
+  vhost: string
+): Promise<void> {
+  const existing = await prisma.configFinding.count({ where: { serverId } });
+  if (existing > 0) return;
+
+  const findings: {
+    ruleKey: string;
+    severity: AlertSeverity;
+    resourceType: string;
+    resourceName: string;
+    vhost: string | null;
+    details: Prisma.InputJsonValue;
+    explanation: string;
+  }[] = [
+    {
+      ruleKey: "config.user.guest_enabled",
+      severity: AlertSeverity.CRITICAL,
+      resourceType: "user",
+      resourceName: "guest",
+      vhost: null,
+      details: { user: "guest" },
+      explanation:
+        "**The built-in `guest` account is still enabled.**\n\nRabbitMQ ships with a `guest`/`guest` superuser that, by default, can only connect over loopback. The moment the broker is reachable from another host (a container network, a load balancer, a misconfigured firewall) that well-known credential becomes a full-cluster backdoor.\n\n**What to do:** delete the `guest` user (or at minimum strip its permissions and set `loopback_users` correctly), and create per-service accounts scoped to the vhosts they actually use.",
+    },
+    {
+      ruleKey: "config.queue.quorum_queue_minority_replicas",
+      severity: AlertSeverity.HIGH,
+      resourceType: "queue",
+      resourceName: "payments.capture",
+      vhost,
+      details: { queueName: "payments.capture", replicas: 2, clusterNodes: 5 },
+      explanation:
+        "**`payments.capture` is a quorum queue with too few replicas.**\n\nIt has 2 members on a 5-node cluster. Quorum queues need a majority of members online to accept writes — with only 2 replicas, losing a single node drops you to 1/2 and the queue goes read-only (publishers blocked). On a 5-node cluster the intended replication factor is 3 or 5.\n\n**What to do:** grow the member set (`rabbitmq-queues grow` or an odd-replica policy) so the queue tolerates at least one node failure.",
+    },
+    {
+      ruleKey: "config.queue.missing_dlx",
+      severity: AlertSeverity.MEDIUM,
+      resourceType: "queue",
+      resourceName: "orders.processing",
+      vhost,
+      details: { queueName: "orders.processing", vhost },
+      explanation:
+        "**`orders.processing` has no dead-letter exchange.**\n\nWhen a message is rejected, expires, or exceeds the queue length limit, it is silently dropped — there is nowhere for poison messages to go. For an orders pipeline that means lost orders with no audit trail.\n\n**What to do:** set `x-dead-letter-exchange` (via queue argument or a policy) pointing at a DLX, and bind an `orders.dlq` queue to capture and inspect failures.",
+    },
+    {
+      ruleKey: "config.queue.exclusive_in_production",
+      severity: AlertSeverity.INFO,
+      resourceType: "queue",
+      resourceName: "session.cache.tmp",
+      vhost,
+      details: { queueName: "session.cache.tmp", vhost },
+      explanation:
+        "**`session.cache.tmp` is an exclusive queue.**\n\nExclusive queues are tied to the connection that declared them and vanish when it closes — fine for short-lived RPC replies, risky as durable infrastructure: a reconnect wipes the queue and any buffered messages. Seeing one with steady traffic usually means a client is using it as a real work queue.\n\n**What to do:** if this is genuinely per-connection scratch space it's fine; if other services depend on it, redeclare it as a normal durable queue.",
+    },
+    {
+      ruleKey: "config.vhost.default_unscoped",
+      severity: AlertSeverity.INFO,
+      resourceType: "vhost",
+      resourceName: "/",
+      vhost: "/",
+      details: { vhost: "/" },
+      explanation:
+        "**Production workloads are running on the default `/` vhost.**\n\nThe default vhost has no isolation boundary — every service shares the same namespace, permissions surface, and blast radius. A bad policy or an accidental purge hits everything at once.\n\n**What to do:** create per-environment / per-team vhosts (e.g. `prod`, `payments`) and move workloads off `/` so permissions and policies can be scoped independently.",
+    },
+  ];
+
+  for (const f of findings) {
+    const fingerprint = `${serverId}|${f.ruleKey}|${f.resourceType}|${f.vhost ?? ""}|${f.resourceName}`;
+    const record = await prisma.configFinding.create({
+      data: {
+        workspaceId,
+        serverId,
+        ruleKey: f.ruleKey,
+        severity: f.severity,
+        resourceType: f.resourceType,
+        resourceName: f.resourceName,
+        vhost: f.vhost,
+        fingerprint,
+        details: f.details,
+      },
+    });
+
+    await prisma.llmExplanation.create({
+      data: {
+        workspaceId,
+        configFindingId: record.id,
+        promptVersion: DEMO_CONFIG_PROMPT_VERSION,
+        provider: DEMO_LLM_PROVIDER,
+        model: DEMO_LLM_MODEL,
+        content: f.explanation,
+        inputTokens: 0,
+        outputTokens: 0,
+      },
+    });
+  }
+
+  logger.info({ count: findings.length }, "Demo config findings seeded");
 }
