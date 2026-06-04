@@ -1,7 +1,8 @@
 /**
  * Agent-native pitch — sits right after the hero. Sells the differentiator
  * the rest of the body does not: Qarote ships an MCP endpoint so the
- * user's AI agent (Claude Desktop, Claude Code, Cursor, Cline, any MCP-compatible client)
+ * user's AI agent (Claude Desktop, Claude Code, Cursor, Cline, GitHub
+ * Copilot, Codex, any MCP-compatible client)
  * can debug RabbitMQ directly, no dashboard switch.
  *
  * Two-column proof: a real `.mcp.json` snippet on the left, a mock
@@ -197,16 +198,21 @@ const AgentSection = () => {
             {t("agent.worksWith")}
           </span>
           <div className="flex flex-wrap items-center justify-center gap-2">
-            {["Claude Desktop", "Claude Code", "Cursor", "Cline"].map(
-              (client) => (
-                <span
-                  key={client}
-                  className="border border-border px-3 py-1.5 text-sm"
-                >
-                  {client}
-                </span>
-              )
-            )}
+            {[
+              "Claude Desktop",
+              "Claude Code",
+              "Cursor",
+              "Cline",
+              "GitHub Copilot",
+              "Codex",
+            ].map((client) => (
+              <span
+                key={client}
+                className="border border-border px-3 py-1.5 text-sm"
+              >
+                {client}
+              </span>
+            ))}
             <span className="text-xs text-muted-foreground">
               {t("agent.worksWithRest")}
             </span>

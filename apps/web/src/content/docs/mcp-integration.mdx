@@ -32,9 +32,13 @@ diagnose RabbitMQ incidents end-to-end" in under five minutes.
 
 ## 2. Wire it into your agent
 
-The mint dialog ships pre-substituted snippets for the four officially
-supported clients (Claude Desktop, Claude Code, Cursor, Cline). Paste
-into the agent config and restart.
+The mint dialog ships ready-to-paste snippets for six officially
+supported clients (Claude Desktop, Claude Code, Cursor, Cline, GitHub
+Copilot, Codex). Snippets for Claude Desktop, Claude Code, Cursor,
+Cline, and Codex are pre-substituted with your secret. The GitHub
+Copilot snippet is the exception: it intentionally uses Copilot's
+`${input:...}` placeholder so `.vscode/mcp.json` stays safe to commit
+— Copilot prompts for the secret at first run.
 
 ### Claude Desktop
 
@@ -112,6 +116,76 @@ extension's globalStorage directory). Drop in:
 > Config paths can change between client versions — see the vendor docs
 > ([Cline](https://docs.cline.bot/mcp/configuring-mcp-servers)) for the
 > current location if the in-app flow has moved.
+
+### GitHub Copilot
+
+Supported across VS Code, Visual Studio, JetBrains, Xcode, and Eclipse
+Copilot clients on every Copilot tier (Free, Pro, Pro+, Business,
+Enterprise). Business and Enterprise admins can restrict MCP access via
+org policy.
+
+Copilot uses a different config shape than the standard MCP — its
+schema is `servers` (not `mcpServers`), each entry needs an explicit
+`"type": "http"`, and secrets are pulled in via `${input:…}`
+placeholders so `.vscode/mcp.json` stays safe to commit.
+
+Drop into `.vscode/mcp.json` (workspace) or run the **MCP: Open User
+Configuration** command for the user-global file:
+
+```json
+{
+  "servers": {
+    "qarote": {
+      "type": "http",
+      "url": "https://app.qarote.io/api/mcp",
+      "headers": {
+        "x-api-key": "${input:qarote-api-key}"
+      }
+    }
+  },
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "qarote-api-key",
+      "description": "Qarote API key (qrt_…)",
+      "password": true
+    }
+  ]
+}
+```
+
+On first use Copilot prompts for the key and stores it in the host's
+secret store. Sources:
+[VS Code MCP servers](https://code.visualstudio.com/docs/copilot/customization/mcp-servers),
+[VS Code MCP configuration reference](https://code.visualstudio.com/docs/agents/reference/mcp-configuration),
+[GitHub Copilot MCP guide](https://docs.github.com/en/copilot/customizing-copilot/extending-copilot-chat-with-mcp).
+
+### Codex (OpenAI)
+
+Codex's MCP config lives in `~/.codex/config.toml` (global) or
+`.codex/config.toml` in a trusted project. It uses **TOML, not JSON**,
+and the section header is `[mcp_servers.<name>]` (snake_case, plural).
+
+```toml
+[mcp_servers.qarote]
+url = "https://app.qarote.io/api/mcp"
+http_headers = { "x-api-key" = "qrt_…" }
+```
+
+For a config you want to commit, prefer env indirection so the key
+doesn't sit in the file:
+
+```toml
+[mcp_servers.qarote]
+url = "https://app.qarote.io/api/mcp"
+env_http_headers = { "x-api-key" = "QAROTE_API_KEY" }
+```
+
+…then `export QAROTE_API_KEY=qrt_…` in your shell. Source:
+[Codex MCP docs](https://developers.openai.com/codex/mcp).
+
+> The Codex config schema is structured but unversioned. Pin to a
+> recent Codex CLI release if you embed this in a team-shared project.
 
 Restart the agent. It should list `ping`, `list_servers`,
 `list_queues`, `get_overview`, `list_incidents`, `get_incident`,

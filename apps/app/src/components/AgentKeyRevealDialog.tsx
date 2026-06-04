@@ -14,8 +14,8 @@
  *   from the local clipboard handler, never propagated upstream).
  *
  * Ships pre-substituted post-mint snippets for the launch MCP clients
- * (Claude Desktop, Claude Code, Cursor, Cline) so the user can paste
- * straight into their agent config.
+ * (Claude Desktop, Claude Code, Cursor, Cline, GitHub Copilot, Codex)
+ * so the user can paste straight into their agent config.
  */
 
 import { useState } from "react";
@@ -47,15 +47,24 @@ interface Props {
   onClose: () => void;
 }
 
-// Three of the four supported clients (Claude Desktop, Cursor, Cline)
-// take the standard MCP `mcpServers` JSON. One shared generator drives
-// all three blocks; they differ only in WHERE the user drops the file
-// (captured in the per-snippet title). DRY-3 applies, KISS over
-// speculative abstraction — if a JSON client diverges on shape we
-// fork a per-client variant at that point.
+// Each supported client gets a snippet generator that emits the exact
+// text the user will paste / run. We have four distinct shapes because
+// the clients are NOT schema-compatible with each other:
 //
-// Claude Code is the odd one out: it's CLI-driven (`claude mcp add ...`),
-// not a JSON paste. Separate generator below.
+//   - mcpSnippet      → standard MCP `mcpServers` JSON for Claude
+//                       Desktop, Cursor, Cline.
+//   - claudeCodeSnippet → CLI command (`claude mcp add …`) — Claude
+//                       Code is CLI-driven, not a JSON paste.
+//   - copilotSnippet  → GitHub Copilot's `servers` + `type: "http"`
+//                       schema with the `${input:...}` placeholder
+//                       (Copilot's official secret-input pattern; we
+//                       deliberately DON'T pre-substitute the key so
+//                       it never ends up in a checked-in
+//                       `.vscode/mcp.json`).
+//   - codexSnippet    → TOML for `~/.codex/config.toml`, Codex's
+//                       documented config format.
+//
+// KISS over abstraction — each shape has a different source of truth.
 const mcpSnippet = (key: string) =>
   JSON.stringify(
     {
@@ -75,6 +84,42 @@ const mcpSnippet = (key: string) =>
 // `.mcp.json`. Documented in Claude Code's MCP guide.
 const claudeCodeSnippet = (key: string) =>
   `claude mcp add --transport http --header "x-api-key: ${key}" qarote https://app.qarote.io/api/mcp`;
+
+// GitHub Copilot. The user's key is intentionally NOT substituted —
+// Copilot's docs recommend `${input:...}` for any secret so
+// `.vscode/mcp.json` stays safe to commit. The user enters the key
+// at first run in the VS Code input prompt.
+const copilotSnippet = () =>
+  JSON.stringify(
+    {
+      servers: {
+        qarote: {
+          type: "http",
+          url: "https://app.qarote.io/api/mcp",
+          headers: { "x-api-key": "${input:qarote-api-key}" },
+        },
+      },
+      inputs: [
+        {
+          type: "promptString",
+          id: "qarote-api-key",
+          description: "Qarote API key (qrt_…)",
+          password: true,
+        },
+      ],
+    },
+    null,
+    2
+  );
+
+// Codex (OpenAI). TOML, not JSON. Hardcoded `http_headers` for the
+// copy-paste path; the integration guide also documents
+// `env_http_headers` for env-indirection when committing the file.
+const codexSnippet = (key: string) =>
+  `[mcp_servers.qarote]
+url = "https://app.qarote.io/api/mcp"
+http_headers = { "x-api-key" = "${key}" }
+`;
 
 export const AgentKeyRevealDialog = ({
   open,
@@ -180,6 +225,41 @@ export const AgentKeyRevealDialog = ({
                   handleCopy(
                     claudeCodeSnippet(secret),
                     t("agentAccess.reveal.snippets.claudeCode")
+                  )
+                }
+              />
+              {/* GitHub Copilot uses a different JSON shape (`servers`
+                  + `type: "http"`) and its secret-prompt placeholder
+                  syntax, so it's its own block. */}
+              <SnippetBlock
+                title={t("agentAccess.reveal.snippets.copilot")}
+                value={copilotSnippet()}
+                copyLabel={t("agentAccess.reveal.snippets.copy")}
+                onCopy={() =>
+                  handleCopy(
+                    copilotSnippet(),
+                    t("agentAccess.reveal.snippets.copilot")
+                  )
+                }
+              />
+              {/* Spell out the two-step flow explicitly — the snippet
+                  intentionally has no secret in it (Copilot's documented
+                  pattern), so the user must also grab the secret from
+                  the top block. Without this hint the user copies the
+                  config, opens Copilot, and stares at an unfilled
+                  `${input:…}` prompt with no idea where the key lives. */}
+              <p className="text-xs text-muted-foreground -mt-2">
+                {t("agentAccess.reveal.snippets.copilotHint")}
+              </p>
+              {/* Codex is TOML for ~/.codex/config.toml. */}
+              <SnippetBlock
+                title={t("agentAccess.reveal.snippets.codex")}
+                value={codexSnippet(secret)}
+                copyLabel={t("agentAccess.reveal.snippets.copy")}
+                onCopy={() =>
+                  handleCopy(
+                    codexSnippet(secret),
+                    t("agentAccess.reveal.snippets.codex")
                   )
                 }
               />

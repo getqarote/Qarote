@@ -128,7 +128,10 @@
         "cursor": "Cursor",
         "copy": "复制",
         "cline": "Cline",
-        "claudeCode": "Claude Code (CLI)"
+        "claudeCode": "Claude Code (CLI)",
+        "copilot": "GitHub Copilot",
+        "codex": "Codex (OpenAI)",
+        "copilotHint": "代码片段中不包含您的密钥 — Copilot 会在首次使用时提示输入。请先复制上方的密钥。"
       },
       "confirm": "我已将密钥复制到安全的位置。",
       "done": "完成"

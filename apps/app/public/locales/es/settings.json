@@ -128,7 +128,10 @@
         "cursor": "Cursor",
         "copy": "Copiar",
         "cline": "Cline",
-        "claudeCode": "Claude Code (CLI)"
+        "claudeCode": "Claude Code (CLI)",
+        "copilot": "GitHub Copilot",
+        "codex": "Codex (OpenAI)",
+        "copilotHint": "El snippet no contiene tu secreto — Copilot lo pedirá la primera vez. Copia primero el secreto de arriba."
       },
       "confirm": "He copiado el secreto en un lugar seguro.",
       "done": "Listo"
