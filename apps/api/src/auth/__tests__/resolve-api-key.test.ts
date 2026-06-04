@@ -30,7 +30,7 @@ import { resolveApiKeyAuth } from "@/auth/resolve-api-key";
 const SCOPE = { workspaceId: "ws_1", mode: "read", v: 1 };
 const VALID_KEY = {
   valid: true,
-  key: { referenceId: "u_1", metadata: SCOPE },
+  key: { id: "k_1", referenceId: "u_1", metadata: SCOPE },
 };
 
 interface Arrange {
@@ -57,6 +57,7 @@ describe("resolveApiKeyAuth", () => {
     await expect(resolveApiKeyAuth("k")).resolves.toEqual({
       userId: "u_1",
       scope: SCOPE,
+      apiKeyId: "k_1",
     });
   });
 

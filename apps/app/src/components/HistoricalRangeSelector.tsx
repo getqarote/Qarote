@@ -92,7 +92,10 @@ export const HistoricalRangeSelector = ({
     <div className={`flex items-center gap-1 ${className}`}>
       <Clock className="w-3 h-3 text-muted-foreground" />
       <Select value={String(value)} onValueChange={handleValueChange}>
-        <SelectTrigger className="w-28 h-7 text-xs">
+        <SelectTrigger
+          className="w-28 h-7 text-xs"
+          aria-label="Diagnosis time range"
+        >
           <SelectValue placeholder="Select range" />
         </SelectTrigger>
         <SelectContent>

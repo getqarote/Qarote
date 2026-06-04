@@ -363,9 +363,11 @@ export function AppSidebar() {
         <div className="flex items-center gap-3">
           <img src="/images/new_icon.svg" alt="Qarote" className="w-6 h-6" />
           <div>
-            <h2 className="font-normal text-[1.2rem] text-sidebar-foreground">
+            {/* Brand mark — not a heading. Demoted from <h2> so the page <h1>
+                stays the first heading in the document outline. */}
+            <span className="font-normal text-[1.2rem] text-sidebar-foreground">
               Qarote
-            </h2>
+            </span>
           </div>
         </div>
 
@@ -589,54 +591,60 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-4 gap-6">
-        {/* OVERVIEW — killer features, jobs-to-be-done */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70 uppercase tracking-wider mb-2">
-            {t("overview")}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>{OVERVIEW_ITEMS.map(renderItem)}</SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* Wraps the menu groups in a <nav> landmark so screen readers
+            announce "Primary navigation" — SidebarContent itself is a
+            plain <div> in shadcn. `display: contents` keeps the flex
+            chain intact through SidebarContent → SidebarGroup. */}
+        <nav aria-label="Primary" className="contents">
+          {/* OVERVIEW — killer features, jobs-to-be-done */}
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70 uppercase tracking-wider mb-2">
+              {t("overview")}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>{OVERVIEW_ITEMS.map(renderItem)}</SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
 
-        {/* BROWSE — RabbitMQ object views, collapsible secondary surface */}
-        <SidebarGroup>
-          <Collapsible
-            open={browseExpanded}
-            onOpenChange={setBrowseExpanded}
-            className="group/browse"
-          >
-            <CollapsibleTrigger
-              // No manual aria-label: Radix sets `aria-expanded` on
-              // the trigger automatically. Screen readers read the
-              // visible "Browse" label + the expanded/collapsed state
-              // (e.g. "Browse, expanded, button") — strictly more
-              // useful than a swap-on-toggle label that loses the
-              // section name.
-              className="group/trigger mb-2 flex w-full items-center justify-between rounded px-2 py-1 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/40 hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring/50"
+          {/* BROWSE — RabbitMQ object views, collapsible secondary surface */}
+          <SidebarGroup>
+            <Collapsible
+              open={browseExpanded}
+              onOpenChange={setBrowseExpanded}
+              className="group/browse"
             >
-              <span>{t("browse")}</span>
-              <PixelChevronDown
-                aria-hidden="true"
-                className={`h-3 w-auto shrink-0 transition-transform duration-200 ${
-                  browseExpanded ? "rotate-0" : "-rotate-90"
-                }`}
-              />
-            </CollapsibleTrigger>
-            {/*
+              <CollapsibleTrigger
+                // No manual aria-label: Radix sets `aria-expanded` on
+                // the trigger automatically. Screen readers read the
+                // visible "Browse" label + the expanded/collapsed state
+                // (e.g. "Browse, expanded, button") — strictly more
+                // useful than a swap-on-toggle label that loses the
+                // section name.
+                className="group/trigger mb-2 flex w-full items-center justify-between rounded px-2 py-1 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/40 hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring/50"
+              >
+                <span>{t("browse")}</span>
+                <PixelChevronDown
+                  aria-hidden="true"
+                  className={`h-3 w-auto shrink-0 transition-transform duration-200 ${
+                    browseExpanded ? "rotate-0" : "-rotate-90"
+                  }`}
+                />
+              </CollapsibleTrigger>
+              {/*
               Reuse the project's existing accordion keyframes
               (`--animate-accordion-{down,up}` declared in
               `apps/app/src/styles/index.css`). `tailwindcss-animate`
               v4 does not auto-register `collapsible-*` aliases, so
               referencing them silently produced no animation.
             */}
-            <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-              <SidebarGroupContent>
-                <SidebarMenu>{BROWSE_ITEMS.map(renderItem)}</SidebarMenu>
-              </SidebarGroupContent>
-            </CollapsibleContent>
-          </Collapsible>
-        </SidebarGroup>
+              <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+                <SidebarGroupContent>
+                  <SidebarMenu>{BROWSE_ITEMS.map(renderItem)}</SidebarMenu>
+                </SidebarGroupContent>
+              </CollapsibleContent>
+            </Collapsible>
+          </SidebarGroup>
+        </nav>
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-4 space-y-4">

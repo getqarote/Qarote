@@ -62,7 +62,7 @@ export function PaginationControls({
             value={pageSize.toString()}
             onValueChange={(value) => onPageSizeChange(Number(value))}
           >
-            <SelectTrigger className="w-20">
+            <SelectTrigger className="w-20" aria-label="Rows per page">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

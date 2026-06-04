@@ -494,54 +494,56 @@ const PricingSection = () => {
                                 !LAUNCH_HIDDEN_FEATURE_KEYS.includes(row.name)
                             )
                             .map((row) => (
-                            <FeatureItem key={row.name}>
-                              <div>
-                                <span className="text-sm text-foreground flex items-center gap-2">
-                                  {tPricing(`featureNames.${row.name}`)}
-                                  {row.soon && (
-                                    <span className="font-medium px-1 border border-border text-muted-foreground text-[0.65rem]">
-                                      {tPricing("soon")}
-                                    </span>
-                                  )}
-                                  {row.tooltipKey && (
-                                    <TooltipProvider delayDuration={150}>
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                          <button
-                                            type="button"
-                                            className="cursor-help inline-flex items-center font-medium text-muted-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                            aria-label={tPricing(
-                                              row.tooltipKey
-                                            )}
-                                          >
-                                            <svg
-                                              className="w-2.5 h-2.5 shrink-0"
-                                              viewBox="0 0 16 16"
-                                              fill="currentColor"
-                                              aria-hidden="true"
+                              <FeatureItem key={row.name}>
+                                <div>
+                                  <span className="text-sm text-foreground flex items-center gap-2">
+                                    {tPricing(`featureNames.${row.name}`)}
+                                    {row.soon && (
+                                      <span className="font-medium px-1 border border-border text-muted-foreground text-[0.65rem]">
+                                        {tPricing("soon")}
+                                      </span>
+                                    )}
+                                    {row.tooltipKey && (
+                                      <TooltipProvider delayDuration={150}>
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <button
+                                              type="button"
+                                              className="cursor-help inline-flex items-center font-medium text-muted-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                              aria-label={tPricing(
+                                                row.tooltipKey
+                                              )}
                                             >
-                                              <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm0 3a.75.75 0 1 1 0 1.5A.75.75 0 0 1 8 4Zm-.25 2.75a.75.75 0 0 1 1.5 0v4a.75.75 0 0 1-1.5 0v-4Z" />
-                                            </svg>
-                                          </button>
-                                        </TooltipTrigger>
-                                        <TooltipContent
-                                          side="top"
-                                          className="max-w-[220px] text-xs"
-                                        >
-                                          {tPricing(row.tooltipKey)}
-                                        </TooltipContent>
-                                      </Tooltip>
-                                    </TooltipProvider>
+                                              <svg
+                                                className="w-2.5 h-2.5 shrink-0"
+                                                viewBox="0 0 16 16"
+                                                fill="currentColor"
+                                                aria-hidden="true"
+                                              >
+                                                <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm0 3a.75.75 0 1 1 0 1.5A.75.75 0 0 1 8 4Zm-.25 2.75a.75.75 0 0 1 1.5 0v4a.75.75 0 0 1-1.5 0v-4Z" />
+                                              </svg>
+                                            </button>
+                                          </TooltipTrigger>
+                                          <TooltipContent
+                                            side="top"
+                                            className="max-w-[220px] text-xs"
+                                          >
+                                            {tPricing(row.tooltipKey)}
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      </TooltipProvider>
+                                    )}
+                                  </span>
+                                  {row.detailKey && (
+                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                      {tPricing(
+                                        `featureNames.${row.detailKey}`
+                                      )}
+                                    </p>
                                   )}
-                                </span>
-                                {row.detailKey && (
-                                  <p className="text-xs text-muted-foreground mt-0.5">
-                                    {tPricing(`featureNames.${row.detailKey}`)}
-                                  </p>
-                                )}
-                              </div>
-                            </FeatureItem>
-                          ))}
+                                </div>
+                              </FeatureItem>
+                            ))}
                         </ul>
                       </div>
 

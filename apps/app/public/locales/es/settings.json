@@ -20,7 +20,8 @@
     "llm": "IA / LLM",
     "integrations": "Integraciones",
     "audit": "Registro de auditoría",
-    "enterprise": "Enterprise"
+    "enterprise": "Enterprise",
+    "agentAccess": "Acceso de agente"
   },
   "llm": {
     "title": "Explicaciones con IA",
@@ -79,5 +80,67 @@
   "license": {
     "accessDeniedTitle": "Se requiere administrador de la organización",
     "accessDenied": "La gestión de la licencia está reservada a los administradores de la organización."
+  },
+  "agentAccess": {
+    "title": "Acceso de agente",
+    "description": "Crea y revoca claves de API de máquina para que los agentes de IA puedan llamar al endpoint MCP de Qarote (leer incidentes, hallazgos de escaneo y explicar incidentes en EE).",
+    "empty": {
+      "title": "Aún no hay claves de agente",
+      "description": "Crea una clave arriba para dar acceso a un agente de IA (Claude Desktop, Cursor, …) a tu workspace vía MCP."
+    },
+    "list": {
+      "created": "Creada el {{date}}",
+      "lastUsed": "Último uso {{date}}",
+      "neverUsed": "Nunca usada",
+      "expires": "Expira el {{date}}",
+      "revoke": "Revocar"
+    },
+    "mint": {
+      "title": "Crear una nueva clave",
+      "nameLabel": "Nombre de la clave",
+      "namePlaceholder": "ej. Claude Desktop (laptop)",
+      "nameRequired": "El nombre es obligatorio.",
+      "scopeLabel": "Alcance",
+      "scopeRead": "Read",
+      "scopeReadConsequence": "Lista incidentes y hallazgos. Sin uso de LLM.",
+      "scopeExplain": "Explain",
+      "scopeExplainConsequence": "Incluye RCA fundamentado vía LLM — consume la cuota del workspace.",
+      "expiryLabel": "Expira después de",
+      "expiry30": "30 días",
+      "expiry90": "90 días (recomendado)",
+      "expiry365": "365 días",
+      "expiryNever": "Nunca",
+      "expiryNeverWarning": "Una clave sin expiración sigue válida hasta que la revoques manualmente. Prefiere un horizonte corto cuando sea posible.",
+      "submit": "Crear clave",
+      "pending": "Creando…",
+      "failed": "Error al crear la clave."
+    },
+    "reveal": {
+      "title": "Guarda esta clave ahora",
+      "description": "Si cierras sin copiar, esta clave es irrecuperable — tendrás que crear una nueva. Qarote solo guarda un hash.",
+      "secretLabel": "Secreto",
+      "copySecret": "Copiar secreto",
+      "copied": "Copiado {{what}}",
+      "copyFailed": "Error al copiar — selecciona y copia manualmente.",
+      "snippetsTitle": "Snippets de configuración del agente",
+      "snippets": {
+        "claudeDesktop": "Claude Desktop",
+        "cursor": "Cursor",
+        "copy": "Copiar",
+        "cline": "Cline",
+        "claudeCode": "Claude Code (CLI)"
+      },
+      "confirm": "He copiado el secreto en un lugar seguro.",
+      "done": "Listo"
+    },
+    "revoke": {
+      "title": "¿Revocar esta clave de agente?",
+      "description": "\"{{name}}\" dejará de funcionar inmediatamente. Cualquier agente que use esta clave necesitará una nueva.",
+      "cancel": "Cancelar",
+      "confirm": "Revocar",
+      "pending": "Revocando…",
+      "success": "\"{{name}}\" revocada.",
+      "failed": "Error al revocar."
+    }
   }
 }

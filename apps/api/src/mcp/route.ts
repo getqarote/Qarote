@@ -28,7 +28,7 @@ mcpRouter.post("/", async (c) => {
   const apiKeyAuth = await resolveApiKeyAuth(key);
   if (!apiKeyAuth) return c.json({ error: "Unauthorized" }, 401);
 
-  const server = buildMcpServer(apiKeyAuth);
+  const server = await buildMcpServer(apiKeyAuth);
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
   });

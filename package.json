@@ -107,6 +107,12 @@
   "pnpm": {
     "overrides": {
       "esbuild@<=0.24.2": ">=0.25.0"
-    }
+    },
+    "ignoredOptionalDependencies": [
+      "@huggingface/transformers",
+      "@playwright/browser-chromium",
+      "onnxruntime-node",
+      "onnxruntime-web"
+    ]
   }
 }

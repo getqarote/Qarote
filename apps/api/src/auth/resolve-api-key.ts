@@ -8,6 +8,10 @@ export interface ApiKeyAuth {
   userId: string;
   /** Workspace + mode the key is scoped to. */
   scope: ApiKeyScope;
+  /** DB id of the api key itself — threaded into audit + quota events so
+   * per-key consumption is observable when the upcoming MCP explain tool
+   * tags `recordUsage` and PostHog events. */
+  apiKeyId: string;
 }
 
 /**
@@ -45,5 +49,5 @@ export async function resolveApiKeyAuth(
   });
   if (!member) return null;
 
-  return { userId: user.id, scope };
+  return { userId: user.id, scope, apiKeyId: result.key.id };
 }

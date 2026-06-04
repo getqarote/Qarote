@@ -20,7 +20,8 @@
     "llm": "AI / LLM",
     "integrations": "集成",
     "audit": "审计日志",
-    "enterprise": "企业版"
+    "enterprise": "企业版",
+    "agentAccess": "代理访问"
   },
   "llm": {
     "title": "AI 解释",
@@ -79,5 +80,67 @@
   "license": {
     "accessDeniedTitle": "需要组织管理员权限",
     "accessDenied": "许可证管理仅限组织管理员使用。"
+  },
+  "agentAccess": {
+    "title": "代理访问",
+    "description": "创建和撤销机器 API 密钥，让 AI 代理通过 MCP 调用 Qarote 端点（读取事件、扫描发现，并在 EE 上解释事件）。",
+    "empty": {
+      "title": "暂无代理密钥",
+      "description": "在上方创建一个密钥，让 AI 代理（Claude Desktop、Cursor 等）通过 MCP 访问您的工作空间。"
+    },
+    "list": {
+      "created": "创建于 {{date}}",
+      "lastUsed": "最近使用 {{date}}",
+      "neverUsed": "从未使用",
+      "expires": "过期时间 {{date}}",
+      "revoke": "撤销"
+    },
+    "mint": {
+      "title": "创建新密钥",
+      "nameLabel": "密钥名称",
+      "namePlaceholder": "例如 Claude Desktop (笔记本)",
+      "nameRequired": "名称为必填项。",
+      "scopeLabel": "作用域",
+      "scopeRead": "Read",
+      "scopeReadConsequence": "列出事件和发现。不使用 LLM。",
+      "scopeExplain": "Explain",
+      "scopeExplainConsequence": "通过 LLM 提供基于证据的 RCA — 计入工作空间配额。",
+      "expiryLabel": "过期时间",
+      "expiry30": "30 天",
+      "expiry90": "90 天（推荐）",
+      "expiry365": "365 天",
+      "expiryNever": "永不过期",
+      "expiryNeverWarning": "无过期时间的密钥在手动撤销前一直有效。可能的话请优先选择较短的期限。",
+      "submit": "创建密钥",
+      "pending": "正在创建…",
+      "failed": "创建失败。"
+    },
+    "reveal": {
+      "title": "立即保存此密钥",
+      "description": "如果未复制就关闭，此密钥将无法恢复 — 您需要创建新密钥。Qarote 仅存储哈希值。",
+      "secretLabel": "密钥",
+      "copySecret": "复制密钥",
+      "copied": "已复制 {{what}}",
+      "copyFailed": "复制失败 — 请手动选择并复制。",
+      "snippetsTitle": "代理配置代码片段",
+      "snippets": {
+        "claudeDesktop": "Claude Desktop",
+        "cursor": "Cursor",
+        "copy": "复制",
+        "cline": "Cline",
+        "claudeCode": "Claude Code (CLI)"
+      },
+      "confirm": "我已将密钥复制到安全的位置。",
+      "done": "完成"
+    },
+    "revoke": {
+      "title": "撤销此代理密钥？",
+      "description": "\"{{name}}\" 将立即停止工作。任何使用此密钥的代理都需要新的密钥。",
+      "cancel": "取消",
+      "confirm": "撤销",
+      "pending": "正在撤销…",
+      "success": "已撤销 \"{{name}}\"。",
+      "failed": "撤销失败。"
+    }
   }
 }

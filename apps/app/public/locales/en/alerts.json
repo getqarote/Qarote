@@ -273,6 +273,10 @@
   },
   "ruleLabels": {
     "config": {
+      "cluster": {
+        "even_node_count": "Cluster has an even node count",
+        "version_skew": "Mixed RabbitMQ versions across nodes"
+      },
       "consumer": {
         "prefetch_misconfig": "Consumer prefetch misconfiguration"
       },
@@ -280,6 +284,7 @@
         "orphan": "Orphan exchange"
       },
       "node": {
+        "fd_limit_low": "File descriptor limit too low",
         "watermark_misconfig": "Memory watermark misconfiguration"
       },
       "policy": {
@@ -290,9 +295,11 @@
         "exclusive_in_production": "Exclusive queue in production",
         "missing_dlx": "Missing dead letter exchange",
         "no_consumer_backlog": "No consumer backlog protection",
+        "no_length_bound": "Queue without a length or TTL bound",
         "quorum_queue_ha_policy": "HA policy on quorum queue",
         "quorum_queue_minority_replicas": "Quorum queue minority replicas",
-        "quorum_queue_no_delivery_limit": "Quorum queue without delivery limit"
+        "quorum_queue_no_delivery_limit": "Quorum queue without delivery limit",
+        "transient_in_production": "Transient queue in production"
       },
       "user": {
         "guest_enabled": "Guest user enabled"

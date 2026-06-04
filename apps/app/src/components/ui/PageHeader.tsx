@@ -20,15 +20,17 @@ export function PageHeader({
   showSidebarTrigger = true,
 }: PageHeaderProps) {
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-4">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex min-w-0 items-center gap-4">
         {showSidebarTrigger && <SidebarTrigger />}
-        <div>
+        <div className="min-w-0">
           <h1 className="title-page">{title}</h1>
           {subtitle && <p className="text-muted-foreground mt-1">{subtitle}</p>}
         </div>
       </div>
-      <div className="flex items-center gap-3">{actions}</div>
+      {actions && (
+        <div className="flex flex-wrap items-center gap-3">{actions}</div>
+      )}
     </div>
   );
 }

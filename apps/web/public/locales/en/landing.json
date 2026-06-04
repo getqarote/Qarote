@@ -1,10 +1,10 @@
 {
   "hero": {
-    "titleBefore": "Stop debugging",
-    "titleHighlight": "RabbitMQ",
-    "titleAfter": " at 3 AM",
-    "subtitle": "The AI that diagnoses your incidents and tells you exactly what to fix — no SRE required. Self-hosted, set up in under 2 minutes.",
-    "noCreditCard": "2-minute setup · No credit card · Free tier, no time limit · Developer+ from $29/mo"
+    "titleBefore": "Stop debugging RabbitMQ. Your",
+    "titleHighlight": "AI agent",
+    "titleAfter": " does it.",
+    "subtitle": "Qarote ships RabbitMQ monitoring with a built-in MCP endpoint. Plug Claude Desktop or Cursor in under 5 minutes — the agent pulls your incidents, reads the firehose evidence, and returns the root cause in your workflow, not a dashboard tab.",
+    "noCreditCard": "5-minute agent setup · Free CE for read-only tools · Root-cause analysis on EE from $29/mo"
   },
   "cta": {
     "getStartedForFree": "Get started for free",
@@ -184,5 +184,33 @@
   "seo": {
     "title": "Qarote — RabbitMQ Monitoring, Alerting & Queue History",
     "description": "Self-hosted RabbitMQ monitoring with live queue depth, consumer health alerting, 7-day Queue History, and Incident Diagnosis. No Prometheus, no Grafana. Free tier, connect in 2 minutes."
+  },
+  "agent": {
+    "title": "RabbitMQ monitoring your agent calls directly",
+    "subtitle": "Below: the actual .mcp.json snippet, a real prompt, the grounded answer your agent returns. Five tools shipping today, on every Qarote deployment — no Grafana plugin to wire, no Prometheus exporter to scrape, no copy-pasting between a dashboard and your prompt.",
+    "snippetCaption": "Drop into ~/.cursor/mcp.json or Claude Desktop config",
+    "snippetHint": "Mint the key in Settings → Agent Access. The snippet is shown once with your key already substituted.",
+    "conversationCaption": "What it looks like in practice",
+    "youLabel": "You",
+    "youPrompt": "Why is the payments.process queue backing up?",
+    "agentLabel": "Agent (via Qarote MCP)",
+    "agentResponse": "Content-type drift on inbound publishes started at 14:03. Consumers reject malformed JSON (47% error rate over the last 10 min). Suggested fix: roll back the publisher that changed the payload format, or accept application/octet-stream in the deserializer.",
+    "toolsTitle": "Tools shipping today",
+    "tools": {
+      "ping": "liveness check (CE)",
+      "listIncidents": "rule-based incident detection (CE)",
+      "getIncident": "full incident record (CE)",
+      "listConfigFindings": "static anti-pattern scan (CE)",
+      "explainIncident": "grounded LLM root-cause analysis (EE)",
+      "listServers": "workspace servers (CE)",
+      "listQueues": "live queue list (CE)",
+      "getOverview": "broker overview, message rates (CE)"
+    },
+    "ceLabel": "CE",
+    "eeLabel": "EE",
+    "worksWith": "Works with",
+    "worksWithRest": "…and any MCP-compatible client",
+    "ctaSignup": "Start free",
+    "ctaDocs": "Read the integration guide"
   }
 }

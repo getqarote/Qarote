@@ -1,10 +1,10 @@
 {
   "hero": {
-    "titleBefore": "别再在凌晨三点排查 ",
-    "titleHighlight": "RabbitMQ",
-    "titleAfter": " 故障",
-    "subtitle": "AI 诊断你的事故并准确告诉你该修什么 — 无需 SRE。自托管，2 分钟内完成部署。",
-    "noCreditCard": "2 分钟配置 · 无需信用卡 · 免费版永不过期 · Developer+ 从 $29/月起"
+    "titleBefore": "别再调试 RabbitMQ。让你的",
+    "titleHighlight": "AI 代理",
+    "titleAfter": "去做。",
+    "subtitle": "Qarote 提供内置 MCP 端点的 RabbitMQ 监控。5 分钟内接入 Claude Desktop 或 Cursor — 代理获取你的事件、读取 firehose 证据，并在你的工作流中返回根因，而非另一个仪表板标签。",
+    "noCreditCard": "5 分钟代理设置 · 只读工具 CE 免费 · EE 根因分析从 29 $/月起"
   },
   "cta": {
     "getStartedForFree": "免费开始使用",
@@ -184,5 +184,33 @@
   "seo": {
     "title": "Qarote — RabbitMQ 监控、告警与队列历史",
     "description": "自托管 RabbitMQ 监控，提供实时队列深度、消费者健康告警、7 天队列历史和故障诊断。无需 Prometheus，无需 Grafana。免费版，2 分钟完成接入。"
+  },
+  "agent": {
+    "title": "你的代理可直接调用的 RabbitMQ 监控",
+    "subtitle": "下方：真实的 .mcp.json 代码片段、真实的提示、代理返回的基于证据的答案。今日交付的五个工具，嵌入每个 Qarote 部署 — 无需配置 Grafana 插件、无需 Prometheus exporter 抓取、无需在仪表板与提示之间复制粘贴。",
+    "snippetCaption": "放入 ~/.cursor/mcp.json 或 Claude Desktop 配置",
+    "snippetHint": "在 Settings → Agent Access 中创建密钥。代码片段仅显示一次，密钥已替换。",
+    "conversationCaption": "实际使用效果",
+    "youLabel": "你",
+    "youPrompt": "为什么 payments.process 队列在积压？",
+    "agentLabel": "代理（通过 Qarote MCP）",
+    "agentResponse": "入站 publish 的内容类型漂移从 14:03 开始。消费者拒绝格式错误的 JSON（最近 10 分钟错误率 47%）。建议修复：回滚更改了 payload 格式的 publisher，或在反序列化器中接受 application/octet-stream。",
+    "toolsTitle": "今日交付的工具",
+    "tools": {
+      "ping": "存活性检查（CE）",
+      "listIncidents": "基于规则的事件检测（CE）",
+      "getIncident": "完整事件记录（CE）",
+      "listConfigFindings": "静态反模式扫描（CE）",
+      "explainIncident": "基于证据的 LLM 根因分析（EE）",
+      "listServers": "工作空间服务器（CE）",
+      "listQueues": "实时队列列表（CE）",
+      "getOverview": "broker 概览、消息速率（CE）"
+    },
+    "ceLabel": "CE",
+    "eeLabel": "EE",
+    "worksWith": "兼容",
+    "worksWithRest": "…以及任何兼容 MCP 的客户端",
+    "ctaSignup": "免费开始",
+    "ctaDocs": "阅读集成指南"
   }
 }

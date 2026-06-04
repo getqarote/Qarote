@@ -144,3 +144,20 @@ RabbitMQ 3.x and 4.x, including latest releases. Connects via the Management HTT
 
 ### Does Qarote work with RabbitMQ clusters?
 Yes. Qarote provides cluster-aware monitoring, automatically discovering all nodes and displaying node-level metrics alongside cluster-wide aggregates. Multi-server support on paid plans lets you monitor multiple independent clusters from one dashboard.
+
+## MCP Integration (For AI Agents)
+
+Qarote exposes its monitoring and incident-diagnosis surface to autonomous AI agents via the Model Context Protocol (MCP). Agents (Claude Desktop, Claude Code, Cursor, Cline, or any MCP-compatible client) authenticate with a workspace-scoped machine API key and call Qarote like any other tool.
+
+- Endpoint: https://app.qarote.io/api/mcp (streamable HTTP).
+- Authentication: x-api-key header. Mint and revoke keys from Settings → Agent Access. Two scopes: `read` (free, lists incidents and findings) and `explain` (EE, includes grounded root-cause analysis).
+- Tools (CE, free): list_incidents, get_incident, list_config_findings, list_servers, list_queues, get_overview, ping.
+- Tools (EE): explain_incident — returns a grounded RCA synthesised from firehose evidence, queue topology, seasonal baselines, and co-firing context. Read-through cached per workspace.
+
+### Why Qarote for agents?
+Most RabbitMQ-aware AI tooling stops at metrics. Qarote ships a deterministic rules engine for incident detection and a managed-LLM pipeline for the analysis — both reachable from the same agent surface. The same RCA your on-call sees in the UI is what your agent receives over MCP.
+
+### Setup time
+Under 5 minutes. Mint a key in the UI, copy the snippet for your agent (Claude Desktop, Claude Code, Cursor, or Cline config substituted with your key), paste, restart the agent.
+
+See https://app.qarote.io/docs/mcp-integration for the full integration guide.

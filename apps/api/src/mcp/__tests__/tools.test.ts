@@ -31,10 +31,11 @@ import { buildMcpServer } from "@/mcp/server";
 const AUTH = {
   userId: "u_1",
   scope: { workspaceId: "ws_1", mode: "read" as const, v: 1 },
+  apiKeyId: "k_1",
 };
 
 async function connectClient(): Promise<Client> {
-  const server = buildMcpServer(AUTH);
+  const server = await buildMcpServer(AUTH);
   const [clientTransport, serverTransport] =
     InMemoryTransport.createLinkedPair();
   await server.connect(serverTransport);
@@ -58,8 +59,11 @@ describe("MCP read tools", () => {
     const { tools } = await client.listTools();
     expect(tools.map((t) => t.name).sort()).toEqual([
       "get_incident",
+      "get_overview",
       "list_config_findings",
       "list_incidents",
+      "list_queues",
+      "list_servers",
       "ping",
     ]);
   });

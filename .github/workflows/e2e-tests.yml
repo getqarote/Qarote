@@ -155,12 +155,27 @@ jobs:
       - name: Build i18n package
         run: pnpm turbo run build --filter=@qarote/i18n
 
+      # Browser binaries are tied to the Playwright version, not the lockfile.
+      # Keying the cache on the resolved version (instead of hashFiles on the
+      # whole lockfile) means the cache survives unrelated dependency bumps and
+      # actually hits across PRs — turning the ~170 MB browser download into a
+      # no-op on the common path, so a slow Playwright CDN can't stall the job.
+      - name: Resolve Playwright version
+        id: pw
+        working-directory: apps/e2e
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
       - name: Cache Playwright browsers
+        id: playwright-cache
         uses: actions/cache@v5
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
 
+      # On a cache hit `playwright install` finds the matching browsers already
+      # present and skips the CDN download; --with-deps still installs the apt
+      # system libraries, which live on the (ephemeral) runner OS and cannot be
+      # cached.
       - name: Install Playwright browsers
         working-directory: apps/e2e
         run: pnpm exec playwright install --with-deps chromium

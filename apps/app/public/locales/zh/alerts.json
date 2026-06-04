@@ -273,6 +273,10 @@
   },
   "ruleLabels": {
     "config": {
+      "cluster": {
+        "even_node_count": "集群节点数为偶数",
+        "version_skew": "节点间 RabbitMQ 版本不一致"
+      },
       "consumer": {
         "prefetch_misconfig": "消费者预取配置错误"
       },
@@ -280,6 +284,7 @@
         "orphan": "孤立交换机"
       },
       "node": {
+        "fd_limit_low": "文件描述符上限过低",
         "watermark_misconfig": "内存水位线配置错误"
       },
       "policy": {
@@ -290,9 +295,11 @@
         "exclusive_in_production": "生产环境中的独占队列",
         "missing_dlx": "缺少死信交换机",
         "no_consumer_backlog": "无消费者积压保护",
+        "no_length_bound": "队列无长度或 TTL 限制",
         "quorum_queue_ha_policy": "仲裁队列上的 HA 策略",
         "quorum_queue_minority_replicas": "仲裁队列副本不足",
-        "quorum_queue_no_delivery_limit": "仲裁队列无投递限制"
+        "quorum_queue_no_delivery_limit": "仲裁队列无投递限制",
+        "transient_in_production": "生产环境中的临时队列"
       },
       "user": {
         "guest_enabled": "来宾用户已启用"

@@ -109,7 +109,10 @@ export function OrgContextHeader({
             onValueChange={handleSwitchOrg}
             disabled={switchWorkspaceMutation.isPending}
           >
-            <SelectTrigger className="h-9 w-[240px] text-sm font-medium">
+            <SelectTrigger
+              className="h-9 w-[240px] text-sm font-medium"
+              aria-label="Switch organization"
+            >
               <div className="flex items-center gap-2 truncate">
                 <PixelBuilding
                   className="h-3.5 w-auto shrink-0 text-muted-foreground"

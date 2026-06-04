@@ -273,6 +273,10 @@
   },
   "ruleLabels": {
     "config": {
+      "cluster": {
+        "even_node_count": "Cluster à nombre pair de nœuds",
+        "version_skew": "Versions RabbitMQ hétérogènes entre nœuds"
+      },
       "consumer": {
         "prefetch_misconfig": "Préchargement consommateur mal configuré"
       },
@@ -280,6 +284,7 @@
         "orphan": "Échange orphelin"
       },
       "node": {
+        "fd_limit_low": "Limite de descripteurs de fichiers trop basse",
         "watermark_misconfig": "Seuil mémoire mal configuré"
       },
       "policy": {
@@ -290,9 +295,11 @@
         "exclusive_in_production": "File exclusive en production",
         "missing_dlx": "Échange de lettres mortes manquant",
         "no_consumer_backlog": "Pas de protection contre l'accumulation",
+        "no_length_bound": "File sans limite de taille ni TTL",
         "quorum_queue_ha_policy": "Politique HA sur file quorum",
         "quorum_queue_minority_replicas": "Répliques minoritaires de file quorum",
-        "quorum_queue_no_delivery_limit": "File quorum sans limite de livraison"
+        "quorum_queue_no_delivery_limit": "File quorum sans limite de livraison",
+        "transient_in_production": "File transitoire en production"
       },
       "user": {
         "guest_enabled": "Utilisateur invité activé"

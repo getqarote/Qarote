@@ -20,7 +20,8 @@
     "llm": "AI / LLM",
     "integrations": "Integrations",
     "audit": "Audit Log",
-    "enterprise": "Enterprise"
+    "enterprise": "Enterprise",
+    "agentAccess": "Agent Access"
   },
   "llm": {
     "title": "AI Explain",
@@ -79,5 +80,67 @@
   "license": {
     "accessDeniedTitle": "Organization admin required",
     "accessDenied": "License management is reserved for organization admins."
+  },
+  "agentAccess": {
+    "title": "Agent Access",
+    "description": "Mint and revoke machine API keys so AI agents can call Qarote's MCP endpoint (read incidents, scan findings, and explain incidents on EE).",
+    "empty": {
+      "title": "No agent keys yet",
+      "description": "Mint a key above to grant an AI agent (Claude Desktop, Cursor, …) access to your workspace via MCP."
+    },
+    "list": {
+      "created": "Created {{date}}",
+      "lastUsed": "Last used {{date}}",
+      "neverUsed": "Never used",
+      "expires": "Expires {{date}}",
+      "revoke": "Revoke"
+    },
+    "mint": {
+      "title": "Mint a new key",
+      "nameLabel": "Key name",
+      "namePlaceholder": "e.g. Claude Desktop (laptop)",
+      "nameRequired": "Name is required.",
+      "scopeLabel": "Scope",
+      "scopeRead": "Read",
+      "scopeReadConsequence": "List incidents and findings. No LLM use.",
+      "scopeExplain": "Explain",
+      "scopeExplainConsequence": "Includes grounded RCA via LLM — counts against your workspace quota.",
+      "expiryLabel": "Expires after",
+      "expiry30": "30 days",
+      "expiry90": "90 days (recommended)",
+      "expiry365": "365 days",
+      "expiryNever": "Never",
+      "expiryNeverWarning": "A key with no expiry stays valid until you revoke it manually. Prefer a short horizon when possible.",
+      "submit": "Mint key",
+      "pending": "Minting…",
+      "failed": "Mint failed."
+    },
+    "reveal": {
+      "title": "Save this key now",
+      "description": "If you close without copying, this key is unrecoverable — you'll need to mint a new one. Qarote stores only a hash.",
+      "secretLabel": "Secret",
+      "copySecret": "Copy secret",
+      "copied": "Copied {{what}}",
+      "copyFailed": "Copy failed — select the text and copy manually.",
+      "snippetsTitle": "Agent config snippets",
+      "snippets": {
+        "claudeDesktop": "Claude Desktop",
+        "cursor": "Cursor",
+        "copy": "Copy",
+        "cline": "Cline",
+        "claudeCode": "Claude Code (CLI)"
+      },
+      "confirm": "I have copied the secret to a safe place.",
+      "done": "Done"
+    },
+    "revoke": {
+      "title": "Revoke this agent key?",
+      "description": "\"{{name}}\" will stop working immediately. Any agent using this key needs a new one.",
+      "cancel": "Cancel",
+      "confirm": "Revoke",
+      "pending": "Revoking…",
+      "success": "Revoked \"{{name}}\".",
+      "failed": "Revoke failed."
+    }
   }
 }

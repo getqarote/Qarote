@@ -416,7 +416,10 @@ async function seedDemoSnapshots(
   });
   if (existing > 0) return;
 
-  const POINTS = 24;
+  // 40 × 5 min = 200 min of history. Crosses the 180-min DIAGNOSIS_WARMUP_MINUTES
+  // threshold (capability-axis.ts) so the demo doesn't render the "warming up —
+  // findings may be sparse" advisory while showing populated findings.
+  const POINTS = 40;
   const STEP_MS = 5 * 60 * 1000;
   const now = Date.now();
   const ts = (i: number) => new Date(now - (POINTS - 1 - i) * STEP_MS);
@@ -457,7 +460,9 @@ async function seedDemoSnapshots(
     // would also trip QUEUE_BACKLOG (which CONSUMER_CRASH supersedes) — that
     // shows a dimmed 4th "caused-by" card and mismatches the sidebar's
     // primary-finding count.
-    const crashed = i >= 20;
+    // Consumers drop in the last 4 points so the 30-min CONSUMER_CRASH window
+    // (last 6 points) still sees both "had consumers" and "now 0".
+    const crashed = i >= POINTS - 4;
     const notifMsgs = 770;
     data.push({
       ...base,

@@ -22,11 +22,14 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
+      // Mobile-first tap targets: min 44×44 on touch viewports, compact on md+
+      // (WCAG 2.5.5 Target Size). md: breakpoints restore the original
+      // desktop densities.
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
+        default: "h-11 md:h-10 px-4 py-2",
+        sm: "h-11 md:h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
-        icon: "h-10 w-10",
+        icon: "h-11 w-11 md:h-10 md:w-10",
       },
     },
     defaultVariants: {

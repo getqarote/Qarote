@@ -1,10 +1,10 @@
 {
   "hero": {
-    "titleBefore": "Arrêtez de déboguer",
-    "titleHighlight": "RabbitMQ",
-    "titleAfter": " à 3 h du matin",
-    "subtitle": "L'IA qui diagnostique vos incidents et vous dit exactement quoi corriger — sans SRE. Auto-hébergé, opérationnel en moins de 2 minutes.",
-    "noCreditCard": "Configuration en 2 min · Sans CB · Offre gratuite, sans limite de durée · Developer+ à partir de 29 $/mois"
+    "titleBefore": "Arrête de débugger RabbitMQ. Ton",
+    "titleHighlight": "agent IA",
+    "titleAfter": " s'en charge.",
+    "subtitle": "Qarote livre un monitoring RabbitMQ avec un endpoint MCP intégré. Branche Claude Desktop ou Cursor en moins de 5 minutes — l’agent récupère tes incidents, lit les preuves du firehose et te renvoie la cause racine dans ton workflow, pas dans un onglet dashboard.",
+    "noCreditCard": "Setup agent en 5 min · CE gratuit pour les outils en lecture · Analyse de cause racine en EE dès 29 $/mois"
   },
   "cta": {
     "getStartedForFree": "Commencer gratuitement",
@@ -184,5 +184,33 @@
   "seo": {
     "title": "Qarote — Monitoring RabbitMQ, Alertes & Historique des files",
     "description": "Monitoring RabbitMQ auto-hébergé : alertes, historique 7 jours, diagnostic d'incidents. Sans Prometheus. Gratuit, opérationnel en 2 minutes."
+  },
+  "agent": {
+    "title": "Le monitoring RabbitMQ que ton agent appelle directement",
+    "subtitle": "Ci-dessous : le snippet .mcp.json réel, un vrai prompt, la réponse ancrée que ton agent te renvoie. Cinq outils livrés aujourd’hui, embarqués dans chaque déploiement Qarote — pas de plugin Grafana à câbler, pas d’exporter Prometheus à scraper, pas de copier-coller entre un dashboard et ton prompt.",
+    "snippetCaption": "À déposer dans ~/.cursor/mcp.json ou la config Claude Desktop",
+    "snippetHint": "Crée la clé dans Settings → Agent Access. Le snippet apparaît une fois avec ta clé déjà substituée.",
+    "conversationCaption": "À quoi ça ressemble en pratique",
+    "youLabel": "Toi",
+    "youPrompt": "Pourquoi la queue payments.process s’accumule ?",
+    "agentLabel": "Agent (via Qarote MCP)",
+    "agentResponse": "Drift de content-type sur les publishes entrants démarré à 14:03. Les consumers rejettent du JSON malformé (taux d’erreur 47 % sur les 10 dernières minutes). Fix suggéré : rollback du publisher qui a changé le format de payload, ou accepter application/octet-stream dans le désérialiseur.",
+    "toolsTitle": "Outils livrés aujourd’hui",
+    "tools": {
+      "ping": "test de liveness (CE)",
+      "listIncidents": "détection d’incidents par règles (CE)",
+      "getIncident": "record d’incident complet (CE)",
+      "listConfigFindings": "scan d’anti-patterns statiques (CE)",
+      "explainIncident": "analyse de cause racine LLM ancrée (EE)",
+      "listServers": "serveurs du workspace (CE)",
+      "listQueues": "liste des queues live (CE)",
+      "getOverview": "overview du broker, débits (CE)"
+    },
+    "ceLabel": "CE",
+    "eeLabel": "EE",
+    "worksWith": "Compatible avec",
+    "worksWithRest": "…et tout client compatible MCP",
+    "ctaSignup": "Démarrer gratuitement",
+    "ctaDocs": "Lire le guide d’intégration"
   }
 }

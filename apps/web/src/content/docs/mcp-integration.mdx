@@ -1,0 +1,275 @@
+---
+title: "MCP Integration"
+description: "Connect Claude Desktop, Cursor, or any MCP-compatible AI agent to Qarote. Mint a key, paste a snippet, get grounded RCA in your agent's workflow."
+section: "Integrations"
+---
+
+# MCP Integration
+
+Qarote exposes its diagnosis surface to autonomous AI agents via the
+[Model Context Protocol](https://modelcontextprotocol.io). The same data
+your on-call sees in the UI — incidents, anti-pattern findings, and
+LLM-grounded root-cause analyses — is callable from Claude Desktop,
+Cursor, or any MCP-compatible client.
+
+This guide gets you from "I have a Qarote workspace" to "my agent can
+diagnose RabbitMQ incidents end-to-end" in under five minutes.
+
+## 1. Mint an agent key
+
+1. Open Qarote → **Settings → Agent Access** (requires the workspace
+   `apikey:manage` permission, granted to OWNERS and ADMINS).
+2. Click **Mint a new key**:
+   - **Name** — anything that helps you remember which agent uses it
+     (e.g. `Claude Desktop (laptop)`).
+   - **Scope** — `read` (free, CE) or `explain` (EE, includes the LLM
+     grounded RCA).
+   - **Expires after** — 30, 90, 365 days, or never. 90 days is the
+     default; **prefer a short horizon** when the key is mintable on
+     demand.
+3. Click **Mint key**. The secret is shown **exactly once**. Copy it
+   immediately — Qarote stores only a hash and cannot recover it.
+
+## 2. Wire it into your agent
+
+The mint dialog ships pre-substituted snippets for the four officially
+supported clients (Claude Desktop, Claude Code, Cursor, Cline). Paste
+into the agent config and restart.
+
+### Claude Desktop
+
+Edit `~/Library/Application Support/Claude/claude_desktop_config.json`
+(macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
+
+```json
+{
+  "mcpServers": {
+    "qarote": {
+      "url": "https://app.qarote.io/api/mcp",
+      "headers": { "x-api-key": "qrt_…" }
+    }
+  }
+}
+```
+
+### Claude Code
+
+Claude Code is CLI-driven. Register Qarote with a single command:
+
+```bash
+claude mcp add --transport http --header "x-api-key: qrt_…" qarote https://app.qarote.io/api/mcp
+```
+
+The default scope is local (the current project, not committed), which
+is what you want for an individual key — explicitly avoid
+`--scope project` since that would commit your personal key into the
+repo's `.mcp.json` for the whole team to share.
+
+Run `/mcp` inside Claude Code to confirm Qarote is connected and to
+inspect the tool list.
+
+> Alternative: a project-local `.mcp.json` using the same shape as
+> Claude Desktop also works, but you take on the secrets-in-git
+> responsibility yourself.
+
+### Cursor
+
+Edit `~/.cursor/mcp.json` (or via Cursor → Settings → MCP):
+
+```json
+{
+  "mcpServers": {
+    "qarote": {
+      "url": "https://app.qarote.io/api/mcp",
+      "headers": { "x-api-key": "qrt_…" }
+    }
+  }
+}
+```
+
+### Cline
+
+Cline ships in both the VS Code marketplace and the JetBrains marketplace
+(IntelliJ, PyCharm, WebStorm, …). The config file is shared across
+hosts.
+
+Open the **MCP Servers** icon in the Cline panel → **Configure** tab →
+**Configure MCP Servers**. That opens `cline_mcp_settings.json` (Cline
+shows the exact path in the panel; on VS Code it lives inside the
+extension's globalStorage directory). Drop in:
+
+```json
+{
+  "mcpServers": {
+    "qarote": {
+      "url": "https://app.qarote.io/api/mcp",
+      "headers": { "x-api-key": "qrt_…" }
+    }
+  }
+}
+```
+
+> Config paths can change between client versions — see the vendor docs
+> ([Cline](https://docs.cline.bot/mcp/configuring-mcp-servers)) for the
+> current location if the in-app flow has moved.
+
+Restart the agent. It should list `ping`, `list_servers`,
+`list_queues`, `get_overview`, `list_incidents`, `get_incident`,
+`list_config_findings`, and (for `explain` scope on EE)
+`explain_incident` in its tool inventory.
+
+## 3. Tools
+
+All tools operate inside the workspace the key is scoped to. Cross-
+workspace ids resolve as not-found.
+
+### `ping`
+
+Liveness probe. Confirms the key resolved to a workspace. Returns the
+workspace id in the response text. No input.
+
+### `list_servers`
+
+Lists the RabbitMQ servers connected to this workspace. No input.
+Returns `{id, name, host, port, vhost, version, environment}` per
+server — never credentials. The returned ids feed `list_queues` and
+`get_overview`.
+
+### `list_queues`
+
+Lists queues on a workspace-scoped RabbitMQ server. Live read from the
+Management API.
+
+| Input      | Type    | Description                               |
+| ---------- | ------- | ----------------------------------------- |
+| `serverId` | string  | The server id (from `list_servers`).      |
+| `vhost`    | string? | Filter to one vhost. Omit for all vhosts. |
+
+Returns the broker's queue payload (name, vhost, messages, consumers,
+state, …). Surfaces "Could not reach the broker." as a structured tool
+error when the Management API is unreachable.
+
+### `get_overview`
+
+Fetches the RabbitMQ broker overview: version, cluster name, message
+rates, queue totals, node counts. Live Management API read.
+
+| Input      | Type   | Description                          |
+| ---------- | ------ | ------------------------------------ |
+| `serverId` | string | The server id (from `list_servers`). |
+
+### `list_incidents`
+
+Lists diagnosed RabbitMQ incidents for the workspace.
+
+| Input            | Type                               | Description                                  |
+| ---------------- | ---------------------------------- | -------------------------------------------- |
+| `serverId`       | string?                            | Filter to one server (omit for all servers). |
+| `severity`       | `LOW`/`MEDIUM`/`HIGH`/`CRITICAL` ? | Severity floor.                              |
+| `unresolvedOnly` | boolean?                           | Hide resolved incidents.                     |
+
+Returns up to 100 rows (rule id, severity, scope, queue + vhost,
+description, recommendation, timestamps).
+
+### `get_incident`
+
+Fetches a single incident by id. Scoped to the workspace — ids from
+other workspaces return not-found.
+
+| Input        | Type   | Description              |
+| ------------ | ------ | ------------------------ |
+| `incidentId` | string | The incident finding id. |
+
+### `list_config_findings`
+
+Lists configuration-scan findings (static anti-patterns: missing
+dead-letter exchange, orphan exchange, etc.).
+
+| Input            | Type     | Description             |
+| ---------------- | -------- | ----------------------- |
+| `serverId`       | string?  | Filter to one server.   |
+| `unresolvedOnly` | boolean? | Hide resolved findings. |
+
+### `explain_incident` (EE)
+
+Returns a grounded root-cause analysis for an incident — rule context +
+firehose evidence + queue topology + seasonal baselines + co-firing
+correlations, synthesised by your workspace's configured LLM.
+
+| Input        | Type   | Description                         |
+| ------------ | ------ | ----------------------------------- |
+| `incidentId` | string | The incident finding id to explain. |
+
+Returns `{ explanation, explanationId, fromCache }`. Repeat calls on the
+same incident pay zero LLM tokens — the response is cached per
+`(subject, prompt version, provider, model)`.
+
+Visibility: this tool is registered ONLY when the key was minted with
+`explain` scope AND the workspace has the `AI_EXPLAIN_INLINE` feature
+enabled. CE workspaces and `read`-scoped keys never see it in
+`tools/list`.
+
+## 4. Example: incident-response workflow
+
+A typical agent loop after a Slack alert:
+
+1. `list_incidents({ severity: "HIGH", unresolvedOnly: true })` — get
+   what's currently broken.
+2. For each high-severity incident: `get_incident({ incidentId })` to
+   pull the full record.
+3. For the highest-priority one: `explain_incident({ incidentId })` to
+   get the grounded RCA and the suggested action.
+4. Post the analysis back to Slack, or — if your agent has the auth —
+   apply the suggested fix.
+
+Cache-friendly: step 3 on the SAME incident returns instantly with zero
+tokens. Loop the same incidentId during a discussion and you're not
+billed twice.
+
+## 5. Errors
+
+All failures surface as structured tool errors (`isError: true`) the
+agent can branch on rather than transport exceptions:
+
+| Message                                                                                  | Cause                                           | Suggested agent action                                     |
+| ---------------------------------------------------------------------------------------- | ----------------------------------------------- | ---------------------------------------------------------- |
+| `Incident not found.`                                                                    | Wrong id, wrong workspace, or deleted mid-call. | Surface to the user; do not retry.                         |
+| `LLM not configured or disabled on this workspace.`                                      | No LlmConfig row, or it's disabled.             | Surface; ask the user to configure in Settings → AI / LLM. |
+| `Managed LLM unavailable on this workspace.`                                             | Managed tier off (kill switch).                 | Surface; user can switch to BYOK or wait.                  |
+| `Monthly LLM quota reached (USED/CAP tokens).`                                           | Workspace at managed cap.                       | Back off until next cycle; resume next month.              |
+| `Server busy: 3 explanations already in flight on this workspace. Please retry shortly.` | Per-workspace concurrency cap.                  | Retry after 30–60 seconds.                                 |
+| `Internal error generating explanation.`                                                 | Unhandled — see Qarote logs.                    | Surface; do not loop.                                      |
+
+## 6. Auth model
+
+- **Key scope** — `{ workspaceId, mode, v }` baked into the key's
+  metadata at mint time. The route + every tool enforce that the
+  caller's claimed workspace == the key's workspace.
+- **Floor** — a `read`-scoped key cannot invoke any mutation, anywhere
+  in the API. Even if the key's creator is later promoted to OWNER, the
+  scope floor stays.
+- **Lifecycle** — keys are bound to the user who minted them. If that
+  user is deactivated or leaves the workspace, the key stops working
+  immediately.
+- **Revocation** — Settings → Agent Access → Revoke. Takes effect on
+  the next request (no cache TTL).
+
+## 7. Rate limits
+
+- Per-key: 120 requests/minute (better-auth apiKey plugin defaults).
+- Per-workspace: max 3 concurrent `explain_incident` calls (shared
+  across UI and agent traffic). Exceeding returns the busy error above.
+
+## 8. Self-hosted
+
+The MCP endpoint ships with every Qarote deployment (Docker, Dokku,
+standalone binary). Replace `https://app.qarote.io` with your own
+hostname; everything else is identical.
+
+For air-gapped installs, BYOK is recommended — the agent's traffic then
+never leaves your network, and Qarote pays no provider tokens.
+
+## 9. Need help?
+
+- GitHub issues: https://github.com/getqarote/Qarote/issues
+- Docs hub: https://app.qarote.io/docs

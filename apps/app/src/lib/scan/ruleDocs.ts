@@ -19,6 +19,13 @@ const RULE_DOC_URLS: Record<string, string> = {
     "https://www.rabbitmq.com/docs/quorum-queues#use-cases",
   "config.queue.quorum_queue_no_delivery_limit":
     "https://www.rabbitmq.com/docs/quorum-queues#poison-message-handling",
+  "config.queue.transient_in_production":
+    "https://www.rabbitmq.com/docs/queues#durability",
+  "config.queue.no_length_bound": "https://www.rabbitmq.com/docs/maxlength",
+  "config.node.fd_limit_low":
+    "https://www.rabbitmq.com/docs/networking#open-file-handle-limit",
+  "config.cluster.even_node_count": "https://www.rabbitmq.com/docs/clustering",
+  "config.cluster.version_skew": "https://www.rabbitmq.com/docs/upgrade",
   "config.exchange.orphan": "https://www.rabbitmq.com/docs/exchanges",
   "config.user.guest_enabled":
     "https://www.rabbitmq.com/docs/access-control#default-state",

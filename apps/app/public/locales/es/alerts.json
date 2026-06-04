@@ -273,6 +273,10 @@
   },
   "ruleLabels": {
     "config": {
+      "cluster": {
+        "even_node_count": "Clúster con número par de nodos",
+        "version_skew": "Versiones de RabbitMQ mixtas entre nodos"
+      },
       "consumer": {
         "prefetch_misconfig": "Prefetch de consumidor mal configurado"
       },
@@ -280,6 +284,7 @@
         "orphan": "Exchange huérfano"
       },
       "node": {
+        "fd_limit_low": "Límite de descriptores de archivo demasiado bajo",
         "watermark_misconfig": "Marca de agua de memoria mal configurada"
       },
       "policy": {
@@ -290,9 +295,11 @@
         "exclusive_in_production": "Cola exclusiva en producción",
         "missing_dlx": "Dead letter exchange faltante",
         "no_consumer_backlog": "Sin protección de acumulación",
+        "no_length_bound": "Cola sin límite de longitud ni TTL",
         "quorum_queue_ha_policy": "Política HA en cola quórum",
         "quorum_queue_minority_replicas": "Réplicas minoritarias en cola quórum",
-        "quorum_queue_no_delivery_limit": "Cola quórum sin límite de entrega"
+        "quorum_queue_no_delivery_limit": "Cola quórum sin límite de entrega",
+        "transient_in_production": "Cola transitoria en producción"
       },
       "user": {
         "guest_enabled": "Usuario invitado habilitado"

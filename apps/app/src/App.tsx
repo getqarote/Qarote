@@ -96,6 +96,11 @@ const LlmSection = lazy(() =>
     default: m.default,
   }))
 );
+const AgentAccessSection = lazy(() =>
+  import("./pages/settings/AgentAccessSection").then((m) => ({
+    default: m.default,
+  }))
+);
 const IntegrationsSection = lazy(() =>
   import("./pages/settings/IntegrationsSection").then((m) => ({
     default: m.default,
@@ -511,6 +516,10 @@ const AppCore = () => (
                                 element={<DigestSection />}
                               />
                               <Route path="llm" element={<LlmSection />} />
+                              <Route
+                                path="agent-access"
+                                element={<AgentAccessSection />}
+                              />
                               <Route
                                 path="integrations"
                                 element={<IntegrationsSection />}

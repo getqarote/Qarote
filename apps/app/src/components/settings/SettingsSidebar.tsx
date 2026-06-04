@@ -96,6 +96,13 @@ const navGroups: NavGroup[] = [
         adminOnly: true,
       },
       {
+        key: "agent-access",
+        path: "/settings/agent-access",
+        icon: PixelKey,
+        labelKey: "settings:nav.agentAccess",
+        adminOnly: true,
+      },
+      {
         key: "integrations",
         path: "/settings/integrations",
         icon: PixelActivity,

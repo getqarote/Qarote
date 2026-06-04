@@ -1,6 +1,7 @@
 import type { SupportedLocale } from "@qarote/i18n";
 
 import { IslandProvider } from "@/components/IslandProvider";
+import AgentSection from "@/components/landing/AgentSection";
 import AudienceSection from "@/components/landing/AudienceSection";
 import BlogSection, {
   type BlogPostPreview,
@@ -34,6 +35,7 @@ export default function LandingIsland({
       <div className="min-h-screen font-sans bg-background">
         <StickyNav />
         <HeroSection />
+        <AgentSection />
         <ComparisonSection />
         <FounderQuoteSection />
         <FeaturesSection />
