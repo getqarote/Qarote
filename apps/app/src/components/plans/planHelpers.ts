@@ -74,7 +74,8 @@ export interface ApiPlan {
   llmExplainsPerMonth: number | null;
   hasLlmDigest: boolean | "coming_soon";
   canUseBYOK: boolean;
-  maxMetricsRetentionHours: number;
+  // Per-plan trace QUERY window cap (hours). Storage is a uniform 7-day
+  // chunk-drop; this gates how far back each plan may query the firehose.
   maxTraceRetentionHours: number;
 }
 

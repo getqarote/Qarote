@@ -42,7 +42,7 @@
   "features": {
     "title": "La couche d'intelligence que votre",
     "titleLine2": "plugin de gestion n'a pas.",
-    "freeTierNote": "Le monitoring en temps réel et la gestion des files sont gratuits, sans limite de durée. Developer+ ajoute les alertes, 7 jours d'Historique des files, Message Spy et le Diagnostic d'incidents — à partir de 29 $/mois.",
+    "freeTierNote": "Le monitoring en temps réel et la gestion des files sont gratuits, sans limite de durée. Developer+ ajoute les alertes, 30 jours d'Historique des files, Message Spy et le Diagnostic d'incidents — à partir de 29 $/mois.",
     "liveQueueMonitoring": {
       "title": "Monitoring des files en temps réel",
       "description": "Profondeur des files, débits de messages et nombre de consommateurs — mis à jour chaque seconde. Détectez un consommateur bloqué ou une file qui se remplit dès que ça arrive, pas 60 secondes plus tard."
@@ -77,7 +77,7 @@
     },
     "metricsPersistence": {
       "title": "Historique des files",
-      "description": "Snapshots de 5 minutes, conservés 7 jours. Le plugin de gestion oublie ce qui s'est passé dès que vous fermez l'onglet — l'Historique des files non. Voyez exactement quand une file a commencé à se remplir, même si personne ne regardait."
+      "description": "Snapshots de 5 minutes, conservés 30 jours. Le plugin de gestion oublie ce qui s'est passé dès que vous fermez l'onglet — l'Historique des files non. Voyez exactement quand une file a commencé à se remplir, même si personne ne regardait."
     },
     "incidentDiagnosis": {
       "title": "Moteur de diagnostic d'incidents",
@@ -183,7 +183,7 @@
   },
   "seo": {
     "title": "Qarote — Monitoring RabbitMQ, Alertes & Historique des files",
-    "description": "Monitoring RabbitMQ auto-hébergé : alertes, historique 7 jours, diagnostic d'incidents. Sans Prometheus. Gratuit, opérationnel en 2 minutes."
+    "description": "Monitoring RabbitMQ auto-hébergé : alertes, historique 30 jours, diagnostic d'incidents. Sans Prometheus. Gratuit, opérationnel en 2 minutes."
   },
   "agent": {
     "title": "Le monitoring RabbitMQ que ton agent appelle directement",

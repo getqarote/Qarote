@@ -107,10 +107,7 @@
     "tags": "Etiquetas",
     "tagsPlaceholder": "Agregar una etiqueta...",
     "unackedWarnThreshold": "Umbral de advertencia de mensajes sin confirmar",
-    "unackedWarnThresholdDesc": "Resalta las filas de vhost en amarillo cuando los mensajes sin confirmar superan este umbral.",
-    "traceRetentionHours": "Retención del Rastreo de mensajes (horas)",
-    "traceRetentionDesc": "Cuánto tiempo conservar los eventos del firehose grabados. Máximo {{max}}h en tu plan actual.",
-    "traceRetentionLockedFree": "La retención del plan gratuito está fijada en 24 horas. Actualiza para configurarla."
+    "unackedWarnThresholdDesc": "Resalta las filas de vhost en amarillo cuando los mensajes sin confirmar superan este umbral."
   },
   "team": {
     "workspaceMembersTitle": "Miembros del espacio de trabajo",

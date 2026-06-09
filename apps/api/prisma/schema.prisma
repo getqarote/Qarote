@@ -20,39 +20,39 @@ enum TraceDirection {
 }
 
 model Alert {
-  id             String          @id @default(uuid())
-  title          String
-  description    String
-  severity       AlertSeverity
-  status         AlertStatus     @default(ACTIVE)
-  workspaceId    String
-  createdById    String?
-  alertRuleId    String?
-  threshold      Float?
-  value          Float?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  resolvedAt     DateTime?
-  acknowledgedAt DateTime?
+  id                String          @id @default(uuid())
+  title             String
+  description       String
+  severity          AlertSeverity
+  status            AlertStatus     @default(ACTIVE)
+  workspaceId       String
+  createdById       String?
+  alertRuleId       String?
+  threshold         Float?
+  value             Float?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  resolvedAt        DateTime?
+  acknowledgedAt    DateTime?
   // Unified fields — populated for system-detected alerts, optional for custom rule alerts
-  serverId       String?
-  serverName     String?
-  fingerprint    String?
-  firstSeenAt    DateTime?
-  lastSeenAt     DateTime?
-  emailSentAt      DateTime?
-  slackNotifiedAt  DateTime?
+  serverId          String?
+  serverName        String?
+  fingerprint       String?
+  firstSeenAt       DateTime?
+  lastSeenAt        DateTime?
+  emailSentAt       DateTime?
+  slackNotifiedAt   DateTime?
   webhookNotifiedAt DateTime?
-  lastNotifiedAt   DateTime?
-  category       String?
-  sourceType     String?
-  sourceName     String?
-  details        Json?
-  duration       BigInt?
-  alertRule      AlertRule?      @relation(fields: [alertRuleId], references: [id])
-  user           User?           @relation(fields: [createdById], references: [id])
-  server         RabbitMQServer? @relation(fields: [serverId], references: [id], onDelete: Cascade)
-  workspace      Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  lastNotifiedAt    DateTime?
+  category          String?
+  sourceType        String?
+  sourceName        String?
+  details           Json?
+  duration          BigInt?
+  alertRule         AlertRule?      @relation(fields: [alertRuleId], references: [id])
+  user              User?           @relation(fields: [createdById], references: [id])
+  server            RabbitMQServer? @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  workspace         Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId, status])
   @@index([serverId, status])
@@ -230,11 +230,12 @@ model RabbitMQServer {
 
 /// Scheduled time-series snapshots written every 5 min by the metrics poller.
 /// Replaces QueueMetric — independent of user activity, includes consumerCount.
-/// Retention: 7 days enforced by runRetentionCleanup() in queue-metrics.service.ts.
+/// Retention: 30 days via the TimescaleDB chunk-drop policy (migration
+/// 20260607120001); app-level cleanup removed.
 /// Never written when workspaceId is null (orphaned rows have no consumer).
 /// workspaceId is denormalized (no FK) — server reassignment requires a backfill migration.
 model QueueMetricSnapshot {
-  id            String         @id @default(cuid())
+  id            String         @default(cuid())
   serverId      String
   workspaceId   String
   queueName     String
@@ -248,9 +249,14 @@ model QueueMetricSnapshot {
   timestamp     DateTime       @default(now())
   server        RabbitMQServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
+  /// Composite PK: TimescaleDB requires the partition column (`timestamp`) in the
+  /// PK and every unique index. Surrogate `id` is kept (Option A) — the natural
+  /// key would make the PK too wide on the hottest table.
+  @@id([id, timestamp])
   @@unique([serverId, queueName, vhost, timestamp])
   @@index([serverId, timestamp])
-  @@index([timestamp])
+  /// `@@index([timestamp])` dropped — TimescaleDB's hypertable creates its own
+  /// time index on the partition column.
   @@index([workspaceId, serverId, timestamp])
   @@index([workspaceId, serverId, queueName, vhost, timestamp])
   @@map("queue_metric_snapshots")
@@ -367,8 +373,6 @@ model Workspace {
   notificationServerIds         Json?
   unackedWarnThreshold          Int                      @default(100)
   vhostThresholds               Json?
-  /// Message tracing retention window in hours. Default 24h, max 168h (7 days).
-  traceRetentionHours           Int                      @default(24)
   /// Denormalized license tier for fast plan-axis reads on the audit
   /// and RBAC paths. Kept in sync by `apps/api/src/workers/license-monitor.ts`
   /// — workspace mutations and license-flip events update this so the
@@ -392,7 +396,7 @@ model Workspace {
   roles                         Role[]
   llmExplanations               LlmExplanation[]
   llmUsageCounters              LlmUsageCounter[]
-  organization                  Organization              @relation(fields: [organizationId], references: [id])
+  organization                  Organization             @relation(fields: [organizationId], references: [id])
 
   @@index([organizationId])
 }
@@ -400,14 +404,15 @@ model Workspace {
 /// Metadata-only trace events from the RabbitMQ Firehose exchange (amq.rabbitmq.trace).
 /// Payload is NOT stored here in v1 — see payloadCaptureEnabled on RabbitMQServer.
 /// timestamp is populated from the Firehose AMQP header, not from insertion time.
-/// Retention: configurable per workspace (traceRetentionHours), default 24h.
+/// Retention: uniform 7 days via the TimescaleDB chunk-drop policy (migration
+/// 20260607120001) — no per-workspace knob.
 model MessageTraceEvent {
-  id           String         @id @default(uuid()) /// typically supplied by firehose.service.ts via crypto.randomUUID(); default is a safety net
+  id           String         @default(uuid()) /// typically supplied by firehose.service.ts via crypto.randomUUID(); default is a safety net
   /// Monotonically increasing insertion-order column used for cursor pagination
   /// and live-tail polling. UUID v4 ids are random and cannot be used for
   /// stable "id > lastId" ordering — a later insert can sort before an earlier
   /// one under string comparison.
-  cursorId     BigInt         @unique @default(autoincrement())
+  cursorId     BigInt         @default(autoincrement())
   serverId     String
   vhost        String
   exchange     String
@@ -419,9 +424,37 @@ model MessageTraceEvent {
   direction    TraceDirection
   timestamp    DateTime
 
-  server          RabbitMQServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
-  llmExplanations LlmExplanation[]
+  server RabbitMQServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  /// NOTE: A PARTIAL sibling index `MessageTraceEvent_unrouted_partial_idx`
+  /// supporting unrouted-publishes Query B (#firehose-evidence Phase 3 #4)
+  /// is created via raw SQL in the migration
+  /// `20260523130000_add_unrouted_publishes_index`:
+  ///   CREATE INDEX "MessageTraceEvent_unrouted_partial_idx"
+  ///     ON "MessageTraceEvent" ("serverId","vhost","direction","messageId","timestamp")
+  ///     WHERE "messageId" IS NOT NULL;
+  /// Prisma cannot express partial indexes via `@@index`, and we want the
+  /// WHERE clause to skip the cost of indexing untagged firehose rows
+  /// (which the per-row NOT EXISTS subquery never seeks). This sibling
+  /// of the #12 index reverses the column order so messageId leads the
+  /// seek (single-value equality per outer row) with timestamp trailing
+  /// as a range. Both indexes coexist because each supports a distinct
+  /// production access pattern. Mirrors the partial-index documentation
+  /// pattern used for Alert + Role above.
+  ///
+  /// `@@index([timestamp])` dropped — TimescaleDB's hypertable creates its own
+  /// time index on the partition column.
 
+  /// Composite PK: TimescaleDB requires the partition column (`timestamp`) in the
+  /// PK and every unique index. The surrogate `id` is kept because it is the
+  /// stored soft-ref value of `LlmExplanation.traceEventId` (used as a filter
+  /// column on `llm_explanations`, never to join back to this hypertable).
+  @@id([id, timestamp])
+  /// `cursorId` stays unique by construction via its sequence; `timestamp` is
+  /// appended only to satisfy the hypertable unique-index constraint, so the
+  /// constraint is now "unique per (cursorId, timestamp)" rather than globally
+  /// unique on cursorId. Cursor pagination (`cursorId > lastId ORDER BY
+  /// cursorId`) is unaffected.
+  @@unique([cursorId, timestamp])
   @@index([serverId, cursorId])
   @@index([serverId, direction, cursorId])
   @@index([serverId, vhost, routingKey, cursorId])
@@ -441,22 +474,6 @@ model MessageTraceEvent {
   /// lets Postgres seek by the leading equality+range and apply ANY() as an
   /// index-only filter — no heap visits unless the messageId matches.
   @@index([serverId, vhost, direction, timestamp, messageId])
-  /// NOTE: A PARTIAL sibling index `MessageTraceEvent_unrouted_partial_idx`
-  /// supporting unrouted-publishes Query B (#firehose-evidence Phase 3 #4)
-  /// is created via raw SQL in the migration
-  /// `20260523130000_add_unrouted_publishes_index`:
-  ///   CREATE INDEX "MessageTraceEvent_unrouted_partial_idx"
-  ///     ON "MessageTraceEvent" ("serverId","vhost","direction","messageId","timestamp")
-  ///     WHERE "messageId" IS NOT NULL;
-  /// Prisma cannot express partial indexes via `@@index`, and we want the
-  /// WHERE clause to skip the cost of indexing untagged firehose rows
-  /// (which the per-row NOT EXISTS subquery never seeks). This sibling
-  /// of the #12 index reverses the column order so messageId leads the
-  /// seek (single-value equality per outer row) with timestamp trailing
-  /// as a range. Both indexes coexist because each supports a distinct
-  /// production access pattern. Mirrors the partial-index documentation
-  /// pattern used for Alert + Role above.
-  @@index([timestamp])
 }
 
 model WorkspaceLlmConfig {
@@ -540,19 +557,19 @@ model WorkspaceMember {
 ///   - one for system rows where `workspaceId IS NULL`
 ///   - one for custom rows where `workspaceId IS NOT NULL`
 model Role {
-  id            String            @id @default(uuid())
-  workspaceId   String?
-  name          String
-  description   String?
-  isSystem      Boolean           @default(false)
-  builtinKey    WorkspaceRole?    @unique
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
-  createdById   String?
-  workspace     Workspace?        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdBy     User?             @relation("RoleCreator", fields: [createdById], references: [id], onDelete: SetNull)
-  permissions   RolePermission[]
-  members       WorkspaceMember[]
+  id          String            @id @default(uuid())
+  workspaceId String?
+  name        String
+  description String?
+  isSystem    Boolean           @default(false)
+  builtinKey  WorkspaceRole?    @unique
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  createdById String?
+  workspace   Workspace?        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy   User?             @relation("RoleCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  permissions RolePermission[]
+  members     WorkspaceMember[]
 
   @@index([workspaceId])
   @@index([workspaceId, updatedAt(sort: Desc)])
@@ -852,7 +869,7 @@ model SsoProvider {
 /// default `references: "user"`). Scope (workspaceId + read/explain mode)
 /// lives in `metadata`. Schema generated by `@better-auth/cli generate`.
 model Apikey {
-  id                  String    @id      @default(uuid())
+  id                  String    @id @default(uuid())
   configId            String    @default("default")
   name                String?
   start               String?
@@ -1124,39 +1141,39 @@ model QuizLead {
 /// changes on this queue" query (`docs/internal/llm-situated-explanation`)
 /// hits the index directly.
 model AuditLog {
-  id          String      @id @default(uuid())
-  timestamp   DateTime    @default(now())
+  id             String      @id @default(uuid())
+  timestamp      DateTime    @default(now())
   /// Qarote user who performed the action; null for system-triggered
   /// events (cron-driven actions, broker_diff in Phase 2).
-  actorId     String?
+  actorId        String?
   /// Denormalized for readability after user deletion. On GDPR erasure
   /// we overwrite to "[deleted user]" — never null after creation.
-  actorEmail  String?
-  source      AuditSource @default(qarote)
+  actorEmail     String?
+  source         AuditSource @default(qarote)
   /// Dotted notation, e.g. "rabbitmq.queue.purge", "auth.denial.member:invite".
-  action      String
+  action         String
   /// First segment of `action` for indexable category-based filtering.
-  category    String
-  entityType  String
-  entityId    String?
-  entityLabel String?
-  serverId    String?
-  vhost       String?
-  workspaceId String?
+  category       String
+  entityType     String
+  entityId       String?
+  entityLabel    String?
+  serverId       String?
+  vhost          String?
+  workspaceId    String?
   /// Org-level events (license / SSO / auth) carry organizationId so
   /// the row is attributable to a tenant when no workspace exists.
   /// Workspace-scoped events leave this null. Both can coexist —
   /// workspace events tied to an org workspace will populate both,
   /// letting org-wide queries surface them too.
   organizationId String?
-  metadata    Json?
-  ipAddress   String?
-  userAgent   String?
+  metadata       Json?
+  ipAddress      String?
+  userAgent      String?
 
-  actor        User?         @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actor        User?           @relation(fields: [actorId], references: [id], onDelete: SetNull)
   server       RabbitMQServer? @relation(fields: [serverId], references: [id], onDelete: SetNull)
-  workspace    Workspace?    @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
-  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  workspace    Workspace?      @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  organization Organization?   @relation(fields: [organizationId], references: [id], onDelete: SetNull)
 
   // Workspace-prefixed composites for the dominant filter shapes —
   // single-column indexes that ignore the workspaceId narrowing are
@@ -1224,7 +1241,7 @@ model IncidentDiagnosisRecord {
   lastSeenAt     DateTime      @default(now())
   resolvedAt     DateTime?
 
-  server          RabbitMQServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  server          RabbitMQServer   @relation(fields: [serverId], references: [id], onDelete: Cascade)
   llmExplanations LlmExplanation[]
 
   @@unique([serverId, fingerprint])
@@ -1254,8 +1271,8 @@ model ConfigFinding {
   resolvedAt   DateTime?
   details      Json?
 
-  workspace       Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  server          RabbitMQServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  workspace       Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  server          RabbitMQServer   @relation(fields: [serverId], references: [id], onDelete: Cascade)
   llmExplanations LlmExplanation[]
 
   @@unique([fingerprint])
@@ -1286,31 +1303,35 @@ model DiagnosisRuleConfig {
 /// Soft-deleted on regenerate (supersededAt set) so old permalinks resolve to a
 /// banner-flagged historical version instead of 404ing.
 model LlmExplanation {
-  id                String    @id @default(uuid())
-  workspaceId       String    @map("workspace_id")
+  id          String @id @default(uuid())
+  workspaceId String @map("workspace_id")
 
-  incidentFindingId String?   @map("incident_finding_id")
-  configFindingId   String?   @map("config_finding_id")
-  traceEventId      String?   @map("trace_event_id")
+  incidentFindingId String? @map("incident_finding_id")
+  configFindingId   String? @map("config_finding_id")
+  traceEventId      String? @map("trace_event_id")
 
-  promptVersion     String    @map("prompt_version")
-  provider          String
-  model             String
-  content           String    @db.Text
-  inputTokens       Int       @map("input_tokens")
-  outputTokens      Int       @map("output_tokens")
+  promptVersion String @map("prompt_version")
+  provider      String
+  model         String
+  content       String @db.Text
+  inputTokens   Int    @map("input_tokens")
+  outputTokens  Int    @map("output_tokens")
 
-  createdBy         String?   @map("created_by")
-  createdAt         DateTime  @default(now()) @map("created_at")
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
 
-  supersededBy      String?   @map("superseded_by")
-  supersededAt      DateTime? @map("superseded_at")
+  supersededBy String?   @map("superseded_by")
+  supersededAt DateTime? @map("superseded_at")
 
-  workspace        Workspace                @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  incidentFinding  IncidentDiagnosisRecord? @relation(fields: [incidentFindingId], references: [id], onDelete: Restrict)
-  configFinding    ConfigFinding?           @relation(fields: [configFindingId], references: [id], onDelete: Restrict)
-  traceEvent       MessageTraceEvent?       @relation(fields: [traceEventId], references: [id], onDelete: Restrict)
-  creator          User?                    @relation("LlmExplanationCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  workspace       Workspace                @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  incidentFinding IncidentDiagnosisRecord? @relation(fields: [incidentFindingId], references: [id], onDelete: Restrict)
+  configFinding   ConfigFinding?           @relation(fields: [configFindingId], references: [id], onDelete: Restrict)
+  /// `traceEventId` is a SOFT reference to `MessageTraceEvent.id` — no FK. The
+  /// FK was dropped because `MessageTraceEvent` is a TimescaleDB hypertable whose
+  /// rows are removed by chunk-drop (no app-level cascade). Orphans are avoided
+  /// by capping trace explanations to 7d in `llm-explanation-retention.cron`,
+  /// matching the trace hypertable's 7d retention. Index on `traceEventId` kept.
+  creator         User?                    @relation("LlmExplanationCreator", fields: [createdBy], references: [id], onDelete: SetNull)
 
   @@index([workspaceId, createdAt])
   @@index([incidentFindingId])

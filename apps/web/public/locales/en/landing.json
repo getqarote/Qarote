@@ -42,7 +42,7 @@
   "features": {
     "title": "The intelligence layer your",
     "titleLine2": "management plugin doesn't have.",
-    "freeTierNote": "Live monitoring and queue management are free, no time limit. Developer+ adds alerting, 7-day Queue History, Message Spy, and Incident Diagnosis — from $29/mo.",
+    "freeTierNote": "Live monitoring and queue management are free, no time limit. Developer+ adds alerting, 30-day Queue History, Message Spy, and Incident Diagnosis — from $29/mo.",
     "liveQueueMonitoring": {
       "title": "Live queue monitoring",
       "description": "Queue depths, message rates, and consumer counts — updated every second. Spot a stuck consumer or filling queue the moment it happens, not 60 seconds later."
@@ -77,7 +77,7 @@
     },
     "metricsPersistence": {
       "title": "Queue History",
-      "description": "5-minute snapshots, 7 days retained. The management plugin forgets what happened the moment you close the tab — Queue History doesn't. See exactly when a queue started filling, even if nobody was watching."
+      "description": "5-minute snapshots, 30 days retained. The management plugin forgets what happened the moment you close the tab — Queue History doesn't. See exactly when a queue started filling, even if nobody was watching."
     },
     "incidentDiagnosis": {
       "title": "Incident Diagnosis Engine",
@@ -183,7 +183,7 @@
   },
   "seo": {
     "title": "Qarote — RabbitMQ Monitoring, Alerting & Queue History",
-    "description": "Self-hosted RabbitMQ monitoring with live queue depth, consumer health alerting, 7-day Queue History, and Incident Diagnosis. No Prometheus, no Grafana. Free tier, connect in 2 minutes."
+    "description": "Self-hosted RabbitMQ monitoring with live queue depth, consumer health alerting, 30-day Queue History, and Incident Diagnosis. No Prometheus, no Grafana. Free tier, connect in 2 minutes."
   },
   "agent": {
     "title": "RabbitMQ monitoring your agent calls directly",

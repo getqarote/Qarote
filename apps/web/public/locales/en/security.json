@@ -23,7 +23,7 @@
       },
       {
         "title": "Message payloads never leave your broker",
-        "description": "Qarote reads queue depths, message rates, and consumer counts to power alerting and trend charts — retaining those metrics for up to 7 days. The actual contents of your messages are never accessed, read, or stored."
+        "description": "Qarote reads queue depths, message rates, and consumer counts to power alerting and trend charts — retaining those metrics for up to 30 days. The actual contents of your messages are never accessed, read, or stored."
       },
       {
         "title": "Workspace isolation",

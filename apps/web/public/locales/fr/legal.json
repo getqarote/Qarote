@@ -101,7 +101,12 @@
           },
           {
             "label": "Métriques de surveillance des files d'attente (profondeurs, taux, nombre de consommateurs)",
-            "detail": "7 jours, supprimées automatiquement",
+            "detail": "30 jours, supprimées automatiquement",
+            "mono": true
+          },
+          {
+            "label": "Événements de trace de messages (métadonnées)",
+            "detail": "7 jours, supprimés automatiquement",
             "mono": true
           },
           {

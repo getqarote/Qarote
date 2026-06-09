@@ -23,7 +23,7 @@
       },
       {
         "title": "Los payloads de mensajes nunca salen de tu broker",
-        "description": "Qarote lee profundidades de cola, tasas de mensajes y conteos de consumidores para alertas y gráficos de tendencias — reteniendo esas métricas hasta 7 días. El monitoreo en segundo plano nunca accede ni almacena el contenido de tus mensajes. La función Message Spy, activada de forma explícita, puede mostrar el contenido de los mensajes con tu permiso."
+        "description": "Qarote lee profundidades de cola, tasas de mensajes y conteos de consumidores para alertas y gráficos de tendencias — reteniendo esas métricas hasta 30 días. El monitoreo en segundo plano nunca accede ni almacena el contenido de tus mensajes. La función Message Spy, activada de forma explícita, puede mostrar el contenido de los mensajes con tu permiso."
       },
       {
         "title": "Aislamiento de espacios de trabajo",

@@ -1,6 +1,8 @@
 services:
   postgres:
-    image: postgres:15-alpine
+    # TimescaleDB required — the API runs `CREATE EXTENSION timescaledb` at boot.
+    # Pinned to the pg17 HA line (also aligns the long-standing pg15→pg17 drift).
+    image: timescale/timescaledb-ha:pg17
     container_name: qarote_e2e_postgres
     environment:
       POSTGRES_DB: qarote_e2e

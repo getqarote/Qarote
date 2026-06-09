@@ -61,7 +61,7 @@
       {
         "number": "03",
         "title": "Ajusta la ventana de tiempo",
-        "description": "Selecciona 1 hora, 6 horas, 24 horas o 7 días. Haz zoom en la ventana de un incidente o revisa la tendencia de toda la semana. La misma gráfica, diferente resolución."
+        "description": "Selecciona 1 hora, 6 horas, 24 horas o 30 días. Haz zoom en la ventana de un incidente o revisa la tendencia de todo el mes. La misma gráfica, diferente resolución."
       }
     ]
   },
@@ -85,7 +85,7 @@
     "items": [
       {
         "question": "¿Cuánto tiempo atrás llegan los analytics?",
-        "answer": "Las gráficas de analytics se nutren de los datos de Queue History — 7 días de snapshots a intervalos de 5 minutos en los planes Developer y Enterprise. La edición Community muestra solo métricas en tiempo real."
+        "answer": "Las gráficas de analytics se nutren de los datos de Queue History — 30 días de snapshots a intervalos de 5 minutos en los planes Developer y Enterprise. La edición Community se limita a una ventana de vista previa de 6 horas."
       },
       {
         "question": "¿Puedo exportar los datos de las gráficas?",
@@ -97,7 +97,7 @@
       },
       {
         "question": "¿En qué se diferencia esto de Queue History?",
-        "answer": "Analytics y Queue History se nutren de los mismos datos subyacentes — snapshots cada 5 minutos almacenados durante 7 días. Queue History pone el énfasis en la línea temporal en bruto para retrospectivas de incidentes. Analytics pone el énfasis en la visualización de tendencias, gráficas comparativas y vistas de planificación de capacidad sobre los mismos datos."
+        "answer": "Analytics y Queue History se nutren de los mismos datos subyacentes — snapshots cada 5 minutos almacenados durante 30 días. Queue History pone el énfasis en la línea temporal en bruto para retrospectivas de incidentes. Analytics pone el énfasis en la visualización de tendencias, gráficas comparativas y vistas de planificación de capacidad sobre los mismos datos."
       },
       {
         "question": "¿Funcionan los analytics con Qarote autoalojado?",

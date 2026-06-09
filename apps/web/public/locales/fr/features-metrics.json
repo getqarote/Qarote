@@ -1,12 +1,12 @@
 {
   "seo": {
-    "title": "Queue History RabbitMQ — 7 jours de snapshots de métriques | Qarote",
-    "description": "7 jours d'historique de files RabbitMQ. Profondeur de file, nombres de consommateurs et débits de messages capturés toutes les 5 minutes — pour les rétrospectives d'incidents et la planification de capacité. Sans Prometheus."
+    "title": "Queue History RabbitMQ — 30 jours de snapshots de métriques | Qarote",
+    "description": "30 jours d'historique de files RabbitMQ. Profondeur de file, nombres de consommateurs et débits de messages capturés toutes les 5 minutes — pour les rétrospectives d'incidents et la planification de capacité. Sans Prometheus."
   },
   "hero": {
     "eyebrow": "Fonctionnalités → Queue History",
-    "title": "7 jours d'historique de files RabbitMQ. Pas 8 heures.",
-    "subtitle": "Le plugin de management RabbitMQ supprime les métriques après environ 8 heures. Qarote capture la profondeur de file, les nombres de consommateurs et les débits de messages toutes les 5 minutes et les conserve 7 jours — pour que les données soient là quand vous en avez besoin pour les rétrospectives d'incidents et la planification de capacité."
+    "title": "30 jours d'historique de files RabbitMQ. Pas 8 heures.",
+    "subtitle": "Le plugin de management RabbitMQ supprime les métriques après environ 8 heures. Qarote capture la profondeur de file, les nombres de consommateurs et les débits de messages toutes les 5 minutes et les conserve 30 jours — pour que les données soient là quand vous en avez besoin pour les rétrospectives d'incidents et la planification de capacité."
   },
   "metricTypes": {
     "eyebrow": "Ce qui est stocké",
@@ -15,7 +15,7 @@
       {
         "icon": "chart.svg",
         "title": "Historique de profondeur de file",
-        "description": "Nombre de messages par file capturé toutes les 5 minutes, conservé 7 jours — 2 016 points de données par file et par semaine. Représentez la profondeur de n'importe quelle file sur n'importe quelle fenêtre temporelle. Voyez exactement quand une file a commencé à se remplir, à quelle vitesse elle a grossi et quand elle s'est vidée — même si vous ne regardiez pas quand c'est arrivé."
+        "description": "Nombre de messages par file capturé toutes les 5 minutes, conservé 30 jours — 8 640 points de données par file sur toute la fenêtre. Représentez la profondeur de n'importe quelle file sur n'importe quelle fenêtre temporelle. Voyez exactement quand une file a commencé à se remplir, à quelle vitesse elle a grossi et quand elle s'est vidée — même si vous ne regardiez pas quand c'est arrivé."
       },
       {
         "icon": "message.svg",
@@ -40,7 +40,7 @@
       {
         "icon": "send.svg",
         "title": "Nombre de connexions et de canaux",
-        "description": "Total des connexions et canaux ouverts par broker dans le temps. Les fuites de connexions sont l'un des modes de panne RabbitMQ les plus courants — un graphique montrant une croissance constante du nombre de connexions sur 7 jours est une fuite en cours."
+        "description": "Total des connexions et canaux ouverts par broker dans le temps. Les fuites de connexions sont l'un des modes de panne RabbitMQ les plus courants — un graphique montrant une croissance constante du nombre de connexions sur 30 jours est une fuite en cours."
       }
     ]
   },
@@ -56,12 +56,12 @@
       {
         "number": "02",
         "title": "Les métriques sont stockées automatiquement",
-        "description": "Chaque snapshot est écrit dans la base de données de Qarote. Toutes les files sur tous les serveurs connectés sont stockées par défaut — aucune configuration requise. Les données sont conservées 7 jours et purgées automatiquement au fur et à mesure qu'elles sortent de la fenêtre de rétention."
+        "description": "Chaque snapshot est écrit dans la base de données de Qarote. Toutes les files sur tous les serveurs connectés sont stockées par défaut — aucune configuration requise. Les données sont conservées 30 jours et purgées automatiquement au fur et à mesure qu'elles sortent de la fenêtre de rétention."
       },
       {
         "number": "03",
         "title": "Interrogez n'importe quelle fenêtre temporelle",
-        "description": "Ouvrez n'importe quelle file et remontez jusqu'aux 7 derniers jours. Zoomez sur une fenêtre d'incident de 15 minutes ou consultez la tendance de la semaine complète — les données sont toujours là."
+        "description": "Ouvrez n'importe quelle file et remontez jusqu'aux 30 derniers jours. Zoomez sur une fenêtre d'incident de 15 minutes ou consultez la tendance du mois complet — les données sont toujours là."
       }
     ]
   },
@@ -85,11 +85,11 @@
     "items": [
       {
         "question": "Combien de temps les métriques sont-elles conservées ?",
-        "answer": "7 jours sur les plans Developer et Enterprise. Les snapshots sont pris toutes les 5 minutes et automatiquement purgés après 7 jours. L'édition Community gratuite affiche uniquement les métriques en temps réel — aucune donnée historique n'est stockée."
+        "answer": "30 jours sur les plans Developer et Enterprise. Les snapshots sont pris toutes les 5 minutes et automatiquement purgés après 30 jours. L'édition Community gratuite est limitée à une fenêtre d'aperçu de 6 heures — seules les 6 dernières heures d'historique sont consultables."
       },
       {
         "question": "Quel espace de stockage la persistance des métriques utilise-t-elle ?",
-        "answer": "Minimal. Un déploiement typique avec 50 files à des snapshots de 5 minutes utilise environ 20 Mo pour la fenêtre complète de 7 jours. Le stockage est géré automatiquement — les snapshots sont purgés au fur et à mesure qu'ils sortent de la fenêtre de rétention."
+        "answer": "Minimal. Un déploiement typique avec 50 files à des snapshots de 5 minutes utilise environ 85 Mo pour la fenêtre complète de 30 jours — et TimescaleDB compresse les anciens chunks, donc la taille réelle sur disque est généralement plus faible. Le stockage est géré automatiquement — les snapshots sont purgés au fur et à mesure qu'ils sortent de la fenêtre de rétention."
       },
       {
         "question": "Puis-je interroger les métriques historiques via API ?",

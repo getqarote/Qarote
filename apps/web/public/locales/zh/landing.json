@@ -42,7 +42,7 @@
   "features": {
     "title": "管理插件所缺少的",
     "titleLine2": "智能监控层，由 Qarote 提供。",
-    "freeTierNote": "实时监控和队列管理永久免费。Developer+ 新增告警、7 天队列历史、消息监听和故障诊断 — 从 $29/月起。",
+    "freeTierNote": "实时监控和队列管理永久免费。Developer+ 新增告警、30 天队列历史、消息监听和故障诊断 — 从 $29/月起。",
     "liveQueueMonitoring": {
       "title": "实时队列监控",
       "description": "队列深度、消息速率和消费者数量 — 每秒更新。在消费者卡住或队列积压的第一时间发现问题，而不是 60 秒后。"
@@ -77,7 +77,7 @@
     },
     "metricsPersistence": {
       "title": "队列历史记录",
-      "description": "每 5 分钟快照，保留 7 天。管理插件在你关闭标签页的瞬间就会遗忘历史 — 队列历史不会。即使当时无人值守，也能精确还原队列开始积压的时刻。"
+      "description": "每 5 分钟快照，保留 30 天。管理插件在你关闭标签页的瞬间就会遗忘历史 — 队列历史不会。即使当时无人值守，也能精确还原队列开始积压的时刻。"
     },
     "incidentDiagnosis": {
       "title": "故障诊断引擎",
@@ -183,7 +183,7 @@
   },
   "seo": {
     "title": "Qarote — RabbitMQ 监控、告警与队列历史",
-    "description": "自托管 RabbitMQ 监控，提供实时队列深度、消费者健康告警、7 天队列历史和故障诊断。无需 Prometheus，无需 Grafana。免费版，2 分钟完成接入。"
+    "description": "自托管 RabbitMQ 监控，提供实时队列深度、消费者健康告警、30 天队列历史和故障诊断。无需 Prometheus，无需 Grafana。免费版，2 分钟完成接入。"
   },
   "agent": {
     "title": "你的代理可直接调用的 RabbitMQ 监控",

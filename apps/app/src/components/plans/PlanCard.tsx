@@ -351,15 +351,6 @@ type IntelligenceRow = {
   soon?: boolean;
 };
 
-function formatRetentionKey(hours: number): string {
-  if (hours <= 6) return "detail6h";
-  if (hours <= 24) return "detail24h";
-  if (hours <= 168) return "detail7Days";
-  if (hours <= 336) return "detail14Days";
-  if (hours <= 720) return "detail30Days";
-  return "detail90Days";
-}
-
 function intelligenceRowsFromPlan(plan: ApiPlan): IntelligenceRow[] {
   const isFree = plan.plan === "FREE";
   const isEnterprise = plan.plan === "ENTERPRISE";
@@ -387,9 +378,11 @@ function intelligenceRowsFromPlan(plan: ApiPlan): IntelligenceRow[] {
     });
   }
   if (plan.hasMetricsPersistence) {
+    // Metrics are stored for a uniform 30 days (TimescaleDB chunk-drop). FREE is
+    // limited to a 6h query window; paid plans query the full 30 days.
     rows.push({
       name: "metricsPersistence",
-      detailKey: formatRetentionKey(plan.maxMetricsRetentionHours),
+      detailKey: isFree ? "detail6h" : "detail30Days",
     });
   }
   if (plan.hasIncidentDiagnosis) {
@@ -401,9 +394,11 @@ function intelligenceRowsFromPlan(plan: ApiPlan): IntelligenceRow[] {
     });
   }
   if (plan.hasMessageTracing) {
+    // Trace events are stored for a uniform 7 days (TimescaleDB chunk-drop).
+    // FREE gets a 6h preview window; paid plans query the full 7 days.
     rows.push({
       name: "messageTracing",
-      detailKey: formatRetentionKey(plan.maxTraceRetentionHours),
+      detailKey: isFree ? "detail6h" : "detail7Days",
     });
   }
   if (plan.hasLlmExplain) {

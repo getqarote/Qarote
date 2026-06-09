@@ -97,7 +97,7 @@
       },
       {
         "question": "Quelle est la différence entre le monitoring en direct et Queue History ?",
-        "answer": "Le monitoring en direct affiche l'état actuel de vos files — mis à jour chaque seconde. Queue History (Developer+) stocke des snapshots toutes les 5 minutes pendant 7 jours, vous permettant de consulter ce qui s'est passé lors d'un incident passé. Les deux utilisent les mêmes métriques sous-jacentes."
+        "answer": "Le monitoring en direct affiche l'état actuel de vos files — mis à jour chaque seconde. Queue History (Developer+) stocke des snapshots toutes les 5 minutes pendant 30 jours, vous permettant de consulter ce qui s'est passé lors d'un incident passé. Les deux utilisent les mêmes métriques sous-jacentes."
       },
       {
         "question": "Qarote stocke-t-il les données de monitoring en direct ?",

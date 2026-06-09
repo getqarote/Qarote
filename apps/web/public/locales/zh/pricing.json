@@ -114,7 +114,7 @@
     "messageSpy": "消息监听",
     "messageSpyDesc": "在不消费消息的情况下检查队列中的实时消息内容",
     "metricsPersistence": "队列历史记录",
-    "metricsPersistenceDesc": "每 5 分钟快照，保留 7 天 — 随时回溯过去一周任意时刻的队列深度、消息速率和消费者数量",
+    "metricsPersistenceDesc": "每 5 分钟快照，保留 30 天 — 随时回溯过去一个月任意时刻的队列深度、消息速率和消费者数量",
     "incidentDiagnosis": "故障诊断引擎",
     "incidentDiagnosisDesc": "自动化根因分析，快速定位故障",
     "messageTracing": "消息追踪（Firehose）",

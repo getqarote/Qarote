@@ -46,16 +46,82 @@ Qarote self-hosted provides core RabbitMQ monitoring out of the box. Premium fea
 
 Requirements depend on your deployment method:
 
-- **Binary:** PostgreSQL 17+ (no Docker, Node.js, or web server needed)
-- **Docker Compose:** Docker and Docker Compose (PostgreSQL is included)
-- **Dokku:** Dokku installed on your server
+- **Binary:** PostgreSQL 17+ **with the TimescaleDB extension** (no Docker, Node.js, or web server needed)
+- **Docker Compose:** Docker and Docker Compose (a TimescaleDB-enabled PostgreSQL is included)
+- **Dokku:** Dokku installed on your server (the Postgres service must use a TimescaleDB image — see below)
 - Minimum 2GB RAM, 10GB disk space
+
+> ### ⚠️ TimescaleDB is required (not optional)
+>
+> Qarote stores time-series data (`queue_metric_snapshots`,
+> `MessageTraceEvent`) in **TimescaleDB hypertables**. On every startup the
+> API runs `prisma migrate deploy`, which executes
+> `CREATE EXTENSION IF NOT EXISTS timescaledb`. If the Postgres server does
+> **not** ship the TimescaleDB extension, that statement fails and **the API
+> crash-loops on boot** — it is not a silent degradation.
+>
+> Use a TimescaleDB-enabled image/package everywhere:
+>
+> - **Docker / Compose / Dokku:** `timescale/timescaledb-ha:pg17` (the bundled
+>   compose files already pin this). The HA image stores its data under
+>   `/home/postgres/pgdata` (`PGDATA=/home/postgres/pgdata/data`), **not**
+>   `/var/lib/postgresql/data` — mount persistent volumes accordingly.
+> - **Binary / bare-metal:** install the `timescaledb` package into your
+>   PostgreSQL 17 server (see the Binary section below).
+>
+> Retention is handled entirely by TimescaleDB: metrics are kept for **30
+> days** and trace events for **7 days** via chunk-drop policies — there are no
+> per-tenant cleanup cron jobs to configure.
+
+> ### ⬆️ Upgrading an existing (pre-TimescaleDB) deployment
+>
+> Earlier releases ran a plain `postgres:17-alpine` image with the data volume
+> mounted at `/var/lib/postgresql/data`. The TimescaleDB image stores data at
+> `/home/postgres/pgdata/data`, and the compose files now mount the
+> `postgres_data` volume at `/home/postgres/pgdata`. **If you just pull the new
+> images and `up -d`, Postgres will initialise an empty database at the new path
+> and your existing data (accounts, servers, licenses) will appear "lost"** —
+> it's still in the volume, just at the old location.
+>
+> Before upgrading: **back up first** (`pg_dump` against the running old
+> container), then migrate the data into the new layout. The simplest, safest
+> path:
+>
+> ```bash
+> # 1. With the OLD stack still running, dump everything:
+> docker compose -f docker-compose.selfhosted.yml exec postgres \
+>   pg_dump -U postgres -Fc qarote > qarote-backup.dump
+>
+> # 2. Pull the new images, recreate the postgres service on a FRESH volume
+> #    (rename or remove the old postgres_data volume so the HA image initdb's
+> #    cleanly at /home/postgres/pgdata/data), then bring up only postgres:
+> docker compose -f docker-compose.selfhosted.yml up -d postgres
+>
+> # 3. Restore into the new TimescaleDB-backed database, then start the rest.
+> #    (The app's migrations run CREATE EXTENSION + create_hypertable on boot;
+> #    restoring the schema-only dump first is unnecessary — let migrations build
+> #    the hypertables, then restore data, OR pg_restore the full dump which
+> #    re-creates tables as plain tables. If you pg_restore the full dump,
+> #    convert the two time-series tables afterwards — but for most installs the
+> #    metric/trace history is disposable, so restoring only the non-time-series
+> #    data and letting history rebuild from live polling is simplest.)
+> cat qarote-backup.dump | docker compose -f docker-compose.selfhosted.yml \
+>   exec -T postgres pg_restore -U postgres -d qarote --no-owner
+> docker compose -f docker-compose.selfhosted.yml up -d
+> ```
+>
+> Preserve volume ownership/permissions (and SELinux labels on RHEL-family
+> hosts) when copying data directories by hand. **Verify your backup restores
+> before deleting the old volume.**
 
 ### Why PostgreSQL specifically
 
 Qarote depends on a few PostgreSQL features that have no portable
 equivalents in MySQL, SQLite, or other engines:
 
+- **TimescaleDB hypertables, compression, and retention policies** — the two
+  highest-volume tables are partitioned by time; retention is a chunk-drop
+  policy, not a `DELETE` sweep. This is the hard requirement above.
 - **`pgcrypto` extension** (`digest`, `gen_random_uuid`) — used for
   the append-only audit-log trigger and the RBAC scope-fingerprint
   generated column.
@@ -85,25 +151,48 @@ Qarote is available as a single binary that embeds both the API and frontend. No
 > systemctl status postgresql  # Check if running (Linux)
 > ```
 >
-> **Install PostgreSQL** if you don't have it:
+> **Install PostgreSQL 17 _with TimescaleDB_** if you don't have it. A plain
+> PostgreSQL install is **not** sufficient — the API crash-loops without the
+> `timescaledb` extension (see the warning above).
 >
-> - **macOS:** `brew install postgresql@17`
-> - **Ubuntu/Debian:** `sudo apt install postgresql`
-> - **Windows (WSL2):** `sudo apt install postgresql`
+> - **macOS:** `brew install postgresql@17 timescaledb` then run
+>   `timescaledb-tune` and restart Postgres.
+> - **Ubuntu/Debian:** add the TimescaleDB apt repo, then
+>   `sudo apt install timescaledb-2-postgresql-17` and run `timescaledb-tune`.
+>   See the [TimescaleDB self-hosted install guide](https://docs.timescale.com/self-hosted/latest/install/).
+> - **Any OS via Docker:** run `timescale/timescaledb-ha:pg17` instead.
 
 ### Database Setup
 
-After installing PostgreSQL, create a dedicated user and database:
+After installing PostgreSQL with TimescaleDB, create a dedicated user and database:
 
 ```bash
 # 1. Create a user and database for Qarote
 sudo -u postgres psql -c "CREATE USER qarote WITH PASSWORD 'your-secure-password';"
 sudo -u postgres psql -c "CREATE DATABASE qarote OWNER qarote;"
 
-# 2. Configure idle connection timeouts (prevents zombie connections)
+# 2. Ensure shared_preload_libraries includes timescaledb, then restart Postgres.
+#    (timescaledb-tune does this for you.) The API's migrations run
+#    `CREATE EXTENSION timescaledb` automatically on first boot.
+#
+#    IMPORTANT: `ALTER SYSTEM SET` *replaces* the whole value — it does not
+#    append, and it cannot evaluate SQL expressions. So read the current value
+#    with `SHOW shared_preload_libraries` and build the merged string in the
+#    shell, adding timescaledb only when it's absent (preserves e.g.
+#    pg_stat_statements). This block is idempotent:
+current=$(sudo -u postgres psql -tAc "SHOW shared_preload_libraries" | tr -d '[:space:]')
+if ! printf '%s' "$current" | grep -qw timescaledb; then
+  merged=$([ -n "$current" ] && printf '%s,timescaledb' "$current" || printf 'timescaledb')
+  sudo -u postgres psql -c "ALTER SYSTEM SET shared_preload_libraries = '$merged';"
+fi
+
+# 3. Configure idle connection timeouts (prevents zombie connections)
 sudo -u postgres psql -c "ALTER SYSTEM SET idle_session_timeout = '30min';"
 sudo -u postgres psql -c "ALTER SYSTEM SET idle_in_transaction_session_timeout = '5min';"
 sudo -u postgres psql -c "SELECT pg_reload_conf();"
+
+# Restart Postgres so shared_preload_libraries takes effect:
+sudo systemctl restart postgresql
 ```
 
 Your database URL will be: `postgresql://qarote:your-secure-password@localhost:5432/qarote`
@@ -258,12 +347,28 @@ docker compose -f docker-compose.selfhosted-ee.yml up -d
 
 2. **Create the app and database:**
 
+   The `dokku-postgres` plugin defaults to a plain PostgreSQL image. Qarote
+   requires TimescaleDB, so point the plugin at a TimescaleDB image **before**
+   creating the service (`CREATE EXTENSION` runs on the first app boot — a plain
+   image makes the API crash-loop):
+
    ```bash
    ssh dokku@your-server apps:create qarote
    sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git postgres
-   dokku postgres:create qarote-db
+
+   # Use a TimescaleDB image for THIS service (pinned to the pg17 HA line).
+   export POSTGRES_IMAGE="timescale/timescaledb-ha"
+   export POSTGRES_IMAGE_VERSION="pg17"
+   dokku postgres:create qarote-db --image "$POSTGRES_IMAGE" --image-version "$POSTGRES_IMAGE_VERSION"
    dokku postgres:link qarote-db qarote
    ```
+
+   > **Migrating an existing plain-Postgres service?** Because the extension is
+   > created at boot, the image swap must land **before or atomically with** the
+   > deploy that runs the new migrations. For a pre-launch / empty database the
+   > simplest path is to destroy and recreate the service on the TimescaleDB
+   > image (`dokku postgres:destroy qarote-db` → recreate as above → relink),
+   > since there is no data to preserve.
 
 3. **Set environment variables:**
 

@@ -12,7 +12,9 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      # The timescaledb-ha image stores data under /home/postgres/pgdata
+      # (PGDATA=/home/postgres/pgdata/data), NOT /var/lib/postgresql/data.
+      - postgres_data:/home/postgres/pgdata
     networks:
       - rabbit_dashboard_network
     healthcheck:

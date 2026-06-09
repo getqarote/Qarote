@@ -49,7 +49,6 @@ import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
 import { useDiagnosis } from "@/hooks/queries/useDiagnosis";
-import { useCurrentPlan } from "@/hooks/queries/usePlans";
 import { useQueueHistory } from "@/hooks/queries/useQueueHistory";
 import {
   useDeleteQueue,
@@ -116,29 +115,11 @@ const QueueDetail = () => {
   const isPremium =
     userPlan === UserPlan.DEVELOPER || userPlan === UserPlan.ENTERPRISE;
 
-  // FREE plan: queryable range is hard-clamped to 6h server-side
-  // (`resolve-allowed-range.ts`) regardless of the 24h retention window —
-  // mirror that here so the picker can't pretend otherwise.
-  //
-  // Paid plans use planData's `maxMetricsRetentionHours` once it
-  // resolves. While the query is loading, fall back to a tier-correct
-  // ceiling derived from `userPlan` (which is already resolved from
-  // UserContext): DEVELOPER → 168, ENTERPRISE → 720. A blanket 720
-  // fallback was wrong — DEVELOPER users would briefly see 30d as
-  // selectable until planData arrived (server clamps anyway, but the
-  // picker shouldn't lie). If planData fails permanently, the
-  // tier-correct fallback continues to gate correctly.
-  const { data: planData } = useCurrentPlan();
-  const planFallbackMaxRangeHours =
-    userPlan === UserPlan.ENTERPRISE
-      ? 720
-      : userPlan === UserPlan.DEVELOPER
-        ? 168
-        : 6;
-  const maxRangeHours = isPremium
-    ? (planData?.planFeatures.maxMetricsRetentionHours ??
-      planFallbackMaxRangeHours)
-    : 6;
+  // Metrics retention is a uniform 30-day TimescaleDB chunk-drop. FREE plans
+  // are hard-clamped to a 6h query window server-side
+  // (`resolve-allowed-range.ts`); paid plans can query the full 30 days. Mirror
+  // that here so the picker can't offer a range the server will reject.
+  const maxRangeHours = isPremium ? 30 * 24 : 6;
 
   const {
     data: queueData,

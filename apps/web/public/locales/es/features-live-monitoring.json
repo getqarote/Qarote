@@ -97,7 +97,7 @@
       },
       {
         "question": "¿Cuál es la diferencia entre la monitorización en vivo y Queue History?",
-        "answer": "La monitorización en vivo muestra el estado actual de tus queues — actualizado cada segundo. Queue History (Developer+) almacena snapshots cada 5 minutos durante 7 días, para que puedas revisar lo que ocurrió durante un incidente pasado. Ambas utilizan las mismas métricas subyacentes."
+        "answer": "La monitorización en vivo muestra el estado actual de tus queues — actualizado cada segundo. Queue History (Developer+) almacena snapshots cada 5 minutos durante 30 días, para que puedas revisar lo que ocurrió durante un incidente pasado. Ambas utilizan las mismas métricas subyacentes."
       },
       {
         "question": "¿Qarote almacena los datos de la monitorización en vivo?",

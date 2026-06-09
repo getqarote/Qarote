@@ -103,7 +103,7 @@
     "title": "Visibilité totale sur le flux de messages"
   },
   "queueHistory": {
-    "description": "7 jours de profondeur de file, comptages de consommateurs et taux de messages capturés toutes les 5 minutes. Visualisez n'importe quelle file sur n'importe quelle fenêtre de temps — voyez exactement quand elle a commencé à se remplir et quand elle s'est vidée."
+    "description": "30 jours de profondeur de file, comptages de consommateurs et taux de messages capturés toutes les 5 minutes. Visualisez n'importe quelle file sur n'importe quelle fenêtre de temps — voyez exactement quand elle a commencé à se remplir et quand elle s'est vidée."
   },
   "messageSpy": {
     "description": "Parcourez les en-têtes et charges utiles des messages directement dans n'importe quelle file — en lecture seule, non destructif, sûr pour la production. Pas de consommateur AMQP. Pas de scripts jetables. Les messages restent exactement où ils sont.",
@@ -129,7 +129,7 @@
       {
         "icon": "chart.svg",
         "title": "Historique des files",
-        "description": "7 jours de profondeur de file, comptages de consommateurs et taux de messages capturés toutes les 5 minutes. Pour les rétrospectives d'incidents et la planification de capacité.",
+        "description": "30 jours de profondeur de file, comptages de consommateurs et taux de messages capturés toutes les 5 minutes. Pour les rétrospectives d'incidents et la planification de capacité.",
         "href": "/features/metrics/"
       },
       {

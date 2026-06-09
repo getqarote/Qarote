@@ -93,7 +93,9 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15-alpine
+        # TimescaleDB required — the API runs `CREATE EXTENSION timescaledb` at
+        # boot. Pinned to the pg17 HA line (also fixes the prior pg15 drift).
+        image: timescale/timescaledb-ha:pg17
         env:
           POSTGRES_DB: qarote_e2e
           POSTGRES_USER: postgres

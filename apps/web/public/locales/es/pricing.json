@@ -114,7 +114,7 @@
     "messageSpy": "Espía de mensajes",
     "messageSpyDesc": "Inspecciona el contenido de mensajes en las colas sin consumirlos",
     "metricsPersistence": "Historial de colas",
-    "metricsPersistenceDesc": "Snapshots cada 5 minutos, retenidos 7 días — revisa profundidades, tasas y consumidores en cualquier momento de la semana pasada",
+    "metricsPersistenceDesc": "Snapshots cada 5 minutos, retenidos 30 días — revisa profundidades, tasas y consumidores en cualquier momento del último mes",
     "incidentDiagnosis": "Motor de diagnóstico de incidentes",
     "incidentDiagnosisDesc": "Análisis automatizado de causa raíz para identificar fallos rápidamente",
     "messageTracing": "Trazado de mensajes (Firehose)",

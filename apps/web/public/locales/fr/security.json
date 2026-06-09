@@ -23,7 +23,7 @@
       },
       {
         "title": "Les payloads de messages ne quittent jamais votre broker",
-        "description": "Qarote lit les profondeurs de file, les taux de messages et le nombre de consommateurs pour alimenter les alertes et les graphiques de tendances — ces métriques sont conservées 7 jours. Le contenu réel de vos messages n'est jamais accédé, lu ni stocké."
+        "description": "Qarote lit les profondeurs de file, les taux de messages et le nombre de consommateurs pour alimenter les alertes et les graphiques de tendances — ces métriques sont conservées 30 jours. Le contenu réel de vos messages n'est jamais accédé, lu ni stocké."
       },
       {
         "title": "Isolation des espaces de travail",

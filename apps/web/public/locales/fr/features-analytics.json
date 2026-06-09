@@ -61,7 +61,7 @@
       {
         "number": "03",
         "title": "Ajustez la fenêtre temporelle",
-        "description": "Sélectionnez 1 heure, 6 heures, 24 heures ou 7 jours. Zoomez sur une fenêtre d'incident ou consultez la tendance de la semaine complète. Le même graphique, à différentes résolutions."
+        "description": "Sélectionnez 1 heure, 6 heures, 24 heures ou 30 jours. Zoomez sur une fenêtre d'incident ou consultez la tendance du mois complet. Le même graphique, à différentes résolutions."
       }
     ]
   },
@@ -85,7 +85,7 @@
     "items": [
       {
         "question": "Sur quelle période les analytiques remontent-elles ?",
-        "answer": "Les graphiques analytiques s'appuient sur les données de Queue History — 7 jours de snapshots à intervalles de 5 minutes sur les plans Developer et Enterprise. L'édition Community affiche uniquement les métriques en temps réel."
+        "answer": "Les graphiques analytiques s'appuient sur les données de Queue History — 30 jours de snapshots à intervalles de 5 minutes sur les plans Developer et Enterprise. L'édition Community est limitée à une fenêtre d'aperçu de 6 heures."
       },
       {
         "question": "Puis-je exporter les données des graphiques ?",
@@ -97,7 +97,7 @@
       },
       {
         "question": "Quelle est la différence avec Queue History ?",
-        "answer": "Analytiques et Queue History s'appuient sur les mêmes données sous-jacentes — des snapshots à 5 minutes conservés 7 jours. Queue History met l'accent sur la chronologie brute pour les rétrospectives d'incidents. Analytiques met l'accent sur la visualisation des tendances, les graphiques comparatifs et les vues de planification de capacité sur les mêmes données."
+        "answer": "Analytiques et Queue History s'appuient sur les mêmes données sous-jacentes — des snapshots à 5 minutes conservés 30 jours. Queue History met l'accent sur la chronologie brute pour les rétrospectives d'incidents. Analytiques met l'accent sur la visualisation des tendances, les graphiques comparatifs et les vues de planification de capacité sur les mêmes données."
       },
       {
         "question": "Les analytiques fonctionnent-elles avec Qarote auto-hébergé ?",

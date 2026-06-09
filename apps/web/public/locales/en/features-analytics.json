@@ -61,7 +61,7 @@
       {
         "number": "03",
         "title": "Adjust the time window",
-        "description": "Select 1 hour, 6 hours, 24 hours, or 7 days. Zoom into an incident window or review the full week's trend. The same chart, different resolution."
+        "description": "Select 1 hour, 6 hours, 24 hours, or 30 days. Zoom into an incident window or review the full month's trend. The same chart, different resolution."
       }
     ]
   },
@@ -85,7 +85,7 @@
     "items": [
       {
         "question": "How far back do analytics go?",
-        "answer": "Analytics charts draw from Queue History data — 7 days of snapshots at 5-minute intervals on Developer and Enterprise plans. The Community edition shows real-time metrics only."
+        "answer": "Analytics charts draw from Queue History data — 30 days of snapshots at 5-minute intervals on Developer and Enterprise plans. The Community edition is limited to a 6-hour preview window."
       },
       {
         "question": "Can I export chart data?",
@@ -97,7 +97,7 @@
       },
       {
         "question": "How is this different from Queue History?",
-        "answer": "Analytics and Queue History draw from the same underlying data — 5-minute snapshots stored for 7 days. Queue History emphasizes the raw timeline for incident retrospectives. Analytics emphasizes trend visualization, comparative charting, and capacity planning views over the same data."
+        "answer": "Analytics and Queue History draw from the same underlying data — 5-minute snapshots stored for 30 days. Queue History emphasizes the raw timeline for incident retrospectives. Analytics emphasizes trend visualization, comparative charting, and capacity planning views over the same data."
       },
       {
         "question": "Does analytics work with self-hosted Qarote?",

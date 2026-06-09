@@ -97,7 +97,7 @@
       },
       {
         "question": "What's the difference between live monitoring and queue history?",
-        "answer": "Live monitoring shows the current state of your queues — updated every second. Queue History (Developer+) stores snapshots every 5 minutes for 7 days, so you can review what happened during a past incident. Both use the same underlying metrics."
+        "answer": "Live monitoring shows the current state of your queues — updated every second. Queue History (Developer+) stores snapshots every 5 minutes for 30 days, so you can review what happened during a past incident. Both use the same underlying metrics."
       },
       {
         "question": "Does Qarote store live monitoring data?",

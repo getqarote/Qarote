@@ -21,9 +21,12 @@ describe("PlanFeatures retention limits", () => {
       );
     });
 
-    it("ENTERPRISE is 720h (30 days)", () => {
+    // ENTERPRISE matches DEVELOPER (168h) since trace storage is a uniform
+    // 7-day chunk-drop for every paid plan — a larger query window would only
+    // silently return the 7 days that actually exist.
+    it("ENTERPRISE is 168h (7 days), matching storage", () => {
       expect(PLAN_FEATURES[UserPlan.ENTERPRISE].maxTraceRetentionHours).toBe(
-        720
+        168
       );
     });
 
@@ -33,44 +36,16 @@ describe("PlanFeatures retention limits", () => {
       ).toBeGreaterThan(PLAN_FEATURES[UserPlan.FREE].maxTraceRetentionHours);
     });
 
-    it("ENTERPRISE > DEVELOPER", () => {
+    it("ENTERPRISE >= DEVELOPER", () => {
       expect(
         PLAN_FEATURES[UserPlan.ENTERPRISE].maxTraceRetentionHours
-      ).toBeGreaterThan(
+      ).toBeGreaterThanOrEqual(
         PLAN_FEATURES[UserPlan.DEVELOPER].maxTraceRetentionHours
       );
     });
   });
 
-  describe("maxMetricsRetentionHours", () => {
-    it("FREE is 24h", () => {
-      expect(PLAN_FEATURES[UserPlan.FREE].maxMetricsRetentionHours).toBe(24);
-    });
-
-    it("DEVELOPER is 336h (14 days)", () => {
-      expect(PLAN_FEATURES[UserPlan.DEVELOPER].maxMetricsRetentionHours).toBe(
-        336
-      );
-    });
-
-    it("ENTERPRISE is 2160h (90 days)", () => {
-      expect(PLAN_FEATURES[UserPlan.ENTERPRISE].maxMetricsRetentionHours).toBe(
-        2160
-      );
-    });
-
-    it("DEVELOPER > FREE", () => {
-      expect(
-        PLAN_FEATURES[UserPlan.DEVELOPER].maxMetricsRetentionHours
-      ).toBeGreaterThan(PLAN_FEATURES[UserPlan.FREE].maxMetricsRetentionHours);
-    });
-
-    it("ENTERPRISE > DEVELOPER", () => {
-      expect(
-        PLAN_FEATURES[UserPlan.ENTERPRISE].maxMetricsRetentionHours
-      ).toBeGreaterThan(
-        PLAN_FEATURES[UserPlan.DEVELOPER].maxMetricsRetentionHours
-      );
-    });
-  });
+  // maxMetricsRetentionHours was removed — metrics retention is now a uniform
+  // 30-day TimescaleDB chunk-drop (no per-plan gating). The metric query window
+  // is covered by resolve-allowed-range.test.ts.
 });

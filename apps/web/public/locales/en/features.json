@@ -103,7 +103,7 @@
     "title": "Full visibility into message flow"
   },
   "queueHistory": {
-    "description": "7 days of queue depth, consumer counts, and message rates captured every 5 minutes. Graph any queue over any time window — see exactly when it started filling and when it drained, even if you weren't watching."
+    "description": "30 days of queue depth, consumer counts, and message rates captured every 5 minutes. Graph any queue over any time window — see exactly when it started filling and when it drained, even if you weren't watching."
   },
   "messageSpy": {
     "description": "Browse message headers and payloads directly inside any queue — read-only, non-destructive, safe for production. No AMQP consumer. No throwaway scripts. The messages stay exactly where they are.",
@@ -129,7 +129,7 @@
       {
         "icon": "chart.svg",
         "title": "Metrics",
-        "description": "7 days of queue depth, consumer counts, and message rates captured every 5 minutes. For incident retrospectives and capacity planning — no Prometheus required.",
+        "description": "30 days of queue depth, consumer counts, and message rates captured every 5 minutes. For incident retrospectives and capacity planning — no Prometheus required.",
         "href": "/features/metrics/"
       },
       {

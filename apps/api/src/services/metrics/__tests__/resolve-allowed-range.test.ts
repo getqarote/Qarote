@@ -2,20 +2,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/services/plan/plan.service", () => ({
   getWorkspacePlan: vi.fn(),
-  getPlanFeatures: vi.fn(),
 }));
 
-import {
-  getPlanFeatures,
-  getWorkspacePlan,
-} from "@/services/plan/plan.service";
+import { getWorkspacePlan } from "@/services/plan/plan.service";
 
 import { resolveAllowedRange } from "../resolve-allowed-range";
 
 import { UserPlan } from "@/generated/prisma/client";
 
 const mockGetWorkspacePlan = getWorkspacePlan as ReturnType<typeof vi.fn>;
-const mockGetPlanFeatures = getPlanFeatures as ReturnType<typeof vi.fn>;
+
+// Uniform 30-day metrics retention (matches the TimescaleDB chunk-drop policy).
+const PAID_MAX = 30 * 24; // 720h
 
 describe("resolveAllowedRange", () => {
   beforeEach(() => {
@@ -38,7 +36,7 @@ describe("resolveAllowedRange", () => {
     );
   });
 
-  // ── FREE plan ────────────────────────────────────────────────────────────
+  // ── FREE plan — 6h preview cap ─────────────────────────────────────────────
 
   it("FREE + requested 6h → allowed 6h, wasClamped:false", async () => {
     mockGetWorkspacePlan.mockResolvedValue(UserPlan.FREE);
@@ -64,48 +62,42 @@ describe("resolveAllowedRange", () => {
     expect(result).toEqual({ hours: 6, wasClamped: true });
   });
 
-  // ── DEVELOPER plan ────────────────────────────────────────────────────────
+  // ── DEVELOPER plan — uniform 30-day window ──────────────────────────────────
 
   it("DEVELOPER + requested 72h → allowed 72h, wasClamped:false", async () => {
     mockGetWorkspacePlan.mockResolvedValue(UserPlan.DEVELOPER);
-    mockGetPlanFeatures.mockReturnValue({ maxMetricsRetentionHours: 168 });
     const result = await resolveAllowedRange("ws-1", 72);
     expect(result).toEqual({ hours: 72, wasClamped: false });
   });
 
-  it("DEVELOPER + requested 168h → allowed 168h, wasClamped:false (at limit)", async () => {
+  it("DEVELOPER + requested 720h → allowed 720h, wasClamped:false (at limit)", async () => {
     mockGetWorkspacePlan.mockResolvedValue(UserPlan.DEVELOPER);
-    mockGetPlanFeatures.mockReturnValue({ maxMetricsRetentionHours: 168 });
-    const result = await resolveAllowedRange("ws-1", 168);
-    expect(result).toEqual({ hours: 168, wasClamped: false });
+    const result = await resolveAllowedRange("ws-1", PAID_MAX);
+    expect(result).toEqual({ hours: PAID_MAX, wasClamped: false });
   });
 
-  it("DEVELOPER + requested 720h → clamped to 168h, wasClamped:true", async () => {
+  it("DEVELOPER + requested 721h → clamped to 720h, wasClamped:true", async () => {
     mockGetWorkspacePlan.mockResolvedValue(UserPlan.DEVELOPER);
-    mockGetPlanFeatures.mockReturnValue({ maxMetricsRetentionHours: 168 });
-    const result = await resolveAllowedRange("ws-1", 720);
-    expect(result).toEqual({ hours: 168, wasClamped: true });
+    const result = await resolveAllowedRange("ws-1", PAID_MAX + 1);
+    expect(result).toEqual({ hours: PAID_MAX, wasClamped: true });
   });
 
-  // ── ENTERPRISE plan ───────────────────────────────────────────────────────
+  // ── ENTERPRISE plan — same uniform 30-day window ────────────────────────────
 
   it("ENTERPRISE + requested 720h → allowed 720h, wasClamped:false", async () => {
     mockGetWorkspacePlan.mockResolvedValue(UserPlan.ENTERPRISE);
-    mockGetPlanFeatures.mockReturnValue({ maxMetricsRetentionHours: 720 });
-    const result = await resolveAllowedRange("ws-1", 720);
-    expect(result).toEqual({ hours: 720, wasClamped: false });
+    const result = await resolveAllowedRange("ws-1", PAID_MAX);
+    expect(result).toEqual({ hours: PAID_MAX, wasClamped: false });
   });
 
   it("ENTERPRISE + requested 721h → clamped to 720h, wasClamped:true", async () => {
     mockGetWorkspacePlan.mockResolvedValue(UserPlan.ENTERPRISE);
-    mockGetPlanFeatures.mockReturnValue({ maxMetricsRetentionHours: 720 });
-    const result = await resolveAllowedRange("ws-1", 721);
-    expect(result).toEqual({ hours: 720, wasClamped: true });
+    const result = await resolveAllowedRange("ws-1", PAID_MAX + 1);
+    expect(result).toEqual({ hours: PAID_MAX, wasClamped: true });
   });
 
   it("ENTERPRISE + requested 168h → allowed 168h, wasClamped:false (within limit)", async () => {
     mockGetWorkspacePlan.mockResolvedValue(UserPlan.ENTERPRISE);
-    mockGetPlanFeatures.mockReturnValue({ maxMetricsRetentionHours: 720 });
     const result = await resolveAllowedRange("ws-1", 168);
     expect(result).toEqual({ hours: 168, wasClamped: false });
   });

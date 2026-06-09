@@ -31,8 +31,6 @@ import { ExtendedWorkspace } from "@/contexts/WorkspaceContextDefinition";
 
 import { useUser } from "@/hooks/ui/useUser";
 
-import { UserPlan } from "@/types/plans";
-
 import { NoWorkspaceCard } from "./NoWorkspaceCard";
 import { formatDate, WorkspaceFormState } from "./profileUtils";
 import { WorkspaceFormFields } from "./WorkspaceFormFields";
@@ -65,7 +63,7 @@ export const WorkspaceInfoTab = ({
   isDeleting,
 }: WorkspaceInfoTabProps) => {
   const { t } = useTranslation("profile");
-  const { userPlan, planData } = useUser();
+  const { planData } = useUser();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [confirmName, setConfirmName] = useState("");
   const confirmInputId = useId();
@@ -133,21 +131,6 @@ export const WorkspaceInfoTab = ({
           editingWorkspace={editingWorkspace}
           workspaceForm={workspaceForm}
           setWorkspaceForm={setWorkspaceForm}
-          // Tier-correct fallback while planData is loading or null.
-          // A blanket 24 was wrong: a DEVELOPER user briefly saw the
-          // input capped at 24 (and rejecting their valid 168) until
-          // the query resolved, and stuck there forever on query error.
-          maxTraceRetentionHours={
-            planData?.planFeatures.maxTraceRetentionHours ??
-            (userPlan === UserPlan.ENTERPRISE
-              ? 720
-              : userPlan === UserPlan.DEVELOPER
-                ? 168
-                : 24)
-          }
-          // Lock by plan identity rather than ceiling magnitude — a future
-          // paid tier with a small max should still be editable.
-          traceRetentionLocked={userPlan === UserPlan.FREE}
         />
 
         <div className="space-y-2">

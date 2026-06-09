@@ -114,7 +114,7 @@
     "messageSpy": "Message Spy",
     "messageSpyDesc": "Inspect live message content inside queues without consuming them",
     "metricsPersistence": "Queue History",
-    "metricsPersistenceDesc": "5-minute snapshots retained for 7 days — review queue depths, rates, and consumer counts at any point in the past week",
+    "metricsPersistenceDesc": "5-minute snapshots retained for 30 days — review queue depths, rates, and consumer counts at any point in the past month",
     "incidentDiagnosis": "Incident Diagnosis Engine",
     "incidentDiagnosisDesc": "Automated root cause analysis to pinpoint failures fast",
     "messageTracing": "Message Tracing (Firehose)",

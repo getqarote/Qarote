@@ -1,12 +1,12 @@
 {
   "seo": {
-    "title": "RabbitMQ Queue History — 7 Days of Metric Snapshots | Qarote",
-    "description": "7 days of RabbitMQ queue history. Queue depth, consumer counts, and message rates captured every 5 minutes — for incident retrospectives and capacity planning. No Prometheus required."
+    "title": "RabbitMQ Queue History — 30 Days of Metric Snapshots | Qarote",
+    "description": "30 days of RabbitMQ queue history. Queue depth, consumer counts, and message rates captured every 5 minutes — for incident retrospectives and capacity planning. No Prometheus required."
   },
   "hero": {
     "eyebrow": "Features → Queue History",
-    "title": "7 days of RabbitMQ queue history. Not 8 hours.",
-    "subtitle": "The RabbitMQ management plugin discards metrics after roughly 8 hours. Qarote captures queue depth, consumer counts, and message rates every 5 minutes and retains them for 7 days — so the data is there when you need it for incident retrospectives and capacity planning."
+    "title": "30 days of RabbitMQ queue history. Not 8 hours.",
+    "subtitle": "The RabbitMQ management plugin discards metrics after roughly 8 hours. Qarote captures queue depth, consumer counts, and message rates every 5 minutes and retains them for 30 days — so the data is there when you need it for incident retrospectives and capacity planning."
   },
   "metricTypes": {
     "eyebrow": "What's stored",
@@ -15,7 +15,7 @@
       {
         "icon": "chart.svg",
         "title": "Queue depth history",
-        "description": "Queue message counts captured every 5 minutes, retained for 7 days — 2,016 data points per queue per week. Graph the depth of any queue over any time window. See exactly when a queue started filling, how fast it grew, and when it drained — even if you weren't watching when it happened."
+        "description": "Queue message counts captured every 5 minutes, retained for 30 days — 8,640 data points per queue over the full window. Graph the depth of any queue over any time window. See exactly when a queue started filling, how fast it grew, and when it drained — even if you weren't watching when it happened."
       },
       {
         "icon": "message.svg",
@@ -40,7 +40,7 @@
       {
         "icon": "send.svg",
         "title": "Connection and channel counts",
-        "description": "Total connections and open channels per broker over time. Connection leaks are one of the most common RabbitMQ failure modes — a chart showing steady connection count growth over 7 days is a leak in progress."
+        "description": "Total connections and open channels per broker over time. Connection leaks are one of the most common RabbitMQ failure modes — a chart showing steady connection count growth over 30 days is a leak in progress."
       }
     ]
   },
@@ -56,12 +56,12 @@
       {
         "number": "02",
         "title": "Metrics are stored automatically",
-        "description": "Every snapshot is written to Qarote's database. All queues on all connected servers are stored by default — no configuration required. Data is retained for 7 days and automatically purged as it ages out."
+        "description": "Every snapshot is written to Qarote's database. All queues on all connected servers are stored by default — no configuration required. Data is retained for 30 days and automatically purged as it ages out."
       },
       {
         "number": "03",
         "title": "Query any time window",
-        "description": "Open any queue and scrub back through the past 7 days. Zoom into a 15-minute incident window or review the full week's trend — the data is always there."
+        "description": "Open any queue and scrub back through the past 30 days. Zoom into a 15-minute incident window or review the full month's trend — the data is always there."
       }
     ]
   },
@@ -85,11 +85,11 @@
     "items": [
       {
         "question": "How long are metrics retained?",
-        "answer": "7 days on Developer and Enterprise plans. Snapshots are taken every 5 minutes and automatically purged after 7 days. The free Community edition shows real-time metrics only — no historical data is stored."
+        "answer": "30 days on Developer and Enterprise plans. Snapshots are taken every 5 minutes and automatically purged after 30 days. The free Community edition is limited to a 6-hour preview window — only the last 6 hours of history are queryable."
       },
       {
         "question": "How much storage does metrics persistence use?",
-        "answer": "Minimal. A typical deployment with 50 queues at 5-minute snapshots uses approximately 20 MB for the full 7-day window. Storage is managed automatically — snapshots are purged as they age out of the retention window."
+        "answer": "Minimal. A typical deployment with 50 queues at 5-minute snapshots uses approximately 85 MB for the full 30-day window — and TimescaleDB compresses older chunks, so the on-disk figure is typically lower. Storage is managed automatically: snapshots are purged as they age out of the retention window."
       },
       {
         "question": "Can I query historical metrics via API?",

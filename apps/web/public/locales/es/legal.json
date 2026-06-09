@@ -101,7 +101,12 @@
           },
           {
             "label": "Métricas de monitorización de colas (profundidades, tasas, conteos de consumidores)",
-            "detail": "7 días, eliminadas automáticamente",
+            "detail": "30 días, eliminadas automáticamente",
+            "mono": true
+          },
+          {
+            "label": "Eventos de rastreo de mensajes (metadatos)",
+            "detail": "7 días, eliminados automáticamente",
             "mono": true
           },
           {

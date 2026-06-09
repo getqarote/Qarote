@@ -103,7 +103,7 @@
     "title": "Visibilidad total sobre el flujo de mensajes"
   },
   "queueHistory": {
-    "description": "7 días de profundidad de cola, conteos de consumidores y tasas de mensajes capturados cada 5 minutos. Grafica cualquier cola en cualquier ventana de tiempo — ve exactamente cuándo empezó a llenarse y cuándo se vació, aunque no estuvieras mirando."
+    "description": "30 días de profundidad de cola, conteos de consumidores y tasas de mensajes capturados cada 5 minutos. Grafica cualquier cola en cualquier ventana de tiempo — ve exactamente cuándo empezó a llenarse y cuándo se vació, aunque no estuvieras mirando."
   },
   "messageSpy": {
     "description": "Navega cabeceras y payloads de mensajes directamente en cualquier cola — solo lectura, no destructivo, seguro para producción. Sin consumidor AMQP. Sin scripts desechables. Los mensajes permanecen exactamente donde están.",
@@ -129,7 +129,7 @@
       {
         "icon": "chart.svg",
         "title": "Historial de colas",
-        "description": "7 días de profundidad de cola, conteos de consumidores y tasas de mensajes capturados cada 5 minutos. Para retrospectivas de incidentes y planificación de capacidad.",
+        "description": "30 días de profundidad de cola, conteos de consumidores y tasas de mensajes capturados cada 5 minutos. Para retrospectivas de incidentes y planificación de capacidad.",
         "href": "/features/metrics/"
       },
       {

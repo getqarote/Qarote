@@ -101,6 +101,11 @@
           },
           {
             "label": "Queue monitoring metrics (depths, rates, consumer counts)",
+            "detail": "30 days, automatically purged",
+            "mono": true
+          },
+          {
+            "label": "Message trace events (metadata)",
             "detail": "7 days, automatically purged",
             "mono": true
           },

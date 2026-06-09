@@ -51,11 +51,11 @@ export interface PlanFeatures {
   hasLlmDigest: boolean | "coming_soon";
   canUseBYOK: boolean;
 
-  // Retention limits (in hours)
-  // Note: these are operational quotas, not billing/display features.
-  // A future refactor can extract a PlanLimits type for cleaner separation.
+  // Per-plan trace QUERY window cap (in hours). Not a storage knob — trace
+  // storage is a uniform 7-day TimescaleDB chunk-drop. This gates how far back
+  // each plan may query the firehose (FREE = 6h preview lever).
+  // Note: this is an operational quota, not a billing/display feature.
   maxTraceRetentionHours: number;
-  maxMetricsRetentionHours: number;
 
   // RabbitMQ version support
   supportedRabbitMqVersions: string[];
@@ -118,13 +118,13 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
     // Intelligence & Diagnostics (limited on FREE)
     hasDailyDigest: "limited", // weekly digest only on Community
     hasMessageSpy: "limited", // 5 messages / capture (FREE_SPY_PREVIEW_COUNT)
-    hasMetricsPersistence: "limited", // 24 h retention
+    hasMetricsPersistence: "limited", // 6h queryable preview (storage is 30d)
     hasIncidentDiagnosis: true, // full detection — free on every plan (CE/EE split)
     hasMessageTracing: "limited", // 6 h retention — wow factor without storage burden
 
-    // Retention limits
-    maxTraceRetentionHours: 6, // 6 h — wow factor without storage cost on Community
-    maxMetricsRetentionHours: 24, // 1 day (queryable range is further clamped to 6h)
+    // Trace query window — 6h preview (wow factor without storage cost).
+    // Metrics query window is a separate FREE 6h cap in resolve-allowed-range.
+    maxTraceRetentionHours: 6,
 
     // RabbitMQ support
     supportedRabbitMqVersions: ["3.12", "3.13", "4.0", "4.1"],
@@ -198,9 +198,8 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
     hasIncidentDiagnosis: true,
     hasMessageTracing: true,
 
-    // Retention limits
-    maxTraceRetentionHours: 168, // 7 days — user-configurable within this bound
-    maxMetricsRetentionHours: 336, // 14 days
+    // Trace query window — full 7-day storage window is queryable.
+    maxTraceRetentionHours: 168,
 
     // RabbitMQ support
     supportedRabbitMqVersions: [
@@ -291,9 +290,10 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
     hasIncidentDiagnosis: true,
     hasMessageTracing: true,
 
-    // Retention limits
-    maxTraceRetentionHours: 720, // 30 days
-    maxMetricsRetentionHours: 2160, // 90 days — quarterly capacity planning
+    // Trace query window — the full 7-day storage window. Kept at 168h (not
+    // higher) so a 30-day request can't silently return only the 7 days that
+    // actually exist; trace storage is a uniform 7-day chunk-drop for every plan.
+    maxTraceRetentionHours: 168,
 
     // RabbitMQ support
     supportedRabbitMqVersions: [
