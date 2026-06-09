@@ -64,6 +64,7 @@
     "copyCommand": "Copier la commande",
     "copied": "Copié",
     "explain": "Expliquer",
+    "explainLockedHint": "AI Explain nécessite un plan Developer — passez à un plan supérieur pour débloquer l'analyse de cause racine",
     "explaining": "Génération de l'explication…",
     "retry": "Réessayer",
     "explainError": "Impossible de générer l'explication — vérifiez votre connexion et réessayez.",

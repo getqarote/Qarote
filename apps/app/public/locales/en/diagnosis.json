@@ -64,6 +64,7 @@
     "copyCommand": "Copy command",
     "copied": "Copied",
     "explain": "Explain",
+    "explainLockedHint": "AI Explain requires a Developer plan — upgrade to unlock root-cause analysis",
     "explaining": "Generating explanation…",
     "retry": "Retry",
     "explainError": "Couldn't generate explanation — check your connection and try again.",

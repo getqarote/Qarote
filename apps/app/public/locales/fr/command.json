@@ -1,0 +1,28 @@
+{
+  "placeholder": "Rechercher destinations, objets, actions…",
+  "empty": "Aucun résultat.",
+  "trigger": "Rechercher",
+  "groups": {
+    "goTo": "Aller à",
+    "objects": "Objets",
+    "actions": "Actions"
+  },
+  "goTo": {
+    "cockpit": "Cockpit",
+    "notifications": "Notifications",
+    "topology": "Topologie",
+    "settings": "Paramètres",
+    "help": "Aide et support"
+  },
+  "objects": {
+    "queues": "Parcourir les files (Topologie)",
+    "exchanges": "Parcourir les exchanges (Topologie)",
+    "users": "Utilisateurs",
+    "policies": "Politiques",
+    "virtualHosts": "Hôtes virtuels",
+    "definitions": "Définitions"
+  },
+  "actions": {
+    "configureAiExplain": "Configurer AI Explain"
+  }
+}

@@ -13,7 +13,7 @@ export function Layout({ children }: LayoutProps) {
       {/* Demo mode banner */}
       <DemoBanner />
 
-      {/* App Header with workspace selector */}
+      {/* App Header with org/workspace breadcrumb + command palette trigger */}
       <AppHeader />
 
       {/* Main content */}

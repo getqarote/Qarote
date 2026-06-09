@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContextDefinition";
 
 /**
  * Hook to fetch all organizations the current user belongs to.
- * Used by the WorkspaceSelector to determine if the user is multi-org.
+ * Used by the ContextBreadcrumb to determine if the user is multi-org.
  */
 export const useMyOrganizations = () => {
   const { isAuthenticated } = useAuth();

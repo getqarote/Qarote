@@ -1,0 +1,66 @@
+{
+  "connectionBar": {
+    "broker": "your broker",
+    "connected": "Connected",
+    "manage": "Manage",
+    "addServer": "Add server",
+    "retry": "Retry",
+    "updateCredentials": "Update credentials",
+    "checkSettings": "Check connection settings",
+    "contactSupport": "Contact support",
+    "error": {
+      "auth": "Authentication failed for {{name}} — credentials rejected",
+      "unreachable": "Can't reach {{name}} — broker unreachable",
+      "error": "Qarote couldn't load {{name}} — something went wrong on our side"
+    }
+  },
+  "agent": {
+    "eyebrow": "Your agent",
+    "connectTitle": "Connect your agent",
+    "connectBody": "Wire Claude Code, Cursor, Copilot, or any MCP client. It lists queues, diagnoses incidents, and explains root causes — in your editor, not a dashboard.",
+    "connectCta": "Connect your agent",
+    "watching": "Meanwhile, Qarote's agent is already watching 24/7.",
+    "wiredCount_one": "{{count}} agent connected",
+    "wiredCount_other": "{{count}} agents connected",
+    "lastCall": "last call {{when}}",
+    "neverCalled": "no calls yet",
+    "manageKeys": "Manage keys",
+    "wireAgent": "Wire agent",
+    "cloudWatching": "Qarote watching 24/7",
+    "enableAiExplain": "Enable AI Explain",
+    "enableAiExplainBody": "Paste an API key or run a local Ollama so your agent can explain root causes.",
+    "configureAiExplain": "Configure AI Explain"
+  },
+  "sees": {
+    "title": "What your agent sees right now",
+    "refresh": "Refresh",
+    "allQuiet": "All quiet — no active findings in the last 2h",
+    "staleMetrics": "Can't fetch live metrics while the broker is unreachable.",
+    "retry": "Retry",
+    "clusterDetail": "Cluster detail"
+  },
+  "cluster": {
+    "title": "Cluster",
+    "description": "Nodes, connections, and channels — also available to your agent over MCP.",
+    "nodes": "Nodes · {{count}}",
+    "connections": "Connections · {{count}}",
+    "channels": "Channels · {{count}}",
+    "none": "None right now.",
+    "agentNote": "These objects are also available to your agent via list_servers and get_overview."
+  },
+  "ask": {
+    "label": "Ask your agent",
+    "hint": "Don't click through dashboards — paste one of these to your agent and it calls Qarote's tools for you.",
+    "copy": "Copy",
+    "copied": "Copied to clipboard",
+    "copyFailed": "Couldn't copy to clipboard",
+    "previous": "Previous prompt",
+    "next": "Next prompt",
+    "prompt1": "What's wrong with my RabbitMQ right now?",
+    "prompt2": "Explain the last incident",
+    "prompt3": "Which queues have no consumers right now?",
+    "prompt4": "Why is payments.capture depth climbing?",
+    "prompt5": "Show config findings ranked by severity",
+    "prompt6": "Did anything change on the broker in the last hour?"
+  }
+}

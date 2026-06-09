@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react";
 
 import { readGateError } from "@/lib/feature-gate/readGateError";
 
+import { ServerTracingSection } from "@/components/server/ServerTracingSection";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -325,6 +326,7 @@ export const AddServerForm = ({
                   <ConnectionStatusDisplay
                     connectionStatus={connectionStatus}
                   />
+                  {server?.id && <ServerTracingSection serverId={server.id} />}
                 </>
               )}
 

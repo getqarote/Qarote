@@ -93,13 +93,15 @@
       "lastUsed": "Último uso {{date}}",
       "neverUsed": "Nunca usada",
       "expires": "Expira el {{date}}",
-      "revoke": "Revocar"
+      "revoke": "Revocar",
+      "loadError": "No se pudieron cargar las claves de agente. Inténtalo de nuevo."
     },
     "mint": {
       "title": "Crear una nueva clave",
       "nameLabel": "Nombre de la clave",
       "namePlaceholder": "ej. Claude Desktop (laptop)",
       "nameRequired": "El nombre es obligatorio.",
+      "nameTooLong": "El nombre debe tener 80 caracteres o menos.",
       "scopeLabel": "Alcance",
       "scopeRead": "Read",
       "scopeReadConsequence": "Lista incidentes y hallazgos. Sin uso de LLM.",

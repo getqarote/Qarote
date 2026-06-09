@@ -1,5 +1,6 @@
 {
   "home": "Accueil",
+  "cockpit": "Cockpit",
   "overview": "Vue d'ensemble",
   "browse": "Explorer",
   "browseToggle": {
@@ -39,6 +40,7 @@
   "addServer": "Ajouter un serveur",
   "createVirtualHost": "Créer un hôte virtuel",
   "theme": "Thème",
+  "toggleTheme": "Changer de thème",
   "ssoSettings": "Paramètres SSO",
   "smtpSettings": "Paramètres e-mail",
   "switchWorkspace": "Changer d'espace de travail",

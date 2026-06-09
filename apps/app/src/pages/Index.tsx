@@ -1,136 +1,43 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { AddServerButton } from "@/components/AddServerButton";
-import { ConnectedNodes } from "@/components/ConnectedNodes";
-import { ConnectionStatus } from "@/components/ConnectionStatus";
-import { HomeActiveConcerns } from "@/components/home/HomeActiveConcerns";
-import { HomeStatusBanner } from "@/components/home/HomeStatusBanner";
-import { MessagesRatesChart } from "@/components/MessagesRatesChart";
-import { MetricsStatusStrip } from "@/components/MetricsStatusStrip";
+import { AgentBlock } from "@/components/cockpit/AgentBlock";
+import { AskYourAgent } from "@/components/cockpit/AskYourAgent";
+import { ConnectionBar } from "@/components/cockpit/ConnectionBar";
+import { WhatAgentSees } from "@/components/cockpit/WhatAgentSees";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
-import { PageErrorOrGate } from "@/components/PageErrorOrGate";
 import { NoServerSelectedCard, PageShell } from "@/components/PageShell";
-import { QueueDepthsChart } from "@/components/QueueDepthsChart";
-import { QueuedMessagesChart } from "@/components/QueuedMessagesChart";
-import { ResourceUsage } from "@/components/ResourceUsage";
-import { TimeRange } from "@/components/TimeRangeSelector";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { PixelChevronDown } from "@/components/ui/pixel-chevron-down";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
 
-import { useDiagnosis } from "@/hooks/queries/useDiagnosis";
-import { useMessageIdCoverage } from "@/hooks/queries/useMessageIdCoverage";
-import { useServers } from "@/hooks/queries/useServer";
-import { useIsWorkspaceAdmin } from "@/hooks/queries/useWorkspaceRole";
-import { useDashboardData } from "@/hooks/ui/useDashboardData";
-
+/**
+ * Home cockpit — the agent-first centerpiece. One state-driven page built
+ * from four self-contained blocks (each owns its data; react-query dedupes
+ * shared queries):
+ *   ConnectionBar   — broker reachability + manage/add
+ *   AgentBlock      — wire your agent (MCP) / wired status
+ *   WhatAgentSees   — calm / incident glance + live metrics
+ *   AskYourAgent    — example prompts to paste into your agent
+ *
+ * The cockpit is never a dead empty room: the onboarding scan + live state
+ * fill it before the user wires an agent.
+ */
 const Index = () => {
   const { t } = useTranslation("dashboard");
   const { selectedServerId, hasServers } = useServerContext();
   const { user, isAuthenticated } = useAuth();
-  const isAdmin = useIsWorkspaceAdmin() === true;
   const navigate = useNavigate();
-  const [liveRatesTimeRange, setLiveRatesTimeRange] = useState<TimeRange>("1d");
-  const [activityExpanded, setActivityExpanded] = useState(false);
 
-  // Check if user needs to create a workspace
+  // Users without a workspace land in onboarding (create workspace + connect
+  // first server). Guard against redirect loops by only acting off "/".
   useEffect(() => {
     if (isAuthenticated && !user?.workspaceId) {
       navigate("/onboarding", { replace: true });
     }
-    // Don't navigate to "/" when already on "/" - this prevents redirect loops
   }, [isAuthenticated, user?.workspaceId, navigate]);
-
-  const {
-    overview,
-    queues,
-    nodes,
-    metrics,
-    liveRatesData,
-    queueTotals,
-    isLoading,
-    queuesLoading,
-    liveRatesLoading,
-    overviewError,
-    metricsError,
-    liveRatesError,
-    nodesError,
-  } = useDashboardData(selectedServerId, liveRatesTimeRange);
-
-  // Diagnosis detection is free on every plan (CE/EE split) — the only gate
-  // left is "is there a server to diagnose?". The AI Explain layer is gated
-  // separately on the DiagnosisCard.
-  const hasDiagnosis = !!selectedServerId;
-  const { data: diagnosisData, isFetched: isDiagnosisFetched } = useDiagnosis(
-    selectedServerId,
-    120,
-    { enabled: hasDiagnosis }
-  );
-  const diagnoses = diagnosisData?.diagnoses;
-  const signalErrorCount = diagnosisData?.signalErrors?.length ?? 0;
-
-  // Compute root-cause incident counts in one place. The status banner
-  // takes a clean { critical, warning, total } shape — derived here
-  // rather than letting the banner reason about the API's loose
-  // `Record<string, number>` `severitySummary` (keyed by uppercase
-  // severity strings, no `total` field). The MetricsStatusStrip below
-  // also reads the same root count so the sidebar badge, the banner,
-  // and the strip cannot disagree.
-  const rootDiagnoses = hasDiagnosis
-    ? (diagnoses?.filter((d) => !d.supersededBy) ?? [])
-    : [];
-  const rootDiagnosisCount =
-    hasDiagnosis && isDiagnosisFetched ? rootDiagnoses.length : undefined;
-
-  // messageId coverage stat for the MetricsStatusStrip — passive ambient
-  // surface complementing the LOW_MESSAGE_ID_COVERAGE finding (#163).
-  // Hook returns `isHidden: true` when the firehose is off, when data
-  // hasn't loaded yet, or when the query errored — we treat all three
-  // identically: don't render the cell. The suppressMessageIdPopover
-  // flag prevents the popover from competing with the finding's
-  // "why this matters" surface when both are visible at the same time
-  // on this page (anti-dup per UX review B4).
-  const { data: coverageData, isHidden: coverageHidden } =
-    useMessageIdCoverage(selectedServerId);
-  const messageIdCoverage =
-    !coverageHidden && coverageData && coverageData.firehoseEnabled
-      ? {
-          taggedPublishes: coverageData.taggedPublishes,
-          totalPublishes: coverageData.totalPublishes,
-        }
-      : null;
-  const suppressMessageIdPopover =
-    diagnoses?.some((d) => d.rule === "LOW_MESSAGE_ID_COVERAGE") ?? false;
-  const bannerCounts =
-    hasDiagnosis && isDiagnosisFetched
-      ? {
-          critical: rootDiagnoses.filter(
-            (d) => d.severity === "CRITICAL" || d.severity === "HIGH"
-          ).length,
-          warning: rootDiagnoses.filter(
-            (d) => d.severity === "MEDIUM" || d.severity === "LOW"
-          ).length,
-          total: rootDiagnoses.length,
-        }
-      : null;
-
-  // Display name for the status banner. Fall back to host or a generic
-  // label so the calm copy never reads "All quiet across undefined."
-  const { data: serversData } = useServers();
-  const selectedServer = serversData?.servers?.find(
-    (s) => s.id === selectedServerId
-  );
-  const serverName =
-    selectedServer?.name ?? selectedServer?.host ?? t("home.serverFallback");
 
   if (!hasServers) {
     return (
@@ -157,126 +64,20 @@ const Index = () => {
     );
   }
 
-  if (overviewError) {
-    return (
-      <PageShell>
-        <div className="flex items-center gap-4">
-          <SidebarTrigger />
-          <h1 className="title-page">{t("home.title")}</h1>
-        </div>
-        <PageErrorOrGate
-          error={overviewError}
-          fallbackMessage={t("common:serverConnectionError")}
-        />
-      </PageShell>
-    );
-  }
-
   return (
     <PageShell bare>
-      {/*
-        Home rhythm — 3 zones per docs/plans/sidebar-redesign.md § Home:
-          1. STATUS    — calm/amber/red banner, lead-with-state
-          2. CONCERNS  — Diagnosis cards (root only) + recent alerts
-          3. ACTIVITY  — KPI strip, totals, throughput, depths, nodes
-        (PULSE / Daily Digest teaser is hidden at launch — the Digest
-        feature is gated out of the frontend; a calm STATUS banner in
-        zone 1 already carries the "all quiet" signal.)
-        Generous separation between zones (gap-10), tight rhythm within.
-        Incident-mode hierarchy lives in the banner; the rest stays calm.
-      */}
-      <div className="content-container-large !space-y-10">
-        {/* Toolbar — sidebar trigger + admin CTA. The status banner
-            below now carries the "you are home" semantic role; we
-            don't need a noisy H1 fighting it for attention. The
-            visually-hidden h1 keeps the page accessible to screen
-            readers and the document outline. */}
-        <div className="space-y-3">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <SidebarTrigger />
-              <h1 className="sr-only">{t("home.title")}</h1>
-            </div>
-            <div className="flex items-center gap-3">
-              {isAdmin && <AddServerButton />}
-            </div>
-          </div>
-          <ConnectionStatus />
+      <div className="content-container-large !space-y-6">
+        {/* The status banner role moved to ConnectionBar; the sr-only h1
+            keeps the document outline + a SidebarTrigger for mobile. */}
+        <div className="flex items-center gap-4">
+          <SidebarTrigger />
+          <h1 className="sr-only">{t("home.title")}</h1>
         </div>
 
-        {/* ZONE 1 — STATUS. Loud only when warranted. Tone derived from
-            the root-incident counts. `null` counts mean diagnosis is
-            unavailable for this server (no plan/license/capability)
-            and the banner renders a neutral surface. */}
-        <HomeStatusBanner
-          serverName={serverName}
-          counts={bannerCounts}
-          isLoading={hasDiagnosis && !isDiagnosisFetched}
-          signalErrorCount={signalErrorCount}
-        />
-
-        {/* ZONE 2 — CONCERNS. HomeActiveConcerns (diagnosis findings) is the
-            single concern surface at launch; the RecentAlerts strip is hidden
-            to keep the wedge (diagnosis) as the one "look here" signal. */}
-        <HomeActiveConcerns
-          diagnoses={diagnoses}
-          isFetched={isDiagnosisFetched}
-        />
-
-        {/* ZONE 3 — ACTIVITY. Collapsed by default so Home delivers on its
-            "answer in <3 seconds" promise (zones 1+2). Operators who want
-            the full KPI/chart view expand once and the state persists for
-            the session. */}
-        <Collapsible open={activityExpanded} onOpenChange={setActivityExpanded}>
-          <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-1 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
-            <span>{t("home.activity.label")}</span>
-            <PixelChevronDown
-              aria-hidden="true"
-              className={`h-3.5 w-auto shrink-0 transition-transform duration-200 ${activityExpanded ? "rotate-180" : ""}`}
-            />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-            <div className="space-y-10 pt-6">
-              <MetricsStatusStrip
-                metrics={metrics}
-                isLoading={isLoading}
-                metricsError={metricsError}
-                nodesError={nodesError}
-                diagnosisCount={rootDiagnosisCount}
-                messageIdCoverage={messageIdCoverage}
-                suppressMessageIdPopover={suppressMessageIdPopover}
-              />
-
-              <ResourceUsage overview={overview} overviewError={null} />
-
-              <div className="grid grid-cols-1 min-[1440px]:grid-cols-2 gap-6 [&>*]:min-w-0">
-                <QueuedMessagesChart
-                  queueTotals={queueTotals}
-                  isLoading={liveRatesLoading}
-                  error={liveRatesError}
-                  timeRange={liveRatesTimeRange}
-                  onTimeRangeChange={setLiveRatesTimeRange}
-                />
-                <MessagesRatesChart
-                  messagesRates={liveRatesData?.messagesRates}
-                  ratesMode={liveRatesData?.ratesMode}
-                  isLoading={liveRatesLoading}
-                  error={liveRatesError}
-                  timeRange={liveRatesTimeRange}
-                  onTimeRangeChange={setLiveRatesTimeRange}
-                />
-              </div>
-
-              <QueueDepthsChart queues={queues} isLoading={queuesLoading} />
-
-              <ConnectedNodes
-                nodes={nodes}
-                isLoading={isLoading}
-                nodesError={nodesError}
-              />
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
+        <ConnectionBar />
+        <AgentBlock />
+        <WhatAgentSees />
+        <AskYourAgent />
       </div>
     </PageShell>
   );

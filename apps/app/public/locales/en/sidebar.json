@@ -1,5 +1,6 @@
 {
   "home": "Home",
+  "cockpit": "Cockpit",
   "overview": "Overview",
   "browse": "Browse",
   "browseToggle": {
@@ -39,6 +40,7 @@
   "addServer": "Add server",
   "createVirtualHost": "Create virtual host",
   "theme": "Theme",
+  "toggleTheme": "Toggle theme",
   "ssoSettings": "SSO Settings",
   "smtpSettings": "Email Settings",
   "switchWorkspace": "Switch Workspace",

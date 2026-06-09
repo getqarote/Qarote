@@ -3,7 +3,7 @@
     "titleBefore": "Arrête de débugger RabbitMQ. Ton",
     "titleHighlight": "agent IA",
     "titleAfter": " s'en charge.",
-    "subtitle": "Qarote livre un monitoring RabbitMQ avec un endpoint MCP intégré. Branche Claude Desktop ou Cursor en moins de 5 minutes — l’agent récupère tes incidents, lit les preuves du firehose et te renvoie la cause racine dans ton workflow, pas dans un onglet dashboard.",
+    "subtitle": "Qarote livre un monitoring RabbitMQ avec un endpoint MCP intégré. Branchez Claude Desktop ou Cursor en moins de 5 minutes — l’agent récupère vos incidents, lit les preuves du firehose et vous renvoie la cause racine dans votre workflow, pas dans un onglet dashboard.",
     "noCreditCard": "Setup agent en 5 min · CE gratuit pour les outils en lecture · Analyse de cause racine en EE dès 29 $/mois"
   },
   "cta": {
@@ -147,6 +147,7 @@
     "freeTierScope": "Plan gratuit : 1 serveur, monitoring en temps réel, gestion des files — sans limite de durée. Alertes et multi-serveur à partir de 29 $/mois."
   },
   "footer": {
+    "tagline": "RabbitMQ, débogué par votre agent.",
     "about": "À propos",
     "pricing": "Tarifs",
     "blog": "Blog",
@@ -186,10 +187,10 @@
     "description": "Monitoring RabbitMQ auto-hébergé : alertes, historique 30 jours, diagnostic d'incidents. Sans Prometheus. Gratuit, opérationnel en 2 minutes."
   },
   "agent": {
-    "title": "Le monitoring RabbitMQ que ton agent appelle directement",
-    "subtitle": "Ci-dessous : le snippet .mcp.json réel, un vrai prompt, la réponse ancrée que ton agent te renvoie. Cinq outils livrés aujourd’hui, embarqués dans chaque déploiement Qarote — pas de plugin Grafana à câbler, pas d’exporter Prometheus à scraper, pas de copier-coller entre un dashboard et ton prompt.",
+    "title": "Le monitoring RabbitMQ que votre agent appelle directement",
+    "subtitle": "Ci-dessous : le snippet .mcp.json réel, un vrai prompt, la réponse ancrée que votre agent vous renvoie. Huit outils livrés aujourd’hui, embarqués dans chaque déploiement Qarote — pas de plugin Grafana à câbler, pas d’exporter Prometheus à scraper, pas de copier-coller entre un dashboard et votre prompt.",
     "snippetCaption": "À déposer dans ~/.cursor/mcp.json ou la config Claude Desktop",
-    "snippetHint": "Crée la clé dans Settings → Agent Access. Le snippet apparaît une fois avec ta clé déjà substituée.",
+    "snippetHint": "Créez la clé dans Settings → Agent Access. Le snippet apparaît une fois avec votre clé déjà substituée.",
     "conversationCaption": "À quoi ça ressemble en pratique",
     "youLabel": "Toi",
     "youPrompt": "Pourquoi la queue payments.process s’accumule ?",

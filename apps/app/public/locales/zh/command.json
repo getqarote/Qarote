@@ -1,0 +1,28 @@
+{
+  "placeholder": "搜索页面、对象、操作…",
+  "empty": "无匹配结果。",
+  "trigger": "搜索",
+  "groups": {
+    "goTo": "前往",
+    "objects": "对象",
+    "actions": "操作"
+  },
+  "goTo": {
+    "cockpit": "驾驶舱",
+    "notifications": "通知",
+    "topology": "拓扑",
+    "settings": "设置",
+    "help": "帮助与支持"
+  },
+  "objects": {
+    "queues": "浏览队列（拓扑）",
+    "exchanges": "浏览交换机（拓扑）",
+    "users": "用户",
+    "policies": "策略",
+    "virtualHosts": "虚拟主机",
+    "definitions": "定义"
+  },
+  "actions": {
+    "configureAiExplain": "配置 AI Explain"
+  }
+}

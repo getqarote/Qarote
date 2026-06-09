@@ -93,13 +93,15 @@
       "lastUsed": "Last used {{date}}",
       "neverUsed": "Never used",
       "expires": "Expires {{date}}",
-      "revoke": "Revoke"
+      "revoke": "Revoke",
+      "loadError": "Couldn't load agent keys. Try again."
     },
     "mint": {
       "title": "Mint a new key",
       "nameLabel": "Key name",
       "namePlaceholder": "e.g. Claude Desktop (laptop)",
       "nameRequired": "Name is required.",
+      "nameTooLong": "Name must be 80 characters or fewer.",
       "scopeLabel": "Scope",
       "scopeRead": "Read",
       "scopeReadConsequence": "List incidents and findings. No LLM use.",

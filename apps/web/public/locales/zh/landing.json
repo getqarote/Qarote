@@ -147,6 +147,7 @@
     "freeTierScope": "免费版：1台服务器，实时监控，队列管理 — 无时间限制。告警和多服务器从 $29/月起。"
   },
   "footer": {
+    "tagline": "RabbitMQ，由你的智能体来排障。",
     "about": "关于我们",
     "pricing": "定价",
     "blog": "博客",
@@ -187,7 +188,7 @@
   },
   "agent": {
     "title": "你的代理可直接调用的 RabbitMQ 监控",
-    "subtitle": "下方：真实的 .mcp.json 代码片段、真实的提示、代理返回的基于证据的答案。今日交付的五个工具，嵌入每个 Qarote 部署 — 无需配置 Grafana 插件、无需 Prometheus exporter 抓取、无需在仪表板与提示之间复制粘贴。",
+    "subtitle": "下方：真实的 .mcp.json 代码片段、真实的提示、代理返回的基于证据的答案。今日交付的八个工具，嵌入每个 Qarote 部署 — 无需配置 Grafana 插件、无需 Prometheus exporter 抓取、无需在仪表板与提示之间复制粘贴。",
     "snippetCaption": "放入 ~/.cursor/mcp.json 或 Claude Desktop 配置",
     "snippetHint": "在 Settings → Agent Access 中创建密钥。代码片段仅显示一次，密钥已替换。",
     "conversationCaption": "实际使用效果",

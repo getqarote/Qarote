@@ -34,6 +34,8 @@ const i18n = createI18nInstance({
     "scan",
     "audit",
     "roles",
+    "command",
+    "cockpit",
   ],
   defaultNamespace: "common",
   loadPath: "/locales/{{lng}}/{{ns}}.json",

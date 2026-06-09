@@ -147,6 +147,7 @@
     "freeTierScope": "Free tier: 1 server, live monitoring, queue management — no time limit. Alerting and multi-server from $29/mo."
   },
   "footer": {
+    "tagline": "RabbitMQ, debugged by your agent.",
     "about": "About",
     "blog": "Blog",
     "alerting": "Alerting",
@@ -187,7 +188,7 @@
   },
   "agent": {
     "title": "RabbitMQ monitoring your agent calls directly",
-    "subtitle": "Below: the actual .mcp.json snippet, a real prompt, the grounded answer your agent returns. Five tools shipping today, on every Qarote deployment — no Grafana plugin to wire, no Prometheus exporter to scrape, no copy-pasting between a dashboard and your prompt.",
+    "subtitle": "Below: the actual .mcp.json snippet, a real prompt, the grounded answer your agent returns. Eight tools shipping today, on every Qarote deployment — no Grafana plugin to wire, no Prometheus exporter to scrape, no copy-pasting between a dashboard and your prompt.",
     "snippetCaption": "Drop into ~/.cursor/mcp.json or Claude Desktop config",
     "snippetHint": "Mint the key in Settings → Agent Access. The snippet is shown once with your key already substituted.",
     "conversationCaption": "What it looks like in practice",

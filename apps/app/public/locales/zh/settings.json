@@ -93,13 +93,15 @@
       "lastUsed": "最近使用 {{date}}",
       "neverUsed": "从未使用",
       "expires": "过期时间 {{date}}",
-      "revoke": "撤销"
+      "revoke": "撤销",
+      "loadError": "无法加载 agent 密钥，请重试。"
     },
     "mint": {
       "title": "创建新密钥",
       "nameLabel": "密钥名称",
       "namePlaceholder": "例如 Claude Desktop (笔记本)",
       "nameRequired": "名称为必填项。",
+      "nameTooLong": "名称不得超过 80 个字符。",
       "scopeLabel": "作用域",
       "scopeRead": "Read",
       "scopeReadConsequence": "列出事件和发现。不使用 LLM。",

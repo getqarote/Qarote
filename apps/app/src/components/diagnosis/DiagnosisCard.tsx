@@ -9,6 +9,7 @@ import {
   ChevronRight,
   ExternalLink,
   Loader2,
+  Lock,
   Sparkles,
   ThumbsDown,
   ThumbsUp,
@@ -17,6 +18,7 @@ import {
 import { marked } from "marked";
 import { Line, LineChart, ResponsiveContainer, Tooltip } from "recharts";
 
+import { getUpgradePath } from "@/lib/featureFlags";
 import { findingKey } from "@/lib/findingKey";
 import { formatRelativeAgo } from "@/lib/formatRelativeAgo";
 
@@ -436,6 +438,21 @@ export function DiagnosisCard({
               )}
               {t("card.explain")}
             </button>
+          )}
+          {/* Locked affordance — the finding exists but the user isn't
+              entitled to AI Explain (free plan / unlicensed). Never let the
+              wedge's signature action silently vanish: show a locked pill
+              that routes to the upgrade path. */}
+          {!canExplain && !!findingId && (
+            <Link
+              to={getUpgradePath()}
+              title={t("card.explainLockedHint")}
+              aria-label={t("card.explainLockedHint")}
+              className="inline-flex items-center gap-1.5 px-2 py-1 text-xs rounded-sm border border-border bg-muted text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground"
+            >
+              <Lock className="h-3 w-3" aria-hidden="true" />
+              {t("card.explain")}
+            </Link>
           )}
         </div>
 

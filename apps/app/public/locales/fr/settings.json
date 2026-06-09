@@ -93,13 +93,15 @@
       "lastUsed": "Dernière utilisation {{date}}",
       "neverUsed": "Jamais utilisée",
       "expires": "Expire le {{date}}",
-      "revoke": "Révoquer"
+      "revoke": "Révoquer",
+      "loadError": "Impossible de charger les clés agent. Réessayez."
     },
     "mint": {
       "title": "Mintez une nouvelle clé",
       "nameLabel": "Nom de la clé",
       "namePlaceholder": "ex. Claude Desktop (laptop)",
       "nameRequired": "Le nom est requis.",
+      "nameTooLong": "Le nom doit faire 80 caractères maximum.",
       "scopeLabel": "Portée",
       "scopeRead": "Read",
       "scopeReadConsequence": "Liste les incidents et findings. Aucun usage LLM.",

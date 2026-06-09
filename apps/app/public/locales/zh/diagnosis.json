@@ -64,6 +64,7 @@
     "copyCommand": "复制命令",
     "copied": "已复制",
     "explain": "解释",
+    "explainLockedHint": "AI Explain 需要 Developer 套餐 — 升级以解锁根因分析",
     "explaining": "正在生成解释…",
     "retry": "重试",
     "explainError": "无法生成解释 — 请检查您的连接后重试。",

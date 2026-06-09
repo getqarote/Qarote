@@ -1,0 +1,66 @@
+{
+  "connectionBar": {
+    "broker": "你的 broker",
+    "connected": "已连接",
+    "manage": "管理",
+    "addServer": "添加服务器",
+    "retry": "重试",
+    "updateCredentials": "更新凭据",
+    "checkSettings": "检查连接设置",
+    "contactSupport": "联系支持",
+    "error": {
+      "auth": "{{name}} 认证失败 — 凭据被拒绝",
+      "unreachable": "无法连接 {{name}} — broker 不可达",
+      "error": "Qarote 无法加载 {{name}} — 我们这边出了问题"
+    }
+  },
+  "agent": {
+    "eyebrow": "你的智能体",
+    "connectTitle": "连接你的智能体",
+    "connectBody": "接入 Claude Code、Cursor、Copilot 或任意 MCP 客户端。它能在你的编辑器里列出队列、诊断事故并解释根因——无需打开仪表盘。",
+    "connectCta": "连接你的智能体",
+    "watching": "与此同时，Qarote 的智能体已在 24/7 监控。",
+    "wiredCount_one": "已连接 {{count}} 个智能体",
+    "wiredCount_other": "已连接 {{count}} 个智能体",
+    "lastCall": "最近调用 {{when}}",
+    "neverCalled": "暂无调用",
+    "manageKeys": "管理密钥",
+    "wireAgent": "接入智能体",
+    "cloudWatching": "Qarote 24/7 监控中",
+    "enableAiExplain": "启用 AI Explain",
+    "enableAiExplainBody": "粘贴 API 密钥或运行本地 Ollama，让你的智能体解释根因。",
+    "configureAiExplain": "配置 AI Explain"
+  },
+  "sees": {
+    "title": "你的智能体当前看到的",
+    "refresh": "刷新",
+    "allQuiet": "一切平静 — 过去 2 小时无活跃问题",
+    "staleMetrics": "broker 不可达时无法获取实时指标。",
+    "retry": "重试",
+    "clusterDetail": "集群详情"
+  },
+  "cluster": {
+    "title": "集群",
+    "description": "节点、连接和通道 — 也可通过 MCP 提供给你的智能体。",
+    "nodes": "节点 · {{count}}",
+    "connections": "连接 · {{count}}",
+    "channels": "通道 · {{count}}",
+    "none": "暂无。",
+    "agentNote": "这些对象也可通过 list_servers 和 get_overview 提供给你的智能体。"
+  },
+  "ask": {
+    "label": "问问你的智能体",
+    "hint": "别在仪表盘里点来点去 — 把下面任意一句粘贴给你的智能体，它会替你调用 Qarote 的工具。",
+    "copy": "复制",
+    "copied": "已复制到剪贴板",
+    "copyFailed": "无法复制到剪贴板",
+    "previous": "上一条",
+    "next": "下一条",
+    "prompt1": "我的 RabbitMQ 现在哪里出问题了？",
+    "prompt2": "解释最近的一次事故",
+    "prompt3": "现在哪些队列没有消费者？",
+    "prompt4": "为什么 payments.capture 的深度在上升？",
+    "prompt5": "按严重程度列出配置问题",
+    "prompt6": "过去一小时 broker 上有任何变更吗？"
+  }
+}

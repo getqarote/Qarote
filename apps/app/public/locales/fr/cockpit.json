@@ -1,0 +1,66 @@
+{
+  "connectionBar": {
+    "broker": "votre broker",
+    "connected": "Connecté",
+    "manage": "Gérer",
+    "addServer": "Ajouter un serveur",
+    "retry": "Réessayer",
+    "updateCredentials": "Mettre à jour les identifiants",
+    "checkSettings": "Vérifier les paramètres de connexion",
+    "contactSupport": "Contacter le support",
+    "error": {
+      "auth": "Échec d'authentification pour {{name}} — identifiants rejetés",
+      "unreachable": "Impossible de joindre {{name}} — broker injoignable",
+      "error": "Qarote n'a pas pu charger {{name}} — une erreur est survenue de notre côté"
+    }
+  },
+  "agent": {
+    "eyebrow": "Votre agent",
+    "connectTitle": "Connectez votre agent",
+    "connectBody": "Branchez Claude Code, Cursor, Copilot ou tout client MCP. Il liste les files, diagnostique les incidents et explique les causes racines — dans votre éditeur, pas un dashboard.",
+    "connectCta": "Connecter votre agent",
+    "watching": "En attendant, l'agent de Qarote surveille déjà 24/7.",
+    "wiredCount_one": "{{count}} agent connecté",
+    "wiredCount_other": "{{count}} agents connectés",
+    "lastCall": "dernier appel {{when}}",
+    "neverCalled": "aucun appel pour l'instant",
+    "manageKeys": "Gérer les clés",
+    "wireAgent": "Brancher un agent",
+    "cloudWatching": "Qarote surveille 24/7",
+    "enableAiExplain": "Activer AI Explain",
+    "enableAiExplainBody": "Collez une clé API ou lancez un Ollama local pour que votre agent explique les causes racines.",
+    "configureAiExplain": "Configurer AI Explain"
+  },
+  "sees": {
+    "title": "Ce que votre agent voit maintenant",
+    "refresh": "Rafraîchir",
+    "allQuiet": "Tout est calme — aucun finding actif sur les 2 dernières heures",
+    "staleMetrics": "Impossible de récupérer les métriques en direct tant que le broker est injoignable.",
+    "retry": "Réessayer",
+    "clusterDetail": "Détail du cluster"
+  },
+  "cluster": {
+    "title": "Cluster",
+    "description": "Nœuds, connexions et canaux — aussi disponibles pour votre agent via MCP.",
+    "nodes": "Nœuds · {{count}}",
+    "connections": "Connexions · {{count}}",
+    "channels": "Canaux · {{count}}",
+    "none": "Aucun pour l'instant.",
+    "agentNote": "Ces objets sont aussi disponibles pour votre agent via list_servers et get_overview."
+  },
+  "ask": {
+    "label": "Demandez à votre agent",
+    "hint": "Ne cliquez pas dans des dashboards — collez l'une de ces requêtes à votre agent et il appelle les outils Qarote pour vous.",
+    "copy": "Copier",
+    "copied": "Copié dans le presse-papiers",
+    "copyFailed": "Impossible de copier dans le presse-papiers",
+    "previous": "Requête précédente",
+    "next": "Requête suivante",
+    "prompt1": "Qu'est-ce qui ne va pas avec mon RabbitMQ en ce moment ?",
+    "prompt2": "Explique le dernier incident",
+    "prompt3": "Quelles files n'ont aucun consommateur en ce moment ?",
+    "prompt4": "Pourquoi la profondeur de payments.capture grimpe-t-elle ?",
+    "prompt5": "Montre les findings de config triés par sévérité",
+    "prompt6": "Quelque chose a-t-il changé sur le broker dans la dernière heure ?"
+  }
+}

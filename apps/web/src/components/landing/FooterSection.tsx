@@ -268,7 +268,7 @@ const FooterSection = ({ currentLocale = "en" }: FooterSectionProps) => {
                   Qarote
                 </h3>
                 <p className="text-xs text-muted-foreground/60 mt-0.5">
-                  RabbitMQ monitoring.
+                  {t("footer.tagline", "RabbitMQ, debugged by your agent.")}
                 </p>
               </div>
             </div>

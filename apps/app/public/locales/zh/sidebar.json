@@ -1,5 +1,6 @@
 {
   "home": "首页",
+  "cockpit": "驾驶舱",
   "overview": "概览",
   "browse": "浏览",
   "browseToggle": {
@@ -38,6 +39,7 @@
   "addServer": "添加服务器",
   "createVirtualHost": "创建虚拟主机",
   "theme": "主题",
+  "toggleTheme": "切换主题",
   "ssoSettings": "SSO 设置",
   "smtpSettings": "邮件设置",
   "settings": "设置",

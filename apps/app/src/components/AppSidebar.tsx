@@ -1,36 +1,25 @@
-import { type ComponentType, useEffect, useState } from "react";
+import { type ComponentType, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router";
 
-import { Plus } from "lucide-react";
+import { Moon, Plus, Search, Sun } from "lucide-react";
+
+import { commandKeyLabel } from "@/lib/shortcut";
 
 import { AddServerForm } from "@/components/AddServerFormComponent";
 import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
 import { RequirePermission } from "@/components/rbac/RequirePermission";
 import { ServerManagement } from "@/components/ServerManagement";
 import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { PixelActivity } from "@/components/ui/pixel-activity";
-import { PixelAlert } from "@/components/ui/pixel-alert";
 import { PixelChart } from "@/components/ui/pixel-chart";
-import { PixelChevronDown } from "@/components/ui/pixel-chevron-down";
-import { PixelClock } from "@/components/ui/pixel-clock";
-import { PixelDatabase } from "@/components/ui/pixel-database";
 import { PixelFlag } from "@/components/ui/pixel-flag";
 import { PixelHelp } from "@/components/ui/pixel-help";
-import { PixelKey } from "@/components/ui/pixel-key";
 import { PixelLayers } from "@/components/ui/pixel-layers";
 import { PixelLogout } from "@/components/ui/pixel-logout";
-import { PixelMessage } from "@/components/ui/pixel-message";
 import { PixelNetwork } from "@/components/ui/pixel-network";
 import { PixelServer } from "@/components/ui/pixel-server";
 import { PixelSettings } from "@/components/ui/pixel-settings";
 import { PixelUser } from "@/components/ui/pixel-user";
-import { PixelZap } from "@/components/ui/pixel-zap";
 import {
   Select,
   SelectContent,
@@ -44,7 +33,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -53,7 +41,9 @@ import {
 import { CreateVHostModal } from "@/components/vhosts/CreateVHostModal";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
+import { useCommandPalette } from "@/contexts/CommandPaletteContext";
 import { useServerContext } from "@/contexts/ServerContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
 
 import { useDiagnosis } from "@/hooks/queries/useDiagnosis";
@@ -83,99 +73,45 @@ type NavItem = {
   titleKey: string;
   url: string;
   icon: IconComponent;
-  adminOnly?: boolean;
   /**
-   * When set, the item renders a status badge fed from a live data source.
-   * The actual count is computed in the `AppSidebar` body and threaded
-   * through `<NavBadge>`. Items without a `badge` field render no badge.
+   * When set, the item renders a live status badge. Currently only the
+   * "diagnosis" source exists (active diagnosis findings for the selected
+   * server) — surfaced on Notifications as the peripheral "something fired"
+   * cue. The count source becomes the unified finding list once diagnostic
+   * findings land in the Notifications worklist.
    */
   badge?: "diagnosis";
 };
 
 /**
- * OVERVIEW — jobs-to-be-done. The killer features that define what Qarote
- * does that the RabbitMQ Management UI does not. Order matters: Home is
- * the calm landing surface, then Diagnosis (most likely incident-mode
- * entry point), Notifications, and the Qarote-original Topology.
- * (Messages / Message Spy + Firehose Tracing is hidden from nav at launch;
- * the /messages route stays alive for deep-link backward compat.)
+ * The agent-first nav: three destinations only. Everything the agent can do
+ * for itself (browse queues, inspect objects, admin CRUD) leaves the nav and
+ * lives one ⌘K away (see docs/plans/agent-first-cockpit.md). What stays is
+ * what the agent cannot do for itself: read its cockpit (Home), get paged
+ * (Notifications), and see the map (Topology).
+ *
+ * The /diagnosis, /queues, /policies… routes still exist for deep-links and
+ * Topology drill-down — they are just no longer surfaced in the nav.
  *
  * No plan / capability badges here on purpose: ADR-002 makes gating
  * multi-axis (Plan × License × Capability), and a static badge would lie
  * in 2 cases out of 3. The page's `<FeatureGate>` is the source of truth.
  */
-const OVERVIEW_ITEMS: NavItem[] = [
-  { titleKey: "sidebar:home", url: "/", icon: PixelChart },
+const NAV_ITEMS: NavItem[] = [
+  { titleKey: "sidebar:cockpit", url: "/", icon: PixelChart },
   {
-    titleKey: "sidebar:diagnosis",
-    url: "/diagnosis",
-    icon: PixelAlert,
+    titleKey: "sidebar:notifications",
+    url: "/alerts",
+    icon: PixelFlag,
     badge: "diagnosis",
   },
-  { titleKey: "sidebar:notifications", url: "/alerts", icon: PixelFlag },
   { titleKey: "sidebar:topology", url: "/topology", icon: PixelNetwork },
 ];
 
 /**
- * BROWSE — RabbitMQ object views. Power-user surface for inspecting the
- * underlying broker primitives. Collapsible so the OVERVIEW section
- * always wins the first read; expanded by default until the user collapses
- * it (state persisted per-browser).
- */
-const BROWSE_ITEMS: NavItem[] = [
-  { titleKey: "sidebar:queues", url: "/queues", icon: PixelMessage },
-  { titleKey: "sidebar:exchanges", url: "/exchanges", icon: PixelActivity },
-  { titleKey: "sidebar:connections", url: "/connections", icon: PixelClock },
-  { titleKey: "sidebar:channels", url: "/channels", icon: PixelZap },
-  { titleKey: "sidebar:nodes", url: "/nodes", icon: PixelServer },
-  { titleKey: "sidebar:policies", url: "/policies", icon: PixelKey },
-  {
-    titleKey: "sidebar:virtualHosts",
-    url: "/vhosts",
-    icon: PixelLayers,
-    adminOnly: true,
-  },
-  {
-    titleKey: "sidebar:users",
-    url: "/users",
-    icon: PixelUser,
-    adminOnly: true,
-  },
-  {
-    titleKey: "sidebar:definitions",
-    url: "/definitions",
-    icon: PixelDatabase,
-    adminOnly: true,
-  },
-];
-
-const BROWSE_STORAGE_KEY = "qarote.sidebar.browse.expanded";
-
-/**
- * Persist the BROWSE collapse state across sessions. Default collapsed to
- * keep the sidebar focused on OVERVIEW; users opt into the power-user
- * object views by expanding the section.
- */
-function useBrowseExpanded(): [boolean, (next: boolean) => void] {
-  const [expanded, setExpanded] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    const stored = window.localStorage.getItem(BROWSE_STORAGE_KEY);
-    return stored === null ? false : stored === "1";
-  });
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(BROWSE_STORAGE_KEY, expanded ? "1" : "0");
-  }, [expanded]);
-
-  return [expanded, setExpanded];
-}
-
-/**
- * Diagnosis findings for the selected server, **post cascade-collapse**.
- * Returns `undefined` while loading or when feature/server are not
- * available so the badge stays hidden — never flashes "0" on its way to
- * the real value.
+ * Active diagnosis findings for the selected server, post cascade-collapse.
+ * Returns `undefined` while loading / when no server so the badge stays
+ * hidden — never flashes "0" on its way to the real value.
  */
 function useDiagnosisActiveCount(
   serverId: string | null,
@@ -231,20 +167,40 @@ function NavBadge({
   );
 }
 
+// Helper function to shorten hostnames
+const shortenHost = (host: string, maxLength: number = 25) => {
+  if (host.length <= maxLength) return host;
+
+  // For CloudAMQP hosts, show the meaningful part
+  if (host.includes(".cloudamqp.com")) {
+    const parts = host.split(".");
+    return `${parts[0]}...cloudamqp.com`;
+  }
+
+  // For other cloud providers
+  if (host.includes(".amazonaws.com")) {
+    const parts = host.split(".");
+    return `${parts[0]}...aws`;
+  }
+
+  // For other hosts, truncate with ellipsis
+  return `${host.substring(0, maxLength - 3)}...`;
+};
+
 function NavMenuItem({
   item,
   isActive,
+  label,
   badgeCount,
   badgeSeverity,
   badgeLabel,
-  label,
 }: {
   item: NavItem;
   isActive: boolean;
+  label: string;
   badgeCount?: number;
   badgeSeverity?: "critical" | "warning";
   badgeLabel?: string;
-  label: string;
 }) {
   const Icon = item.icon;
   return (
@@ -276,33 +232,6 @@ function NavMenuItem({
   );
 }
 
-// NOTE: Active-alerts badge intentionally not implemented in Phase 1.
-// The existing `useRabbitMQAlerts` is a per-vhost websocket subscription;
-// mounting it in the sidebar would open a workspace-wide subscription on
-// every page load. A cheaper "active alert count" tRPC query is needed
-// before we can wire this badge — tracked as an Open Question in
-// docs/plans/sidebar-redesign.md.
-
-// Helper function to shorten hostnames
-const shortenHost = (host: string, maxLength: number = 25) => {
-  if (host.length <= maxLength) return host;
-
-  // For CloudAMQP hosts, show the meaningful part
-  if (host.includes(".cloudamqp.com")) {
-    const parts = host.split(".");
-    return `${parts[0]}...cloudamqp.com`;
-  }
-
-  // For other cloud providers
-  if (host.includes(".amazonaws.com")) {
-    const parts = host.split(".");
-    return `${parts[0]}...aws`;
-  }
-
-  // For other hosts, truncate with ellipsis
-  return `${host.substring(0, maxLength - 3)}...`;
-};
-
 export function AppSidebar() {
   const { t } = useTranslation("sidebar");
   const location = useLocation();
@@ -321,21 +250,19 @@ export function AppSidebar() {
   const { data: serversData } = useServers();
   const servers = serversData?.servers || [];
   const isAdmin = useIsWorkspaceAdmin() === true;
+  const { open: openCommandPalette } = useCommandPalette();
+  const { resolvedTheme, setTheme } = useTheme();
+
+  // Diagnosis detection is free on every plan (CE/EE split) — the badge
+  // fetches whenever a server is selected.
+  const { count: diagnosisActiveCount, maxSeverity: diagnosisSeverity } =
+    useDiagnosisActiveCount(selectedServerId, !!selectedServerId);
 
   // Plan checking
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
-  // Sidebar nav state
-  const [browseExpanded, setBrowseExpanded] = useBrowseExpanded();
-  // Diagnosis detection is free on every plan (CE/EE split) — the sidebar
-  // badge fetches whenever a server is selected.
-  const { count: diagnosisActiveCount, maxSeverity: diagnosisSeverity } =
-    useDiagnosisActiveCount(selectedServerId, !!selectedServerId);
-
   const renderItem = (item: NavItem) => {
-    if (item.adminOnly && !isAdmin) return null;
     const isActive = location.pathname === item.url;
-    const label = t(item.titleKey);
     const badgeCount =
       item.badge === "diagnosis" ? diagnosisActiveCount : undefined;
     const badgeLabel =
@@ -349,10 +276,10 @@ export function AppSidebar() {
         key={item.titleKey}
         item={item}
         isActive={isActive}
+        label={t(item.titleKey)}
         badgeCount={badgeCount}
         badgeSeverity={badgeSeverity}
         badgeLabel={badgeLabel}
-        label={label}
       />
     );
   };
@@ -398,8 +325,15 @@ export function AppSidebar() {
                             <div className="flex items-center gap-2.5 min-w-0">
                               <PixelServer className="h-4 text-primary shrink-0" />
                               <div className="flex flex-col min-w-0 text-left">
-                                <span className="truncate font-medium leading-tight">
-                                  {s.name}
+                                <span className="flex items-center gap-1.5 min-w-0">
+                                  {selectedServerId && (
+                                    <ServerStatusDot
+                                      serverId={selectedServerId}
+                                    />
+                                  )}
+                                  <span className="truncate font-medium leading-tight">
+                                    {s.name}
+                                  </span>
                                 </span>
                                 <span className="text-xs text-sidebar-foreground/60 truncate leading-tight">
                                   {shortenHost(s.host)}
@@ -519,7 +453,7 @@ export function AppSidebar() {
                         {selectedVHost && (
                           <div className="flex items-center gap-2 w-full min-w-0">
                             <PixelLayers className="h-3 shrink-0" />
-                            <span className="truncate font-medium">
+                            <span className="truncate font-mono text-[0.8125rem]">
                               {selectedVHost === "/"
                                 ? t("common:default")
                                 : selectedVHost}
@@ -533,7 +467,7 @@ export function AppSidebar() {
                         <SelectItem key={vhost.name} value={vhost.name}>
                           <div className="flex items-center gap-2 w-full min-w-0">
                             <PixelLayers className="h-3 shrink-0" />
-                            <span className="font-medium">
+                            <span className="font-mono text-[0.8125rem]">
                               {vhost.name === "/"
                                 ? t("common:default")
                                 : vhost.name}
@@ -590,61 +524,29 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-4 gap-6">
-        {/* Wraps the menu groups in a <nav> landmark so screen readers
-            announce "Primary navigation" — SidebarContent itself is a
-            plain <div> in shadcn. `display: contents` keeps the flex
-            chain intact through SidebarContent → SidebarGroup. */}
+      <SidebarContent className="px-4 gap-4">
+        {/* Primary navigation — three agent-first destinations. */}
         <nav aria-label="Primary" className="contents">
-          {/* OVERVIEW — killer features, jobs-to-be-done */}
           <SidebarGroup>
-            <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/70 uppercase tracking-wider mb-2">
-              {t("overview")}
-            </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>{OVERVIEW_ITEMS.map(renderItem)}</SidebarMenu>
+              <SidebarMenu>{NAV_ITEMS.map(renderItem)}</SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
-
-          {/* BROWSE — RabbitMQ object views, collapsible secondary surface */}
-          <SidebarGroup>
-            <Collapsible
-              open={browseExpanded}
-              onOpenChange={setBrowseExpanded}
-              className="group/browse"
-            >
-              <CollapsibleTrigger
-                // No manual aria-label: Radix sets `aria-expanded` on
-                // the trigger automatically. Screen readers read the
-                // visible "Browse" label + the expanded/collapsed state
-                // (e.g. "Browse, expanded, button") — strictly more
-                // useful than a swap-on-toggle label that loses the
-                // section name.
-                className="group/trigger mb-2 flex w-full items-center justify-between rounded px-2 py-1 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/40 hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring/50"
-              >
-                <span>{t("browse")}</span>
-                <PixelChevronDown
-                  aria-hidden="true"
-                  className={`h-3 w-auto shrink-0 transition-transform duration-200 ${
-                    browseExpanded ? "rotate-0" : "-rotate-90"
-                  }`}
-                />
-              </CollapsibleTrigger>
-              {/*
-              Reuse the project's existing accordion keyframes
-              (`--animate-accordion-{down,up}` declared in
-              `apps/app/src/styles/index.css`). `tailwindcss-animate`
-              v4 does not auto-register `collapsible-*` aliases, so
-              referencing them silently produced no animation.
-            */}
-              <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-                <SidebarGroupContent>
-                  <SidebarMenu>{BROWSE_ITEMS.map(renderItem)}</SidebarMenu>
-                </SidebarGroupContent>
-              </CollapsibleContent>
-            </Collapsible>
-          </SidebarGroup>
         </nav>
+
+        {/* ⌘K command palette — the escape hatch for everything off the nav
+            (object views, admin CRUD, actions). */}
+        <button
+          type="button"
+          onClick={openCommandPalette}
+          className="flex w-full items-center gap-2 rounded-lg border border-sidebar-border bg-sidebar-accent/40 px-3 py-2 text-sm text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring/50"
+        >
+          <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span className="flex-1 text-left">{t("command:trigger")}…</span>
+          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-0.5 rounded border border-sidebar-border bg-sidebar px-1.5 font-mono text-[0.625rem] font-medium text-sidebar-foreground/60">
+            {commandKeyLabel()}
+          </kbd>
+        </button>
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-4 space-y-4">
@@ -700,16 +602,34 @@ export function AppSidebar() {
               </span>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => logoutMutation.mutate()}
-            disabled={logoutMutation.isPending}
-            className="text-sidebar-foreground/70 hover:text-destructive p-1"
-            title={t("auth:signOut")}
-          >
-            <PixelLogout className="h-4 w-auto shrink-0" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                setTheme(resolvedTheme === "dark" ? "light" : "dark")
+              }
+              className="text-sidebar-foreground/70 hover:text-sidebar-foreground p-1"
+              title={t("toggleTheme")}
+              aria-label={t("toggleTheme")}
+            >
+              {resolvedTheme === "dark" ? (
+                <Sun className="h-4 w-4 shrink-0" />
+              ) : (
+                <Moon className="h-4 w-4 shrink-0" />
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => logoutMutation.mutate()}
+              disabled={logoutMutation.isPending}
+              className="text-sidebar-foreground/70 hover:text-destructive p-1"
+              title={t("auth:signOut")}
+            >
+              <PixelLogout className="h-4 w-auto shrink-0" />
+            </Button>
+          </div>
         </div>
       </SidebarFooter>
 

@@ -206,6 +206,15 @@ function formatCondition(rule: AlertRule): string {
   return `${symbol} ${rule.threshold}${isPercent ? "%" : ""}`;
 }
 
+/**
+ * Launch gate: ship the rules list read-only (view + on/off toggle) but hide
+ * the create/edit/delete affordances. The ~25 defaults + on/off cover the
+ * launch surface; the threshold editor is deferred (YAGNI) until a user
+ * needs to keep a rule at a *different* threshold. Flip to re-enable.
+ * Hide, don't delete — the form + mutations stay wired.
+ */
+const RULE_EDITING_ENABLED = false;
+
 // ---------------------------------------------------------------------------
 // AlertRuleForm
 // ---------------------------------------------------------------------------
@@ -661,12 +670,14 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
                       className="pl-9"
                     />
                   </div>
-                  <Button
-                    onClick={handleCreate}
-                    className="btn-primary shrink-0"
-                  >
-                    {t("rules.createRule")}
-                  </Button>
+                  {RULE_EDITING_ENABLED && (
+                    <Button
+                      onClick={handleCreate}
+                      className="btn-primary shrink-0"
+                    >
+                      {t("rules.createRule")}
+                    </Button>
+                  )}
                 </div>
 
                 {/* No rules exist yet */}
@@ -679,9 +690,11 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
                     <p className="text-muted-foreground mb-4">
                       {t("rules.noRulesDescription")}
                     </p>
-                    <Button onClick={handleCreate} variant="outline">
-                      {t("rules.createFirstRule")}
-                    </Button>
+                    {RULE_EDITING_ENABLED && (
+                      <Button onClick={handleCreate} variant="outline">
+                        {t("rules.createFirstRule")}
+                      </Button>
+                    )}
                   </div>
                 )}
 
@@ -763,23 +776,25 @@ export function AlertRulesModal({ isOpen, onClose }: AlertRulesModalProps) {
                                       : t("rules.badge.disabled")}
                                   </TooltipContent>
                                 </Tooltip>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-6 w-6 p-0"
-                                      onClick={() => handleEdit(rule)}
-                                      aria-label={t("rules.actions.edit")}
-                                    >
-                                      <PixelPen className="h-3.5 w-auto shrink-0" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    {t("rules.actions.edit")}
-                                  </TooltipContent>
-                                </Tooltip>
-                                {!rule.isDefault && (
+                                {RULE_EDITING_ENABLED && (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-6 w-6 p-0"
+                                        onClick={() => handleEdit(rule)}
+                                        aria-label={t("rules.actions.edit")}
+                                      >
+                                        <PixelPen className="h-3.5 w-auto shrink-0" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      {t("rules.actions.edit")}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )}
+                                {RULE_EDITING_ENABLED && !rule.isDefault && (
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <Button

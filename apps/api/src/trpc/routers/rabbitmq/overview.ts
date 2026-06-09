@@ -1,5 +1,7 @@
 import { TRPCError } from "@trpc/server";
 
+import { classifyBrokerError } from "@/core/rabbitmq/brokerError";
+
 import {
   getOrgPlan,
   getOverLimitWarningMessage,
@@ -106,6 +108,13 @@ export const overviewRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: te(ctx.locale, "rabbitmq.failedToFetchOverview"),
+          // Lifted to shape.data.cause by the errorFormatter so the cockpit
+          // ConnectionBar can render a distinct state (auth / unreachable /
+          // error) without parsing the localized, prod-masked message.
+          cause: {
+            code: "BROKER_CONNECTION",
+            kind: classifyBrokerError(error),
+          },
         });
       }
     }),

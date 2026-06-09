@@ -147,6 +147,7 @@
     "freeTierScope": "Plan gratuito: 1 servidor, monitoreo en vivo, gestión de colas — sin límite de tiempo. Alertas y multi-servidor desde $29/mes."
   },
   "footer": {
+    "tagline": "RabbitMQ, depurado por tu agente.",
     "about": "Acerca de",
     "blog": "Blog",
     "alerting": "Alertas",
@@ -187,7 +188,7 @@
   },
   "agent": {
     "title": "Monitoring de RabbitMQ que tu agente llama directamente",
-    "subtitle": "Abajo: el snippet .mcp.json real, un prompt real, la respuesta fundamentada que tu agente devuelve. Cinco herramientas listas hoy, en cada despliegue de Qarote — sin plugin de Grafana, sin exporter de Prometheus, sin copiar-pegar entre un dashboard y tu prompt.",
+    "subtitle": "Abajo: el snippet .mcp.json real, un prompt real, la respuesta fundamentada que tu agente devuelve. Ocho herramientas listas hoy, en cada despliegue de Qarote — sin plugin de Grafana, sin exporter de Prometheus, sin copiar-pegar entre un dashboard y tu prompt.",
     "snippetCaption": "Para colocar en ~/.cursor/mcp.json o la configuración de Claude Desktop",
     "snippetHint": "Crea la clave en Settings → Agent Access. El snippet se muestra una vez con tu clave ya sustituida.",
     "conversationCaption": "Cómo se ve en la práctica",

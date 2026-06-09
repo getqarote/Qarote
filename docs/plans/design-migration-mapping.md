@@ -13,18 +13,21 @@
 ## Big picture
 **La grande majorité est du REWIRE/RESTYLE, pas du build.** Les fondations
 existent partout (charts, topology, scan, Explain streaming, server forms,
-settings ×12, selectors, portal licences, pages web). **Le vrai gap = la couche
-agent/MCP** (entièrement neuve, vit sur la branche non-mergée
-`feat/mcp-agent-surface`) + les **mutations de lifecycle alertes/findings**.
+settings ×12, selectors, portal licences, pages web). **La couche agent/MCP
+est MERGÉE dans main** (vérifié 2026-06-07 : `apps/api/src/mcp/` + endpoint
+`/api/mcp` ; front `pages/settings/AgentAccessSection.tsx` + `useApiKeys`).
+Le vrai gap restant = le **câblage UI agent-first** (cockpit AgentBlock, qui
+réutilise le backend existant) + les **mutations de lifecycle alertes/findings**.
 
 ---
 
 ## 🆕 BACKLOG — le vrai travail neuf (cross-app, priorisé)
 
 ### Backend (mutations qui n'existent pas)
-1. **Agent/MCP (le plus gros)** : mint clé agent, list clés + last-call telemetry,
-   revoke (better-auth `apiKey`), + l'endpoint `/api/mcp`. → branche
-   `feat/mcp-agent-surface` à vérifier/merger plutôt que repartir de zéro.
+1. ~~**Agent/MCP**~~ ✅ **DÉJÀ MERGÉ dans main** (vérifié 2026-06-07) : mint/list/
+   revoke clé agent (`useApiKeys` + `AgentAccessSection`), endpoint `/api/mcp`
+   (`apps/api/src/mcp/`), tools read + `explain_incident`. Plus rien à builder
+   côté backend ici — juste **câbler l'UI** (cockpit AgentBlock) dessus.
 2. **Lifecycle alertes** : `acknowledgeAlert`/claim · `resolveAlert` ·
    `snoozeAlert` · `reopenAlert`. (Aujourd'hui les alertes s'auto-résolvent, zéro
    lifecycle manuel — `ee/routers/rabbitmq/alerts.ts`.)
@@ -81,8 +84,8 @@ agent/MCP** (entièrement neuve, vit sur la branche non-mergée
   bloc "Custom digest" du notif-settings (le design l'omet déjà ✅).
 - **Knob rétention trace par-workspace** : retiré (rétention uniforme 30j/7j).
 - **Feedback section** : V1 mise de côté → masquer.
-- ⚠️ **Roles/RBAC** : code entièrement build, mais **décision non finalisée**
-  (re-rentre dans le scope comme SSO/Audit, ou reste différé ?). → à trancher.
+- ✅ **Roles/RBAC** : **DANS le scope** (décidé 2026-06-07) — code entièrement
+  build, traité comme SSO/Audit. → **restyle**, pas un cut. (N'est plus différé.)
 
 ---
 
@@ -131,6 +134,7 @@ backend pour peu de valeur v1).
 6. **web** (recontent agent-first + agent-surface section).
 7. **portal** (restyle + Billing page + regenerate).
 
-> Dépendance dure : l'**AgentBlock cockpit** et **Settings → Agent keys**
-> dépendent de la **couche MCP backend** (`feat/mcp-agent-surface`). À
-> vérifier/merger en premier, sinon ces surfaces restent mockées.
+> ~~Dépendance dure~~ : la **couche MCP backend est mergée dans main** (vérifié
+> 2026-06-07). L'**AgentBlock cockpit** et **Settings → Agent keys** se câblent
+> sur le vrai backend (`/api/mcp`, `useApiKeys`, `AgentAccessSection`) — pas de
+> mocks, pas de merge préalable.

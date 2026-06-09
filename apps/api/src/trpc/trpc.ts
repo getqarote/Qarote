@@ -51,6 +51,10 @@ const PROPAGATED_CAUSE_CODES = new Set([
   // per-row escalation/staleness UI is unreachable.
   "PRIVILEGE_ESCALATION",
   "STALE_UPDATE",
+  // Broker connection failure kind (auth / unreachable / error) so the
+  // cockpit ConnectionBar can render a distinct state without parsing the
+  // (i18n-localized, prod-masked) message string.
+  "BROKER_CONNECTION",
 ] as const);
 
 /**

@@ -81,13 +81,15 @@ const navGroups: NavGroup[] = [
         adminOnly: true,
         enterpriseOnly: true,
       },
-      {
-        key: "digest",
-        path: "/settings/digest",
-        icon: PixelEmail,
-        labelKey: "settings:nav.digest",
-        adminOnly: true,
-      },
+      // Digest is deferred at launch — hide the nav entry but keep the
+      // /settings/digest route alive for deep-links (hide, don't delete).
+      // {
+      //   key: "digest",
+      //   path: "/settings/digest",
+      //   icon: PixelEmail,
+      //   labelKey: "settings:nav.digest",
+      //   adminOnly: true,
+      // },
       {
         key: "llm",
         path: "/settings/llm",
