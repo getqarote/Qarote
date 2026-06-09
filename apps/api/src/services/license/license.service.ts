@@ -19,6 +19,7 @@ import type {
   ValidateLicenseOptions,
 } from "./license.interfaces";
 import { signLicenseJwt } from "./license-crypto.service";
+import { getLicenseFeaturesForTier } from "./license-features.service";
 
 import { Prisma, UserPlan } from "@/generated/prisma/client";
 
@@ -366,6 +367,64 @@ class LicenseService {
       logger.error({ error }, "Failed to generate license JWT");
       throw error;
     }
+  }
+
+  /**
+   * Regenerate (rotate) the signed license JWT for an existing license.
+   *
+   * Issues a fresh JWT for the SAME tier + expiry (rotation, not renewal —
+   * the expiry is unchanged) and bumps `currentVersion` so the portal
+   * surfaces the new key. NOTE: license JWTs are validated OFFLINE against a
+   * baked-in public key, so the PREVIOUS key keeps working until it expires
+   * — this is a rotation, not a revocation. Callers must say so honestly.
+   */
+  async regenerateLicenseJwt(
+    licenseId: string
+  ): Promise<{ jwt: string; version: number }> {
+    const license = await prisma.license.findUnique({
+      where: { id: licenseId },
+    });
+    if (!license) {
+      throw new Error(`License ${licenseId} not found`);
+    }
+
+    // Sign the new JWT outside the transaction (no DB write).
+    const features = getLicenseFeaturesForTier(license.tier);
+    const jwt = await this.generateLicenseJwt({
+      licenseId: license.id,
+      tier: license.tier,
+      features: features as string[],
+      expiresAt: license.expiresAt,
+    });
+
+    // Increment + read back the version atomically inside the tx so two
+    // concurrent rotations can't read the same currentVersion and collide on
+    // (licenseId, version) when creating the file version. The JWT itself
+    // doesn't embed the version, so signing it earlier is safe.
+    const { currentVersion: newVersion } = await prisma.$transaction(
+      async (tx) => {
+        const bumped = await tx.license.update({
+          where: { id: license.id },
+          data: { currentVersion: { increment: 1 }, updatedAt: new Date() },
+          select: { currentVersion: true },
+        });
+        await this.saveLicenseFileVersion(
+          license.id,
+          bumped.currentVersion,
+          jwt,
+          license.expiresAt,
+          undefined,
+          tx
+        );
+        return bumped;
+      }
+    );
+
+    logger.info(
+      { licenseId, newVersion },
+      "License JWT regenerated (rotation)"
+    );
+    return { jwt, version: newVersion };
   }
 }
 

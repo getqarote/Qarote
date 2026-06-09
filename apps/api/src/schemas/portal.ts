@@ -12,3 +12,8 @@ export const purchaseLicenseSchema = z.object({
 export const validateLicenseSchema = z.object({
   licenseKey: z.string().min(1, "License key is required"),
 });
+
+// Schema for regenerating (rotating) a license key
+export const regenerateLicenseSchema = z.object({
+  licenseId: z.string().min(1, "License id is required"),
+});

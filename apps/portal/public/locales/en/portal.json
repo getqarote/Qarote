@@ -2,9 +2,32 @@
   "layout": {
     "title": "Qarote Portal",
     "licenses": "Licenses",
+    "billing": "Billing",
     "account": "Account",
 
     "logout": "Logout"
+  },
+  "billing": {
+    "title": "Billing",
+    "description": "Your payment method, invoices, and billing details.",
+    "loading": "Loading billing…",
+    "errorLoading": "Couldn't load your billing details.",
+    "retry": "Try again",
+    "manageTitle": "Manage billing",
+    "manageHint": "Update your payment method and download invoices in the secure Stripe portal.",
+    "manageButton": "Manage billing in Stripe",
+    "manageOpening": "Opening…",
+    "manageError": "Couldn't open the billing portal. Please try again.",
+    "contact": "Billing contact:",
+    "recentPayments": "Recent payments",
+    "noPayments": "No payments yet.",
+    "status": {
+      "paid": "Paid",
+      "succeeded": "Succeeded",
+      "failed": "Failed",
+      "pending": "Pending",
+      "refunded": "Refunded"
+    }
   },
   "footer": {
     "privacyPolicy": "Privacy Policy",
@@ -31,6 +54,15 @@
     "retryLoading": "Try again",
     "showFullKey": "Show full key",
     "hideKey": "Hide key",
+    "regenerate": {
+      "button": "Regenerate key",
+      "warning": "This issues a new key for this license. Your previous key keeps working until it expires — licenses are validated offline, so it can't be revoked. Update your self-hosted servers with the new key.",
+      "confirm": "Regenerate key",
+      "cancel": "Cancel",
+      "pending": "Regenerating…",
+      "success": "A new license key was generated.",
+      "failed": "Couldn't regenerate the key. Please try again."
+    },
     "activationGuide": "Paste this key in your Qarote instance under Settings → License.",
     "activationDocsLink": "View activation guide →",
     "expiredOn": "This license expired on {{date}}.",

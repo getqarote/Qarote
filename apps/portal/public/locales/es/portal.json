@@ -2,9 +2,32 @@
   "layout": {
     "title": "Portal de Qarote",
     "licenses": "Licencias",
+    "billing": "Facturación",
     "account": "Cuenta",
 
     "logout": "Cerrar sesión"
+  },
+  "billing": {
+    "title": "Facturación",
+    "description": "Su método de pago, sus facturas y sus datos de facturación.",
+    "loading": "Cargando facturación…",
+    "errorLoading": "No se pudieron cargar sus datos de facturación.",
+    "retry": "Intentar de nuevo",
+    "manageTitle": "Gestionar facturación",
+    "manageHint": "Actualice su método de pago y descargue facturas en el portal seguro de Stripe.",
+    "manageButton": "Gestionar facturación en Stripe",
+    "manageOpening": "Abriendo…",
+    "manageError": "No se pudo abrir el portal de facturación. Inténtelo de nuevo.",
+    "contact": "Contacto de facturación:",
+    "recentPayments": "Pagos recientes",
+    "noPayments": "Aún no hay pagos.",
+    "status": {
+      "paid": "Pagado",
+      "succeeded": "Completado",
+      "failed": "Fallido",
+      "pending": "Pendiente",
+      "refunded": "Reembolsado"
+    }
   },
   "footer": {
     "privacyPolicy": "Política de privacidad",
@@ -31,6 +54,15 @@
     "retryLoading": "Intentar de nuevo",
     "showFullKey": "Mostrar clave completa",
     "hideKey": "Ocultar clave",
+    "regenerate": {
+      "button": "Regenerar clave",
+      "warning": "Esto emite una nueva clave para esta licencia. Su clave anterior sigue siendo válida hasta que expire — las licencias se validan sin conexión, por lo que no puede revocarse. Actualice sus servidores autoalojados con la nueva clave.",
+      "confirm": "Regenerar clave",
+      "cancel": "Cancelar",
+      "pending": "Regenerando…",
+      "success": "Se generó una nueva clave de licencia.",
+      "failed": "No se pudo regenerar la clave. Inténtelo de nuevo."
+    },
     "activationGuide": "Pegue esta clave en su instancia Qarote en Configuración → Licencia.",
     "activationDocsLink": "Ver guía de activación →",
     "expiredOn": "Esta licencia expiró el {{date}}.",

@@ -1,11 +1,16 @@
 import { TRPCError } from "@trpc/server";
 
+import { prisma } from "@/core/prisma";
 import { getUserDisplayName } from "@/core/utils";
 
 import { licenseService } from "@/services/license/license.service";
 import { stripe, StripeService } from "@/services/stripe/stripe.service";
 
-import { purchaseLicenseSchema, validateLicenseSchema } from "@/schemas/portal";
+import {
+  purchaseLicenseSchema,
+  regenerateLicenseSchema,
+  validateLicenseSchema,
+} from "@/schemas/portal";
 
 import { emailConfig, stripeConfig } from "@/config";
 
@@ -93,6 +98,49 @@ export const licenseRouter = router({
       });
     }
   }),
+
+  /**
+   * Regenerate (rotate) the signed license key for one of the caller's
+   * licenses. Issues a fresh JWT for the same tier + expiry and bumps the
+   * version so the portal surfaces the new key.
+   *
+   * Rotation, NOT revocation: license JWTs are validated offline, so the
+   * previous key keeps working until it expires — the UI says so. Ownership
+   * is enforced by customer email before any rotation happens.
+   */
+  regenerate: rateLimitedProcedure
+    .input(regenerateLicenseSchema)
+    .mutation(async ({ input, ctx }) => {
+      const user = ctx.user;
+
+      try {
+        const license = await prisma.license.findUnique({
+          where: { id: input.licenseId },
+          select: { id: true, customerEmail: true },
+        });
+
+        // Same NOT_FOUND for missing and not-owned so we don't leak which
+        // license ids exist for other customers.
+        if (!license || license.customerEmail !== user.email) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: te(ctx.locale, "license.notFound"),
+          });
+        }
+
+        const { jwt } = await licenseService.regenerateLicenseJwt(license.id);
+        return { jwt };
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        ctx.logger.error({ error }, "Error regenerating license");
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: te(ctx.locale, "license.failedToRegenerate"),
+        });
+      }
+    }),
 
   /**
    * Purchase a license

@@ -2,9 +2,32 @@
   "layout": {
     "title": "Qarote 门户",
     "licenses": "许可证",
+    "billing": "账单",
     "account": "账户",
 
     "logout": "退出登录"
+  },
+  "billing": {
+    "title": "账单",
+    "description": "您的付款方式、发票和账单信息。",
+    "loading": "正在加载账单…",
+    "errorLoading": "无法加载您的账单信息。",
+    "retry": "重试",
+    "manageTitle": "管理账单",
+    "manageHint": "在安全的 Stripe 门户中更新付款方式并下载发票。",
+    "manageButton": "在 Stripe 中管理账单",
+    "manageOpening": "正在打开…",
+    "manageError": "无法打开账单门户，请重试。",
+    "contact": "账单联系人：",
+    "recentPayments": "近期付款",
+    "noPayments": "暂无付款。",
+    "status": {
+      "paid": "已支付",
+      "succeeded": "成功",
+      "failed": "失败",
+      "pending": "处理中",
+      "refunded": "已退款"
+    }
   },
   "footer": {
     "privacyPolicy": "隐私政策",
@@ -31,6 +54,15 @@
     "retryLoading": "重试",
     "showFullKey": "显示完整密钥",
     "hideKey": "隐藏密钥",
+    "regenerate": {
+      "button": "重新生成密钥",
+      "warning": "这将为该许可证签发一个新密钥。您之前的密钥在到期前仍然有效 — 许可证为离线校验，无法被吊销。请用新密钥更新您的自托管服务器。",
+      "confirm": "重新生成密钥",
+      "cancel": "取消",
+      "pending": "正在重新生成…",
+      "success": "已生成新的许可证密钥。",
+      "failed": "无法重新生成密钥，请重试。"
+    },
     "activationGuide": "请将此密钥粘贴到您的 Qarote 实例的「设置 → 许可证」中。",
     "activationDocsLink": "查看激活指南 →",
     "expiredOn": "此许可证已于 {{date}} 到期。",

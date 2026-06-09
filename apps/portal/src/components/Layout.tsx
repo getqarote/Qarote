@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation } from "react-router";
 
 import {
   ChevronDown,
+  CreditCard,
   Github,
   LayoutDashboard,
   LogOut,
@@ -37,6 +38,7 @@ const Layout = () => {
 
   const navigation = [
     { name: t("layout.licenses"), href: "/licenses", icon: LayoutDashboard },
+    { name: t("layout.billing"), href: "/billing", icon: CreditCard },
   ];
 
   return (

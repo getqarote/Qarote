@@ -11,6 +11,7 @@ import { Toaster } from "@/components/ui/sonner";
 
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 
+import Billing from "@/pages/Billing";
 import LicenseManagement from "@/pages/LicenseManagement";
 import LicensePurchase from "@/pages/LicensePurchase";
 import Login from "@/pages/Login";
@@ -81,6 +82,7 @@ const App = () => {
               >
                 <Route index element={<Navigate to="/licenses" replace />} />
                 <Route path="licenses" element={<LicenseManagement />} />
+                <Route path="billing" element={<Billing />} />
                 <Route path="purchase" element={<LicensePurchase />} />
               </Route>
             </Routes>

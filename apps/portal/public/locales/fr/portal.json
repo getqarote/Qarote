@@ -2,9 +2,32 @@
   "layout": {
     "title": "Portail Qarote",
     "licenses": "Licences",
+    "billing": "Facturation",
     "account": "Compte",
 
     "logout": "Déconnexion"
+  },
+  "billing": {
+    "title": "Facturation",
+    "description": "Votre moyen de paiement, vos factures et vos informations de facturation.",
+    "loading": "Chargement de la facturation…",
+    "errorLoading": "Impossible de charger vos informations de facturation.",
+    "retry": "Réessayer",
+    "manageTitle": "Gérer la facturation",
+    "manageHint": "Mettez à jour votre moyen de paiement et téléchargez vos factures dans le portail sécurisé Stripe.",
+    "manageButton": "Gérer la facturation dans Stripe",
+    "manageOpening": "Ouverture…",
+    "manageError": "Impossible d'ouvrir le portail de facturation. Veuillez réessayer.",
+    "contact": "Contact de facturation :",
+    "recentPayments": "Paiements récents",
+    "noPayments": "Aucun paiement pour le moment.",
+    "status": {
+      "paid": "Payé",
+      "succeeded": "Réussi",
+      "failed": "Échoué",
+      "pending": "En attente",
+      "refunded": "Remboursé"
+    }
   },
   "footer": {
     "privacyPolicy": "Politique de confidentialité",
@@ -31,6 +54,15 @@
     "retryLoading": "Réessayer",
     "showFullKey": "Afficher la clé complète",
     "hideKey": "Masquer la clé",
+    "regenerate": {
+      "button": "Régénérer la clé",
+      "warning": "Ceci émet une nouvelle clé pour cette licence. Votre clé précédente reste valide jusqu'à son expiration — les licences sont validées hors ligne, elle ne peut donc pas être révoquée. Mettez à jour vos serveurs auto-hébergés avec la nouvelle clé.",
+      "confirm": "Régénérer la clé",
+      "cancel": "Annuler",
+      "pending": "Régénération…",
+      "success": "Une nouvelle clé de licence a été générée.",
+      "failed": "Impossible de régénérer la clé. Veuillez réessayer."
+    },
     "activationGuide": "Collez cette clé dans votre instance Qarote sous Paramètres → Licence.",
     "activationDocsLink": "Voir le guide d'activation →",
     "expiredOn": "Cette licence a expiré le {{date}}.",

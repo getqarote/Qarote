@@ -4,12 +4,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockOrgFindUnique = vi.fn();
 const mockOrgUpdate = vi.fn();
+const mockLicenseFindUnique = vi.fn();
 
 vi.mock("@/core/prisma", () => ({
   prisma: {
     organization: {
       findUnique: (...a: unknown[]) => mockOrgFindUnique(...a),
       update: (...a: unknown[]) => mockOrgUpdate(...a),
+    },
+    license: {
+      findUnique: (...a: unknown[]) => mockLicenseFindUnique(...a),
     },
   },
 }));
@@ -36,11 +40,13 @@ vi.mock("@/services/plan/plan.service", () => ({
 
 const mockValidateLicense = vi.fn();
 const mockGetLicensesForUser = vi.fn();
+const mockRegenerateLicenseJwt = vi.fn();
 
 vi.mock("@/services/license/license.service", () => ({
   licenseService: {
     validateLicense: (...a: unknown[]) => mockValidateLicense(...a),
     getLicensesForUser: (...a: unknown[]) => mockGetLicensesForUser(...a),
+    regenerateLicenseJwt: (...a: unknown[]) => mockRegenerateLicenseJwt(...a),
   },
 }));
 
@@ -168,5 +174,47 @@ describe("licenseRouter.purchaseLicense", () => {
     const result = await caller.purchaseLicense({ tier: "DEVELOPER" });
 
     expect(result.checkoutUrl).toBe("https://checkout.stripe.com/license");
+  });
+});
+
+describe("licenseRouter.regenerate", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("throws NOT_FOUND when the license does not exist", async () => {
+    mockLicenseFindUnique.mockResolvedValue(null);
+
+    const caller = licenseRouter.createCaller(makeCtx() as never);
+    await expect(
+      caller.regenerate({ licenseId: "lic-x" })
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    expect(mockRegenerateLicenseJwt).not.toHaveBeenCalled();
+  });
+
+  it("throws NOT_FOUND (no leak) when the license is owned by another user", async () => {
+    mockLicenseFindUnique.mockResolvedValue({
+      id: "lic-1",
+      customerEmail: "someone-else@test.com",
+    });
+
+    const caller = licenseRouter.createCaller(makeCtx() as never);
+    await expect(
+      caller.regenerate({ licenseId: "lic-1" })
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    // Ownership is enforced before any rotation.
+    expect(mockRegenerateLicenseJwt).not.toHaveBeenCalled();
+  });
+
+  it("rotates and returns the new jwt when the caller owns the license", async () => {
+    mockLicenseFindUnique.mockResolvedValue({
+      id: "lic-1",
+      customerEmail: "admin@test.com",
+    });
+    mockRegenerateLicenseJwt.mockResolvedValue({ jwt: "new-jwt", version: 2 });
+
+    const caller = licenseRouter.createCaller(makeCtx() as never);
+    const result = await caller.regenerate({ licenseId: "lic-1" });
+
+    expect(result).toEqual({ jwt: "new-jwt" });
+    expect(mockRegenerateLicenseJwt).toHaveBeenCalledWith("lic-1");
   });
 });

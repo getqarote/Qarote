@@ -8,6 +8,7 @@ import {
   Check,
   CheckCheck,
   Copy,
+  RefreshCw,
   ShieldCheck,
   XCircle,
 } from "lucide-react";
@@ -20,7 +21,7 @@ import { type License } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-import { useLicenses } from "@/hooks/queries/useLicenses";
+import { useLicenses, useRegenerateLicense } from "@/hooks/queries/useLicenses";
 
 const LicenseManagement = () => {
   const { data, isLoading, isError, refetch } = useLicenses();
@@ -31,6 +32,32 @@ const LicenseManagement = () => {
 
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
+  const [confirmingRegenId, setConfirmingRegenId] = useState<string | null>(
+    null
+  );
+  const regenerate = useRegenerateLicense();
+
+  const handleRegenerate = (licenseId: string) => {
+    regenerate.mutate(
+      { licenseId },
+      {
+        onSuccess: () => {
+          try {
+            track("license_key_regenerated");
+          } catch {
+            // non-blocking analytics
+          }
+          toast.success(t("licenseManagement.regenerate.success"));
+          setConfirmingRegenId(null);
+          // Refetch so the card shows the freshly-rotated JWT.
+          refetch();
+        },
+        onError: () => {
+          toast.error(t("licenseManagement.regenerate.failed"));
+        },
+      }
+    );
+  };
 
   // Strip ?session_id= from URL after rendering the banner once
   useEffect(() => {
@@ -316,6 +343,46 @@ const LicenseManagement = () => {
                       </Button>
                     </div>
                   </div>
+
+                  {license.isActive &&
+                    (confirmingRegenId === license.id ? (
+                      <div className="rounded-md border border-warning/30 bg-warning/5 px-4 py-3 space-y-2.5">
+                        <p className="text-sm text-foreground">
+                          {t("licenseManagement.regenerate.warning")}
+                        </p>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => handleRegenerate(license.id)}
+                            disabled={regenerate.isPending}
+                          >
+                            {regenerate.isPending && (
+                              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                            )}
+                            {regenerate.isPending
+                              ? t("licenseManagement.regenerate.pending")
+                              : t("licenseManagement.regenerate.confirm")}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setConfirmingRegenId(null)}
+                            disabled={regenerate.isPending}
+                          >
+                            {t("licenseManagement.regenerate.cancel")}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setConfirmingRegenId(license.id)}
+                      >
+                        <RefreshCw className="h-4 w-4" />
+                        {t("licenseManagement.regenerate.button")}
+                      </Button>
+                    ))}
 
                   <p className="text-xs text-muted-foreground">
                     {t("licenseManagement.activationGuide")}{" "}
