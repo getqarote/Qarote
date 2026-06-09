@@ -62,10 +62,16 @@ Requirements depend on your deployment method:
 >
 > Use a TimescaleDB-enabled image/package everywhere:
 >
-> - **Docker / Compose / Dokku:** `timescale/timescaledb-ha:pg17` (the bundled
->   compose files already pin this). The HA image stores its data under
+> - **Docker Compose:** `timescale/timescaledb-ha:pg17` (the bundled compose
+>   files already pin this). The HA image stores its data under
 >   `/home/postgres/pgdata` (`PGDATA=/home/postgres/pgdata/data`), **not**
->   `/var/lib/postgresql/data` — mount persistent volumes accordingly.
+>   `/var/lib/postgresql/data` — the compose files mount the volume there
+>   accordingly.
+> - **Dokku:** the NON-HA `timescale/timescaledb` image (`latest-pg17`). The
+>   `dokku-postgres` plugin mounts data at `/var/lib/postgresql/data`, which the
+>   standard image uses — so data persists. Do **not** use `timescaledb-ha`
+>   under dokku-postgres (it writes outside the plugin's volume). See the Dokku
+>   section below.
 > - **Binary / bare-metal:** install the `timescaledb` package into your
 >   PostgreSQL 17 server (see the Binary section below).
 >
@@ -160,7 +166,8 @@ Qarote is available as a single binary that embeds both the API and frontend. No
 > - **Ubuntu/Debian:** add the TimescaleDB apt repo, then
 >   `sudo apt install timescaledb-2-postgresql-17` and run `timescaledb-tune`.
 >   See the [TimescaleDB self-hosted install guide](https://docs.timescale.com/self-hosted/latest/install/).
-> - **Any OS via Docker:** run `timescale/timescaledb-ha:pg17` instead.
+> - **Any OS via Docker:** run `timescale/timescaledb:latest-pg17` instead (the
+>   non-HA image uses the standard `/var/lib/postgresql/data` path).
 
 ### Database Setup
 
@@ -356,9 +363,13 @@ docker compose -f docker-compose.selfhosted-ee.yml up -d
    ssh dokku@your-server apps:create qarote
    sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git postgres
 
-   # Use a TimescaleDB image for THIS service (pinned to the pg17 HA line).
-   export POSTGRES_IMAGE="timescale/timescaledb-ha"
-   export POSTGRES_IMAGE_VERSION="pg17"
+   # Use the NON-HA timescaledb image for dokku-postgres. The plugin mounts the
+   # data volume at /var/lib/postgresql/data, which timescale/timescaledb (the
+   # standard postgres entrypoint) uses — so data persists. Do NOT use
+   # timescaledb-ha here: it stores data under /home/postgres/pgdata, outside the
+   # plugin's volume, so your data would be lost on every container recreate.
+   export POSTGRES_IMAGE="timescale/timescaledb"
+   export POSTGRES_IMAGE_VERSION="latest-pg17"
    dokku postgres:create qarote-db --image "$POSTGRES_IMAGE" --image-version "$POSTGRES_IMAGE_VERSION"
    dokku postgres:link qarote-db qarote
    ```
