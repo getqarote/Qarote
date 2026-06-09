@@ -7,6 +7,7 @@ export const useGetFindings = (
   serverId: string | null,
   options?: {
     resolved?: boolean;
+    dismissed?: boolean;
     severity?: AlertSeverity;
     limit?: number;
     offset?: number;
@@ -21,6 +22,7 @@ export const useGetFindings = (
       serverId: serverId ?? "",
       workspaceId: workspace?.id ?? "",
       resolved: options?.resolved,
+      dismissed: options?.dismissed,
       severity: options?.severity,
       limit: options?.limit ?? 50,
       offset: options?.offset ?? 0,
@@ -33,6 +35,26 @@ export const useTriggerScan = () => {
   const utils = trpc.useUtils();
 
   return trpc.rabbitmq.scan.triggerScan.useMutation({
+    onSuccess: () => {
+      utils.rabbitmq.scan.getFindings.invalidate();
+    },
+  });
+};
+
+export const useResolveFinding = () => {
+  const utils = trpc.useUtils();
+
+  return trpc.rabbitmq.scan.resolveFinding.useMutation({
+    onSuccess: () => {
+      utils.rabbitmq.scan.getFindings.invalidate();
+    },
+  });
+};
+
+export const useDismissFinding = () => {
+  const utils = trpc.useUtils();
+
+  return trpc.rabbitmq.scan.dismissFinding.useMutation({
     onSuccess: () => {
       utils.rabbitmq.scan.getFindings.invalidate();
     },

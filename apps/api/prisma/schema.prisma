@@ -1266,10 +1266,15 @@ model ConfigFinding {
   resourceName String
   vhost        String?
   fingerprint  String
-  detectedAt   DateTime      @default(now())
-  lastSeenAt   DateTime      @default(now())
-  resolvedAt   DateTime?
-  details      Json?
+  detectedAt    DateTime      @default(now())
+  lastSeenAt    DateTime      @default(now())
+  resolvedAt    DateTime?
+  // User-driven dismissal (distinct from scan auto-resolve). A dismissed
+  // finding stays dismissed across re-scans — persistConfigFindings never
+  // touches these fields. dismissReason captures the optional "why".
+  dismissedAt   DateTime?
+  dismissReason String?
+  details       Json?
 
   workspace       Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   server          RabbitMQServer   @relation(fields: [serverId], references: [id], onDelete: Cascade)
@@ -1277,6 +1282,7 @@ model ConfigFinding {
 
   @@unique([fingerprint])
   @@index([serverId, resolvedAt])
+  @@index([serverId, dismissedAt])
   @@index([workspaceId, severity])
   @@index([ruleKey])
 }

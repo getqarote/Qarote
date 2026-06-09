@@ -223,6 +223,9 @@
     "tracingQueryStartBeforeEnd": "La hora de inicio debe ser anterior a la hora de fin.",
     "tracingQueryWindowExceeded": "El rango de tiempo no puede exceder los 7 días."
   },
+  "scan": {
+    "findingNotFound": "Hallazgo no encontrado"
+  },
   "alerts": {
     "failedToGetRules": "Error al obtener las reglas de alerta",
     "ruleNotFound": "Regla de alerta no encontrada",

@@ -163,7 +163,27 @@
     "emptyDesc": "运行首次配置扫描以检测 RabbitMQ 配置反模式。",
     "emptyResolvedTitle": "暂无已解决的问题",
     "emptyResolvedDesc": "在集群中修复问题后，已解决的项目将显示在此处。",
-    "pageInfo": "第 {{current}} / {{total}} 页（共 {{count}} 条）"
+    "pageInfo": "第 {{current}} / {{total}} 页（共 {{count}} 条）",
+    "statusActive": "活跃",
+    "statusResolved": "已解决",
+    "statusDismissed": "已忽略",
+    "resolveAction": "解决",
+    "dismissAction": "忽略",
+    "dismissTitle": "忽略此问题",
+    "dismissDescription": "已忽略的问题在后续扫描中将保持隐藏。可填写可选原因以备记录。",
+    "dismissReasonLabel": "原因（可选）",
+    "dismissReasonPlaceholder": "例如：已接受的风险 — 仅限内部 vhost",
+    "dismissConfirm": "忽略此问题",
+    "cancel": "取消",
+    "dismissed": "已忽略",
+    "dismissedAt": "已忽略 {{time}}",
+    "emptyDismissedTitle": "没有已忽略的问题",
+    "emptyDismissedDesc": "您忽略的问题将收集在此处，方便日后查看。",
+    "toast": {
+      "resolveSuccess": "问题已解决",
+      "dismissSuccess": "问题已忽略",
+      "actionError": "出现错误，请重试"
+    }
   },
   "modal": {
     "title": "告警通知设置",

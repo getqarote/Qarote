@@ -163,7 +163,27 @@
     "emptyDesc": "Ejecuta tu primer escaneo de configuración para detectar anti-patrones de RabbitMQ.",
     "emptyResolvedTitle": "No hay hallazgos resueltos",
     "emptyResolvedDesc": "Los hallazgos resueltos aparecerán aquí una vez que corrijas los problemas en tu clúster.",
-    "pageInfo": "Página {{current}} de {{total}} ({{count}} en total)"
+    "pageInfo": "Página {{current}} de {{total}} ({{count}} en total)",
+    "statusActive": "Activos",
+    "statusResolved": "Resueltos",
+    "statusDismissed": "Descartados",
+    "resolveAction": "Resolver",
+    "dismissAction": "Descartar",
+    "dismissTitle": "Descartar hallazgo",
+    "dismissDescription": "Los hallazgos descartados permanecen ocultos en los próximos escaneos. Añada un motivo opcional para dejar constancia.",
+    "dismissReasonLabel": "Motivo (opcional)",
+    "dismissReasonPlaceholder": "p. ej. Riesgo aceptado — vhost solo interno",
+    "dismissConfirm": "Descartar hallazgo",
+    "cancel": "Cancelar",
+    "dismissed": "Descartado",
+    "dismissedAt": "Descartado {{time}}",
+    "emptyDismissedTitle": "Sin hallazgos descartados",
+    "emptyDismissedDesc": "Los hallazgos que descarte se recopilan aquí para que pueda revisarlos más tarde.",
+    "toast": {
+      "resolveSuccess": "Hallazgo resuelto",
+      "dismissSuccess": "Hallazgo descartado",
+      "actionError": "Algo salió mal: inténtelo de nuevo"
+    }
   },
   "modal": {
     "title": "Configuración de notificaciones de alertas",

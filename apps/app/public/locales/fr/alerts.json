@@ -163,7 +163,27 @@
     "emptyDesc": "Lancez votre premier scan de configuration pour détecter les anti-patterns RabbitMQ.",
     "emptyResolvedTitle": "Aucun problème résolu",
     "emptyResolvedDesc": "Les problèmes résolus apparaîtront ici une fois corrigés sur votre cluster.",
-    "pageInfo": "Page {{current}} sur {{total}} ({{count}} au total)"
+    "pageInfo": "Page {{current}} sur {{total}} ({{count}} au total)",
+    "statusActive": "Actifs",
+    "statusResolved": "Résolus",
+    "statusDismissed": "Ignorés",
+    "resolveAction": "Résoudre",
+    "dismissAction": "Ignorer",
+    "dismissTitle": "Ignorer le problème",
+    "dismissDescription": "Les problèmes ignorés restent masqués lors des prochains scans. Ajoutez une raison facultative pour mémoire.",
+    "dismissReasonLabel": "Raison (facultatif)",
+    "dismissReasonPlaceholder": "ex. Risque accepté — vhost interne uniquement",
+    "dismissConfirm": "Ignorer le problème",
+    "cancel": "Annuler",
+    "dismissed": "Ignoré",
+    "dismissedAt": "Ignoré {{time}}",
+    "emptyDismissedTitle": "Aucun problème ignoré",
+    "emptyDismissedDesc": "Les problèmes que vous ignorez sont regroupés ici pour les revoir plus tard.",
+    "toast": {
+      "resolveSuccess": "Problème résolu",
+      "dismissSuccess": "Problème ignoré",
+      "actionError": "Une erreur est survenue — veuillez réessayer"
+    }
   },
   "modal": {
     "title": "Paramètres de notification d'alertes",

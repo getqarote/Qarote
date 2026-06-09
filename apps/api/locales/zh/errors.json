@@ -223,6 +223,9 @@
     "tracingQueryStartBeforeEnd": "开始时间必须早于结束时间。",
     "tracingQueryWindowExceeded": "时间范围不能超过 7 天。"
   },
+  "scan": {
+    "findingNotFound": "未找到该问题"
+  },
   "alerts": {
     "failedToGetRules": "获取告警规则失败",
     "ruleNotFound": "未找到告警规则",

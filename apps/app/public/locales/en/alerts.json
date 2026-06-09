@@ -163,7 +163,27 @@
     "emptyDesc": "Run your first config scan to check for RabbitMQ configuration anti-patterns.",
     "emptyResolvedTitle": "No resolved findings yet",
     "emptyResolvedDesc": "Resolved findings will appear here once you fix the underlying issues in your cluster.",
-    "pageInfo": "Page {{current}} of {{total}} ({{count}} total)"
+    "pageInfo": "Page {{current}} of {{total}} ({{count}} total)",
+    "statusActive": "Active",
+    "statusResolved": "Resolved",
+    "statusDismissed": "Dismissed",
+    "resolveAction": "Resolve",
+    "dismissAction": "Dismiss",
+    "dismissTitle": "Dismiss finding",
+    "dismissDescription": "Dismissed findings stay hidden across future scans. Add an optional reason for the record.",
+    "dismissReasonLabel": "Reason (optional)",
+    "dismissReasonPlaceholder": "e.g. Accepted risk — internal-only vhost",
+    "dismissConfirm": "Dismiss finding",
+    "cancel": "Cancel",
+    "dismissed": "Dismissed",
+    "dismissedAt": "Dismissed {{time}}",
+    "emptyDismissedTitle": "No dismissed findings",
+    "emptyDismissedDesc": "Findings you dismiss are collected here so you can review them later.",
+    "toast": {
+      "resolveSuccess": "Finding resolved",
+      "dismissSuccess": "Finding dismissed",
+      "actionError": "Something went wrong — please try again"
+    }
   },
   "modal": {
     "title": "Alert Notification Settings",

@@ -223,6 +223,9 @@
     "tracingQueryStartBeforeEnd": "L'heure de début doit être avant l'heure de fin.",
     "tracingQueryWindowExceeded": "La plage temporelle ne peut pas dépasser 7 jours."
   },
+  "scan": {
+    "findingNotFound": "Finding introuvable"
+  },
   "alerts": {
     "failedToGetRules": "Échec de la récupération des règles d'alerte",
     "ruleNotFound": "Règle d'alerte introuvable",
