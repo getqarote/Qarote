@@ -142,6 +142,9 @@
     "failedToRenewSubscription": "续订失败",
     "allWorkspaces": "您的所有工作区"
   },
+  "organization": {
+    "slugTaken": "该 slug 已被占用，请换一个。"
+  },
   "license": {
     "validationFailed": "许可证验证失败",
     "failedToFetchLicenses": "获取许可证列表失败",

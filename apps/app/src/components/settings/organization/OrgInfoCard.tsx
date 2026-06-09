@@ -42,12 +42,14 @@ export function OrgInfoCard({ org, isOrgAdmin }: OrgInfoCardProps) {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
     name: org.name,
+    slug: org.slug,
     contactEmail: org.contactEmail ?? "",
   });
 
   const handleCancel = () => {
     setForm({
       name: org.name,
+      slug: org.slug,
       contactEmail: org.contactEmail ?? "",
     });
     setEditing(false);
@@ -57,13 +59,24 @@ export function OrgInfoCard({ org, isOrgAdmin }: OrgInfoCardProps) {
     try {
       await updateOrgMutation.mutateAsync({
         name: form.name || undefined,
+        // Send the raw (trimmed) slug so backend validation runs — an empty
+        // or too-short slug returns a proper error instead of being silently
+        // skipped. Unchanged value is a harmless no-op on the org's own row.
+        slug: form.slug.trim(),
         contactEmail: form.contactEmail || null,
       });
       setEditing(false);
       toast.success(t("org.toast.orgUpdated"));
     } catch (error) {
       logger.error({ error }, "Update org error");
-      toast.error(t("org.toast.orgUpdateFailed"));
+      // The backend returns a localized CONFLICT message for a taken slug —
+      // surface it directly; fall back to the generic failure otherwise.
+      const code = (error as { data?: { code?: string } })?.data?.code;
+      if (code === "CONFLICT" && error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error(t("org.toast.orgUpdateFailed"));
+      }
     }
   };
 
@@ -89,6 +102,22 @@ export function OrgInfoCard({ org, isOrgAdmin }: OrgInfoCardProps) {
             ) : (
               <p className="text-sm text-foreground">{org.name}</p>
             )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="org-slug">{t("org.slug")}</Label>
+            {editing ? (
+              <Input
+                id="org-slug"
+                value={form.slug}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, slug: e.target.value }))
+                }
+                placeholder={t("org.slugPlaceholder")}
+              />
+            ) : (
+              <p className="text-sm font-mono text-foreground">{org.slug}</p>
+            )}
+            <p className="text-xs text-muted-foreground">{t("org.slugDesc")}</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="org-email">{t("org.billingEmail")}</Label>

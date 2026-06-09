@@ -142,6 +142,9 @@
     "failedToRenewSubscription": "Error al renovar la suscripción",
     "allWorkspaces": "todos tus espacios de trabajo"
   },
+  "organization": {
+    "slugTaken": "Ese slug ya está en uso. Pruebe con otro."
+  },
   "license": {
     "validationFailed": "Error en la validación de la licencia",
     "failedToFetchLicenses": "Error al obtener las licencias",

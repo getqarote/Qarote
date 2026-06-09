@@ -1,3 +1,5 @@
+import { TRPCError } from "@trpc/server";
+
 import { recordFromContext } from "@/services/audit";
 import { getOrgPlan } from "@/services/plan/plan.service";
 
@@ -9,6 +11,8 @@ import {
   rateLimitedProcedure,
   router,
 } from "@/trpc/trpc";
+
+import { te } from "@/i18n";
 
 /**
  * Organization management router
@@ -89,24 +93,38 @@ export const managementRouter = router({
   update: rateLimitedOrgAdminProcedure
     .input(UpdateOrganizationSchema)
     .mutation(async ({ input, ctx }) => {
-      const updated = await ctx.prisma.organization.update({
-        where: { id: ctx.organizationId },
-        data: {
-          ...(input.name !== undefined && { name: input.name }),
-          ...(input.contactEmail !== undefined && {
-            contactEmail: input.contactEmail,
-          }),
-          ...(input.logoUrl !== undefined && { logoUrl: input.logoUrl }),
-        },
-        include: {
-          _count: {
-            select: {
-              members: true,
-              workspaces: true,
+      let updated;
+      try {
+        updated = await ctx.prisma.organization.update({
+          where: { id: ctx.organizationId },
+          data: {
+            ...(input.name !== undefined && { name: input.name }),
+            ...(input.slug !== undefined && { slug: input.slug }),
+            ...(input.contactEmail !== undefined && {
+              contactEmail: input.contactEmail,
+            }),
+            ...(input.logoUrl !== undefined && { logoUrl: input.logoUrl }),
+          },
+          include: {
+            _count: {
+              select: {
+                members: true,
+                workspaces: true,
+              },
             },
           },
-        },
-      });
+        });
+      } catch (error) {
+        // Slug is @unique — a collision surfaces as a friendly CONFLICT
+        // rather than an opaque 500.
+        if ((error as { code?: string }).code === "P2002") {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: te(ctx.locale, "organization.slugTaken"),
+          });
+        }
+        throw error;
+      }
 
       ctx.logger.info(
         {
@@ -125,6 +143,7 @@ export const managementRouter = router({
         metadata: {
           changes: {
             ...(input.name !== undefined && { name: input.name }),
+            ...(input.slug !== undefined && { slug: input.slug }),
             ...(input.contactEmail !== undefined && {
               contactEmail: input.contactEmail,
             }),

@@ -159,6 +159,9 @@
     "failedToRenewSubscription": "Failed to renew subscription",
     "allWorkspaces": "your workspaces"
   },
+  "organization": {
+    "slugTaken": "That slug is already taken. Try another."
+  },
   "license": {
     "validationFailed": "License validation failed",
     "failedToFetchLicenses": "Failed to fetch licenses",

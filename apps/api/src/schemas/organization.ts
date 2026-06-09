@@ -8,6 +8,17 @@ export const UpdateOrganizationSchema = z.object({
     .min(2, "Organization name must be at least 2 characters")
     .max(100, "Organization name must be less than 100 characters")
     .optional(),
+  // Lowercase letters, digits, and single hyphens between segments — the
+  // slug is a public-ish identifier and must stay URL-safe + unique.
+  slug: z
+    .string()
+    .min(3, "Slug must be at least 3 characters")
+    .max(48, "Slug must be less than 48 characters")
+    .regex(
+      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+      "Slug may only contain lowercase letters, numbers, and hyphens"
+    )
+    .optional(),
   contactEmail: z.string().email("Invalid email address").optional().nullable(),
   logoUrl: z.string().url("Invalid URL").optional().nullable(),
 });

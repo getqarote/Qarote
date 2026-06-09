@@ -188,6 +188,30 @@ describe("managementRouter", () => {
 
       expect(result.organization.name).toBe("Acme Corp");
     });
+
+    it("passes the slug through to the update", async () => {
+      mockOrgUpdate.mockResolvedValue(mockOrg);
+
+      const caller = managementRouter.createCaller(makeCtx());
+      await caller.update({ slug: "new-slug" });
+
+      expect(mockOrgUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ slug: "new-slug" }),
+        })
+      );
+    });
+
+    it("maps a unique-slug collision (P2002) to CONFLICT", async () => {
+      mockOrgUpdate.mockRejectedValue(
+        Object.assign(new Error("Unique constraint failed"), { code: "P2002" })
+      );
+
+      const caller = managementRouter.createCaller(makeCtx());
+      await expect(caller.update({ slug: "taken-slug" })).rejects.toMatchObject(
+        { code: "CONFLICT" }
+      );
+    });
   });
 
   describe("getBillingInfo", () => {
