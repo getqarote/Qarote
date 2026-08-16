@@ -39,7 +39,6 @@ import {
   IconQueue,
 } from "@/components/ui/icons";
 import { Input } from "@/components/ui/input";
-import { TagsInput } from "@/components/ui/tags-input";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
@@ -95,8 +94,11 @@ interface ScanSummary {
  * Post-signup onboarding wizard. The user is already authenticated (better-auth
  * created the account); this 3-step flow runs before they have a workspace.
  *
- *   0. **Account** — name the org (first-onboarding only) + workspace + tags,
- *      and optionally invite teammates. Runs the create-workspace flow.
+ *   0. **Account** — name the org (first-onboarding only) + workspace, and
+ *      optionally invite teammates. Runs the create-workspace flow. Workspace
+ *      tags are deliberately absent here — they live in Settings → Workspace,
+ *      and asking for them before the user has connected a single broker is a
+ *      field with no context to fill it from.
  *   1. **Connect** — URL-first first-broker connection. createServer tests the
  *      connection server-side; success advances to the scan.
  *   2. **Scan** — point-in-time scan with a progressive checklist, then a
@@ -104,7 +106,7 @@ interface ScanSummary {
  *
  * Two render modes via `isFirstOnboarding`:
  *   - **First onboarding**: org name + invitee manager in step 0.
- *   - **Returning user** (rebuild): just workspace name + tags in step 0.
+ *   - **Returning user** (rebuild): just the workspace name in step 0.
  * Both go through all 3 steps.
  */
 const Onboarding = () => {
@@ -175,7 +177,6 @@ const Onboarding = () => {
       lastName: user?.lastName ?? "",
       orgName: "",
       workspaceName: "",
-      tags: [],
     },
   });
 
@@ -241,10 +242,6 @@ const Onboarding = () => {
 
       const result = await createWorkspaceMutation.mutateAsync({
         name: data.workspaceName.trim(),
-        tags:
-          data.tags && data.tags.length > 0
-            ? data.tags.filter((tag) => tag.trim().length > 0)
-            : undefined,
       });
       const newWorkspaceId = result.workspace.id;
 
@@ -558,32 +555,6 @@ const Onboarding = () => {
                         <FormMessage />
                         <p className="text-xs text-muted-foreground">
                           {t("workspaceNameHint")}
-                        </p>
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={accountForm.control}
-                    name="tags"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium">
-                          {t("tagsLabel")}
-                        </FormLabel>
-                        <FormControl>
-                          <TagsInput
-                            value={field.value || []}
-                            onChange={field.onChange}
-                            placeholder={t("tagsPlaceholder")}
-                            maxTags={10}
-                            maxTagLength={20}
-                            disabled={isAccountPending}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                        <p className="text-xs text-muted-foreground">
-                          {t("tagsHint")}
                         </p>
                       </FormItem>
                     )}

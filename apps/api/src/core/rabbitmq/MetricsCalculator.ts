@@ -191,14 +191,35 @@ export class RabbitMQMetricsCalculator {
     return this.extractInstantaneousRates(messageStats, disk);
   }
 
-  // Detect whether message stats contain sample arrays (detailed mode) or only rates (basic mode)
+  /**
+   * Which rate detail the broker offers: sample arrays (detailed), an
+   * instantaneous rate only (basic), or nothing (none).
+   *
+   * The broker declares this in `/api/overview` as `rates_mode`, so trust the
+   * declaration and only infer when it is absent. Inferring from
+   * `message_stats` alone is wrong: RabbitMQ does not materialise that object
+   * until the first publish, so an idle broker running the default
+   * `rates_mode=basic` has no `publish_details` and used to be reported as
+   * "none" — telling the operator their broker cannot report rates when it
+   * simply had no traffic yet. Verified on 3.13.7: idle declares `basic` with
+   * `message_stats: {}`; after one publish the same broker still declares
+   * `basic` and the stats appear.
+   *
+   * Queue payloads carry no declaration. There, absent stats mean "nothing
+   * published yet" at least as often as "rates off", so fall back to the
+   * reading that does not accuse the broker of a misconfiguration — the series
+   * comes back empty either way and renders as "no traffic in this window".
+   */
   static detectRatesMode(
     data: RabbitMQOverview | RabbitMQQueue
   ): "detailed" | "basic" | "none" {
-    const messageStats =
-      "message_stats" in data ? data.message_stats : data.message_stats || {};
-    if (!messageStats?.publish_details) return "none";
-    if (messageStats.publish_details.samples) return "detailed";
+    const declared = "rates_mode" in data ? data.rates_mode : undefined;
+    if (declared === "none") return "none";
+
+    const messageStats = data.message_stats;
+    if (messageStats?.publish_details?.samples) return "detailed";
+    if (declared === "detailed" || declared === "basic") return declared;
+
     return "basic";
   }
 
