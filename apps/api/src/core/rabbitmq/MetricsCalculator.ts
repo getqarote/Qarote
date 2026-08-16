@@ -231,21 +231,51 @@ export class RabbitMQMetricsCalculator {
     let readySamples: RateSample[] | undefined;
     let unacknowledgedSamples: RateSample[] | undefined;
 
+    let current: QueueTotalsTimeSeries;
+
     if ("queue_totals" in data) {
       // Overview data
       samples = data.queue_totals?.messages_details?.samples;
       readySamples = data.queue_totals?.messages_ready_details?.samples;
       unacknowledgedSamples =
         data.queue_totals?.messages_unacknowledged_details?.samples;
+      current = {
+        timestamp: Date.now(),
+        messages: data.queue_totals?.messages,
+        messages_ready: data.queue_totals?.messages_ready,
+        messages_unacknowledged: data.queue_totals?.messages_unacknowledged,
+      };
     } else {
       // Queue data
       samples = data.messages_details?.samples;
       readySamples = data.messages_ready_details?.samples;
       unacknowledgedSamples = data.messages_unacknowledged_details?.samples;
+      current = {
+        timestamp: Date.now(),
+        messages: data.messages,
+        messages_ready: data.messages_ready,
+        messages_unacknowledged: data.messages_unacknowledged,
+      };
     }
 
-    if (!samples) {
-      return [];
+    // Sample arrays only exist under rates_mode=detailed. Under `basic` — the
+    // RabbitMQ default, and what AmazonMQ ships — the broker sends the current
+    // depth with no history, and returning [] here drew an empty chart next to
+    // a populated depth tile. extractMessageRates already falls back to a
+    // single instantaneous point in exactly this case; this is the same move
+    // for depth, so the two cards agree about what the broker offers.
+    //
+    // An empty array counts as no history, not as history: a detailed-mode
+    // broker returns `samples: []` when the retention window holds nothing yet
+    // — which is exactly the moment a server is first connected. Testing
+    // truthiness alone would send that case into the sample path and back to
+    // the blank chart this fixes.
+    if (!samples?.length) {
+      const hasDepth =
+        typeof current.messages === "number" ||
+        typeof current.messages_ready === "number" ||
+        typeof current.messages_unacknowledged === "number";
+      return hasDepth ? [current] : [];
     }
 
     return this.processQueueTotalSamples(
