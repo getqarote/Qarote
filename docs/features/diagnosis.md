@@ -91,11 +91,10 @@ rule only on the brokers that support the feature.
 
 ### Tier C — research candidates
 
-Nine candidates have research notes under
-`docs/research/diagnosis-rules/` (seven `needs-more-research`, two
-`reject`). Each ends in a single `Decision: ship | reject |
-needs-more-research` line. None are wired today; reasons are in
-the per-note `Decision` block.
+Further rules are under evaluation and none are wired today. A
+candidate ships only once its detection is validated against real
+broker behaviour, rather than inferred from documentation — the
+same bar the Tier A and Tier B rules above had to clear.
 
 ## "Explain this finding" — situated LLM explanations
 
