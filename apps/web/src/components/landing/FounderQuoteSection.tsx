@@ -1,56 +1,41 @@
-import { type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { useScrollEntry } from "@/hooks/useScrollEntry";
+/**
+ * Founder quote — a dark full-width band that restates the whole pitch with
+ * emotional weight. Ported from Qarote.html (founder quote section). Fixed ink
+ * panel → hardcoded colors, not theme tokens (matches SelfHostedSection).
+ */
 
 const FounderQuoteSection = () => {
   const { t } = useTranslation("landing");
-  const reduceMotion = useReducedMotion();
-  const [quoteRef, quoteEntered] = useScrollEntry<HTMLQuoteElement>(0.15);
-
-  const enter = (delay = 0): CSSProperties =>
-    reduceMotion
-      ? {}
-      : {
-          opacity: quoteEntered ? 1 : 0,
-          transform: quoteEntered ? "translateY(0)" : "translateY(12px)",
-          transition: `opacity 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
-        };
 
   return (
-    <section className="py-16 bg-muted/10">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <blockquote
-          ref={quoteRef}
-          className="border border-border p-8 lg:p-12"
-          style={enter(0)}
-        >
-          <p className="text-2xl lg:text-3xl text-foreground font-normal leading-snug mb-8">
-            {t("founderQuote.openQuote")}
-            {t("founderQuote.line1")}
-            <br />
-            {t("founderQuote.line2")}
-            <br />
-            <span className="text-primary">{t("founderQuote.highlight")}</span>
-            {t("founderQuote.closeQuote")}
-          </p>
-          <footer className="flex items-center gap-3" style={enter(80)}>
-            <img
-              src="/images/team/brice.jpg"
-              alt={t("founderQuote.imgAlt")}
-              className="w-10 h-10 rounded-full object-cover"
-              width={40}
-              height={40}
-            />
-            <p className="text-sm text-muted-foreground">
-              <span className="text-foreground font-medium">
-                {t("founderQuote.name")}
-              </span>{" "}
-              — {t("founderQuote.role")}
-            </p>
-          </footer>
+    <section className="bg-[#15120E] text-[#E7EAF0]">
+      <div className="mx-auto max-w-[1000px] px-[clamp(20px,5vw,64px)] py-[clamp(64px,9vw,120px)]">
+        <blockquote className="font-display text-[clamp(28px,4.4vw,50px)] font-medium leading-[1.16] tracking-[-0.025em] text-white">
+          {t("founderQuote.line1")}
+          <br />
+          {t("founderQuote.line2")}
+          <br />
+          <span className="text-carrot">{t("founderQuote.highlight")}</span>
         </blockquote>
+        <div className="mt-8 flex items-center gap-[14px]">
+          <img
+            src="/images/team/brice.jpg"
+            alt={t("founderQuote.imgAlt")}
+            className="size-[46px] shrink-0 rounded-full object-cover"
+            width={46}
+            height={46}
+          />
+          <div>
+            <div className="font-semibold text-white">
+              {t("founderQuote.name")}
+            </div>
+            <div className="text-[14.5px] text-[#9AA3B2]">
+              {t("founderQuote.role")}
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

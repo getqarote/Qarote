@@ -1,19 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { toast } from "sonner";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alertDialog";
+import { qToast } from "@/lib/qToast";
+
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -29,6 +21,10 @@ interface PurgeQueueDialogProps {
   vhost?: string | null;
   trigger?: React.ReactNode;
   onSuccess?: () => void;
+  /** Optional controlled mode — when provided, the parent owns open state and
+   *  no trigger is rendered (used as the soft "Purge instead" action). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export const PurgeQueueDialog = ({
@@ -37,8 +33,15 @@ export const PurgeQueueDialog = ({
   vhost: vhostProp,
   trigger,
   onSuccess,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
 }: PurgeQueueDialogProps) => {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled
+    ? (controlledOnOpenChange ?? (() => {}))
+    : setInternalOpen;
   const { selectedServerId } = useServerContext();
   const { selectedVHost } = useVHostContext();
   const { workspace } = useWorkspace();
@@ -49,74 +52,85 @@ export const PurgeQueueDialog = ({
   // Use prop vhost if provided, otherwise use context vhost, fallback to "/"
   const vhost = vhostProp ?? selectedVHost ?? "/";
 
-  // Handle success/error
-  useEffect(() => {
-    if (purgeQueueMutation.isSuccess) {
-      toast(t("purge.successTitle"), {
-        description: t("purge.successDescription", { queueName }),
-      });
-
-      setOpen(false);
-      onSuccess?.();
-    }
-    if (purgeQueueMutation.isError) {
-      toast.error(t("purge.errorTitle"), {
-        description:
-          purgeQueueMutation.error?.message || "An unexpected error occurred",
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    purgeQueueMutation.isSuccess,
-    purgeQueueMutation.isError,
-    purgeQueueMutation.error,
-  ]);
-
-  const handlePurge = () => {
+  // Awaited so ConfirmDialog closes only after the purge resolves; on success
+  // we fire the result qToast (the dialog itself never toasts). The thrown
+  // error is caught here and surfaced — ConfirmDialog keeps the dialog open.
+  const handlePurge = async () => {
+    // Fail fast on missing context — throwing keeps ConfirmDialog open (it only
+    // closes when onConfirm resolves) so the user can retry once context loads.
     if (!selectedServerId) {
-      toast.error(t("toast.error"), {
-        description: t("purge.noServer"),
-      });
-      return;
+      toast.error(t("toast.error"), { description: t("purge.noServer") });
+      throw new Error("no server");
     }
     if (!workspace?.id) {
-      toast.error(t("toast.error"), {
-        description: t("purge.noWorkspace"),
-      });
-      return;
+      toast.error(t("toast.error"), { description: t("purge.noWorkspace") });
+      throw new Error("no workspace");
     }
-    purgeQueueMutation.mutate({
-      serverId: selectedServerId,
-      workspaceId: workspace.id,
-      queueName,
-      vhost: encodeURIComponent(vhost),
-    });
+    try {
+      await purgeQueueMutation.mutateAsync({
+        serverId: selectedServerId,
+        workspaceId: workspace.id,
+        queueName,
+        vhost: encodeURIComponent(vhost),
+      });
+      qToast({
+        severity: "success",
+        title: t("purge.successTitle"),
+        msg: t("purge.successDescription", { queueName }),
+      });
+      onSuccess?.();
+    } catch (error) {
+      toast.error(t("purge.errorTitle"), {
+        description:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
+      });
+      // Re-throw so ConfirmDialog keeps the dialog open on a failed purge.
+      throw error;
+    }
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger asChild>
-        {trigger || (
-          <Button
-            size="sm"
-            variant="destructive-outline"
-            className="rounded-none"
-          >
-            {t("purge.trigger")}
-          </Button>
-        )}
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{t("purge.title", { queueName })}</AlertDialogTitle>
-          <AlertDialogDescription className="space-y-3">
-            <div>
-              <strong>⚠️ {t("purge.cannotBeUndone")}</strong>
-            </div>
+    <>
+      {/* In controlled mode the parent owns open state — render no trigger. */}
+      {isControlled ? null : trigger ? (
+        <span
+          onClick={() => setOpen(true)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setOpen(true);
+            }
+          }}
+        >
+          {trigger}
+        </span>
+      ) : (
+        <Button
+          size="sm"
+          variant="destructive-outline"
+          className="rounded-none"
+          onClick={() => setOpen(true)}
+        >
+          {t("purge.trigger")}
+        </Button>
+      )}
+
+      <ConfirmDialog
+        open={open}
+        onOpenChange={setOpen}
+        tone="danger"
+        title={t("purge.title", { queueName })}
+        warn={{ tone: "danger", message: t("purge.cannotBeUndone") }}
+        body={
+          <div className="space-y-3">
             <div>{t("purge.description")}</div>
             <div className="p-3 bg-muted rounded-lg border">
               <div className="flex items-center justify-between">
-                <span className="font-medium">{queueName}</span>
+                <span className="font-medium font-mono">{queueName}</span>
                 {messageCount > 0 && (
                   <Badge variant="secondary">
                     {t("purge.messagesCount", {
@@ -126,7 +140,7 @@ export const PurgeQueueDialog = ({
                 )}
               </div>
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div>
               {messageCount > 0
                 ? t("purge.allMessagesDeleted", {
                     count: messageCount.toLocaleString(),
@@ -134,37 +148,20 @@ export const PurgeQueueDialog = ({
                 : t("purge.allMessagesDeletedEmpty")}{" "}
               {t("purge.operationWill")}
             </div>
-            <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+            <ul className="list-disc list-inside space-y-1">
               <li>{t("purge.removeAllPending")}</li>
               <li>{t("purge.clearReadyAndUnacked")}</li>
               <li>{t("purge.resetCount")}</li>
               <li>{t("purge.cannotBeReversed")}</li>
             </ul>
-            <div className="mt-3 p-3 bg-info-muted border border-info/30 rounded-lg">
-              <div className="flex items-start gap-2">
-                <div className="w-4 h-4 text-info mt-0.5">ℹ️</div>
-                <div className="text-sm text-info">
-                  <strong>Note:</strong> {t("purge.note")}
-                </div>
-              </div>
-            </div>
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel className="rounded-none">
-            {t("cancel")}
-          </AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handlePurge}
-            disabled={purgeQueueMutation.isPending}
-            className="border border-destructive/30 bg-background text-destructive hover:bg-destructive/10 hover:border-destructive/50 rounded-none"
-          >
-            {purgeQueueMutation.isPending
-              ? t("purge.purging")
-              : t("purge.confirm")}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </div>
+        }
+        confirmLabel={t("purge.confirm")}
+        pendingLabel={t("purge.purging")}
+        cancelLabel={t("cancel")}
+        isPending={purgeQueueMutation.isPending}
+        onConfirm={handlePurge}
+      />
+    </>
   );
 };

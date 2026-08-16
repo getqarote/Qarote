@@ -38,12 +38,6 @@ export class UserMapper {
       response.authProvider = user.googleId ? "google" : "password";
     }
 
-    // Include subscription if present (can be null)
-    if ("subscription" in user) {
-      response.subscription =
-        (user.subscription as UserApiResponse["subscription"]) ?? null;
-    }
-
     // Include workspace if present (can be null)
     if ("workspace" in user) {
       response.workspace =

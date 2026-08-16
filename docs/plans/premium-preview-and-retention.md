@@ -515,7 +515,7 @@ Add assertions that cover the soft-preview model for features that were previous
 ### Documentation
 | File | Change |
 |---|---|
-| `docs/adr/` | **New ADR** — soft preview model rationale (hard block → soft preview, plan-aware retention design decisions) |
+| `docs/internal/adr/` | **New ADR** — soft preview model rationale (hard block → soft preview, plan-aware retention design decisions) |
 
 ---
 

@@ -17,22 +17,21 @@
 }
 
 @theme {
-  /* Heading font: Bricolage Grotesque variable — H1 page titles and H2
-     section headers. The optical-size axis (opsz 12–96) sharpens detail
-     at display sizes and softens it at small sizes automatically. */
-  --font-heading: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
-  /* UI font: system-native first (SF Pro on macOS, Segoe UI on Windows,
-     Cantarell/Ubuntu/DejaVu on Linux). No external web font request — respects
-     the self-hosted ethos and ships zero bytes. Arial is kept only as a late
-     fallback for systems without a better option. */
+  /* Heading font: Space Grotesk — H1 page titles and H2 section headers.
+     Self-hosted via @fontsource (zero external request, self-hosted ethos).
+     No optical-size axis; title-page/title-section keep font-optical-sizing
+     auto harmlessly. */
+  --font-heading: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  /* UI font: IBM Plex Sans — all body and UI text. Self-hosted via
+     @fontsource; the system stack stays as a fallback while it loads. */
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", roboto,
-    "Helvetica Neue", arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol", "Noto Color Emoji";
-  /* Numeric font: Fragment Mono — loaded via Google Fonts. Used for all
-     metric numbers, queue depths, rates, IDs, routing keys, and code. */
+    "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    roboto, "Helvetica Neue", arial, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  /* Numeric font: IBM Plex Mono — metric numbers, queue depths, rates, IDs,
+     routing keys, and code. Self-hosted via @fontsource. */
   --font-mono:
-    "Fragment Mono", ui-monospace, "SFMono-Regular", "SF Mono", menlo, monaco,
+    "IBM Plex Mono", ui-monospace, "SFMono-Regular", "SF Mono", menlo, monaco,
     consolas, "Liberation Mono", "Courier New", monospace;
 
   --color-border: hsl(var(--border));
@@ -341,8 +340,8 @@
 @utility title-page {
   /* Quieter: solid foreground, weight carries hierarchy. The brand gradient
      is reserved for the wordmark only (title-gradient utility).
-     Bricolage Grotesque with optical sizing active — opsz auto sharpens
-     letterforms at the 30px display size used here. */
+     Space Grotesk has no optical-size axis; font-optical-sizing: auto is a
+     harmless no-op kept for forward-compatibility. */
   @apply text-3xl font-bold text-foreground tracking-tight;
   font-family: var(--font-heading);
   font-optical-sizing: auto;
@@ -382,46 +381,135 @@
   @apply bg-card border border-border rounded-lg p-4 shadow-xs;
 }
 
+/* Agent CTA card (cockpit "Connect your agent") — the prototype's
+   `linear-gradient(160deg, carrot-wash, surface)`. Theme-aware: --primary and
+   --card both flip with the theme, so one rule serves light + night. */
+@utility agent-cta-gradient {
+  background: linear-gradient(
+    160deg,
+    hsl(var(--primary) / 0.07),
+    hsl(var(--card)) 70%
+  );
+}
+
+/* "Ask your agent" carousel — a slight directional slide+fade when the prompt
+   changes. Gated on `no-preference` so reduced-motion users get an instant
+   swap. Keyed by index in the component so the animation replays each change. */
+@keyframes ask-in-next {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes ask-in-prev {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ask-anim-next {
+    animation: ask-in-next 0.22s ease;
+  }
+  .ask-anim-prev {
+    animation: ask-in-prev 0.22s ease;
+  }
+}
+
+/* First-run cockpit radar (prototype `.firstrun__icon--ping`) — two carrot
+   rings pulse outward from the icon tile while the icon breathes. transform +
+   opacity only (GPU-light, no JS); the rings are aria-hidden. Everything lives
+   under no-preference, so reduced-motion = static icon, zero animation. */
+.firstrun-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  border: 1.5px solid hsl(var(--primary));
+  opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .firstrun-ring {
+    animation: firstrun-ping 2.8s cubic-bezier(0.2, 0.7, 0.3, 1) infinite;
+  }
+  .firstrun-ring--2 {
+    animation-delay: 1.4s;
+  }
+  .firstrun-radar > svg {
+    animation: firstrun-breath 2.8s ease-in-out infinite;
+  }
+}
+@keyframes firstrun-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  70% {
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+@keyframes firstrun-breath {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 20 14.3% 4.1%;
-    --card: 30 25% 98%; /* rgb(252 250 246) converted to HSL - unified card background */
-    --card-foreground: 20 14.3% 4.1%;
+    /* NEW CANONICAL DESIGN (prototype, Jun 11 2026) — warm paper light theme.
+       Prototype hex in comments. See docs/reference/index.tokens.css. */
+    --background: 40 27% 98%; /* paper #FBFAF8 — warm off-white, was pure white */
+    --foreground: 34 20% 7%; /* ink #15120E */
+    --card: 0 0% 100%; /* surfaces are pure white on the warm paper */
+    --card-foreground: 34 20% 7%;
     --popover: 0 0% 100%;
-    --popover-foreground: 20 14.3% 4.1%;
+    --popover-foreground: 34 20% 7%;
 
-    /* Orange primary theme — saturation dialed from 95% to 82% for a more
-       sophisticated, less neon tone. Same hue, same brand, quieter voice. */
-    --primary: 24 82% 52%;
-    --primary-foreground: 0 0% 98%;
+    /* Carrot primary #E8590C — slightly deeper & more saturated than the old
+       24 82% 52%. Same in light and dark (brand constant). */
+    --primary: 21 90% 48%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 30 25% 94%;
-    --secondary-foreground: 25 45% 17%;
+    --secondary: 43 30% 96%; /* surface-2 #F7F5F0 */
+    --secondary-foreground: 35 10% 24%; /* ink-2 #433E37 */
 
-    --muted: 30 25% 94%;
-    --muted-foreground: 25 8% 45%;
+    --muted: 44 25% 91%; /* surface-3 #EEEBE3 */
+    --muted-foreground: 37 8% 42%; /* ink-3 #756E63 */
 
-    --accent: 30 25% 94%;
-    --accent-foreground: 25 45% 17%;
+    /* Accent = carrot wash — selected/hover tint carries the brand. */
+    --accent: 26 74% 94%; /* #FBEEE4 */
+    --accent-foreground: 22 88% 25%; /* carrot-ink #7A3208 */
 
-    --destructive: 0 72% 47%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 6 68% 52%; /* #D8412F */
+    --destructive-foreground: 0 0% 100%;
 
-    /* Status — light mode. Hue spread is intentional: success=green, warning=amber
-       (deliberately distinct from primary orange 25), info=blue. Use ONLY for actual
-       health/state. Never decorative. */
-    --success: 142 71% 28%;
-    --success-foreground: 0 0% 98%;
-    --success-muted: 142 60% 92%;
+    /* Status — actual health/state only, never decoration (rule unchanged). */
+    --success: 146 50% 36%; /* #2E8B57 */
+    --success-foreground: 0 0% 100%;
+    --success-muted: 146 40% 93%;
 
-    --warning: 38 92% 45%;
-    --warning-foreground: 0 0% 98%;
-    --warning-muted: 38 90% 94%;
+    --warning: 35 75% 49%; /* #D98A1F */
+    --warning-foreground: 0 0% 100%;
+    --warning-muted: 35 75% 93%;
 
-    --info: 217 91% 50%;
-    --info-foreground: 0 0% 98%;
-    --info-muted: 217 90% 95%;
+    --info: 217 71% 51%; /* #2A6FDB */
+    --info-foreground: 0 0% 100%;
+    --info-muted: 217 70% 95%;
 
     /* Chart series palette — light mode. See lib/chartColors.ts for the
        palette provenance and color-blind safety audit. These are Tableau 10
@@ -443,61 +531,61 @@
     --chart-disk-writes: 325 46% 51%;
     --chart-disk-reads: 162 40% 38%;
 
-    --border: 30 25% 89%;
-    --input: 30 25% 89%;
-    --ring: 24 82% 52%;
+    --border: 42 19% 86%; /* line #E3DFD6 */
+    --input: 41 16% 80%; /* line-2 #D4CFC4 */
+    --ring: 21 90% 48%;
 
-    /* Smaller radius */
-    --radius: 0.25rem;
+    /* Radius 7px — softer than 0.25rem, still tool-like. */
+    --radius: 0.4375rem;
 
-    /* Orange sidebar theme */
-    --sidebar-background: 30 54% 98%;
-    --sidebar-foreground: 25 25% 20%;
-    --sidebar-primary: 24 82% 52%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 30 35% 92%;
-    --sidebar-accent-foreground: 25 45% 17%;
-    --sidebar-border: 30 25% 89%;
-    --sidebar-ring: 24 82% 52%;
+    /* Sidebar — same warm paper family */
+    --sidebar-background: 40 27% 98%;
+    --sidebar-foreground: 34 20% 7%;
+    --sidebar-primary: 21 90% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 26 74% 94%;
+    --sidebar-accent-foreground: 22 88% 25%;
+    --sidebar-border: 42 19% 86%;
+    --sidebar-ring: 21 90% 48%;
   }
 
   .dark {
-    --background: 20 14.3% 4.1%;
-    --foreground: 0 0% 95%;
-    --card: 20 14.3% 8%; /* Darker card background for dark mode */
-    --card-foreground: 0 0% 95%; /* Light text on dark card */
-    --popover: 20 14.3% 4.1%;
-    --popover-foreground: 0 0% 95%;
+    /* NEW CANONICAL DESIGN — cool deep-navy night palette (prototype signature),
+       replacing the warm near-black. Prototype hex in comments. */
+    --background: 220 29% 6%; /* night #0B0E14 */
+    --foreground: 220 23% 92%; /* #E7EAF0 */
+    --card: 221 28% 9%; /* surface #11151E */
+    --card-foreground: 220 23% 92%;
+    --popover: 221 28% 9%;
+    --popover-foreground: 220 23% 92%;
 
-    /* Orange primary theme for dark mode — same saturation dial as light */
-    --primary: 24 82% 56%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 21 90% 52%; /* carrot, +4L for contrast on night */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 25 14% 12%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 221 27% 12%; /* surface-2 #161B26 */
+    --secondary-foreground: 218 16% 73%; /* #AEB6C4 */
 
-    --muted: 25 14% 12%;
-    --muted-foreground: 25 8% 65%;
+    --muted: 221 27% 12%;
+    --muted-foreground: 219 12% 54%; /* #7B8597 */
 
-    --accent: 25 14% 12%;
-    --accent-foreground: 0 0% 95%;
+    --accent: 15 30% 14%; /* carrot-soft over night */
+    --accent-foreground: 24 80% 71%; /* #F0A878 */
 
-    --destructive: 0 72% 56%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 7 84% 64%; /* #F06A57 */
+    --destructive-foreground: 0 0% 100%;
 
-    /* Status — dark mode. Slightly lifted lightness so they read on dark surfaces.
-       Same hue policy as light mode. */
-    --success: 142 60% 50%;
-    --success-foreground: 0 0% 98%;
-    --success-muted: 142 40% 14%;
+    /* Status — dark mode (brighter so they read on night surfaces). */
+    --success: 150 50% 50%; /* #3FBF7F */
+    --success-foreground: 220 29% 6%;
+    --success-muted: 150 45% 13%;
 
-    --warning: 38 90% 56%;
-    --warning-foreground: 20 14% 8%;
-    --warning-muted: 38 50% 14%;
+    --warning: 40 73% 56%; /* #E0A93C */
+    --warning-foreground: 220 29% 6%;
+    --warning-muted: 40 60% 13%;
 
-    --info: 217 88% 62%;
-    --info-foreground: 0 0% 98%;
-    --info-muted: 217 50% 14%;
+    --info: 217 75% 64%;
+    --info-foreground: 220 29% 6%;
+    --info-muted: 217 50% 15%;
 
     /* Chart series palette — dark mode. Same hues as light mode, lifted ~13%
        in lightness and slightly more saturated so each series pops on the
@@ -520,19 +608,19 @@
     --chart-disk-writes: 325 54% 64%;
     --chart-disk-reads: 162 48% 51%;
 
-    --border: 25 14% 12%;
-    --input: 25 14% 12%;
-    --ring: 24 82% 56%;
+    --border: 222 23% 17%; /* #222836 */
+    --input: 220 21% 22%; /* #2C3444 */
+    --ring: 21 90% 52%;
 
-    /* Orange sidebar theme for dark mode */
-    --sidebar-background: 25 20% 8%;
-    --sidebar-foreground: 30 25% 85%;
-    --sidebar-primary: 24 82% 56%;
+    /* Sidebar — deep navy, same family as the night background */
+    --sidebar-background: 220 30% 8%; /* #0E121A */
+    --sidebar-foreground: 220 23% 92%;
+    --sidebar-primary: 21 90% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 25 15% 15%;
-    --sidebar-accent-foreground: 30 25% 85%;
-    --sidebar-border: 25 15% 15%;
-    --sidebar-ring: 24 82% 56%;
+    --sidebar-accent: 15 30% 14%;
+    --sidebar-accent-foreground: 24 80% 71%;
+    --sidebar-border: 222 23% 17%;
+    --sidebar-ring: 21 90% 52%;
   }
 }
 
@@ -598,4 +686,62 @@
   .si-in {
     animation: none !important;
   }
+}
+
+/* ─── Skeleton shimmer — shaped-content loading placeholders ────────────────
+   A muted block with a soft sheen sweeping across it. The base block (colour,
+   radius, layout) is a Tailwind class on the element (`bg-muted`); this rule
+   only carries the sheen + its motion. Mirrors the FlowLoader contract: motion
+   is opt-in under `prefers-reduced-motion: no-preference`, so the default —
+   including the explicit `reduce` state — is a static muted block with no
+   animation (no `animate-pulse`, no sweep). The sheen rides an `::after`
+   overlay clipped to the block, tinted from the surface token so it adapts to
+   light/dark with no hardcoded colour. */
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, hsl(var(--background)) 60%, transparent) 50%,
+      transparent 100%
+    );
+    animation: skeleton-sweep 1.5s ease-in-out infinite;
+  }
+}
+
+@keyframes skeleton-sweep {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ─── Code / terminal surface ───────────────────────────────────────────────
+   A ready-to-paste snippet reads as a terminal: an always-dark surface,
+   independent of the active UI theme (a nested `.dark` token-swap doesn't
+   re-scope reliably for this, so the night palette is set directly here). */
+.code-surface {
+  background-color: hsl(220 29% 6%); /* night */
+  color: hsl(220 23% 92%); /* night foreground */
+  border-color: hsl(220 18% 18%);
+}
+.code-surface__head {
+  background-color: hsl(220 25% 10%);
+  color: hsl(219 12% 62%);
+  border-color: hsl(220 18% 18%);
+}
+.code-surface__copy {
+  color: hsl(219 12% 72%);
+}
+.code-surface__copy:hover {
+  color: hsl(0 0% 100%);
+  background-color: hsl(0 0% 100% / 0.08);
 }

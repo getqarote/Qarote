@@ -1,24 +1,31 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Info } from "lucide-react";
+import { Info, Loader2, MoreHorizontal, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
+import { displayName, initials } from "@/lib/userDisplay";
 
-import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdownMenu";
+import { IconUser } from "@/components/ui/icons";
 import { Input } from "@/components/ui/input";
-import { PaginationControls } from "@/components/ui/PaginationControls";
-import { PixelEmail } from "@/components/ui/pixel-email";
-import { PixelSettings } from "@/components/ui/pixel-settings";
-import { PixelTrash } from "@/components/ui/pixel-trash";
-import { PixelUser } from "@/components/ui/pixel-user";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -28,356 +35,359 @@ import {
 } from "@/components/ui/tooltip";
 
 import {
+  useCancelOrgInvitation,
+  useCurrentOrganization,
+  useInviteOrgMember,
   useOrgMembers,
+  useOrgWorkspaces,
+  usePendingOrgInvitations,
   useUpdateOrgMemberRole,
 } from "@/hooks/queries/useOrganization";
 
+import { MemberRolePill } from "./MemberRolePill";
 import { MemberWorkspacesDialog } from "./MemberWorkspacesDialog";
-import { getRoleBadgeVariant, getRoleIcon, useRoleLabels } from "./roleUi";
-import type { OrgMember } from "./types";
+import { useRoleLabels } from "./roleUi";
+import type { OrgMember, PendingOrgInvitation } from "./types";
 
 interface OrgMembersCardProps {
   isOrgAdmin: boolean;
-  onInviteClick: () => void;
   onRemoveMember: (member: { id: string; email: string }) => void;
 }
 
 /**
- * Lists organization members with pagination, inline role editing,
- * a "manage workspaces" action per member, and a remove button.
- *
- * Owns its own pagination state and the "manage workspaces" dialog
- * open state. The parent supplies the remove-member callback because
- * the confirm dialog lives at the page level (shared with other
- * destructive actions and centralized for consistency).
- *
- * Owner rows are read-only — the role picker is replaced by a badge
- * and the action buttons are hidden, because there's always exactly
- * one owner and they can't be demoted from the UI.
+ * Organization members (prototype): one row per member — avatar, name/email,
+ * role pill, the workspaces they belong to, and a Manage menu (change role,
+ * manage workspaces, remove). Below the list: an inline invite row and the
+ * pending invitations. Owner rows are read-only (exactly one owner, can't be
+ * demoted from here).
  */
 export function OrgMembersCard({
   isOrgAdmin,
-  onInviteClick,
   onRemoveMember,
 }: OrgMembersCardProps) {
   const { t } = useTranslation("profile");
   const roleLabels = useRoleLabels();
+  const { data: orgData } = useCurrentOrganization();
+  const orgName = orgData?.organization?.name ?? "";
 
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [query, setQuery] = useState("");
-  const [manageWsMember, setManageWsMember] = useState<{
+  const { data, isLoading } = useOrgMembers({ page: 1, limit: 50 });
+  const members = (data?.members ?? []) as OrgMember[];
+
+  const updateRole = useUpdateOrgMemberRole();
+  const [manageWs, setManageWs] = useState<{
     id: string;
     userId: string;
     firstName: string;
     lastName: string;
   } | null>(null);
 
-  const { data, isLoading } = useOrgMembers({ page, limit: pageSize });
-  const updateRoleMutation = useUpdateOrgMemberRole();
+  // Invite
+  const { data: wsData } = useOrgWorkspaces();
+  const orgWorkspaces = wsData?.workspaces ?? [];
+  const invite = useInviteOrgMember();
+  const [email, setEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<"MEMBER" | "ADMIN">("MEMBER");
+  const [inviteWs, setInviteWs] = useState("all");
 
-  const members = (data?.members ?? []) as OrgMember[];
-  const total = data?.pagination?.total ?? members.length;
+  // Pending
+  const { data: pendingData } = usePendingOrgInvitations({
+    page: 1,
+    limit: 50,
+  });
+  const pending = (pendingData?.invitations ?? []) as PendingOrgInvitation[];
+  const cancelInvite = useCancelOrgInvitation();
 
-  const q = query.trim().toLowerCase();
-  const filteredMembers = q
-    ? members.filter((m) => {
-        const fullName = `${m.firstName} ${m.lastName}`.trim().toLowerCase();
-        return (
-          fullName.includes(q) ||
-          m.email.toLowerCase().includes(q) ||
-          m.role.toLowerCase().includes(q)
-        );
-      })
-    : members;
+  const handleRoleChange = (memberId: string, role: "ADMIN" | "MEMBER") => {
+    updateRole.mutate(
+      { memberId, role },
+      {
+        onSuccess: () => toast.success(t("toast.roleUpdated")),
+        onError: (err) =>
+          toast.error(t("toast.roleUpdateFailed"), {
+            description: err instanceof Error ? err.message : undefined,
+          }),
+      }
+    );
+  };
 
-  const handleRoleChange = async (memberId: string, newRole: string) => {
+  const handleInvite = async () => {
+    if (!email.trim() || invite.isPending) return;
     try {
-      await updateRoleMutation.mutateAsync({
-        memberId,
-        role: newRole as "OWNER" | "ADMIN" | "MEMBER",
+      const result = await invite.mutateAsync({
+        email: email.trim(),
+        role: inviteRole,
+        workspaceAssignments:
+          inviteWs === "all"
+            ? []
+            : [{ workspaceId: inviteWs, role: inviteRole }],
       });
-      toast.success(t("toast.roleUpdated"));
+      setEmail("");
+      toast.success(
+        result.emailSent
+          ? t("org.toast.invitedToOrg", { email: result.invitation.email })
+          : t("toast.invitationCreated", { email: result.invitation.email })
+      );
     } catch (error) {
-      logger.error({ error }, "Role change error");
-      toast.error(t("toast.roleUpdateFailed"), {
-        description: error instanceof Error ? error.message : undefined,
-      });
+      logger.error({ error }, "Org invite error");
+      toast.error(
+        error instanceof Error ? error.message : t("org.toast.inviteFailed")
+      );
     }
   };
 
-  return (
-    <>
-      <div className="rounded-lg border border-border overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
-          <div>
-            <h2 className="title-section flex items-center gap-2">
-              {t("org.members")}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 text-muted-foreground"
-                    aria-label={t("org.roleHelp")}
-                  >
-                    <Info className="h-4 w-4" aria-hidden="true" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <div className="space-y-2 max-w-xs">
-                    <p className="font-medium text-sm">
-                      {t("org.roleHelpTitle")}
-                    </p>
-                    <div className="text-xs text-muted-foreground space-y-1">
-                      <p>
-                        <span className="font-medium text-foreground">
-                          {roleLabels["OWNER"] ?? t("org.roleOwner")}
-                        </span>
-                        {" — "}
-                        {t("org.roleDescOwner")}
-                      </p>
-                      <p>
-                        <span className="font-medium text-foreground">
-                          {roleLabels["ADMIN"] ?? t("org.roleAdmin")}
-                        </span>
-                        {" — "}
-                        {t("org.roleDescOrgAdmin")}
-                      </p>
-                      <p>
-                        <span className="font-medium text-foreground">
-                          {roleLabels["MEMBER"] ?? t("org.roleMember")}
-                        </span>
-                        {" — "}
-                        {t("org.roleDescOrgMember")}
-                      </p>
-                    </div>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {t("org.membersCount", { count: total })}
-            </p>
-          </div>
-          {isOrgAdmin && (
-            <Button size="sm" onClick={onInviteClick} className="rounded-none">
-              {t("org.invite")}
-            </Button>
-          )}
-        </div>
-        <div className="p-4">
-          {isLoading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-            </div>
-          ) : (
-            <>
-              <div className="flex flex-col gap-3 mb-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="text-xs text-muted-foreground">
-                  {query.trim()
-                    ? t("org.searchResults", {
-                        shown: filteredMembers.length,
-                        total: members.length,
-                      })
-                    : null}
-                </div>
-                <Input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={t("org.searchPlaceholder")}
-                  className="w-full sm:w-72"
-                />
-              </div>
+  const handleCancel = (invitationId: string, inviteEmail: string) => {
+    cancelInvite.mutate(
+      { invitationId },
+      {
+        onSuccess: () =>
+          toast.success(t("toast.invitationRevoked", { email: inviteEmail })),
+        onError: (err) =>
+          toast.error(err.message || t("org.toast.inviteFailed")),
+      }
+    );
+  };
 
-              <div className="space-y-2">
-                {filteredMembers.map((member) => (
-                  <MemberRow
-                    key={member.id}
-                    member={member}
-                    isOrgAdmin={isOrgAdmin}
-                    roleLabels={roleLabels}
-                    isRoleUpdating={updateRoleMutation.isPending}
-                    onRoleChange={(role) => handleRoleChange(member.id, role)}
-                    onManageWorkspaces={() =>
-                      setManageWsMember({
-                        id: member.id,
-                        userId: member.userId,
-                        firstName: member.firstName,
-                        lastName: member.lastName,
-                      })
-                    }
-                    onRemove={() =>
-                      onRemoveMember({ id: member.id, email: member.email })
-                    }
-                  />
-                ))}
-              </div>
-              {total > pageSize && (
-                <PaginationControls
-                  total={total}
-                  page={page}
-                  pageSize={pageSize}
-                  onPageChange={setPage}
-                  onPageSizeChange={(size) => {
-                    setPageSize(size);
-                    setPage(1);
-                  }}
-                  itemLabel="members"
-                />
-              )}
-            </>
-          )}
+  const workspacesText = (m: OrgMember) =>
+    m.role === "OWNER"
+      ? t("org.allWorkspaces")
+      : m.workspaces && m.workspaces.length > 0
+        ? m.workspaces.join(", ")
+        : "—";
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-6">
+      <h3 className="flex items-center gap-2 text-sm font-semibold">
+        {t("org.orgMembersTitle")}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              className="text-muted-foreground"
+              aria-label={t("org.roleHelp")}
+            >
+              <Info className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs text-xs">
+            <p>
+              <b>{roleLabels.OWNER}</b> — {t("org.roleDescOwner")}
+            </p>
+            <p>
+              <b>{roleLabels.ADMIN}</b> — {t("org.roleDescOrgAdmin")}
+            </p>
+            <p>
+              <b>{roleLabels.MEMBER}</b> — {t("org.roleDescOrgMember")}
+            </p>
+          </TooltipContent>
+        </Tooltip>
+      </h3>
+      <p className="mt-0.5 text-xs text-muted-foreground">
+        {t("org.orgMembersSubtitle", { org: orgName })}
+      </p>
+
+      {isLoading ? (
+        <div className="mt-4 space-y-3">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
         </div>
-      </div>
+      ) : (
+        <div className="mt-4 border-t border-border">
+          {members.map((m) => {
+            const canManage = isOrgAdmin && m.role !== "OWNER";
+            const fullName = displayName(m);
+            return (
+              <div
+                key={m.id}
+                className="flex items-center gap-3 border-b border-border py-3.5"
+              >
+                <Avatar className="h-9 w-9 shrink-0">
+                  <AvatarImage src={m.image ?? undefined} />
+                  <AvatarFallback className="text-xs">
+                    {initials(m)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-medium">{fullName}</div>
+                  <div className="truncate font-mono text-xs text-muted-foreground">
+                    {m.email}
+                  </div>
+                </div>
+                <MemberRolePill
+                  role={m.role}
+                  label={roleLabels[m.role] ?? m.role}
+                />
+                <div className="hidden w-44 shrink-0 text-right font-mono text-xs text-muted-foreground sm:block">
+                  {workspacesText(m)}
+                </div>
+                {canManage ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="shrink-0">
+                        {t("org.manage")}
+                        <MoreHorizontal
+                          className="h-3.5 w-3.5"
+                          aria-hidden="true"
+                        />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuLabel>{t("org.orgRole")}</DropdownMenuLabel>
+                      <DropdownMenuItem
+                        disabled={m.role === "ADMIN" || updateRole.isPending}
+                        onClick={() => handleRoleChange(m.id, "ADMIN")}
+                      >
+                        {roleLabels.ADMIN}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        disabled={m.role === "MEMBER" || updateRole.isPending}
+                        onClick={() => handleRoleChange(m.id, "MEMBER")}
+                      >
+                        {roleLabels.MEMBER}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() =>
+                          setManageWs({
+                            id: m.id,
+                            userId: m.userId,
+                            firstName: m.firstName,
+                            lastName: m.lastName,
+                          })
+                        }
+                      >
+                        {t("org.workspaces")}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() =>
+                          onRemoveMember({ id: m.id, email: m.email })
+                        }
+                      >
+                        {t("org.remove")}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <span className="w-px shrink-0" />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Inline invite */}
+      {isOrgAdmin && (
+        <div className="mt-4 flex flex-col gap-3 rounded-lg border border-dashed border-border p-4 sm:flex-row sm:items-end">
+          <div className="flex-1 space-y-1.5">
+            <Label htmlFor="org-invite-email">{t("org.inviteByEmail")}</Label>
+            <Input
+              id="org-invite-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={t("org.inviteEmailPlaceholder")}
+            />
+          </div>
+          <div className="space-y-1.5 sm:w-36">
+            <Label>{t("org.inviteRole")}</Label>
+            <Select
+              value={inviteRole}
+              onValueChange={(v) => setInviteRole(v as "MEMBER" | "ADMIN")}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="MEMBER">{roleLabels.MEMBER}</SelectItem>
+                <SelectItem value="ADMIN">{roleLabels.ADMIN}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5 sm:w-44">
+            <Label>{t("org.inviteWorkspaces")}</Label>
+            <Select value={inviteWs} onValueChange={setInviteWs}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("org.allWorkspaces")}</SelectItem>
+                {orgWorkspaces.map((ws) => (
+                  <SelectItem key={ws.id} value={ws.id}>
+                    {ws.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button
+            onClick={handleInvite}
+            disabled={!email.trim() || invite.isPending}
+          >
+            {invite.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+            ) : (
+              <UserPlus className="h-4 w-4" aria-hidden="true" />
+            )}
+            {t("org.sendInvite")}
+          </Button>
+        </div>
+      )}
+
+      {/* Pending invitations */}
+      {pending.length > 0 && (
+        <div className="mt-5">
+          <p className="text-xs font-medium text-muted-foreground">
+            {t("org.pendingInvitations")}
+          </p>
+          <div className="mt-2 border-t border-border">
+            {pending.map((inv) => (
+              <div
+                key={inv.id}
+                className="flex items-center gap-3 border-b border-border py-3.5"
+              >
+                <span
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-dashed border-border text-muted-foreground"
+                  aria-hidden="true"
+                >
+                  <IconUser className="h-4 w-auto shrink-0" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-medium">
+                    {inv.email}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {t("org.awaitingAcceptance")}
+                  </div>
+                </div>
+                <MemberRolePill
+                  role={inv.role}
+                  label={roleLabels[inv.role] ?? inv.role}
+                />
+                {isOrgAdmin && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0 text-destructive hover:text-destructive"
+                    disabled={cancelInvite.isPending}
+                    onClick={() => handleCancel(inv.id, inv.email)}
+                  >
+                    {t("org.cancelInvite")}
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <MemberWorkspacesDialog
-        open={manageWsMember !== null}
+        open={manageWs !== null}
         onOpenChange={(open) => {
-          if (!open) setManageWsMember(null);
+          if (!open) setManageWs(null);
         }}
-        member={manageWsMember}
+        member={manageWs}
       />
-    </>
-  );
-}
-
-/**
- * A single row in the members list. Extracted inline because the
- * role-picker / badge / action cluster is ~80 lines on its own and
- * repeats three-deep inside the map if inlined.
- */
-function MemberRow({
-  member,
-  isOrgAdmin,
-  roleLabels,
-  isRoleUpdating,
-  onRoleChange,
-  onManageWorkspaces,
-  onRemove,
-}: {
-  member: OrgMember;
-  isOrgAdmin: boolean;
-  roleLabels: Record<string, string>;
-  isRoleUpdating: boolean;
-  onRoleChange: (role: string) => void;
-  onManageWorkspaces: () => void;
-  onRemove: () => void;
-}) {
-  const { t } = useTranslation("profile");
-  const fullName = `${member.firstName} ${member.lastName}`.trim();
-  const canMutate = isOrgAdmin && member.role !== "OWNER";
-
-  return (
-    <div className="flex items-center justify-between p-3 rounded-lg border">
-      <div className="flex items-center gap-3 min-w-0">
-        <div
-          className="flex items-center justify-center h-8 w-8 rounded-full bg-muted shrink-0 overflow-hidden"
-          aria-hidden="true"
-        >
-          {member.image ? (
-            <img
-              src={member.image}
-              alt=""
-              className="h-8 w-8 rounded-full object-cover"
-            />
-          ) : (
-            <PixelUser className="h-4 w-auto shrink-0 text-muted-foreground" />
-          )}
-        </div>
-        <div className="min-w-0">
-          <div className="font-medium text-sm truncate">{fullName}</div>
-          <div className="text-xs text-muted-foreground flex items-center gap-1 min-w-0">
-            <PixelEmail className="h-3 w-auto shrink-0" aria-hidden="true" />
-            <span className="truncate">{member.email}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2 shrink-0">
-        {canMutate ? (
-          <Select
-            value={member.role}
-            onValueChange={onRoleChange}
-            disabled={isRoleUpdating}
-          >
-            <SelectTrigger
-              className="w-32 h-8 text-xs"
-              aria-label={t("org.orgRole")}
-            >
-              <span className="flex! items-center gap-1.5">
-                {getRoleIcon(member.role)}
-                {roleLabels[member.role]}
-              </span>
-            </SelectTrigger>
-            <SelectContent className="min-w-56">
-              <SelectItem value="ADMIN" className="py-2">
-                <div>
-                  <span className="flex items-center gap-1.5">
-                    {getRoleIcon("ADMIN")}
-                    {roleLabels["ADMIN"]}
-                  </span>
-                  <p className="text-[11px] text-muted-foreground mt-0.5 font-normal">
-                    {t("org.roleDescOrgAdmin")}
-                  </p>
-                </div>
-              </SelectItem>
-              <SelectItem value="MEMBER" className="py-2">
-                <div>
-                  <span className="flex items-center gap-1.5">
-                    {getRoleIcon("MEMBER")}
-                    {roleLabels["MEMBER"]}
-                  </span>
-                  <p className="text-[11px] text-muted-foreground mt-0.5 font-normal">
-                    {t("org.roleDescOrgMember")}
-                  </p>
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        ) : (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Badge variant={getRoleBadgeVariant()}>
-                {roleLabels[member.role]}
-              </Badge>
-            </TooltipTrigger>
-            <TooltipContent>
-              {member.role === "OWNER"
-                ? t("org.roleDescOwner")
-                : t("org.roleDescOrgMember")}
-            </TooltipContent>
-          </Tooltip>
-        )}
-
-        {canMutate && (
-          <>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs gap-1"
-              onClick={onManageWorkspaces}
-              aria-label={`${t("org.workspaces")}: ${fullName}`}
-            >
-              <PixelSettings
-                className="h-3.5 w-auto shrink-0"
-                aria-hidden="true"
-              />
-              <span className="hidden sm:inline">{t("org.workspaces")}</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-              onClick={onRemove}
-              aria-label={`${t("org.remove")}: ${fullName}`}
-            >
-              <PixelTrash className="h-4 w-auto shrink-0" aria-hidden="true" />
-            </Button>
-          </>
-        )}
-      </div>
     </div>
   );
 }

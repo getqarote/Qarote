@@ -9,16 +9,14 @@ import { toast } from "sonner";
 import { track } from "@/lib/analytics";
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
+import { cn } from "@/lib/utils";
 
+import { AuthPageHeader } from "@/components/auth/AuthPageHeader";
+import { AuthPageWrapper } from "@/components/auth/AuthPageWrapper";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -196,17 +194,15 @@ export default function VerifyEmail() {
 
   if (verificationState.loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-              <RefreshCw className="h-6 w-6 text-blue-600 animate-spin" />
-            </div>
-            <CardTitle>{t("verifyingEmail")}</CardTitle>
-            <CardDescription>{t("verifyingEmailDescription")}</CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
+      <AuthPageWrapper>
+        <AuthPageHeader
+          Icon={({ className }) => (
+            <RefreshCw className={cn(className, "animate-spin")} />
+          )}
+          title={t("verifyingEmail")}
+          description={t("verifyingEmailDescription")}
+        />
+      </AuthPageWrapper>
     );
   }
 
@@ -217,128 +213,108 @@ export default function VerifyEmail() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div
-            className={`mx-auto mb-4 w-12 h-12 rounded-full flex items-center justify-center ${
-              result.success ? "bg-green-100" : "bg-red-100"
-            }`}
-          >
-            {result.success ? (
-              <CheckCircle className="h-6 w-6 text-green-600" />
-            ) : (
-              <XCircle className="h-6 w-6 text-red-600" />
-            )}
-          </div>
-          <CardTitle>
-            {result.success ? t("emailVerified") : t("verificationFailed")}
-          </CardTitle>
-          <CardDescription>
-            {result.success
-              ? result.type === "EMAIL_CHANGE"
-                ? t("emailChangeVerified")
-                : t("emailVerifiedSuccess")
-              : result.error}
-          </CardDescription>
-        </CardHeader>
+    <AuthPageWrapper>
+      <AuthPageHeader
+        Icon={result.success ? CheckCircle : XCircle}
+        variant={result.success ? "success" : "destructive"}
+        title={result.success ? t("emailVerified") : t("verificationFailed")}
+        description={
+          result.success
+            ? result.type === "EMAIL_CHANGE"
+              ? t("emailChangeVerified")
+              : t("emailVerifiedSuccess")
+            : result.error
+        }
+      />
 
-        <CardContent className="space-y-4">
-          {result.success ? (
-            <>
-              <Alert className="border-green-200 bg-green-50">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-green-800">
-                  {result.message || t("emailVerificationComplete")}
-                  {result.type === "SIGNUP" && tPortal("signupVerifiedExtra")}
-                </AlertDescription>
-              </Alert>
+      <CardContent className="space-y-4">
+        {result.success ? (
+          <>
+            <Alert className="border-success/30 bg-success-muted">
+              <CheckCircle className="h-4 w-4 text-success" />
+              <AlertDescription className="text-success">
+                {result.message || t("emailVerificationComplete")}
+                {result.type === "SIGNUP" && tPortal("signupVerifiedExtra")}
+              </AlertDescription>
+            </Alert>
 
-              <div className="space-y-2">
+            <div className="space-y-2">
+              <Button
+                onClick={
+                  isAuthenticated ? handleGoToLicenses : handleGoToSignIn
+                }
+                className="w-full btn-primary"
+              >
+                {isAuthenticated
+                  ? tPortal("goToLicenses")
+                  : t("signInToContinue")}
+              </Button>
+              <p className="text-center text-sm text-muted-foreground">
+                {t("redirectingAutomatically")}
+              </p>
+            </div>
+          </>
+        ) : (
+          <>
+            <Alert variant="destructive">
+              <XCircle className="h-4 w-4" />
+              <AlertDescription>{result.error}</AlertDescription>
+            </Alert>
+
+            <div className="space-y-2">
+              {token && (
                 <Button
-                  onClick={
-                    isAuthenticated ? handleGoToLicenses : handleGoToSignIn
-                  }
-                  className="w-full bg-gradient-button hover:bg-gradient-button-hover"
-                >
-                  {isAuthenticated
-                    ? tPortal("goToLicenses")
-                    : t("signInToContinue")}
-                </Button>
-                <p className="text-sm text-gray-500 text-center">
-                  {t("redirectingAutomatically")}
-                </p>
-              </div>
-            </>
-          ) : (
-            <>
-              <Alert className="border-red-200 bg-red-50">
-                <XCircle className="h-4 w-4 text-red-600" />
-                <AlertDescription className="text-red-800">
-                  {result.error}
-                </AlertDescription>
-              </Alert>
-
-              <div className="space-y-2">
-                {token && (
-                  <Button
-                    onClick={() => window.location.reload()}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    {t("tryAgain")}
-                  </Button>
-                )}
-
-                {!isAuthenticated && showEmailInput && (
-                  <div className="space-y-2">
-                    <input
-                      type="email"
-                      placeholder={t("enterEmailAddress")}
-                      value={userEmail}
-                      onChange={(e) => setUserEmail(e.target.value)}
-                      className="w-full px-3 py-2 border border-border rounded-md focus:outline-hidden focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
-                )}
-
-                <Button
-                  onClick={handleResendVerification}
+                  onClick={() => window.location.reload()}
                   variant="outline"
                   className="w-full"
-                  disabled={resendVerificationMutation.isPending}
                 >
-                  <Mail className="h-4 w-4 mr-2" />
-                  {!isAuthenticated && showEmailInput
-                    ? t("resendVerificationEmail")
-                    : t("resendVerificationEmail")}
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  {t("tryAgain")}
                 </Button>
+              )}
 
-                {!isAuthenticated && (
-                  <Button
-                    onClick={handleGoToSignIn}
-                    variant="ghost"
-                    className="w-full"
-                  >
-                    {t("backToSignIn")}
-                  </Button>
-                )}
+              {!isAuthenticated && showEmailInput && (
+                <Input
+                  type="email"
+                  placeholder={t("enterEmailAddress")}
+                  value={userEmail}
+                  onChange={(e) => setUserEmail(e.target.value)}
+                />
+              )}
 
-                {isAuthenticated && (
-                  <Button
-                    onClick={handleGoToLicenses}
-                    variant="ghost"
-                    className="w-full"
-                  >
-                    {tPortal("goToLicenses")}
-                  </Button>
-                )}
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+              <Button
+                onClick={handleResendVerification}
+                variant="outline"
+                className="w-full"
+                disabled={resendVerificationMutation.isPending}
+              >
+                <Mail className="mr-2 h-4 w-4" />
+                {t("resendVerificationEmail")}
+              </Button>
+
+              {!isAuthenticated && (
+                <Button
+                  onClick={handleGoToSignIn}
+                  variant="ghost"
+                  className="w-full"
+                >
+                  {t("backToSignIn")}
+                </Button>
+              )}
+
+              {isAuthenticated && (
+                <Button
+                  onClick={handleGoToLicenses}
+                  variant="ghost"
+                  className="w-full"
+                >
+                  {tPortal("goToLicenses")}
+                </Button>
+              )}
+            </div>
+          </>
+        )}
+      </CardContent>
+    </AuthPageWrapper>
   );
 }

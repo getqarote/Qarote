@@ -1,4 +1,3 @@
-export * from "./alert";
 export * from "./auth";
 export * from "./exchange";
 export * from "./message";

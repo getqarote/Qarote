@@ -72,24 +72,35 @@ interface BuildOptions {
 const NODE_WIDTH = 200;
 const NODE_HEIGHT = 80;
 
-/** Shared edge appearance — uses neutral slate that works in both themes. */
+type QueueTone = "good" | "amber" | "red";
+
+/**
+ * Severity tone for a queue node, consistent with the cockpit/notifications
+ * colour system: red = a backlog with no consumer to drain it (the classic
+ * incident), amber = idle with no consumer, good = actively consumed.
+ */
+export function queueTone(d: {
+  consumerCount: number;
+  messages: number;
+}): QueueTone {
+  if (d.consumerCount === 0 && d.messages > 0) return "red";
+  if (d.consumerCount === 0) return "amber";
+  return "good";
+}
+
+/**
+ * Shared edge appearance. Stroke colour + width are intentionally NOT set
+ * inline — topology.css owns `.react-flow__edge-path` so the theme tokens
+ * apply and the hover/selected → carrot rule can win (an inline stroke would
+ * out-specify the CSS). Only the dashed pattern for synthetic orphan edges
+ * stays inline since it carries meaning, and edge-label colours come from CSS.
+ */
 function makeEdgeStyle(dashed = false) {
   return {
     type: "smoothstep" as const,
     animated: false,
     style: {
-      stroke: "hsl(var(--muted-foreground) / 0.35)",
-      strokeWidth: 1.5,
       ...(dashed ? { strokeDasharray: "6,4" } : {}),
-    },
-    labelStyle: {
-      fontSize: 10,
-      fill: "hsl(var(--muted-foreground))",
-      fontFamily: "var(--font-mono)",
-    },
-    labelBgStyle: {
-      fill: "hsl(var(--card))",
-      fillOpacity: 0.9,
     },
     labelBgPadding: [4, 2] as [number, number],
     labelBgBorderRadius: 3,
@@ -112,7 +123,7 @@ export function buildTopologyGraph(
 
   const g = new dagre.graphlib.Graph();
   g.setDefaultEdgeLabel(() => ({}));
-  g.setGraph({ rankdir: "LR", nodesep: 50, ranksep: 140, edgesep: 25 });
+  g.setGraph({ rankdir: "LR", nodesep: 24, ranksep: 80, edgesep: 25 });
 
   // Build consumer count per queue
   const consumerCountByQueue = new Map<string, number>();
@@ -161,10 +172,21 @@ export function buildTopologyGraph(
 
   const visibleQueues = queues.filter((q) => !hiddenQueues.has(q.name));
 
+  // Node ids of queues actively in incident (a backlog with no consumer to
+  // drain it). Their incoming edge is highlighted carrot so the broken path
+  // stands out — purely data-driven via queueTone.
+  const critQueueIds = new Set<string>();
+
   for (const queue of visibleQueues) {
     const id = `queue:${encodeURIComponent(queue.name)}@${encodeURIComponent(queue.vhost)}`;
     const consumerKey = `${encodeURIComponent(queue.name)}@${encodeURIComponent(queue.vhost)}`;
+    const consumerCount =
+      consumerCountByQueue.get(consumerKey) || queue.consumers;
     g.setNode(id, { width: NODE_WIDTH, height: NODE_HEIGHT });
+
+    if (queueTone({ consumerCount, messages: queue.messages }) === "red") {
+      critQueueIds.add(id);
+    }
 
     nodes.push({
       id,
@@ -177,7 +199,7 @@ export function buildTopologyGraph(
         messages: queue.messages,
         messagesReady: queue.messages_ready,
         messagesUnacknowledged: queue.messages_unacknowledged,
-        consumerCount: consumerCountByQueue.get(consumerKey) || queue.consumers,
+        consumerCount,
         memory: queue.memory,
         vhost: queue.vhost,
       } satisfies QueueNodeData,
@@ -210,6 +232,7 @@ export function buildTopologyGraph(
       source: sourceId,
       target: targetId,
       label: binding.routing_key || undefined,
+      ...(critQueueIds.has(targetId) ? { className: "topo-edge--crit" } : {}),
       ...edgeDefaults,
     });
   }

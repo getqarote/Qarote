@@ -1,68 +1,54 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router";
 
-import { AlertCircle } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
-import { AuthPageHeader } from "@/components/auth/AuthPageHeader";
-import { AuthPageWrapper } from "@/components/auth/AuthPageWrapper";
-import { PageLoader } from "@/components/PageLoader";
+import { AuthSplitLayout } from "@/components/auth/AuthSplitLayout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { CardContent } from "@/components/ui/card";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
 /**
- * Human-readable error messages for the error codes the server
- * returns on a failed SSO callback. Unrecognized codes fall through
- * to a generic "Authentication error: {code}" message so the
- * operator still sees something actionable.
+ * SSO error codes → i18n keys (auth namespace). Unrecognized codes fall back to
+ * the generic `ssoErrorGeneric` so the operator still sees the raw code.
  */
-const ERROR_MESSAGES: Record<string, string> = {
-  missing_code: "Authorization code was not provided.",
-  invalid_state:
-    "Invalid or expired authentication session. This may be a security issue. Please try signing in again.",
-  no_email: "Your identity provider did not return an email address.",
-  no_subject_id:
-    "Your identity provider did not return a user identifier. Please contact your administrator.",
-  account_creation_failed: "Failed to create your account. Please try again.",
-  account_inactive:
-    "Your account is inactive. Please contact your administrator.",
-  token_exchange_failed: "Failed to exchange authorization token.",
-  authentication_failed: "SSO authentication failed. Please try again.",
-  expired_code: "Your login session has expired. Please try again.",
-  email_in_use:
-    "An account with this email already exists using a different sign-in method. Please sign in with your existing method.",
+const ERROR_KEYS: Record<string, string> = {
+  missing_code: "ssoError.missingCode",
+  invalid_state: "ssoError.invalidState",
+  no_email: "ssoError.noEmail",
+  no_subject_id: "ssoError.noSubjectId",
+  account_creation_failed: "ssoError.accountCreationFailed",
+  account_inactive: "ssoError.accountInactive",
+  token_exchange_failed: "ssoError.tokenExchangeFailed",
+  authentication_failed: "ssoError.authenticationFailed",
+  expired_code: "ssoError.expiredCode",
+  email_in_use: "ssoError.emailInUse",
 };
 
 /**
- * SSO callback handler. Reached when the IdP redirects the browser
- * back to Qarote after authentication. Two render branches:
- *
- *   1. **Error** — the URL has an `?error=` param; we surface the
- *      error in an AuthPageWrapper with a "return to sign in"
- *      fallback
- *   2. **Success** — session cookie is set; we figure out where to
- *      land (pending org invitation, workspace dashboard, or
- *      onboarding) and navigate there. Shows a `PageLoader` while
- *      the auth context resolves.
+ * SSO callback interstitial (prototype split layout). Two states:
+ * signing ("Signing you in…" + spinner) and error ("We couldn't complete SSO
+ * sign-in" + the specific reason + "Back to sign in"). Redirect logic and the
+ * org-invite hand-off are unchanged.
  */
 const SSOCallback = () => {
+  const { t } = useTranslation("auth");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { isAuthenticated, isLoading, user } = useAuth();
   const errorParam = searchParams.get("error");
   const error = errorParam
-    ? ERROR_MESSAGES[errorParam] || `Authentication error: ${errorParam}`
+    ? ERROR_KEYS[errorParam]
+      ? t(ERROR_KEYS[errorParam])
+      : t("ssoErrorGeneric", { code: errorParam })
     : null;
 
   useEffect(() => {
     if (error || isLoading) return;
 
     if (isAuthenticated) {
-      // Check for pending org invitation (query param first,
-      // sessionStorage fallback for browsers that stripped the
-      // query param during the OAuth round-trip)
       const orgInviteToken =
         searchParams.get("orgInviteToken") ||
         sessionStorage.getItem("pendingOrgInviteToken");
@@ -75,8 +61,6 @@ const SSOCallback = () => {
       const target = user?.workspaceId ? "/" : "/onboarding";
       navigate(target, { replace: true });
     } else {
-      // Session cookie was expected but auth check found nothing —
-      // redirect to sign-in to restart the flow
       navigate("/auth/sign-in", { replace: true });
     }
   }, [
@@ -90,28 +74,49 @@ const SSOCallback = () => {
 
   if (error) {
     return (
-      <AuthPageWrapper>
-        <AuthPageHeader
-          Icon={AlertCircle}
-          title="Authentication Error"
-          variant="destructive"
-        />
-        <CardContent className="space-y-4">
-          <Alert variant="destructive">
+      <AuthSplitLayout
+        header={
+          <div className="mb-6">
+            <p className="mb-3 select-none font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-primary">
+              {t("panelEyebrow")}
+            </p>
+            <h1 className="font-heading text-[clamp(26px,3vw,32px)] font-bold leading-[1.15] tracking-tight">
+              {t("ssoErrorTitle")}
+            </h1>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <Alert variant="destructive" aria-live="assertive">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
           <Button
-            className="w-full"
+            className="btn-primary h-11 w-full"
             onClick={() => navigate("/auth/sign-in", { replace: true })}
           >
-            Return to Sign In
+            {t("backToSignIn")}
           </Button>
-        </CardContent>
-      </AuthPageWrapper>
+        </div>
+      </AuthSplitLayout>
     );
   }
 
-  return <PageLoader />;
+  // ── Signing in… ───────────────────────────────────────────────────────────
+  return (
+    <AuthSplitLayout>
+      <div
+        className="flex flex-col items-center justify-center gap-3 py-10 text-center"
+        role="status"
+        aria-live="polite"
+      >
+        <Loader2
+          className="h-7 w-7 animate-spin text-primary"
+          aria-hidden="true"
+        />
+        <p className="text-sm text-muted-foreground">{t("ssoSigningIn")}</p>
+      </div>
+    </AuthSplitLayout>
+  );
 };
 
 export default SSOCallback;

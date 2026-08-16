@@ -3,7 +3,9 @@
   "groups": {
     "personal": "Personnel",
     "workspace": "Espace de travail",
-    "organization": "Organisation"
+    "organization": "Organisation",
+    "account": "Compte",
+    "billing": "Facturation"
   },
   "nav": {
     "profile": "Profil",
@@ -11,17 +13,20 @@
     "workspaceSettings": "Paramètres",
     "members": "Membres",
     "roles": "Rôles",
-    "organization": "Paramètres",
+    "organization": "Organisation",
     "subscription": "Abonnement",
     "sso": "SSO",
     "license": "Licence",
-    "smtp": "E-mail",
+    "smtp": "Email (SMTP)",
     "digest": "Digest quotidien",
     "llm": "IA / LLM",
     "integrations": "Intégrations",
     "audit": "Journal d'audit",
     "enterprise": "Enterprise",
-    "agentAccess": "Accès agent"
+    "agentAccess": "Accès agent",
+    "workspace": "Workspace",
+    "aiExplain": "AI Explain",
+    "agentKeys": "Clés d'agent"
   },
   "llm": {
     "title": "Explications IA",
@@ -64,26 +69,74 @@
       "atCapAlert": "Vous avez atteint la limite mensuelle.",
       "upgradeLink": "Changer de plan",
       "byok": "Vous utilisez votre propre clé API — les appels ne sont pas comptés dans un quota Qarote."
-    }
+    },
+    "intro": "Choisissez le LLM qui génère l'analyse des causes racines. La détection reste gratuite — cela alimente uniquement <code>explain_incident</code>.",
+    "activeProvider": "Fournisseur actif :",
+    "showKey": "Afficher la clé",
+    "hideKey": "Masquer la clé",
+    "card": {
+      "managed": {
+        "title": "Géré par Qarote",
+        "desc": "Qarote exécute le modèle avec sa propre clé. Rien à configurer — l'usage est décompté de votre quota mensuel."
+      },
+      "anthropic": {
+        "title": "Votre clé Anthropic",
+        "desc": "Utilisez votre propre clé API Anthropic. Fonctionne avec les modèles Claude de votre choix."
+      },
+      "openai": {
+        "title": "Votre clé OpenAI",
+        "desc": "Utilisez votre propre clé API OpenAI. Fonctionne avec les modèles GPT de votre choix."
+      },
+      "ollama": {
+        "title": "Modèle local",
+        "desc": "Exécutez un modèle local via Ollama. Entièrement hors ligne."
+      }
+    },
+    "badge": {
+      "recommended": "Recommandé",
+      "zeroConfig": "Zéro config",
+      "byok": "BYOK",
+      "ollamaOffline": "Ollama · Hors ligne"
+    },
+    "managed": {
+      "explainsLabel": "Explications gérées",
+      "thisMonth": "ce mois-ci",
+      "resets": "réinitialisé le {{date}}",
+      "cachedNote": "Les explications identiques répétées sont mises en cache et ne sont pas décomptées de votre quota.",
+      "enableHint": "Activez les explications IA et enregistrez pour utiliser votre quota mensuel."
+    },
+    "byok": {
+      "unlimitedTitle": "Illimité",
+      "unlimitedDesc": "vous payez votre propre coût LLM. Aucun quota Qarote."
+    },
+    "ollama": {
+      "privacy": "S'exécute sur votre propre machine — aucune donnée du broker ne quitte votre réseau.",
+      "baseUrl": "URL de base",
+      "modelName": "Nom du modèle",
+      "unlimitedDesc": "s'exécute sur votre matériel local. Aucun quota Qarote."
+    },
+    "testAfterSave": "Enregistrez vos modifications avant de les tester."
   },
   "sso": {
-    "upgradeTitle": "Fonctionnalité Enterprise",
-    "upgradeDescription": "Le SSO avec OIDC et SAML 2.0 est disponible avec le plan Enterprise.",
+    "upgradeTitle": "Le SSO est une fonctionnalité Enterprise",
+    "upgradeDescription": "Imposez à votre équipe de se connecter via votre fournisseur d'identité (OIDC ou SAML), avec provisionnement automatique et restrictions de domaine.",
     "upgradeRequirement": "Plan Enterprise requis",
     "upgradeCloudHint": "Mettez à niveau votre plan pour configurer l'authentification unique pour votre organisation.",
     "upgradeSelfHostedHint": "Activez une licence Enterprise pour configurer l'authentification unique pour votre organisation.",
     "viewPlans": "Voir les plans",
     "contactSales": "Contacter les ventes",
     "activateLicense": "Activer la licence",
-    "purchaseLicense": "Acheter une licence"
+    "purchaseLicense": "Acheter une licence",
+    "upgradeCta": "Mettre à niveau",
+    "upgradeContactSales": "Contactez le service commercial pour le SSO, le SCIM et une revue de sécurité."
   },
   "license": {
     "accessDeniedTitle": "Accès administrateur de l'organisation requis",
     "accessDenied": "La gestion de la licence est réservée aux administrateurs de l'organisation."
   },
   "agentAccess": {
-    "title": "Accès agent",
-    "description": "Mintez et révoquez des clés API machine pour permettre à des agents IA d'appeler le point d'accès MCP de Qarote (lire les incidents, les findings de scan, et expliquer les incidents en EE).",
+    "title": "Clés d'agent",
+    "description": "Connectez Claude Code, Cursor, Copilot… à Qarote via MCP.",
     "empty": {
       "title": "Aucune clé agent pour le moment",
       "description": "Mintez une clé ci-dessus pour donner accès à un agent IA (Claude Desktop, Cursor, …) à votre workspace via MCP."
@@ -94,31 +147,46 @@
       "neverUsed": "Jamais utilisée",
       "expires": "Expire le {{date}}",
       "revoke": "Révoquer",
-      "loadError": "Impossible de charger les clés agent. Réessayez."
+      "loadError": "Impossible de charger les clés agent. Réessayez.",
+      "colName": "Nom",
+      "colScope": "Portée",
+      "colCreated": "Créée",
+      "colLastUsed": "Dernière utilisation",
+      "colExpires": "Expire",
+      "neverExpires": "Jamais",
+      "justNow": "à l'instant"
     },
     "mint": {
-      "title": "Mintez une nouvelle clé",
-      "nameLabel": "Nom de la clé",
-      "namePlaceholder": "ex. Claude Desktop (laptop)",
+      "title": "Générer une clé d’agent",
+      "nameLabel": "Nom",
+      "namePlaceholder": "Claude Code – laptop",
       "nameRequired": "Le nom est requis.",
       "nameTooLong": "Le nom doit faire 80 caractères maximum.",
       "scopeLabel": "Portée",
-      "scopeRead": "Read",
-      "scopeReadConsequence": "Liste les incidents et findings. Aucun usage LLM.",
-      "scopeExplain": "Explain",
-      "scopeExplainConsequence": "Inclut le RCA grounded via LLM — consomme le quota de votre workspace.",
-      "expiryLabel": "Expire après",
+      "scopeRead": "read · free",
+      "scopeReadConsequence": "Liste les incidents, les signalements, les queues, l’overview.",
+      "scopeExplain": "explain · EE",
+      "scopeExplainConsequence": "Ajoute l’analyse de cause racine par LLM (explain_incident).",
+      "expiryLabel": "Expiration",
       "expiry30": "30 jours",
-      "expiry90": "90 jours (recommandé)",
-      "expiry365": "365 jours",
+      "expiry90": "90 jours",
+      "expiry365": "1 an",
       "expiryNever": "Jamais",
       "expiryNeverWarning": "Une clé sans expiration reste valide jusqu'à révocation manuelle. Préférez un horizon court si possible.",
       "submit": "Minter la clé",
       "pending": "Mint en cours…",
-      "failed": "Échec du mint."
+      "failed": "Échec du mint.",
+      "scopeExplainGated": " · explain nécessite Developer+",
+      "expiryHint": "Privilégiez un horizon court — vous pourrez toujours en générer une autre.",
+      "cancel": "Annuler",
+      "toast": {
+        "successTitle": "Clé créée",
+        "successMsg": "Prête à coller dans votre agent.",
+        "viewKeys": "Voir les clés"
+      }
     },
     "reveal": {
-      "title": "Sauvegardez cette clé maintenant",
+      "title": "Clé créée — copiez-la maintenant",
       "description": "Si vous fermez sans copier, cette clé est irrécupérable — vous devrez en minter une nouvelle. Qarote ne stocke que le hash.",
       "secretLabel": "Secret",
       "copySecret": "Copier le secret",
@@ -133,10 +201,14 @@
         "claudeCode": "Claude Code (CLI)",
         "copilot": "GitHub Copilot",
         "codex": "Codex (OpenAI)",
-        "copilotHint": "Le snippet ne contient pas votre secret — Copilot vous le demandera à la première utilisation. Copiez d’abord le secret ci-dessus."
+        "copilotHint": "Le snippet ne contient pas votre secret — Copilot vous le demandera à la première utilisation. Copiez d’abord le secret ci-dessus.",
+        "windsurf": "Windsurf",
+        "opencode": "opencode"
       },
       "confirm": "J’ai copié le secret dans un endroit sûr.",
-      "done": "Terminé"
+      "done": "Terminé",
+      "warning": "Ce secret n’est affiché <b>qu’une fois</b>. Qarote ne stocke qu’un hash — si vous le perdez, vous devrez générer une nouvelle clé.",
+      "pasteLabel": "Collez dans votre client"
     },
     "revoke": {
       "title": "Révoquer cette clé agent ?",
@@ -146,6 +218,18 @@
       "pending": "Révocation…",
       "success": "\"{{name}}\" révoquée.",
       "failed": "Échec de la révocation."
+    },
+    "endpoint": {
+      "label": "Endpoint :",
+      "authHeader": "en-tête d'auth :",
+      "copy": "copier",
+      "copied": "copié",
+      "copyFailed": "Copie impossible — copiez-le manuellement."
     }
+  },
+  "intent": "Paramètres — compte, workspace, organisation et facturation. L'organisation (facturation) et le workspace (opérations) sont des pairs, pas imbriqués.",
+  "demoBlocked": {
+    "heading": "Indisponible sur la démo",
+    "body": "Cette section est masquée sur la démo publique. Déployez votre propre Qarote pour configurer les fournisseurs, les membres et la facturation."
   }
 }

@@ -49,6 +49,31 @@ export async function runMigrations(databaseUrl: string): Promise<void> {
         "SELECT pg_advisory_lock(hashtext('qarote_migrations'))"
       );
 
+      // Preflight: TimescaleDB + its Toolkit must be AVAILABLE on the Postgres
+      // server. Extensions ship in the Postgres image/package (server-side) — the
+      // app cannot install them, it can only `CREATE EXTENSION` to activate them.
+      // Fail fast with an operator message instead of a cryptic mid-migration
+      // "could not open extension control file" + crash-loop. (Read paths use the
+      // Toolkit's counter_agg/rate() at runtime, so it is a hard requirement.)
+      const REQUIRED_EXTENSIONS = ["timescaledb", "timescaledb_toolkit"];
+      const { rows: availExts } = await pool.query<{ name: string }>(
+        `SELECT name FROM pg_available_extensions WHERE name = ANY($1::text[])`,
+        [REQUIRED_EXTENSIONS]
+      );
+      const availableExts = new Set(availExts.map((e) => e.name));
+      const missingExts = REQUIRED_EXTENSIONS.filter(
+        (e) => !availableExts.has(e)
+      );
+      if (missingExts.length > 0) {
+        throw new Error(
+          `Required Postgres extension(s) not available on the server: ${missingExts.join(", ")}. ` +
+            `These ship in the Postgres image/package (server-side) and cannot be installed by the app. ` +
+            `Use a TimescaleDB + Toolkit image (e.g. timescale/timescaledb-ha) or install the matching ` +
+            `apt packages (timescaledb-2-postgresql-17 + timescaledb-toolkit-postgresql-17). ` +
+            `See docs/SELF_HOSTED_DEPLOYMENT.md.`
+        );
+      }
+
       // Ensure the Prisma migration-tracking table exists
       await pool.query(`
         CREATE TABLE IF NOT EXISTS "_prisma_migrations" (

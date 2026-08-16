@@ -6,8 +6,8 @@ import { ExternalLink, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
+import { IconTrash } from "@/components/ui/icons";
 import { Input } from "@/components/ui/input";
-import { PixelTrash } from "@/components/ui/pixel-trash";
 import {
   Select,
   SelectContent,
@@ -225,7 +225,7 @@ const ArgumentRow = ({
           aria-label={t("removeArgument")}
           className="text-muted-foreground hover:text-destructive"
         >
-          <PixelTrash className="h-4 w-auto shrink-0" />
+          <IconTrash className="h-4 w-auto shrink-0" />
         </Button>
       </div>
 

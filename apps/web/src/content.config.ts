@@ -20,6 +20,14 @@ const blog = defineCollection({
     author: z.string().optional(),
     tags: z.array(z.string()).optional(),
     readingTimeMin: z.number().optional(),
+    /** Editorial category — drives the index filter pills. */
+    category: z.enum(["diagnosis", "mcp", "patterns", "engineering"]),
+    /** Cover SVG filename under /blog-covers (falls back by category). */
+    cover: z.string().optional(),
+    /** Optional caption pill rendered bottom-left on the cover. */
+    coverCaption: z.string().optional(),
+    /** Promotes the post to the index's featured slot. */
+    featured: z.boolean().optional(),
   }),
 });
 

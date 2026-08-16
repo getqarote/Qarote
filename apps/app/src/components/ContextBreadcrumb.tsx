@@ -2,20 +2,22 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { Carrot, User } from "lucide-react";
 import { toast } from "sonner";
 
-import { getUpgradePath } from "@/lib/featureFlags";
 import { logger } from "@/lib/logger";
 
+import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { PixelCheck } from "@/components/ui/pixel-check";
-import { PixelChevronDown } from "@/components/ui/pixel-chevron-down";
+  IconCheck,
+  IconChevron,
+  IconChevronRight,
+  IconGrid,
+  IconLock,
+  IconPlus,
+  IconSettings,
+  IconStar,
+  IconUser,
+} from "@/components/ui/icons";
 import {
   Popover,
   PopoverContent,
@@ -27,22 +29,28 @@ import {
   useSwitchWorkspace,
   useUserWorkspaces,
 } from "@/hooks/queries/useWorkspaceApi";
-import { useIsWorkspaceAdmin } from "@/hooks/queries/useWorkspaceRole";
 import { SESSION_TOAST_KEY, useSessionToast } from "@/hooks/ui/useSessionToast";
 import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 import { CreateWorkspaceForm } from "./CreateWorkspaceForm";
+import { BreadcrumbSkeleton } from "./skeletons/SidebarSkeletons";
 
+// Ports the prototype `.crumb__seg`: borderless path segment, surface tint on
+// hover/open, chevron rotates 180° when its popover is open.
 const SEGMENT_TRIGGER =
-  "flex items-center gap-1.5 rounded-md px-2 py-1 text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 disabled:opacity-60";
+  "group/seg inline-flex w-max shrink-0 items-center gap-[7px] rounded-md border border-transparent px-2 py-[5px] text-[13.5px] font-medium text-foreground transition-colors hover:bg-accent data-[state=open]:border-border data-[state=open]:bg-accent focus-visible:outline-none disabled:opacity-60";
 
 const MENU_HEADING =
-  "px-3 py-2 text-xs uppercase tracking-wider font-medium text-muted-foreground";
+  "px-2.5 pb-1 pt-1.5 font-mono text-[9.5px] uppercase tracking-[0.09em] text-muted-foreground";
 
+const SEGMENT_CHEV =
+  "h-3 w-auto shrink-0 text-muted-foreground transition-transform group-data-[state=open]/seg:rotate-180";
+
+/** Square gradient-free carrot avatar with the org initial (prototype `.crumb__avatar`). */
 function OrgAvatar({ initial }: { initial: string }) {
   return (
-    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-primary/10 text-[0.625rem] font-semibold text-primary">
+    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-[5px] bg-primary font-heading text-[10.5px] font-semibold text-primary-foreground">
       {initial}
     </span>
   );
@@ -59,7 +67,6 @@ function OrgAvatar({ initial }: { initial: string }) {
  */
 export function ContextBreadcrumb() {
   const { t } = useTranslation("sidebar");
-  const isAdmin = useIsWorkspaceAdmin() === true;
   const { canCreateWorkspace } = useUser();
   const { workspace } = useWorkspace();
   const navigate = useNavigate();
@@ -67,6 +74,7 @@ export function ContextBreadcrumb() {
   const [orgOpen, setOrgOpen] = useState(false);
   const [wsOpen, setWsOpen] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   useSessionToast();
 
@@ -88,7 +96,6 @@ export function ContextBreadcrumb() {
     : workspaces;
 
   const isLoading = isLoadingWorkspaces || isLoadingOrgs;
-  const isMultiOrg = organizations.length > 1;
 
   // ---- Handlers ----
 
@@ -155,7 +162,7 @@ export function ContextBreadcrumb() {
     if (canCreateWorkspace) {
       setShowCreateModal(true);
     } else {
-      navigate(getUpgradePath());
+      setShowUpgradeModal(true);
     }
   };
 
@@ -169,184 +176,193 @@ export function ContextBreadcrumb() {
 
   const getRoleIcon = (ws: WorkspaceInfo) =>
     ws.isOwner ? (
-      <Carrot className="w-3 h-3 text-primary" />
+      <IconStar size={12} className="text-primary" />
     ) : (
-      <User className="w-3 h-3 text-muted-foreground" />
+      <IconUser size={12} className="text-muted-foreground" />
     );
 
   const getRoleLabel = (ws: WorkspaceInfo) =>
     ws.isOwner ? t("owner") : ws.userRole || t("member");
 
-  const getOrgRoleLabel = (role: string) => {
-    switch (role) {
-      case "OWNER":
-        return t("owner");
-      case "ADMIN":
-        return t("admin");
-      default:
-        return t("member");
-    }
-  };
-
   if (isLoading) {
-    return (
-      <div className="flex items-center gap-2" aria-busy="true">
-        <div className="h-6 w-24 animate-pulse rounded-md bg-muted" />
-        <PixelChevronDown className="h-3 w-auto text-muted-foreground/40 rotate-[-90deg]" />
-        <div className="h-6 w-28 animate-pulse rounded-md bg-muted" />
-      </div>
-    );
+    return <BreadcrumbSkeleton />;
   }
 
   const orgInitial = currentOrg?.name?.charAt(0).toUpperCase() ?? "?";
 
   return (
-    <Breadcrumb>
-      <BreadcrumbList className="gap-1 sm:gap-1.5">
-        {/* Organization segment */}
-        <BreadcrumbItem>
-          {currentOrg && isMultiOrg ? (
-            <Popover open={orgOpen} onOpenChange={setOrgOpen}>
-              <PopoverTrigger
-                className={SEGMENT_TRIGGER}
-                aria-label={t("switchOrganization")}
-                disabled={switchWorkspaceMutation.isPending}
-              >
-                <OrgAvatar initial={orgInitial} />
-                <span className="max-w-[160px] truncate font-medium text-foreground">
-                  {currentOrg.name}
-                </span>
-                <PixelChevronDown className="h-3 w-auto shrink-0 text-muted-foreground" />
-              </PopoverTrigger>
-              <PopoverContent align="start" className="w-[280px] p-0">
-                <div className={MENU_HEADING}>{t("organizations")}</div>
-                <div className="max-h-[320px] overflow-y-auto pb-1">
-                  {organizations.map((org) => (
-                    <button
-                      key={org.id}
-                      type="button"
-                      onClick={() => handleOrgSwitch(org.id)}
-                      className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors hover:bg-accent"
-                    >
-                      <div className="min-w-0">
-                        <div className="truncate font-medium text-foreground">
-                          {org.name}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {getOrgRoleLabel(org.role)}
-                        </div>
-                      </div>
-                      {org.id === currentOrg.id && (
-                        <PixelCheck className="h-2.5 shrink-0 text-green-500" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-                <div className="border-t border-border" />
-                <button
-                  type="button"
-                  onClick={() => goTo("/settings/organization")}
-                  className="w-full px-3 py-2.5 text-left text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                >
-                  {t("settings")}
-                </button>
-              </PopoverContent>
-            </Popover>
-          ) : (
-            currentOrg && (
-              <span
-                className="flex items-center gap-1.5 px-2 py-1 text-sm"
-                aria-label={t("switchOrganization")}
-              >
-                <OrgAvatar initial={orgInitial} />
-                <span className="max-w-[160px] truncate font-medium text-foreground">
-                  {currentOrg.name}
-                </span>
-              </span>
-            )
-          )}
-        </BreadcrumbItem>
-
-        <BreadcrumbSeparator />
-
-        {/* Workspace segment */}
-        <BreadcrumbItem>
-          <Popover open={wsOpen} onOpenChange={setWsOpen}>
-            <PopoverTrigger
-              className={SEGMENT_TRIGGER}
-              aria-label={t("switchWorkspace")}
-              disabled={switchWorkspaceMutation.isPending}
-            >
-              <span className="max-w-[180px] truncate font-medium text-foreground">
-                {currentWorkspace?.name || workspace?.name}
-              </span>
-              <PixelChevronDown className="h-3 w-auto shrink-0 text-muted-foreground" />
-            </PopoverTrigger>
-            <PopoverContent align="start" className="w-[300px] p-0">
-              <div className={MENU_HEADING}>{t("workspaces")}</div>
-              <div className="max-h-[320px] overflow-y-auto pb-1">
-                {currentOrgWorkspaces.map((ws) => (
+    <nav
+      className="flex min-w-0 items-center gap-[3px]"
+      aria-label={t("contextNav")}
+    >
+      {/* Organization segment — always a dropdown (even single-org): the menu
+          carries Create-organization + Organization-settings actions, so it's
+          never a useless single-item switcher. */}
+      {currentOrg && (
+        <Popover open={orgOpen} onOpenChange={setOrgOpen}>
+          <PopoverTrigger
+            className={`${SEGMENT_TRIGGER} hidden sm:inline-flex`}
+            aria-label={t("switchOrganization")}
+            disabled={switchWorkspaceMutation.isPending}
+          >
+            <OrgAvatar initial={orgInitial} />
+            <span className="max-w-[160px] truncate">{currentOrg.name}</span>
+            <IconChevron size={14} className={SEGMENT_CHEV} />
+          </PopoverTrigger>
+          <PopoverContent
+            align="start"
+            className="w-[280px] min-w-[240px] p-1.5"
+          >
+            <div className={MENU_HEADING}>{t("organizations")}</div>
+            <div className="max-h-[320px] overflow-y-auto">
+              {organizations.map((org) => {
+                const selected = org.id === currentOrg.id;
+                return (
                   <button
-                    key={ws.id}
+                    key={org.id}
                     type="button"
-                    onClick={() => handleWorkspaceSwitch(ws.id)}
-                    className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors hover:bg-accent"
-                  >
-                    <div className="min-w-0">
-                      <div className="truncate font-medium text-foreground">
-                        {ws.name}
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          {getRoleIcon(ws)}
-                          {getRoleLabel(ws)}
-                        </span>
-                        <span aria-hidden="true">·</span>
-                        <span>
-                          {t("servers", { count: ws._count.servers })}
-                        </span>
-                      </div>
-                    </div>
-                    {ws.id === workspace?.id && (
-                      <PixelCheck className="h-2.5 shrink-0 text-green-500" />
-                    )}
-                  </button>
-                ))}
-              </div>
-              <div className="border-t border-border" />
-              {isAdmin && (
-                <button
-                  type="button"
-                  onClick={handleCreateWorkspace}
-                  className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors hover:bg-accent"
-                >
-                  <span
-                    className={`font-medium ${
-                      canCreateWorkspace
-                        ? "text-foreground"
-                        : "text-muted-foreground/60"
+                    onClick={() => handleOrgSwitch(org.id)}
+                    role="option"
+                    aria-selected={selected}
+                    className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm transition-colors hover:bg-accent ${
+                      selected ? "bg-accent" : ""
                     }`}
                   >
-                    {t("createNewWorkspace")}
-                  </span>
-                  {!canCreateWorkspace && (
-                    <span className="rounded-full bg-warning-muted px-1.5 py-0.5 text-[10px] font-semibold text-warning-foreground">
-                      {t("upgrade")}
+                    <OrgAvatar initial={org.name.charAt(0).toUpperCase()} />
+                    <span className="min-w-0 flex-1 truncate font-medium text-foreground">
+                      {org.name}
                     </span>
-                  )}
+                    <IconCheck
+                      size={15}
+                      className={`ml-auto shrink-0 ${
+                        selected ? "text-primary" : "text-transparent"
+                      }`}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mx-1 my-1.5 h-px bg-border" />
+            <button
+              type="button"
+              onClick={() => goTo("/settings/organization")}
+              className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-accent"
+            >
+              <IconPlus size={15} className="text-muted-foreground" />
+              {t("createOrganization")}
+            </button>
+            <button
+              type="button"
+              onClick={() => goTo("/settings/organization")}
+              className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm text-foreground/80 transition-colors hover:bg-accent"
+            >
+              <IconSettings size={15} className="text-muted-foreground" />
+              {t("settings")}
+            </button>
+          </PopoverContent>
+        </Popover>
+      )}
+
+      <span
+        className="hidden shrink-0 text-muted-foreground/55 sm:inline-flex"
+        aria-hidden="true"
+      >
+        <IconChevronRight size={14} />
+      </span>
+
+      {/* Workspace segment */}
+      <Popover open={wsOpen} onOpenChange={setWsOpen}>
+        <PopoverTrigger
+          className={SEGMENT_TRIGGER}
+          aria-label={t("switchWorkspace")}
+          disabled={switchWorkspaceMutation.isPending}
+        >
+          <span className="grid h-5 w-5 shrink-0 place-items-center rounded-[5px] bg-accent text-muted-foreground">
+            <IconGrid size={13} />
+          </span>
+          <span className="max-w-[180px] truncate">
+            {currentWorkspace?.name || workspace?.name}
+          </span>
+          <IconChevron size={14} className={SEGMENT_CHEV} />
+        </PopoverTrigger>
+        <PopoverContent align="start" className="w-[300px] min-w-[240px] p-1.5">
+          <div className={MENU_HEADING}>{t("workspaces")}</div>
+          <div className="max-h-[320px] overflow-y-auto">
+            {currentOrgWorkspaces.map((ws) => {
+              const selected = ws.id === workspace?.id;
+              return (
+                <button
+                  key={ws.id}
+                  type="button"
+                  onClick={() => handleWorkspaceSwitch(ws.id)}
+                  role="option"
+                  aria-selected={selected}
+                  className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm transition-colors hover:bg-accent ${
+                    selected ? "bg-accent" : ""
+                  }`}
+                >
+                  <span className="grid h-[26px] w-[26px] shrink-0 place-items-center rounded-md bg-accent text-muted-foreground">
+                    <IconGrid size={14} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-medium text-foreground">
+                      {ws.name}
+                    </span>
+                    <span className="flex items-center gap-1.5 truncate font-mono text-[10.5px] text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        {getRoleIcon(ws)}
+                        {getRoleLabel(ws)}
+                      </span>
+                      <span aria-hidden="true">·</span>
+                      <span>{t("members", { count: ws._count.members })}</span>
+                    </span>
+                  </span>
+                  <IconCheck
+                    size={15}
+                    className={`ml-auto shrink-0 ${
+                      selected ? "text-primary" : "text-transparent"
+                    }`}
+                  />
                 </button>
-              )}
-              <button
-                type="button"
-                onClick={() => goTo("/settings/workspace")}
-                className="w-full px-3 py-2.5 text-left text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-              >
-                {t("settings")}
-              </button>
-            </PopoverContent>
-          </Popover>
-        </BreadcrumbItem>
-      </BreadcrumbList>
+              );
+            })}
+          </div>
+          <div className="mx-1 my-1.5 h-px bg-border" />
+          <button
+            type="button"
+            onClick={handleCreateWorkspace}
+            className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm transition-colors hover:bg-accent"
+          >
+            {canCreateWorkspace ? (
+              <IconPlus size={15} className="text-muted-foreground" />
+            ) : (
+              <IconLock size={15} className="text-muted-foreground" />
+            )}
+            <span
+              className={`flex-1 font-medium ${
+                canCreateWorkspace
+                  ? "text-foreground/80"
+                  : "text-muted-foreground/60"
+              }`}
+            >
+              {t("createNewWorkspace")}
+            </span>
+            {!canCreateWorkspace && (
+              <span className="ml-auto rounded-full border border-primary/30 bg-primary/10 px-1.5 py-px font-mono text-[9.5px] text-primary">
+                {t("developerPlus")}
+              </span>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => goTo("/settings/workspace")}
+            className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm text-foreground/80 transition-colors hover:bg-accent"
+          >
+            <IconSettings size={15} className="text-muted-foreground" />
+            {t("settings")}
+          </button>
+        </PopoverContent>
+      </Popover>
 
       {canCreateWorkspace && (
         <CreateWorkspaceForm
@@ -354,6 +370,12 @@ export function ContextBreadcrumb() {
           onClose={() => setShowCreateModal(false)}
         />
       )}
-    </Breadcrumb>
+
+      <PlanUpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        feature="workspace_creation"
+      />
+    </nav>
   );
 }

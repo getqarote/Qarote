@@ -30,7 +30,7 @@
   "helpSupport": "Ayuda y soporte",
   "server": "Servidor",
   "virtualHost": "Host virtual",
-  "management": "Administraci\u00f3n",
+  "management": "Administración",
   "selectServer": "Seleccionar un servidor...",
   "selectVhost": "Seleccionar un vhost...",
   "noServersConfigured": "No hay servidores configurados",
@@ -64,5 +64,15 @@
   "switchOrganization": "Cambiar de organización",
   "orgSwitched": "¡Organización cambiada con éxito!",
   "orgSwitchedDescription": "Cambiado a {{orgName}}",
-  "backToWorkspaces": "Volver a espacios de trabajo"
+  "backToWorkspaces": "Volver a espacios de trabajo",
+  "serverLabel": "Servidor",
+  "vhostLabel": "Vhost",
+  "serversInWorkspace": "Servidores de este espacio de trabajo",
+  "contextNav": "Contexto",
+  "help": "Ayuda",
+  "manageCurrentServer": "Gestionar el servidor actual",
+  "members_one": "{{count}} miembro",
+  "members_other": "{{count}} miembros",
+  "developerPlus": "Developer+",
+  "createOrganization": "Crear organización"
 }

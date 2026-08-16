@@ -43,7 +43,6 @@ export const registrationRouter = router({
         password,
         firstName,
         lastName,
-        acceptTerms,
         sourceApp,
         referralSource,
         discoveryQuery,
@@ -84,13 +83,13 @@ export const registrationRouter = router({
         }
       }
 
-      // Validate that terms were accepted
-      if (!acceptTerms) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: te(ctx.locale, "auth.mustAcceptTerms"),
-        });
-      }
+      // Name is optional at sign-up. Normalise it here: persist whatever the
+      // user supplied (trimmed), and derive a friendly greeting fallback from
+      // the email local-part so transactional emails never read "Hi ,".
+      const safeFirstName = firstName?.trim() ?? "";
+      const safeLastName = lastName?.trim() ?? "";
+      const fullName = `${safeFirstName} ${safeLastName}`.trim();
+      const greetingName = safeFirstName || email.split("@")[0];
 
       try {
         // Check if user already exists
@@ -118,9 +117,9 @@ export const registrationRouter = router({
             data: {
               email,
               passwordHash: hashedPassword,
-              firstName,
-              lastName,
-              name: `${firstName} ${lastName}`.trim(),
+              firstName: safeFirstName,
+              lastName: safeLastName,
+              name: fullName,
               ...(autoVerify && {
                 emailVerified: true,
                 emailVerifiedAt: new Date(),
@@ -160,7 +159,7 @@ export const registrationRouter = router({
           StripeCustomerService.provisionTrialForNewUser({
             userId: user.id,
             email,
-            name: `${firstName} ${lastName}`.trim(),
+            name: fullName,
             prisma: ctx.prisma,
           })
             .then((subscription) => {
@@ -206,7 +205,7 @@ export const registrationRouter = router({
               user.email,
               verificationToken,
               "SIGNUP",
-              firstName,
+              greetingName,
               sourceApp,
               ctx.locale
             );

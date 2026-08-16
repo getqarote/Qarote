@@ -64,5 +64,15 @@
   "switchOrganization": "切换组织",
   "orgSwitched": "组织切换成功！",
   "orgSwitchedDescription": "已切换到{{orgName}}",
-  "backToWorkspaces": "返回工作区"
+  "backToWorkspaces": "返回工作区",
+  "serverLabel": "服务器",
+  "vhostLabel": "虚拟主机",
+  "serversInWorkspace": "此工作区的服务器",
+  "contextNav": "上下文",
+  "help": "帮助",
+  "manageCurrentServer": "管理当前服务器",
+  "members_one": "{{count}} 名成员",
+  "members_other": "{{count}} 名成员",
+  "developerPlus": "Developer+",
+  "createOrganization": "创建组织"
 }

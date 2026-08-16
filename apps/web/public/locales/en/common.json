@@ -79,7 +79,10 @@
   "noCreditCard": "No credit card required",
   "changelog": {
     "title": "What's New",
-    "subtitle": "All notable changes to Qarote, documented release by release."
+    "subtitle": "All notable changes to Qarote, documented release by release.",
+    "eyebrow": "Changelog",
+    "latest": "latest",
+    "upcoming": "Upcoming"
   },
   "notFound": {
     "code": "404",

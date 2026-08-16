@@ -133,6 +133,27 @@ const mockFullPaymentMethod = {
   billing_details: { name: "Test User", email: "admin@test.com" },
 };
 
+// The org's Subscription row. It now carries the Stripe subscription id — the
+// denormalized mirror on Organization is gone.
+function dbSubscription(overrides: Record<string, unknown> = {}) {
+  const now = new Date();
+  return {
+    id: "dbsub-1",
+    status: "ACTIVE",
+    plan: "DEVELOPER",
+    billingInterval: "MONTH",
+    stripeSubscriptionId: "sub_123",
+    canceledAt: null,
+    isRenewalAfterCancel: false,
+    previousCancelDate: null,
+    trialStart: null,
+    trialEnd: null,
+    createdAt: now,
+    updatedAt: now,
+    ...overrides,
+  };
+}
+
 // --- Tests ---
 
 describe("billingRouter.getBillingOverview", () => {
@@ -168,26 +189,15 @@ describe("billingRouter.getBillingOverview", () => {
 
   it("assembles overview from subscription + workspace + org without a Stripe subscription ID", async () => {
     const now = new Date();
-    mockSubscriptionFindUnique.mockResolvedValue({
-      id: "dbsub-1",
-      status: "ACTIVE",
-      plan: "DEVELOPER",
-      billingInterval: "MONTH",
-      canceledAt: null,
-      isRenewalAfterCancel: false,
-      previousCancelDate: null,
-      trialStart: null,
-      trialEnd: null,
-      createdAt: now,
-      updatedAt: now,
-    });
+    mockSubscriptionFindUnique.mockResolvedValue(
+      dbSubscription({ stripeSubscriptionId: null })
+    );
     mockWorkspaceFindUnique.mockResolvedValue({
       id: "ws-1",
       name: "Acme Workspace",
     });
     mockOrgFindUnique.mockResolvedValue({
       stripeCustomerId: null,
-      stripeSubscriptionId: null,
     });
     mockPaymentFindMany.mockResolvedValue([
       {
@@ -218,9 +228,9 @@ describe("billingRouter.getBillingOverview", () => {
   });
 
   it("fetches and returns Stripe subscription shape when stripeSubscriptionId is present", async () => {
+    mockSubscriptionFindUnique.mockResolvedValue(dbSubscription());
     mockOrgFindUnique.mockResolvedValue({
       stripeCustomerId: "cus_abc",
-      stripeSubscriptionId: "sub_123",
     });
     mockStripeGetSubscription.mockResolvedValue(mockStripeSubscription);
     // Payment method resolution: subscription has a pm ID so getPaymentMethod is called
@@ -254,9 +264,9 @@ describe("billingRouter.getBillingOverview", () => {
   });
 
   it("returns resolved paymentMethod when StripeService.getPaymentMethod succeeds", async () => {
+    mockSubscriptionFindUnique.mockResolvedValue(dbSubscription());
     mockOrgFindUnique.mockResolvedValue({
       stripeCustomerId: "cus_abc",
-      stripeSubscriptionId: "sub_123",
     });
     mockStripeGetSubscription.mockResolvedValue(mockStripeSubscription);
     mockStripeGetPaymentMethod.mockResolvedValue(mockFullPaymentMethod);
@@ -273,9 +283,9 @@ describe("billingRouter.getBillingOverview", () => {
   });
 
   it("returns null stripeSubscription and warns when StripeService.getSubscription throws", async () => {
+    mockSubscriptionFindUnique.mockResolvedValue(dbSubscription());
     mockOrgFindUnique.mockResolvedValue({
       stripeCustomerId: "cus_abc",
-      stripeSubscriptionId: "sub_123",
     });
     mockStripeGetSubscription.mockRejectedValue(
       new Error("Stripe unavailable")

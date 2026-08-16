@@ -4,8 +4,8 @@ import { useTranslation } from "react-i18next";
 import { AlertCircle, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { IconClose } from "@/components/ui/icons";
 import { Input } from "@/components/ui/input";
-import { PixelX } from "@/components/ui/pixel-x";
 import {
   Tooltip,
   TooltipContent,
@@ -130,7 +130,7 @@ export const RegexFilterInput = forwardRef<
               aria-label={t("clearFilter")}
               className="h-7 w-7"
             >
-              <PixelX className="h-3.5 w-auto shrink-0" aria-hidden="true" />
+              <IconClose className="h-3.5 w-auto shrink-0" aria-hidden="true" />
             </Button>
           </div>
         )}

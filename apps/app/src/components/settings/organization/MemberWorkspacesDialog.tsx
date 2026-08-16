@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
+import { displayName } from "@/lib/userDisplay";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -138,7 +139,7 @@ export function MemberWorkspacesDialog({
           {member && (
             <DialogDescription>
               {t("org.manageWorkspacesDesc", {
-                name: `${member.firstName} ${member.lastName}`,
+                name: displayName(member),
               })}
             </DialogDescription>
           )}

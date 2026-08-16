@@ -23,16 +23,4 @@ export const teamMembers: TeamMember[] = [
       "Docker",
     ],
   },
-  {
-    id: "paul",
-    photo: "/images/team/paul.jpg",
-    linkedin: "https://www.linkedin.com/in/paul-dufour/",
-    knowsAbout: [
-      "Digital Marketing",
-      "E-commerce",
-      "Growth Strategy",
-      "Google Ads",
-      "SEO",
-    ],
-  },
 ];

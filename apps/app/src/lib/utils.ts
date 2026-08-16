@@ -14,14 +14,6 @@ export function formatCurrency(amountInCents: number): string {
   }).format(amountInCents / 100);
 }
 
-export function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat(i18n.language, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(date);
-}
-
 export function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 B";
   const k = 1024;

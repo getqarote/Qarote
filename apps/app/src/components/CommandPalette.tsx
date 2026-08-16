@@ -10,20 +10,25 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { PixelActivity } from "@/components/ui/pixel-activity";
-import { PixelChart } from "@/components/ui/pixel-chart";
-import { PixelDatabase } from "@/components/ui/pixel-database";
-import { PixelFlag } from "@/components/ui/pixel-flag";
-import { PixelHelp } from "@/components/ui/pixel-help";
-import { PixelKey } from "@/components/ui/pixel-key";
-import { PixelLayers } from "@/components/ui/pixel-layers";
-import { PixelMessage } from "@/components/ui/pixel-message";
-import { PixelNetwork } from "@/components/ui/pixel-network";
-import { PixelSettings } from "@/components/ui/pixel-settings";
-import { PixelUser } from "@/components/ui/pixel-user";
-import { PixelZap } from "@/components/ui/pixel-zap";
+import {
+  IconActivity,
+  IconBell,
+  IconDatabase,
+  IconHelp,
+  IconHome,
+  IconKey,
+  IconLayers,
+  IconMessage,
+  IconPlay,
+  IconPlus,
+  IconSettings,
+  IconSparkle,
+  IconTopo,
+  IconUser,
+} from "@/components/ui/icons";
 
 import { useCommandPalette } from "@/contexts/CommandPaletteContext";
+import { useServerContext } from "@/contexts/ServerContext";
 
 import { useIsWorkspaceAdmin } from "@/hooks/queries/useWorkspaceRole";
 
@@ -36,7 +41,10 @@ type PaletteEntry = {
   /** i18n key under the `command` namespace. */
   labelKey: string;
   icon: IconComponent;
-  to: string;
+  /** Plain navigation target. Omitted for entries that use `action` instead. */
+  to?: string;
+  /** Non-navigation action (needs runtime state, e.g. the selected server). */
+  action?: "runScan";
   /** Hidden from non-admins (admin-only object views). */
   adminOnly?: boolean;
   /**
@@ -54,42 +62,42 @@ type PaletteEntry = {
  * the admin-near-Settings surface lands in a later phase.
  */
 const GO_TO: PaletteEntry[] = [
-  { labelKey: "goTo.cockpit", icon: PixelChart, to: "/", keywords: ["home"] },
-  { labelKey: "goTo.notifications", icon: PixelFlag, to: "/alerts" },
-  { labelKey: "goTo.topology", icon: PixelNetwork, to: "/topology" },
-  { labelKey: "goTo.settings", icon: PixelSettings, to: "/settings" },
-  { labelKey: "goTo.help", icon: PixelHelp, to: "/help" },
+  { labelKey: "goTo.cockpit", icon: IconHome, to: "/", keywords: ["home"] },
+  { labelKey: "goTo.notifications", icon: IconBell, to: "/alerts" },
+  { labelKey: "goTo.topology", icon: IconTopo, to: "/topology" },
+  { labelKey: "goTo.settings", icon: IconSettings, to: "/settings" },
+  { labelKey: "goTo.help", icon: IconHelp, to: "/help" },
 ];
 
 const OBJECTS: PaletteEntry[] = [
   {
     labelKey: "objects.queues",
-    icon: PixelMessage,
+    icon: IconMessage,
     to: "/topology",
     keywords: ["queue"],
   },
   {
     labelKey: "objects.exchanges",
-    icon: PixelActivity,
+    icon: IconActivity,
     to: "/topology",
     keywords: ["exchange"],
   },
-  { labelKey: "objects.users", icon: PixelUser, to: "/users", adminOnly: true },
+  { labelKey: "objects.users", icon: IconUser, to: "/users", adminOnly: true },
   {
     labelKey: "objects.policies",
-    icon: PixelKey,
+    icon: IconKey,
     to: "/policies",
     adminOnly: true,
   },
   {
     labelKey: "objects.virtualHosts",
-    icon: PixelLayers,
+    icon: IconLayers,
     to: "/vhosts",
     adminOnly: true,
   },
   {
     labelKey: "objects.definitions",
-    icon: PixelDatabase,
+    icon: IconDatabase,
     to: "/definitions",
     adminOnly: true,
   },
@@ -97,8 +105,26 @@ const OBJECTS: PaletteEntry[] = [
 
 const ACTIONS: PaletteEntry[] = [
   {
+    labelKey: "actions.runConfigScan",
+    icon: IconPlay,
+    action: "runScan",
+    keywords: ["scan", "config", "findings", "diagnose", "rescan"],
+  },
+  {
+    labelKey: "actions.addServer",
+    icon: IconPlus,
+    to: "/?addServer=true",
+    keywords: ["server", "broker", "connect", "new"],
+  },
+  {
+    labelKey: "actions.mintAgentKey",
+    icon: IconKey,
+    to: "/settings/agent-access",
+    keywords: ["agent", "key", "api", "mcp", "token", "mint"],
+  },
+  {
     labelKey: "actions.configureAiExplain",
-    icon: PixelZap,
+    icon: IconSparkle,
     to: "/settings/llm",
     keywords: ["llm", "ai", "explain", "anthropic", "openai", "ollama"],
   },
@@ -109,6 +135,7 @@ export function CommandPalette() {
   const { isOpen, setOpen, close } = useCommandPalette();
   const navigate = useNavigate();
   const isAdmin = useIsWorkspaceAdmin() === true;
+  const { selectedServerId } = useServerContext();
 
   const groups = useMemo(() => {
     const visible = (entries: PaletteEntry[]) =>
@@ -120,9 +147,15 @@ export function CommandPalette() {
     ].filter((g) => g.entries.length > 0);
   }, [isAdmin]);
 
-  const handleSelect = (to: string) => {
+  const handleSelect = (entry: PaletteEntry) => {
     close();
-    navigate(to);
+    if (entry.action === "runScan") {
+      // The scan reveal runs the point-in-time config scan for the active
+      // server; it redirects home when no server is selected.
+      navigate("/scan", { state: { serverId: selectedServerId } });
+      return;
+    }
+    if (entry.to) navigate(entry.to);
   };
 
   return (
@@ -139,7 +172,7 @@ export function CommandPalette() {
                 <CommandItem
                   key={entry.labelKey}
                   value={`${label} ${(entry.keywords ?? []).join(" ")}`}
-                  onSelect={() => handleSelect(entry.to)}
+                  onSelect={() => handleSelect(entry)}
                   className="gap-3"
                 >
                   <Icon className="h-4 w-auto shrink-0" aria-hidden="true" />
@@ -150,6 +183,29 @@ export function CommandPalette() {
           </CommandGroup>
         ))}
       </CommandList>
+      <div className="flex items-center gap-3 border-t border-border px-3 py-2 text-[11px] text-muted-foreground">
+        <span className="flex items-center gap-1">
+          <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono">
+            ↑
+          </kbd>
+          <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono">
+            ↓
+          </kbd>
+          {t("footer.navigate")}
+        </span>
+        <span className="flex items-center gap-1">
+          <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono">
+            ↵
+          </kbd>
+          {t("footer.open")}
+        </span>
+        <span className="flex items-center gap-1">
+          <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono">
+            esc
+          </kbd>
+          {t("footer.close")}
+        </span>
+      </div>
     </CommandDialog>
   );
 }

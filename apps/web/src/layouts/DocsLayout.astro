@@ -31,6 +31,7 @@ const sectionFirstSlug = sectionData?.pages[0]?.slug ?? "getting-started";
   title={`${title} — Qarote Docs`}
   description={description}
   canonicalPath={`/docs/${slug}/`}
+  nav={false}
 >
   <!-- Docs Nav -->
   <nav class="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm">
@@ -51,7 +52,7 @@ const sectionFirstSlug = sectionData?.pages[0]?.slug ?? "getting-started";
         </button>
 
         <a href="/" class="flex items-center gap-1.5 shrink-0">
-          <img src="/images/new_icon.svg" alt="" width={22} height={22} class="w-[22px] h-[22px]" aria-hidden="true" />
+          <img src="/images/new_icon.svg" alt="" width={16} height={22} class="w-auto h-[22px]" aria-hidden="true" />
           <span class="font-display font-normal text-[1.1rem] leading-none">Qarote</span>
         </a>
 

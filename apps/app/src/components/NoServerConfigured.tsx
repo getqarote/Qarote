@@ -1,12 +1,13 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
 
 import { Server } from "lucide-react";
 
-import { AddServerForm } from "@/components/AddServerFormComponent";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+
+import { useAddServerDialog } from "@/contexts/AddServerDialogContext";
 
 interface NoServerConfiguredProps {
   title: string;
@@ -21,18 +22,21 @@ export function NoServerConfigured({
 }: NoServerConfiguredProps) {
   const { t } = useTranslation("common");
   const [searchParams, setSearchParams] = useSearchParams();
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  // The add form lives in AddServerDialogProvider (app shell), not here, so its
+  // scanning → done reveal isn't unmounted when adding the first server flips
+  // this empty state to real content.
+  const { open: openAddServer } = useAddServerDialog();
 
   useEffect(() => {
     if (searchParams.get("addServer") === "true") {
-      triggerRef.current?.click();
+      openAddServer();
       setSearchParams((prev) => {
         const next = new URLSearchParams(prev);
         next.delete("addServer");
         return next;
       });
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, openAddServer]);
 
   return (
     <div className="content-container-large">
@@ -50,14 +54,9 @@ export function NoServerConfigured({
               {t("noServerConfigured")}
             </h2>
             <p className="text-muted-foreground mb-4">{description}</p>
-            <AddServerForm
-              isFirstServer={true}
-              trigger={
-                <Button ref={triggerRef} className="btn-primary">
-                  {t("addServer")}
-                </Button>
-              }
-            />
+            <Button className="btn-primary" onClick={openAddServer}>
+              {t("addServer")}
+            </Button>
           </div>
         </CardContent>
       </Card>

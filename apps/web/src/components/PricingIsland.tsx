@@ -1,10 +1,11 @@
 import type { SupportedLocale } from "@qarote/i18n";
 
 import { IslandProvider } from "@/components/IslandProvider";
-import FinalCtaSection from "@/components/landing/FinalCtaSection";
+import ComparePlansSection from "@/components/landing/ComparePlansSection";
 import FooterSection from "@/components/landing/FooterSection";
+import PricingCtaSection from "@/components/landing/PricingCtaSection";
+import PricingFaqSection from "@/components/landing/PricingFaqSection";
 import PricingSection from "@/components/landing/PricingSection";
-import StickyNav from "@/components/StickyNav";
 import { TawkTo } from "@/components/TawkTo";
 
 interface PricingIslandProps {
@@ -19,9 +20,10 @@ export default function PricingIsland({
   return (
     <IslandProvider locale={locale} resources={resources}>
       <div className="min-h-screen font-sans bg-background">
-        <StickyNav currentPage="pricing" />
         <PricingSection />
-        <FinalCtaSection />
+        <ComparePlansSection />
+        <PricingFaqSection />
+        <PricingCtaSection />
         <FooterSection currentLocale={locale} />
       </div>
       <TawkTo />

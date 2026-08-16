@@ -187,37 +187,45 @@ export const invitationRouter = router({
         // Check if existing user has a credential Account (for legacy migration)
         let hasCredentialAccount = false;
 
-        // For existing users, verify password
+        // For existing users, verify the password — UNLESS the request is
+        // already authenticated. R-INV-2 above guarantees the session email
+        // equals the invitation email, so a signed-in user has already proven
+        // identity and need not re-enter their password (password-less
+        // direct-accept). We still resolve `hasCredentialAccount` so the
+        // legacy-migration branch below behaves identically.
         if (user) {
-          if (!password) {
-            throw new TRPCError({
-              code: "UNAUTHORIZED",
-              message: te(ctx.locale, "auth.passwordRequiredForExisting"),
-            });
-          }
-
           // Check Account table first (better-auth), fall back to User.passwordHash
           const account = await ctx.prisma.account.findFirst({
             where: { userId: user.id, providerId: "credential" },
             select: { password: true },
           });
           hasCredentialAccount = !!account;
-          const hash = account?.password || user.passwordHash;
 
-          if (!hash) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: te(ctx.locale, "auth.accountNoPasswordUseReset"),
-            });
-          }
+          if (!ctx.user) {
+            if (!password) {
+              throw new TRPCError({
+                code: "UNAUTHORIZED",
+                message: te(ctx.locale, "auth.passwordRequiredForExisting"),
+              });
+            }
 
-          const isPasswordValid = await comparePassword(password, hash);
+            const hash = account?.password || user.passwordHash;
 
-          if (!isPasswordValid) {
-            throw new TRPCError({
-              code: "UNAUTHORIZED",
-              message: te(ctx.locale, "auth.invalidPassword"),
-            });
+            if (!hash) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: te(ctx.locale, "auth.accountNoPasswordUseReset"),
+              });
+            }
+
+            const isPasswordValid = await comparePassword(password, hash);
+
+            if (!isPasswordValid) {
+              throw new TRPCError({
+                code: "UNAUTHORIZED",
+                message: te(ctx.locale, "auth.invalidPassword"),
+              });
+            }
           }
         } else {
           if (!password || !firstName || !lastName) {

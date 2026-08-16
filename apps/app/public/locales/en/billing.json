@@ -29,7 +29,6 @@
   "plans": {
     "chooseYourPlan": "Choose Your Plan",
     "subtitle": "Scale your RabbitMQ monitoring with plans designed for teams of all sizes.",
-    "pricingTitle": "Simple, transparent pricing",
     "currentPlan": "Current Plan",
     "mostPopular": "Most popular",
     "startFree": "Start free",
@@ -240,5 +239,62 @@
     "preferSelfHost": "Prefer to self-host?",
     "preferSelfHostDesc": "Deploy Qarote on your own infrastructure with a license key.",
     "learnMore": "Learn more"
+  },
+  "hero": {
+    "subtitle": "Billing for this organization.",
+    "billedStripe": "Billed {{interval}} · via Stripe",
+    "billedContract": "Billed {{interval}} · custom contract",
+    "intervalMonthly": "monthly",
+    "intervalYearly": "yearly",
+    "perMonth": "/mo",
+    "perYear": "/yr",
+    "interval": "Interval",
+    "currentPeriodEnds": "Current period ends",
+    "renewsOn": "Renews on",
+    "cancelsOn": "Cancels on",
+    "auto": "(auto)",
+    "seats": "Seats",
+    "seatsValue": "{{current}} of {{limit}}",
+    "paymentMethod": "Payment method",
+    "changePlan": "Change plan",
+    "switchYearly": "Switch to yearly",
+    "save20": "save 20%",
+    "updatePayment": "Update payment",
+    "cancel": "Cancel"
+  },
+  "statusPill": {
+    "pastDue": "Past due",
+    "canceled": "Canceled"
+  },
+  "pastDue": {
+    "title": "Payment failed.",
+    "body": "We couldn't charge your card. Update your payment method to keep paid features active.",
+    "update": "Update now →"
+  },
+  "community": {
+    "name": "Community",
+    "tagline": "Free forever · detection core + read tools.",
+    "upgrade": "Upgrade",
+    "hint": "Upgrade to Developer for managed AI Explain, Slack/webhook alerting, and more brokers."
+  },
+  "invoices": {
+    "title": "Invoices",
+    "empty": "No invoices yet",
+    "view": "View"
+  },
+  "cancelDialog": {
+    "title": "Cancel subscription?",
+    "warn": "Your plan stays active until the end of the period. After that you drop to Community — managed Explain and paid integrations stop.",
+    "reasonLabel": "Mind sharing why? (optional)",
+    "reasonPlaceholder": "Select a reason",
+    "confirm": "Cancel at period end",
+    "keep": "Keep my plan",
+    "reasons": {
+      "tooExpensive": "Too expensive",
+      "missingFeature": "Missing a feature",
+      "switchingTools": "Switching tools",
+      "exploring": "Just exploring",
+      "other": "Other"
+    }
   }
 }

@@ -18,8 +18,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alertDialog";
 import { Button } from "@/components/ui/button";
+import { IconTrash } from "@/components/ui/icons";
 import { Input } from "@/components/ui/input";
-import { PixelTrash } from "@/components/ui/pixel-trash";
 
 interface VHostDangerZoneProps {
   vhostName: string;
@@ -63,10 +63,7 @@ export function VHostDangerZone({
                 disabled={isDefault}
                 title={isDefault ? t("cannotDeleteDefault") : undefined}
               >
-                <PixelTrash
-                  className="h-4 w-auto shrink-0"
-                  aria-hidden="true"
-                />
+                <IconTrash className="h-4 w-auto shrink-0" aria-hidden="true" />
                 {t("deleteVhost")}
               </Button>
               {isDefault && (

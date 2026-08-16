@@ -68,7 +68,10 @@
     "explaining": "Generando explicación…",
     "retry": "Reintentar",
     "explainError": "No se pudo generar la explicación — verifique su conexión e inténtelo de nuevo.",
-    "explainHelpful": "¿Esta explicación fue útil?"
+    "explainHelpful": "¿Esta explicación fue útil?",
+    "fired": "activado",
+    "depth": "profundidad",
+    "onDemand": "bajo demanda"
   },
   "step": {
     "brokerRead": "Leyendo la topología del broker…",
@@ -101,5 +104,9 @@
     "bannerHidden_one": "{{count}} hallazgo oculto. Actualiza para ver todos los diagnósticos.",
     "bannerHidden_other": "{{count}} hallazgos ocultos. Actualiza para ver todos los diagnósticos.",
     "upgrade": "Actualizar plan"
+  },
+  "provenance": {
+    "generatedBy": "Generado por",
+    "promptVersion": "prompt v{{version}}"
   }
 }

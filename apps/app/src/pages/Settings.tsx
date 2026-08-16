@@ -2,13 +2,11 @@ import { Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { Outlet } from "react-router";
 
-import { AppSidebar } from "@/components/AppSidebar";
+import { PageShell } from "@/components/PageShell";
+import { DemoSectionGuard } from "@/components/settings/DemoSectionGuard";
 import { SettingsSidebar } from "@/components/settings/SettingsSidebar";
-import { PixelSettings } from "@/components/ui/pixel-settings";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
-
-import { useIsMobile } from "@/hooks/ui/useMobile";
 
 const SectionLoader = () => (
   <div className="space-y-4">
@@ -18,38 +16,35 @@ const SectionLoader = () => (
   </div>
 );
 
+// intent — Settings — account, workspace, organization, and billing. Org
+// (billing) and workspace (operations) are peers, not nested. The grouped
+// sub-nav mirrors that peering; each section owns its own h2.
 const Settings = () => {
   const { t } = useTranslation("settings");
-  const isMobile = useIsMobile();
 
   return (
-    <SidebarProvider>
-      <div className="page-layout">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-h-0">
-          <main className="flex-1 p-6 overflow-auto">
-            <div className="container mx-auto space-y-6">
-              <div className="flex items-center gap-3">
-                <SidebarTrigger />
-                <PixelSettings className="h-8" />
-                <h1 className="title-page">{t("pageTitle")}</h1>
-              </div>
+    <PageShell>
+      {/* Intent note (prototype `.intent-note`) */}
+      <div className="flex items-start gap-4">
+        <SidebarTrigger className="md:hidden" />
+        <p className="border-l-2 border-border pl-2.5 font-mono text-[11px] leading-relaxed text-muted-foreground">
+          <span className="text-primary">// intent — </span>
+          {t("intent")}
+        </p>
+      </div>
 
-              {isMobile && <SettingsSidebar />}
-
-              <div className="flex gap-8">
-                {!isMobile && <SettingsSidebar />}
-                <div className="flex-1 min-w-0">
-                  <Suspense fallback={<SectionLoader />}>
-                    <Outlet />
-                  </Suspense>
-                </div>
-              </div>
-            </div>
-          </main>
+      {/* 2-col: sticky grouped sub-nav · active section */}
+      <div className="mt-6 flex flex-col gap-8 md:flex-row">
+        <SettingsSidebar />
+        <div className="min-w-0 flex-1">
+          <Suspense fallback={<SectionLoader />}>
+            <DemoSectionGuard>
+              <Outlet />
+            </DemoSectionGuard>
+          </Suspense>
         </div>
       </div>
-    </SidebarProvider>
+    </PageShell>
   );
 };
 

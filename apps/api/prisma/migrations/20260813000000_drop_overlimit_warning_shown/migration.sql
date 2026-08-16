@@ -1,0 +1,13 @@
+-- Drop `overLimitWarningShown`: a flag nothing ever set to true.
+--
+-- Added by 20250624225434 alongside isOverQueueLimit and queueCountAtConnect to
+-- track "have we already shown the over-limit warning once". The reader was
+-- never built. Every row has carried `false` since, and the only code touching
+-- it selected it, echoed it into two API responses that no frontend reads, and
+-- wrote `false` again at server creation.
+--
+-- Surfaced while rewriting the queue-ceiling warning payload (#294): the field
+-- was being returned to clients as though it meant something. It was removed
+-- from the payloads there; this removes the column behind it, so the schema
+-- stops implying a mechanism that does not exist.
+ALTER TABLE "RabbitMQServer" DROP COLUMN "overLimitWarningShown";

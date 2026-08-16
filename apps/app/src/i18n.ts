@@ -16,6 +16,7 @@ const i18n = createI18nInstance({
     "users",
     "alerts",
     "billing",
+    "pricing",
     "profile",
     "workspace",
     "help",

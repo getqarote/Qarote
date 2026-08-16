@@ -69,18 +69,32 @@ export class RabbitMQMetricsCalculator {
     });
   }
 
-  // Helper function to process queue total samples
+  /**
+   * The management API returns samples newest-first, but consumers read this
+   * series as chronological — charts render left to right and take the last
+   * element as "current". Sorting is required, not cosmetic.
+   *
+   * Ready/unacked are joined on timestamp rather than array position: the
+   * three series do not always share a sampling grid.
+   */
   static processQueueTotalSamples(
     samples: RateSample[],
     readySamples: RateSample[],
     unacknowledgedSamples: RateSample[]
   ): QueueTotalsTimeSeries[] {
-    return samples.map((sample, index) => ({
-      timestamp: sample.timestamp,
-      messages: sample.sample,
-      messages_ready: readySamples[index]?.sample || 0,
-      messages_unacknowledged: unacknowledgedSamples[index]?.sample || 0,
-    }));
+    const byTimestamp = (list: RateSample[]) =>
+      new Map(list.map((s) => [s.timestamp, s.sample]));
+    const ready = byTimestamp(readySamples);
+    const unacknowledged = byTimestamp(unacknowledgedSamples);
+
+    return [...samples]
+      .sort((a, b) => a.timestamp - b.timestamp)
+      .map((sample) => ({
+        timestamp: sample.timestamp,
+        messages: sample.sample,
+        messages_ready: ready.get(sample.timestamp) ?? 0,
+        messages_unacknowledged: unacknowledged.get(sample.timestamp) ?? 0,
+      }));
   }
 
   // Generic function for extracting message rates from message stats

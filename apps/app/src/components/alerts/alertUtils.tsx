@@ -45,33 +45,35 @@ export const getSeverityColor = (
 };
 
 /**
- * Format a timestamp string to a localized date/time string
+ * Border-left / dot accent token class for a given severity. Shared across the
+ * cockpit, notifications, and config-scan surfaces so the severity color
+ * system stays identical everywhere. critical/high → destructive, medium →
+ * warning, low → info, else muted-foreground.
  */
-export const formatTimestamp = (timestamp: string): string => {
-  try {
-    return new Date(timestamp).toLocaleString();
-  } catch {
-    return timestamp;
-  }
-};
-
-/**
- * Format a timestamp to relative time (e.g., "5m ago", "2h ago")
- */
-export const formatRelativeTime = (timestamp: string): string => {
-  try {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return `${diffDays}d ago`;
-  } catch {
-    return "Unknown";
+export const getSeverityAccent = (
+  severity: RabbitMQAlertSeverity
+): { border: string; text: string; bg: string } => {
+  switch (severity) {
+    case RabbitMQAlertSeverity.CRITICAL:
+    case RabbitMQAlertSeverity.HIGH:
+      return {
+        border: "border-l-destructive",
+        text: "text-destructive",
+        bg: "bg-destructive",
+      };
+    case RabbitMQAlertSeverity.MEDIUM:
+      return {
+        border: "border-l-warning",
+        text: "text-warning",
+        bg: "bg-warning",
+      };
+    case RabbitMQAlertSeverity.LOW:
+      return { border: "border-l-info", text: "text-info", bg: "bg-info" };
+    default:
+      return {
+        border: "border-l-muted-foreground",
+        text: "text-muted-foreground",
+        bg: "bg-muted-foreground",
+      };
   }
 };

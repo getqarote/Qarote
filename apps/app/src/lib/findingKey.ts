@@ -6,7 +6,7 @@
  * has not yet been persisted (dryRun, or persistence best-effort failure — see
  * `apps/api/src/ee/services/incident/incident.interfaces.ts`). Keeping the
  * fallback in one place prevents the three call sites (DiagnosisCard,
- * HomeActiveConcerns, Diagnosis page) from drifting.
+ * the cockpit, Diagnosis page) from drifting.
  *
  * Note: when `id` becomes available between renders (first cycle → after
  * persist), the key flips and React will remount the consumer. This is the

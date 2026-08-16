@@ -32,12 +32,37 @@
     "configureAiExplain": "Configurer AI Explain"
   },
   "sees": {
-    "title": "Ce que votre agent voit maintenant",
+    "title": "Ce que votre agent voit",
     "refresh": "Rafraîchir",
-    "allQuiet": "Tout est calme — aucun finding actif sur les 2 dernières heures",
     "staleMetrics": "Impossible de récupérer les métriques en direct tant que le broker est injoignable.",
     "retry": "Réessayer",
-    "clusterDetail": "Détail du cluster"
+    "clusterDetail": "Détail du cluster",
+    "timeRange": {
+      "label": "Plage de temps"
+    },
+    "cluster": "Cluster",
+    "calm": {
+      "headline": "Tout est calme — aucun signalement actif sur les dernières {{window}}",
+      "lastScan": "dernier scan {{ago}}",
+      "justNow": "à l’instant"
+    },
+    "concerns": {
+      "headline_one": "{{count}} préoccupation au cours des {{window}}",
+      "headline_other": "{{count}} préoccupations au cours des {{window}}",
+      "severity": {
+        "critical_one": "{{count}} critique",
+        "critical_other": "{{count}} critiques",
+        "high_one": "{{count}} élevée",
+        "high_other": "{{count}} élevées",
+        "medium_one": "{{count}} moyenne",
+        "medium_other": "{{count}} moyennes",
+        "low_one": "{{count}} faible",
+        "low_other": "{{count}} faibles",
+        "info_one": "{{count}} info",
+        "info_other": "{{count}} infos"
+      },
+      "view": "Voir dans Diagnostic"
+    }
   },
   "cluster": {
     "title": "Cluster",
@@ -46,7 +71,12 @@
     "connections": "Connexions · {{count}}",
     "channels": "Canaux · {{count}}",
     "none": "Aucun pour l'instant.",
-    "agentNote": "Ces objets sont aussi disponibles pour votre agent via list_servers et get_overview."
+    "agentNote": "Ces objets sont aussi disponibles pour votre agent via list_servers et get_overview.",
+    "nodeRunQueue": "{{value}} en file",
+    "channelOpen": "Ouverts",
+    "channelUnacked": "Non acquittés",
+    "channelPrefetchAvg": "Prefetch (moy.)",
+    "agentNoteTools": "Ces objets sont aussi disponibles pour votre agent via <listServers>list_servers</listServers> et <getOverview>get_overview</getOverview>."
   },
   "ask": {
     "label": "Demandez à votre agent",
@@ -62,5 +92,16 @@
     "prompt4": "Pourquoi la profondeur de payments.capture grimpe-t-elle ?",
     "prompt5": "Montre les findings de config triés par sévérité",
     "prompt6": "Quelque chose a-t-il changé sur le broker dans la dernière heure ?"
+  },
+  "pushBanner": {
+    "title": "Soyez alerté sur votre téléphone",
+    "enable": "Activer les alertes",
+    "dismiss": "Ignorer"
+  },
+  "noAlertChannel": {
+    "title": "Aucun canal d’alerte",
+    "body": "Un signalement critique peut se déclencher sans pouvoir vous joindre. Ajoutez un e-mail, Slack ou un webhook pour que les incidents vous parviennent.",
+    "action": "Configurer les alertes",
+    "dismiss": "Ignorer"
   }
 }

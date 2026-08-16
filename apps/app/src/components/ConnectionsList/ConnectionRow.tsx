@@ -9,7 +9,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
+import { IconChevronRight } from "@/components/ui/icons";
 
 import {
   formatBytes,
@@ -94,7 +94,7 @@ export function ConnectionRow({
               {formatBytes(connection.send_oct ?? 0)}
             </span>
             <div className="w-8 flex justify-center">
-              <PixelChevronRight
+              <IconChevronRight
                 className={`h-3 text-muted-foreground transition-transform duration-150 shrink-0 ${
                   isOpen ? "rotate-90" : ""
                 }`}

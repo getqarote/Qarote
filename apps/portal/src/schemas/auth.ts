@@ -12,22 +12,13 @@ const passwordSchema = z
     "Password must contain at least one special character"
   );
 
-// Sign up form schema
-export const signUpSchema = z
-  .object({
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
-    email: z.string().email("Please enter a valid email address"),
-    password: passwordSchema,
-    confirmPassword: z.string(),
-    acceptTerms: z.boolean().refine((val) => val === true, {
-      message: "You must accept the Terms of Service and Privacy Policy",
-    }),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+// Lightweight sign-up: email + password only. First/last name are optional at
+// the backend (derived from OAuth or left blank), and confirm-password is
+// dropped in favour of the inline strength meter — mirrors the app's sign-up.
+export const signUpSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: passwordSchema,
+});
 
 export type SignUpFormData = z.infer<typeof signUpSchema>;
 

@@ -131,15 +131,16 @@ async function seedDemoAlerts(
     {
       title: "High queue depth on orders.processing",
       description:
-        "Queue orders.processing has 12,847 messages ready, exceeding the threshold of 10,000.",
+        "Queue orders.processing has 1,543 messages ready, exceeding the threshold of 1,000.",
       severity: "CRITICAL" as const,
       status: "ACTIVE" as const,
       category: "queue_depth",
       sourceType: "queue",
       sourceName: "orders.processing",
       serverName: "Demo RabbitMQ",
-      threshold: 10000,
-      value: 12847,
+      // In the range the simulator actually reaches (plateaus near 1,700).
+      threshold: 1000,
+      value: 1543,
       firstSeenAt: minutesAgo(45),
       lastSeenAt: minutesAgo(2),
       fingerprint: fp("queue_depth", "queue", "orders.processing"),
@@ -160,39 +161,10 @@ async function seedDemoAlerts(
       lastSeenAt: minutesAgo(1),
       fingerprint: fp("consumer_count", "queue", "notifications.email"),
     },
-    {
-      title: "High message rate on analytics.direct",
-      description:
-        "Exchange analytics.direct is publishing 1,523 msg/s, exceeding the threshold of 1,000 msg/s.",
-      severity: "MEDIUM" as const,
-      status: "ACKNOWLEDGED" as const,
-      category: "message_rate",
-      sourceType: "cluster",
-      sourceName: "analytics.direct",
-      serverName: "Demo RabbitMQ",
-      threshold: 1000,
-      value: 1523,
-      firstSeenAt: minutesAgo(120),
-      lastSeenAt: minutesAgo(15),
-      acknowledgedAt: minutesAgo(90),
-      fingerprint: fp("message_rate", "cluster", "analytics.direct"),
-    },
-    {
-      title: "Unacknowledged messages on orders.failed",
-      description:
-        "Queue orders.failed has 234 unacknowledged messages. Consumers may be stuck.",
-      severity: "HIGH" as const,
-      status: "ACTIVE" as const,
-      category: "unacked_messages",
-      sourceType: "queue",
-      sourceName: "orders.failed",
-      serverName: "Demo RabbitMQ",
-      threshold: 100,
-      value: 234,
-      firstSeenAt: minutesAgo(60),
-      lastSeenAt: minutesAgo(3),
-      fingerprint: fp("unacked_messages", "queue", "orders.failed"),
-    },
+    // A message-rate and an unacked alert were removed here: both were false
+    // by ~250x against the live broker, and nothing at this traffic level
+    // crosses either threshold, so retuning them would just invent smaller
+    // numbers. What remains is verifiable or node-scoped.
     {
       title: "Memory alarm cleared on node rabbit@demo",
       description:
@@ -234,6 +206,8 @@ async function seedDemoAlerts(
       ...alert,
       workspaceId,
       serverId,
+      // Same split the analyser applies at runtime.
+      vhost: alert.sourceType === "queue" ? vhost : null,
       createdAt: alert.firstSeenAt,
       updatedAt: alert.lastSeenAt,
     })),
@@ -322,12 +296,12 @@ async function seedDemoDiagnostics(
       queueName: "orders.processing",
       severity: AlertSeverity.HIGH,
       description:
-        "orders.processing is holding 12,847 ready messages and climbing — publish rate (1,240 msg/s) has outpaced consumer throughput (310 msg/s) for the last 38 minutes.",
+        "orders.processing is holding over a thousand ready messages and climbing — publishers have outpaced consumer throughput by roughly 4:1 for the last half hour.",
       recommendation:
-        "Scale the orders consumer group: the 4 active consumers are saturated. Add capacity or raise prefetch, then confirm the ready count trends down.",
+        "Scale the orders consumer group: the single active consumer is saturated. Add capacity or raise prefetch, then confirm the ready count trends down.",
       ageMin: 38,
       explanation:
-        "**Root cause: a sustained producer/consumer imbalance, not a spike.**\n\nThe backlog on `orders.processing` has grown steadily for ~38 minutes because publishers are sustaining ~1,240 msg/s while the 4 consumers drain only ~310 msg/s combined. That 4:1 gap compounds — at this rate the queue adds ~930 messages every second.\n\nThis is a throughput ceiling on the consumer side, not a transient burst: the publish rate is flat, so a retry storm or fan-out misconfiguration is unlikely. The most probable cause is consumers blocked on a downstream dependency (DB writes, a slow API) or a prefetch set too low to keep workers busy.\n\n**What to do:** add consumer capacity (or raise `prefetch_count` if workers are idle between acks) and watch the ready count. If it doesn't fall within a few minutes of scaling, the bottleneck is downstream of the consumers — profile the message handler, not RabbitMQ.",
+        "**Root cause: a sustained producer/consumer imbalance, not a spike.**\n\nThe backlog on `orders.processing` has grown steadily because publishers are arriving roughly four times faster than the single consumer drains them. A gap that ratio doesn't recover on its own — every minute it persists adds to the depth, which is why the ready count keeps setting new highs rather than oscillating.\n\nThis is a throughput ceiling on the consumer side, not a transient burst: the publish rate is flat, so a retry storm or fan-out misconfiguration is unlikely. The most probable cause is a consumer blocked on a downstream dependency (DB writes, a slow API), or a prefetch set too low to keep it busy between acks.\n\n**What to do:** add consumer capacity (or raise `prefetch_count` if the worker sits idle waiting on acks) and watch the ready count. If it doesn't fall within a few minutes of scaling, the bottleneck is downstream of the consumer — profile the message handler, not RabbitMQ.",
     },
     {
       ruleId: "CONSUMER_CRASH",
@@ -335,12 +309,12 @@ async function seedDemoDiagnostics(
       queueName: "notifications.email",
       severity: AlertSeverity.CRITICAL,
       description:
-        "notifications.email dropped from 3 consumers to 0. 1,902 messages are now accumulating with nothing draining them.",
+        "notifications.email has no consumers attached. Messages are accumulating with nothing draining them.",
       recommendation:
         "Restart the email worker and inspect its logs for an unhandled exception or OOM. Messages are durable and will drain once a consumer reconnects.",
       ageMin: 19,
       explanation:
-        "**Root cause: the consumer fleet died, not RabbitMQ.**\n\nAll 3 consumers on `notifications.email` disconnected within the same window and none reconnected. A simultaneous drop across every consumer points to a single shared failure — a deploy that crash-loops, an unhandled exception killing the process, or an OOM — rather than independent network blips.\n\nThe queue itself is healthy: messages are durable and simply queuing up safely. The risk is purely latency (emails are delayed), and it grows until a consumer returns.\n\n**What to do:** check the email worker's logs for the exit reason. If it's crash-looping on a poison message, the redelivery will keep killing new consumers — move the offending message to a dead-letter queue before bringing workers back.",
+        "**Root cause: the consumer fleet died, not RabbitMQ.**\n\n`notifications.email` has zero consumers attached while its siblings on the same fanout — `notifications.push` and `notifications.sms` — are still draining normally. That asymmetry is the tell: a broker-wide problem would have taken all three down, so the failure is specific to the email worker.\n\nThe queue itself is healthy: messages are durable and simply queuing up safely. The risk is purely latency (emails are delayed), and it grows until a consumer returns.\n\n**What to do:** check the email worker's logs for the exit reason. If it's crash-looping on a poison message, the redelivery will keep killing new consumers — move the offending message to a dead-letter queue before bringing workers back.",
     },
     {
       ruleId: "SLOW_CONSUMER",
@@ -416,15 +390,34 @@ async function seedDemoSnapshots(
   });
   if (existing > 0) return;
 
-  // 40 × 5 min = 200 min of history. Crosses the 180-min DIAGNOSIS_WARMUP_MINUTES
+  // 200 × 60 s = 200 min of history. Crosses the 180-min DIAGNOSIS_WARMUP_MINUTES
   // threshold (capability-axis.ts) so the demo doesn't render the "warming up —
   // findings may be sparse" advisory while showing populated findings.
-  const POINTS = 40;
-  const STEP_MS = 5 * 60 * 1000;
+  //
+  // Points are 60 s apart (prod cadence). Philosophy B (ADR-004 §1): the rate is
+  // derived at read time from cumulative counters via counter_agg, which needs
+  // >= 2 samples per bucket — 5-min spacing would leave 2-min buckets
+  // single-sampled and derive a rate of 0. So we seed a monotonic counter per
+  // queue whose per-step increment is `rate * stepSeconds`.
+  const POINTS = 200;
+  const STEP_MS = 60 * 1000;
+  const STEP_SECONDS = STEP_MS / 1000;
   const now = Date.now();
   const ts = (i: number) => new Date(now - (POINTS - 1 - i) * STEP_MS);
   const lerp = (a: number, b: number, i: number) =>
     Math.round(a + ((b - a) * i) / (POINTS - 1));
+
+  const counters: Record<string, { publish: bigint; deliver: bigint }> = {};
+  const accrue = (
+    queueName: string,
+    publishRate: number,
+    consumeRate: number
+  ) => {
+    const c = (counters[queueName] ??= { publish: 0n, deliver: 0n });
+    c.publish += BigInt(Math.round(publishRate * STEP_SECONDS));
+    c.deliver += BigInt(Math.round(consumeRate * STEP_SECONDS));
+    return { publishCount: c.publish, deliverCount: c.deliver };
+  };
 
   const data: {
     serverId: string;
@@ -434,57 +427,69 @@ async function seedDemoSnapshots(
     messages: bigint;
     messagesReady: bigint;
     messagesUnack: bigint;
-    publishRate: number;
-    consumeRate: number;
+    publishCount: bigint;
+    deliverCount: bigint;
     consumerCount: number;
     timestamp: Date;
   }[] = [];
 
   for (let i = 0; i < POINTS; i++) {
-    const isLast = i === POINTS - 1;
+    const minsFromEnd = POINTS - 1 - i;
+    // Publish stops over the last few minutes (visible under 2-min rate buckets).
+    const publishStopped = minsFromEnd < 3;
     const base = { serverId, workspaceId, vhost, timestamp: ts(i) };
 
-    const ordersMsgs = lerp(300, 12000, i);
+    // Magnitudes track what the demo simulator actually sustains, so the
+    // engine's description agrees with a live `list_queues` read. The matching
+    // per-queue regimes live in the demo role's simulator template.
+    const ordersMsgs = lerp(120, 1700, i);
     data.push({
       ...base,
       queueName: "orders.processing",
       messages: BigInt(ordersMsgs),
-      messagesReady: BigInt(ordersMsgs - 50),
-      messagesUnack: BigInt(50),
-      publishRate: isLast ? 0 : 1240,
-      consumeRate: 310,
-      consumerCount: 4,
+      messagesReady: BigInt(ordersMsgs - 1),
+      messagesUnack: BigInt(1),
+      // ~4:1 in/out gap, uncapped: the one queue meant to back up.
+      ...accrue("orders.processing", publishStopped ? 0 : 0.15, 0.033),
+      consumerCount: 1,
     });
 
     // Depth held flat so this queue trips ONLY CONSUMER_CRASH. A rising depth
     // would also trip QUEUE_BACKLOG (which CONSUMER_CRASH supersedes) — that
     // shows a dimmed 4th "caused-by" card and mismatches the sidebar's
     // primary-finding count.
-    // Consumers drop in the last 4 points so the 30-min CONSUMER_CRASH window
-    // (last 6 points) still sees both "had consumers" and "now 0".
-    const crashed = i >= POINTS - 4;
-    const notifMsgs = 770;
+    // Consumers drop over the last 20 min so the 30-min CONSUMER_CRASH window
+    // still sees both "had consumers" and "now 0".
+    const crashed = minsFromEnd < 20;
+    // 800 = the x-max-length the simulator sets on this queue, which is what
+    // holds the depth flat on the live broker too.
+    const notifMsgs = 800;
     data.push({
       ...base,
       queueName: "notifications.email",
       messages: BigInt(notifMsgs),
       messagesReady: BigInt(notifMsgs),
       messagesUnack: BigInt(0),
-      publishRate: isLast ? 0 : 400,
-      consumeRate: crashed ? 0 : 400,
-      consumerCount: crashed ? 0 : 3,
+      // The fanout hits all three notification queues on every batch.
+      ...accrue(
+        "notifications.email",
+        publishStopped ? 0 : 0.6,
+        crashed ? 0 : 0.6
+      ),
+      consumerCount: crashed ? 0 : 1,
     });
 
-    const payMsgs = lerp(4000, 4400, i);
+    // Near-flat by design: SLOW_CONSUMER keys on the consume/publish gap, not
+    // depth, and x-max-length keeps it below QUEUE_BACKLOG's threshold.
+    const payMsgs = lerp(880, 900, i);
     data.push({
       ...base,
       queueName: "payments.capture",
       messages: BigInt(payMsgs),
-      messagesReady: BigInt(payMsgs - 30),
-      messagesUnack: BigInt(30),
-      publishRate: 100,
-      consumeRate: 90,
-      consumerCount: 2,
+      messagesReady: BigInt(payMsgs - 1),
+      messagesUnack: BigInt(1),
+      ...accrue("payments.capture", 0.15, 0.033),
+      consumerCount: 1,
     });
   }
 

@@ -144,6 +144,11 @@
         "byok": "Use my own key",
         "configureKey": "Configure API key"
       }
+    },
+    "share": {
+      "button": "Share",
+      "copied": "Public link copied to clipboard",
+      "failed": "Couldn’t create share link"
     }
   }
 }

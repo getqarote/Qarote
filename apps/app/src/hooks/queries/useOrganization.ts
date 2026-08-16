@@ -50,14 +50,11 @@ export const useUpdateOrganization = () => {
   });
 };
 
-// Get organization billing info
-export const useOrgBillingInfo = () => {
-  const { isAuthenticated } = useAuth();
-
-  return trpc.organization.management.getBillingInfo.useQuery(undefined, {
-    enabled: isAuthenticated,
-    staleTime: 60000,
-  });
+// Permanently delete the current organization (OWNER only). On success the
+// caller's org/workspace context is gone, so the UI hard-reloads to re-bootstrap
+// rather than invalidating individual queries.
+export const useDeleteOrganization = () => {
+  return trpc.organization.management.delete.useMutation();
 };
 
 // List organization members

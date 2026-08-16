@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { prisma } from "@/core/prisma";
+
 import {
   extractMajorMinorVersion,
-  getUpgradeRecommendationForOverLimit,
+  getOrgPlan,
   PlanLimitExceededError,
   PlanValidationError,
   validateQueueCreationOnServer,
@@ -22,7 +24,14 @@ vi.mock("@/core/prisma", () => ({
     subscription: {
       findUnique: vi.fn(),
     },
+    organization: {
+      findUnique: vi.fn(),
+    },
   },
+}));
+
+vi.mock("@/config/deployment", () => ({
+  isDemoMode: () => false,
 }));
 
 vi.mock("@/core/logger", () => ({
@@ -100,26 +109,6 @@ describe("PlanLimitExceededError", () => {
   it("is an instance of Error", () => {
     const err = new PlanLimitExceededError("Feature", 5, 3, UserPlan.DEVELOPER);
     expect(err).toBeInstanceOf(Error);
-  });
-});
-
-describe("getUpgradeRecommendationForOverLimit", () => {
-  it("recommends DEVELOPER for FREE plan", () => {
-    const result = getUpgradeRecommendationForOverLimit(UserPlan.FREE);
-    expect(result.recommendedPlan).toBe(UserPlan.DEVELOPER);
-    expect(result.message).toContain("Developer");
-  });
-
-  it("recommends ENTERPRISE for DEVELOPER plan", () => {
-    const result = getUpgradeRecommendationForOverLimit(UserPlan.DEVELOPER);
-    expect(result.recommendedPlan).toBe(UserPlan.ENTERPRISE);
-    expect(result.message).toContain("Enterprise");
-  });
-
-  it("returns null recommendedPlan for ENTERPRISE plan", () => {
-    const result = getUpgradeRecommendationForOverLimit(UserPlan.ENTERPRISE);
-    expect(result.recommendedPlan).toBeNull();
-    expect(result.message).toContain("highest plan");
   });
 });
 
@@ -336,5 +325,39 @@ describe("validateQueueCreationOnServer", () => {
     expect(() =>
       validateQueueCreationOnServer(UserPlan.ENTERPRISE, 1000)
     ).not.toThrow();
+  });
+});
+
+describe("getOrgPlan — signup trial", () => {
+  const mockOrgFindUnique = vi.mocked(prisma.organization.findUnique);
+  const DAY_MS = 24 * 60 * 60 * 1000;
+
+  it("returns the paid plan when a subscription exists (overrides the trial)", async () => {
+    mockOrgFindUnique.mockResolvedValue({
+      createdAt: new Date(), // brand new, but a real subscription wins
+      subscription: { plan: UserPlan.DEVELOPER },
+    } as never);
+    expect(await getOrgPlan("org-1")).toBe(UserPlan.DEVELOPER);
+  });
+
+  it("grants ENTERPRISE during the 14-day trial when there is no subscription", async () => {
+    mockOrgFindUnique.mockResolvedValue({
+      createdAt: new Date(Date.now() - 5 * DAY_MS),
+      subscription: null,
+    } as never);
+    expect(await getOrgPlan("org-1")).toBe(UserPlan.ENTERPRISE);
+  });
+
+  it("falls back to FREE once the 14-day trial has elapsed", async () => {
+    mockOrgFindUnique.mockResolvedValue({
+      createdAt: new Date(Date.now() - 15 * DAY_MS),
+      subscription: null,
+    } as never);
+    expect(await getOrgPlan("org-1")).toBe(UserPlan.FREE);
+  });
+
+  it("returns FREE when the org cannot be found", async () => {
+    mockOrgFindUnique.mockResolvedValue(null as never);
+    expect(await getOrgPlan("missing")).toBe(UserPlan.FREE);
   });
 });

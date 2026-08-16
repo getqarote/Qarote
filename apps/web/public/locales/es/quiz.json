@@ -1,9 +1,55 @@
 {
-  "calculatingResults": "Calculando tus resultados…",
   "seo": {
-    "title": "Evaluación RabbitMQ — Prueba tus habilidades",
-    "description": "Quiz RabbitMQ gratuito con 20 preguntas. Evalúa tu conocimiento sobre colas, exchanges, consumers y patrones de producción. Puntuación y veredicto.",
-    "resultsTitle": "Mis resultados de la evaluación de habilidades RabbitMQ",
-    "resultsDescription": "Realicé la evaluación gratuita de habilidades RabbitMQ en Qarote. Mira cómo te comparas."
+    "title": "¿Conoces bien tu configuración de RabbitMQ? — Qarote",
+    "description": "Una evaluación gratuita de RabbitMQ con 20 preguntas. Obtén una puntuación, un veredicto por nivel y descubre exactamente dónde están tus carencias. Sin registro.",
+    "resultsTitle": "Mi resultado de la evaluación de RabbitMQ — Qarote",
+    "resultsDescription": "Hice la evaluación gratuita de RabbitMQ de Qarote. Descubre tu nivel y dónde están tus carencias."
+  },
+  "bar": {
+    "answered": "{{answered}}/{{total}} respondidas",
+    "exit": "Salir",
+    "toggleTheme": "Cambiar tema"
+  },
+  "start": {
+    "badge": "Gratis · 20 preguntas · ~5 minutos",
+    "title": "¿Conoces bien tu configuración de RabbitMQ?",
+    "body": "20 preguntas sobre colas, exchanges, consumidores y patrones de producción. Obtén una puntuación, un veredicto por nivel y descubre exactamente dónde están tus carencias.",
+    "cta": "Hacer la evaluación gratuita",
+    "sub": "Sin registro."
+  },
+  "question": {
+    "counter": "{{index}} / {{total}}",
+    "answerLabel": "Respuesta",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "seeResults": "Ver resultados",
+    "hint": "pulsa A–D o 1–4",
+    "progressLabel": "Pregunta {{index}} de {{total}}"
+  },
+  "email": {
+    "title": "¿Quieres el desglose completo?",
+    "body": "Deja tu correo y te enviaremos tus resultados detallados y tus carencias por área. Opcional — tu puntuación está lista de todos modos.",
+    "placeholder": "tu@empresa.com",
+    "ariaLabel": "Correo (opcional)",
+    "submit": "Envíame los resultados",
+    "skip": "Omitir — ver resultados",
+    "note": "Sin cuenta, sin spam. Solo tu desglose."
+  },
+  "results": {
+    "tierLabel": "Tu nivel",
+    "copy": "Copiar enlace del resultado",
+    "copied": "¡Copiado!",
+    "shareX": "Compartir en X",
+    "shareLinkedIn": "LinkedIn",
+    "shareText": "Obtuve un {{score}} % en la evaluación de RabbitMQ de Qarote — nivel {{tier}}.",
+    "breakdownTitle": "Dónde están tus carencias",
+    "breakdownSub": "Puntuación por área en los cuatro temas.",
+    "areaScore": "{{correct}} / {{total}} · {{pct}} %",
+    "opportunity": "Mayor oportunidad: <b>{{area}}</b> — repasa esta área para subir de nivel.",
+    "ctaEyebrow": "Diagnóstico de RabbitMQ centrado en el agente",
+    "ctaTitle": "Deja de enterarte por una alerta.",
+    "ctaBody": "Qarote detecta incidentes y explica la causa raíz — y la entrega a tu agente de IA por MCP, para que depures desde tu editor.",
+    "ctaButton": "Prueba Qarote gratis",
+    "retake": "↺ Repetir la evaluación"
   }
 }

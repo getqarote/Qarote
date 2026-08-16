@@ -1,0 +1,43 @@
+---
+title: "Reading a depth anomaly: signal vs planned drain"
+description: "Not every climbing queue is an incident. How the rules engine tells a real backlog from a deliberate drain."
+publishedAt: "2026-04-30"
+author: "Brice Tessier"
+category: "diagnosis"
+cover: "cover-diagnosis-depth.svg"
+coverCaption: "depth ↑"
+readingTimeMin: 5
+tags: ["diagnosis", "depth", "rules-engine"]
+---
+
+import Callout from "@/components/blog/Callout.astro";
+
+A queue depth chart pointing up is the most over-paged signal in messaging. Sometimes it's an outage. Just as often it's a replay you kicked off yourself, or a batch job behaving exactly as designed. A rule that fires on "depth went up" will cry wolf until you mute it — and then miss the real one. The skill is telling the two apart.
+
+## Climbing isn't the same as broken
+
+Depth is a derivative of two flows: publish rate in, ack rate out. Depth rises whenever publishes outpace acks, and there are two completely different reasons that happens:
+
+- **A real backlog** — consumers can't keep up, or aren't there at all. Drain rate is at or near zero while messages pile in.
+- **A deliberate drain or replay** — you intentionally pushed a burst, and consumers are chewing through it as fast as they can.
+
+Same chart. Opposite meanings. The number on the y-axis can't distinguish them; only the _shape_ of the surrounding signals can.
+
+## What the rules engine weighs
+
+Qarote's rules engine doesn't fire on depth alone. It reads the supporting signals and asks whether they describe loss or load:
+
+- **Consumer count and delta.** Did consumers drop right before depth climbed? Loss looks like an incident. A stable or rising consumer count under a publish spike looks like planned load.
+- **Drain rate.** Near-zero ack rate while depth grows is the backlog tell. A healthy ack rate that simply can't match an unusual publish burst is a drain in progress.
+- **Publish shape.** A sharp, bounded spike consistent with a replay or batch reads very differently from a steady climb with no end.
+- **Co-firing.** Are sibling queues degrading at the same time? Correlated loss points at a shared cause; an isolated climb on one queue points at that queue's own workload.
+
+<Callout type="note">
+  The question is never "is depth high?" It's "is anything *draining* it?" A
+  deep queue with healthy consumers and a falling slope is a drain doing its
+  job. A shallow queue that just lost every consumer is the one to wake up for.
+</Callout>
+
+## So the page means something
+
+By gating on the combination — consumers lost _and_ drain stalled _and_, ideally, co-firing siblings — the engine fires when depth signals a genuine problem and stays quiet when it's you running a replay. That's the difference between an alert you trust and one you've trained yourself to ignore.

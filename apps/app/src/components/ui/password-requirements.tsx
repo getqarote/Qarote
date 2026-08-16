@@ -4,7 +4,7 @@ import { Check } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-import { PixelX } from "@/components/ui/pixel-x";
+import { IconClose } from "@/components/ui/icons";
 
 interface PasswordRequirementsProps {
   password: string;
@@ -40,7 +40,7 @@ function PasswordRequirements({
                 isValid ? (
                   <Check className="h-3.5 w-3.5 text-success shrink-0" />
                 ) : (
-                  <PixelX className="h-3.5 w-auto shrink-0 text-destructive" />
+                  <IconClose className="h-3.5 w-auto shrink-0 text-destructive" />
                 )
               ) : (
                 <span className="h-3.5 w-3.5 flex items-center justify-center shrink-0">

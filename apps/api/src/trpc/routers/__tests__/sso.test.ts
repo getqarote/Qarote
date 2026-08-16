@@ -12,6 +12,7 @@ const mockSsoProviderUpsert = vi.fn();
 const mockSsoProviderUpdate = vi.fn();
 const mockSsoProviderDeleteMany = vi.fn();
 const mockOrgSsoConfigUpsert = vi.fn();
+const mockOrgSsoConfigUpdate = vi.fn();
 const mockTransaction = vi.fn();
 
 vi.mock("@/core/prisma", () => ({
@@ -32,6 +33,7 @@ vi.mock("@/core/prisma", () => ({
     orgSsoConfig: {
       findFirst: (...a: unknown[]) => mockOrgSsoConfigFindFirst(...a),
       upsert: (...a: unknown[]) => mockOrgSsoConfigUpsert(...a),
+      update: (...a: unknown[]) => mockOrgSsoConfigUpdate(...a),
     },
     $transaction: (...a: unknown[]) => mockTransaction(...a),
   },
@@ -119,6 +121,7 @@ function makeCtx(overrides: Record<string, unknown> = {}) {
       orgSsoConfig: {
         findFirst: mockOrgSsoConfigFindFirst,
         upsert: mockOrgSsoConfigUpsert,
+        update: mockOrgSsoConfigUpdate,
       },
       $transaction: mockTransaction,
     },
@@ -168,6 +171,7 @@ const mockOrgConfig = {
   organizationId: null,
   providerId: "prov-1",
   autoProvision: true,
+  enforced: false,
   createdAt: new Date(),
   updatedAt: new Date(),
   provider: mockProvider,
@@ -237,6 +241,22 @@ describe("ssoRouter", () => {
       expect(result!.type).toBe("oidc");
       expect(result!.oidcConfig?.clientSecret).toBe(REDACTED);
       expect(result!.oidcConfig?.clientId).toBe("qarote");
+      expect(result!.autoProvision).toBe(true);
+      expect(result!.enforced).toBe(false);
+    });
+
+    it("surfaces autoProvision and enforced from the OrgSsoConfig row", async () => {
+      mockOrgSsoConfigFindFirst.mockResolvedValue({
+        ...mockOrgConfig,
+        autoProvision: false,
+        enforced: true,
+      });
+
+      const caller = ssoRouter.createCaller(makeCtx() as never);
+      const result = await caller.getProviderConfig();
+
+      expect(result!.autoProvision).toBe(false);
+      expect(result!.enforced).toBe(true);
     });
 
     it("returns null when no provider configured", async () => {
@@ -341,6 +361,64 @@ describe("ssoRouter", () => {
       );
     });
 
+    it("persists autoProvision: false when supplied", async () => {
+      mockIsFeatureEnabled.mockResolvedValue(true);
+
+      const txSsoUpsert = vi.fn().mockResolvedValue({ id: "prov-new" });
+      const txOscUpsert = vi.fn().mockResolvedValue({});
+      mockTransaction.mockImplementation(async (cb: (tx: unknown) => unknown) =>
+        cb({
+          ssoProvider: { upsert: txSsoUpsert },
+          orgSsoConfig: { upsert: txOscUpsert },
+        })
+      );
+
+      const caller = ssoRouter.createCaller(makeCtx() as never);
+      await caller.registerProvider({
+        type: "oidc",
+        oidcDiscoveryUrl:
+          "https://idp.example.com/.well-known/openid-configuration",
+        oidcClientId: "qarote",
+        oidcClientSecret: "secret",
+        autoProvision: false,
+      });
+
+      expect(txOscUpsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          update: expect.objectContaining({ autoProvision: false }),
+          create: expect.objectContaining({ autoProvision: false }),
+        })
+      );
+    });
+
+    it("defaults autoProvision to true when omitted", async () => {
+      mockIsFeatureEnabled.mockResolvedValue(true);
+
+      const txSsoUpsert = vi.fn().mockResolvedValue({ id: "prov-new" });
+      const txOscUpsert = vi.fn().mockResolvedValue({});
+      mockTransaction.mockImplementation(async (cb: (tx: unknown) => unknown) =>
+        cb({
+          ssoProvider: { upsert: txSsoUpsert },
+          orgSsoConfig: { upsert: txOscUpsert },
+        })
+      );
+
+      const caller = ssoRouter.createCaller(makeCtx() as never);
+      await caller.registerProvider({
+        type: "oidc",
+        oidcDiscoveryUrl:
+          "https://idp.example.com/.well-known/openid-configuration",
+        oidcClientId: "qarote",
+        oidcClientSecret: "secret",
+      });
+
+      expect(txOscUpsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          create: expect.objectContaining({ autoProvision: true }),
+        })
+      );
+    });
+
     it("cloud: rejects non-enterprise plan", async () => {
       mockIsCloudMode = true;
       const { UserPlan } = await import("@/generated/prisma/client");
@@ -412,6 +490,107 @@ describe("ssoRouter", () => {
             "https://idp.example.com/.well-known/openid-configuration",
         })
       ).rejects.toThrow(TRPCError);
+    });
+
+    it("persists autoProvision when supplied (scoped by provider PK)", async () => {
+      mockIsFeatureEnabled.mockResolvedValue(true);
+      mockSsoProviderFindUnique.mockResolvedValue(mockProvider);
+      mockSsoProviderUpdate.mockResolvedValue({
+        ...mockProvider,
+        id: "prov-1",
+      });
+      mockOrgSsoConfigUpdate.mockResolvedValue({});
+
+      const caller = ssoRouter.createCaller(makeCtx() as never);
+      await caller.updateProvider({
+        type: "oidc",
+        oidcDiscoveryUrl:
+          "https://idp.example.com/.well-known/openid-configuration",
+        oidcClientId: "qarote",
+        oidcClientSecret: REDACTED,
+        autoProvision: false,
+      });
+
+      expect(mockOrgSsoConfigUpdate).toHaveBeenCalledWith({
+        where: { providerId: "prov-1" },
+        data: { autoProvision: false },
+      });
+    });
+
+    it("leaves autoProvision untouched when omitted", async () => {
+      mockIsFeatureEnabled.mockResolvedValue(true);
+      mockSsoProviderFindUnique.mockResolvedValue(mockProvider);
+      mockSsoProviderUpdate.mockResolvedValue({
+        ...mockProvider,
+        id: "prov-1",
+      });
+
+      const caller = ssoRouter.createCaller(makeCtx() as never);
+      await caller.updateProvider({
+        type: "oidc",
+        oidcDiscoveryUrl:
+          "https://idp.example.com/.well-known/openid-configuration",
+        oidcClientId: "qarote",
+        oidcClientSecret: REDACTED,
+      });
+
+      expect(mockOrgSsoConfigUpdate).not.toHaveBeenCalled();
+    });
+  });
+
+  // ─── setEnforcement ───────────────────────────────────────────────────────
+
+  describe("setEnforcement (ssoAdmin)", () => {
+    it("self-hosted: flips enforced on the instance-wide config", async () => {
+      mockIsFeatureEnabled.mockResolvedValue(true);
+      mockOrgSsoConfigFindFirst.mockResolvedValue(mockOrgConfig);
+      mockOrgSsoConfigUpdate.mockResolvedValue({});
+
+      const caller = ssoRouter.createCaller(makeCtx() as never);
+      const result = await caller.setEnforcement({ enforced: true });
+
+      expect(result.success).toBe(true);
+      expect(mockOrgSsoConfigFindFirst).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { organizationId: null } })
+      );
+      expect(mockOrgSsoConfigUpdate).toHaveBeenCalledWith({
+        where: { id: "osc-1" },
+        data: { enforced: true },
+      });
+    });
+
+    it("cloud: scopes the config lookup to the caller's org", async () => {
+      mockIsCloudMode = true;
+      mockGetOrgPlan.mockResolvedValue(
+        (await import("@/generated/prisma/client")).UserPlan.ENTERPRISE
+      );
+      mockOrgSsoConfigFindFirst.mockResolvedValue({
+        ...mockOrgConfig,
+        organizationId: "org-1",
+      });
+      mockOrgSsoConfigUpdate.mockResolvedValue({});
+
+      const caller = ssoRouter.createCaller(makeCtx() as never);
+      await caller.setEnforcement({ enforced: false });
+
+      expect(mockOrgSsoConfigFindFirst).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { organizationId: "org-1" } })
+      );
+      expect(mockOrgSsoConfigUpdate).toHaveBeenCalledWith({
+        where: { id: "osc-1" },
+        data: { enforced: false },
+      });
+    });
+
+    it("throws NOT_FOUND when no SSO config exists", async () => {
+      mockIsFeatureEnabled.mockResolvedValue(true);
+      mockOrgSsoConfigFindFirst.mockResolvedValue(null);
+
+      const caller = ssoRouter.createCaller(makeCtx() as never);
+      await expect(caller.setEnforcement({ enforced: true })).rejects.toThrow(
+        TRPCError
+      );
+      expect(mockOrgSsoConfigUpdate).not.toHaveBeenCalled();
     });
   });
 

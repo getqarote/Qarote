@@ -18,10 +18,20 @@ All deployments start with the **free tier** (core monitoring). Premium features
 
 ## Prerequisites
 
-- **Binary:** PostgreSQL 17+ already running (no Docker or Node.js needed)
-- **Docker Compose:** Docker and Docker Compose installed (PostgreSQL is bundled)
-- **Dokku:** Dokku installed on your server
+- **Binary:** PostgreSQL 17+ **with the TimescaleDB extension and TimescaleDB Toolkit** already running (no Docker or Node.js needed)
+- **Docker Compose:** Docker and Docker Compose installed (a TimescaleDB + Toolkit PostgreSQL is bundled)
+- **Dokku:** Dokku installed on your server (its Postgres must ship TimescaleDB + Toolkit — see below)
 - Minimum 2 GB RAM, 10 GB disk space
+
+> ⚠️ **PostgreSQL must ship TimescaleDB _and_ the TimescaleDB Toolkit.** Qarote
+> stores time-series data in TimescaleDB hypertables and derives throughput rates
+> at read time with the Toolkit's `counter_agg`/`rate()`. Both are server-side
+> extensions that must be present in your Postgres image/package — Qarote
+> _activates_ them (`CREATE EXTENSION`) but cannot install them, so a missing
+> extension fails the migration on first boot. Use `timescale/timescaledb-ha`
+> (the Docker Compose setup bundles it) or install the `timescaledb-2-postgresql-17`
+> and `timescaledb-toolkit-postgresql-17` packages. `timescaledb-toolkit` has no
+> Homebrew formula — on macOS use a Docker/Linux Postgres.
 
 ## Binary
 

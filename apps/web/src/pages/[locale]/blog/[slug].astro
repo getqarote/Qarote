@@ -1,7 +1,8 @@
 ---
 import { getCollection, render, type CollectionEntry } from "astro:content";
 import { SUPPORTED_LOCALES } from "@qarote/i18n";
-import BlogLayout from "../../../layouts/BlogLayout.astro";
+
+import BlogLayout from "@/layouts/BlogLayout.astro";
 
 export async function getStaticPaths() {
   const allPosts = await getCollection("blog");
@@ -14,9 +15,36 @@ export async function getStaticPaths() {
       const separatorIdx = post.id.indexOf("/");
       const locale = post.id.slice(0, separatorIdx);
       const slug = post.id.slice(separatorIdx + 1);
+
+      // Related posts within the same locale: same category first, then most
+      // recent, excluding the current post. Capped at 3.
+      const localePosts = allPosts
+        .filter((p) => p.id.startsWith(`${locale}/`) && p.id !== post.id)
+        .sort(
+          (a, b) =>
+            new Date(b.data.publishedAt).getTime() -
+            new Date(a.data.publishedAt).getTime()
+        );
+      const sameCat = localePosts.filter(
+        (p) => p.data.category === post.data.category
+      );
+      const related = [
+        ...sameCat,
+        ...localePosts.filter((p) => !sameCat.includes(p)),
+      ]
+        .slice(0, 3)
+        .map((p) => ({
+          slug: p.id.slice(locale.length + 1),
+          title: p.data.title,
+          category: p.data.category,
+          cover: p.data.cover,
+          coverCaption: p.data.coverCaption,
+          readingTimeMin: p.data.readingTimeMin,
+        }));
+
       return {
         params: { locale, slug },
-        props: { post, locale, slug },
+        props: { post, locale, slug, related },
       };
     });
 }
@@ -25,10 +53,18 @@ interface Props {
   post: CollectionEntry<"blog">;
   locale: string;
   slug: string;
+  related: {
+    slug: string;
+    title: string;
+    category: CollectionEntry<"blog">["data"]["category"];
+    cover?: string;
+    coverCaption?: string;
+    readingTimeMin?: number;
+  }[];
 }
 
-const { post, locale, slug } = Astro.props as Props;
-const { Content, headings } = await render(post);
+const { post, locale, slug, related } = Astro.props as Props;
+const { Content } = await render(post);
 ---
 
 <BlogLayout
@@ -36,11 +72,14 @@ const { Content, headings } = await render(post);
   description={post.data.description}
   publishedAt={post.data.publishedAt}
   updatedAt={post.data.updatedAt}
-  tags={post.data.tags}
+  author={post.data.author}
   readingTimeMin={post.data.readingTimeMin}
-  headings={headings}
+  category={post.data.category}
+  cover={post.data.cover}
+  coverCaption={post.data.coverCaption}
   slug={slug}
   locale={locale}
+  related={related}
 >
   <Content />
 </BlogLayout>

@@ -136,20 +136,6 @@ export async function cachePruneExpired(): Promise<void> {
 }
 
 /**
- * Delete a single cache entry by key. No-op when the key is absent.
- * Used by callers that own an explicit lifecycle (e.g. distributed
- * concurrency reservations) where TTL alone isn't enough — the
- * release path needs to drop the entry deterministically.
- */
-export async function cacheDelete(key: string): Promise<void> {
-  try {
-    await prisma.$executeRaw`DELETE FROM cache WHERE key = ${key}`;
-  } catch (error) {
-    logger.warn({ error, key }, "cacheDelete failed — ignored");
-  }
-}
-
-/**
  * Atomically increment a numeric counter under `key` and return the new value.
  *
  * - First call (no row): row is created with `value = 1` and the given `ttlMs`.
@@ -227,32 +213,4 @@ export async function cacheIncrement(
     );
   }
   return { count: row.count, windowEnd: row.window_end };
-}
-
-/**
- * Count non-expired entries whose key starts with `prefix`. Uses the
- * `idx_cache_key_pattern` index for a range scan independent of
- * collation.
- *
- * The same LIKE-escaping rules as `cacheDeletePrefix` apply — `%`,
- * `_`, and `\` in the prefix are escaped so a workspace id containing
- * one of those characters can't unintentionally match unrelated keys.
- */
-export async function cacheCountPrefix(prefix: string): Promise<number> {
-  const escaped = prefix
-    .replace(/\\/g, "\\\\")
-    .replace(/%/g, "\\%")
-    .replace(/_/g, "\\_");
-  const pattern = `${escaped}%`;
-  try {
-    const rows = await prisma.$queryRaw<[{ count: bigint }]>`
-      SELECT COUNT(*)::bigint AS count FROM cache
-      WHERE key LIKE ${pattern} ESCAPE '\\'
-        AND expires_at > NOW()
-    `;
-    return Number(rows[0]?.count ?? 0n);
-  } catch (error) {
-    logger.warn({ error, prefix }, "cacheCountPrefix failed — returning 0");
-    return 0;
-  }
 }

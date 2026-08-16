@@ -46,7 +46,9 @@ docs/architecture
 docs/development
 
 # Infrastructure
-infrastructure/
+# infrastructure/ est versionné (review CodeRabbit) mais EXCLU du mirror public.
+# Les secrets restent ignorés par infrastructure/terraform/.gitignore et
+# infrastructure/ansible/.gitignore — ne PAS remettre d'exclusion globale ici.
 # infrastructure/terraform/.terraform/
 # infrastructure/terraform/.terraform.lock.hcl
 # infrastructure/terraform/terraform.tfstate

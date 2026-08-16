@@ -33,6 +33,16 @@ export const addServerSchema = z.object({
 
 export type AddServerFormData = z.infer<typeof addServerSchema>;
 
+/**
+ * Edit-mode schema — identical to {@link addServerSchema} except the password
+ * is optional. In the Manage-server sheet an empty password means "keep the
+ * current credential" (the submit handler omits it from the mutation), so it
+ * must not fail validation. Add mode keeps `password.min(1)`.
+ */
+export const editServerSchema = addServerSchema.extend({
+  password: z.string().optional(),
+});
+
 // URL validation schema for RabbitMQ server URLs
 // Ensures protocol is at the start and URL is parseable
 export const urlValidationSchema = z

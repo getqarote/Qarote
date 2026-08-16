@@ -34,12 +34,6 @@ export const sessionRouter = router({
           createdAt: true,
           updatedAt: true,
           pendingEmail: true,
-          subscription: {
-            select: {
-              plan: true,
-              status: true,
-            },
-          },
           workspace: {
             select: {
               id: true,

@@ -5,7 +5,7 @@ import { MoreHorizontal } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
+import { IconChevronRight } from "@/components/ui/icons";
 
 const Breadcrumb = React.forwardRef<
   HTMLElement,
@@ -86,7 +86,7 @@ const BreadcrumbSeparator = ({
     className={cn("[&>svg]:size-3.5", className)}
     {...props}
   >
-    {children ?? <PixelChevronRight className="h-3.5 w-auto" />}
+    {children ?? <IconChevronRight className="h-3.5 w-auto" />}
   </li>
 );
 BreadcrumbSeparator.displayName = "BreadcrumbSeparator";

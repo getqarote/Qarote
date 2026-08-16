@@ -18,7 +18,7 @@ export class SignInPage {
       name: "Sign in",
       exact: true,
     });
-    this.signUpLink = page.getByRole("link", { name: /create a new account/i });
+    this.signUpLink = page.getByRole("link", { name: /^sign up$/i });
     this.forgotPasswordLink = page.getByRole("link", {
       name: /forgot your password/i,
     });

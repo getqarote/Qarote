@@ -19,6 +19,13 @@ vi.mock("@/middlewares/workspace", () => ({
   hasWorkspaceAccess: vi.fn().mockResolvedValue(true),
 }));
 
+const mockDeleteOrgCascade = vi.fn();
+class MockSubscriptionCancelFailedError extends Error {}
+vi.mock("@/services/organization/org-deletion.service", () => ({
+  deleteOrganizationCascade: (...a: unknown[]) => mockDeleteOrgCascade(...a),
+  SubscriptionCancelFailedError: MockSubscriptionCancelFailedError,
+}));
+
 const { managementRouter } = await import("../management");
 
 const mockOrgFindUnique = vi.fn();
@@ -259,6 +266,80 @@ describe("managementRouter", () => {
         })
       );
       expect(result?.organizationId).toBe("org-1");
+    });
+  });
+
+  describe("delete", () => {
+    const ownerCtx = () =>
+      makeCtx({
+        orgRole: "OWNER",
+        resolveOrg: vi
+          .fn()
+          .mockResolvedValue({ organizationId: "org-1", role: "OWNER" }),
+      });
+
+    it("throws FORBIDDEN when the caller is ADMIN, not OWNER", async () => {
+      const caller = managementRouter.createCaller(
+        makeCtx({ orgRole: "ADMIN" })
+      );
+      await expect(
+        caller.delete({ confirmation: "acme-corp" })
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      expect(mockDeleteOrgCascade).not.toHaveBeenCalled();
+    });
+
+    it("throws NOT_FOUND when the org does not exist", async () => {
+      mockOrgFindUnique.mockResolvedValue(null);
+      const caller = managementRouter.createCaller(ownerCtx());
+      await expect(
+        caller.delete({ confirmation: "acme-corp" })
+      ).rejects.toMatchObject({ code: "NOT_FOUND" });
+      expect(mockDeleteOrgCascade).not.toHaveBeenCalled();
+    });
+
+    it("throws BAD_REQUEST when the confirmation does not match the slug", async () => {
+      mockOrgFindUnique.mockResolvedValue({
+        id: "org-1",
+        name: "Acme Corp",
+        slug: "acme-corp",
+      });
+      const caller = managementRouter.createCaller(ownerCtx());
+      await expect(
+        caller.delete({ confirmation: "wrong" })
+      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+      expect(mockDeleteOrgCascade).not.toHaveBeenCalled();
+    });
+
+    it("deletes when OWNER + confirmation matches the slug", async () => {
+      mockOrgFindUnique.mockResolvedValue({
+        id: "org-1",
+        name: "Acme Corp",
+        slug: "acme-corp",
+      });
+      mockDeleteOrgCascade.mockResolvedValue(undefined);
+
+      const caller = managementRouter.createCaller(ownerCtx());
+      // Whitespace around the confirmation is trimmed.
+      const res = await caller.delete({ confirmation: "  acme-corp  " });
+
+      expect(res).toEqual({ success: true });
+      expect(mockDeleteOrgCascade).toHaveBeenCalledWith("org-1");
+    });
+
+    it("maps a subscription-cancel failure to INTERNAL_SERVER_ERROR", async () => {
+      mockOrgFindUnique.mockResolvedValue({
+        id: "org-1",
+        name: "Acme Corp",
+        slug: "acme-corp",
+      });
+      mockDeleteOrgCascade.mockRejectedValue(
+        new MockSubscriptionCancelFailedError("org-1")
+      );
+
+      const caller = managementRouter.createCaller(ownerCtx());
+      await expect(
+        caller.delete({ confirmation: "acme-corp" })
+      ).rejects.toMatchObject({ code: "INTERNAL_SERVER_ERROR" });
     });
   });
 

@@ -29,7 +29,6 @@
   "plans": {
     "chooseYourPlan": "Elige tu plan",
     "subtitle": "Escala tu monitoreo de RabbitMQ con planes diseñados para equipos de todos los tamaños.",
-    "pricingTitle": "Precios simples y transparentes",
     "currentPlan": "Plan actual",
     "mostPopular": "Más popular",
     "startFree": "Comenzar gratis",
@@ -240,5 +239,62 @@
     "preferSelfHost": "¿Prefieres el auto-alojamiento?",
     "preferSelfHostDesc": "Despliega Qarote en tu propia infraestructura con una clave de licencia.",
     "learnMore": "Más información"
+  },
+  "hero": {
+    "subtitle": "Facturación de esta organización.",
+    "billedStripe": "Facturado {{interval}} · vía Stripe",
+    "billedContract": "Facturado {{interval}} · contrato personalizado",
+    "intervalMonthly": "mensualmente",
+    "intervalYearly": "anualmente",
+    "perMonth": "/mes",
+    "perYear": "/año",
+    "interval": "Intervalo",
+    "currentPeriodEnds": "Fin del periodo",
+    "renewsOn": "Se renueva el",
+    "cancelsOn": "Se cancela el",
+    "auto": "(auto)",
+    "seats": "Asientos",
+    "seatsValue": "{{current}} de {{limit}}",
+    "paymentMethod": "Método de pago",
+    "changePlan": "Cambiar de plan",
+    "switchYearly": "Cambiar a anual",
+    "save20": "ahorra 20 %",
+    "updatePayment": "Actualizar pago",
+    "cancel": "Cancelar"
+  },
+  "statusPill": {
+    "pastDue": "Vencido",
+    "canceled": "Cancelado"
+  },
+  "pastDue": {
+    "title": "Pago fallido.",
+    "body": "No pudimos cobrar tu tarjeta. Actualiza tu método de pago para mantener las funciones de pago.",
+    "update": "Actualizar →"
+  },
+  "community": {
+    "name": "Community",
+    "tagline": "Gratis para siempre · núcleo de detección + herramientas de lectura.",
+    "upgrade": "Mejorar plan",
+    "hint": "Cambia a Developer para AI Explain gestionado, alertas de Slack/webhook y más brokers."
+  },
+  "invoices": {
+    "title": "Facturas",
+    "empty": "Aún no hay facturas",
+    "view": "Ver"
+  },
+  "cancelDialog": {
+    "title": "¿Cancelar la suscripción?",
+    "warn": "Tu plan sigue activo hasta el final del periodo. Después pasarás a Community: Explain gestionado e integraciones de pago se detienen.",
+    "reasonLabel": "¿Te importa decirnos por qué? (opcional)",
+    "reasonPlaceholder": "Selecciona un motivo",
+    "confirm": "Cancelar al final del periodo",
+    "keep": "Mantener mi plan",
+    "reasons": {
+      "tooExpensive": "Demasiado caro",
+      "missingFeature": "Falta una función",
+      "switchingTools": "Cambio de herramienta",
+      "exploring": "Solo explorando",
+      "other": "Otro"
+    }
   }
 }

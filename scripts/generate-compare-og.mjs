@@ -1,23 +1,27 @@
 #!/usr/bin/env node
 /**
- * Generates OG images for comparison pages using Playwright.
+ * Generates the default OG / social-share card using Playwright.
  * Run from repo root: node scripts/generate-compare-og.mjs
  */
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const { chromium } = require("/Users/brice/Code/Personal/Active/Qarote/apps/e2e/node_modules/@playwright/test");
-import { writeFileSync, readFileSync } from "fs";
-import { resolve, dirname } from "path";
-import { fileURLToPath } from "url";
+import { createRequire } from "node:module";
+import { writeFileSync, readFileSync } from "node:fs";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Resolved through apps/e2e, which owns the Playwright dependency. Anchoring
+// on that package.json keeps this working from any checkout or git worktree.
+const require = createRequire(resolve(__dirname, "../apps/e2e/package.json"));
+const { chromium } = require("@playwright/test");
 const OUT_DIR = resolve(__dirname, "../apps/web/public/images");
 
 const logoSvg = readFileSync(resolve(OUT_DIR, "new_icon.svg"), "utf8");
 const logoDataUrl = `data:image/svg+xml;base64,${Buffer.from(logoSvg).toString("base64")}`;
 
 // Bricolage Grotesque woff2 — same URL used in apps/web/src/styles/index.css
-const FONT_URL = "https://fonts.gstatic.com/s/bricolagegrotesque/v7/3y9U6as8bTXq_nANBjzKo3IeZx8z6up5BeSl5jBNz_19PcbfFA.woff2";
+const FONT_URL =
+  "https://fonts.gstatic.com/s/bricolagegrotesque/v7/3y9U6as8bTXq_nANBjzKo3IeZx8z6up5BeSl5jBNz_19PcbfFA.woff2";
 
 const cards = [
   {
@@ -28,22 +32,7 @@ const cards = [
     subtitle:
       "The AI that diagnoses your incidents · No SRE required · Self-hosted",
     badge: "AI Diagnostics",
-    accent: "#FF691B",
     out: "qarote_card.jpg",
-  },
-  {
-    title: "Qarote vs Datadog",
-    subtitle: "RabbitMQ-native monitoring · Free & open-source core · Self-hosted",
-    badge: "Datadog Alternative",
-    accent: "#FF691B",
-    out: "compare-datadog-card.jpg",
-  },
-  {
-    title: "Qarote vs Grafana + Prometheus",
-    subtitle: "Purpose-built for RabbitMQ · No assembly required · MIT licensed",
-    badge: "Grafana Alternative",
-    accent: "#FF691B",
-    out: "compare-grafana-card.jpg",
   },
 ];
 
@@ -134,10 +123,6 @@ function buildHtml({ title, subtitle, badge }) {
     max-width: 900px;
   }
 
-  h1 .vs {
-    color: #FF691B;
-  }
-
   .subtitle {
     font-size: 22px;
     color: #6b6b6b;
@@ -193,7 +178,7 @@ function buildHtml({ title, subtitle, badge }) {
     </div>
 
     <div class="middle">
-      <h1>${title.replace(" vs ", ' <span class="vs">vs</span> ')}</h1>
+      <h1>${title}</h1>
       <p class="subtitle">${subtitle}</p>
     </div>
 
@@ -214,12 +199,18 @@ function buildHtml({ title, subtitle, badge }) {
 }
 
 const browser = await chromium.launch();
-const context = await browser.newContext({ viewport: { width: 1200, height: 630 } });
+const context = await browser.newContext({
+  viewport: { width: 1200, height: 630 },
+});
 
 for (const card of cards) {
   const page = await context.newPage();
   await page.setContent(buildHtml(card), { waitUntil: "networkidle" });
-  const buf = await page.screenshot({ type: "jpeg", quality: 92, clip: { x: 0, y: 0, width: 1200, height: 630 } });
+  const buf = await page.screenshot({
+    type: "jpeg",
+    quality: 92,
+    clip: { x: 0, y: 0, width: 1200, height: 630 },
+  });
   const outPath = resolve(OUT_DIR, card.out);
   writeFileSync(outPath, buf);
   console.log(`✓ ${card.out}`);

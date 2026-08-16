@@ -15,6 +15,9 @@ vi.mock("@/core/prisma", () => {
       findUnique: vi.fn(),
       update: vi.fn(),
     },
+    organizationMember: {
+      findFirst: vi.fn(),
+    },
     license: {
       findMany: vi.fn(),
     },
@@ -129,12 +132,7 @@ describe("Webhook Idempotency - License Renewal", () => {
     vi.mocked(prisma.subscription.findUnique).mockResolvedValue({
       id: "sub-id",
       stripeSubscriptionId: subscriptionId,
-      userId: "user-id",
-      user: {
-        id: "user-id",
-        email: "test@example.com",
-        name: "Test User",
-      },
+      organizationId: "org-id",
     } as any);
 
     vi.mocked(prisma.subscription.update).mockResolvedValue({} as any);
@@ -218,12 +216,7 @@ describe("Webhook Idempotency - License Renewal", () => {
     vi.mocked(prisma.subscription.findUnique).mockResolvedValue({
       id: "sub-id",
       stripeSubscriptionId: "sub_test",
-      userId: "user-id",
-      user: {
-        id: "user-id",
-        email: "test@example.com",
-        name: "Test User",
-      },
+      organizationId: "org-id",
     } as any);
 
     vi.mocked(prisma.subscription.update).mockResolvedValue({} as any);

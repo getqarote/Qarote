@@ -278,5 +278,6 @@
   "featureLim": "Max length limit set",
   "featureDlx": "Dead-letter exchange: {{exchange}}",
   "featurePrio": "Priority queue — max priority: {{value}}",
-  "featureSac": "Single active consumer"
+  "featureSac": "Single active consumer",
+  "ceilingReached": "Metrics collection paused"
 }

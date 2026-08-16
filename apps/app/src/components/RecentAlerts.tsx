@@ -11,7 +11,7 @@ import {
 } from "@/components/alerts/alertUtils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
+import { IconChevronRight } from "@/components/ui/icons";
 
 import { useServerContext } from "@/contexts/ServerContext";
 import { useVHostContext } from "@/contexts/VHostContextDefinition";
@@ -82,7 +82,7 @@ export const RecentAlerts = () => {
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors shrink-0"
         >
           {t("viewAll")}
-          <PixelChevronRight className="h-3 shrink-0" />
+          <IconChevronRight className="h-3 shrink-0" />
         </Link>
       </div>
     );
@@ -134,7 +134,7 @@ export const RecentAlerts = () => {
           className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
         >
           {t("viewAll")}
-          <PixelChevronRight className="h-3 shrink-0" />
+          <IconChevronRight className="h-3 shrink-0" />
         </Link>
       </div>
       <div className="p-4">
@@ -224,7 +224,7 @@ export const RecentAlerts = () => {
                 <span className="h-1.5 w-1.5 rounded-full bg-warning shrink-0" />
                 {t("diagnosisTeaser")}
               </span>
-              <PixelChevronRight className="h-3 shrink-0" />
+              <IconChevronRight className="h-3 shrink-0" />
             </Link>
           </div>
         )}

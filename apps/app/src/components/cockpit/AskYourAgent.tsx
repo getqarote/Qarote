@@ -2,15 +2,18 @@
  * Cockpit "Ask your agent" — a carousel of example prompts the user can copy
  * straight into their MCP client. Reinforces the agent-first loop: don't
  * click through dashboards, ask the agent and it calls Qarote's tools.
+ *
+ * Visual: the prototype `.ask` — a mono eyebrow, circular nav buttons, and a
+ * pill-shaped prompt with a copy action. Changing prompts plays a slight
+ * directional slide+fade (see `.ask-anim-*` in styles/index.css).
  */
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Check, ChevronLeft, ChevronRight, Copy } from "lucide-react";
-import { toast } from "sonner";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { CopyPromptButton } from "@/components/CopyPromptButton";
 
 // Six example prompts, keyed in the cockpit namespace (ask.prompt1…6).
 const PROMPT_KEYS = [
@@ -22,77 +25,66 @@ const PROMPT_KEYS = [
   "ask.prompt6",
 ] as const;
 
+const NAV_BUTTON =
+  "grid h-[30px] w-[30px] shrink-0 place-items-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:border-primary hover:bg-accent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
 export function AskYourAgent() {
   const { t } = useTranslation("cockpit");
   const [idx, setIdx] = useState(0);
-  const [copied, setCopied] = useState(false);
+  // Navigation direction drives which slide-in animation plays on change.
+  const [dir, setDir] = useState<1 | -1>(1);
 
   const prompt = t(PROMPT_KEYS[idx]);
-  const go = (delta: number) =>
+  const go = (delta: 1 | -1) => {
+    setDir(delta);
     setIdx((idx + delta + PROMPT_KEYS.length) % PROMPT_KEYS.length);
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(prompt);
-      setCopied(true);
-      toast.success(t("ask.copied"));
-      window.setTimeout(() => setCopied(false), 1500);
-    } catch {
-      toast.error(t("ask.copyFailed"));
-    }
   };
 
   return (
     <section className="space-y-3" aria-label={t("ask.label")}>
-      <div>
-        <h2 className="title-section">{t("ask.label")}</h2>
-        <p className="text-muted-foreground text-sm mt-1">{t("ask.hint")}</p>
+      <div className="space-y-1">
+        <span className="font-mono text-[11px] uppercase tracking-[0.09em] text-muted-foreground">
+          {t("ask.label")}
+        </span>
+        <p className="text-sm text-muted-foreground">{t("ask.hint")}</p>
       </div>
 
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
+      <div className="flex items-center gap-2.5">
+        <button
+          type="button"
           onClick={() => go(-1)}
           aria-label={t("ask.previous")}
+          className={NAV_BUTTON}
         >
           <ChevronLeft className="h-4 w-4" />
-        </Button>
+        </button>
 
         <div
-          className="flex flex-1 items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3 min-w-0"
+          className="flex min-w-0 flex-1 items-center gap-2.5 rounded-full border border-border bg-muted/50 px-4 py-2"
           aria-live="polite"
         >
-          <span className="font-mono text-sm min-w-0 break-words">
+          <span
+            key={idx}
+            className={`min-w-0 flex-1 truncate font-mono text-sm text-foreground ${
+              dir === 1 ? "ask-anim-next" : "ask-anim-prev"
+            }`}
+          >
             {prompt}
           </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={copy}
-            className="shrink-0"
-            aria-label={t("ask.copy")}
-          >
-            {copied ? (
-              <Check className="h-4 w-4 text-success" />
-            ) : (
-              <Copy className="h-4 w-4" />
-            )}
-            {t("ask.copy")}
-          </Button>
+          <CopyPromptButton prompt={prompt} label={t("ask.copy")} />
         </div>
 
-        <Button
-          variant="ghost"
-          size="icon"
+        <button
+          type="button"
           onClick={() => go(1)}
           aria-label={t("ask.next")}
+          className={NAV_BUTTON}
         >
           <ChevronRight className="h-4 w-4" />
-        </Button>
+        </button>
       </div>
 
-      <p className="text-center font-mono text-xs text-muted-foreground">
+      <p className="text-center font-mono text-[11px] text-muted-foreground">
         {idx + 1} / {PROMPT_KEYS.length}
       </p>
     </section>

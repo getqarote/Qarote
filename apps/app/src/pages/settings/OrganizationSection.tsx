@@ -1,46 +1,35 @@
-import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 
-import { InviteMemberDialog } from "@/components/settings/organization/InviteMemberDialog";
+import { ArrowRight } from "lucide-react";
+
+import { DeleteOrganizationCard } from "@/components/settings/organization/DeleteOrganizationCard";
 import { NoOrgView } from "@/components/settings/organization/NoOrgView";
-import { OrgContextHeader } from "@/components/settings/organization/OrgContextHeader";
 import { OrgInfoCard } from "@/components/settings/organization/OrgInfoCard";
-import { OrgMembersCard } from "@/components/settings/organization/OrgMembersCard";
-import { OrgMyInvitationsCard } from "@/components/settings/organization/OrgMyInvitationsCard";
-import { OrgPendingInvitationsCard } from "@/components/settings/organization/OrgPendingInvitationsCard";
-import { RemoveMemberDialog } from "@/components/settings/organization/RemoveMemberDialog";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import { useMyOrganizations } from "@/hooks/queries/useMyOrganizations";
 import { useCurrentOrganization } from "@/hooks/queries/useOrganization";
+import { useUser } from "@/hooks/ui/useUser";
+
+import { getPlanDisplayName } from "@/types/plans";
 
 /**
- * Composition shell for the Organization settings surface. Owns only:
- *   - The top-level guard (loading / not-in-org / in-org)
- *   - The invite dialog open state, because it's triggered from the
- *     Members card header but lives as a page-level dialog
- *   - The remove member target state, for the same reason
- *
- * Every other concern — form state, pagination, mutations, card data
- * fetching — lives in the individual extracted components. This file
- * used to be 1430 lines; the extraction makes each sub-component
- * independently readable and testable.
+ * `/settings/organization` — the billing + team boundary (a peer of the
+ * workspace, not its parent). Org info, the current plan, and the delete
+ * danger zone. Member management lives on the Members page; this page is just
+ * the org's own identity and billing.
  */
 const OrganizationSection = () => {
-  const { data: orgData, isLoading: orgLoading } = useCurrentOrganization();
-  const { data: orgsData } = useMyOrganizations();
+  const { t } = useTranslation("profile");
+  const { data: orgData, isLoading } = useCurrentOrganization();
+  const { userPlan } = useUser();
 
-  const [inviteOpen, setInviteOpen] = useState(false);
-  const [memberToRemove, setMemberToRemove] = useState<{
-    id: string;
-    email: string;
-  } | null>(null);
-
-  if (orgLoading) {
+  if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-64 w-full rounded-xl" />
       </div>
     );
   }
@@ -48,7 +37,6 @@ const OrganizationSection = () => {
   const org = orgData?.organization;
   const callerRole = orgData?.role;
   const isOrgAdmin = callerRole === "OWNER" || callerRole === "ADMIN";
-  const organizations = orgsData?.organizations ?? [];
 
   if (!org) {
     return <NoOrgView />;
@@ -56,33 +44,36 @@ const OrganizationSection = () => {
 
   return (
     <div className="space-y-6">
-      <OrgContextHeader
-        org={org}
-        callerRole={callerRole}
-        organizations={organizations}
-      />
+      <div>
+        <h2 className="text-2xl font-semibold tracking-tight">
+          {t("org.sectionTitle")}
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {t("org.sectionSubtitle")}
+        </p>
+      </div>
 
-      {/* `key={org.id}` forces a remount when the operator switches
-          organizations, which resets the inline-edit state inside
-          `OrgInfoCard` without needing an effect. */}
+      {/* key forces a remount (form reset) when switching orgs. */}
       <OrgInfoCard key={org.id} org={org} isOrgAdmin={isOrgAdmin} />
 
-      <OrgMembersCard
-        isOrgAdmin={isOrgAdmin}
-        onInviteClick={() => setInviteOpen(true)}
-        onRemoveMember={setMemberToRemove}
-      />
+      {/* Current plan */}
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border bg-card p-6">
+        <div>
+          <p className="text-sm font-semibold">{t("org.currentPlan")}</p>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            {getPlanDisplayName(userPlan)}
+          </p>
+        </div>
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/settings/subscription">
+            {t("org.viewSubscription")}
+            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+          </Link>
+        </Button>
+      </div>
 
-      {isOrgAdmin && <OrgPendingInvitationsCard />}
-
-      <OrgMyInvitationsCard alreadyInOrg />
-
-      <InviteMemberDialog open={inviteOpen} onOpenChange={setInviteOpen} />
-
-      <RemoveMemberDialog
-        member={memberToRemove}
-        onClose={() => setMemberToRemove(null)}
-      />
+      {/* Danger zone — only the OWNER can destroy the org. */}
+      {callerRole === "OWNER" && <DeleteOrganizationCard org={org} />}
     </div>
   );
 };

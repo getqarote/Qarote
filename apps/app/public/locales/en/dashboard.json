@@ -20,12 +20,6 @@
       "unavailableSubline": "Upgrade or check broker capabilities to enable incident diagnosis.",
       "regionLabel": "Broker status overview"
     },
-    "activeConcerns": {
-      "heading": "Active concerns",
-      "viewAll": "View all in Diagnosis",
-      "viewAllWithOverflow": "View all (+{{count}} more)",
-      "openInDiagnosis": "Open in Diagnosis"
-    },
     "activity": {
       "label": "Activity"
     },
@@ -39,6 +33,19 @@
       "enabledSublineNoTime": "Delivery time not yet scheduled.",
       "setUp": "Set up",
       "configure": "Configure"
+    },
+    "intent": "One state-driven page centered on your agent — it verifies what the agent sees, never a dead empty room.",
+    "firstRun": {
+      "title": "Connect your first broker",
+      "description": "Qarote detects incidents and explains their root cause the moment you're connected — over the Management API, read-only, in under two minutes.",
+      "removedTitle": "No broker connected",
+      "removedDescription": "{{name}} was removed. Connect another to resume monitoring and diagnosis.",
+      "addServer": "Add server",
+      "meta": "~2 min · no exporter · no Grafana · no config",
+      "gated": "Ask a workspace admin to connect a broker.",
+      "hintBefore": "Once connected, ask your agent ",
+      "hintQuestion": "\"what's wrong with my RabbitMQ?\"",
+      "hintAfter": " — it calls Qarote over MCP and reads back the diagnosis."
     }
   },
   "pageTitle": "Dashboard",
@@ -268,5 +275,98 @@
       },
       "footer": "Higher coverage unlocks deeper diagnosis."
     }
-  }
+  },
+  "prov": {
+    "detected": "detected",
+    "inferred": "inferred",
+    "defaulted": "default",
+    "mgmtPort": "Management port",
+    "amqpPort": "AMQP port",
+    "host": "Host",
+    "tls": "TLS",
+    "tlsOn": "On",
+    "tlsOff": "Off",
+    "username": "Username",
+    "vhost": "Virtual host",
+    "fromUrl": "from URL",
+    "legend": "detected = read from the URL · inferred = derived (e.g. AMQPS ⇒ mgmt 443) · default = standard fallback",
+    "password": "Password"
+  },
+  "addServerLead": "Paste a connection URL and Qarote detects the rest — host, ports, TLS, and credentials. No URL?",
+  "connectAndScan": "Connect & scan",
+  "serverUrlAccepts": "Accepts:",
+  "manageServer": "Manage server",
+  "redetectFromUrl": "Re-detect from URL",
+  "redetectPanelTitle": "Paste a new URL to re-detect",
+  "redetectPanelHint": "For credential rotation, host moves, or switching to TLS.",
+  "detect": "Detect",
+  "close": "Close",
+  "cancel": "Cancel",
+  "saveChanges": "Save changes",
+  "serverRemovedSuccess": "Server \"{{name}}\" has been removed.",
+  "serverRemovedError": "Failed to remove server. Please try again.",
+  "removeServerTitle": "Remove server",
+  "removeServerDescription": "Removes this server from the workspace. Monitoring and diagnosis stop, and its agent keys keep working but return no data.",
+  "removeServerConfirmTitle": "Remove \"{{name}}\"?",
+  "removeServerConfirmDescription": "This removes the server from this workspace. Monitoring and diagnosis stop immediately. You can add it again later, but its history and findings won't be restored.",
+  "enterManually": "Enter manually",
+  "connectionDetected": "Connection detected",
+  "addServerScanDescription": "Connecting and scanning your broker",
+  "scanningServer": "Connecting & scanning {{name}}…",
+  "scanningSubtext": "point-in-time · no warm-up",
+  "connectedActive": "Connected. {{name}} is now the active server.",
+  "queuesPill_one": "{{count}} queue",
+  "queuesPill_other": "{{count}} queues",
+  "exchangesPill_one": "{{count}} exchange",
+  "exchangesPill_other": "{{count}} exchanges",
+  "findingsPill_one": "{{count}} config finding",
+  "findingsPill_other": "{{count}} config findings",
+  "findingsScanRunning": "scan running",
+  "findingsSummary": "The config scan flagged: {{resources}}.",
+  "findingsClean": "No config findings — your topology looks clean.",
+  "goToCockpit": "Go to cockpit",
+  "serverFallbackName": "broker",
+  "chartAsk": {
+    "seeFinding": "see finding",
+    "askButton": "Ask your agent",
+    "copied": "Prompt copied to clipboard",
+    "copyFailed": "Couldn't copy the prompt",
+    "queuedHint": "Want the agent to read this backlog trend for you?",
+    "queuedPrompt": "What does the queued-messages trend tell you about the current incident?",
+    "ratesHint": "Need the full breakdown — publisher confirms, get, disk I/O?",
+    "ratesPromptCalm": "Break down the message rates on my broker — publisher confirms, get, redelivered, disk I/O — and flag anything unusual.",
+    "ratesPromptIncident": "What do the message rates on {{queue}} tell you about the current incident?"
+  },
+  "strip": {
+    "msgsPerSec": "Msgs/sec",
+    "queueDepth": "Queue depth",
+    "avgLatency": "Avg latency",
+    "activeQueues": "Active queues",
+    "nodes": "Nodes",
+    "cpu": "CPU",
+    "memory": "Memory"
+  },
+  "chartState": {
+    "collecting": "Collecting metrics…",
+    "quiet": "Quiet — no traffic in this window",
+    "ratesUnavailable": "Rate metrics unavailable — this broker isn't reporting message rates.",
+    "learnMore": "Learn more"
+  },
+  "leaveBlankKeepCurrent": "Leave blank to keep current",
+  "redetectReviewHeading": "Detected from {{host}} — review what changes",
+  "redetectNothingChanged": "Nothing differs from the current connection.",
+  "redetectApplyField": "Apply {{field}}",
+  "redetectPasswordRotated": "rotated",
+  "redetectApplyNone": "Close",
+  "applyNChanges": "Apply {{count}} changes",
+  "scanChecklist": {
+    "overview": "Reading /api/overview…",
+    "enumerate": "Enumerating queues & exchanges…",
+    "dlx": "Checking dead-letter exchanges…",
+    "consumers": "Scanning consumer health…",
+    "routing": "Evaluating exchange routing…"
+  },
+  "findingsFlaggedPrefix": "The config scan flagged:",
+  "findingsMore": "+{{count}} more",
+  "viewFindings": "View config findings"
 }

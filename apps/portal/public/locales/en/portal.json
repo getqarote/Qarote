@@ -4,7 +4,6 @@
     "licenses": "Licenses",
     "billing": "Billing",
     "account": "Account",
-
     "logout": "Logout"
   },
   "billing": {
@@ -27,7 +26,18 @@
       "failed": "Failed",
       "pending": "Pending",
       "refunded": "Refunded"
-    }
+    },
+    "invoicesTitle": "Invoices",
+    "invoicePdf": "PDF",
+    "paymentMethodTitle": "Payment method",
+    "cardLabel": "{{brand}} ···· {{last4}}",
+    "cardExpires": "expires {{month}}/{{year}}",
+    "update": "Update",
+    "noPaymentMethod": "No payment method on file.",
+    "addPaymentMethod": "Add payment method",
+    "contactTitle": "Billing contact",
+    "contactHint": "Where invoices and billing notices are sent.",
+    "contactEmail": "Email"
   },
   "footer": {
     "privacyPolicy": "Privacy Policy",
@@ -77,7 +87,24 @@
     },
     "status": {
       "active": "Active",
-      "inactive": "Inactive"
+      "inactive": "Inactive",
+      "expiring": "Expiring soon",
+      "expired": "Expired"
+    },
+    "noLicensesValue": "A self-hosted license unlocks AI Explain, alerting, topology, and multi-server — validated offline, with no phone-home.",
+    "cardSubtitle": "Self-hosted · annual license · ID {{id}}",
+    "downloadKey": "Download license key (.jwt)",
+    "pasteInstruction": "Paste this into your self-hosted Qarote:",
+    "pasteLocation": "Settings → License",
+    "renewNow": "Renew now",
+    "expiringNudge_one": "Expires in {{count}} day ({{date}}). Renew now to avoid losing AI Explain and paid features.",
+    "expiringNudge_other": "Expires in {{count}} days ({{date}}). Renew now to avoid losing AI Explain and paid features.",
+    "expiredNudge": "License expired ({{date}}). Detection still runs, but AI Explain, alerting, and paid features are locked.",
+    "meta": {
+      "tier": "Tier",
+      "validUntil": "Valid until",
+      "issued": "Issued",
+      "lastValidated": "Last validated"
     }
   },
   "licensePurchase": {
@@ -93,47 +120,49 @@
     "stripeHandoff": "You will be redirected to Stripe for secure payment · License key delivered by email",
     "enterpriseContact": "Need custom terms or have questions?",
     "badges": {
-      "selected": "Selected",
-      "soon": "Soon"
-    },
-    "categories": {
-      "coreFeatures": "Core Features",
-      "intelligenceDiagnostics": "Intelligence & Diagnostics",
-      "security": "Security & Compatibility",
-      "support": "Support"
-    },
-    "features": {
-      "servers": "RabbitMQ Servers",
-      "workspaces": "Workspaces",
-      "teamMembers": "Team Members",
-      "advancedAnalytics": "Advanced analytics",
-      "queueManagement": "Queue, Exchange, VHost & User management",
-      "alertsWebhooks": "Alerts & webhooks",
-      "topologyVisualization": "Topology visualization",
-      "roleBasedAccess": "Role-based access",
-      "dailyDigest": "Daily digest",
-      "messageSpy": "Message Spy",
-      "metricsPersistence": "Metrics persistence",
-      "incidentDiagnosis": "Incident diagnosis",
-      "messageTracing": "Message tracing",
-      "ssoSamlOidc": "SSO, SAML & OIDC",
-      "soc2": "SOC 2 compliance",
-      "rabbitmqVersions": "RabbitMQ version support",
-      "communitySupport": "Community support",
-      "prioritySupport": "Priority support"
-    },
-    "limits": {
-      "upTo3": "Up to 3",
-      "unlimited": "Unlimited",
-      "rabbitmqVersionsValue": "All versions 3.x and 4.x",
-      "limited": "Limited"
+      "mostPopular": "Most popular"
     },
     "plans": {
       "developer": {
-        "name": "Developer"
+        "name": "Developer",
+        "audience": "For individuals and small teams self-hosting Qarote."
       },
       "enterprise": {
-        "name": "Enterprise"
+        "name": "Enterprise",
+        "audience": "For platform teams that need SSO, audit, and RBAC."
+      }
+    },
+    "intro": "Self-hosted, annual. Pick a tier and check out — your license key is issued instantly.",
+    "tierGroupLabel": "Choose a license tier",
+    "orderSummary": {
+      "title": "Order summary",
+      "tierLine": "{{name}} · annual",
+      "seats": "Seats",
+      "decreaseSeats": "Decrease seats",
+      "increaseSeats": "Increase seats",
+      "total": "Total",
+      "checkout": "Checkout",
+      "secureCheckout": "Secure checkout via Stripe",
+      "cancel": "Cancel"
+    },
+    "cards": {
+      "developer": {
+        "bullets": [
+          "Everything in Community",
+          "AI Explain — LLM root-cause",
+          "BYOK or local Ollama",
+          "Alerting: email · Slack · webhooks",
+          "Multi-server · topology"
+        ]
+      },
+      "enterprise": {
+        "bullets": [
+          "Everything in Developer",
+          "Managed LLM (zero-config)",
+          "SSO / SAML · advanced RBAC",
+          "Audit log · SOC 2",
+          "Priority support & SLA"
+        ]
       }
     }
   },

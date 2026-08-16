@@ -23,6 +23,14 @@
     "definitions": "Définitions"
   },
   "actions": {
-    "configureAiExplain": "Configurer AI Explain"
+    "configureAiExplain": "Configurer AI Explain",
+    "runConfigScan": "Lancer l'analyse de configuration",
+    "addServer": "Ajouter un serveur",
+    "mintAgentKey": "Générer une clé d'agent"
+  },
+  "footer": {
+    "navigate": "naviguer",
+    "open": "ouvrir",
+    "close": "fermer"
   }
 }

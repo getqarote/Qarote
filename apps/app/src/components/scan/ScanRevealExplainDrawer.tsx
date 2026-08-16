@@ -86,7 +86,7 @@ export function ScanRevealExplainDrawer({
 
   return (
     <Sheet open={!!finding} onOpenChange={(open) => !open && onClose()}>
-      {/* SheetContent already renders a PixelX close button (absolute top-right).
+      {/* SheetContent already renders an IconClose close button (absolute top-right).
           onOpenAutoFocus redirects focus from that button to the title. */}
       <SheetContent
         className="w-full sm:max-w-lg overflow-y-auto"

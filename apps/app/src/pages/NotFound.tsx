@@ -4,6 +4,8 @@ import { Link, useLocation } from "react-router";
 
 import { logger } from "@/lib/logger";
 
+import { ConfusedRabbit } from "@/components/ConfusedRabbit";
+
 const NotFound = () => {
   const { t } = useTranslation("common");
   const location = useLocation();
@@ -16,13 +18,19 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">{t("notFound.code")}</h1>
-        <p className="text-xl text-muted-foreground mb-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-6">
+      <div className="text-center text-primary">
+        <ConfusedRabbit />
+        <h1 className="mt-6 text-4xl font-bold text-foreground">
+          {t("notFound.code")}
+        </h1>
+        <p className="mt-4 text-xl text-muted-foreground">
           {t("notFound.message")}
         </p>
-        <Link to="/" className="text-info hover:text-info underline">
+        <Link
+          to="/"
+          className="mt-6 inline-block font-medium text-primary underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none"
+        >
           {t("notFound.returnHome")}
         </Link>
       </div>

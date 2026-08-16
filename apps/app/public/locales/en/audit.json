@@ -28,12 +28,21 @@
     "system": "System"
   },
   "filter": {
-    "category": { "placeholder": "Category" },
-    "source": { "placeholder": "Source" },
-    "from": { "label": "From date" },
-    "to": { "label": "To date" },
-    "actor": { "placeholder": "Actor — email or user ID" },
-    "clear": "Clear filters"
+    "category": "Category",
+    "source": {
+      "placeholder": "Source"
+    },
+    "from": {
+      "label": "From date"
+    },
+    "to": {
+      "label": "To date"
+    },
+    "actor": {
+      "placeholder": "Actor — email or user ID"
+    },
+    "clear": "Clear filters",
+    "range": "Date range"
   },
   "status": {
     "loading": "Loading…",
@@ -45,7 +54,10 @@
     "filtered": "No audit events match the filters.",
     "none": "No audit events recorded yet. Admin-relevant changes will appear here.",
     "quiet": "The journal is quiet",
-    "quietDetail": "No privileged operations recorded. Admin-relevant changes will appear here as they happen."
+    "quietDetail": "No privileged operations recorded. Admin-relevant changes will appear here as they happen.",
+    "title": "No recorded actions",
+    "body": "No actions match these filters yet.",
+    "denials": "No authorization denials in this range — nothing was blocked."
   },
   "shortcuts": {
     "label": "Keyboard shortcuts",
@@ -62,12 +74,41 @@
     "first": "First page",
     "next": "Next",
     "more_one": "{{count}} more event",
-    "more_other": "{{count}} more events"
+    "more_other": "{{count}} more events",
+    "older": "Load older"
   },
   "export": {
     "button": "Export CSV",
     "success": "Exported {{count}} rows",
     "truncated": "Result was truncated to the row cap. Refine filters to capture older history.",
     "failed": "Export failed"
+  },
+  "forbidden": {
+    "subtitle": "A filterable trail of who changed what, when.",
+    "title": "You don't have access to the audit log",
+    "body": "Viewing the audit log needs the audit:read permission. Ask an organization admin or owner to grant your role access."
+  },
+  "subtitle": "Who did what, when. Also a diagnosis signal — Qarote reads recent config changes from here.",
+  "search": {
+    "placeholder": "Search actions, actors, entities…"
+  },
+  "range": {
+    "24h": "Last 24h",
+    "7d": "Last 7 days",
+    "30d": "Last 30 days"
+  },
+  "denialsOnly": "Denials only",
+  "system": "system",
+  "footer": {
+    "retention": "Entries kept {{days}} days"
+  },
+  "gate": {
+    "subtitle": "A persistent, filterable trail of operator actions.",
+    "title": "Audit log is an Enterprise feature",
+    "body": "Keep a searchable 90-day record of who changed what — and feed recent config changes into Qarote's incident diagnosis.",
+    "cta": "Upgrade",
+    "activateLicense": "Activate license",
+    "purchaseLicense": "Purchase license",
+    "footnote": "Operational logs still run server-side; Enterprise adds persistence, search, export, and the diagnosis signal."
   }
 }

@@ -144,6 +144,11 @@
         "byok": "Utiliser ma clé",
         "configureKey": "Configurer la clé API"
       }
+    },
+    "share": {
+      "button": "Partager",
+      "copied": "Lien public copié dans le presse-papiers",
+      "failed": "Impossible de créer le lien de partage"
     }
   }
 }

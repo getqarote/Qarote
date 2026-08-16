@@ -95,7 +95,10 @@
         "title": "数据保留",
         "description": "我们会在提供服务和实现本隐私政策所述目的所需的时间内保留您的个人信息。具体而言：",
         "items": [
-          { "label": "账户信息", "detail": "直到您删除账户" },
+          {
+            "label": "账户信息",
+            "detail": "直到您删除账户"
+          },
           {
             "label": "队列监控指标（深度、速率、消费者数量）",
             "detail": "30 天，自动清除",
@@ -106,9 +109,18 @@
             "detail": "7 天，自动清除",
             "mono": true
           },
-          { "label": "使用数据", "detail": "用于分析目的最多保留 2 年" },
-          { "label": "付款信息", "detail": "根据法律和支付处理商的要求" },
-          { "label": "支持通信", "detail": "最多保留 3 年" }
+          {
+            "label": "使用数据",
+            "detail": "用于分析目的最多保留 2 年"
+          },
+          {
+            "label": "付款信息",
+            "detail": "根据法律和支付处理商的要求"
+          },
+          {
+            "label": "支持通信",
+            "detail": "最多保留 3 年"
+          }
         ]
       },
       "yourRights": {
@@ -140,7 +152,7 @@
             "text": "请求限制处理"
           }
         },
-        "contact": "要行使这些权利，请通过 privacy@qarote.io 联系我们"
+        "contact": "要行使这些权利，请通过 security@qarote.io 联系我们"
       },
       "cookies": {
         "title": "Cookie 和跟踪",
@@ -212,8 +224,23 @@
         "description": "如果您对本隐私政策或我们的数据实践有任何疑问，请联系我们：",
         "email": "support@qarote.io",
         "address": "229 rue Saint-Honoré, 75001, Paris, France"
+      },
+      "aiFeatures": {
+        "title": "AI 功能与 broker 上下文",
+        "description": "当您使用 AI Explain（根因分析）时，Qarote 会将相关的 broker 上下文——例如受影响的队列、指标、拓扑以及近期的配置变更——发送给语言模型提供方以生成解释。我们不会发送您的消息正文。您选择提供方，该选择决定数据流向：",
+        "items": [
+          "托管——由我们的模型提供方（Anthropic）使用 Qarote 的账户处理。",
+          "自带密钥——由您自己的 Anthropic 或 OpenAI 账户按该提供方的条款处理。",
+          "本地（Ollama）——完全在您自己的基础设施上处理；任何 broker 上下文都不会离开您的网络。"
+        ],
+        "note": "需要严格数据驻留的自托管部署可使用本地提供方，将所有 AI 处理保留在网络内。"
+      },
+      "agentAccess": {
+        "title": "代理访问（MCP）",
+        "description": "您可以通过 Model Context Protocol 使用范围受限的 API 密钥将 AI 代理连接到 Qarote。密钥仅显示一次，且仅以哈希形式存储。根据您授予的范围，代理可以读取监控数据、请求诊断，并在您启用时对您的 broker 执行管理操作。通过代理执行的操作会被记录以供审计。您应对所授予的范围以及所授权的代理负责。"
       }
-    }
+    },
+    "summary": "Qarote 如何收集、使用和保护你的数据。简而言之：我们读取 RabbitMQ 的管理与指标数据以检测和解释故障——除非你显式启用消息追踪的载荷捕获，我们绝不访问或存储你的消息内容。"
   },
   "termsOfService": {
     "title": "服务条款",
@@ -229,12 +256,11 @@
         "title": "服务描述",
         "description": "Qarote 提供现代化的基于 Web 的界面，用于监控和管理 RabbitMQ 消息代理。我们的服务包括：",
         "items": [
-          "实时队列监控和分析",
-          "消息发布和消费工具",
-          "队列和交换器管理",
-          "性能指标和告警",
-          "多服务器集群支持",
-          "用户管理和访问控制"
+          "通过确定性规则引擎进行事件检测；",
+          "AI 辅助的根因分析（“AI Explain”）；",
+          "基于 Model Context Protocol (MCP) 的 AI 代理接口，您授权的 AI 代理可借此读取监控数据、请求诊断，并在您授予的范围内管理您的 broker；",
+          "配置扫描、拓扑可视化、告警以及多服务器支持；",
+          "云托管与自托管部署选项。"
         ]
       },
       "accounts": {
@@ -280,7 +306,26 @@
         "description": "如果您对本条款有任何疑问，请联系我们：",
         "email": "support@qarote.io",
         "address": "229 rue Saint-Honoré, 75001, Paris, France"
+      },
+      "licensing": {
+        "title": "许可",
+        "description": "Qarote 的 Community 版在 MIT 许可下开源。Premium 与 Enterprise 功能为授权使用、非开源，受本条款及您的许可证密钥约束。您不得规避许可证校验，也不得重新分发或转售付费功能。自托管许可证离线校验，并仍受本条款约束。"
+      },
+      "agentAccess": {
+        "title": "代理访问与自动化操作",
+        "description": "您可以授予范围受限的 API 密钥，允许 AI 代理与本服务交互；当您启用管理或修复范围时，可在您的 RabbitMQ broker 上创建、修改、清空或删除对象。任何此类操作均在您的授权下执行，风险自负。您应自行负责所授予的范围与密钥、在启用自动执行前审查操作，以及维护您自己的备份。在法律允许的范围内，Qarote 不对您或您授权的代理发起的操作结果负责。"
       }
-    }
-  }
+    },
+    "summary": "本条款约束你对 Qarote 的使用——一个用于诊断和管理 RabbitMQ 消息代理的 agent-first 平台。使用本服务即表示你同意受其约束。"
+  },
+  "footer": {
+    "questions": "有疑问？请发邮件至",
+    "email": "support@qarote.io",
+    "address": "229 rue Saint-Honoré, 75001 Paris, France",
+    "seeAlsoPrefix": "另请参阅我们的",
+    "privacy": "隐私政策",
+    "terms": "服务条款"
+  },
+  "section": "章节",
+  "contents": "目录"
 }

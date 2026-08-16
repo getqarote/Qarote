@@ -46,34 +46,44 @@ Qarote self-hosted provides core RabbitMQ monitoring out of the box. Premium fea
 
 Requirements depend on your deployment method:
 
-- **Binary:** PostgreSQL 17+ **with the TimescaleDB extension** (no Docker, Node.js, or web server needed)
-- **Docker Compose:** Docker and Docker Compose (a TimescaleDB-enabled PostgreSQL is included)
-- **Dokku:** Dokku installed on your server (the Postgres service must use a TimescaleDB image — see below)
+- **Binary:** PostgreSQL 17+ **with the TimescaleDB extension and TimescaleDB Toolkit** (no Docker, Node.js, or web server needed)
+- **Docker Compose:** Docker and Docker Compose (a TimescaleDB + Toolkit PostgreSQL is included)
+- **Dokku:** Dokku installed on your server (the Postgres service must ship TimescaleDB **and** the Toolkit — see below)
 - Minimum 2GB RAM, 10GB disk space
 
-> ### ⚠️ TimescaleDB is required (not optional)
+> ### ⚠️ TimescaleDB **+ Toolkit** are required (not optional)
 >
 > Qarote stores time-series data (`queue_metric_snapshots`,
-> `MessageTraceEvent`) in **TimescaleDB hypertables**. On every startup the
-> API runs `prisma migrate deploy`, which executes
-> `CREATE EXTENSION IF NOT EXISTS timescaledb`. If the Postgres server does
-> **not** ship the TimescaleDB extension, that statement fails and **the API
-> crash-loops on boot** — it is not a silent degradation.
+> `MessageTraceEvent`) in **TimescaleDB hypertables**, and derives throughput
+> rates at read time with the **TimescaleDB Toolkit** hyperfunctions
+> (`counter_agg`/`rate()`). On startup the migration runs
+> `CREATE EXTENSION IF NOT EXISTS timescaledb` **and**
+> `CREATE EXTENSION IF NOT EXISTS timescaledb_toolkit`. A Postgres extension is a
+> **server-side binary that ships in the image/package** — the app can only
+> _activate_ it (`CREATE EXTENSION`), it cannot install it. If either extension
+> is not available on the server, the migration fails and **the API crash-loops
+> on boot** — it is not a silent degradation. A boot **preflight** fails fast with
+> a clear message naming the missing extension.
 >
-> Use a TimescaleDB-enabled image/package everywhere:
+> Use an image/package that ships **both** `timescaledb` and
+> `timescaledb_toolkit` everywhere:
 >
 > - **Docker Compose:** `timescale/timescaledb-ha:pg17` (the bundled compose
->   files already pin this). The HA image stores its data under
->   `/home/postgres/pgdata` (`PGDATA=/home/postgres/pgdata/data`), **not**
->   `/var/lib/postgresql/data` — the compose files mount the volume there
+>   files already pin this) — it bundles both extensions. The HA image stores its
+>   data under `/home/postgres/pgdata` (`PGDATA=/home/postgres/pgdata/data`),
+>   **not** `/var/lib/postgresql/data` — the compose files mount the volume there
 >   accordingly.
-> - **Dokku:** the NON-HA `timescale/timescaledb` image (`latest-pg17`). The
->   `dokku-postgres` plugin mounts data at `/var/lib/postgresql/data`, which the
->   standard image uses — so data persists. Do **not** use `timescaledb-ha`
->   under dokku-postgres (it writes outside the plugin's volume). See the Dokku
->   section below.
-> - **Binary / bare-metal:** install the `timescaledb` package into your
->   PostgreSQL 17 server (see the Binary section below).
+> - **Dokku:** the plain `timescale/timescaledb` image bundles TimescaleDB but
+>   **NOT the Toolkit**, so it is no longer sufficient. Point `dokku-postgres` at
+>   a **Toolkit-enabled image** — a Debian-based `postgres:17` +
+>   `timescaledb-2-postgresql-17` + `timescaledb-toolkit-postgresql-17` (keeps the
+>   plugin's `/var/lib/postgresql/data` path) via `POSTGRES_IMAGE` — **or** run
+>   Postgres as a `timescale/timescaledb-ha` container via plain Docker (not the
+>   `dokku-postgres` plugin, which mounts a data path the HA image doesn't use).
+> - **Binary / bare-metal:** install **both** the `timescaledb` and the
+>   `timescaledb-toolkit` packages into your PostgreSQL 17 server (see the Binary
+>   section below). Note: `timescaledb-toolkit` has **no Homebrew formula** — on
+>   macOS use a Docker/Linux Postgres.
 >
 > Retention is handled entirely by TimescaleDB: metrics are kept for **30
 > days** and trace events for **7 days** via chunk-drop policies — there are no
@@ -157,17 +167,18 @@ Qarote is available as a single binary that embeds both the API and frontend. No
 > systemctl status postgresql  # Check if running (Linux)
 > ```
 >
-> **Install PostgreSQL 17 _with TimescaleDB_** if you don't have it. A plain
-> PostgreSQL install is **not** sufficient — the API crash-loops without the
-> `timescaledb` extension (see the warning above).
+> **Install PostgreSQL 17 _with TimescaleDB and the TimescaleDB Toolkit_** if you
+> don't have it. A plain PostgreSQL install is **not** sufficient — the API
+> crash-loops without **both** extensions (see the warning above).
 >
-> - **macOS:** `brew install postgresql@17 timescaledb` then run
->   `timescaledb-tune` and restart Postgres.
 > - **Ubuntu/Debian:** add the TimescaleDB apt repo, then
->   `sudo apt install timescaledb-2-postgresql-17` and run `timescaledb-tune`.
+>   `sudo apt install timescaledb-2-postgresql-17 timescaledb-toolkit-postgresql-17`
+>   and run `timescaledb-tune`.
 >   See the [TimescaleDB self-hosted install guide](https://docs.timescale.com/self-hosted/latest/install/).
-> - **Any OS via Docker:** run `timescale/timescaledb:latest-pg17` instead (the
->   non-HA image uses the standard `/var/lib/postgresql/data` path).
+> - **Any OS via Docker (incl. macOS):** run `ghcr.io/getqarote/postgres:17`
+>   (Debian `postgres:17` + TimescaleDB + Toolkit at the standard
+>   `/var/lib/postgresql/data` path). `timescaledb-toolkit` has **no Homebrew
+>   formula**, so a native macOS `brew` install can't provide it — use Docker there.
 
 ### Database Setup
 
@@ -363,13 +374,14 @@ docker compose -f docker-compose.selfhosted-ee.yml up -d
    ssh dokku@your-server apps:create qarote
    sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git postgres
 
-   # Use the NON-HA timescaledb image for dokku-postgres. The plugin mounts the
-   # data volume at /var/lib/postgresql/data, which timescale/timescaledb (the
-   # standard postgres entrypoint) uses — so data persists. Do NOT use
-   # timescaledb-ha here: it stores data under /home/postgres/pgdata, outside the
-   # plugin's volume, so your data would be lost on every container recreate.
-   export POSTGRES_IMAGE="timescale/timescaledb"
-   export POSTGRES_IMAGE_VERSION="latest-pg17"
+   # Point dokku-postgres at the Qarote image (Debian postgres:17 + TimescaleDB +
+   # Toolkit). It keeps the standard /var/lib/postgresql/data path the plugin
+   # mounts, so data persists. The plain timescale/timescaledb image lacks the
+   # Toolkit; do NOT use timescaledb-ha here — it stores data under
+   # /home/postgres/pgdata, outside the plugin's volume, so your data would be lost
+   # on every container recreate.
+   export POSTGRES_IMAGE="ghcr.io/getqarote/postgres"
+   export POSTGRES_IMAGE_VERSION="17"
    dokku postgres:create qarote-db --image "$POSTGRES_IMAGE" --image-version "$POSTGRES_IMAGE_VERSION"
    dokku postgres:link qarote-db qarote
    ```
@@ -380,6 +392,19 @@ docker compose -f docker-compose.selfhosted-ee.yml up -d
    > simplest path is to destroy and recreate the service on the TimescaleDB
    > image (`dokku postgres:destroy qarote-db` → recreate as above → relink),
    > since there is no data to preserve.
+   >
+   > **Preserving data instead?** `dokku postgres:upgrade` reuses the volume, but
+   > mind the **UID**: this image runs postgres as **UID 999**. A volume from a
+   > plain Debian `postgres:*` image is already 999 (clean swap). A volume from an
+   > **Alpine** `timescale/timescaledb:*` image is **UID 70**, so the new container
+   > hits `postgresql.conf: Permission denied` and refuses to start until you
+   > chown it — stop, chown, then upgrade (chained with `&&`; if it fails partway,
+   > follow the rollback in the runbook). Pass `POSTGRES_IMAGE` on the upgrade too,
+   > or dokku falls back to its default image:
+   > `dokku postgres:stop qarote-db && sudo chown -R 999:999 /var/lib/dokku/services/postgres/qarote-db/data && POSTGRES_IMAGE=ghcr.io/getqarote/postgres POSTGRES_IMAGE_VERSION=17 dokku postgres:upgrade qarote-db`.
+   > If the old volume already had TimescaleDB, then
+   > `ALTER EXTENSION timescaledb UPDATE;` afterwards. Full runbook:
+   > [`docker/postgresql/production/README.md`](../docker/postgresql/production/README.md).
 
 3. **Set environment variables:**
 

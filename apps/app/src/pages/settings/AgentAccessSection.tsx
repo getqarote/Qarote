@@ -1,25 +1,29 @@
 /**
- * Settings → Agent Access section. Owners and admins mint and revoke
- * machine API keys here so external AI agents can call Qarote's MCP
- * endpoint (list incidents, read config findings, and — on EE — get the
- * grounded RCA via explain_incident).
+ * Settings → Agent keys. Owners and admins mint and revoke machine API keys
+ * here so external AI agents can call Qarote's MCP endpoint (list incidents,
+ * read config findings, and — on EE — get the grounded RCA via explain_incident).
  *
- * The mint form is the shared `MintAgentKeyForm` (also used by the cockpit
- * "Connect your agent" dialog); the copy-once reveal dialog renders only
- * when a mint succeeds, and the parent clears the secret from state inside
- * the dialog's onClose so it can't survive a re-render.
+ * "Mint key" opens the shared MintAgentKeyDialog (also used by the cockpit
+ * "Connect your agent" flow), which owns the mint form AND the copy-once
+ * reveal. The button is permission-gated (apikey:manage); the backend enforces
+ * the same permission on the mutation regardless.
  */
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { MintAgentKeyForm } from "@/components/agent/MintAgentKeyForm";
-import { AgentKeyRevealDialog } from "@/components/AgentKeyRevealDialog";
+import { Check, Copy, Plus } from "lucide-react";
+import { toast } from "sonner";
+
+import { getMcpEndpoint, MCP_AUTH_HEADER } from "@/lib/mcp";
+
+import { MintAgentKeyDialog } from "@/components/agent/MintAgentKeyDialog";
 import { AgentKeysList } from "@/components/AgentKeysList";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { SettingsTableSkeleton } from "@/components/skeletons/SettingsSkeleton";
+import { Button } from "@/components/ui/button";
 
 import { useApiKeys } from "@/hooks/queries/useApiKeys";
+import { usePermission } from "@/hooks/queries/useWorkspaceRole";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
 const AgentAccessSection = () => {
@@ -28,65 +32,79 @@ const AgentAccessSection = () => {
   const workspaceId = workspace?.id ?? "";
 
   const { list } = useApiKeys(workspaceId);
+  const canMint = usePermission("apikey:manage") === true;
+  const [mintOpen, setMintOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  // The mint mutation returns the plaintext secret exactly once; we stash
-  // it here long enough for the dialog to render, then clear it from
-  // state inside the dialog's onClose handler.
-  const [revealed, setRevealed] = useState<{
-    secret: string;
-    name: string;
-  } | null>(null);
-
-  // Scope the loading state to the list area only — never hide the mint
-  // form behind a skeleton: a user landing here mid-fetch can already
-  // start minting.
   const keys = list.data ?? [];
+  const hasKeys = keys.filter((k) => k.enabled).length > 0;
+  const mcpEndpoint = getMcpEndpoint();
+
+  const copyEndpoint = async () => {
+    try {
+      await navigator.clipboard.writeText(mcpEndpoint);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      toast.error(t("agentAccess.endpoint.copyFailed"));
+    }
+  };
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="title-section">{t("agentAccess.title")}</h2>
-        <p className="text-muted-foreground text-sm mt-1">
-          {t("agentAccess.description")}
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-semibold tracking-tight">
+            {t("agentAccess.title")}
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t("agentAccess.description")}
+          </p>
+        </div>
+        {canMint && (
+          <Button className="shrink-0" onClick={() => setMintOpen(true)}>
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            {t("agentAccess.mint.submit")}
+          </Button>
+        )}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("agentAccess.mint.title")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <MintAgentKeyForm
-            workspaceId={workspaceId}
-            onMinted={(secret, name) => setRevealed({ secret, name })}
-          />
-        </CardContent>
-      </Card>
+      {/* MCP endpoint + auth header — the connection target for every key. */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-secondary/40 px-5 py-3.5">
+        <p className="min-w-0 break-all font-mono text-sm text-muted-foreground">
+          {t("agentAccess.endpoint.label")}{" "}
+          <span className="text-foreground">{mcpEndpoint}</span>
+          <span className="mx-1.5">·</span>
+          {t("agentAccess.endpoint.authHeader")}{" "}
+          <span className="text-foreground">{MCP_AUTH_HEADER}</span>
+        </p>
+        <Button variant="outline" size="sm" onClick={copyEndpoint}>
+          {copied ? (
+            <Check className="h-3.5 w-3.5" aria-hidden="true" />
+          ) : (
+            <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+          )}
+          {copied
+            ? t("agentAccess.endpoint.copied")
+            : t("agentAccess.endpoint.copy")}
+        </Button>
+      </div>
 
-      {/* AgentKeysList already returns null when there are no enabled keys —
-          no separate empty Card needed (the mint form above IS the entry
-          point). A muted helper line stands in when the list is empty,
-          and a Skeleton fills the area during the initial fetch. */}
       {list.isLoading ? (
-        <Skeleton className="h-24 w-full" />
+        <SettingsTableSkeleton rows={2} />
       ) : list.isError ? (
-        <p className="text-destructive text-sm">
+        <p className="text-sm text-destructive">
           {t("agentAccess.list.loadError")}
         </p>
-      ) : keys.filter((k) => k.enabled).length === 0 ? (
-        <p className="text-muted-foreground text-sm">
+      ) : !hasKeys ? (
+        <p className="text-sm text-muted-foreground">
           {t("agentAccess.empty.description")}
         </p>
       ) : (
         <AgentKeysList workspaceId={workspaceId} />
       )}
 
-      <AgentKeyRevealDialog
-        open={revealed !== null}
-        secret={revealed?.secret ?? null}
-        keyName={revealed?.name ?? ""}
-        onClose={() => setRevealed(null)}
-      />
+      <MintAgentKeyDialog open={mintOpen} onOpenChange={setMintOpen} />
     </div>
   );
 };

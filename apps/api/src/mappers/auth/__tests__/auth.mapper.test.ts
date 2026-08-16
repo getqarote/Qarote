@@ -65,18 +65,6 @@ describe("UserMapper", () => {
     expect(result.pendingEmail).toBe("new@example.com");
   });
 
-  it("includes subscription when present", () => {
-    const result = UserMapper.toApiResponse({
-      ...baseUser,
-      subscription: { plan: "DEVELOPER", status: "ACTIVE" },
-    });
-
-    expect(result.subscription).toEqual({
-      plan: "DEVELOPER",
-      status: "ACTIVE",
-    });
-  });
-
   it("maps an array of users independently", () => {
     const secondUser = {
       ...baseUser,

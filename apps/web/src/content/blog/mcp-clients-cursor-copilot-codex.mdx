@@ -1,0 +1,53 @@
+---
+title: "One MCP surface, every client: Cursor, Copilot, Codex"
+description: "The same Qarote tools from any MCP-capable agent — and what differs between client configs."
+publishedAt: "2026-04-21"
+author: "Brice Tessier"
+category: "mcp"
+cover: "cover-mcp-clients.svg"
+coverCaption: "+ any client"
+readingTimeMin: 4
+tags: ["mcp", "clients", "integrations"]
+---
+
+import Callout from "@/components/blog/Callout.astro";
+
+Qarote exposes one MCP surface — `list_incidents`, `get_incident`, `explain_incident`, and the config-scan tools. Any MCP-capable agent can call it. The tools are identical no matter who's asking; the only thing that changes is where each client keeps its server config.
+
+## Same tools, five clients
+
+The endpoint and the API key are the same everywhere. Point the client at `https://your-qarote.example.com/api/mcp`, pass the key, and ask "what's wrong with my rabbitmq?". Where you _put_ that config is the only per-client wrinkle:
+
+- **Cursor** — `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` in the project.
+- **GitHub Copilot** — `.vscode/mcp.json` in the workspace, under a `servers` block.
+- **Codex** — the CLI's `~/.codex/config.toml`, as an `[mcp_servers.qarote]` table.
+- **Windsurf** — `~/.codeium/windsurf/mcp_config.json`.
+- **opencode** — the `mcp` block in `opencode.json`.
+
+## The config, give or take a key name
+
+Most of these clients share the JSON shape Claude Code uses. Here's the Cursor/Windsurf/opencode form:
+
+```json
+{
+  "mcpServers": {
+    "qarote": {
+      "type": "http",
+      "url": "https://your-qarote.example.com/api/mcp",
+      "headers": { "Authorization": "Bearer ${QAROTE_API_KEY}" }
+    }
+  }
+}
+```
+
+Copilot uses `servers` instead of `mcpServers`. Codex uses TOML rather than JSON but carries the same three facts — url, transport, auth header.
+
+<Callout type="note">
+  The differences are cosmetic — a key name here, a file path there. None of
+  them change the tools, the responses, or the diagnosis. Pick the client you
+  already work in; Qarote answers the same question from all of them.
+</Callout>
+
+## Why a single surface matters
+
+One surface means one thing to secure, one key to rotate, and one mental model to teach. Whether your team lives in Cursor, Copilot, Codex, Windsurf, or opencode, they're all hitting the same deterministic detection and the same on-demand `explain_incident`. The agent is interchangeable; the diagnosis is not.

@@ -13,9 +13,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { IconChevron, IconChevronUp } from "@/components/ui/icons";
 import { Input } from "@/components/ui/input";
-import { PixelChevronDown } from "@/components/ui/pixel-chevron-down";
-import { PixelChevronUp } from "@/components/ui/pixel-chevron-up";
 
 import type { CreateUserForm } from "@/schemas";
 
@@ -103,10 +102,7 @@ export function UserPermissionsCard({ vhost }: UserPermissionsCardProps) {
               onClick={() => setAdvancedOpen(true)}
               className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground shrink-0"
             >
-              <PixelChevronDown
-                className="h-3 w-auto shrink-0 mr-1"
-                aria-hidden
-              />
+              <IconChevron className="h-3 w-auto shrink-0 mr-1" aria-hidden />
               {t("permissionsAdvancedToggle")}
             </Button>
           </div>
@@ -194,10 +190,7 @@ export function UserPermissionsCard({ vhost }: UserPermissionsCardProps) {
               onClick={() => setAdvancedOpen(false)}
               className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
             >
-              <PixelChevronUp
-                className="h-3 w-auto shrink-0 mr-1"
-                aria-hidden
-              />
+              <IconChevronUp className="h-3 w-auto shrink-0 mr-1" aria-hidden />
               {t("permissionsAdvancedCollapse")}
             </Button>
           </div>

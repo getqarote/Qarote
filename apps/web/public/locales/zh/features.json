@@ -1,165 +1,99 @@
 {
   "seo": {
-    "title": "RabbitMQ 监控功能：实时队列、告警、分析",
-    "description": "探索 Qarote 的 RabbitMQ 监控功能：实时队列跟踪、智能告警、性能分析、多服务器支持和队列管理，尽在一个仪表板中。"
+    "title": "功能 — Qarote RabbitMQ 监控",
+    "description": "面向代理的 RabbitMQ 监控：MCP 工具、确定性事件检测、AI 根因、配置扫描、拓扑、告警与自托管。"
   },
-  "hero": {
-    "title": "监控 RabbitMQ 所需的一切",
-    "subtitle": "一个仪表板管理所有 RabbitMQ 服务器。替代管理插件，比 Prometheus + Grafana 更简单。",
-    "pills": {
-      "liveMonitoring": "实时监控",
-      "alerting": "告警",
-      "analytics": "分析",
-      "queueManagement": "队列管理",
-      "multiServer": "多服务器",
-      "queueHistory": "队列历史",
-      "messageSpy": "消息监听",
-      "dailyDigest": "每日摘要",
-      "incidentDiagnosis": "故障诊断",
-      "messageTracing": "消息追踪"
-    }
+  "head": {
+    "eyebrow": "功能",
+    "title": "您的代理调试 RabbitMQ 所需的一切。",
+    "lead": "Qarote 检测事件、解释根因，并通过 MCP 将这一切暴露给您的 AI 编码代理。这就是完整的产品——从别人没有的那部分开始。"
   },
-  "coreFeature": "核心功能",
-  "liveMonitoring": {
-    "title": "实时队列监控",
-    "description": "一目了然地查看队列深度、消息速率和消费者数量。可视化指标突出显示健康、警告和严重状态，确保您不会错过任何退化。",
-    "metric1Value": "< 1s",
-    "metric1Label": "刷新频率",
-    "metric2Value": "3",
-    "metric2Label": "健康状态",
-    "metric3Value": "0",
-    "metric3Label": "所需配置",
-    "point1": "消息速率：每秒发布、投递、确认",
-    "point2": "消费者利用率和队列年龄跟踪",
-    "point3": "队列健康状态的即时可视化反馈"
+  "worksWith": {
+    "label": "兼容",
+    "any": "+ 任意 MCP 客户端"
   },
-  "insightsSection": {
-    "title": "预防故障的洞察"
+  "agentNative": {
+    "eyebrow": "代理原生 · 护城河",
+    "title": "您的代理早已会说的 MCP 接口。",
+    "body": "大多数 RabbitMQ 工具止步于指标。Qarote 在单一 MCP 接口背后提供确定性事件引擎和托管式根因分析——您通过提问来调试，就在您已经使用的编辑器里。"
   },
-  "alerting": {
-    "title": "智能告警系统",
-    "badge": "Developer 计划+",
-    "description": "可按队列和服务器配置阈值。在问题变成故障之前收到通知。",
-    "point1": "通知渠道：邮件、Slack、Webhooks",
-    "point2": "告警历史和确认工作流",
-    "point3": "按队列和服务器配置阈值"
+  "incident": {
+    "eyebrow": "事件检测",
+    "badge": "CE · 免费",
+    "title": "确定性的规则引擎，而非猜测。",
+    "body": "基于规则的实时检测会在 broker 状态越过阈值的那一刻触发——消费者掉线、深度异常、ack 停滞。无需基线期，无需搭建仪表盘。开源，MIT。",
+    "findingTitle": "消费者掉线",
+    "severity": "严重",
+    "time": "6 分钟前触发",
+    "depth": "深度 0 → 52k"
   },
-  "analytics": {
-    "title": "性能分析",
-    "description": "消息吞吐量、队列深度和节点资源的历史图表。发现趋势，自信地规划容量。",
-    "point1": "可自定义的时间范围：1小时到30天",
-    "point2": "内存、磁盘、文件描述符和 CPU 跟踪",
-    "point3": "容量规划的趋势检测"
+  "aiExplain": {
+    "eyebrow": "AI Explain",
+    "badge": "EE · 付费",
+    "title": "按需为您写好的根因。",
+    "bodyPre": "一次调用",
+    "bodyPost": "便将一个事件及其周边 broker 状态转化为通俗易懂的根因。自带密钥、以托管方式运行，或在本地 Ollama 上完全本地化。按套餐限制——绝不按部署限制。",
+    "cardLabel": "根因分析",
+    "cardBody": "3 个消费者在 15:06 断开；深度以约 8k/分钟攀升且无任何消化——很可能是下游某个 worker 崩溃。请检查 15:05 前后的部署。",
+    "cardCofire": "↳ 同时触发：events.payment 也失去了消费者。"
   },
-  "queueManagement": {
-    "title": "队列管理",
-    "description": "从界面清除、删除和创建队列。检查绑定、查看拓扑并发布测试消息，无需使用命令行。",
-    "point1": "绑定检查和拓扑视图",
-    "point2": "用于测试和调试的消息发布",
-    "point3": "交换器和路由键管理"
-  },
-  "multiServer": {
-    "title": "多服务器支持",
-    "badge": "Dev：3台 | Enterprise：无限",
-    "description": "连接来自不同环境的多个 RabbitMQ 实例。跨预发布、生产和开发环境的统一视图。",
-    "point1": "TLS 加密连接",
-    "point2": "所有环境的统一仪表板",
-    "point3": "在服务器之间无缝切换"
-  },
-  "builtForDevs": {
-    "title": "为开发者打造",
-    "description": "无需 YAML 配置。无需维护 Prometheus 或 Grafana。使用连接字符串在60秒内连接您的 RabbitMQ 服务器。",
-    "point1": "自托管或云端选项",
-    "point2": "GitHub 上的开源社区版",
-    "point3": "无需维护基础设施"
-  },
-  "comparison": {
-    "title": "管理 RabbitMQ 服务器不必如此痛苦",
-    "traditional": {
-      "title": "传统管理界面",
-      "point1": "过时的界面拖慢你的速度",
-      "point2": "无法跨服务器或环境统一查看",
-      "point3": "没有可靠、可操作的告警",
-      "point4": "到处都是自建的仪表板和脚本"
-    },
-    "qarote": {
-      "title": "Qarote",
-      "point1": "简洁、现代的界面，快速而清晰",
-      "point2": "所有服务器和环境的统一仪表板",
-      "point3": "智能告警，及早发现问题",
-      "point4": "零配置监控，无脚本，无维护"
-    },
-    "messagesPerSec": "消息/秒",
-    "activeQueues": "活跃队列",
-    "allSystemsOperational": "所有系统运行正常"
-  },
-  "queueIntelligence": {
-    "title": "深度队列智能分析"
-  },
-  "messageVisibility": {
-    "title": "检查任意消息而不影响队列"
-  },
-  "messagePipeline": {
-    "title": "消息流全链路可观测"
-  },
-  "queueHistory": {
-    "description": "每5分钟采集一次队列深度、消费者数量和消息速率，保留30天数据。可对任意队列在任意时间窗口绘图——即使当时你不在线，也能清楚看到队列何时开始堆积、何时排空。"
-  },
-  "messageSpy": {
-    "description": "直接在任意队列中浏览消息头和消息体——只读、无损、对生产环境安全。无需 AMQP 消费者，无需临时脚本，消息完整保留在原位。",
-    "point1": "只读模式——消息永不被消费或确认",
-    "point2": "完整消息体，支持 JSON 语法高亮",
-    "point3": "消息头、路由键、投递模式、重新投递状态"
-  },
-  "dailyDigest": {
-    "description": "每天早晨通过邮件获取 broker 健康摘要：队列深度趋势、死信队列增长情况以及过去24小时的异常。无需打开仪表板，也能掌握系统动态。"
-  },
-  "incidentDiagnosis": {
-    "description": "针对 RabbitMQ 事故的自动化根因分析。将队列深度峰值、消费者掉线和吞吐量变化关联成一条可读时间线——让你清楚知道发生了什么、以什么顺序发生的。"
-  },
-  "messageTracing": {
-    "description": "通过 RabbitMQ Firehose 实现全 broker 消息追踪。每一次发布、每一次投递、每一次确认——实时采集，附带路由键、交换器和消息体大小。"
-  },
-  "comingSoon": {
-    "eyebrow": "更多功能",
-    "heading": "五项附加工具，同一个仪表板",
-    "subtitle": "每个链接都指向包含完整文档、使用场景和常见问题的专属页面。",
-    "learnMore": "了解更多",
-    "items": [
+  "configScan": {
+    "eyebrow": "配置扫描",
+    "badge": "CE · 免费",
+    "title": "在反模式叫醒您之前就抓住它们。",
+    "body": "结构化扫描会标记那些会在凌晨 3 点演变成事件的 RabbitMQ 错误——缺失的死信交换机、空闲的无消费者队列、对默认交换机的过度使用——每一项都能由您的代理读给您听。",
+    "finds": [
       {
-        "icon": "chart.svg",
-        "title": "队列历史",
-        "description": "每5分钟采集一次队列深度、消费者数量和消息速率，保留30天。用于事故回顾和容量规划，无需 Prometheus。",
-        "href": "/features/metrics/"
+        "code": "no DLX on orders.*",
+        "text": "被拒绝的消息在 5 个队列中被悄无声息地丢弃。",
+        "sev": "amber"
       },
       {
-        "icon": "message.svg",
-        "title": "消息监听",
-        "description": "在任何队列中检查消息头和消息体——只读、无损、对生产环境安全。无需编写临时消费者脚本。",
-        "href": "/features/message-spy/"
+        "code": "idle no-consumer queue",
+        "text": "emails.outbound 已有 9 天没有任何消费者。",
+        "sev": "amber"
       },
       {
-        "icon": "email.svg",
-        "title": "每日摘要",
-        "description": "每日早晨发送 broker 健康摘要邮件：队列深度趋势、死信队列增长情况以及过去24小时的异常。",
-        "href": "/features/digest/"
-      },
-      {
-        "icon": "flag.svg",
-        "title": "故障诊断引擎",
-        "description": "针对 RabbitMQ 事故的自动化根因分析。将队列深度峰值、消费者掉线和吞吐量变化关联成一条可读时间线。",
-        "href": "/features/incident-diagnosis/"
-      },
-      {
-        "icon": "real-time.svg",
-        "title": "消息追踪（Firehose）",
-        "description": "通过 RabbitMQ Firehose 实现全 broker 消息追踪。实时查看每条消息、每条路由、每个消费者，支持过滤和搜索。",
-        "href": "/features/message-tracing/"
+        "code": "default-exchange overuse",
+        "text": "82% 的发布通过默认交换机路由。",
+        "sev": "blue"
       }
     ]
   },
+  "topology": {
+    "eyebrow": "拓扑",
+    "badge": "CE · 免费",
+    "title": "可下钻的实时 broker 地图。",
+    "body": "以图的形式查看交换机、队列和绑定。点击任意节点即可查看深度、消费者和绑定——旧的对象列表式「Browse」已化为一张您真正能据以推理的地图。图表保留 30 天的指标历史。",
+    "caption": "实时拓扑 · 点击节点以下钻"
+  },
+  "alerting": {
+    "eyebrow": "告警",
+    "badge": "EE · 付费渠道",
+    "title": "把重要的内容路由到重要的地方。",
+    "body": "发现会通过电子邮件、Slack 或 webhook 送达，并按严重程度路由：严重项寻呼，其余汇总。电子邮件免费；Slack 与 webhook 在 Developer 解锁。",
+    "emailScope": "严重 · 高",
+    "on": "开启"
+  },
+  "connect": {
+    "eyebrow": "连接与扩展",
+    "title": "两分钟得到第一条发现。",
+    "body": "通过 TLS 上的 Management HTTP API 连接——无需 exporter，无需在机器上部署代理。一个 broker 或多个；RabbitMQ 3.x 与 4.x；单节点或集群；包含 CloudAMQP 与 Amazon MQ。",
+    "codeComment": "将 Qarote 指向 Management API",
+    "codeResult": "14 个队列 · 6 个交换机 · 3 条发现"
+  },
+  "deploy": {
+    "eyebrow": "按您的方式部署",
+    "title": "您的网络、您的模型、您的规则。",
+    "body": "以云托管方式运行 Qarote，或使用 Docker、Compose、Dokku 或独立二进制自托管。自托管离线校验许可证——无回连——AI Explain 可在本地 Ollama 上运行，broker 数据从不离开您的网络。",
+    "licensePill": "离线 JWT 许可证",
+    "cardLabel": "数据控制",
+    "cardBody": "检测核心为 MIT 开源。自托管许可证校验为离线。本地 Ollama 将 broker 状态的每一个字节都保留在您的边界之内。"
+  },
   "cta": {
-    "title": "准备好监控您的 RabbitMQ 服务器了吗？",
-    "subtitle": "从免费的 Community 计划开始。无需信用卡。"
+    "heading": "在您自己的 broker 上看看。",
+    "body": "在两分钟内连接，然后问问您的代理哪里出了问题。",
+    "primary": "免费开始",
+    "secondary": "查看价格"
   }
 }

@@ -1,25 +1,29 @@
-import { ReactNode, useId } from "react";
+import { ReactNode, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
   AlertCircle,
   CheckCircle,
-  ExternalLink,
+  Copy,
+  Eye,
+  EyeOff,
   Loader2,
+  Play,
   Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { isCloudMode } from "@/lib/featureFlags";
 import { cn } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 import { useTestSsoConnection } from "@/hooks/queries/useSsoProvider";
 
+import { copyToClipboard } from "./ssoHelpers";
 import { SSO_PROVIDER_PRESETS } from "./ssoProviderPresets";
 import type { SSOFormValues, SSOProviderType } from "./types";
 
@@ -27,89 +31,106 @@ interface SSOProtocolCardProps {
   values: SSOFormValues;
   onChange: (patch: Partial<SSOFormValues>) => void;
   /**
-   * `setup` shows the "Start from a preset" chips row (first-time
-   * configuration — operators need the head-start). `edit` hides
-   * it because the operator has already committed to an IdP and
-   * the chips would just be noise.
+   * `setup` shows the "Start from a preset" chips row and hides the
+   * read-only redirect URL (no provider exists yet). `edit` hides the
+   * chips (the operator has committed to an IdP) and surfaces the
+   * redirect URL to copy into the IdP.
    */
   mode: "setup" | "edit";
+  /** OIDC callback URL — empty until the provider is created. */
+  oidcCallbackUrl: string;
+  /** SAML2 ACS URL — empty until the provider is created. */
+  samlAcsUrl: string;
 }
 
 /**
- * The heart of the SSO settings page. In a single card it holds:
- *
- *   1. A segmented control for OIDC vs SAML 2.0 (replacing the
- *      old dropdown — two options never warranted a dropdown)
- *   2. In setup mode: a "Start from a preset" chips row with
- *      known-good discovery URL templates for the 6 most common
- *      IdPs (Keycloak, Authentik, Auth0, Okta, Google, Entra)
- *   3. The protocol-specific fields (OIDC: discovery URL +
- *      client ID + client secret; SAML: metadata URL)
- *   4. A prominent "Test connection" action that verifies the
- *      discovery URL reaches a live IdP, with inline success /
- *      failure feedback
- *   5. In cloud mode: the email domain field for tenant routing.
- *      Merged into this card (the old separate "Display & Tenancy"
- *      card held a single field — chrome for chrome's sake)
- *
- * All of this used to live in three separate cards with awkward
- * transitions and hidden affordances. Consolidating follows the
- * design context principle "respect the user's working memory" —
- * the operator's mental model is "configure the IdP" as one task,
- * not three.
+ * The single provider card. In one card it holds: the OIDC/SAML
+ * segmented control, a "Start from a preset" chips row (setup only),
+ * the protocol-specific credential fields, the read-only redirect URL
+ * (edit only), the auto-provision toggle, the allowed-domain field, and
+ * a "Verify connection" action that probes the discovery URL.
  */
 export function SSOProtocolCard({
   values,
   onChange,
   mode,
+  oidcCallbackUrl,
+  samlAcsUrl,
 }: SSOProtocolCardProps) {
   const { t } = useTranslation("sso");
   const fieldId = useId();
 
+  const redirectUrl = values.type === "oidc" ? oidcCallbackUrl : samlAcsUrl;
+
   return (
-    <div className="rounded-lg border border-border overflow-hidden">
-      <div className="px-4 py-3 bg-muted/30 border-b border-border">
-        <h2 className="title-section">{t("protocol")}</h2>
-        <p className="text-sm text-muted-foreground">
-          {t("protocolDescription")}
-        </p>
-      </div>
-      <div className="p-4 space-y-6">
-        {/* Protocol picker — segmented control, not a dropdown */}
-        <ProtocolSegmentedControl
-          value={values.type}
-          onChange={(type) => onChange({ type })}
+    <div className="space-y-5 rounded-xl border border-border bg-card p-6">
+      {/* Protocol picker — full-width segmented control */}
+      <ProtocolSegmentedControl
+        value={values.type}
+        onChange={(type) => onChange({ type })}
+      />
+
+      {/* Preset chips — setup mode only */}
+      {mode === "setup" && values.type === "oidc" && (
+        <PresetChips
+          onSelect={(template) => onChange({ oidcDiscoveryUrl: template })}
         />
+      )}
 
-        {/* Preset chips — setup mode only */}
-        {mode === "setup" && values.type === "oidc" && (
-          <PresetChips
-            onSelect={(template) => onChange({ oidcDiscoveryUrl: template })}
-          />
-        )}
+      {/* Protocol-specific fields */}
+      {values.type === "oidc" ? (
+        <OidcFields
+          fieldId={fieldId}
+          values={values}
+          onChange={onChange}
+          mode={mode}
+        />
+      ) : (
+        <SamlFields fieldId={fieldId} values={values} onChange={onChange} />
+      )}
 
-        {/* Protocol-specific fields */}
-        {values.type === "oidc" ? (
-          <OidcFields
-            fieldId={fieldId}
-            values={values}
-            onChange={onChange}
-            mode={mode}
-          />
-        ) : (
-          <SamlFields fieldId={fieldId} values={values} onChange={onChange} />
-        )}
+      {/* Redirect URL — read-only, edit mode only (provider exists) */}
+      {mode === "edit" && redirectUrl && (
+        <RedirectUrlRow
+          fieldId={fieldId}
+          label={
+            values.type === "oidc" ? t("oidcCallbackLabel") : t("samlAcsLabel")
+          }
+          hint={values.type === "oidc" ? t("redirectUrlHint") : t("acsUrlHint")}
+          url={redirectUrl}
+        />
+      )}
 
-        {/* Email domain field — cloud mode only, merged in here
-            instead of a separate one-field card */}
-        {isCloudMode() && (
-          <DomainField
-            fieldId={fieldId}
-            value={values.domain}
-            onChange={(domain) => onChange({ domain })}
-          />
-        )}
+      <hr className="border-border" />
+
+      {/* Auto-provision toggle */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-0.5">
+          <Label htmlFor={`${fieldId}-autoprovision`} className="font-medium">
+            {t("autoProvisionLabel")}
+          </Label>
+          <p className="text-sm text-muted-foreground">
+            {t("autoProvisionHint")}
+          </p>
+        </div>
+        <Switch
+          id={`${fieldId}-autoprovision`}
+          checked={values.autoProvision}
+          onCheckedChange={(autoProvision) => onChange({ autoProvision })}
+        />
       </div>
+
+      <hr className="border-border" />
+
+      <DomainField
+        fieldId={fieldId}
+        value={values.domain}
+        onChange={(domain) => onChange({ domain })}
+      />
+
+      {values.type === "oidc" && (
+        <VerifyConnection discoveryUrl={values.oidcDiscoveryUrl} />
+      )}
     </div>
   );
 }
@@ -126,12 +147,12 @@ function ProtocolSegmentedControl({
   const { t } = useTranslation("sso");
 
   return (
-    <div className="flex items-center gap-4">
-      <Label className="shrink-0">{t("ssoType")}</Label>
+    <div className="space-y-2">
+      <Label>{t("ssoType")}</Label>
       <div
         role="tablist"
         aria-label={t("ssoType")}
-        className="inline-flex items-center rounded-lg border bg-muted/40 p-1"
+        className="flex gap-[3px] rounded-full border border-border bg-muted/50 p-[3px]"
       >
         <SegmentButton
           active={value === "oidc"}
@@ -172,7 +193,7 @@ function SegmentButton({
       aria-selected={active}
       onClick={onClick}
       className={cn(
-        "inline-flex items-center rounded-md px-4 py-1.5 text-sm font-medium motion-safe:transition-colors",
+        "inline-flex flex-1 items-center justify-center rounded-full px-4 py-1.5 text-[13px] font-medium motion-safe:transition-colors",
         "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         active
           ? "bg-background text-foreground shadow-sm"
@@ -231,211 +252,69 @@ function OidcFields({
   mode: "setup" | "edit";
 }) {
   const { t } = useTranslation("sso");
+  const [showSecret, setShowSecret] = useState(false);
 
   return (
     <div className="space-y-5">
-      <DiscoveryUrlField
-        fieldId={fieldId}
-        value={values.oidcDiscoveryUrl}
-        onChange={(oidcDiscoveryUrl) => onChange({ oidcDiscoveryUrl })}
-      />
-
       <div className="space-y-2">
-        <Label htmlFor={`${fieldId}-client-id`}>{t("oidcClientId")}</Label>
-        <Input
-          id={`${fieldId}-client-id`}
-          placeholder="qarote"
-          value={values.oidcClientId}
-          onChange={(e) => onChange({ oidcClientId: e.target.value })}
-          autoComplete="off"
-        />
-        <p className="text-xs text-muted-foreground">{t("oidcClientIdHint")}</p>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor={`${fieldId}-client-secret`}>
-          {t("oidcClientSecret")}
-        </Label>
-        <Input
-          id={`${fieldId}-client-secret`}
-          type="password"
-          placeholder={
-            mode === "edit"
-              ? t("clientSecretKeepPlaceholder")
-              : t("clientSecretPlaceholder")
-          }
-          value={values.oidcClientSecret}
-          onChange={(e) => onChange({ oidcClientSecret: e.target.value })}
-          autoComplete="new-password"
-        />
-      </div>
-    </div>
-  );
-}
-
-// ─── Discovery URL + inline test action ────────────────────────
-
-function DiscoveryUrlField({
-  fieldId,
-  value,
-  onChange,
-}: {
-  fieldId: string;
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  const { t } = useTranslation("sso");
-
-  const testMutation = useTestSsoConnection({
-    onSuccess: (data) => {
-      if (data.success) {
-        toast.success(t("testSuccess", { issuer: data.issuer }));
-      } else {
-        toast.error(data.error || t("testError"));
-      }
-    },
-    onError: (error) => toast.error(error.message || t("testError")),
-  });
-
-  const handleTest = () => {
-    if (!value) {
-      toast.error(t("discoveryUrlRequired"));
-      return;
-    }
-    testMutation.mutate({ discoveryUrl: value });
-  };
-
-  const hasResult = testMutation.data !== undefined;
-  const isPending = testMutation.isPending;
-
-  return (
-    <div className="space-y-2">
-      <div className="flex items-baseline justify-between gap-2">
         <Label htmlFor={`${fieldId}-discovery-url`}>
           {t("oidcDiscoveryUrl")}
         </Label>
-        <ConnectionStatusBadge
-          isPending={isPending}
-          result={testMutation.data}
-        />
-      </div>
-
-      <div className="flex gap-2">
         <Input
           id={`${fieldId}-discovery-url`}
           placeholder="https://your-idp.com/.well-known/openid-configuration"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
+          value={values.oidcDiscoveryUrl}
+          onChange={(e) => onChange({ oidcDiscoveryUrl: e.target.value })}
           autoComplete="off"
           className="font-mono text-xs"
         />
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleTest}
-          disabled={isPending || !value}
-          className="shrink-0"
-        >
-          {isPending ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
-          ) : (
-            <ExternalLink className="h-4 w-4 mr-2" aria-hidden="true" />
-          )}
-          {isPending
-            ? t("testing")
-            : hasResult
-              ? t("testAgain")
-              : t("testConnection")}
-        </Button>
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        {t("oidcDiscoveryUrlHint")}
-      </p>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor={`${fieldId}-client-id`}>{t("oidcClientId")}</Label>
+          <Input
+            id={`${fieldId}-client-id`}
+            placeholder="qarote-prod"
+            value={values.oidcClientId}
+            onChange={(e) => onChange({ oidcClientId: e.target.value })}
+            autoComplete="off"
+          />
+        </div>
 
-      {testMutation.data && <TestConnectionResult result={testMutation.data} />}
-    </div>
-  );
-}
-
-function ConnectionStatusBadge({
-  isPending,
-  result,
-}: {
-  isPending: boolean;
-  result: { success: boolean } | undefined;
-}) {
-  const { t } = useTranslation("sso");
-
-  if (isPending) {
-    return (
-      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-        <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
-        {t("testing")}
-      </span>
-    );
-  }
-
-  if (result?.success) {
-    return (
-      <span className="inline-flex items-center gap-1 text-xs font-medium text-success">
-        <CheckCircle className="h-3 w-3" aria-hidden="true" />
-        {t("statusValid")}
-      </span>
-    );
-  }
-
-  if (result && !result.success) {
-    return (
-      <span className="inline-flex items-center gap-1 text-xs font-medium text-destructive">
-        <AlertCircle className="h-3 w-3" aria-hidden="true" />
-        {t("testError")}
-      </span>
-    );
-  }
-
-  return (
-    <span className="text-xs text-muted-foreground">{t("statusUntested")}</span>
-  );
-}
-
-/**
- * Larger inline callout below the discovery URL field when a test
- * has completed. Separate from the header badge because the header
- * badge is the at-a-glance status indicator, while this is the
- * full message (issuer or error detail) the operator needs for
- * debugging.
- */
-function TestConnectionResult({
-  result,
-}: {
-  result: { success: boolean; issuer?: string; error?: string };
-}) {
-  const { t } = useTranslation("sso");
-
-  if (result.success) {
-    return (
-      <div className="mt-2 flex items-start gap-2 rounded-md border border-success/30 bg-success-muted p-3 text-sm">
-        <CheckCircle
-          className="h-4 w-4 text-success mt-0.5 shrink-0"
-          aria-hidden="true"
-        />
-        <div className="min-w-0">
-          <p className="font-medium text-success">
-            {t("testSuccess", { issuer: result.issuer })}
-          </p>
+        <div className="space-y-2">
+          <Label htmlFor={`${fieldId}-client-secret`}>
+            {t("oidcClientSecret")}
+          </Label>
+          <div className="relative">
+            <Input
+              id={`${fieldId}-client-secret`}
+              type={showSecret ? "text" : "password"}
+              placeholder={
+                mode === "edit"
+                  ? t("clientSecretKeepPlaceholder")
+                  : t("clientSecretPlaceholder")
+              }
+              value={values.oidcClientSecret}
+              onChange={(e) => onChange({ oidcClientSecret: e.target.value })}
+              autoComplete="new-password"
+              className="pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowSecret((s) => !s)}
+              aria-label={showSecret ? t("hideSecret") : t("showSecret")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              {showSecret ? (
+                <EyeOff className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <Eye className="h-4 w-4" aria-hidden="true" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
-    );
-  }
-
-  return (
-    <div className="mt-2 flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm">
-      <AlertCircle
-        className="h-4 w-4 text-destructive mt-0.5 shrink-0"
-        aria-hidden="true"
-      />
-      <p className="text-destructive break-words min-w-0">{result.error}</p>
     </div>
   );
 }
@@ -471,7 +350,50 @@ function SamlFields({
   );
 }
 
-// ─── Cloud-mode domain field ───────────────────────────────────
+// ─── Redirect URL (read-only) ──────────────────────────────────
+
+function RedirectUrlRow({
+  fieldId,
+  label,
+  hint,
+  url,
+}: {
+  fieldId: string;
+  label: string;
+  hint: string;
+  url: string;
+}) {
+  const { t } = useTranslation("sso");
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-baseline gap-2">
+        <Label htmlFor={`${fieldId}-redirect`}>{label}</Label>
+        <span className="text-xs text-muted-foreground">· {t("readOnly")}</span>
+      </div>
+      <div className="flex items-stretch overflow-hidden rounded-md border border-border bg-muted/50">
+        <input
+          id={`${fieldId}-redirect`}
+          readOnly
+          value={url}
+          className="min-w-0 flex-1 bg-transparent px-3 py-2 font-mono text-xs text-muted-foreground outline-none"
+        />
+        <button
+          type="button"
+          onClick={() => copyToClipboard(url, t)}
+          aria-label={t("copyToClipboard")}
+          className="flex shrink-0 items-center gap-1.5 border-l border-border bg-card px-3 font-mono text-[11px] text-muted-foreground hover:text-primary"
+        >
+          <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+          {t("copyToClipboard")}
+        </button>
+      </div>
+      <p className="text-xs text-muted-foreground">{hint}</p>
+    </div>
+  );
+}
+
+// ─── Domain field ──────────────────────────────────────────────
 
 function DomainField({
   fieldId,
@@ -485,7 +407,7 @@ function DomainField({
   const { t } = useTranslation("sso");
 
   return (
-    <div className="space-y-2 pt-2 border-t">
+    <div className="space-y-2">
       <Label htmlFor={`${fieldId}-domain`}>{t("domain")}</Label>
       <Input
         id={`${fieldId}-domain`}
@@ -495,6 +417,85 @@ function DomainField({
         autoComplete="off"
       />
       <p className="text-xs text-muted-foreground">{t("domainHint")}</p>
+    </div>
+  );
+}
+
+// ─── Verify connection ─────────────────────────────────────────
+
+function VerifyConnection({ discoveryUrl }: { discoveryUrl: string }) {
+  const { t } = useTranslation("sso");
+
+  const testMutation = useTestSsoConnection({
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success(t("testSuccess", { issuer: data.issuer }));
+      } else {
+        toast.error(data.error || t("testError"));
+      }
+    },
+    onError: (error) => toast.error(error.message || t("testError")),
+  });
+
+  const handleTest = () => {
+    if (!discoveryUrl) {
+      toast.error(t("discoveryUrlRequired"));
+      return;
+    }
+    testMutation.mutate({ discoveryUrl });
+  };
+
+  const isPending = testMutation.isPending;
+
+  return (
+    <div className="space-y-2">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handleTest}
+        disabled={isPending || !discoveryUrl}
+      >
+        {isPending ? (
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+        ) : (
+          <Play className="h-4 w-4" aria-hidden="true" />
+        )}
+        {isPending ? t("testing") : t("verifyConnection")}
+      </Button>
+
+      {testMutation.data && <TestConnectionResult result={testMutation.data} />}
+    </div>
+  );
+}
+
+function TestConnectionResult({
+  result,
+}: {
+  result: { success: boolean; issuer?: string; error?: string };
+}) {
+  const { t } = useTranslation("sso");
+
+  if (result.success) {
+    return (
+      <div className="flex items-start gap-2 rounded-md border border-success/30 bg-success-muted p-3 text-sm">
+        <CheckCircle
+          className="mt-0.5 h-4 w-4 shrink-0 text-success"
+          aria-hidden="true"
+        />
+        <p className="min-w-0 font-medium text-success">
+          {t("testSuccess", { issuer: result.issuer })}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm">
+      <AlertCircle
+        className="mt-0.5 h-4 w-4 shrink-0 text-destructive"
+        aria-hidden="true"
+      />
+      <p className="min-w-0 break-words text-destructive">{result.error}</p>
     </div>
   );
 }

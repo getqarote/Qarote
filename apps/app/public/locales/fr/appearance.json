@@ -1,8 +1,8 @@
 {
   "title": "Apparence",
-  "subtitle": "Personnalisez l'apparence du tableau de bord.",
+  "subtitle": "Les changements s'appliquent immédiatement — aucune sauvegarde nécessaire.",
   "themeTitle": "Thème",
-  "themeDescription": "Sélectionnez votre schéma de couleurs préféré.",
+  "themeDescription": "Choisissez l'apparence de Qarote sur cet appareil.",
   "themeSystemHint": "Système suit le réglage de votre OS.",
   "light": "Clair",
   "dark": "Sombre",

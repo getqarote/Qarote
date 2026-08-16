@@ -1,6 +1,8 @@
 {
   "pageTitle": "Notificaciones",
   "pageSubtitle": "Monitorea alertas y notificaciones del sistema",
+  "subtitle": "Alertas y hallazgos de configuración enviados por tus brokers.",
+  "intent": "Notificaciones — la superficie para lo que el agente no puede hacer solo: avisar a una persona. Estados vacíos amables, nunca salas muertas.",
   "noServerTitle": "Notificaciones",
   "noServerDescription": "Monitorea alertas y notificaciones del sistema",
   "alertRules": "Reglas de alertas",
@@ -11,10 +13,54 @@
   "active": {
     "noneTitle": "Sin alertas activas",
     "noneDesc": "Tu clúster de RabbitMQ está funcionando sin alertas.",
+    "noneDescChannels": "Tu clúster funciona sin problemas. Las alertas llegan aquí por email, Slack y webhook en cuanto se dispara una regla.",
+    "showResolvedCount": "Mostrar resueltas ({{count}})",
     "upgradeCta": "Actualizar ahora",
     "previewHiddenCount": "{{count}} alerta oculta — actualice para verlas todas",
     "previewHiddenCount_other": "{{count}} alertas ocultas — actualice para verlas todas",
     "previewUpgradeHint": "Actualice a Developer para recibir notificaciones por email y Slack en cada alerta."
+  },
+  "filter": {
+    "all": "Todas",
+    "bySeverity": "Filtrar por severidad",
+    "noneForFilter": "Ninguna alerta coincide con este filtro."
+  },
+  "sevLabel": {
+    "critical": "Crítica",
+    "high": "Alta",
+    "medium": "Media",
+    "low": "Baja",
+    "info": "Info"
+  },
+  "status": {
+    "active": "Activa",
+    "ack": "Asignada",
+    "resolved": "Resuelta",
+    "snoozed": "Pospuesta"
+  },
+  "pager": {
+    "prev": "Anterior",
+    "next": "Siguiente",
+    "range": "{{from}}–{{to}} de {{total}}"
+  },
+  "detail": {
+    "source": "Origen",
+    "server": "Servidor",
+    "queueVhost": "Cola · vhost",
+    "thresholdVsActual": "Umbral vs real",
+    "actual": "Real",
+    "timeline": "Cronología",
+    "explainTitle": "Esta alerta corresponde a un incidente diagnosticable.",
+    "explainHint": "Obtén un análisis de causa raíz aquí mismo.",
+    "rca": "Análisis de causa raíz",
+    "rcaLoading": "Analizando…",
+    "rcaError": "No se pudo generar una explicación. Inténtalo de nuevo."
+  },
+  "timeline": {
+    "firstSeen": "Primera detección",
+    "claimed": "Asignada",
+    "resolved": "Resuelta",
+    "lastSeen": "Última detección"
   },
   "failedToLoad": "No se pudieron cargar los datos de alertas. Por favor inténtalo de nuevo.",
   "loadingResolved": "Cargando alertas resueltas...",
@@ -146,7 +192,8 @@
       "firstSeen": "Visto por primera vez",
       "resolved": "Resuelto",
       "source": "{{type}}: {{name}}"
-    }
+    },
+    "explain": "Explicar"
   },
   "configScan": "Escaneo de config",
   "scan": {
@@ -183,6 +230,42 @@
       "resolveSuccess": "Hallazgo resuelto",
       "dismissSuccess": "Hallazgo descartado",
       "actionError": "Algo salió mal: inténtelo de nuevo"
+    },
+    "configFinding": "Hallazgo de configuración",
+    "whatWhy": "Qué y por qué",
+    "explainThis": "Explicar este hallazgo",
+    "aiExplanation": "Explicación de IA",
+    "ruleGuidance": "guía de la regla",
+    "noAutoFix": "Sin corrección automática — Qarote aún no puede aplicar este cambio por ti de forma segura.",
+    "rescan": "Reescanear",
+    "markResolved": "Marcar resuelto",
+    "inspect": "Inspeccionar",
+    "openFindings_one": "{{count}} hallazgo abierto",
+    "openFindings_other": "{{count}} hallazgos abiertos",
+    "showResolvedIgnored": "Mostrar resueltos e ignorados",
+    "emptyCategory": "Sin hallazgos en esta categoría.",
+    "dismissReasonSelect": "Selecciona un motivo",
+    "dismissReasons": {
+      "byDesign": "No se corregirá — por diseño",
+      "acceptableRisk": "Riesgo aceptable",
+      "falsePositive": "Falso positivo",
+      "handledElsewhere": "Gestionado en otro sitio"
+    },
+    "banner": {
+      "resolved": "Marcado como resuelto. Reaparecerá si el escaneo lo detecta de nuevo.",
+      "dismissed": "Ignorado. Oculto de la lista pero recuperable.",
+      "dismissedWithReason": "Ignorado · {{reason}}. Oculto pero recuperable."
+    },
+    "categories": {
+      "queues": "colas",
+      "exchanges": "exchanges",
+      "bindings": "bindings",
+      "consumers": "consumidores",
+      "connections": "conexiones",
+      "nodes": "nodos",
+      "policies": "policies",
+      "users": "usuarios",
+      "vhosts": "vhosts"
     }
   },
   "modal": {
@@ -328,5 +411,284 @@
         "default_unscoped": "Tráfico de producción en el vhost predeterminado"
       }
     }
+  },
+  "lifecycle": {
+    "acknowledge": "Asignarme",
+    "unacknowledge": "Liberar",
+    "snooze": "Posponer",
+    "snoozeForLabel": "Posponer hasta…",
+    "resolve": "Resolver",
+    "reopen": "Reabrir",
+    "acknowledgedBadge": "Asignada",
+    "snoozeFor": {
+      "1h": "Durante 1 hora",
+      "4h": "Durante 4 horas",
+      "24h": "Hasta mañana"
+    },
+    "toast": {
+      "acknowledged": "Alerta asignada",
+      "unacknowledged": "Asignación retirada",
+      "snoozed": "Alerta pospuesta",
+      "resolved": "Alerta resuelta",
+      "reopened": "Alerta reabierta",
+      "error": "Algo salió mal: inténtelo de nuevo"
+    },
+    "claimTooltip": "Asignarme — avisa al equipo de que te encargas; la alerta sigue activa hasta resolverla",
+    "resolveTooltip": "Resolver — marca la alerta como corregida y la mueve a resueltas",
+    "reopenTooltip": "Reabrir — la devuelve a las alertas activas"
+  },
+  "viewAlertRules": "Ver reglas de alerta",
+  "bulk": {
+    "selectedCount": "{{count}} seleccionada(s)",
+    "clear": "Borrar",
+    "selectAll": "Seleccionar todo",
+    "selectRow": "Seleccionar la alerta {{title}}",
+    "confirmResolveTitle": "¿Resolver las alertas seleccionadas?",
+    "confirmResolveBody": "Esto marca {{count}} alertas como resueltas y las saca de la lista activa.",
+    "toast": {
+      "claimed": "{{count}} alerta(s) reclamada(s)",
+      "resolved": "{{count}} alerta(s) resuelta(s)",
+      "partialError": "{{count}} acción(es) fallida(s)"
+    }
+  },
+  "rules": {
+    "customComingSoon": "Reglas personalizadas próximamente",
+    "kind": {
+      "threshold": "Umbral",
+      "diagnostic": "Diagnóstico",
+      "config": "Configuración"
+    },
+    "intent": "Reglas de alerta — en el lanzamiento es leer + alternar, no un editor de umbrales. Qarote trae valores por defecto sensatos; desactiva lo que sea demasiado ruidoso para tu configuración.",
+    "searchPlaceholderShort": "Buscar reglas…",
+    "countOn": "{{on}} / {{total}} activas",
+    "defaultsNote": "Usando las reglas por defecto de Qarote — desactiva lo que sea demasiado ruidoso para tu configuración.",
+    "customSoon": "personalizado pronto",
+    "customSoonTooltip": "Umbrales personalizados próximamente",
+    "groupCount": "{{on}}/{{total}} activas",
+    "selfCalibrating": "autocalibrado · sin umbral que definir",
+    "undo": "Deshacer",
+    "disableRule": "Desactivar {{name}}",
+    "enableRule": "Activar {{name}}",
+    "kindDesc": {
+      "threshold": "Puntual — se dispara cuando un valor cruza una línea fija.",
+      "diagnostic": "Por ventana — autocalibrado, sin umbral que ajustar.",
+      "config": "Anti-patrones estructurales en tu topología."
+    },
+    "toast": {
+      "enabled": "Regla activada",
+      "disabled": "Regla desactivada"
+    }
+  },
+  "ruleGuidance": {
+    "config": {
+      "cluster": {
+        "even_node_count": {
+          "what": "Este clúster tiene un número par de nodos, así que una partición de red puede dividirlo en dos mitades iguales sin mayoría — las quorum queues no pueden elegir líder y pueden quedarse bloqueadas. Usa un número impar para que siempre sobreviva una mayoría.",
+          "fixTitle": "Pasar a un número impar de nodos",
+          "fixSteps": [
+            "Añade o quita un nodo para que el total sea impar (3, 5, …).",
+            "Reparte las réplicas de quorum queues por la mayoría superviviente.",
+            "Reescanea para confirmar que el hallazgo desaparece."
+          ]
+        },
+        "version_skew": {
+          "what": "Los nodos del clúster ejecutan versiones de RabbitMQ distintas. Mezclar versiones solo está previsto durante una actualización — mantenerlo provoca deriva de comportamiento y bloquea operaciones de quorum/Khepri.",
+          "fixTitle": "Alinear las versiones de RabbitMQ",
+          "fixSteps": [
+            "Planifica una actualización progresiva hacia la misma versión menor.",
+            "Actualiza los nodos rezagados uno a uno, comprobando la salud del clúster.",
+            "Reescanea cuando todos los nodos reporten la misma versión."
+          ]
+        }
+      },
+      "consumer": {
+        "prefetch_misconfig": {
+          "what": "Los consumidores de {{resource}} usan un prefetch (QoS) que probablemente perjudica el rendimiento o la equidad — un prefetch ilimitado deja que un consumidor acapare mensajes, y un prefetch de 1 serializa el trabajo y añade idas y vueltas.",
+          "fixTitle": "Ajustar el prefetch de los consumidores",
+          "fixSteps": [
+            "Establece un prefetch de canal acotado (empieza en 20–100 y mide).",
+            "Asegúrate de que cada consumidor confirme para devolver el crédito de prefetch.",
+            "Reescanea tras redesplegar los consumidores."
+          ]
+        }
+      },
+      "exchange": {
+        "orphan": {
+          "what": "El exchange {{resource}} no tiene bindings, así que todo lo publicado se descarta en silencio (o se devuelve si es mandatory). Suele ser un resto de una ruta renombrada o una cola eliminada.",
+          "fixTitle": "Enlazar o eliminar el exchange",
+          "fixSteps": [
+            "Confirma si algún publicador aún apunta a este exchange.",
+            "Si hace falta, enlázalo a la(s) cola(s) que debe enrutar.",
+            "Si está realmente huérfano, elimínalo y reescanea."
+          ]
+        }
+      },
+      "node": {
+        "fd_limit_low": {
+          "what": "El límite de descriptores de archivo de un nodo es bajo para su número de conexiones y colas. RabbitMQ usa un FD por conexión y varios por cola — cerca del límite, accept() falla y se caen conexiones bajo carga.",
+          "fixTitle": "Subir el límite de descriptores de archivo",
+          "fixSteps": [
+            "Sube el ulimit del SO (y LimitNOFILE de systemd) del proceso del broker.",
+            "Busca margen muy por encima del pico de conexiones × ~1,5.",
+            "Reinicia el nodo y reescanea."
+          ]
+        },
+        "watermark_misconfig": {
+          "what": "El high-watermark de memoria en {{resource}} está lo bastante alto como para que, bajo carga, el broker alcance la alarma y bloquee a todos los publicadores de todo el clúster antes de que puedas reaccionar.",
+          "fixTitle": "Bajar el watermark de memoria",
+          "fixSteps": [
+            "Revisa primero el margen de memoria de cada nodo.",
+            "Baja vm_memory_high_watermark (p. ej. a 0,6) en los nodos afectados.",
+            "Observa el estado de la alarma tras aplicarlo y reescanea."
+          ]
+        }
+      },
+      "policy": {
+        "conflicting": {
+          "what": "Dos policies coinciden con {{resource}} a la misma prioridad y RabbitMQ solo aplica una — el ganador es no determinista con igual prioridad, así que tus colas pueden recibir en silencio los ajustes equivocados.",
+          "fixTitle": "Resolver el conflicto de policies",
+          "fixSteps": [
+            "Decide qué definiciones necesita realmente {{resource}}.",
+            "Fusiónalas, acota los patrones para que no se solapen, o reprioriza.",
+            "Reescanea para confirmar que solo se aplica una policy."
+          ]
+        }
+      },
+      "queue": {
+        "classic_mirrored_deprecated": {
+          "what": "{{resource}} es una classic mirrored queue. El mirroring clásico está obsoleto y se elimina en RabbitMQ 4.x — las quorum queues son el reemplazo soportado para la durabilidad replicada.",
+          "fixTitle": "Migrar a una quorum queue",
+          "fixSteps": [
+            "Crea una nueva quorum queue junto a la clásica (no se puede convertir in situ).",
+            "Drena los consumidores, cambia los publicadores y retira la cola antigua.",
+            "Reescanea cuando la cola clásica haya desaparecido."
+          ]
+        },
+        "exclusive_in_production": {
+          "what": "{{resource}} es una cola exclusiva — se elimina en cuanto cae la conexión que la declaró. Bien para colas de respuesta RPC, peligroso para algo que deba sobrevivir a una reconexión.",
+          "fixTitle": "Reconsiderar el flag exclusive",
+          "fixSteps": [
+            "Confirma que la cola está realmente ligada a una sola conexión efímera.",
+            "Si los datos deben perdurar, redeclárala durable y no exclusiva.",
+            "Reescanea tras el cambio."
+          ]
+        },
+        "missing_dlx": {
+          "what": "{{resource}} no tiene dead-letter exchange, así que los mensajes rechazados (requeue=false) o caducados (TTL) se descartan en silencio, sin rastro — no puedes inspeccionar ni reproducir los fallos.",
+          "fixTitle": "Añadir un dead-letter",
+          "fixSteps": [
+            "Crea un dead-letter exchange y una cola enlazada que controles.",
+            "Aplica x-dead-letter-exchange por policy o argumento de cola en {{resource}}.",
+            "Reescanea para confirmar que el hallazgo desaparece."
+          ]
+        },
+        "no_consumer_backlog": {
+          "what": "{{resource}} no tiene protección contra un backlog ilimitado — sin límite de longitud, TTL ni gestión de overflow, un consumidor parado deja que los mensajes se acumulen hasta disparar alarmas de memoria o disco.",
+          "fixTitle": "Acotar el backlog",
+          "fixSteps": [
+            "Define un max-length o message-TTL acorde a la carga.",
+            "Elige deliberadamente un comportamiento de overflow (drop-head o reject-publish).",
+            "Reescanea tras aplicar la policy."
+          ]
+        },
+        "no_length_bound": {
+          "what": "{{resource}} no tiene ni max-length ni message-TTL, así que puede crecer sin límite si los productores superan a los consumidores, disparando con el tiempo alarmas de memoria o disco que bloquean todo el nodo.",
+          "fixTitle": "Añadir un límite de longitud o TTL",
+          "fixSteps": [
+            "Decide el techo adecuado (max-length, max-length-bytes o message-TTL).",
+            "Aplícalo vía policy para poder ajustarlo fácilmente.",
+            "Reescanea para confirmar el límite."
+          ]
+        },
+        "quorum_queue_ha_policy": {
+          "what": "{{resource}} es una quorum queue pero todavía le coincide una policy HA clásica (ha-mode). Las policies HA no tienen sentido para quorum queues y delatan una migración a medias.",
+          "fixTitle": "Quitar la policy HA",
+          "fixSteps": [
+            "Acota o elimina la policy ha-mode para que no afecte a las quorum queues.",
+            "Confirma que la replicación la rigen los ajustes de réplica de la quorum queue.",
+            "Reescanea para confirmar que la policy obsoleta desaparece."
+          ]
+        },
+        "quorum_queue_minority_replicas": {
+          "what": "Las réplicas de la quorum queue {{resource}} están colocadas de modo que un solo fallo de nodo pierde la mayoría — la cola queda indisponible hasta que el nodo vuelve.",
+          "fixTitle": "Reequilibrar las réplicas",
+          "fixSteps": [
+            "Lleva el conjunto de réplicas a un número impar repartido en nodos distintos.",
+            "Usa rabbitmq-queues add_member / grow para reequilibrar.",
+            "Reescanea para confirmar que una mayoría sobrevive a la pérdida de un nodo."
+          ]
+        },
+        "quorum_queue_no_delivery_limit": {
+          "what": "{{resource}} es una quorum queue sin delivery-limit, así que un mensaje envenenado puede reentregarse para siempre, dando vueltas por los consumidores sin pasar nunca a dead-letter.",
+          "fixTitle": "Fijar un delivery-limit",
+          "fixSteps": [
+            "Fija x-delivery-limit (por policy) con un número de reintentos razonable.",
+            "Combínalo con un dead-letter exchange para capturar los mensajes agotados.",
+            "Reescanea tras aplicarlo."
+          ]
+        },
+        "transient_in_production": {
+          "what": "{{resource}} es una cola transient (no durable) — se pierde al reiniciar el broker junto con sus mensajes. Rara vez es lo que quieres para una carga de producción.",
+          "fixTitle": "Hacer la cola durable",
+          "fixSteps": [
+            "Confirma que los datos de la cola deben sobrevivir a un reinicio.",
+            "Redeclárala durable (transient/durable no se cambia in situ).",
+            "Reescanea tras el cambio."
+          ]
+        }
+      },
+      "user": {
+        "guest_enabled": {
+          "what": "El usuario guest por defecto sigue activo. Aun limitado a localhost por defecto, dejarlo activo es una debilidad conocida que falla la mayoría de comprobaciones de hardening.",
+          "fixTitle": "Desactivar o reemplazar el usuario guest",
+          "fixSteps": [
+            "Crea usuarios con nombre y permisos de mínimo privilegio por aplicación.",
+            "Elimina el usuario guest (o al menos cambia su contraseña y restríngelo).",
+            "Reescanea para confirmar que guest ha desaparecido."
+          ]
+        }
+      },
+      "vhost": {
+        "default_unscoped": {
+          "what": "Hay tráfico de producción en el vhost por defecto (\"/\"). Un único vhost compartido no da ninguna frontera de aislamiento de permisos, policies o límites entre aplicaciones.",
+          "fixTitle": "Separar el tráfico en vhosts con nombre",
+          "fixSteps": [
+            "Crea un vhost por aplicación o entorno.",
+            "Mueve allí colas/exchanges y concede permisos acotados.",
+            "Reescanea cuando el vhost por defecto ya no lleve tráfico de producción."
+          ]
+        }
+      }
+    }
+  },
+  "notifSettings": {
+    "title": "Configuración de notificaciones",
+    "channels": "Canales",
+    "channelsDesc": "Dónde se entregan las alertas.",
+    "email": "Email",
+    "slack": "Slack",
+    "webhooks": "Webhooks",
+    "webhook": "Webhook",
+    "notConfigured": "Sin configurar",
+    "configured": "Configurado",
+    "configure": "Configurar",
+    "developerPlus": "Developer+",
+    "upgrade": "Actualizar",
+    "upgradeHint": "Actualiza para enrutar alertas aquí",
+    "enableChannel": "Activar {{channel}}",
+    "channelUpdated": "{{channel}} actualizado",
+    "saved": "Guardado",
+    "saveError": "Algo salió mal: inténtalo de nuevo",
+    "saveChanges": "Guardar cambios",
+    "severityRouting": "Enrutamiento por severidad",
+    "severityRoutingDesc": "Elige qué severidades van a qué canal.",
+    "allSeveritiesNote": "Slack y webhook reciben todas las severidades mientras están activos; usa la columna Email para filtrar qué severidades se envían por email.",
+    "opensNewTab": "(se abre en una pestaña nueva)",
+    "showSecret": "Mostrar secreto",
+    "hideSecret": "Ocultar secreto",
+    "test": "Probar",
+    "testSending": "Enviando…",
+    "testOk": "muestra enviada",
+    "testFailed": "prueba fallida"
   }
 }

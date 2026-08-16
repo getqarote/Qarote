@@ -52,11 +52,6 @@ vi.mock("@/services/plan/plan.service", () => ({
     .fn()
     .mockResolvedValue({ servers: 0, users: 0, workspaces: 0 }),
   validateQueueCreationOnServer: vi.fn(),
-  getOverLimitWarningMessage: vi.fn().mockReturnValue("over limit"),
-  getUpgradeRecommendationForOverLimit: vi
-    .fn()
-    .mockReturnValue({ message: "upgrade", recommendedPlan: null }),
-  getPlanDisplayName: vi.fn().mockReturnValue("Free"),
 }));
 
 vi.mock("@/mappers/rabbitmq", () => ({
@@ -69,7 +64,6 @@ vi.mock("@/mappers/rabbitmq", () => ({
 }));
 
 vi.mock("@/core/rabbitmq/AmqpClient", () => ({ RabbitMQAmqpClient: class {} }));
-vi.mock("@/core/rabbitmq/BoundedBuffer", () => ({ BoundedBuffer: class {} }));
 vi.mock("@/core/utils", () => ({ abortableSleep: vi.fn() }));
 
 vi.mock("../shared", () => ({
@@ -81,6 +75,7 @@ vi.mock("../shared", () => ({
   createStandaloneAmqpConnection: vi.fn(),
 }));
 
+const { MAX_QUEUES_PER_SERVER } = await import("@/services/queue-limit");
 const { queuesRouter } = await import("../queues");
 
 // --- Helpers ---
@@ -136,7 +131,6 @@ const mockServer = {
   useHttps: false,
   isOverQueueLimit: false,
   queueCountAtConnect: null,
-  overLimitWarningShown: false,
   workspaceId: "ws-1",
   workspace: { id: "ws-1", name: "Test WS" },
 };
@@ -194,6 +188,86 @@ describe("queuesRouter.getQueues", () => {
 
     expect(result.queues).toBeDefined();
     expect(mockClient.getQueues).toHaveBeenCalled();
+  });
+
+  // The ceiling stops metrics collection server-side. If the API does not say
+  // so, the customer sees their data freeze with no explanation — the whole
+  // point of the payload is that the UI can render a reason.
+  it("explains itself when the server is over the ceiling", async () => {
+    mockVerifyServerAccess.mockResolvedValue({
+      ...mockServer,
+      isOverQueueLimit: true,
+      queueCountAtConnect: 120,
+    });
+    mockClient.getQueues.mockResolvedValue(
+      Array.from({ length: 120 }, (_, i) => ({
+        name: `q${i}`,
+        vhost: "/",
+        messages: 0,
+      }))
+    );
+
+    const caller = queuesRouter.createCaller(makeCtx() as never);
+    const result = await caller.getQueues({
+      serverId: "srv-1",
+      workspaceId: "ws-1",
+    });
+
+    expect(result.warning).toMatchObject({
+      isOverLimit: true,
+      currentQueueCount: 120,
+      limit: MAX_QUEUES_PER_SERVER,
+    });
+    // Translated for the caller's locale, not a key or a raw template.
+    expect(result.warning?.message).toContain("120");
+    expect(result.warning?.message).not.toContain("{{");
+    // No tier raises this ceiling: an upsell here would be a dead end.
+    expect(result.warning).not.toHaveProperty("recommendedPlan");
+    expect(result.warning?.message.toLowerCase()).not.toContain("upgrade");
+  });
+
+  it("stays silent while the server is under the ceiling", async () => {
+    mockVerifyServerAccess.mockResolvedValue(mockServer);
+    mockClient.getQueues.mockResolvedValue([
+      { name: "q1", vhost: "/", messages: 0 },
+    ]);
+
+    const caller = queuesRouter.createCaller(makeCtx() as never);
+    const result = await caller.getQueues({
+      serverId: "srv-1",
+      workspaceId: "ws-1",
+    });
+
+    expect(result.warning).toBeUndefined();
+  });
+
+  // The ceiling is broker-wide; the list in the response is not. Both callers
+  // pass a vhost filter, so quoting the returned list would tell a customer with
+  // a 150-queue broker that "12 queues" exceed a limit of 100.
+  it("quotes the broker-wide count, not the filtered view", async () => {
+    mockVerifyServerAccess.mockResolvedValue({
+      ...mockServer,
+      isOverQueueLimit: true,
+      queueCountAtConnect: 150,
+    });
+    mockClient.getQueues.mockResolvedValue(
+      Array.from({ length: 12 }, (_, i) => ({
+        name: `q${i}`,
+        vhost: "/prod",
+        messages: 0,
+      }))
+    );
+
+    const caller = queuesRouter.createCaller(makeCtx() as never);
+    const result = await caller.getQueues({
+      serverId: "srv-1",
+      workspaceId: "ws-1",
+      vhost: "/prod",
+    });
+
+    expect(result.warning?.currentQueueCount).toBe(150);
+    expect(result.warning?.message).toContain("150");
+    expect(result.warning?.message).not.toContain("12 ");
   });
 });
 

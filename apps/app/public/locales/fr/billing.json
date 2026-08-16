@@ -29,7 +29,6 @@
   "plans": {
     "chooseYourPlan": "Choisissez votre forfait",
     "subtitle": "Faites évoluer votre surveillance RabbitMQ avec des forfaits conçus pour des équipes de toutes tailles.",
-    "pricingTitle": "Tarification simple et transparente",
     "currentPlan": "Forfait actuel",
     "mostPopular": "Le plus populaire",
     "startFree": "Commencer gratuitement",
@@ -240,5 +239,62 @@
     "preferSelfHost": "Vous préférez l'auto-hébergement ?",
     "preferSelfHostDesc": "Déployez Qarote sur votre propre infrastructure avec une clé de licence.",
     "learnMore": "En savoir plus"
+  },
+  "hero": {
+    "subtitle": "Facturation de cette organisation.",
+    "billedStripe": "Facturé {{interval}} · via Stripe",
+    "billedContract": "Facturé {{interval}} · contrat sur mesure",
+    "intervalMonthly": "mensuellement",
+    "intervalYearly": "annuellement",
+    "perMonth": "/mois",
+    "perYear": "/an",
+    "interval": "Intervalle",
+    "currentPeriodEnds": "Fin de période",
+    "renewsOn": "Renouvellement le",
+    "cancelsOn": "Annulation le",
+    "auto": "(auto)",
+    "seats": "Sièges",
+    "seatsValue": "{{current}} sur {{limit}}",
+    "paymentMethod": "Moyen de paiement",
+    "changePlan": "Changer de forfait",
+    "switchYearly": "Passer à l'annuel",
+    "save20": "économisez 20 %",
+    "updatePayment": "Mettre à jour le paiement",
+    "cancel": "Annuler"
+  },
+  "statusPill": {
+    "pastDue": "En retard",
+    "canceled": "Annulé"
+  },
+  "pastDue": {
+    "title": "Échec du paiement.",
+    "body": "Nous n'avons pas pu débiter votre carte. Mettez à jour votre moyen de paiement pour conserver les fonctionnalités payantes.",
+    "update": "Mettre à jour →"
+  },
+  "community": {
+    "name": "Community",
+    "tagline": "Gratuit pour toujours · cœur de détection + outils de lecture.",
+    "upgrade": "Mettre à niveau",
+    "hint": "Passez à Developer pour AI Explain managé, les alertes Slack/webhook, et plus de brokers."
+  },
+  "invoices": {
+    "title": "Factures",
+    "empty": "Aucune facture pour l'instant",
+    "view": "Voir"
+  },
+  "cancelDialog": {
+    "title": "Annuler l'abonnement ?",
+    "warn": "Votre forfait reste actif jusqu'à la fin de la période. Ensuite, vous repassez à Community — Explain managé et intégrations payantes s'arrêtent.",
+    "reasonLabel": "Pourquoi nous quittez-vous ? (facultatif)",
+    "reasonPlaceholder": "Choisissez une raison",
+    "confirm": "Annuler en fin de période",
+    "keep": "Conserver mon forfait",
+    "reasons": {
+      "tooExpensive": "Trop cher",
+      "missingFeature": "Fonctionnalité manquante",
+      "switchingTools": "Changement d'outil",
+      "exploring": "Je découvre",
+      "other": "Autre"
+    }
   }
 }

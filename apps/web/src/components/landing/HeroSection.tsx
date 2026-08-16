@@ -1,141 +1,86 @@
-import { type CSSProperties, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ExternalLink } from "lucide-react";
-
 import AuthButtons from "@/components/AuthButtons";
-import HeroBackgroundFlow from "@/components/landing/HeroBackgroundFlow";
-import { Button } from "@/components/ui/button";
-
-import { useReducedMotion } from "@/hooks/useReducedMotion";
+import DemoVideoModal from "@/components/DemoVideoModal";
+import HeroAgentChat from "@/components/HeroAgentChat";
+import HeroFlowCanvas from "@/components/HeroFlowCanvas";
 
 const HeroSection = () => {
   const { t, i18n } = useTranslation("landing");
   const lang = i18n.resolvedLanguage ?? i18n.language ?? "";
   const needsWordSpacing = !/^(zh|ja|ko)(-|$)/i.test(lang);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const reduceMotion = useReducedMotion();
-
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setMounted(true));
-    return () => cancelAnimationFrame(id);
-  }, []);
-
-  // Listen for play-video custom events from StickyNav island
-  useEffect(() => {
-    const handler = () => setIsVideoPlaying(true);
-    document.addEventListener("play-video", handler);
-    return () => document.removeEventListener("play-video", handler);
-  }, []);
-
-  const enter = (delay: number): CSSProperties =>
-    reduceMotion
-      ? {}
-      : {
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? "none" : "translateY(10px)",
-          transition: `opacity 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
-        };
 
   return (
-    <header
-      id="home"
-      className="relative overflow-hidden text-foreground pb-16 bg-background"
-    >
-      <div className="relative">
-        <HeroBackgroundFlow />
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 md:pt-28 pb-3.5">
-          <div className="w-full text-center">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-6 leading-tight max-w-4xl mx-auto px-2 font-normal">
+    <header>
+      {/* Dark, full-bleed hero: the animated message-flow canvas sits behind a
+          split of headline + CTAs (left) and the agent-chat proof card (right),
+          with a scrim so the white headline stays legible over the animation. */}
+      <section
+        id="hero"
+        className="relative isolate overflow-hidden bg-[#0B0E14] text-[#E7EAF0]"
+      >
+        <HeroFlowCanvas />
+        <div
+          className="hero-scrim pointer-events-none absolute inset-0 z-[1]"
+          aria-hidden="true"
+        />
+
+        <div className="relative z-[2] mx-auto grid max-w-[1180px] items-center gap-[clamp(32px,5vw,72px)] px-[clamp(20px,5vw,64px)] pb-[clamp(56px,9vh,96px)] pt-[clamp(72px,12vh,150px)] lg:grid-cols-[1.05fr_0.95fr]">
+          {/* LEFT — headline, CTAs, meta */}
+          <div className="max-w-[600px]">
+            <span className="font-mono text-[12px] uppercase tracking-[0.14em] text-carrot">
+              {t("hero.eyebrow")}
+            </span>
+            <h1 className="mt-[22px] font-display text-[clamp(38px,6vw,68px)] font-semibold leading-[1.02] tracking-[-0.03em] text-[#E7EAF0]">
               {t("hero.titleBefore")}
               {needsWordSpacing ? " " : ""}
-              <span className="text-primary">{t("hero.titleHighlight")}</span>
+              <span className="text-carrot">{t("hero.titleHighlight")}</span>
               {t("hero.titleAfter")}
             </h1>
-
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-12 leading-relaxed max-w-3xl mx-auto px-2">
+            <p className="mt-6 max-w-[50ch] text-[clamp(17px,1.9vw,20px)] leading-[1.55] text-[#9AA3B2] [text-wrap:pretty]">
               {t("hero.subtitle")}
             </p>
 
-            <div className="mb-12">
-              <AuthButtons describedById="hero-no-credit-card" />
-              <p
-                id="hero-no-credit-card"
-                className="text-xs sm:text-sm text-muted-foreground mt-3 px-4"
-              >
-                {t("hero.noCreditCard")}
-              </p>
-              <div className="flex justify-center mt-5 px-4">
-                <Button asChild variant="pillGhost" size="pillMd">
-                  <a
-                    href="https://demo.qarote.io/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {t("cta.tryLiveDemo")}
-                    <ExternalLink
-                      className="h-4 w-4 opacity-70"
-                      aria-hidden="true"
-                    />
-                    <span className="sr-only">{t("cta.opensInNewTab")}</span>
-                  </a>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* YouTube Video */}
-      <div id="video" className="relative pb-12" style={enter(260)}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {!isVideoPlaying ? (
-            <button
-              type="button"
-              className="relative w-full aspect-video overflow-hidden group cursor-pointer"
-              onClick={() => setIsVideoPlaying(true)}
-            >
-              <picture>
-                <source srcSet="/images/dashboard.webp" type="image/webp" />
-                <img
-                  src="/images/dashboard.png"
-                  alt="Qarote Dashboard Interface"
-                  className="w-full h-full object-contain bg-card"
-                  width={3420}
-                  height={1894}
-                  fetchPriority="high"
-                />
-              </picture>
-              <div className="absolute inset-0 flex items-center justify-center bg-zinc-950/15 group-hover:bg-zinc-950/20 transition-colors">
-                <div
-                  aria-hidden="true"
-                  className="w-20 h-20 md:w-24 md:h-24 bg-background flex items-center justify-center transition-all group-hover:scale-110 shadow-soft rounded-full"
-                >
-                  <img
-                    src="/images/play.svg"
-                    alt=""
-                    aria-hidden="true"
-                    className="w-10 h-10 md:w-12 md:h-12 object-contain block ml-2 image-crisp"
-                    width={48}
-                    height={48}
-                  />
-                </div>
-              </div>
-            </button>
-          ) : (
-            <div className="relative w-full aspect-video overflow-hidden">
-              <iframe
-                src="https://www.youtube.com/embed/x1GvnivauyA?autoplay=1"
-                title="Qarote Video"
-                className="w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
+            <div className="mt-[34px] flex flex-wrap items-center gap-[14px]">
+              <AuthButtons
+                align="left"
+                labelKey="cta.tryForFree"
+                describedById="hero-meta"
               />
+              <a
+                className="inline-flex items-center gap-2 rounded-md border border-[#232936] px-5 py-2.5 text-[15px] font-medium text-[#E7EAF0] transition-colors hover:bg-white/[0.04]"
+                href="https://demo.qarote.io/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t("cta.seeLiveDemo")}
+                <span className="sr-only">{t("cta.opensInNewTab")}</span>
+              </a>
             </div>
-          )}
+
+            <div className="mt-[18px]">
+              <DemoVideoModal videoId="x1GvnivauyA" />
+            </div>
+
+            <p
+              id="hero-meta"
+              className="mt-[26px] flex flex-wrap items-center gap-x-[18px] gap-y-[7px] font-mono text-[12.5px] text-[#9AA3B2]"
+            >
+              <span className="inline-flex items-center gap-[7px]">
+                <span
+                  className="h-[6px] w-[6px] rounded-full bg-[#3FBF7F]"
+                  aria-hidden="true"
+                />
+                {t("hero.noExporter")}
+              </span>
+              <span>{t("hero.versions")}</span>
+            </p>
+          </div>
+
+          {/* RIGHT — live agent-chat proof card */}
+          <HeroAgentChat />
         </div>
-      </div>
+      </section>
     </header>
   );
 };

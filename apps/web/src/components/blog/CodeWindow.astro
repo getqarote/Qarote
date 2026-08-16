@@ -1,0 +1,70 @@
+---
+/**
+ * Terminal/agent-chat code window: a title bar with three dots + a label, over a
+ * code body. Wrap a fenced code block in this from MDX:
+ *   <CodeWindow title="agent · claude code">
+ *   ```text
+ *   you ▸ what's wrong with my rabbitmq?
+ *   ```
+ *   </CodeWindow>
+ * The copy button is added by the article template's enhancer script.
+ */
+interface Props {
+  title?: string;
+}
+const { title = "agent" } = Astro.props;
+---
+
+<div class="codewin">
+  <div class="codewin__bar">
+    <span class="codewin__dot"></span>
+    <span class="codewin__dot"></span>
+    <span class="codewin__dot"></span>
+    <span class="codewin__name">{title}</span>
+  </div>
+  <div class="codewin__body"><slot /></div>
+</div>
+
+<style>
+  .codewin {
+    margin: 18px 0;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: #0b0e14;
+  }
+  .codewin__bar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 14px;
+    background: #11151e;
+    border-bottom: 1px solid #232936;
+  }
+  .codewin__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #2e3646;
+  }
+  .codewin__name {
+    margin-left: 8px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: #9aa3b2;
+  }
+  /* The fenced code block inside renders as <pre>; strip its own chrome so it
+     sits flush in the window. */
+  .codewin__body :global(pre) {
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 16px 18px;
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: #e7eaf0;
+    overflow-x: auto;
+  }
+</style>

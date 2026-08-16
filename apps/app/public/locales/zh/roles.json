@@ -8,7 +8,8 @@
     "members": "成员",
     "description": "说明",
     "updatedAt": "最后更新",
-    "actions": "操作"
+    "actions": "操作",
+    "type": "类型"
   },
   "empty": {
     "title": "尚未创建自定义角色",
@@ -18,7 +19,8 @@
   "gate": {
     "title": "自定义角色 + 资源范围",
     "body": "定义具名的权限组合,并将其限定到特定的服务器或环境。Enterprise 套餐可用。",
-    "upgradeCta": "升级到 Enterprise"
+    "upgradeCta": "升级到 Enterprise",
+    "footnote": "现有的角色分配仍然有效——升级仅解锁角色的创建和编辑。"
   },
   "planDowngradeBanner": {
     "title": "在当前套餐下,自定义角色为只读",
@@ -105,7 +107,14 @@
       "body_other": "{{count}} 位成员将被重新分配到内置「成员」角色。",
       "confirm": "删除角色",
       "cancel": "保留角色"
-    }
+    },
+    "basedOn": "基于",
+    "basedOnBlank": "空白角色",
+    "basedOnClone": "{{role}}（副本）",
+    "enabledCount": "已启用 {{count}} 项权限",
+    "scopableBadge": "可限定范围",
+    "selectAll": "全选",
+    "deselectAll": "取消全选"
   },
   "errors": {
     "loadFailed": "加载角色失败",
@@ -118,5 +127,8 @@
     "lastOwnerBlocked": "无法降级——这将导致工作区没有所有者。至少需要一名成员保留所有者角色。",
     "saved": "角色已分配",
     "saveFailed": "分配角色失败"
-  }
+  },
+  "typeSystem": "内置",
+  "typeCustom": "自定义",
+  "edit": "编辑 {{name}}"
 }

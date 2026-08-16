@@ -1,9 +1,25 @@
 ---
 import "../styles/index.css";
 
+// Self-hosted fonts (zero external request) — mirrors apps/app. Heading: Space
+// Grotesk; UI body: IBM Plex Sans; numeric/mono: IBM Plex Mono. Weights 400–700.
+import "@fontsource/space-grotesk/400.css";
+import "@fontsource/space-grotesk/500.css";
+import "@fontsource/space-grotesk/600.css";
+import "@fontsource/space-grotesk/700.css";
+import "@fontsource/ibm-plex-sans/400.css";
+import "@fontsource/ibm-plex-sans/500.css";
+import "@fontsource/ibm-plex-sans/600.css";
+import "@fontsource/ibm-plex-sans/700.css";
+import "@fontsource/ibm-plex-mono/400.css";
+import "@fontsource/ibm-plex-mono/500.css";
+import "@fontsource/ibm-plex-mono/600.css";
+import "@fontsource/ibm-plex-mono/700.css";
+
 import { SUPPORTED_LOCALES } from "@qarote/i18n";
 
 import { ConsentBannerIsland } from "../components/consent/ConsentBannerIsland";
+import NavIsland from "../components/NavIsland";
 import AttributionCapture from "../components/AttributionCapture.astro";
 import PostHog from "../components/posthog.astro";
 import { loadTranslations } from "../lib/i18n-static";
@@ -13,6 +29,11 @@ interface Props {
   description: string;
   locale?: string;
   canonicalPath?: string;
+  /**
+   * Explicit OG image URL. When omitted, the page resolves to its build-time
+   * generated card under `/og/<slug>.png` (see `src/pages/og/[card].png.ts`),
+   * derived from the route. Unmapped routes fall back to the static default.
+   */
   image?: string;
   /**
    * When true, emit `noindex, follow` so the page is reachable by direct URL
@@ -20,6 +41,11 @@ interface Props {
    * (Daily Digest, Message Spy, Firehose Tracing) until they return.
    */
   noindex?: boolean;
+  /**
+   * Render the shared marketing navbar. Defaults to true (all marketing
+   * pages); docs/blog layouts pass `false` since they have their own nav.
+   */
+  nav?: boolean;
 }
 
 const {
@@ -27,18 +53,60 @@ const {
   description,
   locale = "en",
   canonicalPath = "/",
-  image = "https://qarote.io/images/qarote_card.jpg",
+  image,
   noindex = false,
+  nav = true,
 } = Astro.props;
 
-const consentResources = { common: loadTranslations(locale, "common") };
-
 const baseUrl = "https://qarote.io";
+
+/**
+ * Map the current route to a generated OG card slug. Slugs MUST match the
+ * enumeration in `src/pages/og/[card].png.ts`. Returns null when the route has
+ * no dedicated card (caller falls back to the static default image).
+ */
+function deriveCardSlug(pathname: string): string | null {
+  // Strip locale prefix and surrounding slashes → bare path like "blog/foo".
+  let path = pathname.replace(/^\/(fr|es|zh)(?=\/|$)/, "");
+  path = path.replace(/^\/+|\/+$/g, "");
+  // Detect the locale segment so blog cards can be locale-specific.
+  const localeMatch = pathname.match(/^\/(fr|es|zh)(?:\/|$)/);
+  const routeLocale = localeMatch ? localeMatch[1] : "en";
+
+  if (path === "") return "landing";
+  if (path === "pricing") return "pricing";
+  if (path === "features" || path.startsWith("features/")) return "features";
+  if (path === "docs" || path.startsWith("docs")) return "docs";
+  if (path === "changelog") return "changelog";
+  if (path.startsWith("blog/")) {
+    const slug = path.slice("blog/".length);
+    return routeLocale === "en" ? `blog-${slug}` : `blog-${routeLocale}-${slug}`;
+  }
+  if (path.startsWith("compare/")) return `compare-${path.slice("compare/".length)}`;
+  return null;
+}
+
+const cardSlug = deriveCardSlug(Astro.url.pathname);
+const ogImage =
+  image ??
+  (cardSlug
+    ? new URL(`/og/${cardSlug}.png`, Astro.site).href
+    : `${baseUrl}/images/og-default.png`);
+
+const consentResources = { common: loadTranslations(locale, "common") };
+const navResources = {
+  nav: loadTranslations(locale, "nav"),
+  common: loadTranslations(locale, "common"),
+};
+
 const canonicalUrl =
   locale === "en"
     ? `${baseUrl}${canonicalPath}`
     : `${baseUrl}/${locale}${canonicalPath}`;
 const fullTitle = title.includes("Qarote") ? title : `${title} | Qarote`;
+// Describes the social card image; avoid a doubled brand suffix when the title
+// already mentions Qarote.
+const imageAlt = title.includes("Qarote") ? title : `${title} — Qarote`;
 const ogLocaleMap: Record<string, string> = {
   en: "en_US",
   fr: "fr_FR",
@@ -220,12 +288,12 @@ const isProd = import.meta.env.PROD;
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content={image} />
-    <meta property="og:image:secure_url" content={image} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:secure_url" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:type" content="image/jpeg" />
-    <meta property="og:image:alt" content={title} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:alt" content={imageAlt} />
     <meta property="og:site_name" content="Qarote" />
     <meta property="og:locale" content={ogLocale} />
 
@@ -236,7 +304,8 @@ const isProd = import.meta.env.PROD;
     <meta name="twitter:url" content={canonicalUrl} />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={image} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={imageAlt} />
 
     <!-- Theme Color for Mobile Browsers -->
     <meta name="theme-color" content="#e97120" />
@@ -344,6 +413,16 @@ const isProd = import.meta.env.PROD;
     }
   </head>
   <body>
+    {
+      nav && (
+        <NavIsland
+          locale={locale}
+          resources={navResources}
+          currentPath={Astro.url.pathname}
+          client:load
+        />
+      )
+    }
     <slot />
     <ConsentBannerIsland locale={locale} resources={consentResources} client:load />
   </body>

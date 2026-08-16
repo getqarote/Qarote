@@ -278,5 +278,6 @@
   "featureLim": "已设置最大长度限制",
   "featureDlx": "死信交换机: {{exchange}}",
   "featurePrio": "优先级队列 — 最高优先级: {{value}}",
-  "featureSac": "单活跃消费者"
+  "featureSac": "单活跃消费者",
+  "ceilingReached": "指标采集已暂停"
 }

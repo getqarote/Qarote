@@ -1,0 +1,61 @@
+---
+title: "The four RabbitMQ anti-patterns that page you at 3 a.m."
+description: "Missing DLX, idle no-consumer queues, default-exchange overuse, unbounded depth — and how a config scan catches them first."
+publishedAt: "2026-05-09"
+author: "Brice Tessier"
+category: "patterns"
+cover: "cover-patterns-configscan.svg"
+coverCaption: "config scan"
+readingTimeMin: 8
+tags: ["patterns", "config-scan", "best-practices"]
+---
+
+import Callout from "@/components/blog/Callout.astro";
+
+Most RabbitMQ incidents aren't surprises. They're config decisions made months earlier that finally met the right traffic. The four below cause a disproportionate share of after-hours pages, and every one of them is visible in the broker's topology _before_ it fires. A config scan reads that topology and flags them while it's still daylight.
+
+## Missing dead-letter exchange
+
+A queue with no dead-letter exchange (DLX) has nowhere to put a message it can't handle. Rejected and expired messages either vanish or, worse, loop — redelivered forever to a consumer that keeps failing them. You discover this when a downstream team asks where their order went and the answer is "nowhere."
+
+Set a DLX so poison messages land somewhere inspectable:
+
+```bash
+rabbitmqctl set_policy dlx "^orders\." \
+  '{"dead-letter-exchange":"orders.dlx"}' \
+  --apply-to queues
+```
+
+A scan flags any queue handling real traffic with no DLX configured — the silent-data-loss case you never see coming.
+
+## Idle no-consumer queues
+
+A durable queue with zero consumers is a leak with a schedule. Publishers keep writing; nothing reads; depth grows until memory or disk alarms trip and _every_ publisher on the node gets blocked. The queue nobody noticed takes down the queues everybody depends on.
+
+These are trivial to spot in topology — bound, durable, receiving messages, zero consumers — and a scan surfaces them long before the alarm.
+
+## Default-exchange overuse
+
+Publishing everything to the default (nameless) exchange by routing key feels convenient. It also hard-codes queue names into producers, kills your ability to fan out or re-route without a code change, and turns a queue rename into a coordinated multi-service deploy. It's not a crash, it's a slow loss of operational flexibility.
+
+<Callout type="note">
+  The default exchange is fine for a quick spike. The moment two services share
+  a queue name through it, you've coupled their deploys together — name your
+  exchanges.
+</Callout>
+
+## Unbounded queue depth
+
+A queue with no max-length and no TTL will, given one bad afternoon, grow without limit. Memory climbs, the node hits its high-watermark, RabbitMQ throttles publishers, and a localized backlog becomes a cluster-wide outage.
+
+Bound it:
+
+```bash
+rabbitmqctl set_policy maxlen "^events\." \
+  '{"max-length":100000,"overflow":"reject-publish"}' \
+  --apply-to queues
+```
+
+## Catch them before they page you
+
+The thread through all four: they're structural, they're static, and they're readable from the broker's own config. Qarote's config scan walks your topology and flags each one as a finding — so the fix is a calm pull request on Tuesday, not a 3 a.m. page on Saturday.

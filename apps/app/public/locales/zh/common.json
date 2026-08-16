@@ -110,5 +110,6 @@
   "justUpdated": "刚刚更新",
   "backToDashboard": "返回仪表板",
   "backToSettings": "返回设置",
-  "loadingPermissions": "正在检查权限…"
+  "loadingPermissions": "正在检查权限…",
+  "srLoading": "加载中…"
 }

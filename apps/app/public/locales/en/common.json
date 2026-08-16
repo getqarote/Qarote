@@ -110,5 +110,6 @@
   "justUpdated": "Just updated",
   "backToDashboard": "Back to dashboard",
   "backToSettings": "Back to your settings",
-  "loadingPermissions": "Checking permissions…"
+  "loadingPermissions": "Checking permissions…",
+  "srLoading": "Loading…"
 }

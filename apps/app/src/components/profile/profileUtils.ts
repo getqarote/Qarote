@@ -2,18 +2,6 @@
  * Profile page utility functions and types
  */
 
-export interface ProfileFormState {
-  firstName: string;
-  lastName: string;
-}
-
-export interface WorkspaceFormState {
-  name: string;
-  contactEmail: string;
-  tags: string[];
-  unackedWarnThreshold: number;
-}
-
 export interface InviteFormState {
   emails: string[];
   role: "ADMIN" | "MEMBER";

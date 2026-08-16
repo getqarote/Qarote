@@ -1,3 +1,10 @@
+import { useTranslation } from "react-i18next";
+
+/**
+ * One section of a long-form legal document, prototype "magazine" style:
+ * a mono "Section 0N" label, a display heading, then the prose — no card
+ * chrome. Lives in the right-hand body column next to the sticky TOC.
+ */
 export function LegalSection({
   id,
   index,
@@ -9,23 +16,16 @@ export function LegalSection({
   title: string;
   children: React.ReactNode;
 }) {
+  const { t } = useTranslation("legal");
   return (
-    <section
-      id={id}
-      className="border border-border overflow-hidden scroll-mt-20"
-    >
-      <div className="px-6 py-4 border-b border-border flex items-center gap-4">
-        <span
-          className="text-xl font-normal text-primary/30 leading-none tabular-nums shrink-0 font-mono"
-          aria-hidden="true"
-        >
-          {String(index).padStart(2, "0")}
-        </span>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-foreground">
-          {title}
-        </h2>
+    <section id={id} className="scroll-mt-[84px]">
+      <div className="mb-2 font-mono text-xs uppercase tracking-[0.08em] text-muted-foreground">
+        {t("section")} {String(index).padStart(2, "0")}
       </div>
-      <div className="p-6 space-y-4 text-muted-foreground max-w-[72ch]">
+      <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+        {title}
+      </h2>
+      <div className="mt-4 space-y-4 text-[15px] leading-relaxed text-muted-foreground">
         {children}
       </div>
     </section>

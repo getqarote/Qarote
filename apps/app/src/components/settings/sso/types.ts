@@ -21,6 +21,10 @@ export interface ProviderConfig {
   type: SSOProviderType;
   oidcConfig: Record<string, unknown> | null;
   samlConfig: Record<string, unknown> | null;
+  /** Whether new members are auto-created on first SSO sign-in. */
+  autoProvision: boolean;
+  /** Whether password sign-in is blocked for this org (SSO required). */
+  enforced: boolean;
 }
 
 /**
@@ -36,4 +40,5 @@ export interface SSOFormValues {
   oidcClientSecret: string;
   samlMetadataUrl: string;
   domain: string;
+  autoProvision: boolean;
 }

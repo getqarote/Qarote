@@ -5,6 +5,7 @@ import { Loader2, User } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
+import { displayName } from "@/lib/userDisplay";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -154,18 +155,16 @@ export function AddFromOrgDialog({
               </p>
             ) : (
               availableMembers.map((member) => {
-                const displayName =
-                  `${member.firstName ?? ""} ${member.lastName ?? ""}`.trim() ||
-                  member.email;
+                const name = displayName(member);
                 return (
                   <MemberRow
                     key={member.userId}
                     avatarUrl={member.image ?? null}
-                    displayName={displayName}
+                    displayName={name}
                     email={member.email}
                     isPending={pendingUserId === member.userId}
                     isDisabled={pendingUserId !== null}
-                    onAdd={() => handleAdd(member.userId, displayName)}
+                    onAdd={() => handleAdd(member.userId, name)}
                   />
                 );
               })

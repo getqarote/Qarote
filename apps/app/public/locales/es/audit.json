@@ -28,12 +28,21 @@
     "system": "Sistema"
   },
   "filter": {
-    "category": { "placeholder": "Categoría" },
-    "source": { "placeholder": "Origen" },
-    "from": { "label": "Fecha desde" },
-    "to": { "label": "Fecha hasta" },
-    "actor": { "placeholder": "Actor — correo o ID de usuario" },
-    "clear": "Limpiar filtros"
+    "category": "Categoría",
+    "source": {
+      "placeholder": "Origen"
+    },
+    "from": {
+      "label": "Fecha desde"
+    },
+    "to": {
+      "label": "Fecha hasta"
+    },
+    "actor": {
+      "placeholder": "Actor — correo o ID de usuario"
+    },
+    "clear": "Limpiar filtros",
+    "range": "Periodo"
   },
   "status": {
     "loading": "Cargando…",
@@ -45,7 +54,10 @@
     "filtered": "Ningún evento de auditoría coincide con los filtros.",
     "none": "Aún no hay eventos de auditoría. Los cambios sensibles aparecerán aquí.",
     "quiet": "El registro está en silencio",
-    "quietDetail": "No se registraron operaciones privilegiadas. Los cambios sensibles aparecerán aquí en tiempo real."
+    "quietDetail": "No se registraron operaciones privilegiadas. Los cambios sensibles aparecerán aquí en tiempo real.",
+    "title": "No hay acciones registradas",
+    "body": "Ninguna acción coincide con estos filtros todavía.",
+    "denials": "No hay denegaciones de autorización en este periodo: no se bloqueó nada."
   },
   "shortcuts": {
     "label": "Atajos de teclado",
@@ -62,12 +74,41 @@
     "first": "Primera página",
     "next": "Siguiente",
     "more_one": "{{count}} evento más",
-    "more_other": "{{count}} eventos más"
+    "more_other": "{{count}} eventos más",
+    "older": "Cargar más antiguas"
   },
   "export": {
     "button": "Exportar CSV",
     "success": "{{count}} filas exportadas",
     "truncated": "El resultado se truncó al límite. Refine los filtros para capturar el histórico anterior.",
     "failed": "La exportación falló"
+  },
+  "forbidden": {
+    "subtitle": "Un registro filtrable de quién cambió qué y cuándo.",
+    "title": "No tienes acceso al registro de auditoría",
+    "body": "Ver el registro de auditoría requiere el permiso audit:read. Pide a un administrador o propietario de la organización que conceda acceso a tu rol."
+  },
+  "subtitle": "Quién hizo qué y cuándo. También una señal de diagnóstico: Qarote lee aquí los cambios de configuración recientes.",
+  "search": {
+    "placeholder": "Buscar acciones, actores, entidades…"
+  },
+  "range": {
+    "24h": "Últimas 24 h",
+    "7d": "Últimos 7 días",
+    "30d": "Últimos 30 días"
+  },
+  "denialsOnly": "Solo denegaciones",
+  "system": "sistema",
+  "footer": {
+    "retention": "Entradas conservadas {{days}} días"
+  },
+  "gate": {
+    "subtitle": "Un registro persistente y filtrable de las acciones de los operadores.",
+    "title": "El registro de auditoría es una función Enterprise",
+    "body": "Mantén un registro consultable de 90 días de quién cambió qué y alimenta el diagnóstico de incidentes de Qarote con los cambios de configuración recientes.",
+    "cta": "Mejorar plan",
+    "activateLicense": "Activar licencia",
+    "purchaseLicense": "Comprar licencia",
+    "footnote": "Los registros operativos siguen ejecutándose en el servidor; Enterprise añade persistencia, búsqueda, exportación y la señal de diagnóstico."
   }
 }

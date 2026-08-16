@@ -18,8 +18,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alertDialog";
 import { Button } from "@/components/ui/button";
+import { IconTrash } from "@/components/ui/icons";
 import { Input } from "@/components/ui/input";
-import { PixelTrash } from "@/components/ui/pixel-trash";
 
 interface UserDangerZoneProps {
   username: string;
@@ -75,10 +75,7 @@ export function UserDangerZone({
                 disabled={disabled}
                 title={disabledReason}
               >
-                <PixelTrash
-                  className="h-4 w-auto shrink-0"
-                  aria-hidden="true"
-                />
+                <IconTrash className="h-4 w-auto shrink-0" aria-hidden="true" />
                 {t("deleteUser")}
               </Button>
               {disabledReason && (

@@ -10,7 +10,7 @@ import { trackPurchase } from "@/lib/ga";
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
 
-import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
+import { IconChevronRight } from "@/components/ui/icons";
 
 import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
@@ -168,7 +168,7 @@ const PaymentSuccess: React.FC = () => {
             className="btn-primary w-full flex items-center justify-center"
           >
             {t("paymentSuccess.exploreDashboard")}
-            <PixelChevronRight className="h-3 shrink-0 ml-2" />
+            <IconChevronRight className="h-3 shrink-0 ml-2" />
           </button>
 
           <button

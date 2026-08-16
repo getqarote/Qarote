@@ -64,5 +64,15 @@
   "switchOrganization": "Switch organization",
   "orgSwitched": "Organization switched successfully!",
   "orgSwitchedDescription": "Switched to {{orgName}}",
-  "backToWorkspaces": "Back to workspaces"
+  "backToWorkspaces": "Back to workspaces",
+  "serverLabel": "Server",
+  "vhostLabel": "Vhost",
+  "serversInWorkspace": "Servers in this workspace",
+  "contextNav": "Context",
+  "help": "Help",
+  "manageCurrentServer": "Manage current server",
+  "members_one": "{{count}} member",
+  "members_other": "{{count}} members",
+  "developerPlus": "Developer+",
+  "createOrganization": "Create organization"
 }

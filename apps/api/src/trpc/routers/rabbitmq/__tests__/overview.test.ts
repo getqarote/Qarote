@@ -33,10 +33,6 @@ vi.mock("@/services/plan/plan.service", () => ({
   PlanLimitExceededError: class extends Error {},
   PlanValidationError: class extends Error {},
   getOrgPlan: vi.fn().mockResolvedValue("FREE"),
-  getOverLimitWarningMessage: vi.fn().mockReturnValue("Over limit warning"),
-  getUpgradeRecommendationForOverLimit: vi
-    .fn()
-    .mockReturnValue({ message: "Upgrade now", recommendedPlan: "PRO" }),
 }));
 vi.mock("@/mappers/rabbitmq", () => ({
   OverviewMapper: { toApiResponse: vi.fn((d) => d) },
@@ -88,7 +84,6 @@ const mockServer = {
   workspaceId: "ws-1",
   isOverQueueLimit: false,
   queueCountAtConnect: null,
-  overLimitWarningShown: false,
   workspace: null,
 };
 
@@ -134,7 +129,6 @@ describe("overviewRouter.getOverview", () => {
       ...mockServer,
       isOverQueueLimit: true,
       queueCountAtConnect: 5,
-      overLimitWarningShown: false,
       workspace: { id: "ws-1", name: "Test WS" },
     };
     mockVerifyServerAccess.mockResolvedValue(serverWithLimit);

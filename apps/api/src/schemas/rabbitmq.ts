@@ -187,6 +187,11 @@ export const CreateServerWithWorkspaceSchema = CreateServerSchema.extend({
 export const UpdateServerWithWorkspaceSchema = UpdateServerSchema.extend({
   workspaceId: z.string(),
   id: z.string(),
+  // Forward-looking firehose payload-capture toggle. Persisted on the server
+  // row (RabbitMQServer.payloadCaptureEnabled); v1 only stores the flag — no
+  // capture pipeline is wired yet. Update-only (not part of create) since the
+  // Edit-server sheet is where it is surfaced.
+  payloadCaptureEnabled: z.boolean().optional(),
 });
 
 export const DeleteServerInputSchema = WorkspaceIdOnlySchema.extend({

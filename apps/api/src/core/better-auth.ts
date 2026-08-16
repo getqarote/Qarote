@@ -3,6 +3,7 @@ import { sso } from "@better-auth/sso";
 import bcrypt from "bcryptjs";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
@@ -52,6 +53,40 @@ async function enforceSsoEntitlement(providerId: string): Promise<void> {
     if (!hasSSO) {
       throw new Error("SSO requires Enterprise license");
     }
+  }
+}
+
+/**
+ * SSO enforcement check for the email/password sign-in path.
+ * Returns true when sign-in must be BLOCKED (an enforced provider matches the
+ * caller's domain in cloud, or the instance-wide config in self-hosted).
+ *
+ * Pure decision logic, separated from the better-auth middleware so it can be
+ * unit-tested without booting the full auth instance. Single indexed query.
+ * Fails OPEN on lookup error (returns false) — the real protection is that
+ * SSO-only users have no password; this gate is a UX redirect aid.
+ */
+export async function isSsoEnforcedForEmail(email: string): Promise<boolean> {
+  if (typeof email !== "string" || !email.includes("@")) return false;
+  const domain = email.slice(email.lastIndexOf("@") + 1).toLowerCase();
+
+  try {
+    const enforced = await prisma.orgSsoConfig.findFirst({
+      where: {
+        enforced: true,
+        ...(isCloudMode()
+          ? { provider: { domain } }
+          : { organizationId: null }),
+      },
+      select: { provider: { select: { providerId: true } } },
+    });
+    return Boolean(enforced?.provider.providerId);
+  } catch (error) {
+    logger.warn(
+      { error, domain },
+      "SSO enforcement lookup failed; allowing sign-in (fail-open)"
+    );
+    return false;
   }
 }
 
@@ -520,5 +555,31 @@ export const auth = betterAuth({
         },
       },
     },
+  },
+
+  hooks: {
+    // SSO enforcement gate. Blocks email/password sign-in for users whose
+    // organization (cloud, matched by email domain) or instance (self-hosted)
+    // has SSO enforcement turned on, redirecting them to the SSO flow.
+    //
+    // Scope: ONLY the email/password path. SSO logins use a different path,
+    // social logins another — neither is affected. Non-enforced orgs pass
+    // through untouched. The real protection is that SSO-only users have no
+    // password; this gate is a UX aid that returns a clear error instead of
+    // an opaque "invalid credentials". The lookup is a single indexed query
+    // (OrgSsoConfig.providerId / SsoProvider.domain). On lookup failure we
+    // fail OPEN (log + allow) to avoid a self-inflicted sign-in DoS.
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path !== "/sign-in/email") return;
+
+      const email = (ctx.body as { email?: unknown } | undefined)?.email;
+      if (typeof email !== "string") return;
+
+      if (await isSsoEnforcedForEmail(email)) {
+        throw new APIError("FORBIDDEN", {
+          message: "Your organization requires SSO sign-in.",
+        });
+      }
+    }),
   },
 });

@@ -1,165 +1,99 @@
 {
   "seo": {
-    "title": "Fonctionnalités de monitoring RabbitMQ : files d'attente, alertes, analytiques",
-    "description": "Découvrez les fonctionnalités de monitoring RabbitMQ de Qarote : suivi des files d'attente en temps réel, alertes intelligentes, analytiques de performance, support multi-serveurs et gestion des files dans un seul tableau de bord."
+    "title": "Fonctionnalités — Supervision RabbitMQ Qarote",
+    "description": "Supervision RabbitMQ pensée pour les agents : outils MCP, détection d'incidents déterministe, cause racine par IA, scan de config, topologie, alerting et auto-hébergement."
   },
-  "hero": {
-    "title": "Tout ce dont vous avez besoin pour monitorer RabbitMQ",
-    "subtitle": "Un seul tableau de bord pour tous vos serveurs RabbitMQ. Remplace le management plugin, plus simple que Prometheus + Grafana.",
-    "pills": {
-      "liveMonitoring": "Temps réel",
-      "alerting": "Alertes",
-      "analytics": "Analytiques",
-      "queueManagement": "Gestion des files",
-      "multiServer": "Multi-serveurs",
-      "queueHistory": "Historique des files",
-      "messageSpy": "Espion de messages",
-      "dailyDigest": "Digest quotidien",
-      "incidentDiagnosis": "Diagnostic d'incident",
-      "messageTracing": "Traçage de messages"
-    }
+  "head": {
+    "eyebrow": "Fonctionnalités",
+    "title": "Tout ce dont votre agent a besoin pour déboguer RabbitMQ.",
+    "lead": "Qarote détecte les incidents, explique la cause racine, et expose tout cela à votre agent de code IA via MCP. Voici le produit complet — en commençant par ce que personne d'autre n'a."
   },
-  "coreFeature": "FONCTIONNALITÉ CLÉ",
-  "liveMonitoring": {
-    "title": "Monitoring des files en temps réel",
-    "description": "Profondeur des files, taux de messages et nombre de consommateurs en un coup d'œil. Des indicateurs visuels signalent les états sains, d'alerte et critiques.",
-    "metric1Value": "< 1s",
-    "metric1Label": "Rafraîchissement",
-    "metric2Value": "3",
-    "metric2Label": "États de santé",
-    "metric3Value": "0",
-    "metric3Label": "Config requise",
-    "point1": "Taux de messages : publication, livraison, acquittement par seconde",
-    "point2": "Utilisation des consommateurs et suivi de l'âge des files",
-    "point3": "Retour visuel instantané sur la santé des files"
+  "worksWith": {
+    "label": "Compatible avec",
+    "any": "+ tout client MCP"
   },
-  "insightsSection": {
-    "title": "Des insights qui préviennent les pannes"
+  "agentNative": {
+    "eyebrow": "Pensé pour les agents · le moat",
+    "title": "Une surface MCP que votre agent parle déjà.",
+    "body": "La plupart des outils RabbitMQ s'arrêtent aux métriques. Qarote livre un moteur d'incidents déterministe et une analyse de cause racine managée derrière une seule surface MCP — vous déboguez en demandant, dans l'éditeur où vous êtes déjà."
   },
-  "alerting": {
-    "title": "Système d'alertes intelligent",
-    "badge": "Plan Developer+",
-    "description": "Seuils configurables par file et par serveur. Soyez notifié avant que les problèmes ne deviennent des pannes.",
-    "point1": "Canaux de notification : email, Slack, webhooks",
-    "point2": "Historique des alertes et workflow d'acquittement",
-    "point3": "Configuration de seuils par file et par serveur"
+  "incident": {
+    "eyebrow": "Détection d'incidents",
+    "badge": "CE · gratuit",
+    "title": "Un moteur de règles déterministe, pas une supposition.",
+    "body": "La détection live, basée sur des règles, se déclenche dès que l'état du broker franchit un seuil — consumers disparus, anomalies de profondeur, acks bloqués. Aucune période de référence, aucun tableau de bord à construire. Open source, MIT.",
+    "findingTitle": "consumers disparus",
+    "severity": "Critique",
+    "time": "déclenché il y a 6 min",
+    "depth": "profondeur 0 → 52k"
   },
-  "analytics": {
-    "title": "Analytiques de performance",
-    "description": "Graphiques historiques pour le débit de messages, la profondeur des files et les ressources des nœuds. Détectez les tendances et planifiez la capacité en toute confiance.",
-    "point1": "Plages de temps personnalisables : 1 heure à 30 jours",
-    "point2": "Suivi mémoire, disque, descripteurs de fichiers et CPU",
-    "point3": "Détection de tendances pour la planification de capacité"
+  "aiExplain": {
+    "eyebrow": "AI Explain",
+    "badge": "EE · payant",
+    "title": "La cause racine, rédigée pour vous à la demande.",
+    "bodyPre": "Un appel",
+    "bodyPost": "transforme un incident et l'état du broker environnant en une cause racine en langage clair. Apportez votre clé, exécutez-le en managé, ou gardez-le 100 % local sur Ollama. Plan-gated — jamais deploy-gated.",
+    "cardLabel": "Analyse de cause racine",
+    "cardBody": "Les 3 consumers se sont déconnectés à 15:06 ; la profondeur grimpe d'environ 8k/min sans aucun drainage — probablement un worker en aval qui a crashé. Vérifiez les déploiements autour de 15:05.",
+    "cardCofire": "↳ co-déclenchement : events.payment a aussi perdu ses consumers."
   },
-  "queueManagement": {
-    "title": "Gestion des files d'attente",
-    "description": "Purgez, supprimez et créez des files depuis l'interface. Inspectez les bindings, visualisez la topologie et publiez des messages de test sans toucher à la ligne de commande.",
-    "point1": "Inspection des bindings et vue topologique",
-    "point2": "Publication de messages pour le test et le débogage",
-    "point3": "Gestion des exchanges et des clés de routage"
-  },
-  "multiServer": {
-    "title": "Support multi-serveurs",
-    "badge": "Dev : 3 | Enterprise : illimité",
-    "description": "Connectez plusieurs instances RabbitMQ de différents environnements. Une vue unifiée pour le staging, la production et le développement.",
-    "point1": "Connexions chiffrées TLS",
-    "point2": "Tableau de bord unifié pour tous les environnements",
-    "point3": "Basculez entre les serveurs en toute fluidité"
-  },
-  "builtForDevs": {
-    "title": "Conçu pour les développeurs",
-    "description": "Pas de configuration YAML. Pas de Prometheus ni de Grafana à maintenir. Connectez votre serveur RabbitMQ en 60 secondes avec une chaîne de connexion.",
-    "point1": "Option auto-hébergée ou cloud",
-    "point2": "Édition Community open source sur GitHub",
-    "point3": "Aucune infrastructure à maintenir"
-  },
-  "comparison": {
-    "title": "Gérer vos serveurs RabbitMQ ne devrait pas être aussi pénible",
-    "traditional": {
-      "title": "Interfaces de gestion traditionnelles",
-      "point1": "Une interface obsolète qui vous ralentit",
-      "point2": "Pas de vue unifiée entre serveurs ou environnements",
-      "point3": "Pas d'alertes fiables et actionnables",
-      "point4": "Des dashboards et scripts DIY partout"
-    },
-    "qarote": {
-      "title": "Qarote",
-      "point1": "Une interface moderne, rapide et claire",
-      "point2": "Un tableau de bord unifié pour tous vos serveurs et environnements",
-      "point3": "Des alertes intelligentes qui détectent les problèmes tôt",
-      "point4": "Monitoring zéro-config, pas de scripts, pas de maintenance"
-    },
-    "messagesPerSec": "Messages/sec",
-    "activeQueues": "Files actives",
-    "allSystemsOperational": "Tous les systèmes opérationnels"
-  },
-  "queueIntelligence": {
-    "title": "Une intelligence des files qui va en profondeur"
-  },
-  "messageVisibility": {
-    "title": "Inspectez n'importe quel message sans toucher à la file"
-  },
-  "messagePipeline": {
-    "title": "Visibilité totale sur le flux de messages"
-  },
-  "queueHistory": {
-    "description": "30 jours de profondeur de file, comptages de consommateurs et taux de messages capturés toutes les 5 minutes. Visualisez n'importe quelle file sur n'importe quelle fenêtre de temps — voyez exactement quand elle a commencé à se remplir et quand elle s'est vidée."
-  },
-  "messageSpy": {
-    "description": "Parcourez les en-têtes et charges utiles des messages directement dans n'importe quelle file — en lecture seule, non destructif, sûr pour la production. Pas de consommateur AMQP. Pas de scripts jetables. Les messages restent exactement où ils sont.",
-    "point1": "Lecture seule — les messages ne sont jamais consommés ni acquittés",
-    "point2": "Charge utile complète avec coloration syntaxique JSON",
-    "point3": "En-têtes, clé de routage, mode de livraison, statut de relivraison"
-  },
-  "dailyDigest": {
-    "description": "Un résumé matinal de la santé de votre broker par email : tendances de profondeur de file, croissance des DLQ et anomalies des dernières 24 heures. Une conscience asynchrone sans tableau de bord ouvert."
-  },
-  "incidentDiagnosis": {
-    "description": "Analyse automatisée des causes racines pour les incidents RabbitMQ. Corrèle les pics de profondeur de file, les chutes de consommateurs et les changements de débit en une seule chronologie lisible — pour savoir ce qui s'est passé et dans quel ordre."
-  },
-  "messageTracing": {
-    "description": "Traçage complet des messages sur votre broker via le Firehose RabbitMQ. Chaque publication, chaque livraison, chaque acquittement — capturé en temps réel avec la clé de routage, l'exchange et la taille de la charge utile."
-  },
-  "comingSoon": {
-    "eyebrow": "Plus de fonctionnalités",
-    "heading": "Cinq outils supplémentaires, un seul tableau de bord",
-    "subtitle": "Chaque lien mène à une page dédiée avec la documentation complète, les cas d'usage et les FAQ.",
-    "learnMore": "En savoir plus",
-    "items": [
+  "configScan": {
+    "eyebrow": "Scan de config",
+    "badge": "CE · gratuit",
+    "title": "Repérez les anti-patterns avant qu'ils ne vous réveillent.",
+    "body": "Un scan structurel signale les erreurs RabbitMQ qui deviennent des incidents à 3 h du matin — dead-letter exchanges manquants, files sans consumer inactives, sur-utilisation de l'exchange par défaut — chacune lisible par votre agent.",
+    "finds": [
       {
-        "icon": "chart.svg",
-        "title": "Historique des files",
-        "description": "30 jours de profondeur de file, comptages de consommateurs et taux de messages capturés toutes les 5 minutes. Pour les rétrospectives d'incidents et la planification de capacité.",
-        "href": "/features/metrics/"
+        "code": "no DLX on orders.*",
+        "text": "Les messages rejetés sont silencieusement perdus sur 5 files.",
+        "sev": "amber"
       },
       {
-        "icon": "message.svg",
-        "title": "Message Spy",
-        "description": "Inspectez les en-têtes et les charges utiles des messages dans n'importe quelle file — en lecture seule, non destructif, sûr pour la production.",
-        "href": "/features/message-spy/"
+        "code": "idle no-consumer queue",
+        "text": "emails.outbound n'a aucun consumer depuis 9 jours.",
+        "sev": "amber"
       },
       {
-        "icon": "email.svg",
-        "title": "Digest quotidien",
-        "description": "Un résumé matinal de la santé de votre broker : tendances de profondeur de file, croissance des DLQ et anomalies des dernières 24 heures.",
-        "href": "/features/digest/"
-      },
-      {
-        "icon": "flag.svg",
-        "title": "Moteur de diagnostic d'incident",
-        "description": "Analyse automatisée des causes racines pour les incidents RabbitMQ. Corrèle les pics de profondeur, les chutes de consommateurs et les changements de débit en une seule chronologie.",
-        "href": "/features/incident-diagnosis/"
-      },
-      {
-        "icon": "real-time.svg",
-        "title": "Traçage de messages (Firehose)",
-        "description": "Traçage complet des messages sur votre broker via le Firehose RabbitMQ. Chaque message, chaque route, chaque consommateur — en temps réel avec filtrage et recherche.",
-        "href": "/features/message-tracing/"
+        "code": "default-exchange overuse",
+        "text": "82 % des publications passent par l'exchange par défaut.",
+        "sev": "blue"
       }
     ]
   },
+  "topology": {
+    "eyebrow": "Topologie",
+    "badge": "CE · gratuit",
+    "title": "La carte live du broker, avec drill-down.",
+    "body": "Visualisez exchanges, files et liaisons sous forme de graphe. Cliquez n'importe quel nœud pour inspecter profondeur, consumers et liaisons — l'ancien « Browse » en liste d'objets s'est dissous en une carte que l'on peut vraiment raisonner. Les graphiques conservent 30 jours d'historique de métriques.",
+    "caption": "topologie live · cliquez un nœud pour explorer"
+  },
+  "alerting": {
+    "eyebrow": "Alerting",
+    "badge": "EE · canaux payants",
+    "title": "Routez ce qui compte, là où ça compte.",
+    "body": "Les findings vous parviennent par e-mail, Slack ou webhook, avec un routage par sévérité : les criticals alertent, le reste se résume. L'e-mail est gratuit ; Slack et les webhooks se débloquent sur Developer.",
+    "emailScope": "critique · élevé",
+    "on": "activé"
+  },
+  "connect": {
+    "eyebrow": "Connecter & passer à l'échelle",
+    "title": "Deux minutes jusqu'à votre premier finding.",
+    "body": "Connectez-vous via l'API HTTP de management en TLS — aucun exporter, aucun agent sur la machine. Un broker ou plusieurs ; RabbitMQ 3.x & 4.x ; mono-nœud ou en cluster ; CloudAMQP et Amazon MQ inclus.",
+    "codeComment": "pointez Qarote vers l'API de management",
+    "codeResult": "14 files · 6 exchanges · 3 findings"
+  },
+  "deploy": {
+    "eyebrow": "Déployez à votre façon",
+    "title": "Votre réseau, votre modèle, vos règles.",
+    "body": "Lancez Qarote en cloud, ou auto-hébergez avec Docker, Compose, Dokku ou un binaire autonome. L'auto-hébergé valide sa licence hors-ligne — aucun phone-home — et AI Explain peut tourner sur Ollama local, pour que les données du broker ne quittent jamais votre réseau.",
+    "licensePill": "licence JWT hors-ligne",
+    "cardLabel": "contrôle des données",
+    "cardBody": "Le cœur de détection est MIT et open source. La validation de licence auto-hébergée est hors-ligne. Ollama local garde chaque octet de l'état du broker à l'intérieur de votre périmètre."
+  },
   "cta": {
-    "title": "Prêt à monitorer vos serveurs RabbitMQ ?",
-    "subtitle": "Commencez avec le plan Community gratuit. Aucune carte de crédit requise."
+    "heading": "Voyez-le sur votre propre broker.",
+    "body": "Connectez-vous en moins de deux minutes, puis demandez à votre agent ce qui ne va pas.",
+    "primary": "Commencer gratuitement",
+    "secondary": "Voir les tarifs"
   }
 }

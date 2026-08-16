@@ -1,5 +1,8 @@
 import { logger } from "./logger";
-import type { TierSlug } from "./quiz-logic";
+import type { QuizTier } from "./quiz-data";
+
+/** Tier identifier as used by the data model (`reactive` | `proactive` | `production`). */
+type QuizTierId = QuizTier["id"];
 
 function pushToDataLayer(data: Record<string, unknown>): void {
   try {
@@ -19,7 +22,7 @@ export function trackQuizStarted(): void {
 export function trackQuizCompleted(params: {
   scorePct: number;
   correctCount: number;
-  tier: TierSlug;
+  tier: QuizTierId;
 }): void {
   pushToDataLayer({
     event: "quiz_completed",
@@ -29,27 +32,9 @@ export function trackQuizCompleted(params: {
   });
 }
 
-export function trackQuizShareClicked(params: {
-  tier: TierSlug;
-  scorePct: number;
-}): void {
-  pushToDataLayer({
-    event: "quiz_share_clicked",
-    quiz_tier: params.tier,
-    quiz_score_pct: params.scorePct,
-  });
-}
-
-export function trackQuizEmailCaptured(params: { tier: TierSlug }): void {
+export function trackQuizEmailCaptured(params: { tier: QuizTierId }): void {
   pushToDataLayer({
     event: "quiz_email_captured",
-    quiz_tier: params.tier,
-  });
-}
-
-export function trackQuizCtaClicked(params: { tier: TierSlug }): void {
-  pushToDataLayer({
-    event: "quiz_cta_clicked",
     quiz_tier: params.tier,
   });
 }

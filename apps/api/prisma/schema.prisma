@@ -34,8 +34,13 @@ model Alert {
   updatedAt         DateTime        @updatedAt
   resolvedAt        DateTime?
   acknowledgedAt    DateTime?
+  // User-driven temporary silence. An alert is "snoozed" while
+  // snoozedUntil > now: hidden from the active feed and notification-gated,
+  // then reappears on its own once the deadline passes (lazy, no worker).
+  // Orthogonal to status — only ACTIVE/ACKNOWLEDGED rows are ever snoozed.
+  snoozedUntil      DateTime?
   // Unified fields — populated for system-detected alerts, optional for custom rule alerts
-  serverId          String?
+  serverId          String? @db.Uuid
   serverName        String?
   fingerprint       String?
   firstSeenAt       DateTime?
@@ -47,6 +52,8 @@ model Alert {
   category          String?
   sourceType        String?
   sourceName        String?
+  // Null for node/cluster alerts, which have no vhost. Mirrors ConfigFinding.
+  vhost             String?
   details           Json?
   duration          BigInt?
   alertRule         AlertRule?      @relation(fields: [alertRuleId], references: [id])
@@ -85,7 +92,7 @@ model AlertRule {
   severity              AlertSeverity
   enabled               Boolean            @default(true)
   isDefault             Boolean            @default(false)
-  serverId              String?
+  serverId              String? @db.Uuid
   createdById           String?
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
@@ -170,7 +177,7 @@ model Queue {
   id            String         @id @default(uuid())
   name          String
   vhost         String
-  serverId      String
+  serverId      String @db.Uuid
   messages      BigInt
   messagesReady BigInt
   messagesUnack BigInt
@@ -183,7 +190,7 @@ model Queue {
 }
 
 model RabbitMQServer {
-  id                    String                    @id @default(uuid())
+  id                    String                    @id @default(uuid()) @db.Uuid
   name                  String
   host                  String
   port                  Int
@@ -197,7 +204,6 @@ model RabbitMQServer {
   version               String?
   versionMajorMinor     String?
   isOverQueueLimit      Boolean                   @default(false)
-  overLimitWarningShown Boolean                   @default(false)
   queueCountAtConnect   Int?
   /// Free-text environment tag (`prod`, `staging`, `dev`, …) consumed
   /// by the RBAC Phase 3 `server.environment` resource-scope
@@ -208,6 +214,10 @@ model RabbitMQServer {
   amqpPort              Int                       @default(5672)
   traceEnabled          Boolean                   @default(false)
   payloadCaptureEnabled Boolean                   @default(false)
+  /// When this server's queue metrics were last successfully captured. Null
+  /// until the first poll. Consumed by the reconcile cron (ADR-004 §2 / #7) to
+  /// re-enqueue servers the fan-out fleet dropped; unused until then.
+  lastPolledAt          DateTime?
   // Broker capability snapshot — see services/feature-gate/capability-axis.ts.
   // `version` (above) already stores rabbitmq_version; productName captures
   // the product flavour (RabbitMQ / Tanzu RabbitMQ / AWS MQ for RabbitMQ /…).
@@ -235,30 +245,42 @@ model RabbitMQServer {
 /// Never written when workspaceId is null (orphaned rows have no consumer).
 /// workspaceId is denormalized (no FK) — server reassignment requires a backfill migration.
 model QueueMetricSnapshot {
-  id            String         @default(cuid())
-  serverId      String
+  serverId      String @db.Uuid
   workspaceId   String
   queueName     String
   vhost         String
   messages      BigInt
   messagesReady BigInt
   messagesUnack BigInt
-  publishRate   Float
-  consumeRate   Float
+  /// Cumulative RabbitMQ counters (`message_stats.publish` / `.deliver`) — the
+  /// single raw source of truth. The throughput RATE is derived at READ time from
+  /// the counter delta via the TimescaleDB Toolkit `counter_agg`/`rate()`
+  /// (ADR-004 §1; Prometheus-style `rate()`), never computed or stored at ingest.
+  /// Nullable: null when the broker omits stats — never a fake 0.
+  publishCount  BigInt?
+  deliverCount  BigInt?
   consumerCount Int
   timestamp     DateTime       @default(now())
   server        RabbitMQServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
-  /// Composite PK: TimescaleDB requires the partition column (`timestamp`) in the
-  /// PK and every unique index. Surrogate `id` is kept (Option A) — the natural
-  /// key would make the PK too wide on the hottest table.
-  @@id([id, timestamp])
+  /// Identity + dedup key. It includes the `timestamp` partition column that
+  /// TimescaleDB requires in any unique index on a hypertable, so it also serves
+  /// as the row identifier — no surrogate PK. The random-cuid `@@id([id, ...])`
+  /// and the `id` column were dropped in the 2026-07 hypertable audit
+  /// (ADR-004 §6): `id` had no reader and its random btree amplified every 50k/s
+  /// insert on the widest index.
   @@unique([serverId, queueName, vhost, timestamp])
+  /// Availability probe + universal small-window fallback. The two
+  /// `workspaceId`-leading indexes were dropped in the same audit — they served
+  /// only the digest's cross-server query, now per-server fan-out (#250) — so the
+  /// write path carries just this + the unique. (`@@index([timestamp])` was
+  /// already dropped: TimescaleDB creates its own time index on the partition.)
   @@index([serverId, timestamp])
-  /// `@@index([timestamp])` dropped — TimescaleDB's hypertable creates its own
-  /// time index on the partition column.
-  @@index([workspaceId, serverId, timestamp])
-  @@index([workspaceId, serverId, queueName, vhost, timestamp])
+  /// A TimescaleDB continuous aggregate `queue_metric_hourly` (hourly counter_agg /
+  /// percentile_agg rollup backing the LLM seasonal baseline, ADR-004 §6c) is
+  /// derived from this table. It is INVISIBLE to Prisma — created by the
+  /// out-of-Prisma bootstrap (`core/ts-bootstrap.ts`), since CAGG DDL cannot run in
+  /// a migration transaction. Dev/shadow DBs must use the Toolkit image.
   @@map("queue_metric_snapshots")
 }
 
@@ -298,7 +320,6 @@ model User {
   workspace               Workspace?               @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
   workspaceMembers        WorkspaceMember[]        @relation("WorkspaceMembers")
   payments                Payment[]
-  subscription            Subscription?
   organizationMembers     OrganizationMember[]
   orgInvitationsSent      OrganizationInvitation[] @relation("OrgInvitationsSent")
   auditLogs               AuditLog[]
@@ -413,7 +434,7 @@ model MessageTraceEvent {
   /// stable "id > lastId" ordering — a later insert can sort before an earlier
   /// one under string comparison.
   cursorId     BigInt         @default(autoincrement())
-  serverId     String
+  serverId     String @db.Uuid
   vhost        String
   exchange     String
   routingKey   String
@@ -455,9 +476,6 @@ model MessageTraceEvent {
   /// unique on cursorId. Cursor pagination (`cursorId > lastId ORDER BY
   /// cursorId`) is unaffected.
   @@unique([cursorId, timestamp])
-  @@index([serverId, cursorId])
-  @@index([serverId, direction, cursorId])
-  @@index([serverId, vhost, routingKey, cursorId])
   @@index([serverId, timestamp])
   @@index([serverId, direction, timestamp])
   @@index([serverId, vhost, queueName, timestamp])
@@ -805,16 +823,12 @@ model Subscription {
   updatedAt            DateTime           @updatedAt
   isRenewalAfterCancel Boolean            @default(false)
   previousCancelDate   DateTime?
-  userId               String             @unique
-  // Nullable during migration. PostgreSQL unique allows multiple NULLs. Will become required after transition.
-  organizationId       String?            @unique
+  organizationId       String             @unique
   plan                 UserPlan
-  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  organization         Organization?      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization         Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([status], name: "subscription_status_idx")
   @@index([stripeSubscriptionId], name: "subscription_stripe_id_idx")
-  @@index([userId], name: "subscription_user_idx")
 }
 
 model Webhook {
@@ -905,6 +919,7 @@ model OrgSsoConfig {
   organizationId String?
   providerId     String   @unique
   autoProvision  Boolean  @default(true)
+  enforced       Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -1037,7 +1052,6 @@ model Organization {
   contactEmail         String?
   logoUrl              String?
   stripeCustomerId     String?  @unique
-  stripeSubscriptionId String?  @unique
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
@@ -1157,7 +1171,7 @@ model AuditLog {
   entityType     String
   entityId       String?
   entityLabel    String?
-  serverId       String?
+  serverId       String? @db.Uuid
   vhost          String?
   workspaceId    String?
   /// Org-level events (license / SSO / auth) carry organizationId so
@@ -1212,7 +1226,7 @@ enum AuditSource {
 /// previous `lastSeenAt` is older than the dedup TTL.
 model IncidentDiagnosisRecord {
   id             String        @id @default(uuid())
-  serverId       String
+  serverId       String @db.Uuid
   /// Denormalised for tenant-scoped queries without joining through server.
   /// Kept in sync at write time (no FK).
   workspaceId    String
@@ -1259,7 +1273,7 @@ model IncidentDiagnosisRecord {
 model ConfigFinding {
   id           String        @id @default(uuid())
   workspaceId  String
-  serverId     String
+  serverId     String @db.Uuid
   ruleKey      String
   severity     AlertSeverity
   resourceType String
@@ -1329,6 +1343,16 @@ model LlmExplanation {
   supersededBy String?   @map("superseded_by")
   supersededAt DateTime? @map("superseded_at")
 
+  /// Opt-in public share. `shareToken` is an opaque, revocable handle minted
+  /// from the app; `shareExpiresAt` enforces the 90-day window. Null = private
+  /// (no public link). The public RCA page resolves by `shareToken`, never by id.
+  shareToken     String?   @unique @map("share_token")
+  shareExpiresAt DateTime? @map("share_expires_at")
+  /// Structured incident evidence captured at explain-time (queue/server/
+  /// severity/metrics/sparkline/co-firing) so the public card renders without
+  /// re-querying private workspace data. Best-effort; may be null on old rows.
+  publicSnapshot Json? @map("public_snapshot")
+
   workspace       Workspace                @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   incidentFinding IncidentDiagnosisRecord? @relation(fields: [incidentFindingId], references: [id], onDelete: Restrict)
   configFinding   ConfigFinding?           @relation(fields: [configFindingId], references: [id], onDelete: Restrict)
@@ -1368,4 +1392,27 @@ model LlmUsageCounter {
 
   @@id([workspaceId, periodStart])
   @@map("llm_usage_counters")
+}
+
+/// Shared cache table, accessed exclusively through raw SQL in
+/// `apps/api/src/core/cache.ts` — no Prisma client call reads this model.
+///
+/// It is declared here anyway, and that is the whole point: when it was absent
+/// from the schema, `prisma migrate dev` saw an untracked table and generated a
+/// DROP (migration 20260505215044). The table stayed gone, every cache call
+/// failed with 42P01, and the swallow-and-log in most callers kept it invisible
+/// until a real poll cycle on the stress rig surfaced it. A model Prisma knows
+/// about is one Prisma will not offer to drop.
+///
+/// The table is UNLOGGED — see the contract in cache.ts. Prisma cannot express
+/// that, so the CREATE lives in the migration; Prisma ignores logged-ness on
+/// diff and will not revert it.
+model Cache {
+  key       String   @id @db.VarChar(255)
+  value     Json
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+
+  @@index([key(ops: raw("text_pattern_ops"))], map: "idx_cache_key_pattern")
+  @@index([expiresAt], map: "idx_cache_expires_at")
+  @@map("cache")
 }

@@ -74,6 +74,7 @@ export function providerConfigToFormValues(
     samlMetadataUrl:
       (config.samlConfig?.metadataUrl as string | undefined) ?? "",
     domain: config.domain ?? "",
+    autoProvision: config.autoProvision,
   };
 }
 
@@ -88,6 +89,7 @@ export const emptyFormValues: SSOFormValues = {
   oidcClientSecret: "",
   samlMetadataUrl: "",
   domain: "",
+  autoProvision: true,
 };
 
 /**
@@ -106,6 +108,7 @@ export function formValuesToApiPayload(values: SSOFormValues): {
   oidcClientSecret?: string;
   samlMetadataUrl?: string;
   domain?: string;
+  autoProvision: boolean;
 } {
   const clientSecret = values.oidcClientSecret;
   return {
@@ -116,5 +119,6 @@ export function formValuesToApiPayload(values: SSOFormValues): {
       clientSecret && clientSecret !== REDACTED ? clientSecret : undefined,
     samlMetadataUrl: values.samlMetadataUrl || undefined,
     domain: values.domain || undefined,
+    autoProvision: values.autoProvision,
   };
 }

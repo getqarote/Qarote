@@ -3,7 +3,9 @@
   "groups": {
     "personal": "Personal",
     "workspace": "Workspace",
-    "organization": "Organization"
+    "organization": "Organization",
+    "account": "Account",
+    "billing": "Billing"
   },
   "nav": {
     "profile": "Profile",
@@ -11,17 +13,20 @@
     "workspaceSettings": "Settings",
     "members": "Members",
     "roles": "Roles",
-    "organization": "Settings",
+    "organization": "Organization",
     "subscription": "Subscription",
     "sso": "SSO",
     "license": "License",
-    "smtp": "Email",
+    "smtp": "Email (SMTP)",
     "digest": "Daily Digest",
     "llm": "AI / LLM",
     "integrations": "Integrations",
-    "audit": "Audit Log",
+    "audit": "Audit log",
     "enterprise": "Enterprise",
-    "agentAccess": "Agent Access"
+    "agentAccess": "Agent Access",
+    "workspace": "Workspace",
+    "aiExplain": "AI Explain",
+    "agentKeys": "Agent keys"
   },
   "llm": {
     "title": "AI Explain",
@@ -64,26 +69,74 @@
       "atCapAlert": "You've reached this month's limit.",
       "upgradeLink": "Upgrade your plan",
       "byok": "You're using your own API key — calls aren't metered against a Qarote quota."
-    }
+    },
+    "intro": "Pick which LLM generates root-cause analysis. Detection stays free — this only powers <code>explain_incident</code>.",
+    "activeProvider": "Active provider:",
+    "showKey": "Show key",
+    "hideKey": "Hide key",
+    "card": {
+      "managed": {
+        "title": "Qarote-managed",
+        "desc": "Qarote runs the model on its own key. Nothing to configure — usage is metered against your monthly quota."
+      },
+      "anthropic": {
+        "title": "Your Anthropic key",
+        "desc": "Bring your own Anthropic API key. Runs on Claude models you choose."
+      },
+      "openai": {
+        "title": "Your OpenAI key",
+        "desc": "Bring your own OpenAI API key. Runs on GPT models you choose."
+      },
+      "ollama": {
+        "title": "Local model",
+        "desc": "Run a local model through Ollama. Fully offline."
+      }
+    },
+    "badge": {
+      "recommended": "Recommended",
+      "zeroConfig": "Zero config",
+      "byok": "BYOK",
+      "ollamaOffline": "Ollama · Offline"
+    },
+    "managed": {
+      "explainsLabel": "Managed explains",
+      "thisMonth": "this month",
+      "resets": "resets {{date}}",
+      "cachedNote": "Repeated identical explanations are cached and don't count against your quota.",
+      "enableHint": "Enable AI explanations and save to start using your monthly quota."
+    },
+    "byok": {
+      "unlimitedTitle": "Unlimited",
+      "unlimitedDesc": "you pay your own LLM cost. No Qarote quota."
+    },
+    "ollama": {
+      "privacy": "Runs on your own machine — no broker data leaves your network.",
+      "baseUrl": "Base URL",
+      "modelName": "Model name",
+      "unlimitedDesc": "runs on your local compute. No Qarote quota."
+    },
+    "testAfterSave": "Save your changes first to test them."
   },
   "sso": {
-    "upgradeTitle": "Enterprise Feature",
-    "upgradeDescription": "SSO with OIDC and SAML 2.0 is available on the Enterprise plan.",
+    "upgradeTitle": "SSO is an Enterprise feature",
+    "upgradeDescription": "Require your team to sign in through your identity provider (OIDC or SAML), with auto-provisioning and domain restrictions.",
     "upgradeRequirement": "Enterprise Plan Required",
     "upgradeCloudHint": "Upgrade your plan to configure single sign-on for your organization.",
     "upgradeSelfHostedHint": "Activate an Enterprise license to configure single sign-on for your organization.",
     "viewPlans": "View plans",
     "contactSales": "Contact sales",
     "activateLicense": "Activate license",
-    "purchaseLicense": "Purchase license"
+    "purchaseLicense": "Purchase license",
+    "upgradeCta": "Upgrade",
+    "upgradeContactSales": "Contact sales for SSO, SCIM, and a security review."
   },
   "license": {
     "accessDeniedTitle": "Organization admin required",
     "accessDenied": "License management is reserved for organization admins."
   },
   "agentAccess": {
-    "title": "Agent Access",
-    "description": "Mint and revoke machine API keys so AI agents can call Qarote's MCP endpoint (read incidents, scan findings, and explain incidents on EE).",
+    "title": "Agent keys",
+    "description": "Connect Claude Code, Cursor, Copilot… to Qarote over MCP.",
     "empty": {
       "title": "No agent keys yet",
       "description": "Mint a key above to grant an AI agent (Claude Desktop, Cursor, …) access to your workspace via MCP."
@@ -94,31 +147,46 @@
       "neverUsed": "Never used",
       "expires": "Expires {{date}}",
       "revoke": "Revoke",
-      "loadError": "Couldn't load agent keys. Try again."
+      "loadError": "Couldn't load agent keys. Try again.",
+      "colName": "Name",
+      "colScope": "Scope",
+      "colCreated": "Created",
+      "colLastUsed": "Last used",
+      "colExpires": "Expires",
+      "neverExpires": "Never",
+      "justNow": "just now"
     },
     "mint": {
-      "title": "Mint a new key",
-      "nameLabel": "Key name",
-      "namePlaceholder": "e.g. Claude Desktop (laptop)",
+      "title": "Mint agent key",
+      "nameLabel": "Name",
+      "namePlaceholder": "Claude Code – laptop",
       "nameRequired": "Name is required.",
       "nameTooLong": "Name must be 80 characters or fewer.",
       "scopeLabel": "Scope",
-      "scopeRead": "Read",
-      "scopeReadConsequence": "List incidents and findings. No LLM use.",
-      "scopeExplain": "Explain",
-      "scopeExplainConsequence": "Includes grounded RCA via LLM — counts against your workspace quota.",
-      "expiryLabel": "Expires after",
+      "scopeRead": "read · free",
+      "scopeReadConsequence": "Lists incidents, findings, queues, overview.",
+      "scopeExplain": "explain · EE",
+      "scopeExplainConsequence": "Adds LLM root-cause analysis (explain_incident).",
+      "expiryLabel": "Expires",
       "expiry30": "30 days",
-      "expiry90": "90 days (recommended)",
-      "expiry365": "365 days",
+      "expiry90": "90 days",
+      "expiry365": "1 year",
       "expiryNever": "Never",
       "expiryNeverWarning": "A key with no expiry stays valid until you revoke it manually. Prefer a short horizon when possible.",
       "submit": "Mint key",
       "pending": "Minting…",
-      "failed": "Mint failed."
+      "failed": "Mint failed.",
+      "scopeExplainGated": " · explain requires Developer+",
+      "expiryHint": "Prefer a short horizon — you can always mint another.",
+      "cancel": "Cancel",
+      "toast": {
+        "successTitle": "Key created",
+        "successMsg": "Ready to paste into your agent.",
+        "viewKeys": "View keys"
+      }
     },
     "reveal": {
-      "title": "Save this key now",
+      "title": "Key created — copy it now",
       "description": "If you close without copying, this key is unrecoverable — you'll need to mint a new one. Qarote stores only a hash.",
       "secretLabel": "Secret",
       "copySecret": "Copy secret",
@@ -133,10 +201,14 @@
         "claudeCode": "Claude Code (CLI)",
         "copilot": "GitHub Copilot",
         "codex": "Codex (OpenAI)",
-        "copilotHint": "The snippet doesn't contain your secret — Copilot will prompt for it at first use. Copy the secret above first."
+        "copilotHint": "The snippet doesn't contain your secret — Copilot will prompt for it at first use. Copy the secret above first.",
+        "windsurf": "Windsurf",
+        "opencode": "opencode"
       },
       "confirm": "I have copied the secret to a safe place.",
-      "done": "Done"
+      "done": "Done",
+      "warning": "This secret is shown <b>once</b>. Qarote stores only a hash — if you lose it you’ll need to mint a new key.",
+      "pasteLabel": "Paste into your client"
     },
     "revoke": {
       "title": "Revoke this agent key?",
@@ -146,6 +218,18 @@
       "pending": "Revoking…",
       "success": "Revoked \"{{name}}\".",
       "failed": "Revoke failed."
+    },
+    "endpoint": {
+      "label": "Endpoint:",
+      "authHeader": "auth header:",
+      "copy": "copy",
+      "copied": "copied",
+      "copyFailed": "Couldn't copy — copy it manually."
     }
+  },
+  "intent": "Settings — account, workspace, organization, and billing. Org (billing) and workspace (operations) are peers, not nested.",
+  "demoBlocked": {
+    "heading": "Not available on the demo",
+    "body": "This section is hidden on the public demo. Deploy your own Qarote to configure providers, members and billing."
   }
 }

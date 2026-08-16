@@ -6,7 +6,6 @@ describe("normalizePathname", () => {
   it.each([
     ["/", "/"],
     ["/dashboard", "/dashboard"],
-    ["/messages", "/messages"],
     ["/messages/550e8400-e29b-41d4-a716-446655440000", "/messages/:id"],
     ["/users/12345", "/users/:id"],
     ["/orgs/cm5xyz0123456789abcdef", "/orgs/:id"],

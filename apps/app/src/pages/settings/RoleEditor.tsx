@@ -6,31 +6,23 @@ import { Link, useNavigate, useParams } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   AlertTriangle,
-  ChevronDown,
-  ChevronRight,
+  ArrowLeft,
   Loader2,
   Search,
   Trash2,
-  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { WORKSPACE_ROLE_RANK, WorkspaceRole } from "@/lib/api/authTypes";
+import { qToast } from "@/lib/qToast";
 import { trpc } from "@/lib/trpc/client";
+import { cn } from "@/lib/utils";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alertDialog";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { useRoleLabels } from "@/components/settings/organization/roleUi";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,21 +32,20 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radioGroup";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import { TagsInput } from "@/components/ui/tags-input";
 import { Textarea } from "@/components/ui/textarea";
 
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
-/**
- * Permissive cause-reader for editor-specific codes that aren't part of
- * the whitelist `readRbacError` handles (`STALE_UPDATE`,
- * `PRIVILEGE_ESCALATION`, `UNKNOWN_PERMISSION`,
- * `DUPLICATE_PERMISSION_ENTRY`). The errorFormatter still lifts the
- * cause onto `shape.data.cause` regardless of the code; the strict
- * whitelist only governs which codes the formatter accepts on the
- * server side.
- */
 function readEditorCause(err: unknown): Record<string, unknown> | null {
   if (!err || typeof err !== "object") return null;
   const data = (err as { data?: unknown }).data;
@@ -63,8 +54,6 @@ function readEditorCause(err: unknown): Record<string, unknown> | null {
   if (!cause || typeof cause !== "object") return null;
   return cause as Record<string, unknown>;
 }
-
-// ─── Scope model ─────────────────────────────────────────────────────
 
 type ScopeJson =
   | null
@@ -76,9 +65,21 @@ interface PermissionEntry {
   scope: ScopeJson;
 }
 
-// ─── Form schema ─────────────────────────────────────────────────────
+interface CatalogPermission {
+  key: string;
+  minimumBuiltinTier: string;
+  label: string;
+  category: string;
+  scopable: boolean;
+}
 
 const BUILTIN_ROLE_NAMES = ["owner", "admin", "member", "readonly"] as const;
+// Tiers offered as clone sources for a new role ("Based on").
+const CLONE_TIERS: WorkspaceRole[] = [
+  WorkspaceRole.ADMIN,
+  WorkspaceRole.MEMBER,
+  WorkspaceRole.READONLY,
+];
 
 const FormSchema = z.object({
   name: z
@@ -99,12 +100,6 @@ const FormSchema = z.object({
 
 type FormValues = z.infer<typeof FormSchema>;
 
-// ─── Helpers ─────────────────────────────────────────────────────────
-
-function categoryOf(key: string): string {
-  return key.split(":")[0] ?? "other";
-}
-
 function scopeFingerprint(scope: ScopeJson): string {
   if (scope === null) return "null";
   if (scope.kind === "server.id") {
@@ -113,8 +108,6 @@ function scopeFingerprint(scope: ScopeJson): string {
   return `server.environment:${[...scope.values].sort().join(",")}`;
 }
 
-// ─── Editor ──────────────────────────────────────────────────────────
-
 const RoleEditor = () => {
   const { t } = useTranslation("roles");
   const { roleId } = useParams<{ roleId?: string }>();
@@ -122,12 +115,11 @@ const RoleEditor = () => {
   const navigate = useNavigate();
   const { workspace } = useWorkspace();
   const workspaceId = workspace?.id ?? "";
+  const roleLabels = useRoleLabels();
 
   const [permissions, setPermissions] = useState<PermissionEntry[]>([]);
   const [search, setSearch] = useState("");
-  const [openCategories, setOpenCategories] = useState<Record<string, boolean>>(
-    {}
-  );
+  const [basedOn, setBasedOn] = useState("blank");
   const [conflictUpdatedAt, setConflictUpdatedAt] = useState<string | null>(
     null
   );
@@ -142,75 +134,68 @@ const RoleEditor = () => {
     defaultValues: { name: "", description: "" },
   });
 
-  // Load catalog
   const catalog = trpc.workspace.role.permissionList.useQuery(
     { workspaceId },
     { enabled: !!workspaceId, staleTime: 60_000 }
   );
-
-  // Load servers for scope picker
   const servers = trpc.rabbitmq.server.getServers.useQuery(
     { workspaceId },
     { enabled: !!workspaceId, staleTime: 60_000 }
   );
-
-  // Load role if editing
   const roleQuery = trpc.workspace.role.get.useQuery(
     { workspaceId, roleId: roleId ?? "" },
     { enabled: !!workspaceId && !!roleId }
   );
 
-  // Seed form once on load; skip during conflict resolution to preserve the
-  // user's in-progress edits while we fetch the latest updatedAt.
   useEffect(() => {
     if (!roleQuery.data || isResolvingConflict) return;
     form.reset({
       name: roleQuery.data.name,
       description: roleQuery.data.description ?? "",
     });
+    /* eslint-disable react-hooks/set-state-in-effect */
     setPermissions(
       roleQuery.data.permissions.map((p) => ({
         permissionKey: p.permissionKey,
         scope: p.scope as ScopeJson,
       }))
     );
-    // Auto-expand categories that already have grants.
-    const cats = new Set(
-      roleQuery.data.permissions.map((p) => categoryOf(p.permissionKey))
-    );
-    setOpenCategories(
-      Object.fromEntries(Array.from(cats).map((c) => [c, true]))
-    );
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [roleQuery.data, form, isResolvingConflict]);
 
-  // Group catalog by category
+  const catalogPerms = useMemo(
+    () => (catalog.data?.permissions ?? []) as CatalogPermission[],
+    [catalog.data?.permissions]
+  );
+
+  // Group catalog by its (friendly) category.
   const grouped = useMemo(() => {
-    const cat = catalog.data?.permissions ?? [];
-    const map = new Map<
-      string,
-      { key: string; minimumBuiltinTier: string }[]
-    >();
-    for (const p of cat) {
-      const c = categoryOf(p.key);
-      if (!map.has(c)) map.set(c, []);
-      map.get(c)!.push(p);
+    const map = new Map<string, CatalogPermission[]>();
+    for (const p of catalogPerms) {
+      if (!map.has(p.category)) map.set(p.category, []);
+      map.get(p.category)!.push(p);
     }
     return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
-  }, [catalog.data]);
+  }, [catalogPerms]);
 
-  // Filter by search
   const filteredGrouped = useMemo(() => {
     if (!search.trim()) return grouped;
     const q = search.toLowerCase();
     return grouped
       .map(
         ([c, perms]) =>
-          [c, perms.filter((p) => p.key.toLowerCase().includes(q))] as const
+          [
+            c,
+            perms.filter(
+              (p) =>
+                p.key.toLowerCase().includes(q) ||
+                p.label.toLowerCase().includes(q)
+            ),
+          ] as const
       )
       .filter(([, perms]) => perms.length > 0);
   }, [grouped, search]);
 
-  // Mutations
   const utils = trpc.useUtils();
   const createMutation = trpc.workspace.role.create.useMutation({
     onSuccess: () => {
@@ -240,43 +225,25 @@ const RoleEditor = () => {
   });
   const deleteMutation = trpc.workspace.role.delete.useMutation({
     onSuccess: () => {
-      toast.success(t("editor.deletedToast"));
+      qToast({ severity: "success", title: t("editor.deletedToast") });
       void utils.workspace.role.list.invalidate();
       navigate("/settings/roles");
     },
-    onError: (err) => {
-      toast.error(err.message || t("errors.deleteFailed"));
-    },
+    onError: (err) => toast.error(err.message || t("errors.deleteFailed")),
   });
 
   function handleSaveError(err: { message?: string; data?: unknown }) {
     setEscalationErrors({});
     setIsResolvingConflict(false);
     const cause = readEditorCause(err);
-    // STALE_UPDATE conflict
-    if (
-      cause &&
-      typeof cause === "object" &&
-      "code" in cause &&
-      cause.code === "STALE_UPDATE"
-    ) {
+    if (cause && "code" in cause && cause.code === "STALE_UPDATE") {
       const cu = (cause as { currentUpdatedAt?: string }).currentUpdatedAt;
       setConflictUpdatedAt(cu ?? "stale");
       return;
     }
-    // PRIVILEGE_ESCALATION — surface inline on the offending row
-    if (
-      cause &&
-      typeof cause === "object" &&
-      "code" in cause &&
-      cause.code === "PRIVILEGE_ESCALATION"
-    ) {
+    if (cause && "code" in cause && cause.code === "PRIVILEGE_ESCALATION") {
       const p = (cause as { permission?: string }).permission;
-      if (p) {
-        setEscalationErrors({ [p]: t("editor.escalation.row") });
-        // Expand that category
-        setOpenCategories((prev) => ({ ...prev, [categoryOf(p)]: true }));
-      }
+      if (p) setEscalationErrors({ [p]: t("editor.escalation.row") });
     }
     toast.error(err.message || t("errors.saveFailed"));
   }
@@ -288,8 +255,6 @@ const RoleEditor = () => {
       return next;
     });
     if (checked) {
-      // Only append a global grant when there are no grants at all for this key
-      // (scoped or global), preventing the checkbox from widening existing scoped grants.
       setPermissions((prev) =>
         prev.some((p) => p.permissionKey === key)
           ? prev
@@ -301,21 +266,33 @@ const RoleEditor = () => {
   }
 
   function updateScope(key: string, scope: ScopeJson) {
-    setEscalationErrors((prev) => {
-      const next = { ...prev };
-      delete next[key];
-      return next;
-    });
     setPermissions((prev) => {
-      // Remove all rows for this key, then add the new one.
       const without = prev.filter((p) => p.permissionKey !== key);
       return [...without, { permissionKey: key, scope }];
     });
   }
 
+  // "Based on" — seed a new role from a built-in tier's implicit grant set.
+  function applyClone(value: string) {
+    setBasedOn(value);
+    if (value === "blank") {
+      setPermissions([]);
+      return;
+    }
+    const rank = WORKSPACE_ROLE_RANK[value as WorkspaceRole] ?? -1;
+    setPermissions(
+      catalogPerms
+        .filter(
+          (p) =>
+            rank >=
+            (WORKSPACE_ROLE_RANK[p.minimumBuiltinTier as WorkspaceRole] ?? 99)
+        )
+        .map((p) => ({ permissionKey: p.key, scope: null }))
+    );
+  }
+
   async function onSubmit(values: FormValues) {
     if (!workspaceId) return;
-    // Dedupe by (key, fingerprint) defensively (server also enforces).
     const seen = new Set<string>();
     const deduped = permissions.filter((p) => {
       const fp = `${p.permissionKey}:${scopeFingerprint(p.scope)}`;
@@ -329,9 +306,6 @@ const RoleEditor = () => {
     }
 
     if (isEditing && roleQuery.data) {
-      // Serialize: update name/desc first (capturing the fresh updatedAt from
-      // the response), then setPermissions with that timestamp to avoid
-      // a STALE_UPDATE on the second call.
       const expectedUpdatedAt = new Date(roleQuery.data.updatedAt);
       const nameOrDescChanged =
         values.name !== roleQuery.data.name ||
@@ -355,9 +329,9 @@ const RoleEditor = () => {
           permissions: deduped,
         });
       } catch {
-        // onError callbacks on each mutation handle UI feedback.
+        // per-mutation onError handles UI
       }
-    } else if (!isEditing) {
+    } else {
       createMutation.mutate({
         workspaceId,
         name: values.name,
@@ -371,14 +345,13 @@ const RoleEditor = () => {
     createMutation.isPending ||
     updateMutation.isPending ||
     setPermsMutation.isPending;
-
-  // ── Render ────────────────────────────────────────────────────────
+  const grantedCount = permissions.length;
+  const memberCount = isEditing ? (roleQuery.data?.memberCount ?? 0) : 0;
 
   if (catalog.isLoading || (isEditing && roleQuery.isLoading)) {
     return (
-      <div className="space-y-4 max-w-3xl">
+      <div className="max-w-3xl space-y-4">
         <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-10 w-full" />
         <Skeleton className="h-24 w-full" />
         <Skeleton className="h-64 w-full" />
       </div>
@@ -387,55 +360,30 @@ const RoleEditor = () => {
 
   if (isEditing && !roleQuery.data) {
     return (
-      <section className="max-w-3xl space-y-4">
-        <header className="flex items-start justify-between gap-4">
-          <h2 className="text-2xl font-semibold tracking-tight">
-            {t("editor.editTitle")}
-          </h2>
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/settings/roles">
-              <X className="h-4 w-4" aria-hidden />
-              {t("editor.cancel")}
-            </Link>
-          </Button>
-        </header>
-        <div
-          role="alert"
-          className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
-        >
-          {t("errors.loadFailed")}
-        </div>
-      </section>
+      <div
+        role="alert"
+        className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
+      >
+        {t("errors.loadFailed")}
+      </div>
     );
   }
 
-  const memberCount = isEditing ? (roleQuery.data?.memberCount ?? 0) : 0;
-  const totalCount = catalog.data?.permissions.length ?? 0;
-  const grantedCount = permissions.length;
-
   return (
-    <section className="max-w-3xl space-y-8">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-semibold tracking-tight">
-            {isEditing
-              ? roleQuery.data?.name || t("editor.editTitle")
-              : t("editor.createTitle")}
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            {t("editor.selectedCount", {
-              granted: grantedCount,
-              total: totalCount,
-            })}
-          </p>
-        </div>
-        <Button asChild variant="ghost" size="sm">
-          <Link to="/settings/roles">
-            <X className="h-4 w-4" aria-hidden />
-            {t("editor.cancel")}
+    <div className="space-y-6 pb-20">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <Button asChild variant="outline" size="icon" className="shrink-0">
+          <Link to="/settings/roles" aria-label={t("editor.cancel")}>
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           </Link>
         </Button>
-      </header>
+        <h2 className="text-2xl font-semibold tracking-tight">
+          {isEditing
+            ? roleQuery.data?.name || t("editor.editTitle")
+            : t("editor.createTitle")}
+        </h2>
+      </div>
 
       {conflictUpdatedAt && (
         <ConflictBanner
@@ -444,8 +392,6 @@ const RoleEditor = () => {
             void roleQuery.refetch();
           }}
           onOverwrite={() => {
-            // Freeze seeding so the refetch doesn't overwrite the user's edits,
-            // then re-submit with the fresh updatedAt from the response.
             setIsResolvingConflict(true);
             void roleQuery
               .refetch()
@@ -453,39 +399,59 @@ const RoleEditor = () => {
                 setConflictUpdatedAt(null);
                 form.handleSubmit(onSubmit)();
               })
-              .catch(() => {
-                // Refetch failed — lift the guard so seeding can resume and
-                // leave the conflict banner visible so the user can retry.
-                setIsResolvingConflict(false);
-              });
+              .catch(() => setIsResolvingConflict(false));
           }}
         />
       )}
 
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-8"
+        className="space-y-6"
         noValidate
       >
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="role-name">{t("editor.nameLabel")}</Label>
-            <Input
-              id="role-name"
-              {...form.register("name")}
-              placeholder={t("editor.namePlaceholder")}
-              maxLength={64}
-              autoFocus={!isEditing}
-              aria-invalid={!!form.formState.errors.name}
-            />
-            {form.formState.errors.name && (
-              <p role="alert" className="text-xs text-destructive">
-                {t(form.formState.errors.name.message!)}
-              </p>
+        {/* Identity card */}
+        <div className="rounded-xl border border-border bg-card p-6">
+          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="role-name">{t("editor.nameLabel")}</Label>
+              <Input
+                id="role-name"
+                {...form.register("name")}
+                placeholder={t("editor.namePlaceholder")}
+                maxLength={64}
+                autoFocus={!isEditing}
+                aria-invalid={!!form.formState.errors.name}
+              />
+              {form.formState.errors.name && (
+                <p role="alert" className="text-xs text-destructive">
+                  {t(form.formState.errors.name.message!)}
+                </p>
+              )}
+            </div>
+            {!isEditing && (
+              <div className="space-y-1.5">
+                <Label htmlFor="role-basedon">{t("editor.basedOn")}</Label>
+                <Select value={basedOn} onValueChange={applyClone}>
+                  <SelectTrigger id="role-basedon">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="blank">
+                      {t("editor.basedOnBlank")}
+                    </SelectItem>
+                    {CLONE_TIERS.map((tier) => (
+                      <SelectItem key={tier} value={tier}>
+                        {t("editor.basedOnClone", {
+                          role: roleLabels[tier],
+                        })}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             )}
           </div>
-
-          <div className="space-y-1.5">
+          <div className="mt-3.5 space-y-1.5">
             <Label htmlFor="role-description">
               {t("editor.descriptionLabel")}
             </Label>
@@ -495,31 +461,16 @@ const RoleEditor = () => {
               rows={2}
               maxLength={280}
               placeholder={t("editor.descriptionHelper")}
-              aria-invalid={!!form.formState.errors.description}
             />
-            <p className="text-xs text-muted-foreground">
-              {t("editor.descriptionHelper")}
-            </p>
-            {form.formState.errors.description && (
-              <p role="alert" className="text-xs text-destructive">
-                {t(form.formState.errors.description.message!)}
-              </p>
-            )}
           </div>
         </div>
 
-        <div className="space-y-3">
-          <div className="space-y-1">
-            <Label>{t("editor.permissionsLabel")}</Label>
-            <p className="text-xs text-muted-foreground">
-              {t("editor.permissionsHelper")}
-            </p>
-          </div>
-
-          <div className="relative">
+        {/* Search + count */}
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative w-full sm:max-w-md">
             <Search
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
-              aria-hidden
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden="true"
             />
             <Input
               type="search"
@@ -530,75 +481,79 @@ const RoleEditor = () => {
               className="pl-9"
             />
           </div>
-
-          <Card>
-            <CardContent className="p-0">
-              {filteredGrouped.map(([cat, perms]) => {
-                const grantedInCat = perms.filter((p) =>
-                  permissions.some((g) => g.permissionKey === p.key)
-                ).length;
-                const isOpen = openCategories[cat] ?? false;
-                return (
-                  <CategoryGroup
-                    key={cat}
-                    category={cat}
-                    perms={perms}
-                    isOpen={isOpen}
-                    grantedInCat={grantedInCat}
-                    permissions={permissions}
-                    escalationErrors={escalationErrors}
-                    servers={servers.data?.servers ?? []}
-                    onToggle={() =>
-                      setOpenCategories((prev) => ({
-                        ...prev,
-                        [cat]: !isOpen,
-                      }))
-                    }
-                    onPermissionToggle={togglePermission}
-                    onScopeChange={updateScope}
-                  />
-                );
-              })}
-              {filteredGrouped.length === 0 && (
-                <div className="p-6 text-sm text-muted-foreground text-center">
-                  —
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <p className="shrink-0 text-sm text-muted-foreground">
+            {t("editor.enabledCount", { count: grantedCount })}
+          </p>
         </div>
 
-        <div className="flex items-center justify-between gap-4 pt-2 border-t border-border">
-          {isEditing ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setDeleteOpen(true)}
-              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-            >
-              <Trash2 className="h-4 w-4" aria-hidden />
-              {t("editor.delete")}
-            </Button>
-          ) : (
-            <span />
+        {/* Permission category cards */}
+        <div className="space-y-3">
+          {filteredGrouped.map(([category, perms]) => (
+            <CategoryCard
+              key={category}
+              category={category}
+              perms={perms}
+              permissions={permissions}
+              escalationErrors={escalationErrors}
+              servers={servers.data?.servers ?? []}
+              onPermissionToggle={togglePermission}
+              onScopeChange={updateScope}
+            />
+          ))}
+          {filteredGrouped.length === 0 && (
+            <p className="py-6 text-center text-sm text-muted-foreground">—</p>
           )}
-          <Button type="submit" disabled={isSaving}>
-            {isSaving && (
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+        </div>
+
+        {/* Footer bar */}
+        <div className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
+            {isEditing ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setDeleteOpen(true)}
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
+                {t("editor.delete")}
+              </Button>
+            ) : (
+              <span />
             )}
-            {isSaving ? t("editor.saving") : t("editor.save")}
-          </Button>
+            <div className="flex items-center gap-2">
+              <Button asChild variant="outline">
+                <Link to="/settings/roles">{t("editor.cancel")}</Link>
+              </Button>
+              <Button type="submit" disabled={isSaving}>
+                {isSaving && (
+                  <Loader2
+                    className="h-4 w-4 animate-spin"
+                    aria-hidden="true"
+                  />
+                )}
+                {isSaving ? t("editor.saving") : t("editor.save")}
+              </Button>
+            </div>
+          </div>
         </div>
       </form>
 
       {isEditing && roleQuery.data && (
-        <DeleteDialog
+        <ConfirmDialog
           open={deleteOpen}
           onOpenChange={setDeleteOpen}
-          memberCount={memberCount}
-          roleName={roleQuery.data.name}
-          isDeleting={deleteMutation.isPending}
+          tone="danger"
+          title={t("editor.deleteConfirm.title", { name: roleQuery.data.name })}
+          body={
+            memberCount === 0
+              ? t("editor.deleteConfirm.bodyZero")
+              : t("editor.deleteConfirm.body", { count: memberCount })
+          }
+          confirmLabel={t("editor.deleteConfirm.confirm")}
+          cancelLabel={t("editor.deleteConfirm.cancel")}
+          isPending={deleteMutation.isPending}
           onConfirm={() => {
             if (!workspaceId || !roleQuery.data) return;
             deleteMutation.mutate({
@@ -609,11 +564,9 @@ const RoleEditor = () => {
           }}
         />
       )}
-    </section>
+    </div>
   );
 };
-
-// ─── Subcomponents ───────────────────────────────────────────────────
 
 const ConflictBanner = ({
   onReload,
@@ -626,22 +579,22 @@ const ConflictBanner = ({
   return (
     <div
       role="alert"
-      className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-4 space-y-3"
+      className="space-y-3 rounded-lg border border-warning/40 bg-warning-muted p-4"
     >
       <div className="flex items-start gap-3">
         <AlertTriangle
-          className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"
+          className="mt-0.5 h-5 w-5 shrink-0 text-warning"
           aria-hidden
         />
         <div className="space-y-1">
-          <p className="font-medium text-sm">{t("editor.conflict.title")}</p>
+          <p className="text-sm font-medium">{t("editor.conflict.title")}</p>
           <p className="text-sm text-muted-foreground">
             {t("editor.conflict.body")}
           </p>
         </div>
       </div>
       <div className="flex gap-2 pl-8">
-        <Button size="sm" variant="default" onClick={onReload}>
+        <Button size="sm" onClick={onReload}>
           {t("editor.conflict.reload")}
         </Button>
         <Button size="sm" variant="outline" onClick={onOverwrite}>
@@ -652,123 +605,106 @@ const ConflictBanner = ({
   );
 };
 
-interface CategoryGroupProps {
+interface CategoryCardProps {
   category: string;
-  perms: { key: string; minimumBuiltinTier: string }[];
-  isOpen: boolean;
-  grantedInCat: number;
+  perms: CatalogPermission[];
   permissions: PermissionEntry[];
   escalationErrors: Record<string, string>;
   servers: { id: string; name: string; environment?: string | null }[];
-  onToggle: () => void;
   onPermissionToggle: (key: string, checked: boolean) => void;
   onScopeChange: (key: string, scope: ScopeJson) => void;
 }
 
-const CategoryGroup = ({
+const CategoryCard = ({
   category,
   perms,
-  isOpen,
-  grantedInCat,
   permissions,
   escalationErrors,
   servers,
-  onToggle,
   onPermissionToggle,
   onScopeChange,
-}: CategoryGroupProps) => {
+}: CategoryCardProps) => {
   const { t } = useTranslation("roles");
+  const grantedInCat = perms.filter((p) =>
+    permissions.some((g) => g.permissionKey === p.key)
+  ).length;
   const allChecked = grantedInCat === perms.length;
-  const someChecked = grantedInCat > 0 && grantedInCat < perms.length;
-  const categoryLabel = t(`editor.category.${category}`, {
-    defaultValue: category,
+  const label = t(`editor.category.${category}`, {
+    defaultValue: category.charAt(0).toUpperCase() + category.slice(1),
   });
 
   return (
-    <div className="border-b border-border last:border-b-0">
-      <div className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/40">
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-expanded={isOpen}
-          className="p-1 -m-1 rounded hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label={t("editor.categoryToggle", { category: categoryLabel })}
-        >
-          {isOpen ? (
-            <ChevronDown
-              className="h-4 w-4 text-muted-foreground"
-              aria-hidden
-            />
-          ) : (
-            <ChevronRight
-              className="h-4 w-4 text-muted-foreground"
-              aria-hidden
-            />
-          )}
-        </button>
-        <Checkbox
-          checked={allChecked ? true : someChecked ? "indeterminate" : false}
-          onCheckedChange={(c) => {
-            const target = c === true;
-            perms.forEach((p) => onPermissionToggle(p.key, target));
-          }}
-          aria-label={t("editor.categoryToggleAll", {
-            category: categoryLabel,
-          })}
-        />
-        <button
-          type="button"
-          onClick={onToggle}
-          className="flex-1 text-left font-medium text-sm"
-        >
-          {t(`editor.category.${category}`, { defaultValue: category })}
-        </button>
-        <span className="text-xs text-muted-foreground tabular-nums">
-          {grantedInCat}/{perms.length}
-        </span>
+    <div className="rounded-xl border border-border bg-card">
+      <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-3">
+        <h3 className="text-sm font-semibold">{label}</h3>
+        <div className="flex items-center gap-3">
+          <span className="font-mono text-xs tabular-nums text-muted-foreground">
+            {grantedInCat}/{perms.length}
+          </span>
+          <button
+            type="button"
+            className="text-xs font-medium text-primary hover:underline"
+            onClick={() =>
+              perms.forEach((p) => onPermissionToggle(p.key, !allChecked))
+            }
+          >
+            {allChecked ? t("editor.deselectAll") : t("editor.selectAll")}
+          </button>
+        </div>
       </div>
-      {isOpen && (
-        <ul className="bg-muted/20">
-          {perms.map((p) => {
-            const granted = permissions.find((g) => g.permissionKey === p.key);
-            const isGranted = !!granted;
-            const error = escalationErrors[p.key];
-            return (
-              <li
-                key={p.key}
-                className={`flex items-center gap-3 px-4 py-2 pl-12 ${error ? "bg-destructive/5" : ""}`}
-              >
-                <Checkbox
-                  id={`perm-${p.key}`}
-                  checked={isGranted}
-                  onCheckedChange={(c) => onPermissionToggle(p.key, c === true)}
-                />
-                <Label
-                  htmlFor={`perm-${p.key}`}
-                  className="flex-1 text-sm font-mono cursor-pointer"
-                >
+      <div>
+        {perms.map((p) => {
+          const granted = permissions.find((g) => g.permissionKey === p.key);
+          const isGranted = !!granted;
+          const error = escalationErrors[p.key];
+          return (
+            <div
+              key={p.key}
+              className={cn(
+                "flex items-center gap-3 border-b border-border px-5 py-3 last:border-b-0",
+                error && "bg-destructive/5"
+              )}
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-medium">{p.label}</span>
+                  {p.scopable && (
+                    <Badge
+                      variant="outline"
+                      className="border-primary/30 px-1.5 py-0 font-mono text-[10px] text-primary"
+                    >
+                      {t("editor.scopableBadge")}
+                    </Badge>
+                  )}
+                </div>
+                <p className="mt-0.5 font-mono text-xs text-muted-foreground">
                   {p.key}
-                </Label>
-                {isGranted && (
-                  <ScopePill
-                    scope={granted!.scope}
-                    servers={servers}
-                    onChange={(scope) => onScopeChange(p.key, scope)}
-                  />
-                )}
+                </p>
                 {error && (
-                  <span
-                    className="text-xs text-destructive font-medium"
+                  <p
+                    className="mt-0.5 text-xs font-medium text-destructive"
                     role="alert"
                   >
                     {error}
-                  </span>
+                  </p>
                 )}
-              </li>
-            );
-          })}
-        </ul>
-      )}
+              </div>
+              {isGranted && p.scopable && (
+                <ScopePill
+                  scope={granted.scope}
+                  servers={servers}
+                  onChange={(scope) => onScopeChange(p.key, scope)}
+                />
+              )}
+              <Switch
+                checked={isGranted}
+                onCheckedChange={(c) => onPermissionToggle(p.key, c)}
+                aria-label={p.label}
+              />
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };
@@ -790,9 +726,7 @@ const ScopePill = ({ scope, servers, onChange }: ScopePillProps) => {
   const summary = useMemo(() => {
     if (scope === null) return t("editor.scope.any");
     if (scope.kind === "server.id") {
-      return t("editor.scope.summaryServers", {
-        count: scope.ids.length,
-      });
+      return t("editor.scope.summaryServers", { count: scope.ids.length });
     }
     return scope.values.join(", ");
   }, [scope, t]);
@@ -804,7 +738,7 @@ const ScopePill = ({ scope, servers, onChange }: ScopePillProps) => {
           type="button"
           variant="outline"
           size="sm"
-          className="h-7 px-2 text-xs font-normal"
+          className="h-7 shrink-0 px-2 text-xs font-normal"
           aria-label={t("editor.scope.configure")}
         >
           {summary}
@@ -825,15 +759,15 @@ const ScopePill = ({ scope, servers, onChange }: ScopePillProps) => {
             }}
             className="gap-2"
           >
-            <label className="flex items-center gap-2 cursor-pointer">
+            <label className="flex cursor-pointer items-center gap-2">
               <RadioGroupItem value="any" id={`${uid}-scope-any`} />
               <span className="text-sm">{t("editor.scope.any")}</span>
             </label>
-            <label className="flex items-center gap-2 cursor-pointer">
+            <label className="flex cursor-pointer items-center gap-2">
               <RadioGroupItem value="server.id" id={`${uid}-scope-ids`} />
               <span className="text-sm">{t("editor.scope.modeServers")}</span>
             </label>
-            <label className="flex items-center gap-2 cursor-pointer">
+            <label className="flex cursor-pointer items-center gap-2">
               <RadioGroupItem
                 value="server.environment"
                 id={`${uid}-scope-env`}
@@ -845,16 +779,16 @@ const ScopePill = ({ scope, servers, onChange }: ScopePillProps) => {
           </RadioGroup>
 
           {scope?.kind === "server.id" && (
-            <div className="space-y-2 max-h-60 overflow-y-auto border rounded-md p-2">
+            <div className="max-h-60 space-y-2 overflow-y-auto rounded-md border p-2">
               {servers.length === 0 ? (
-                <p className="text-xs text-muted-foreground p-2">—</p>
+                <p className="p-2 text-xs text-muted-foreground">—</p>
               ) : (
                 servers.map((s) => {
                   const checked = scope.ids.includes(s.id);
                   return (
                     <label
                       key={s.id}
-                      className="flex items-center gap-2 cursor-pointer text-sm py-1"
+                      className="flex cursor-pointer items-center gap-2 py-1 text-sm"
                     >
                       <Checkbox
                         checked={checked}
@@ -867,7 +801,7 @@ const ScopePill = ({ scope, servers, onChange }: ScopePillProps) => {
                       />
                       <span className="flex-1 truncate">{s.name}</span>
                       {s.environment && (
-                        <Badge variant="outline" className="text-[10px] py-0">
+                        <Badge variant="outline" className="py-0 text-[10px]">
                           {s.environment}
                         </Badge>
                       )}
@@ -897,57 +831,6 @@ const ScopePill = ({ scope, servers, onChange }: ScopePillProps) => {
         </div>
       </PopoverContent>
     </Popover>
-  );
-};
-
-interface DeleteDialogProps {
-  open: boolean;
-  onOpenChange: (o: boolean) => void;
-  memberCount: number;
-  roleName: string;
-  isDeleting: boolean;
-  onConfirm: () => void;
-}
-
-const DeleteDialog = ({
-  open,
-  onOpenChange,
-  memberCount,
-  roleName,
-  isDeleting,
-  onConfirm,
-}: DeleteDialogProps) => {
-  const { t } = useTranslation("roles");
-  return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>
-            {t("editor.deleteConfirm.title", { name: roleName })}
-          </AlertDialogTitle>
-          <AlertDialogDescription>
-            {memberCount === 0
-              ? t("editor.deleteConfirm.bodyZero")
-              : t("editor.deleteConfirm.body", { count: memberCount })}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>
-            {t("editor.deleteConfirm.cancel")}
-          </AlertDialogCancel>
-          <AlertDialogAction
-            disabled={isDeleting}
-            onClick={onConfirm}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            {isDeleting && (
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-            )}
-            {t("editor.deleteConfirm.confirm")}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
   );
 };
 

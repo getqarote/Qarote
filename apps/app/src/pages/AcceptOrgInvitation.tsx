@@ -1,18 +1,17 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Building2, CheckCircle2, Loader2, Mail, Shield } from "lucide-react";
+import { Building2, Loader2, Shield } from "lucide-react";
 import { toast } from "sonner";
 
 import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
 
-import { AuthPageHeader } from "@/components/auth/AuthPageHeader";
-import { AuthPageWrapper } from "@/components/auth/AuthPageWrapper";
+import { AuthSplitLayout } from "@/components/auth/AuthSplitLayout";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import { InviteAcceptanceForm } from "@/components/auth/InviteAcceptanceForm";
 import {
@@ -22,7 +21,6 @@ import {
 import { SSOLoginButton } from "@/components/auth/SSOLoginButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { CardContent } from "@/components/ui/card";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
@@ -47,6 +45,42 @@ const ROLE_DISPLAY_NAMES: Record<string, string> = {
   ADMIN: "Admin",
   MEMBER: "Member",
 };
+
+/** Split-layout header: carrot eyebrow + optional org logo + title + subtitle. */
+function SplitHeader({
+  title,
+  description,
+  logoUrl,
+}: {
+  title: string;
+  description?: string;
+  logoUrl?: string | null;
+}) {
+  const { t } = useTranslation("auth");
+  return (
+    <div className="mb-6">
+      <p className="mb-3 select-none font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-primary">
+        {t("panelEyebrow")}
+      </p>
+      {logoUrl && (
+        <img
+          src={logoUrl}
+          alt=""
+          aria-hidden="true"
+          className="mb-3 h-10 w-10 rounded-md border border-border object-cover"
+        />
+      )}
+      <h1 className="font-heading text-[clamp(26px,3vw,32px)] font-bold leading-[1.15] tracking-tight">
+        {title}
+      </h1>
+      {description && (
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          {description}
+        </p>
+      )}
+    </div>
+  );
+}
 
 /**
  * Builds the role/org info fields shown in the `InviteInfoPanel`.
@@ -75,6 +109,13 @@ function buildInviteInfoFields(
     fields.push({
       label: `${t("invitedBy")}:`,
       value: invitation.invitedBy.displayName,
+    });
+  }
+
+  if (invitation.workspaces.length > 0) {
+    fields.push({
+      label: `${t("workspacesLabel")}:`,
+      value: invitation.workspaces.map((w) => w.name).join(", "),
     });
   }
 
@@ -122,7 +163,7 @@ function OAuthSection({
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-2 text-muted-foreground">
+          <span className="bg-background px-2 text-muted-foreground">
             {t("orContinueWith")}
           </span>
         </div>
@@ -292,29 +333,38 @@ const AcceptOrgInvitation = () => {
 
   if (loading) {
     return (
-      <AuthPageWrapper>
-        <CardContent className="flex items-center justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin" aria-hidden="true" />
-        </CardContent>
-      </AuthPageWrapper>
+      <AuthSplitLayout>
+        <div
+          className="flex items-center justify-center py-10"
+          role="status"
+          aria-live="polite"
+        >
+          <Loader2
+            className="h-7 w-7 animate-spin text-primary"
+            aria-hidden="true"
+          />
+        </div>
+      </AuthSplitLayout>
     );
   }
 
   if (error && !invitation) {
     return (
-      <AuthPageWrapper>
-        <AuthPageHeader
-          Icon={Mail}
-          title={t("invalidInvitation")}
-          description={error}
-          variant="destructive"
-        />
-        <CardContent>
-          <Button onClick={() => navigate("/auth/sign-in")} className="w-full">
-            {t("goToSignIn")}
-          </Button>
-        </CardContent>
-      </AuthPageWrapper>
+      <AuthSplitLayout
+        header={
+          <SplitHeader
+            title={t("invalidInvitation")}
+            description={error ?? undefined}
+          />
+        }
+      >
+        <Button
+          onClick={() => navigate("/auth/sign-in")}
+          className="btn-primary h-11 w-full"
+        >
+          {t("goToSignIn")}
+        </Button>
+      </AuthSplitLayout>
     );
   }
 
@@ -322,15 +372,83 @@ const AcceptOrgInvitation = () => {
 
   // Authed user flow — already signed in, just confirm acceptance
   if (authUser) {
+    // Wrong account — signed in as a different email than the invite
+    if (
+      invitation &&
+      authUser.email.toLowerCase().trim() !==
+        invitation.email.toLowerCase().trim()
+    ) {
+      return (
+        <AuthSplitLayout
+          header={
+            <SplitHeader
+              title={t("joinOrganization")}
+              description={t("wrongAccountDescription", {
+                email: invitation.email,
+              })}
+              logoUrl={invitation.organization.logoUrl}
+            />
+          }
+        >
+          <div className="space-y-6">
+            <InviteInfoPanel fields={infoFields} />
+            <div className="space-y-3">
+              <Button
+                className="btn-primary h-11 w-full"
+                onClick={async () => {
+                  await authClient.signOut();
+                  navigate(
+                    `/auth/sign-in?redirect=${encodeURIComponent(`/org-invite/${token}`)}`
+                  );
+                }}
+              >
+                {t("switchAccount")}
+              </Button>
+              <Button asChild variant="ghost" className="h-11 w-full">
+                <Link to="/">{t("goToDashboard")}</Link>
+              </Button>
+            </div>
+          </div>
+        </AuthSplitLayout>
+      );
+    }
+
+    // Already a member of this organization
+    if (invitation?.alreadyMember && !acceptSuccess) {
+      return (
+        <AuthSplitLayout
+          header={
+            <SplitHeader
+              title={t("alreadyMemberTitle", {
+                workspace: invitation.organization.name,
+              })}
+              description={t("alreadyMemberDescription")}
+              logoUrl={invitation.organization.logoUrl}
+            />
+          }
+        >
+          <Button
+            className="btn-primary h-11 w-full"
+            onClick={() => {
+              window.location.href = "/";
+            }}
+          >
+            {t("goToWorkspace")}
+          </Button>
+        </AuthSplitLayout>
+      );
+    }
+
     if (acceptSuccess) {
       return (
-        <AuthPageWrapper>
-          <AuthPageHeader
-            Icon={CheckCircle2}
-            title={t("youJoinedOrg", { org: acceptSuccess.orgName })}
-            variant="success"
-          />
-          <CardContent className="space-y-3">
+        <AuthSplitLayout
+          header={
+            <SplitHeader
+              title={t("youJoinedOrg", { org: acceptSuccess.orgName })}
+            />
+          }
+        >
+          <div className="space-y-3">
             {acceptSuccess.firstWorkspaceId && (
               <Button
                 className="w-full"
@@ -361,39 +479,42 @@ const AcceptOrgInvitation = () => {
             )}
             <Button
               variant="outline"
-              className="w-full"
+              className="h-11 w-full"
               onClick={() => navigate("/", { replace: true })}
             >
               {t("stayInCurrentOrg")}
             </Button>
-          </CardContent>
-        </AuthPageWrapper>
+          </div>
+        </AuthSplitLayout>
       );
     }
 
     return (
-      <AuthPageWrapper>
-        <AuthPageHeader
-          Icon={Building2}
-          title={t("joinOrganization")}
-          description={t("acceptOrgInvitationDescription")}
-        />
-        <CardContent className="space-y-6">
+      <AuthSplitLayout
+        header={
+          <SplitHeader
+            title={t("joinOrganization")}
+            description={t("acceptOrgInvitationDescription")}
+            logoUrl={invitation?.organization.logoUrl}
+          />
+        }
+      >
+        <div className="space-y-6">
           {invitation && <InviteInfoPanel fields={infoFields} />}
           {error && (
-            <Alert variant="destructive">
+            <Alert variant="destructive" aria-live="assertive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
           <Button
-            className="w-full"
+            className="btn-primary h-11 w-full"
             onClick={handleAuthAccept}
             disabled={acceptAuthOrgInvitationMutation.isPending}
           >
             {acceptAuthOrgInvitationMutation.isPending ? (
               <>
                 <Loader2
-                  className="h-4 w-4 animate-spin mr-2"
+                  className="mr-2 h-4 w-4 animate-spin"
                   aria-hidden="true"
                 />
                 {t("accepting")}
@@ -402,21 +523,24 @@ const AcceptOrgInvitation = () => {
               t("acceptInvitation")
             )}
           </Button>
-        </CardContent>
-      </AuthPageWrapper>
+        </div>
+      </AuthSplitLayout>
     );
   }
 
   // Existing user — prompt to sign in rather than register again
   if (invitation?.userExists && !forceRegistration) {
     return (
-      <AuthPageWrapper>
-        <AuthPageHeader
-          Icon={Building2}
-          title={t("joinOrganization")}
-          description={t("existingAccountMessage")}
-        />
-        <CardContent className="space-y-6">
+      <AuthSplitLayout
+        header={
+          <SplitHeader
+            title={t("joinOrganization")}
+            description={t("existingAccountMessage")}
+            logoUrl={invitation?.organization.logoUrl}
+          />
+        }
+      >
+        <div className="space-y-6">
           <InviteInfoPanel fields={infoFields} />
 
           <OAuthSection
@@ -441,29 +565,32 @@ const AcceptOrgInvitation = () => {
             <button
               type="button"
               onClick={() => setForceRegistration(true)}
-              className="text-sm text-muted-foreground hover:underline underline-offset-2"
+              className="text-sm text-muted-foreground underline-offset-2 hover:underline"
             >
               {t("dontHaveAccountCreate")}
             </button>
           </div>
-        </CardContent>
-      </AuthPageWrapper>
+        </div>
+      </AuthSplitLayout>
     );
   }
 
   // New user registration flow
   return (
-    <AuthPageWrapper>
-      <AuthPageHeader
-        Icon={Mail}
-        title={t("joinOrganization")}
-        description={t("orgSetUpAccount")}
-      />
-      <CardContent className="space-y-6">
+    <AuthSplitLayout
+      header={
+        <SplitHeader
+          title={t("joinOrganization")}
+          description={t("orgSetUpAccount")}
+          logoUrl={invitation?.organization.logoUrl}
+        />
+      }
+    >
+      <div className="space-y-6">
         {invitation && <InviteInfoPanel fields={infoFields} />}
 
         {error && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" aria-live="assertive">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
@@ -486,8 +613,8 @@ const AcceptOrgInvitation = () => {
             )
           }
         />
-      </CardContent>
-    </AuthPageWrapper>
+      </div>
+    </AuthSplitLayout>
   );
 };
 

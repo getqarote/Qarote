@@ -32,25 +32,6 @@ export async function copyToClipboard(text: string): Promise<boolean> {
   return copyViaExecCommand(text);
 }
 
-/**
- * Whether the runtime can copy at all — modern API or legacy
- * fallback. Use this to decide whether to render a copy button vs.
- * hide it entirely.
- */
-export function isClipboardAvailable(): boolean {
-  if (typeof document === "undefined") return false;
-  if (
-    typeof navigator !== "undefined" &&
-    typeof navigator.clipboard !== "undefined" &&
-    typeof navigator.clipboard.writeText === "function"
-  ) {
-    return true;
-  }
-  // execCommand("copy") still works on every shipping browser; only
-  // SSR / non-browser hosts lack it.
-  return typeof document.execCommand === "function";
-}
-
 function copyViaExecCommand(text: string): boolean {
   if (typeof document === "undefined") return false;
   const textarea = document.createElement("textarea");

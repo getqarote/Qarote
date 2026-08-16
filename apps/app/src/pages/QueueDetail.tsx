@@ -13,7 +13,9 @@ import { toast } from "sonner";
 
 import { getUpgradePath } from "@/lib/featureFlags";
 import { logger } from "@/lib/logger";
+import { qToast } from "@/lib/qToast";
 
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { ConsumerHistoryChart } from "@/components/ConsumerHistoryChart";
 import {
   HistoricalRange,
@@ -21,6 +23,7 @@ import {
 } from "@/components/HistoricalRangeSelector";
 import { MessagesRatesChart } from "@/components/MessagesRatesChart";
 import { PageShell } from "@/components/PageShell";
+import { PurgeQueueDialog } from "@/components/PurgeQueueDialog";
 import { ConsumerDetails } from "@/components/QueueDetail/ConsumerDetails";
 import { LoadingSkeleton } from "@/components/QueueDetail/LoadingSkeleton";
 import { MessageStatistics } from "@/components/QueueDetail/MessageStatistics";
@@ -33,15 +36,6 @@ import { QueueTiming } from "@/components/QueueDetail/QueueTiming";
 import { QueuedMessagesChart } from "@/components/QueuedMessagesChart";
 import { QueueHistoryChart } from "@/components/QueueHistoryChart";
 import { TimeRange } from "@/components/TimeRangeSelector";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -78,7 +72,7 @@ const QueueDetail = () => {
   // vhost.
   const vhost = searchParams.get("vhost") ?? selectedVHost;
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deleteConfirmName, setDeleteConfirmName] = useState("");
+  const [purgeDialogOpen, setPurgeDialogOpen] = useState(false);
 
   // Tab uses history:"push" so the browser Back button navigates between tabs.
   // parseAsStringEnum silently returns the default for any value outside the
@@ -185,8 +179,10 @@ const QueueDetail = () => {
         vhost: vhost ? encodeURIComponent(vhost) : encodeURIComponent("/"),
       });
 
-      toast(t("common:success"), {
-        description: t("deleteSuccess", { queueName }),
+      qToast({
+        severity: "success",
+        title: t("common:success"),
+        msg: t("deleteSuccess", { queueName }),
       });
 
       setDeleteDialogOpen(false);
@@ -196,6 +192,8 @@ const QueueDetail = () => {
       toast.error(t("common:error"), {
         description: error instanceof Error ? error.message : t("deleteError"),
       });
+      // Re-throw so ConfirmDialog keeps the dialog open on a failed delete.
+      throw error;
     }
   };
 
@@ -385,90 +383,54 @@ const QueueDetail = () => {
           />
         )}
 
-        <Dialog
+        <ConfirmDialog
           open={deleteDialogOpen}
-          onOpenChange={(open) => {
-            setDeleteDialogOpen(open);
-            if (!open) setDeleteConfirmName("");
+          onOpenChange={setDeleteDialogOpen}
+          tone="danger"
+          title={t("deleteTitle")}
+          warn={{
+            tone: "danger",
+            message:
+              queue && queue.messages > 0
+                ? t("deleteWarningMessages", { count: queue.messages })
+                : t("deleteConstraints"),
           }}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{t("deleteTitle")}</DialogTitle>
-              <DialogDescription>
-                {t("deleteDescription", { queueName })}
-              </DialogDescription>
-            </DialogHeader>
-
-            {/* Context: show current queue state */}
-            {queue && (queue.messages > 0 || queue.consumers > 0) && (
-              <div className="rounded-md bg-muted/50 p-3 text-sm space-y-1">
-                {queue.messages > 0 && (
-                  <p className="text-warning font-medium">
-                    {t("deleteWarningMessages", {
-                      count: queue.messages,
-                    })}
-                  </p>
-                )}
-                {queue.consumers > 0 && (
-                  <p className="text-warning font-medium">
-                    {t("deleteWarningConsumers", {
-                      count: queue.consumers,
-                    })}
-                  </p>
-                )}
-                <p className="text-muted-foreground">
-                  {t("deleteConstraints")}
-                </p>
-              </div>
-            )}
-
-            {/* Type-to-confirm */}
+          body={
             <div className="space-y-2">
-              <label
-                htmlFor="delete-confirm"
-                className="text-sm text-muted-foreground"
-              >
-                {t("deleteTypeConfirm", { queueName })}
-              </label>
-              <input
-                id="delete-confirm"
-                type="text"
-                value={deleteConfirmName}
-                onChange={(e) => setDeleteConfirmName(e.target.value)}
-                className="flex h-9 w-full rounded-none border border-border bg-background px-3 py-1 text-sm font-mono transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                placeholder={queueName}
-                autoComplete="off"
-                spellCheck={false}
-              />
+              <p>{t("deleteDescription", { queueName })}</p>
+              {queue && queue.consumers > 0 && (
+                <p className="text-warning font-medium">
+                  {t("deleteWarningConsumers", { count: queue.consumers })}
+                </p>
+              )}
+              <p>{t("deleteConstraints")}</p>
             </div>
+          }
+          typeToConfirm={queueName}
+          confirmLabel={t("deleteQueue")}
+          pendingLabel={t("deleting")}
+          cancelLabel={t("common:cancel")}
+          isPending={deleteQueueMutation.isPending}
+          onConfirm={handleDeleteQueue}
+          // Soft, non-destructive escape hatch: empty the queue instead of the
+          // most destructive delete (which only succeeds on an empty queue).
+          softAction={{
+            label: t("purge.trigger"),
+            onClick: () => {
+              setDeleteDialogOpen(false);
+              setPurgeDialogOpen(true);
+            },
+          }}
+        />
 
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setDeleteDialogOpen(false);
-                  setDeleteConfirmName("");
-                }}
-                disabled={deleteQueueMutation.isPending}
-              >
-                {t("common:cancel")}
-              </Button>
-              <Button
-                variant="destructive-outline"
-                onClick={handleDeleteQueue}
-                disabled={
-                  deleteQueueMutation.isPending ||
-                  deleteConfirmName !== queueName
-                }
-              >
-                {deleteQueueMutation.isPending
-                  ? t("deleting")
-                  : t("deleteQueue")}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <PurgeQueueDialog
+          queueName={queueName}
+          messageCount={queue?.messages ?? 0}
+          vhost={vhost}
+          open={purgeDialogOpen}
+          onOpenChange={setPurgeDialogOpen}
+          onSuccess={() => refetch()}
+        />
       </PageShell>
     </TooltipProvider>
   );

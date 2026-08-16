@@ -9,7 +9,7 @@ import type { RabbitMQUser } from "@/lib/api/userTypes";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { PixelTrash } from "@/components/ui/pixel-trash";
+import { IconTrash } from "@/components/ui/icons";
 
 interface UsersTableRowProps {
   user: RabbitMQUser;
@@ -156,7 +156,7 @@ export function UsersTableRow({
             className="h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
             aria-label={t("deleteUser") + ": " + user.name}
           >
-            <PixelTrash className="h-4 w-auto shrink-0" aria-hidden="true" />
+            <IconTrash className="h-4 w-auto shrink-0" aria-hidden="true" />
           </Button>
         )}
       </div>

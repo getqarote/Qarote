@@ -7,8 +7,7 @@ import type { RabbitMQUser } from "@/lib/api/userTypes";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { PixelTrash } from "@/components/ui/pixel-trash";
-import { PixelX } from "@/components/ui/pixel-x";
+import { IconClose, IconTrash } from "@/components/ui/icons";
 import { UsersTableRow } from "@/components/UsersList/UsersTableRow";
 
 type SortDir = "asc" | "desc";
@@ -117,7 +116,7 @@ export function UsersTable({
               onClick={clearSelection}
               className="h-7 text-muted-foreground"
             >
-              <PixelX
+              <IconClose
                 className="h-3.5 w-auto shrink-0 mr-1"
                 aria-hidden="true"
               />
@@ -130,7 +129,7 @@ export function UsersTable({
             size="sm"
             onClick={handleBulkDelete}
           >
-            <PixelTrash
+            <IconTrash
               className="h-4 w-auto shrink-0 mr-2"
               aria-hidden="true"
             />

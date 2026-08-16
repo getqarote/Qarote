@@ -23,6 +23,7 @@ import { emailConfig } from "@/config";
 
 import {
   BillingInterval,
+  OrgRole,
   SubscriptionStatus,
   UserPlan,
 } from "@/generated/prisma/client";
@@ -74,20 +75,25 @@ export async function handleCheckoutSessionCompleted(
     const customerId = StripeService.extractCustomerId(session);
     const subscriptionId = StripeService.extractSubscriptionId(session);
 
-    // Resolve org — Organization is the billing authority
+    // Resolve org — Organization is the billing authority. Without it we
+    // cannot create an org-scoped Subscription row (Fail Fast — surface the
+    // missing link instead of writing a headless subscription).
     const org = customerId
       ? await resolveOrgFromStripeCustomerId(customerId)
       : null;
 
-    if (org) {
-      await prisma.organization.update({
-        where: { id: org.id },
-        data: {
-          stripeCustomerId: customerId,
-          stripeSubscriptionId: subscriptionId,
-        },
-      });
+    if (!org) {
+      logger.error(
+        { customerId, subscriptionId, userId },
+        "No organization resolved for checkout session — cannot create subscription"
+      );
+      return;
     }
+
+    await prisma.organization.update({
+      where: { id: org.id },
+      data: { stripeCustomerId: customerId },
+    });
 
     // Get user for email
     const user = await prisma.user.findUnique({
@@ -164,8 +170,7 @@ export async function handleCheckoutSessionCompleted(
     await prisma.$transaction(async (tx) => {
       await tx.subscription.create({
         data: {
-          userId,
-          organizationId: org?.id ?? null,
+          organizationId: org.id,
           stripeSubscriptionId: subscriptionId!,
           stripePriceId: subscriptionData?.items?.data?.[0]?.price?.id || "",
           stripeCustomerId: customerId!,
@@ -209,7 +214,7 @@ export async function handleCheckoutSessionCompleted(
         distinctId: userId,
         superProperties: {
           app: "api",
-          organization_id: org?.id ?? undefined,
+          organization_id: org.id,
         },
         insertId: stripeEventId,
       },
@@ -217,7 +222,7 @@ export async function handleCheckoutSessionCompleted(
       {
         plan,
         billing_interval: billingInterval ?? null,
-        organization_id: org?.id ?? null,
+        organization_id: org.id,
         stripe_subscription_id: subscriptionId ?? null,
         is_trial: subscriptionStatus !== SubscriptionStatus.ACTIVE,
       }
@@ -442,64 +447,24 @@ export async function handleSubscriptionChange(subscription: Subscription) {
       cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
     };
 
-    // Check if a subscription record already exists (update-only path doesn't need userId)
+    // Check if a subscription record already exists
     const existingSub = await prisma.subscription.findUnique({
       where: { stripeSubscriptionId: subscriptionId },
     });
 
     if (existingSub) {
+      // organizationId is immutable once set — update only the mutable fields.
       await prisma.subscription.update({
         where: { stripeSubscriptionId: subscriptionId },
-        data: {
-          ...subscriptionData,
-          ...(org ? { organizationId: org.id } : {}),
-        },
-      });
-    } else if (org) {
-      // New subscription with org context — find owner for userId linkage
-      const ownerMember = await prisma.organizationMember.findFirst({
-        where: { organizationId: org.id, role: "OWNER" },
-        select: { userId: true },
-      });
-
-      if (!ownerMember) {
-        logger.error(
-          { organizationId: org.id, subscriptionId },
-          "Cannot create subscription: organization has no OWNER member"
-        );
-        return;
-      }
-
-      if (!mappedPlan) {
-        logger.error(
-          { priceId, subscriptionId },
-          "Cannot create subscription: unmapped Stripe price ID"
-        );
-        throw new Error(
-          `Unmapped Stripe price ID: ${priceId} — cannot create subscription`
-        );
-      }
-
-      await prisma.subscription.create({
-        data: {
-          userId: ownerMember.userId,
-          organizationId: org.id,
-          stripeSubscriptionId: subscriptionId,
-          ...subscriptionData,
-          plan: mappedPlan,
-        },
+        data: subscriptionData,
       });
     } else {
-      // Legacy user-scoped customer with no org — look up user by stripeCustomerId
-      const legacyUser = await prisma.subscription.findFirst({
-        where: { stripeCustomerId: customerId },
-        select: { userId: true },
-      });
-
-      if (!legacyUser) {
+      // New subscription — Organization is the billing authority and is
+      // required. No org resolvable from the Stripe customer → skip (Fail Fast).
+      if (!org) {
         logger.warn(
           { customerId, subscriptionId },
-          "No organization or legacy user found for subscription — skipping"
+          "No organization found for new subscription — skipping"
         );
         return;
       }
@@ -516,7 +481,7 @@ export async function handleSubscriptionChange(subscription: Subscription) {
 
       await prisma.subscription.create({
         data: {
-          userId: legacyUser.userId,
+          organizationId: org.id,
           stripeSubscriptionId: subscriptionId,
           ...subscriptionData,
           plan: mappedPlan,
@@ -524,14 +489,11 @@ export async function handleSubscriptionChange(subscription: Subscription) {
       });
     }
 
-    // Update Organization stripe fields when org context is available
+    // Keep the org's Stripe customer id (the webhook lookup index) in sync.
     if (org) {
       await prisma.organization.update({
         where: { id: org.id },
-        data: {
-          stripeCustomerId: customerId,
-          stripeSubscriptionId: subscriptionId,
-        },
+        data: { stripeCustomerId: customerId },
       });
     }
 
@@ -564,7 +526,6 @@ export async function handleCustomerSubscriptionDeleted(
 
     const existingSubscription = await prisma.subscription.findUnique({
       where: { stripeSubscriptionId: subscriptionId },
-      include: { user: true },
     });
 
     if (existingSubscription) {
@@ -575,13 +536,18 @@ export async function handleCustomerSubscriptionDeleted(
         },
       });
 
+      // Attribute churn to the org OWNER — the same identity as the purchase.
+      const owner = await resolveOrgOwnerUser(
+        existingSubscription.organizationId
+      );
+
       try {
         trackEvent(
           {
-            distinctId: existingSubscription.userId,
+            distinctId: owner?.id ?? existingSubscription.organizationId,
             superProperties: {
               app: "api",
-              organization_id: existingSubscription.organizationId ?? undefined,
+              organization_id: existingSubscription.organizationId,
             },
             insertId: stripeEventId,
           },
@@ -589,7 +555,7 @@ export async function handleCustomerSubscriptionDeleted(
           {
             plan: existingSubscription.plan,
             billing_interval: existingSubscription.billingInterval,
-            organization_id: existingSubscription.organizationId ?? null,
+            organization_id: existingSubscription.organizationId,
             stripe_subscription_id: subscriptionId,
           }
         );
@@ -681,7 +647,6 @@ export async function handleInvoicePaymentSucceeded(invoice: Invoice) {
 
     const subscription = await prisma.subscription.findUnique({
       where: { stripeSubscriptionId: subscriptionId },
-      include: { user: true },
     });
 
     if (!subscription) {
@@ -837,15 +802,16 @@ export async function handleInvoicePaymentSucceeded(invoice: Invoice) {
     // Stripe retries are idempotent (the unique idempotencyKey makes the
     // re-attempt a no-op) so we keep observability via logs and let the
     // renewal commits stand.
-    if (subscription.user && invoice.amount_paid > 0) {
+    const owner = await resolveOrgOwnerUser(subscription.organizationId);
+    if (owner && invoice.amount_paid > 0) {
       try {
         await enqueueNotification({
           channel: "email",
           template: "payment_confirmation",
-          target: subscription.user.email,
+          target: owner.email,
           idempotencyKey: `email:invoice:${invoice.id}:payment_confirmation`,
           payload: {
-            userName: getUserDisplayName(subscription.user),
+            userName: getUserDisplayName(owner),
             amount: invoice.amount_paid / 100,
             currency: invoice.currency.toUpperCase(),
             // In Stripe API 2025-03-31+, payment_intent was removed from Invoice.
@@ -859,7 +825,7 @@ export async function handleInvoicePaymentSucceeded(invoice: Invoice) {
             error,
             invoiceId: invoice.id,
             subscriptionId,
-            recipient: subscription.user.email,
+            recipient: owner.email,
             idempotencyKey: `email:invoice:${invoice.id}:payment_confirmation`,
           },
           "Failed to enqueue payment confirmation email — renewal still committed; Stripe retry will re-attempt"
@@ -896,7 +862,6 @@ export async function handleInvoicePaymentFailed(invoice: Invoice) {
 
     const subscription = await prisma.subscription.findUnique({
       where: { stripeSubscriptionId: subscriptionId },
-      include: { user: true },
     });
 
     if (!subscription) {
@@ -943,104 +908,100 @@ export async function handleInvoicePaymentFailed(invoice: Invoice) {
       "Payment failure - grace period status"
     );
 
+    // Resolve the billing contact for the failure emails. A missing OWNER
+    // must NOT block license deactivation below — that is a billing-critical
+    // mutation, not a notification.
+    const owner = await resolveOrgOwnerUser(subscription.organizationId);
+
     // Outbox: deactivation (if applicable) + all email enqueues commit
     // atomically. Stripe retries hit unique idempotencyKeys -> no-op.
-    if (subscription.user) {
-      const userEmail = subscription.user.email;
-      const userName = getUserDisplayName(subscription.user);
-      await prisma.$transaction(async (tx) => {
-        if (!isInGracePeriod && licenses.length > 0) {
-          await tx.license.updateMany({
-            where: { stripeSubscriptionId: subscriptionId },
-            data: { isActive: false },
-          });
-        }
-
-        await enqueueNotification(
-          {
-            channel: "email",
-            template: "payment_failed",
-            target: userEmail,
-            idempotencyKey: `email:invoice:${invoice.id}:payment_failed`,
-            payload: {
-              userName,
-              amount: invoice.amount_due / 100,
-              failureReason:
-                CoreStripeService.mapInvoiceToFailureReason(invoice),
-            },
-          },
-          tx
-        );
-
-        for (const license of licenses) {
-          if (isInGracePeriod) {
-            await enqueueNotification(
-              {
-                channel: "email",
-                template: "license_payment_failed",
-                target: userEmail,
-                idempotencyKey: `email:invoice:${invoice.id}:license_payment_failed:${license.id}`,
-                payload: {
-                  userName,
-                  licenseKey: license.licenseKey,
-                  tier: license.tier,
-                  gracePeriodDays: daysRemaining,
-                  isInGracePeriod: true,
-                  willDeactivate: true,
-                },
-              },
-              tx
-            );
-          } else {
-            await enqueueNotification(
-              {
-                channel: "email",
-                template: "license_expired",
-                target: userEmail,
-                idempotencyKey: `email:invoice:${invoice.id}:license_expired:${license.id}`,
-                payload: {
-                  userName,
-                  licenseKey: license.licenseKey,
-                  tier: license.tier,
-                  expiredAt: (license.expiresAt || now).toISOString(),
-                  renewalUrl: `${emailConfig.portalFrontendUrl}/licenses`,
-                },
-              },
-              tx
-            );
-          }
-        }
-      });
-
+    await prisma.$transaction(async (tx) => {
+      // Suspend licenses once the grace period has lapsed — unconditional on
+      // owner resolution (a customer who stopped paying must not keep premium
+      // just because we can't find someone to email).
       if (!isInGracePeriod && licenses.length > 0) {
-        logger.info(
-          { subscriptionId, licenseCount: licenses.length },
-          "Licenses deactivated after grace period expired"
-        );
+        await tx.license.updateMany({
+          where: { stripeSubscriptionId: subscriptionId },
+          data: { isActive: false },
+        });
       }
 
-      // Per-license logging — kept for observability of the loop.
+      if (!owner) {
+        // Deactivation still committed above; only the emails are skipped.
+        logger.error(
+          {
+            subscriptionId,
+            organizationId: subscription.organizationId,
+            licenseCount: licenses.length,
+          },
+          "Payment failed but org has no OWNER member — notification emails skipped"
+        );
+        return;
+      }
+
+      const userEmail = owner.email;
+      const userName = getUserDisplayName(owner);
+
+      await enqueueNotification(
+        {
+          channel: "email",
+          template: "payment_failed",
+          target: userEmail,
+          idempotencyKey: `email:invoice:${invoice.id}:payment_failed`,
+          payload: {
+            userName,
+            amount: invoice.amount_due / 100,
+            failureReason: CoreStripeService.mapInvoiceToFailureReason(invoice),
+          },
+        },
+        tx
+      );
+
       for (const license of licenses) {
-        try {
-          if (isInGracePeriod) {
-            logger.info(
-              { licenseId: license.id, gracePeriodDays: daysRemaining },
-              "License payment failure email enqueued (in grace period)"
-            );
-          } else {
-            logger.info(
-              { licenseId: license.id },
-              "License expired email enqueued (grace period ended)"
-            );
-          }
-        } catch (logError) {
-          // Logging only — enqueue already committed atomically above.
-          logger.warn(
-            { error: logError, licenseId: license.id },
-            "Trace log failed for payment-failed iteration"
+        if (isInGracePeriod) {
+          await enqueueNotification(
+            {
+              channel: "email",
+              template: "license_payment_failed",
+              target: userEmail,
+              idempotencyKey: `email:invoice:${invoice.id}:license_payment_failed:${license.id}`,
+              payload: {
+                userName,
+                licenseKey: license.licenseKey,
+                tier: license.tier,
+                gracePeriodDays: daysRemaining,
+                isInGracePeriod: true,
+                willDeactivate: true,
+              },
+            },
+            tx
+          );
+        } else {
+          await enqueueNotification(
+            {
+              channel: "email",
+              template: "license_expired",
+              target: userEmail,
+              idempotencyKey: `email:invoice:${invoice.id}:license_expired:${license.id}`,
+              payload: {
+                userName,
+                licenseKey: license.licenseKey,
+                tier: license.tier,
+                expiredAt: (license.expiresAt || now).toISOString(),
+                renewalUrl: `${emailConfig.portalFrontendUrl}/licenses`,
+              },
+            },
+            tx
           );
         }
       }
+    });
+
+    if (!isInGracePeriod && licenses.length > 0) {
+      logger.info(
+        { subscriptionId, licenseCount: licenses.length },
+        "Licenses deactivated after grace period expired"
+      );
     }
 
     logger.info(
@@ -1169,13 +1130,6 @@ export async function handlePaymentActionRequired(invoice: Invoice) {
 
     const subscription = await prisma.subscription.findUnique({
       where: { stripeSubscriptionId: subscriptionId },
-      include: {
-        user: {
-          include: {
-            workspace: true,
-          },
-        },
-      },
     });
 
     if (!subscription) {
@@ -1186,19 +1140,16 @@ export async function handlePaymentActionRequired(invoice: Invoice) {
       return;
     }
 
-    if (
-      subscription.user &&
-      subscription.user.workspace &&
-      invoice.hosted_invoice_url
-    ) {
+    const owner = await resolveOrgOwnerUser(subscription.organizationId);
+    if (owner && owner.workspace && invoice.hosted_invoice_url) {
       await enqueueNotification({
         channel: "email",
         template: "payment_action_required",
-        target: subscription.user.email,
+        target: owner.email,
         idempotencyKey: `email:invoice:${invoice.id}:payment_action_required`,
         payload: {
-          name: getUserDisplayName(subscription.user),
-          workspaceName: subscription.user.workspace.name,
+          name: getUserDisplayName(owner),
+          workspaceName: owner.workspace.name,
           plan: subscription.plan,
           invoiceUrl: invoice.hosted_invoice_url,
           amount: (invoice.amount_due / 100).toFixed(2),
@@ -1236,7 +1187,6 @@ export async function handleUpcomingInvoice(invoice: Invoice) {
 
     const subscription = await prisma.subscription.findUnique({
       where: { stripeSubscriptionId: subscriptionId },
-      include: { user: true },
     });
 
     if (!subscription) {
@@ -1341,7 +1291,8 @@ export async function handleCustomerUpdated(customer: Customer) {
 
 /**
  * Resolve the Organization that owns a given Stripe customer ID.
- * Returns null if no org is found (backward compat for user-only customers).
+ * Returns null if no org is found — callers Fail Fast (log + skip) on null
+ * rather than writing a headless subscription.
  */
 async function resolveOrgFromStripeCustomerId(
   customerId: string
@@ -1350,4 +1301,29 @@ async function resolveOrgFromStripeCustomerId(
     where: { stripeCustomerId: customerId },
     select: { id: true },
   });
+}
+
+/**
+ * Resolve the OWNER user of an organization — the billing contact for
+ * subscription-lifecycle emails and analytics attribution. Subscriptions are
+ * org-scoped, so the recipient is reached through the org's OWNER membership
+ * rather than a denormalized user link. Returns null when the org has no OWNER
+ * (a data-integrity bug worth surfacing, not papering over).
+ */
+async function resolveOrgOwnerUser(organizationId: string) {
+  const member = await prisma.organizationMember.findFirst({
+    where: { organizationId, role: OrgRole.OWNER },
+    select: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          workspace: { select: { name: true } },
+        },
+      },
+    },
+  });
+  return member?.user ?? null;
 }

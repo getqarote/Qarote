@@ -28,12 +28,21 @@
     "system": "系统"
   },
   "filter": {
-    "category": { "placeholder": "类别" },
-    "source": { "placeholder": "来源" },
-    "from": { "label": "起始日期" },
-    "to": { "label": "截止日期" },
-    "actor": { "placeholder": "执行者 — 邮箱或用户 ID" },
-    "clear": "清除筛选"
+    "category": "类别",
+    "source": {
+      "placeholder": "来源"
+    },
+    "from": {
+      "label": "起始日期"
+    },
+    "to": {
+      "label": "截止日期"
+    },
+    "actor": {
+      "placeholder": "执行者 — 邮箱或用户 ID"
+    },
+    "clear": "清除筛选",
+    "range": "时间范围"
   },
   "status": {
     "loading": "加载中…",
@@ -45,7 +54,10 @@
     "filtered": "没有审计事件与过滤条件匹配。",
     "none": "尚无审计事件。管理相关变更将显示在此处。",
     "quiet": "日志静默中",
-    "quietDetail": "暂无特权操作记录。管理相关变更将在发生时显示在此处。"
+    "quietDetail": "暂无特权操作记录。管理相关变更将在发生时显示在此处。",
+    "title": "暂无记录的操作",
+    "body": "暂无符合这些筛选条件的操作。",
+    "denials": "此时间范围内没有授权拒绝——未阻止任何操作。"
   },
   "shortcuts": {
     "label": "键盘快捷键",
@@ -62,12 +74,41 @@
     "first": "首页",
     "next": "下一页",
     "more_one": "还有 {{count}} 条事件",
-    "more_other": "还有 {{count}} 条事件"
+    "more_other": "还有 {{count}} 条事件",
+    "older": "加载更早的"
   },
   "export": {
     "button": "导出 CSV",
     "success": "已导出 {{count}} 行",
     "truncated": "结果已截断到上限。请细化过滤条件以捕获更早的历史。",
     "failed": "导出失败"
+  },
+  "forbidden": {
+    "subtitle": "可筛选的变更记录：谁、改了什么、何时。",
+    "title": "你没有访问审计日志的权限",
+    "body": "查看审计日志需要 audit:read 权限。请联系组织管理员或所有者为你的角色授予访问权限。"
+  },
+  "subtitle": "谁在何时做了什么。也是一个诊断信号——Qarote 从这里读取近期的配置变更。",
+  "search": {
+    "placeholder": "搜索操作、操作者、实体…"
+  },
+  "range": {
+    "24h": "最近 24 小时",
+    "7d": "最近 7 天",
+    "30d": "最近 30 天"
+  },
+  "denialsOnly": "仅显示拒绝",
+  "system": "系统",
+  "footer": {
+    "retention": "条目保留 {{days}} 天"
+  },
+  "gate": {
+    "subtitle": "持久、可筛选的操作者行为记录。",
+    "title": "审计日志是企业版功能",
+    "body": "保留可搜索的 90 天记录，了解谁更改了什么——并将近期配置变更纳入 Qarote 的事件诊断。",
+    "cta": "升级",
+    "activateLicense": "激活许可证",
+    "purchaseLicense": "购买许可证",
+    "footnote": "运行日志仍在服务器端运行；企业版增加了持久化、搜索、导出和诊断信号。"
   }
 }

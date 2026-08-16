@@ -23,6 +23,14 @@
     "definitions": "Definitions"
   },
   "actions": {
-    "configureAiExplain": "Configure AI Explain"
+    "configureAiExplain": "Configure AI Explain",
+    "runConfigScan": "Run config scan",
+    "addServer": "Add server",
+    "mintAgentKey": "Mint agent key"
+  },
+  "footer": {
+    "navigate": "navigate",
+    "open": "open",
+    "close": "close"
   }
 }

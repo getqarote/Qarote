@@ -116,6 +116,23 @@ export const membersRouter = router({
         ctx.prisma.organizationMember.count({ where }),
       ]);
 
+      // Per-member workspace names, in one query (no N+1), for the workspaces
+      // column. Owners implicitly have all workspaces, so the UI renders
+      // "All workspaces" for them regardless of explicit memberships.
+      const wsMembers = await ctx.prisma.workspaceMember.findMany({
+        where: {
+          userId: { in: members.map((m) => m.user.id) },
+          workspace: { organizationId: ctx.organizationId },
+        },
+        select: { userId: true, workspace: { select: { name: true } } },
+      });
+      const wsByUser = new Map<string, string[]>();
+      for (const wm of wsMembers) {
+        const arr = wsByUser.get(wm.userId) ?? [];
+        arr.push(wm.workspace.name);
+        wsByUser.set(wm.userId, arr);
+      }
+
       return {
         members: members.map((m) => ({
           id: m.id,
@@ -125,6 +142,7 @@ export const membersRouter = router({
           lastName: m.user.lastName,
           image: m.user.image,
           role: m.role,
+          workspaces: (wsByUser.get(m.user.id) ?? []).sort(),
           lastLogin: m.user.lastLogin?.toISOString() ?? null,
           joinedAt: m.createdAt.toISOString(),
         })),

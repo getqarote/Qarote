@@ -1,0 +1,83 @@
+---
+/**
+ * Renders a blog cover SVG to fill any box (card media, featured panel, article
+ * hero). The SVGs are night-ground topology/diagnosis art (work in both themes)
+ * with preserveAspectRatio="xMidYMid slice", so they crop cleanly to any ratio.
+ * Optional caption pill, bottom-left.
+ */
+type Category = "diagnosis" | "mcp" | "patterns" | "engineering";
+
+interface Props {
+  cover?: string;
+  category: Category;
+  caption?: string;
+  /** Classes for the sizing box (height / min-height). */
+  boxClass?: string;
+}
+
+const { cover, category, caption, boxClass = "" } = Astro.props;
+
+// Closest motif per category when a post declares no explicit cover.
+const FALLBACK: Record<Category, string> = {
+  diagnosis: "cover-diagnosis-incident.svg",
+  mcp: "cover-mcp-config.svg",
+  patterns: "cover-patterns-rootcause.svg",
+  engineering: "cover-engineering-license.svg",
+};
+
+// alt text mirrors each SVG's <title> (an <img> doesn't expose inner <title>).
+const ALT: Record<string, string> = {
+  "cover-diagnosis-incident.svg":
+    "Abstract message-flow graph with one queue node in red incident state and a carrot scan reticle",
+  "cover-diagnosis-depth.svg":
+    "A queue-depth area chart climbing with a red anomaly peak",
+  "cover-mcp-config.svg":
+    "A .mcp.json config panel with one carrot-highlighted line wired to an agent node",
+  "cover-mcp-clients.svg":
+    "A central carrot hub node surrounded by six client nodes",
+  "cover-patterns-rootcause.svg":
+    "A flat dim chart line beside a glowing carrot root-cause node",
+  "cover-patterns-configscan.svg":
+    "Four queue tiles, three flagged amber and one healthy green, as a config scan",
+  "cover-engineering-license.svg":
+    "A shield with JWT segments and a green padlock, for offline licensing",
+};
+
+const file = cover ?? FALLBACK[category];
+const src = `/blog-covers/${file}`;
+const alt = ALT[file] ?? "Qarote blog cover";
+---
+
+<div class={`cover-box ${boxClass}`}>
+  <img class="cover" src={src} alt={alt} loading="lazy" decoding="async" />
+  {caption && <span class="cover-cap">{caption}</span>}
+</div>
+
+<style>
+  .cover-box {
+    position: relative;
+    overflow: hidden;
+    background: #0b0e14;
+  }
+  .cover {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .cover-cap {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: #e7eaf0;
+    background: rgba(11, 14, 20, 0.55);
+    border: 1px solid rgba(231, 234, 240, 0.18);
+    padding: 3px 8px;
+    border-radius: 5px;
+    backdrop-filter: blur(4px);
+  }
+</style>

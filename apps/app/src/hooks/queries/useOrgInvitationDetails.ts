@@ -8,6 +8,7 @@ export interface OrgInvitationDetails {
   organization: {
     id: string;
     name: string;
+    logoUrl: string | null;
   };
   invitedBy: {
     id: string;
@@ -15,6 +16,10 @@ export interface OrgInvitationDetails {
     displayName: string;
   } | null;
   userExists: boolean;
+  /** True only when the request is authenticated and already in the org. */
+  alreadyMember: boolean;
+  /** Explicitly-assigned workspaces (empty = all org workspaces). */
+  workspaces: { id: string; name: string }[];
 }
 
 export const useOrgInvitationDetails = (token: string | undefined) => {

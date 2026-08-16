@@ -13,8 +13,6 @@ test.describe("User Registration @p0", () => {
 
     await signUpPage.goto();
     await signUpPage.fillForm({
-      firstName: "New",
-      lastName: "User",
       email,
       password: "SecurePass123!",
     });
@@ -27,8 +25,6 @@ test.describe("User Registration @p0", () => {
 
     await signUpPage.goto();
     await signUpPage.fillForm({
-      firstName: "Duplicate",
-      lastName: "User",
       email: "admin@e2e-test.local",
       password: "SecurePass123!",
     });
@@ -51,11 +47,14 @@ test.describe("User Registration @p0", () => {
     await page.waitForURL("**/auth/sign-in");
   });
 
-  test("should show password requirements", async ({ page }) => {
+  test("should show password strength feedback", async ({ page }) => {
     const signUpPage = new SignUpPage(page);
     await signUpPage.goto();
     await signUpPage.passwordInput.fill("weak");
-    await expect(page.getByText(/at least 8 characters/i)).toBeVisible();
+    // The 5-bullet list was replaced by an inline strength bar: a short
+    // password reads "Weak", and the unmet rules appear while focused.
+    await expect(page.getByText(/weak/i).first()).toBeVisible();
+    await expect(page.getByText(/at least 8 characters/i).first()).toBeVisible();
   });
 
   test("should auto-verify and allow immediate sign-in (selfhosted) @selfhosted", async ({
@@ -73,12 +72,7 @@ test.describe("User Registration @p0", () => {
 
     // Register a new user
     await signUpPage.goto();
-    await signUpPage.fillForm({
-      firstName: "Auto",
-      lastName: "Verified",
-      email,
-      password,
-    });
+    await signUpPage.fillForm({ email, password });
     await signUpPage.submit();
     await signUpPage.expectSuccessMessage();
 
@@ -108,12 +102,7 @@ test.describe("User Registration @p0", () => {
 
     // Register a new user in cloud mode
     await signUpPage.goto();
-    await signUpPage.fillForm({
-      firstName: "Cloud",
-      lastName: "User",
-      email,
-      password,
-    });
+    await signUpPage.fillForm({ email, password });
     await signUpPage.submit();
     await signUpPage.expectSuccessMessage();
 

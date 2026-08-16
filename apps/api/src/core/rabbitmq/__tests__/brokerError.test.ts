@@ -8,6 +8,12 @@ describe("classifyBrokerError", () => {
     ["RabbitMQ API error: 403 Forbidden", "auth"],
     ["RabbitMQ API error: 500 Internal Server Error", "error"],
     ["RabbitMQ API error: 404 Not Found", "error"],
+    // The plain-language hint appended by BaseClient must not break the
+    // status-based classification (the prefix + status stay intact).
+    [
+      "RabbitMQ API error: 401 Unauthorized — wrong username or password",
+      "auth",
+    ],
   ] as const)("maps HTTP %s → %s", (message, expected) => {
     expect(classifyBrokerError(new Error(message))).toBe(expected);
   });

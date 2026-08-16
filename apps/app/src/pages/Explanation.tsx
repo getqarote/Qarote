@@ -1,18 +1,23 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router";
 
 import { CONFIG_FINDING_PROMPT_VERSION } from "@api/ee/services/llm/context-builders/config-finding.context";
 import { FINDING_PROMPT_VERSION } from "@api/ee/services/llm/context-builders/finding.context";
 import DOMPurify from "dompurify";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Share2 } from "lucide-react";
 import { marked } from "marked";
+import { toast } from "sonner";
 
 import { formatRelativeAgo } from "@/lib/formatRelativeAgo";
+import { getApiUrl } from "@/lib/runtimeConfig";
+import { displayName } from "@/lib/userDisplay";
 
 import { ExplanationActions } from "@/components/llm/ExplanationActions";
+import { ExplanationProvenance } from "@/components/llm/ExplanationProvenance";
 import { PageShell } from "@/components/PageShell";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -77,7 +82,7 @@ function SupersededBanner({
   const time = formatRelativeAgo(supersededAt, "just now");
   const authorLine = creator
     ? t("explain.superseded.bannerWithAuthor", {
-        name: creator.name || `${creator.firstName} ${creator.lastName}`,
+        name: displayName(creator),
         time,
       })
     : t("explain.superseded.bannerNoAuthor", { time });
@@ -106,6 +111,7 @@ export default function Explanation() {
   const { t } = useTranslation("scan");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [sharing, setSharing] = useState(false);
   const { data, isLoading, error } = useExplanation(id ?? "");
 
   if (isLoading) {
@@ -159,6 +165,27 @@ export default function Explanation() {
       ? `/scan?findingId=${data.configFindingId}`
       : null;
 
+  // Mint (or refresh) an opt-in public share link and copy it. Incident
+  // explanations only — they carry the snapshot the public card renders.
+  const handleShare = async () => {
+    if (sharing) return; // guard against double-click re-minting the token
+    setSharing(true);
+    try {
+      const res = await fetch(
+        `${getApiUrl() ?? ""}/api/llm/explanations/${data.id}/share`,
+        { method: "POST", credentials: "include" }
+      );
+      if (!res.ok) throw new Error(`share failed: ${res.status}`);
+      const { url } = (await res.json()) as { url: string };
+      await navigator.clipboard.writeText(url);
+      toast.success(t("explain.share.copied"));
+    } catch {
+      toast.error(t("explain.share.failed"));
+    } finally {
+      setSharing(false);
+    }
+  };
+
   return (
     <PageShell>
       {/* Superseded banner — sticky, rendered before content */}
@@ -185,22 +212,36 @@ export default function Explanation() {
                 : t("explain.page.headingTrace")}
           </h1>
         </div>
-        <ExplanationActions
-          explanationId={data.id}
-          content={data.content}
-          disabled={false}
-          feature={
-            data.incidentFindingId
-              ? "explain_finding"
-              : data.configFindingId
+        <div className="flex items-center gap-2">
+          {data.incidentFindingId && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleShare}
+              disabled={sharing}
+            >
+              <Share2 className="h-4 w-4" aria-hidden="true" />
+              {t("explain.share.button")}
+            </Button>
+          )}
+          <ExplanationActions
+            explanationId={data.id}
+            content={data.content}
+            disabled={false}
+            feature={
+              data.incidentFindingId
                 ? "explain_finding"
-                : "explain_trace"
-          }
-          onRegenerate={() => {
-            if (contextHref) navigate(contextHref);
-          }}
-          contextHref={contextHref ?? undefined}
-        />
+                : data.configFindingId
+                  ? "explain_finding"
+                  : "explain_trace"
+            }
+            onRegenerate={() => {
+              if (contextHref) navigate(contextHref);
+            }}
+            contextHref={contextHref ?? undefined}
+          />
+        </div>
       </div>
 
       <div className="p-6 max-w-2xl space-y-4">
@@ -227,13 +268,14 @@ export default function Explanation() {
           dangerouslySetInnerHTML={{ __html: renderMarkdown(data.content) }}
         />
 
-        {/* Metadata footer */}
-        <div className="pt-4 border-t border-border text-xs text-muted-foreground space-y-1">
-          <p>{formatRelativeAgo(data.createdAt, "just now")}</p>
-          <p>
-            {data.provider} · {data.model} · prompt v{data.promptVersion}
-          </p>
-        </div>
+        {/* Provenance footer — shared with the in-panel Explain output on
+            DiagnosisCard so both surfaces report identical provenance. */}
+        <ExplanationProvenance
+          provider={data.provider}
+          model={data.model}
+          promptVersion={data.promptVersion}
+          createdAt={data.createdAt}
+        />
       </div>
     </PageShell>
   );

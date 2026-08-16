@@ -2,7 +2,7 @@
 
 The canonical source of truth is **`apps/app/src/styles/index.css`**. This document
 explains the decisions, tradeoffs and anti-patterns behind those tokens so a new
-contributor (or a Claude Code agent) understands the *why*, not just the *what*.
+contributor (or a Claude Code agent) understands the _why_, not just the _what_.
 
 When you change a token in `index.css`, update this document in the same PR.
 
@@ -26,18 +26,22 @@ RabbitMQ misbehaving) — not marketers reading copy. Every word and pixel shoul
 
 ## Typography
 
-Three faces, each with a strict job:
+Three faces, each with a strict job. All three are **self-hosted via
+`@fontsource`** (imported in `apps/app/src/main.tsx`, `apps/portal/src/main.tsx`,
+and `apps/web/src/layouts/BaseLayout.astro`), weights 400–700 — zero external
+request.
 
-| Token | Face | Job |
-|---|---|---|
-| `--font-heading` | **Bricolage Grotesque** variable (opsz 12-96) | H1 page titles, H2 section headers. Optical sizing on (`font-optical-sizing: auto`) — sharpens letterforms at display sizes, softens at small sizes. |
-| `--font-sans` | **system-ui stack** (SF Pro / Segoe UI / Cantarell) | All body and UI text. Native first — zero web font request, respects the self-hosted ethos. |
-| `--font-mono` | **Fragment Mono** (Google Fonts) | Metric numbers, queue depths, rates, IDs, routing keys, code. |
+| Token                                    | Face              | Job                                                                                                               |
+| ---------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `--font-heading` (web: `--font-display`) | **Space Grotesk** | H1 page titles, H2 section headers. No optical-size axis; `.title-*` keep `font-optical-sizing: auto` harmlessly. |
+| `--font-sans`                            | **IBM Plex Sans** | All body and UI text. System stack stays as the fallback while it loads.                                          |
+| `--font-mono`                            | **IBM Plex Mono** | Metric numbers, queue depths, rates, IDs, routing keys, code.                                                     |
 
 Utilities:
-- `.title-page` → 3xl bold tracking-tight, Bricolage with opsz auto
-- `.title-section` → xl semibold tracking-tight, Bricolage with opsz auto
-- `.title-gradient` → orange→red gradient, **wordmark only**
+
+- `.title-page` → 3xl bold tracking-tight, Space Grotesk
+- `.title-section` → xl semibold tracking-tight, Space Grotesk
+- `.title-gradient` → carrot→red gradient, **wordmark only**
 
 ---
 
@@ -45,49 +49,61 @@ Utilities:
 
 ### Brand
 
-| Token | Light | Dark | Use |
-|---|---|---|---|
-| `--primary` | `hsl(24 82% 52%)` | `hsl(24 82% 56%)` | All CTAs, links, focus rings, sidebar highlight. Brand orange — saturation deliberately dialed from 95% → 82% for sophistication ("less neon"). |
-| `--primary-foreground` | `hsl(0 0% 98%)` | `hsl(0 0% 98%)` | Text on primary surfaces. |
+| Token                  | Light             | Dark              | Use                                                                                                                                                               |
+| ---------------------- | ----------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--primary`            | `hsl(21 90% 48%)` | `hsl(21 90% 52%)` | All CTAs, links, focus rings, sidebar highlight. **Carrot** `#E8590C` — the brand constant, same hue in both themes (dark is +4 lightness for contrast on night). |
+| `--primary-foreground` | `hsl(0 0% 100%)`  | `hsl(0 0% 100%)`  | White text on carrot surfaces (carrot needs white — dark text fails contrast).                                                                                    |
 
-### Neutrals (warm)
+Contrast: carrot on white ≈ 3.6:1 — passes AA for **large text and UI
+components** (3:1 bar: buttons, focus rings, icons, badges) but **not** for
+normal body text (4.5:1). Never use carrot as a text color on a white/paper
+surface; use `--foreground` for text and reserve carrot for fills, borders,
+and chrome. White-on-carrot (button labels) is the same ≈3.6:1 — fine for the
+bold/large label sizes used on CTAs.
 
-| Token | Use |
-|---|---|
-| `--background` | Page surface. |
-| `--foreground` | Body text. |
-| `--card` | Card surface — warm tint (`30 25%` hue) so cards lift gently from the page without a heavy shadow. |
-| `--muted`, `--accent` | Quiet secondary surfaces (warm beige). |
-| `--border`, `--input` | Form chrome — same warm hue family. |
+### Neutrals
+
+Light is **warm paper**; dark is **cool deep-navy night**. Two deliberately
+different temperatures — the night palette is the prototype's signature.
+
+| Token                 | Light                                  | Dark                         | Use                                                                              |
+| --------------------- | -------------------------------------- | ---------------------------- | -------------------------------------------------------------------------------- |
+| `--background`        | `40 27% 98%` paper `#FBFAF8`           | `220 29% 6%` night `#0B0E14` | Page surface. Light is warm off-white (not pure white); dark is near-black navy. |
+| `--foreground`        | `34 20% 7%`                            | `220 23% 92%`                | Body text. Night fg/bg ≈ 14:1.                                                   |
+| `--card`              | `0 0% 100%` pure white                 | `221 28% 9%` navy surface    | Cards are pure white on warm paper (elevation reads); a navy surface on night.   |
+| `--muted`, `--accent` | warm `#EEEBE3` / carrot wash `#FBEEE4` | navy `#161B26` / carrot-soft | `--accent` carries the brand as a selected/hover tint.                           |
+| `--border`, `--input` | `#E3DFD6` / `#D4CFC4`                  | `#222836` / `#2C3444`        | Form chrome.                                                                     |
 
 ### Semantic status
 
 **Use ONLY for actual health/state. Never decorative.** Hue spread is intentional
 to remain distinguishable when desaturated (color-blindness safety).
 
-| Token | Light | Dark | Job |
-|---|---|---|---|
-| `--success` | `hsl(142 71% 28%)` | `hsl(142 60% 50%)` | Resolved finding, healthy broker, action completed. |
-| `--warning` | `hsl(38 92% 45%)` | `hsl(38 90% 56%)` | Amber alert — deliberately distinct from primary orange (hue 24). |
-| `--info` | `hsl(217 91% 50%)` | `hsl(217 88% 62%)` | Neutral context, "you should know" callouts. |
-| `--destructive` | `hsl(0 72% 47%)` | `hsl(0 72% 56%)` | Critical findings, destructive actions. |
+| Token           | Light              | Dark               | Job                                                               |
+| --------------- | ------------------ | ------------------ | ----------------------------------------------------------------- |
+| `--success`     | `hsl(146 50% 36%)` | `hsl(150 50% 50%)` | Resolved finding, healthy broker, action completed.               |
+| `--warning`     | `hsl(35 75% 49%)`  | `hsl(40 73% 56%)`  | Amber alert — deliberately distinct from primary carrot (hue 21). |
+| `--info`        | `hsl(217 71% 51%)` | `hsl(217 75% 64%)` | Neutral context, "you should know" callouts.                      |
+| `--destructive` | `hsl(6 68% 52%)`   | `hsl(7 84% 64%)`   | Critical findings, destructive actions.                           |
 
 Each has a paired `-muted` token for soft backgrounds (e.g. `--success-muted` for
-a calm green card).
+a calm green card). In dark mode, status `-foreground` is the night background
+(`220 29% 6%`) so bright status fills carry dark text.
 
 ### Charts
 
 15 series defined as `--chart-*` tokens. Palette = Tableau 10 + 5 OKLCH-derived
 extensions. Color-blind audited (see `apps/app/src/lib/chartColors.ts` for the
-provenance). Dark mode = same hues, lifted ~13% in lightness.
+provenance). Dark mode = same hues, lifted ~13% in lightness. **The chart palette
+is unchanged by the design pivot** — it stands independent of the brand swap.
 
 ---
 
 ## Spacing & Layout
 
 - **Tailwind defaults** for spacing scale. No custom scale.
-- **Border radius small.** `--radius: 0.25rem` (~4px). Tight, dev-tool feel.
-  No bubbly large radii.
+- **Border radius small.** `--radius: 0.4375rem` (7px). Softer than the old 4px
+  but still tool-like — not bubbly. Don't override locally to large radii.
 - **Page max-width.** `.content-container` = `max-w-6xl`, `.content-container-large`
   = `max-w-7xl`, container utility caps at `1400px`.
 - **Padding rhythm.** Main content = `p-6` desktop, `p-4` mobile-ish via
@@ -114,16 +130,16 @@ Qarote's wordmark mascot is a pixel-art rabbit. The following animations live
 in `@theme` and are reserved for delight moments around the mascot — never as
 decoration on UI chrome.
 
-| Animation | Trigger / Use |
-|---|---|
-| `rabbit-bounce` | Hero / empty-state celebration. |
-| `rabbit-bob` | Idle ambient motion. |
-| `ear-twitch-left` / `ear-twitch-right` | Subtle aliveness. |
-| `blink` / `blink-delayed` | Subtle aliveness, staggered. |
-| `nose-wiggle` | Subtle aliveness. |
-| `broom-swish` | Action moment (e.g. "cleanup done"). |
-| `dust-fade` | Paired with broom-swish. |
-| `badge-pop` | Achievement / streak / count-up reveal. |
+| Animation                              | Trigger / Use                           |
+| -------------------------------------- | --------------------------------------- |
+| `rabbit-bounce`                        | Hero / empty-state celebration.         |
+| `rabbit-bob`                           | Idle ambient motion.                    |
+| `ear-twitch-left` / `ear-twitch-right` | Subtle aliveness.                       |
+| `blink` / `blink-delayed`              | Subtle aliveness, staggered.            |
+| `nose-wiggle`                          | Subtle aliveness.                       |
+| `broom-swish`                          | Action moment (e.g. "cleanup done").    |
+| `dust-fade`                            | Paired with broom-swish.                |
+| `badge-pop`                            | Achievement / streak / count-up reveal. |
 
 **Why this matters for differentiation:** these animations are Qarote's
 proprietary visual signature. They are the antidote to generic AI-slop motion
@@ -149,9 +165,10 @@ HeroUI, or hand-roll a parallel component library. If shadcn doesn't have it,
 extend shadcn (most components are extension-friendly).
 
 **Custom utilities** to use over raw Tailwind for common patterns:
-- `.btn-primary` / `.btn-primary-large` — solid orange CTA, no gradient.
+
+- `.btn-primary` / `.btn-primary-large` — solid carrot CTA, no gradient.
   Hover = `hsl(var(--primary) / 92%)`. Disabled = muted background.
-- `.title-page`, `.title-section` — heading typography with opsz active.
+- `.title-page`, `.title-section` — Space Grotesk heading typography.
 - `.card-unified` / `.card-unified-compact` — standard card surface.
 - `.content-container` / `.content-container-large` — page width wrapper.
 - `.page-layout` — full-height flex column for app pages.
@@ -166,22 +183,22 @@ reaching for one of these, stop and check `index.css` or this doc for the
 sanctioned alternative.
 
 1. **Decorative gradients.** Removed via the `/quieter` sweep. Solid
-   `bg-primary` for buttons, `bg-background` for surfaces. The orange→red
+   `bg-primary` for buttons, `bg-background` for surfaces. The carrot→red
    gradient survives **only** inside `.title-gradient` for the wordmark.
-2. **Purple / violet / indigo accents.** Not in Qarote's palette. Orange is
-   the brand color.
+2. **Purple / violet / indigo accents.** Not in Qarote's palette. Carrot
+   (orange `#E8590C`) is the brand color.
 3. **3-column AI-slop feature grid.** Icon-in-colored-circle + bold title
-   + 2-line description, repeated 3x symmetrically. See landing page
-   "How it works" — use one strong composition (animated demo, interactive
-   walkthrough) instead.
+   - 2-line description, repeated 3x symmetrically. See landing page
+     "How it works" — use one strong composition (animated demo, interactive
+     walkthrough) instead.
 4. **Centered everything.** Don't put `text-align: center` on every heading
    and card. Use deliberate alignment based on content type.
-5. **Bubbly border radius.** `--radius` is small (4px). Don't override locally
+5. **Bubbly border radius.** `--radius` is small (7px). Don't override locally
    to large unless there's a strong reason (e.g. avatar circles).
-6. **Default font stacks (Inter, Roboto, Arial, system-ui).** UI text uses
-   system-ui *intentionally* (zero web font request), but headings get
-   Bricolage Grotesque — don't fall back to Inter for headings to "save
-   bytes".
+6. **Default font stacks (Inter, Roboto, Arial, raw system-ui).** Headings are
+   Space Grotesk, body/UI is IBM Plex Sans, numerals are IBM Plex Mono — all
+   self-hosted via `@fontsource`. The system stack is a _fallback only_; don't
+   ship Inter or leave body text on bare system-ui to "save bytes".
 7. **Emoji as decoration.** No rockets in headings, no emoji bullet points.
    Lucide icons or nothing.
 8. **`animate-spin` without considering reduced-motion.** Already handled

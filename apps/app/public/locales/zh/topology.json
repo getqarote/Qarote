@@ -1,6 +1,11 @@
 {
   "pageTitle": "拓扑",
   "pageSubtitle": "交换机、队列和绑定的可视化地图",
+  "canvasHint": "点击节点查看详情 · 拖动以平移",
+  "node": {
+    "bindings_one": "{{count}} 个绑定",
+    "bindings_other": "{{count}} 个绑定"
+  },
   "noServerTitle": "拓扑",
   "noServerDescription": "添加 RabbitMQ 服务器以查看其拓扑。",
   "noServerSelected": "未选择服务器",
@@ -19,6 +24,27 @@
     "bindings": "bindings",
     "bindings_one": "绑定",
     "bindings_other": "绑定"
+  },
+  "drawer": {
+    "description": "{{name}} 的实时状态和绑定",
+    "state": "状态",
+    "depth": "深度",
+    "consumers": "消费者",
+    "ready": "就绪",
+    "unacked": "未确认",
+    "queueType": "类型",
+    "incidentTitle": "积压且无消费者。",
+    "incidentBody": "{{count}} 条消息正在堆积，无人处理。",
+    "incidentBody_one": "{{count}} 条消息正在堆积，无人处理。",
+    "incidentBody_other": "{{count}} 条消息正在堆积，无人处理。",
+    "openInCockpit": "在驾驶舱中打开",
+    "bindingsIn": "入站绑定",
+    "bindingsOut": "出站绑定",
+    "noBindings": "无绑定",
+    "inspect": "检查",
+    "exchange": "交换机",
+    "exchangeType": "类型",
+    "bindings": "绑定"
   },
   "filters": {
     "defaultExchange": "默认交换机",

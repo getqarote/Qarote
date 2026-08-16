@@ -28,7 +28,7 @@ interface TitleWithCountProps {
  *
  * Renders the count in a lighter weight and muted tone so it reads as
  * metadata, not as part of the heading. Numbers use the mono font stack
- * (Fragment Mono) per the Qarote "numbers are sacred" principle — they
+ * (IBM Plex Mono) per the Qarote "numbers are sacred" principle — they
  * deserve their own typographic treatment, not default sans.
  *
  * When a filter is active (`total` provided and != `count`), the count

@@ -4,7 +4,6 @@
     "licenses": "许可证",
     "billing": "账单",
     "account": "账户",
-
     "logout": "退出登录"
   },
   "billing": {
@@ -27,7 +26,18 @@
       "failed": "失败",
       "pending": "处理中",
       "refunded": "已退款"
-    }
+    },
+    "invoicesTitle": "发票",
+    "invoicePdf": "PDF",
+    "paymentMethodTitle": "支付方式",
+    "cardLabel": "{{brand}} ···· {{last4}}",
+    "cardExpires": "{{month}}/{{year}} 到期",
+    "update": "更新",
+    "noPaymentMethod": "未登记支付方式。",
+    "addPaymentMethod": "添加支付方式",
+    "contactTitle": "账单联系人",
+    "contactHint": "发票和账单通知的接收地址。",
+    "contactEmail": "邮箱"
   },
   "footer": {
     "privacyPolicy": "隐私政策",
@@ -77,7 +87,24 @@
     },
     "status": {
       "active": "已激活",
-      "inactive": "未激活"
+      "inactive": "未激活",
+      "expiring": "即将过期",
+      "expired": "已过期"
+    },
+    "noLicensesValue": "自托管许可证可解锁 AI Explain、告警、拓扑和多服务器——离线验证，无数据回传。",
+    "cardSubtitle": "自托管 · 年度许可 · ID {{id}}",
+    "downloadKey": "下载许可证密钥 (.jwt)",
+    "pasteInstruction": "将其粘贴到你的自托管 Qarote：",
+    "pasteLocation": "设置 → 许可证",
+    "renewNow": "立即续期",
+    "expiringNudge_one": "{{count}} 天后过期（{{date}}）。请立即续期，以免失去 AI Explain 和付费功能。",
+    "expiringNudge_other": "{{count}} 天后过期（{{date}}）。请立即续期，以免失去 AI Explain 和付费功能。",
+    "expiredNudge": "许可证已过期（{{date}}）。检测仍在运行，但 AI Explain、告警和付费功能已锁定。",
+    "meta": {
+      "tier": "版本",
+      "validUntil": "有效期至",
+      "issued": "签发于",
+      "lastValidated": "上次验证"
     }
   },
   "licensePurchase": {
@@ -93,47 +120,49 @@
     "stripeHandoff": "将跳转至 Stripe 完成安全支付 · 许可证密钥将通过邮件发送",
     "enterpriseContact": "需要自定义条款或有疑问？",
     "badges": {
-      "selected": "已选择",
-      "soon": "即将推出"
-    },
-    "categories": {
-      "coreFeatures": "核心功能",
-      "intelligenceDiagnostics": "智能与诊断",
-      "security": "安全与兼容性",
-      "support": "支持"
-    },
-    "features": {
-      "servers": "RabbitMQ 服务器",
-      "workspaces": "工作空间",
-      "teamMembers": "团队成员",
-      "advancedAnalytics": "高级分析",
-      "queueManagement": "队列、交换机、虚拟主机与用户管理",
-      "alertsWebhooks": "告警与 Webhook",
-      "topologyVisualization": "拓扑可视化",
-      "roleBasedAccess": "基于角色的访问控制",
-      "dailyDigest": "每日摘要",
-      "messageSpy": "消息侦察",
-      "metricsPersistence": "指标持久化",
-      "incidentDiagnosis": "故障诊断",
-      "messageTracing": "消息追踪",
-      "ssoSamlOidc": "SSO、SAML 与 OIDC",
-      "soc2": "SOC 2 合规",
-      "rabbitmqVersions": "RabbitMQ 版本支持",
-      "communitySupport": "社区支持",
-      "prioritySupport": "优先支持"
-    },
-    "limits": {
-      "upTo3": "最多 3 个",
-      "unlimited": "无限制",
-      "rabbitmqVersionsValue": "全部 3.x 和 4.x 版本",
-      "limited": "受限"
+      "mostPopular": "最受欢迎"
     },
     "plans": {
       "developer": {
-        "name": "开发者版"
+        "name": "开发者版",
+        "audience": "适合自托管 Qarote 的个人和小团队。"
       },
       "enterprise": {
-        "name": "企业版"
+        "name": "企业版",
+        "audience": "适合需要 SSO、审计和 RBAC 的平台团队。"
+      }
+    },
+    "intro": "自托管，按年。选择一个层级并结账——许可证密钥即时签发。",
+    "tierGroupLabel": "选择许可证层级",
+    "orderSummary": {
+      "title": "订单摘要",
+      "tierLine": "{{name}} · 年度",
+      "seats": "席位",
+      "decreaseSeats": "减少席位",
+      "increaseSeats": "增加席位",
+      "total": "合计",
+      "checkout": "结账",
+      "secureCheckout": "通过 Stripe 安全结账",
+      "cancel": "取消"
+    },
+    "cards": {
+      "developer": {
+        "bullets": [
+          "包含 Community 全部功能",
+          "AI Explain — LLM 根因分析",
+          "BYOK 或本地 Ollama",
+          "告警：邮件 · Slack · webhook",
+          "多服务器 · 拓扑"
+        ]
+      },
+      "enterprise": {
+        "bullets": [
+          "包含 Developer 全部功能",
+          "托管 LLM（零配置）",
+          "SSO / SAML · 高级 RBAC",
+          "审计日志 · SOC 2",
+          "优先支持与 SLA"
+        ]
       }
     }
   },

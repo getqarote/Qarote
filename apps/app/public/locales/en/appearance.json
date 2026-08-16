@@ -1,8 +1,8 @@
 {
   "title": "Appearance",
-  "subtitle": "Customize how the dashboard looks and feels.",
+  "subtitle": "Changes apply immediately — no save needed.",
   "themeTitle": "Theme",
-  "themeDescription": "Select your preferred color scheme.",
+  "themeDescription": "Pick how Qarote looks on this device.",
   "themeSystemHint": "System follows your OS setting.",
   "light": "Light",
   "dark": "Dark",

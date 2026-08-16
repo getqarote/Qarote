@@ -1,9 +1,55 @@
 {
-  "calculatingResults": "Calculating your results…",
   "seo": {
-    "title": "RabbitMQ Skills Assessment — Test Your Knowledge",
-    "description": "Take the free 20-question RabbitMQ quiz. Test your knowledge of queues, exchanges, consumers, and production patterns. Get a score and tier verdict.",
-    "resultsTitle": "My RabbitMQ Skills Assessment Results",
-    "resultsDescription": "I took the free RabbitMQ Skills Assessment on Qarote. See how you compare."
+    "title": "How well do you know your RabbitMQ setup? — Qarote",
+    "description": "A free 20-question RabbitMQ assessment. Get a score, a tier verdict, and see exactly where your gaps are. No sign-up required.",
+    "resultsTitle": "My RabbitMQ assessment result — Qarote",
+    "resultsDescription": "I took Qarote's free RabbitMQ assessment. See your tier and where your gaps are."
+  },
+  "bar": {
+    "answered": "{{answered}}/{{total}} answered",
+    "exit": "Exit",
+    "toggleTheme": "Toggle theme"
+  },
+  "start": {
+    "badge": "Free · 20 questions · ~5 minutes",
+    "title": "How well do you know your RabbitMQ setup?",
+    "body": "20 questions across queues, exchanges, consumers, and production patterns. Get a score, a tier verdict, and see exactly where your gaps are.",
+    "cta": "Take the free assessment",
+    "sub": "No sign-up required."
+  },
+  "question": {
+    "counter": "{{index}} / {{total}}",
+    "answerLabel": "Answer",
+    "back": "Back",
+    "next": "Next",
+    "seeResults": "See results",
+    "hint": "press A–D or 1–4",
+    "progressLabel": "Question {{index}} of {{total}}"
+  },
+  "email": {
+    "title": "Want the full breakdown?",
+    "body": "Drop your email and we'll send your detailed results and per-area gaps. Optional — your score is ready either way.",
+    "placeholder": "you@company.com",
+    "ariaLabel": "Email (optional)",
+    "submit": "Email me the results",
+    "skip": "Skip — see results",
+    "note": "No account, no spam. Just your breakdown."
+  },
+  "results": {
+    "tierLabel": "Your tier",
+    "copy": "Copy result link",
+    "copied": "Copied!",
+    "shareX": "Share on X",
+    "shareLinkedIn": "LinkedIn",
+    "shareText": "I scored {{score}}% on Qarote's RabbitMQ assessment — {{tier}} tier.",
+    "breakdownTitle": "Where your gaps are",
+    "breakdownSub": "Per-area score across the four topics.",
+    "areaScore": "{{correct}} / {{total}} · {{pct}}%",
+    "opportunity": "Biggest opportunity: <b>{{area}}</b> — review this area to level up.",
+    "ctaEyebrow": "Agent-first RabbitMQ diagnosis",
+    "ctaTitle": "Stop finding out from a page.",
+    "ctaBody": "Qarote detects incidents and explains root cause — and hands it to your AI agent over MCP, so you debug from your editor.",
+    "ctaButton": "Try Qarote free",
+    "retake": "↺ Retake the assessment"
   }
 }

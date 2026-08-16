@@ -8,7 +8,8 @@
     "members": "Membres",
     "description": "Description",
     "updatedAt": "Dernière mise à jour",
-    "actions": "Actions"
+    "actions": "Actions",
+    "type": "Type"
   },
   "empty": {
     "title": "Aucun rôle personnalisé pour l'instant",
@@ -18,7 +19,8 @@
   "gate": {
     "title": "Rôles personnalisés + portées de ressources",
     "body": "Définissez des ensembles de permissions nommés et restreints à des serveurs ou environnements spécifiques. Disponible sur le plan Enterprise.",
-    "upgradeCta": "Passer à Enterprise"
+    "upgradeCta": "Passer à Enterprise",
+    "footnote": "Vos attributions existantes restent en vigueur — la mise à niveau débloque uniquement la création et la modification des rôles."
   },
   "planDowngradeBanner": {
     "title": "Les rôles personnalisés sont en lecture seule sur ce plan",
@@ -105,7 +107,14 @@
       "body_other": "{{count}} membres seront réassignés au rôle intégré Membre.",
       "confirm": "Supprimer le rôle",
       "cancel": "Conserver le rôle"
-    }
+    },
+    "basedOn": "Basé sur",
+    "basedOnBlank": "Rôle vierge",
+    "basedOnClone": "{{role}} (copie)",
+    "enabledCount": "{{count}} permission(s) activée(s)",
+    "scopableBadge": "limitable",
+    "selectAll": "Tout sélectionner",
+    "deselectAll": "Tout désélectionner"
   },
   "errors": {
     "loadFailed": "Échec du chargement des rôles",
@@ -118,5 +127,8 @@
     "lastOwnerBlocked": "Impossible de rétrograder — cela laisserait l'espace de travail sans propriétaire. Au moins un membre doit rester Propriétaire.",
     "saved": "Rôle assigné",
     "saveFailed": "Échec de l'assignation du rôle"
-  }
+  },
+  "typeSystem": "Intégré",
+  "typeCustom": "Personnalisé",
+  "edit": "Modifier {{name}}"
 }

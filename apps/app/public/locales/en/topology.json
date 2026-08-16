@@ -1,6 +1,11 @@
 {
   "pageTitle": "Topology",
   "pageSubtitle": "Visual map of exchanges, queues, and bindings",
+  "canvasHint": "click a node to inspect · drag to pan",
+  "node": {
+    "bindings_one": "{{count}} binding",
+    "bindings_other": "{{count}} bindings"
+  },
   "noServerTitle": "Topology",
   "noServerDescription": "Add a RabbitMQ server to view its topology.",
   "noServerSelected": "No server selected",
@@ -19,6 +24,27 @@
     "bindings": "bindings",
     "bindings_one": "binding",
     "bindings_other": "bindings"
+  },
+  "drawer": {
+    "description": "Live state and bindings for {{name}}",
+    "state": "State",
+    "depth": "Depth",
+    "consumers": "Consumers",
+    "ready": "Ready",
+    "unacked": "Unacked",
+    "queueType": "Type",
+    "incidentTitle": "Backlog with no consumer.",
+    "incidentBody": "{{count}} message is piling up with nothing to drain it.",
+    "incidentBody_one": "{{count}} message is piling up with nothing to drain it.",
+    "incidentBody_other": "{{count}} messages are piling up with nothing to drain them.",
+    "openInCockpit": "Open in cockpit",
+    "bindingsIn": "Bindings in",
+    "bindingsOut": "Bindings out",
+    "noBindings": "No bindings",
+    "inspect": "Inspect",
+    "exchange": "Exchange",
+    "exchangeType": "Type",
+    "bindings": "Bindings"
   },
   "filters": {
     "defaultExchange": "Default exchange",

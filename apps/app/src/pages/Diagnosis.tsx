@@ -12,6 +12,7 @@ import { DiagnosisSummary } from "@/components/diagnosis/DiagnosisSummary";
 import { FeatureGate } from "@/components/feature-gate/FeatureGate";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { PageShell } from "@/components/PageShell";
+import { DiagnosisSkeleton } from "@/components/skeletons/DiagnosisSkeleton";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -25,6 +26,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useServerContext } from "@/contexts/ServerContext";
 
 import { useDiagnosis } from "@/hooks/queries/useDiagnosis";
+import { useDelayedLoading } from "@/hooks/ui/useDelayedLoading";
 
 /** sessionStorage key: marks that the top-finding auto-expand has fired this
  * browser session, so it happens at most once (no surprise re-expands). */
@@ -120,6 +122,10 @@ function DiagnosisContent({
   });
 
   const isPreconditionFailed = errorCode === "PRECONDITION_FAILED";
+
+  // Anti-flash: only paint the skeleton once loading outlives ~180ms, so a
+  // fast (cached) diagnosis fetch resolves without a skeleton blink.
+  const showSkeleton = useDelayedLoading(isLoading);
 
   const diagnoses = data?.diagnoses ?? [];
 
@@ -233,17 +239,8 @@ function DiagnosisContent({
           </div>
         )}
 
-        {/* Loading */}
-        {isLoading && (
-          <div className="space-y-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div
-                key={i}
-                className="rounded-lg border border-border bg-card h-32 animate-pulse"
-              />
-            ))}
-          </div>
-        )}
+        {/* Loading — anti-flash skeleton, shown only past the delay gate */}
+        {showSkeleton && <DiagnosisSkeleton />}
 
         {/* Precondition failed — no snapshots yet */}
         {!isLoading && isPreconditionFailed && (
@@ -327,7 +324,6 @@ function DiagnosisContent({
                 queueName={d.queueName}
                 vhost={d.vhost}
                 description={d.description}
-                recommendation={d.recommendation}
                 timeline={d.timeline}
                 detectedAt={d.detectedAt}
                 supersededBy={d.supersededBy}

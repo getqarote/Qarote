@@ -20,12 +20,6 @@
       "unavailableSubline": "升级或检查 broker 能力以启用事件诊断。",
       "regionLabel": "Broker 状态概览"
     },
-    "activeConcerns": {
-      "heading": "活跃问题",
-      "viewAll": "在诊断中查看全部",
-      "viewAllWithOverflow": "查看全部（还有 {{count}} 项）",
-      "openInDiagnosis": "在诊断中打开"
-    },
     "activity": {
       "label": "活动"
     },
@@ -39,6 +33,19 @@
       "enabledSublineNoTime": "送达时间尚未安排。",
       "setUp": "设置",
       "configure": "配置"
+    },
+    "intent": "一个以状态驱动、围绕你的智能体的页面——它验证智能体所见，绝不是空荡荡的房间。",
+    "firstRun": {
+      "title": "连接你的第一个 broker",
+      "description": "连接后，Qarote 会立即检测故障并解释其根本原因——通过 Management API、只读、不到两分钟。",
+      "removedTitle": "未连接 broker",
+      "removedDescription": "{{name}} 已被移除。连接另一个以恢复监控和诊断。",
+      "addServer": "添加服务器",
+      "meta": "~2 分钟 · 无需 exporter · 无需 Grafana · 无需配置",
+      "gated": "请让 workspace 管理员连接一个 broker。",
+      "hintBefore": "连接后，问你的智能体 ",
+      "hintQuestion": "“我的 RabbitMQ 出了什么问题？”",
+      "hintAfter": "——它会通过 MCP 调用 Qarote 并返回诊断结果。"
     }
   },
   "pageTitle": "仪表盘",
@@ -268,5 +275,98 @@
       },
       "footer": "更高的覆盖率可解锁更深入的诊断。"
     }
-  }
+  },
+  "prov": {
+    "detected": "已检测",
+    "inferred": "已推断",
+    "defaulted": "默认",
+    "mgmtPort": "管理端口",
+    "amqpPort": "AMQP 端口",
+    "host": "主机",
+    "tls": "TLS",
+    "tlsOn": "开启",
+    "tlsOff": "关闭",
+    "username": "用户名",
+    "vhost": "虚拟主机",
+    "fromUrl": "来自 URL",
+    "legend": "检测到 = 从 URL 读取 · 推断 = 派生（例如 AMQPS ⇒ 管理端口 443）· 默认 = 标准回退值",
+    "password": "密码"
+  },
+  "addServerLead": "粘贴连接 URL，Qarote 会检测其余信息——主机、端口、TLS 和凭据。没有 URL？",
+  "connectAndScan": "连接并扫描",
+  "serverUrlAccepts": "接受：",
+  "manageServer": "管理服务器",
+  "redetectFromUrl": "从 URL 重新检测",
+  "redetectPanelTitle": "粘贴新的 URL 以重新检测",
+  "redetectPanelHint": "适用于凭据轮换、主机变更或切换到 TLS。",
+  "detect": "检测",
+  "close": "关闭",
+  "cancel": "取消",
+  "saveChanges": "保存更改",
+  "serverRemovedSuccess": "服务器「{{name}}」已被移除。",
+  "serverRemovedError": "移除服务器失败，请重试。",
+  "removeServerTitle": "移除服务器",
+  "removeServerDescription": "将此服务器从工作区移除。监控和诊断将停止；其智能体密钥仍然有效，但不会返回数据。",
+  "removeServerConfirmTitle": "移除「{{name}}」？",
+  "removeServerConfirmDescription": "这将把该服务器从此工作区移除。监控和诊断会立即停止。你以后可以重新添加，但其历史记录和发现不会恢复。",
+  "enterManually": "手动输入",
+  "connectionDetected": "已检测到连接",
+  "addServerScanDescription": "正在连接并扫描你的 broker",
+  "scanningServer": "正在连接并扫描 {{name}}…",
+  "scanningSubtext": "时间点快照 · 无需预热",
+  "connectedActive": "已连接。{{name}} 现在是活动服务器。",
+  "queuesPill_one": "{{count}} 个队列",
+  "queuesPill_other": "{{count}} 个队列",
+  "exchangesPill_one": "{{count}} 个交换机",
+  "exchangesPill_other": "{{count}} 个交换机",
+  "findingsPill_one": "{{count}} 项配置发现",
+  "findingsPill_other": "{{count}} 项配置发现",
+  "findingsScanRunning": "扫描进行中",
+  "findingsSummary": "配置扫描标记了：{{resources}}。",
+  "findingsClean": "无配置问题 — 你的拓扑结构很干净。",
+  "goToCockpit": "前往 cockpit",
+  "serverFallbackName": "broker",
+  "chartAsk": {
+    "seeFinding": "查看诊断",
+    "askButton": "询问你的智能体",
+    "copied": "提示词已复制到剪贴板",
+    "copyFailed": "无法复制提示词",
+    "queuedHint": "想让智能体为你解读这个积压趋势吗？",
+    "queuedPrompt": "排队消息的趋势能说明当前故障的什么情况？",
+    "ratesHint": "需要完整明细——发布者确认、get、磁盘 I/O？",
+    "ratesPromptCalm": "拆解我的 broker 的消息速率 — publisher confirms、get、redelivered、disk I/O — 并标记任何异常。",
+    "ratesPromptIncident": "{{queue}} 上的消息速率说明了当前事件的什么情况？"
+  },
+  "strip": {
+    "msgsPerSec": "消息/秒",
+    "queueDepth": "队列深度",
+    "avgLatency": "平均延迟",
+    "activeQueues": "活跃队列",
+    "nodes": "节点",
+    "cpu": "CPU",
+    "memory": "内存"
+  },
+  "chartState": {
+    "collecting": "正在收集指标…",
+    "quiet": "平静 — 此时间段内无流量",
+    "ratesUnavailable": "速率指标不可用 — 该 broker 未报告消息速率。",
+    "learnMore": "了解更多"
+  },
+  "leaveBlankKeepCurrent": "留空以保留当前值",
+  "redetectReviewHeading": "已从 {{host}} 检测 — 请检查变更",
+  "redetectNothingChanged": "与当前连接没有差异。",
+  "redetectApplyField": "应用 {{field}}",
+  "redetectPasswordRotated": "已轮换",
+  "redetectApplyNone": "关闭",
+  "applyNChanges": "应用 {{count}} 项变更",
+  "scanChecklist": {
+    "overview": "正在读取 /api/overview…",
+    "enumerate": "正在枚举 queues 和 exchanges…",
+    "dlx": "正在检查 dead-letter exchanges…",
+    "consumers": "正在扫描 consumer 健康状况…",
+    "routing": "正在评估 exchange 路由…"
+  },
+  "findingsFlaggedPrefix": "配置扫描标记了：",
+  "findingsMore": "+{{count}} 项",
+  "viewFindings": "查看配置扫描结果"
 }

@@ -1,0 +1,99 @@
+name: Release Postgres image (TimescaleDB + Toolkit)
+
+# The production Postgres image (docker/postgresql/production) is versioned by
+# PostgreSQL MAJOR (17), NOT by app release — it only changes on a PG / TimescaleDB
+# / Toolkit bump. So it publishes on its OWN cadence (when its files change on
+# main, or on demand), decoupled from release-docker.yml's v* app tags.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docker/postgresql/production/**"
+      - ".github/workflows/release-postgres.yml"
+  workflow_dispatch:
+
+# Serialize publish runs — don't cancel in-progress to avoid partial pushes.
+concurrency:
+  group: release-postgres
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-push-postgres:
+    name: Build & push Postgres (TimescaleDB + Toolkit) image
+    runs-on: ubuntu-latest
+    # packages:write scoped to the job so it can publish the multi-arch image to
+    # ghcr.io/getqarote/postgres. Multi-arch matters: the demo box is arm64,
+    # x86 elsewhere, and the apt Toolkit packages ship for both.
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+        with:
+          persist-credentials: false
+
+      - uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
+
+      - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
+
+      - name: Login to GHCR
+        # Same org-level publisher credentials (packages:write) as release-docker.yml.
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.GHCR_USERNAME }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ghcr.io/getqarote/postgres
+          # `17` is the stable tag dokku-postgres / the runbook pull; `17-<sha>`
+          # is an immutable per-build tag for traceability + rollback.
+          tags: |
+            type=raw,value=17
+            type=sha,prefix=17-,format=short
+          # Override the auto-derived OCI labels. metadata-action defaults these
+          # from the repo (title=Qarote-EE, description="…Enterprise Edition",
+          # licenses=MIT) — all misleading for what is a PostgreSQL DATA image, not
+          # the app. Describe the actual contents and licensing instead.
+          labels: |
+            org.opencontainers.image.title=Qarote Postgres (TimescaleDB + Toolkit)
+            org.opencontainers.image.description=PostgreSQL 17 with TimescaleDB and the TimescaleDB Toolkit, for Qarote self-hosted and dokku-postgres deployments.
+            org.opencontainers.image.licenses=PostgreSQL AND Apache-2.0 AND LicenseRef-Timescale
+
+      - name: Build and push
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: docker/postgresql/production
+          file: docker/postgresql/production/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          # Stamp the overridden labels onto the image config (metadata-action only
+          # computes them; the build must apply them).
+          labels: ${{ steps.meta.outputs.labels }}
+          # Annotations are set explicitly, NOT from steps.meta.outputs.annotations:
+          # metadata-action derives its annotations from the repo, ignoring the
+          # `labels:` override above, so its output still says "Qarote-EE / Enterprise
+          # Edition / MIT". Set the corrected values ourselves, at both the per-arch
+          # `manifest` and the top-level multi-arch `index` levels, plus `source` so
+          # GHCR keeps linking the package to the repo.
+          annotations: |
+            index:org.opencontainers.image.title=Qarote Postgres (TimescaleDB + Toolkit)
+            index:org.opencontainers.image.description=PostgreSQL 17 with TimescaleDB and the TimescaleDB Toolkit, for Qarote self-hosted and dokku-postgres deployments.
+            index:org.opencontainers.image.licenses=PostgreSQL AND Apache-2.0 AND LicenseRef-Timescale
+            index:org.opencontainers.image.source=https://github.com/getqarote/Qarote-EE
+            manifest:org.opencontainers.image.title=Qarote Postgres (TimescaleDB + Toolkit)
+            manifest:org.opencontainers.image.description=PostgreSQL 17 with TimescaleDB and the TimescaleDB Toolkit, for Qarote self-hosted and dokku-postgres deployments.
+            manifest:org.opencontainers.image.licenses=PostgreSQL AND Apache-2.0 AND LicenseRef-Timescale
+            manifest:org.opencontainers.image.source=https://github.com/getqarote/Qarote-EE
+          # provenance=false avoids attestation manifests that confuse older
+          # Docker clients and dokku git:from-image / dokku-postgres.
+          provenance: false
+          cache-from: type=gha,scope=build-postgres
+          cache-to: type=gha,mode=max,scope=build-postgres

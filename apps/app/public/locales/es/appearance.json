@@ -1,8 +1,8 @@
 {
   "title": "Apariencia",
-  "subtitle": "Personaliza el aspecto del panel de control.",
+  "subtitle": "Los cambios se aplican de inmediato — no hace falta guardar.",
   "themeTitle": "Tema",
-  "themeDescription": "Selecciona tu esquema de colores preferido.",
+  "themeDescription": "Elige cómo se ve Qarote en este dispositivo.",
   "themeSystemHint": "Sistema sigue la configuración del sistema operativo.",
   "light": "Claro",
   "dark": "Oscuro",

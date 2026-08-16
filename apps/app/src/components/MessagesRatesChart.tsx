@@ -12,12 +12,14 @@ import {
   CartesianGrid,
   Line,
   LineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 
+import { ChartIncidentMarker, matchIncidentTime } from "@/lib/chart-utils";
 import {
   CHART_ACK,
   CHART_CONFIRM,
@@ -36,9 +38,12 @@ import {
   CHART_RETURN_UNROUTABLE,
 } from "@/lib/chartColors";
 
+import { CopyPromptButton } from "@/components/CopyPromptButton";
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { TimeRange, TimeRangeSelector } from "@/components/TimeRangeSelector";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { IconActivity, IconExternal, IconSparkle } from "@/components/ui/icons";
+import { FlowLoader } from "@/components/ui/loaders/FlowLoader";
 import {
   Tooltip as UITooltip,
   TooltipContent,
@@ -72,6 +77,26 @@ interface MessagesRatesChartProps {
   error?: Error | null;
   timeRange?: TimeRange;
   onTimeRangeChange?: (timeRange: TimeRange) => void;
+  incidentMarker?: ChartIncidentMarker;
+  /**
+   * Context-built prompt copied by the sparkline "Ask your agent" chip. The
+   * parent (WhatAgentSees) builds it from the live server/incident so calm and
+   * incident states copy different questions. Falls back to a generic
+   * rate-exploration prompt when omitted.
+   */
+  askPrompt?: string;
+  /**
+   * Visual density. "full" (default) keeps the dashboard chrome (axes, grid,
+   * the full chip-grid legend with all 15 series + the "show advanced"
+   * toggle, updates pill). "sparkline" strips the chrome down to a minimalist
+   * line chart for the agent cockpit: hidden axes, no grid, reduced height, a
+   * single-row inline legend curated to 4 series (publish, deliver, confirm,
+   * redeliver), and a synthesis value in the header instead of the updates
+   * pill. The other 11 series stay defined but are neither drawn nor legended
+   * in sparkline mode. The recharts engine and the incident marker /
+   * annotation / "ask your agent" chip are preserved in both modes.
+   */
+  variant?: "full" | "sparkline";
 }
 
 export const MessagesRatesChart = ({
@@ -81,8 +106,12 @@ export const MessagesRatesChart = ({
   error,
   timeRange = "1d",
   onTimeRangeChange,
+  incidentMarker,
+  askPrompt,
+  variant = "full",
 }: MessagesRatesChartProps) => {
   const { t } = useTranslation("dashboard");
+  const isSparkline = variant === "sparkline";
 
   // State for toggling line visibility.
   //
@@ -216,6 +245,44 @@ export const MessagesRatesChart = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mappedData?.length]);
 
+  // Map the incident timestamp onto the rendered XAxis category, or null when
+  // the incident falls outside this chart's window.
+  const incidentTime = incidentMarker
+    ? matchIncidentTime(chartData, incidentMarker.timestamp)
+    : null;
+
+  // Calm detection (sparkline case 1): data is DEFINED and present, but every
+  // curated series (publish + deliver + confirm + redeliver) is 0 across all
+  // points. A legitimate "quiet — no traffic" state, distinct from rates not
+  // being reported at all (ratesMode "none", case 4, handled first) or a down
+  // broker (parent overlay). Memoized on the data length so it only recomputes
+  // when the series shape changes.
+  const allZero = useMemo(() => {
+    if (!mappedData || mappedData.length === 0) return false;
+    return mappedData.every(
+      (point) =>
+        point.publish === 0 &&
+        point.deliver === 0 &&
+        point.confirm === 0 &&
+        point.redeliver === 0
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mappedData?.length, mappedData]);
+
+  // Current-value chip (mirrors the prototype's `chart__val`): the latest
+  // deliver rate, formatted "deliver → N/s". Derived from real data only —
+  // hidden while loading or when the series is empty (placeholder zeros).
+  const headerValue = useMemo(() => {
+    if (!mappedData || mappedData.length === 0) return null;
+    const last = mappedData[mappedData.length - 1];
+    return `deliver → ${last.deliver.toFixed(0)}/s`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mappedData?.length, mappedData?.[mappedData.length - 1]?.deliver]);
+
+  // The chip copies a context-built prompt from the parent; fall back to a
+  // generic rate-exploration question when none is supplied.
+  const resolvedAskPrompt = askPrompt ?? t("chartAsk.ratesPromptCalm");
+
   // Handle permission errors — rendered AFTER all hooks to satisfy
   // the rules-of-hooks invariant that every render calls the same
   // hooks in the same order.
@@ -229,8 +296,181 @@ export const MessagesRatesChart = ({
     );
   }
 
+  // The 4 curated cockpit series: publish · deliver · confirm · redeliver.
+  // The reference's {publish, deliverAck, confirm, redelivered} maps onto the
+  // repo's real dataKeys {publish, deliver, confirm, redeliver}.
+  const sparkMetrics = [
+    { key: "publish" as const, name: t("legendPublish"), color: CHART_PUBLISH },
+    { key: "deliver" as const, name: t("legendDeliver"), color: CHART_DELIVER },
+    { key: "confirm" as const, name: t("legendConfirm"), color: CHART_CONFIRM },
+    {
+      key: "redeliver" as const,
+      name: t("legendRedeliver"),
+      color: CHART_REDELIVER,
+    },
+  ];
+
+  // ── Sparkline branch (agent cockpit) ────────────────────────────────────
+  // SparkCard shell from docs/reference/cockpitCharts.reference.tsx: a clean
+  // bordered card with a header synthesis value ("deliver → N/s"), an
+  // axis-free 140px line chart curated to the 4 core series, the incident
+  // annotation, a one-line legend, and the "ask your agent" chip.
+  if (isSparkline) {
+    return (
+      <div className="rounded-lg border border-border bg-card p-5">
+        <div className="mb-3 flex items-baseline justify-between gap-3">
+          <h3 className="title-section text-base">{t("messagesRates")}</h3>
+          {!isLoading && ratesMode !== "none" && headerValue && (
+            <span className="font-mono text-sm tabular-nums text-muted-foreground">
+              {headerValue}
+            </span>
+          )}
+        </div>
+        {isLoading ? (
+          // Case 2: data not arrived yet.
+          <div className="flex h-[140px] w-full flex-col items-center justify-center gap-2">
+            <FlowLoader size={120} />
+            <span className="font-mono text-xs text-muted-foreground">
+              {t("chartState.collecting")}
+            </span>
+          </div>
+        ) : ratesMode === "none" ? (
+          // Case 4: this broker doesn't report message rates at all. An
+          // empty-state (not a blank chart) — rates come from the management
+          // API, so we link to the rates-mode docs (not message tracing).
+          <div className="flex h-[140px] w-full flex-col items-center justify-center gap-2 text-center">
+            <IconActivity size={22} className="text-muted-foreground" />
+            <p className="max-w-[20rem] text-xs text-muted-foreground">
+              {t("chartState.ratesUnavailable")}
+            </p>
+            <a
+              href="https://www.rabbitmq.com/docs/management#rates-mode"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+            >
+              {t("chartState.learnMore")}
+              <IconExternal size={12} aria-hidden="true" />
+            </a>
+          </div>
+        ) : (
+          <>
+            <div className="h-[140px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={chartData}
+                  margin={{ top: 6, right: 4, bottom: 0, left: 4 }}
+                >
+                  <XAxis dataKey="time" hide />
+                  <YAxis
+                    domain={[0, (dataMax: number) => Math.max(dataMax, 1)]}
+                    hide
+                  />
+                  {incidentTime !== null && (
+                    <ReferenceLine
+                      x={incidentTime}
+                      stroke="hsl(var(--destructive))"
+                      strokeDasharray="3 3"
+                      strokeOpacity={0.7}
+                      ifOverflow="extendDomain"
+                    />
+                  )}
+                  {sparkMetrics.map(
+                    (metric) =>
+                      visibleLines[metric.key] && (
+                        <Line
+                          key={metric.key}
+                          type="monotone"
+                          dataKey={metric.key}
+                          stroke={metric.color}
+                          strokeWidth={1.6}
+                          dot={false}
+                          isAnimationActive={false}
+                          name={metric.name}
+                        />
+                      )
+                  )}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Calm (case 1): data present but every curated series is 0 —
+                replace the legend with a single muted "quiet" note. Otherwise
+                the one-line SparkLegend: dot + label toggle buttons. */}
+            {allZero ? (
+              <p className="mt-2 text-xs text-muted-foreground">
+                {t("chartState.quiet")}
+              </p>
+            ) : (
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+                {sparkMetrics.map((metric) => {
+                  const on = visibleLines[metric.key];
+                  return (
+                    <button
+                      key={metric.key}
+                      type="button"
+                      onClick={() => toggleLine(metric.key)}
+                      aria-pressed={on}
+                      className={`inline-flex items-center gap-1.5 transition-opacity ${
+                        on ? "" : "opacity-40"
+                      }`}
+                    >
+                      <span
+                        className="h-2 w-2 rounded-full"
+                        style={{ backgroundColor: metric.color }}
+                        aria-hidden="true"
+                      />
+                      <span className="text-muted-foreground">
+                        {metric.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {incidentMarker && incidentTime !== null && (
+              <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                <span
+                  className="h-1.5 w-1.5 shrink-0 rounded-full bg-destructive"
+                  aria-hidden="true"
+                />
+                <span>{incidentMarker.label}</span>
+                {incidentMarker.onSeeFinding && (
+                  <button
+                    type="button"
+                    onClick={incidentMarker.onSeeFinding}
+                    className="underline underline-offset-2 hover:text-foreground"
+                  >
+                    {t("chartAsk.seeFinding")}
+                  </button>
+                )}
+              </p>
+            )}
+
+            {/* The agent-first bridge: the chart shows only 4 core series; the
+                deeper ~15-series breakdown (publisher confirms, get, disk I/O…)
+                is delegated to the agent. This chip names what's missing and
+                copies a ready-to-paste question — never a "show advanced". */}
+            <div className="mt-3 flex flex-col gap-2 border-t border-dashed border-border pt-3 text-xs sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+              <span className="text-muted-foreground">
+                {t("chartAsk.ratesHint")}
+              </span>
+              <CopyPromptButton
+                prompt={resolvedAskPrompt}
+                label={t("chartAsk.askButton")}
+                className="self-start sm:self-auto"
+              />
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  // ── Full branch (dashboard / QueueDetail) ───────────────────────────────
   return (
-    <div className="rounded-lg border border-border overflow-hidden">
+    <div className="rounded-lg border border-border bg-card overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
         <div className="flex items-center gap-2">
           <h2 className="title-section">{t("messagesRates")}</h2>
@@ -300,6 +540,11 @@ export const MessagesRatesChart = ({
               </TooltipContent>
             </UITooltip>
           </TooltipProvider>
+          {!isLoading && headerValue && (
+            <span className="font-mono text-sm tabular-nums text-muted-foreground">
+              {headerValue}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
@@ -351,11 +596,19 @@ export const MessagesRatesChart = ({
                   data={chartData}
                   margin={{ top: 20, right: 30, left: 60, bottom: 20 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="hsl(var(--border))"
+                  />
                   <XAxis
                     dataKey="time"
-                    fontSize={11}
                     interval="preserveStartEnd"
+                    stroke="hsl(var(--border))"
+                    tick={{
+                      fontSize: 11,
+                      fontFamily: "var(--font-mono)",
+                      fill: "hsl(var(--muted-foreground))",
+                    }}
                   />
                   <YAxis
                     domain={[0, (dataMax: number) => Math.max(dataMax, 1)]}
@@ -365,9 +618,23 @@ export const MessagesRatesChart = ({
                       position: "insideLeft",
                       style: { textAnchor: "middle" },
                     }}
-                    tick={{ fontSize: 11 }}
+                    stroke="hsl(var(--border))"
+                    tick={{
+                      fontSize: 11,
+                      fontFamily: "var(--font-mono)",
+                      fill: "hsl(var(--muted-foreground))",
+                    }}
                   />
                   <Tooltip
+                    contentStyle={{
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "var(--radius)",
+                      color: "hsl(var(--foreground))",
+                      fontSize: 12,
+                    }}
+                    labelStyle={{ color: "hsl(var(--muted-foreground))" }}
+                    itemStyle={{ color: "hsl(var(--foreground))" }}
                     formatter={(value: number, name: string) => [
                       `${value.toFixed(2)} ${t("msgsPerSec")}`,
                       name.charAt(0).toUpperCase() +
@@ -385,6 +652,15 @@ export const MessagesRatesChart = ({
                       return t("timeLabel", { time });
                     }}
                   />
+                  {incidentTime !== null && (
+                    <ReferenceLine
+                      x={incidentTime}
+                      stroke="hsl(var(--destructive))"
+                      strokeDasharray="3 3"
+                      strokeOpacity={0.7}
+                      ifOverflow="extendDomain"
+                    />
+                  )}
                   {visibleLines.publish && (
                     <Line
                       type="monotone"
@@ -667,6 +943,39 @@ export const MessagesRatesChart = ({
                 </>
               );
             })()}
+
+            {incidentMarker && incidentTime !== null && (
+              <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                <span
+                  className="h-2 w-2 shrink-0 rounded-full bg-destructive"
+                  aria-hidden="true"
+                />
+                <span>{incidentMarker.label}</span>
+                {incidentMarker.onSeeFinding && (
+                  <button
+                    type="button"
+                    onClick={incidentMarker.onSeeFinding}
+                    className="text-xs font-medium text-primary hover:underline"
+                  >
+                    {t("chartAsk.seeFinding")}
+                  </button>
+                )}
+              </div>
+            )}
+
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <span className="text-muted-foreground">
+                {t("chartAsk.ratesHint")}
+              </span>
+              <button
+                type="button"
+                onClick={copyAskPrompt}
+                className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
+              >
+                <IconSparkle size={14} aria-hidden="true" />
+                {t("chartAsk.askButton")}
+              </button>
+            </div>
           </div>
         )}
       </div>

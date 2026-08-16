@@ -1,20 +1,19 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 
 import { track } from "@/lib/analytics";
 import { logger } from "@/lib/logger";
 
-import { AuthPageHeader } from "@/components/auth/AuthPageHeader";
-import { AuthPageWrapper } from "@/components/auth/AuthPageWrapper";
+import { AuthSplitLayout } from "@/components/auth/AuthSplitLayout";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
+import { PasswordStrengthMeter } from "@/components/auth/PasswordStrengthMeter";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -25,8 +24,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
-import { PasswordRequirements } from "@/components/ui/password-requirements";
-import { PixelUserPlus } from "@/components/ui/pixel-user-plus";
 
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -34,25 +31,33 @@ import { useRegister } from "@/hooks/ui/useAuth";
 
 import { type SignUpFormData, signUpSchema } from "@/schemas";
 
+const WEB_BASE_URL = import.meta.env.VITE_WEB_BASE_URL || "https://qarote.io";
+
+/**
+ * Portal sign-up — prototype split layout (form left, night brand panel right),
+ * matching the app's redesigned OAuth-first auth.
+ *
+ * Lightweight form: email + password only. First/last name are optional at the
+ * backend (filled from OAuth or onboarding) and the explicit accept-terms
+ * checkbox is replaced by a passive legal notice. Registration wiring is
+ * unchanged — {@link useRegister} with `sourceApp: "portal"`, then a "verify
+ * your email" success state.
+ */
 const SignUp = () => {
   const { t } = useTranslation("auth");
-  const { t: tCommon } = useTranslation("common");
   const { isAuthenticated } = useAuth();
   const registerMutation = useRegister();
   const location = useLocation();
   const navigate = useNavigate();
+  const [passwordFocused, setPasswordFocused] = useState(false);
 
   const from = location.state?.from?.pathname || "/";
 
   const form = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
       email: "",
       password: "",
-      confirmPassword: "",
-      acceptTerms: false,
     },
   });
 
@@ -63,14 +68,21 @@ const SignUp = () => {
   }, [isAuthenticated, navigate, from]);
 
   const onSubmit = (data: SignUpFormData) => {
+    // Forward first-touch attribution from the URL (set by apps/web
+    // AuthButtons) so the backend can attribute the new sign-up.
+    const search = new URLSearchParams(location.search);
     registerMutation.mutate(
       {
         email: data.email,
         password: data.password,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        acceptTerms: data.acceptTerms,
         sourceApp: "portal" as const,
+        initialUtmSource: search.get("utm_source") || undefined,
+        initialUtmMedium: search.get("utm_medium") || undefined,
+        initialUtmCampaign: search.get("utm_campaign") || undefined,
+        initialUtmTerm: search.get("utm_term") || undefined,
+        initialUtmContent: search.get("utm_content") || undefined,
+        initialReferrer: search.get("referrer") || undefined,
+        initialLandingPage: search.get("landing") || undefined,
       },
       {
         onSuccess: () => {
@@ -83,36 +95,62 @@ const SignUp = () => {
   const isSuccess = registerMutation.isSuccess;
 
   return (
-    <AuthPageWrapper>
-      <AuthPageHeader
-        Icon={PixelUserPlus}
-        title={t("getStarted")}
-        description={t("createAccountDescription")}
-      />
+    <AuthSplitLayout
+      header={
+        <div className="mb-6">
+          <p className="mb-3 select-none font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-primary">
+            {t("panelEyebrow")}
+          </p>
+          <h1 className="font-heading text-[clamp(26px,3vw,32px)] font-bold leading-[1.15] tracking-tight">
+            {t("getStarted")}
+          </h1>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            {t("createAccountDescription")}
+          </p>
+        </div>
+      }
+    >
+      {isSuccess ? (
+        <Alert className="border-success/30 bg-success-muted">
+          <AlertDescription className="text-success">
+            <div className="mb-2 font-medium">{t("accountCreatedSuccess")}</div>
+            <p className="mb-3 text-sm">{t("verificationEmailSent")}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/auth/sign-in")}
+              className="border-success/40 text-success hover:bg-success-muted"
+            >
+              {t("goToSignIn")}
+            </Button>
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <>
+          {/* ── OAuth first ── */}
+          <GoogleLoginButton
+            mode="signup"
+            onError={(error) => logger.error("Google signup error:", error)}
+          />
 
-      <CardContent className="space-y-4">
-        {isSuccess ? (
-          <Alert className="border-success/30 bg-success-muted">
-            <AlertDescription className="text-success">
-              <div className="font-medium mb-2">
-                {t("accountCreatedSuccess")}
-              </div>
-              <p className="text-sm mb-3">{t("verificationEmailSent")}</p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate("/auth/sign-in")}
-                className="border-success/40 text-success hover:bg-success-muted"
-              >
-                {t("goToSignIn")}
-              </Button>
-            </AlertDescription>
-          </Alert>
-        ) : (
+          <div className="relative my-5">
+            <div
+              className="absolute inset-0 flex items-center"
+              aria-hidden="true"
+            >
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-background px-2 text-muted-foreground">
+                {t("orWithEmail")}
+              </span>
+            </div>
+          </div>
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               {registerMutation.isError && (
-                <Alert variant="destructive">
+                <Alert variant="destructive" aria-live="assertive">
                   <AlertDescription>
                     {registerMutation.error instanceof Error
                       ? registerMutation.error.message
@@ -121,45 +159,7 @@ const SignUp = () => {
                 </Alert>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="firstName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("firstName")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t("firstNamePlaceholder")}
-                          disabled={registerMutation.isPending}
-                          autoComplete="given-name"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="lastName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("lastName")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t("lastNamePlaceholder")}
-                          disabled={registerMutation.isPending}
-                          autoComplete="family-name"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
+              {/* ── Email ── */}
               <FormField
                 control={form.control}
                 name="email"
@@ -180,6 +180,7 @@ const SignUp = () => {
                 )}
               />
 
+              {/* ── Password + inline strength meter ── */}
               <FormField
                 control={form.control}
                 name="password"
@@ -192,140 +193,88 @@ const SignUp = () => {
                         disabled={registerMutation.isPending}
                         autoComplete="new-password"
                         {...field}
+                        onFocus={() => setPasswordFocused(true)}
+                        onBlur={() => setPasswordFocused(false)}
                       />
                     </FormControl>
-                    <PasswordRequirements
+                    <PasswordStrengthMeter
                       password={field.value || ""}
-                      className="mt-2"
+                      showRules={passwordFocused}
                     />
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("confirmPassword")}</FormLabel>
-                    <FormControl>
-                      <PasswordInput
-                        placeholder={t("confirmYourPassword")}
-                        disabled={registerMutation.isPending}
-                        autoComplete="new-password"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="acceptTerms"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        disabled={registerMutation.isPending}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel className="text-sm font-normal">
-                        {t("agreeToTerms")}{" "}
-                        <Link
-                          to="/terms-of-service"
-                          className="font-medium text-primary hover:underline underline-offset-2"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {tCommon("termsOfService")}
-                        </Link>{" "}
-                        {t("andThe")}{" "}
-                        <Link
-                          to="/privacy-policy"
-                          className="font-medium text-primary hover:underline underline-offset-2"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {tCommon("privacyPolicy")}
-                        </Link>
-                        .
-                      </FormLabel>
-                      <FormMessage />
-                    </div>
-                  </FormItem>
-                )}
-              />
-
+              {/* ── Submit ── */}
               <Button
                 type="submit"
-                className="w-full btn-primary"
+                className="btn-primary group h-11 w-full"
                 disabled={registerMutation.isPending}
               >
-                {registerMutation.isPending
-                  ? t("creatingAccount")
-                  : t("createAccountButton")}
+                <span className="flex items-center justify-center gap-1.5">
+                  {registerMutation.isPending && (
+                    <Loader2
+                      className="h-4 w-4 animate-spin"
+                      aria-hidden="true"
+                    />
+                  )}
+                  {registerMutation.isPending
+                    ? t("creatingAccount")
+                    : t("createAccountButton")}
+                  {!registerMutation.isPending && (
+                    <span
+                      className="-translate-x-1 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100"
+                      aria-hidden="true"
+                    >
+                      →
+                    </span>
+                  )}
+                </span>
               </Button>
+
+              <p className="text-center font-mono text-xs text-muted-foreground">
+                {t("noCreditCard")}
+              </p>
             </form>
           </Form>
-        )}
 
-        {!isSuccess && (
-          <>
-            <div className="relative my-6">
-              <div
-                className="absolute inset-0 flex items-center"
-                aria-hidden="true"
-              >
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="bg-card px-2 text-muted-foreground">
-                  {t("orContinueWith")}
-                </span>
-              </div>
-            </div>
+          {/* ── Passive legal notice (replaces the accept-terms checkbox) ── */}
+          <p className="mt-5 text-center text-xs leading-relaxed text-muted-foreground">
+            {t("socialAuthTermsNotice")}{" "}
+            <a
+              href={`${WEB_BASE_URL}/terms-of-service/`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline-offset-2 hover:underline"
+            >
+              {t("common:termsOfService")}
+            </a>{" "}
+            {t("andThe")}{" "}
+            <a
+              href={`${WEB_BASE_URL}/privacy-policy/`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline-offset-2 hover:underline"
+            >
+              {t("common:privacyPolicy")}
+            </a>
+            .
+          </p>
 
-            <GoogleLoginButton
-              mode="signup"
-              onError={(error) => logger.error("Google signup error:", error)}
-            />
-          </>
-        )}
-
-        {!isSuccess && (
-          <div className="pt-2 text-center text-sm text-muted-foreground">
-            {t("or")}{" "}
+          {/* ── Sign-in footer ── */}
+          <p className="mt-6 border-t pt-5 text-center text-sm text-muted-foreground">
+            {t("alreadyHaveAccount")}{" "}
             <Link
               to="/auth/sign-in"
-              className="font-medium text-primary hover:underline underline-offset-2"
+              className="font-medium text-primary underline-offset-2 hover:underline"
             >
-              {t("signInToExisting")}
+              {t("signIn")}
             </Link>
-          </div>
-        )}
-
-        <div className="pt-4 flex justify-center gap-4 text-sm text-muted-foreground">
-          <Link
-            to="/terms-of-service"
-            className="hover:text-primary transition-colors"
-          >
-            {tCommon("termsOfService")}
-          </Link>
-          <Link
-            to="/privacy-policy"
-            className="hover:text-primary transition-colors"
-          >
-            {tCommon("privacyPolicy")}
-          </Link>
-        </div>
-      </CardContent>
-    </AuthPageWrapper>
+          </p>
+        </>
+      )}
+    </AuthSplitLayout>
   );
 };
 

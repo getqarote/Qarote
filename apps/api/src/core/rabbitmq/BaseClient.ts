@@ -4,6 +4,18 @@ import type { RabbitMQCredentials } from "./rabbitmq.interfaces";
 import { normalizeTunnelCredentials } from "./tunnel";
 
 /**
+ * Plain-language hints appended to the raw HTTP status for the common
+ * Management-API failures, so "401 Unauthorized" reads as something the
+ * operator can act on. The `RabbitMQ API error: <status>` prefix is kept
+ * verbatim — `classifyBrokerError` parses the status out of it.
+ */
+const API_ERROR_HINTS: Record<number, string> = {
+  401: "wrong username or password",
+  403: "those credentials lack management/monitoring permission",
+  404: "endpoint not found — check the management URL and path",
+};
+
+/**
  * Base RabbitMQ Client
  *
  * Provides foundational HTTP client functionality for RabbitMQ Management API.
@@ -83,13 +95,20 @@ export class RabbitMQBaseClient {
         ...options,
       };
 
-      logger.info(`Fetching RabbitMQ API endpoint: ${this.baseUrl}${endpoint}`);
+      logger.debug(
+        `Fetching RabbitMQ API endpoint: ${this.baseUrl}${endpoint}`
+      );
+      const startedAt = process.hrtime.bigint();
       const response = await fetch(`${this.baseUrl}${endpoint}`, fetchOptions);
+      const headersAt = process.hrtime.bigint();
 
       if (!response.ok) {
         const payload = (await response.json()) as { reason?: string };
+        const hint = API_ERROR_HINTS[response.status];
         const error = new Error(
-          `RabbitMQ API error: ${response.status} ${response.statusText}`,
+          `RabbitMQ API error: ${response.status} ${response.statusText}${
+            hint ? ` — ${hint}` : ""
+          }`,
           { cause: payload.reason }
         );
 
@@ -102,15 +121,36 @@ export class RabbitMQBaseClient {
         throw error;
       }
 
-      logger.info(
-        `Fetched ${endpoint} successfully: ${response.status} ${response.statusText}`
-      );
-
       // Check if response has content
       const contentType = response.headers.get("content-type");
 
       if (contentType?.includes("application/json")) {
-        return response.json() as Promise<T>;
+        // Read then parse, rather than `response.json()`, so transfer and parse
+        // are TIMED SEPARATELY. This is the M4 measurement: at 100k brokers the
+        // poll fan-out is the dominant cost, and JSON parsing runs on the SAME
+        // single thread as everything else — so "how much of a poll is parsing?"
+        // decides whether the fix is network-side or CPU-side. Behaviour is
+        // unchanged: `response.json()` does exactly this internally.
+        const body = await response.text();
+        const bodyAt = process.hrtime.bigint();
+        const parsed = JSON.parse(body) as T;
+        const parsedAt = process.hrtime.bigint();
+
+        const ms = (from: bigint, to: bigint) => Number(to - from) / 1e6;
+        logger.debug(
+          {
+            endpoint,
+            status: response.status,
+            payloadBytes: Buffer.byteLength(body),
+            waitMs: +ms(startedAt, headersAt).toFixed(2),
+            transferMs: +ms(headersAt, bodyAt).toFixed(2),
+            parseMs: +ms(bodyAt, parsedAt).toFixed(2),
+            totalMs: +ms(startedAt, parsedAt).toFixed(2),
+          },
+          "rabbitmq api request"
+        );
+
+        return parsed;
       } else {
         // Some endpoints return text or empty responses
         const text = await response.text();

@@ -110,7 +110,6 @@ const validInput = {
   password: "Password123!",
   firstName: "John",
   lastName: "Doe",
-  acceptTerms: true,
   sourceApp: "app" as const,
 };
 
@@ -156,11 +155,36 @@ describe("registrationRouter.register", () => {
     }
   });
 
-  it("throws BAD_REQUEST when terms not accepted", async () => {
+  it("registers without a name (lightweight sign-up) and defaults name fields", async () => {
+    mockUserFindUnique.mockResolvedValue(null);
+    const txUserCreate = vi.fn().mockResolvedValue(mockCreatedUser);
+    mockTransaction.mockImplementation(async (fn: (tx: unknown) => unknown) => {
+      const tx = {
+        user: { create: txUserCreate },
+        account: { create: vi.fn().mockResolvedValue({}) },
+      };
+      return fn(tx);
+    });
+
     const caller = registrationRouter.createCaller(makeCtx() as never);
-    await expect(
-      caller.register({ ...validInput, acceptTerms: false })
-    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    // No firstName/lastName/acceptTerms — the minimal email + password payload.
+    const result = await caller.register({
+      email: "noname@example.com",
+      password: "Password123!",
+    });
+
+    expect(result.user).toBeDefined();
+    // Missing names are normalised to empty strings (the column is non-null),
+    // and the composed `name` is empty rather than "undefined undefined".
+    expect(txUserCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          firstName: "",
+          lastName: "",
+          name: "",
+        }),
+      })
+    );
   });
 
   it("throws BAD_REQUEST when email already exists", async () => {

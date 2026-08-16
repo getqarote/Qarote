@@ -14,12 +14,12 @@ export const docsNav: DocsSection[] = [
     pages: [{ title: "Introduction", slug: "getting-started" }],
   },
   {
-    section: "Self-Hosted",
-    pages: [{ title: "Deploying Qarote", slug: "self-hosted/deployment" }],
+    section: "Agent · MCP",
+    pages: [{ title: "Connect your agent over MCP", slug: "mcp-integration" }],
   },
   {
-    section: "Queues",
-    pages: [{ title: "Spy on live queues", slug: "queues/spy-on-live-queues" }],
+    section: "Self-Hosted",
+    pages: [{ title: "Deploying Qarote", slug: "self-hosted/deployment" }],
   },
   {
     section: "Security & Privacy",

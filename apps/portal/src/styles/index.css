@@ -17,13 +17,14 @@
 }
 
 @theme {
-  --font-heading: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  /* Self-hosted via @fontsource (see src/main.tsx) — canonical design system. */
+  --font-heading: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Helvetica Neue",
-    arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
-    "Noto Color Emoji";
+    "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    "Helvetica Neue", arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
   --font-mono:
-    "Fragment Mono", ui-monospace, "SFMono-Regular", "SF Mono", menlo, monaco,
+    "IBM Plex Mono", ui-monospace, "SFMono-Regular", "SF Mono", menlo, monaco,
     consolas, "Liberation Mono", "Courier New", monospace;
 
   --color-border: hsl(var(--border));
@@ -370,102 +371,107 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 20 14.3% 4.1%;
-    --card: 30 25% 98%; /* rgb(252 250 246) converted to HSL - unified card background */
-    --card-foreground: 20 14.3% 4.1%;
+    /* NEW CANONICAL DESIGN (prototype, Jun 11 2026) — warm paper light theme,
+       synced with apps/app. See docs/reference/index.tokens.css. */
+    --background: 40 27% 98%; /* paper #FBFAF8 */
+    --foreground: 34 20% 7%; /* ink #15120E */
+    --card: 0 0% 100%; /* surfaces are pure white on the warm paper */
+    --card-foreground: 34 20% 7%;
     --popover: 0 0% 100%;
-    --popover-foreground: 20 14.3% 4.1%;
+    --popover-foreground: 34 20% 7%;
 
-    /* Orange primary theme */
-    --primary: 25 95% 53%;
-    --primary-foreground: 0 0% 98%;
+    /* Carrot primary #E8590C */
+    --primary: 21 90% 48%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 30 25% 94%;
-    --secondary-foreground: 25 45% 17%;
+    --secondary: 43 30% 96%; /* surface-2 #F7F5F0 */
+    --secondary-foreground: 35 10% 24%; /* ink-2 #433E37 */
 
-    --muted: 30 25% 94%;
-    --muted-foreground: 25 8% 45%;
+    --muted: 44 25% 91%; /* surface-3 #EEEBE3 */
+    --muted-foreground: 37 8% 42%; /* ink-3 #756E63 */
 
-    --accent: 30 25% 94%;
-    --accent-foreground: 25 45% 17%;
+    /* Accent = carrot wash */
+    --accent: 26 74% 94%; /* #FBEEE4 */
+    --accent-foreground: 22 88% 25%; /* carrot-ink #7A3208 */
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 6 68% 52%; /* #D8412F */
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 30 25% 89%;
-    --input: 30 25% 89%;
-    --ring: 25 95% 53%;
+    --border: 42 19% 86%; /* line #E3DFD6 */
+    --input: 41 16% 80%; /* line-2 #D4CFC4 */
+    --ring: 21 90% 48%;
 
     /* Status colors */
-    --success: 142 71% 28%;
-    --success-foreground: 0 0% 98%;
-    --success-muted: 142 60% 92%;
+    --success: 146 50% 36%; /* #2E8B57 */
+    --success-foreground: 0 0% 100%;
+    --success-muted: 146 40% 93%;
 
-    --warning: 38 92% 45%;
-    --warning-foreground: 0 0% 98%;
-    --warning-muted: 38 90% 94%;
+    --warning: 35 75% 49%; /* #D98A1F */
+    --warning-foreground: 0 0% 100%;
+    --warning-muted: 35 75% 93%;
 
-    /* Smaller radius */
-    --radius: 0.25rem;
+    /* Radius 7px */
+    --radius: 0.4375rem;
 
-    /* Orange sidebar theme */
-    --sidebar-background: 30 54% 98%;
-    --sidebar-foreground: 25 25% 20%;
-    --sidebar-primary: 25 95% 53%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 30 35% 92%;
-    --sidebar-accent-foreground: 25 45% 17%;
-    --sidebar-border: 30 25% 89%;
-    --sidebar-ring: 25 95% 53%;
+    /* Sidebar — same warm paper family */
+    --sidebar-background: 40 27% 98%;
+    --sidebar-foreground: 34 20% 7%;
+    --sidebar-primary: 21 90% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 26 74% 94%;
+    --sidebar-accent-foreground: 22 88% 25%;
+    --sidebar-border: 42 19% 86%;
+    --sidebar-ring: 21 90% 48%;
   }
 
   .dark {
-    --background: 20 14.3% 4.1%;
-    --foreground: 0 0% 95%;
-    --card: 30 25% 98%; /* Same unified card background in dark mode */
-    --card-foreground: 20 14.3% 4.1%; /* Dark text on light card */
-    --popover: 20 14.3% 4.1%;
-    --popover-foreground: 0 0% 95%;
+    /* NEW CANONICAL DESIGN — deep-navy night palette, synced with apps/app.
+       Card flips from the old light "unified card" to a navy surface so it
+       reads correctly on the night background. */
+    --background: 220 29% 6%; /* night #0B0E14 */
+    --foreground: 220 23% 92%; /* #E7EAF0 */
+    --card: 221 28% 9%; /* surface #11151E */
+    --card-foreground: 220 23% 92%;
+    --popover: 221 28% 9%;
+    --popover-foreground: 220 23% 92%;
 
-    /* Orange primary theme for dark mode */
-    --primary: 25 95% 53%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 21 90% 52%; /* carrot, +4L for contrast on night */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 25 14% 12%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 221 27% 12%; /* surface-2 #161B26 */
+    --secondary-foreground: 218 16% 73%; /* #AEB6C4 */
 
-    --muted: 25 14% 12%;
-    --muted-foreground: 25 8% 65%;
+    --muted: 221 27% 12%;
+    --muted-foreground: 219 12% 54%; /* #7B8597 */
 
-    --accent: 25 14% 12%;
-    --accent-foreground: 0 0% 95%;
+    --accent: 15 30% 14%; /* carrot-soft over night */
+    --accent-foreground: 24 80% 71%; /* #F0A878 */
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 7 84% 64%; /* #F06A57 */
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 25 14% 12%;
-    --input: 25 14% 12%;
-    --ring: 25 95% 53%;
+    --border: 222 23% 17%; /* #222836 */
+    --input: 220 21% 22%; /* #2C3444 */
+    --ring: 21 90% 52%;
 
     /* Status colors — dark mode */
-    --success: 142 60% 50%;
-    --success-foreground: 0 0% 98%;
-    --success-muted: 142 40% 14%;
+    --success: 150 50% 50%; /* #3FBF7F */
+    --success-foreground: 220 29% 6%;
+    --success-muted: 150 45% 13%;
 
-    --warning: 38 90% 56%;
-    --warning-foreground: 20 14% 8%;
-    --warning-muted: 38 50% 14%;
+    --warning: 40 73% 56%; /* #E0A93C */
+    --warning-foreground: 220 29% 6%;
+    --warning-muted: 40 60% 13%;
 
-    /* Orange sidebar theme for dark mode */
-    --sidebar-background: 25 20% 8%;
-    --sidebar-foreground: 30 25% 85%;
-    --sidebar-primary: 25 95% 53%;
+    /* Sidebar — deep navy, same family as the night background */
+    --sidebar-background: 220 30% 8%; /* #0E121A */
+    --sidebar-foreground: 220 23% 92%;
+    --sidebar-primary: 21 90% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 25 15% 15%;
-    --sidebar-accent-foreground: 30 25% 85%;
-    --sidebar-border: 25 14% 12%;
-    --sidebar-ring: 25 95% 53%;
+    --sidebar-accent: 15 30% 14%;
+    --sidebar-accent-foreground: 24 80% 71%;
+    --sidebar-border: 222 23% 17%;
+    --sidebar-ring: 21 90% 52%;
   }
 }
 

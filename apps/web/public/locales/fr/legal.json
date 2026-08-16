@@ -117,7 +117,10 @@
             "label": "Informations de paiement",
             "detail": "selon les exigences légales et des processeurs de paiement"
           },
-          { "label": "Communications de support", "detail": "jusqu'à 3 ans" }
+          {
+            "label": "Communications de support",
+            "detail": "jusqu'à 3 ans"
+          }
         ]
       },
       "yourRights": {
@@ -149,7 +152,7 @@
             "text": "Demander la limitation du traitement"
           }
         },
-        "contact": "Pour exercer ces droits, veuillez nous contacter à privacy@qarote.io"
+        "contact": "Pour exercer ces droits, veuillez nous contacter à security@qarote.io"
       },
       "cookies": {
         "title": "Cookies et suivi",
@@ -221,8 +224,23 @@
         "description": "Si vous avez des questions concernant cette politique de confidentialité ou nos pratiques en matière de données, veuillez nous contacter :",
         "email": "support@qarote.io",
         "address": "229 rue Saint-Honoré, 75001, Paris, France"
+      },
+      "aiFeatures": {
+        "title": "Fonctionnalités IA et contexte du broker",
+        "description": "Lorsque vous utilisez AI Explain (analyse des causes racines), Qarote envoie le contexte pertinent du broker — par exemple la file concernée, les métriques, la topologie et les changements de configuration récents — à un fournisseur de modèle de langage pour générer une explication. Nous n'envoyons pas le corps de vos messages. Vous choisissez le fournisseur, et ce choix détermine où vont les données :",
+        "items": [
+          "Managé — traité par notre fournisseur de modèle (Anthropic) avec le compte de Qarote.",
+          "Apportez votre clé — traité par votre propre compte Anthropic ou OpenAI, selon les conditions de ce fournisseur.",
+          "Local (Ollama) — traité entièrement sur votre propre infrastructure ; aucun contexte du broker ne quitte votre réseau."
+        ],
+        "note": "Les déploiements auto-hébergés nécessitant une résidence des données stricte peuvent garder tout le traitement IA en interne avec le fournisseur local."
+      },
+      "agentAccess": {
+        "title": "Accès agent (MCP)",
+        "description": "Vous pouvez connecter des agents IA à Qarote via le Model Context Protocol à l'aide de clés API à portée limitée. Les clés sont affichées une seule fois et stockées uniquement sous forme de hash. Selon la portée que vous accordez, un agent peut lire les données de supervision, demander des diagnostics et — lorsque vous l'activez — effectuer des actions de gestion sur vos brokers. Les actions effectuées via un agent sont journalisées à des fins d'audit. Vous êtes responsable des portées que vous accordez et des agents que vous autorisez."
       }
-    }
+    },
+    "summary": "Comment Qarote collecte, utilise et protège vos données. En résumé : nous lisons les données de gestion et de métriques RabbitMQ pour détecter et expliquer les incidents — nous n'accédons jamais au contenu de vos messages et ne le stockons jamais, sauf si vous activez explicitement la capture de charge utile pour le traçage."
   },
   "termsOfService": {
     "title": "Conditions d'utilisation",
@@ -238,12 +256,11 @@
         "title": "Description du service",
         "description": "Qarote fournit une interface web moderne pour la surveillance et la gestion des courtiers de messages RabbitMQ. Notre service comprend :",
         "items": [
-          "Surveillance en direct des files d'attente et analytique",
-          "Outils de publication et de consommation de messages",
-          "Gestion des files d'attente et des échanges",
-          "Métriques de performance et alertes",
-          "Prise en charge de clusters multi-serveurs",
-          "Gestion des utilisateurs et contrôles d'accès"
+          "Détection d'incidents via un moteur de règles déterministe ;",
+          "Analyse des causes racines assistée par IA (« AI Explain ») ;",
+          "Une interface pour agents IA via le Model Context Protocol (MCP), par laquelle vos agents IA autorisés peuvent lire les données de supervision, demander des diagnostics et — selon les portées que vous accordez — gérer vos brokers ;",
+          "Scan de configuration, visualisation de la topologie, alerting et support multi-serveurs ;",
+          "Options de déploiement cloud et auto-hébergé."
         ]
       },
       "accounts": {
@@ -289,7 +306,26 @@
         "description": "Si vous avez des questions concernant ces Conditions, veuillez nous contacter :",
         "email": "support@qarote.io",
         "address": "229 rue Saint-Honoré, 75001, Paris, France"
+      },
+      "licensing": {
+        "title": "Licence",
+        "description": "L'édition Community de Qarote est open source sous licence MIT. Les fonctionnalités Premium et Enterprise sont sous licence, non open source, et régies par les présentes Conditions et votre clé de licence. Vous ne pouvez pas contourner la validation de licence, ni redistribuer ou revendre les fonctionnalités premium. Les licences auto-hébergées se valident hors-ligne et restent soumises aux présentes Conditions."
+      },
+      "agentAccess": {
+        "title": "Accès agent et actions automatisées",
+        "description": "Vous pouvez accorder des clés API à portée limitée permettant aux agents IA d'interagir avec le Service et, lorsque vous activez des portées de gestion ou de remédiation, de créer, modifier, purger ou supprimer des objets sur vos brokers RabbitMQ. Toute action de ce type est effectuée sous votre autorisation et à vos propres risques. Vous êtes seul responsable des portées et des clés que vous accordez, de la revue des actions avant d'activer leur exécution automatique, et du maintien de vos propres sauvegardes. Dans la mesure permise par la loi, Qarote n'est pas responsable des conséquences des actions que vous ou vos agents autorisés initiez."
       }
-    }
-  }
+    },
+    "summary": "Les présentes Conditions régissent votre utilisation de Qarote, une plateforme « agent-first » pour diagnostiquer et gérer les courtiers de messages RabbitMQ. En utilisant le Service, vous acceptez d'être lié par ces Conditions."
+  },
+  "footer": {
+    "questions": "Des questions ? Écrivez-nous à",
+    "email": "support@qarote.io",
+    "address": "229 rue Saint-Honoré, 75001 Paris, France",
+    "seeAlsoPrefix": "Consultez également nos",
+    "privacy": "Politique de confidentialité",
+    "terms": "Conditions d'utilisation"
+  },
+  "section": "Section",
+  "contents": "Sommaire"
 }

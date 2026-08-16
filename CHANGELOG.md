@@ -5,9 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [2.0.0]
 
-## [2.0.0] - 2026-04-24
+Qarote becomes agent-native. Connect any AI agent to your RabbitMQ estate over
+the Model Context Protocol, let it read live broker state, and hand it a
+diagnosis engine that explains incidents in plain language.
+
+### Added
+
+- **Agent surface over the Model Context Protocol (MCP)** — connect AI agents directly to Qarote
+- Live-broker read tools for agents: `list_servers`, `list_queues`, `get_queue`, and more
+- `explain_incident` — agent-driven root-cause analysis of RabbitMQ incidents (Enterprise)
+- Machine API-key authentication for the agent surface
+- Agent Access settings: mint, copy-once, list, and revoke API keys
+- Official client support for Claude Desktop, Claude Code, Cline, GitHub Copilot, and Codex
+- **Incident Diagnosis Engine** — config-lint rules for durability, queue bounds, file-descriptor limits, and more (Community)
+- **AI Explain** — LLM-written root-cause narratives layered on diagnosis findings (Enterprise)
+- Firehose Tracing — opt-in message-flow evidence that powers deeper diagnosis
+- Alert lifecycle: acknowledge, snooze, and resolve
+- Config-finding lifecycle: resolve and dismiss
+- Agent-first landing page with a dedicated agent section
+
+### Changed
+
+- Reoriented the product around the agent model: the home screen is now an agent-first cockpit and primary navigation is streamlined
+- Adopted the prototype design system as canon across the app, website, and portal (Space Grotesk + IBM Plex, carrot/paper/night palette)
+- CE/EE split: incident diagnosis is free in Community; AI Explain and `explain_incident` are Enterprise
+- Migrated metric and trace storage to TimescaleDB hypertables (30-day metrics, 7-day traces)
+- Renamed Alerts to Notifications and hid the raw message browser behind Firehose Tracing
+
+### Fixed
+
+- Accessibility landmarks and missing select labels across the app
+- Responsive layout polish across core screens
+
+## [1.1.0] - 2026-04-24
 
 ### Added
 

@@ -8,7 +8,7 @@ import { enqueueNotification } from "@/services/notification/notification-outbox
 import { EncryptionService } from "../encryption.service";
 import { CoreEmailService } from "./core-email.service";
 
-import type { User } from "@/generated/prisma/client";
+import { OrgRole, type User } from "@/generated/prisma/client";
 
 interface EmailVerificationOptions {
   userId: string;
@@ -221,26 +221,28 @@ export class EmailVerificationService {
             emailVerified: true,
             emailVerifiedAt: new Date(),
           },
-          include: {
-            subscription: {
-              select: {
-                plan: true,
-                trialEnd: true,
-                status: true,
-              },
+        });
+
+        // Trial/plan info lives on the org's Subscription (billing is
+        // org-scoped). Resolve it through the user's OWNER membership.
+        const orgSubscription = await prisma.subscription.findFirst({
+          where: {
+            organization: {
+              members: { some: { userId: user.id, role: OrgRole.OWNER } },
             },
           },
+          select: { plan: true, trialEnd: true, status: true },
         });
 
         // Compute trial info for the welcome email
         let trialDaysRemaining: number | undefined;
         let trialEndDate: string | undefined;
         if (
-          updatedUser.subscription?.trialEnd &&
-          updatedUser.subscription.status === "TRIALING"
+          orgSubscription?.trialEnd &&
+          orgSubscription.status === "TRIALING"
         ) {
           const now = new Date();
-          const trialEnd = new Date(updatedUser.subscription.trialEnd);
+          const trialEnd = new Date(orgSubscription.trialEnd);
           const diffMs = trialEnd.getTime() - now.getTime();
           trialDaysRemaining = Math.max(
             0,
@@ -281,7 +283,7 @@ export class EmailVerificationService {
               idempotencyKey: `email:user:${updatedUser.id}:auth_welcome`,
               payload: {
                 name: updatedUser.firstName || updatedUser.email,
-                plan: updatedUser.subscription?.plan || "FREE",
+                plan: orgSubscription?.plan || "FREE",
                 trialDaysRemaining,
                 trialEndDate,
                 locale,

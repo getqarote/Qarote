@@ -79,7 +79,10 @@
   "noCreditCard": "Aucune carte de crédit requise",
   "changelog": {
     "title": "Nouveautés",
-    "subtitle": "Toutes les modifications notables de Qarote, documentées version par version."
+    "subtitle": "Toutes les modifications notables de Qarote, documentées version par version.",
+    "eyebrow": "Notes de version",
+    "latest": "récent",
+    "upcoming": "À venir"
   },
   "notFound": {
     "code": "404",

@@ -205,6 +205,66 @@ describe("RabbitMQMetricsCalculator", () => {
       ]);
     });
 
+    // Every other test here feeds pre-sorted input, which is why a backwards
+    // series went unnoticed.
+    it("returns chronological order when RabbitMQ sends newest-first", () => {
+      const newestFirst: RateSample[] = [
+        { sample: 300, timestamp: 3000 },
+        { sample: 200, timestamp: 2000 },
+        { sample: 100, timestamp: 1000 },
+      ];
+
+      const result = RabbitMQMetricsCalculator.processQueueTotalSamples(
+        newestFirst,
+        [...newestFirst],
+        [...newestFirst]
+      );
+
+      expect(result.map((p) => p.timestamp)).toEqual([1000, 2000, 3000]);
+      // Consumers read the last element as "current".
+      expect(result[result.length - 1].messages).toBe(300);
+    });
+
+    it("aligns ready/unacked by timestamp, not by array position", () => {
+      const samples: RateSample[] = [
+        { sample: 300, timestamp: 3000 },
+        { sample: 200, timestamp: 2000 },
+        { sample: 100, timestamp: 1000 },
+      ];
+      // One series short by a point: index-zipping would misalign it.
+      const readySamples: RateSample[] = [
+        { sample: 30, timestamp: 3000 },
+        { sample: 20, timestamp: 2000 },
+      ];
+
+      const result = RabbitMQMetricsCalculator.processQueueTotalSamples(
+        samples,
+        readySamples,
+        []
+      );
+
+      expect(result).toEqual([
+        {
+          timestamp: 1000,
+          messages: 100,
+          messages_ready: 0,
+          messages_unacknowledged: 0,
+        },
+        {
+          timestamp: 2000,
+          messages: 200,
+          messages_ready: 20,
+          messages_unacknowledged: 0,
+        },
+        {
+          timestamp: 3000,
+          messages: 300,
+          messages_ready: 30,
+          messages_unacknowledged: 0,
+        },
+      ]);
+    });
+
     it("should handle missing ready or unacknowledged samples", () => {
       const samples: RateSample[] = [
         { sample: 100, timestamp: 1000 },

@@ -1,6 +1,11 @@
 {
   "pageTitle": "Topología",
   "pageSubtitle": "Mapa visual de intercambios, colas y enlaces",
+  "canvasHint": "haz clic en un nodo para inspeccionar · arrastra para desplazar",
+  "node": {
+    "bindings_one": "{{count}} enlace",
+    "bindings_other": "{{count}} enlaces"
+  },
   "noServerTitle": "Topología",
   "noServerDescription": "Agregue un servidor RabbitMQ para ver su topología.",
   "noServerSelected": "Servidor no seleccionado",
@@ -19,6 +24,27 @@
     "bindings": "bindings",
     "bindings_one": "enlace",
     "bindings_other": "enlaces"
+  },
+  "drawer": {
+    "description": "Estado en vivo y enlaces de {{name}}",
+    "state": "Estado",
+    "depth": "Profundidad",
+    "consumers": "Consumidores",
+    "ready": "Listos",
+    "unacked": "Sin confirmar",
+    "queueType": "Tipo",
+    "incidentTitle": "Acumulación sin consumidor.",
+    "incidentBody": "{{count}} mensaje se acumula sin nada que lo procese.",
+    "incidentBody_one": "{{count}} mensaje se acumula sin nada que lo procese.",
+    "incidentBody_other": "{{count}} mensajes se acumulan sin nada que los procese.",
+    "openInCockpit": "Abrir en el cockpit",
+    "bindingsIn": "Enlaces entrantes",
+    "bindingsOut": "Enlaces salientes",
+    "noBindings": "Sin enlaces",
+    "inspect": "Inspeccionar",
+    "exchange": "Intercambio",
+    "exchangeType": "Tipo",
+    "bindings": "Enlaces"
   },
   "filters": {
     "defaultExchange": "Intercambio predeterminado",

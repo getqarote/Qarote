@@ -69,14 +69,7 @@ const AudienceSection = () => {
                 onClick={() => handleSignUp("audience_card1")}
               >
                 <span>{t("audience.card1Cta")}</span>
-                <img
-                  src="/images/arrow-right.svg"
-                  alt=""
-                  aria-hidden="true"
-                  className="h-[0.8em] w-auto image-crisp align-middle"
-                  width={14}
-                  height={14}
-                />
+                <span aria-hidden="true">→</span>
               </Button>
             </div>
           </div>
@@ -107,14 +100,7 @@ const AudienceSection = () => {
               <Button type="button" variant="pillGhost" size="pillMd" asChild>
                 <a href={`${localePrefix}/pricing/`}>
                   <span>{t("audience.card2Cta")}</span>
-                  <img
-                    src="/images/arrow-right.svg"
-                    alt=""
-                    aria-hidden="true"
-                    className="h-[0.8em] w-auto image-crisp align-middle"
-                    width={14}
-                    height={14}
-                  />
+                  <span aria-hidden="true">→</span>
                 </a>
               </Button>
             </div>

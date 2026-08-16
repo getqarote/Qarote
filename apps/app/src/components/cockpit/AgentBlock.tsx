@@ -104,9 +104,9 @@ export function AgentBlock() {
   }
 
   return (
-    <div className="card-unified space-y-4">
+    <div className="agent-cta-gradient space-y-4 rounded-lg border border-primary/20 p-6 shadow-xs">
       <div className="space-y-2">
-        <span className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-primary">
+        <span className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.1em] text-primary">
           <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
           {t("agent.eyebrow")}
         </span>

@@ -52,7 +52,7 @@ apps/portal/           # Customer portal
 packages/i18n/         # Shared i18n
 scripts/               # Utility scripts (seed, migrate, stripe, etc.)
 docs/                  # Project documentation
-docs/adr/              # Architecture Decision Records
+docs/internal/adr/              # Architecture Decision Records
 ```
 
 ## Documentation
@@ -63,7 +63,7 @@ docs/adr/              # Architecture Decision Records
 - `docs/ENTERPRISE_EDITION.md` — Licensed features guide
 - `docs/FEATURE_COMPARISON.md` — Edition comparison
 - `docs/RELEASE_MANAGEMENT.md` — Versioning & release-it workflow
-- `docs/adr/` — Architecture Decision Records
+- `docs/internal/adr/` — Architecture Decision Records
 
 ## Engineering Rules & Conventions (non-negotiable)
 

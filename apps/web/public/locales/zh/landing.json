@@ -1,10 +1,12 @@
 {
   "hero": {
+    "eyebrow": "面向 AI 智能体的 RabbitMQ 监控",
     "titleBefore": "别再调试 RabbitMQ。让你的",
     "titleHighlight": "AI 代理",
     "titleAfter": "去做。",
     "subtitle": "Qarote 提供内置 MCP 端点的 RabbitMQ 监控。5 分钟内接入 Claude Desktop 或 Cursor — 代理获取你的事件、读取 firehose 证据，并在你的工作流中返回根因，而非另一个仪表板标签。",
-    "noCreditCard": "5 分钟代理设置 · 只读工具 CE 免费 · EE 根因分析从 29 $/月起"
+    "noExporter": "无需 exporter、无需 Grafana、无需配置",
+    "versions": "RabbitMQ 3.x 和 4.x"
   },
   "cta": {
     "getStartedForFree": "免费开始使用",
@@ -12,10 +14,11 @@
     "startMonitoringForFree": "免费开始监控",
     "selfHostedSolution": "私有化部署方案",
     "contactUs": "联系我们",
-    "tryLiveDemo": "体验在线演示",
     "seeItInAction": "亲自体验 —",
     "tryTheLiveDemo": "试试在线演示",
-    "opensInNewTab": "（在新标签页中打开）"
+    "opensInNewTab": "（在新标签页中打开）",
+    "tryForFree": "免费试用",
+    "seeLiveDemo": "查看在线演示"
   },
   "comparison": {
     "title": "你通过用户反馈才发现问题，",
@@ -146,21 +149,22 @@
     "freeForever": "永久免费（自托管）",
     "freeTierScope": "免费版：1台服务器，实时监控，队列管理 — 无时间限制。告警和多服务器从 $29/月起。"
   },
+  "pricingCta": {
+    "title": "免费开始，两分钟内搞定。",
+    "subtitle": "通过 Management API 连接一个 broker 并接入你的 agent。无需 exporter、无需 Grafana、无需配置。",
+    "readDocs": "阅读文档"
+  },
   "footer": {
     "tagline": "RabbitMQ，由你的智能体来排障。",
     "about": "关于我们",
     "pricing": "定价",
     "blog": "博客",
-    "alerting": "告警",
+    "features": "功能",
     "privacyPolicy": "隐私政策",
     "termsOfService": "服务条款",
     "status": "系统状态",
     "contact": "联系我们",
     "cookiePreferences": "Cookie 偏好设置",
-    "vsDatadog": "Qarote vs Datadog",
-    "vsGrafana": "Qarote vs Grafana + Prometheus",
-    "vsCloudAMQP": "Qarote vs CloudAMQP",
-    "vsNewRelic": "Qarote vs New Relic",
     "quiz": "测验",
     "security": "安全性",
     "docs": "文档",
@@ -169,8 +173,8 @@
   "founderQuote": {
     "openQuote": "「",
     "closeQuote": "」",
-    "line1": "修复花了五分钟。",
-    "line2": "诊断花了四十分钟。",
+    "line1": "修复只花了五分钟。",
+    "line2": "诊断却花了四十分钟。",
     "highlight": "Qarote 就是这两个数字之间的差距。",
     "imgAlt": "Brice Tessier",
     "name": "Brice Tessier",
@@ -213,5 +217,131 @@
     "worksWithRest": "…以及任何兼容 MCP 的客户端",
     "ctaSignup": "免费开始",
     "ctaDocs": "阅读集成指南"
+  },
+  "whatCatches": {
+    "eyebrow": "它能发现什么",
+    "title": "实时发现故障。在反模式造成麻烦前先一步揪出。",
+    "subtitle": "确定性规则引擎实时监控 broker 状态以发现故障，配置扫描则标记那些会演变成凌晨三点告警的结构性问题。每一项发现，你的智能体都能向你复述。",
+    "incidentTitle": "故障检测",
+    "incidentDesc": "基于规则、实时触发——broker 状态一旦越过阈值即刻报警。免费且开源。",
+    "configTitle": "配置扫描",
+    "configDesc": "在反模式引发故障之前，发现你拓扑中的 RabbitMQ 反模式。",
+    "footnote": "另外还有拓扑可视化以查看完整图谱，以及在触发时通过邮件、Slack 和 Webhook 告警。"
+  },
+  "selfHosted": {
+    "eyebrow": "私有部署与数据掌控",
+    "title": "完全在你的网络内运行。",
+    "subtitle": "想托管时用云端，不想时就私有部署。私有部署的设计让一切都无需对外回连——包括 AI。",
+    "offline": {
+      "label": "离线许可证",
+      "title": "无对外回连",
+      "desc": "私有部署的 Qarote 通过离线 JWT 验证许可证。不回调我们的服务器，没有遥测信标，你的可用性不依赖我们的可用性。"
+    },
+    "localAi": {
+      "label": "本地 AI Explain",
+      "title": "在本地模型上做根因分析",
+      "desc": "将 explain_incident 指向本地 Ollama 模型，根因分析便在你的硬件上运行。你的 broker 状态永不离开你的网络。"
+    },
+    "mitCore": {
+      "label": "MIT 内核",
+      "title": "开源检测",
+      "desc": "故障检测引擎与免费的 MCP 工具均采用 MIT 许可、开源。阅读规则、运行内核、信任它的所作所为。"
+    }
+  },
+  "agentSurface": {
+    "eyebrow": "Agent 接入面",
+    "title": "你的 Agent 调用工具，你只需读答案。",
+    "subtitle": "大多数 RabbitMQ 工具止步于指标。Qarote 在一个你的 Agent 早已会用的 MCP 接入面背后，提供确定性的事件引擎与托管的根因分析——于是你只需在已有的对话里发问即可排障。",
+    "steps": {
+      "connect": {
+        "title": "连接 Broker",
+        "desc": "通过 TLS 将 Qarote 指向你的 Management HTTP API。无需 exporter，无需在主机上装 agent。"
+      },
+      "mint": {
+        "title": "生成密钥",
+        "desc": "生成限定于你工作区的 API 密钥。免费的事件工具，或解锁 Explain。"
+      },
+      "wire": {
+        "title": "接入你的 Agent",
+        "desc": "把 server 加入你的 .mcp.json。Claude Code、Cursor、Copilot——都一样。"
+      },
+      "ask": {
+        "title": "直接发问",
+        "desc": "「我的 RabbitMQ 出什么问题了？」Agent 调用工具并解释根因。"
+      }
+    },
+    "freeTools": "免费工具",
+    "paidTool": "付费工具",
+    "paidPara": "确定性检测永久免费。explain_incident 会结合事件本身及周围的 broker 状态，写出你的 Agent 回读给你的根因结论。可在我们的托管模型上运行，自托管时也可用本地 Ollama 模型。",
+    "worksWith": "支持"
+  },
+  "howItWorks": {
+    "eyebrow": "工作原理",
+    "title": "两分钟内即可接入。",
+    "subtitle": "无需部署 Prometheus exporter，无需配置 Grafana，无需维护抓取配置。三步即可从消息代理到一个可用的智能体界面。",
+    "step1": {
+      "label": "第 1 步",
+      "title": "通过 Management API 接入",
+      "desc": "将你的消息代理的 Management HTTP API 地址和只读凭据通过 TLS 提供给 Qarote。支持 RabbitMQ 3.x 和 4.x，单节点或集群，包括 CloudAMQP 和 Amazon MQ。",
+      "timing": "~60 秒 · 无需在代理上安装任何东西"
+    },
+    "step2": {
+      "label": "第 2 步",
+      "title": "Qarote 开始检测",
+      "desc": "规则引擎立即开始扫描——事故、队列深度异常、消费者掉线以及配置反模式。无需基线期，无需搭建仪表盘。",
+      "timing": "~30 秒 · 首批检测结果出现"
+    },
+    "step3": {
+      "label": "第 3 步",
+      "title": "通过 MCP 接入你的智能体",
+      "desc": "将 Qarote MCP 服务器添加到编辑器配置中，你的智能体便能调用每一个工具。向它提问，它替你完成操作。",
+      "timing": "~30 秒 · 粘贴一段配置即可"
+    },
+    "copy": "复制",
+    "copied": "已复制"
+  },
+  "compareTeaser": {
+    "eyebrow": "如何对比",
+    "title": "在其他方案做不到的地方，为之专门打造。",
+    "subtitle": "内置插件用来快速看一眼足够了。指标栈很强大，前提是你愿意自己搭建。Qarote 见效快、支持多 broker，并且是唯一能解释故障、响应你的智能体的工具。它是对指标栈的补充，而非替代。",
+    "columnQarote": "Qarote",
+    "columnPlugin": "插件",
+    "columnStack": "Prom + Grafana",
+    "rows": {
+      "setup": "部署",
+      "multiBroker": "多 broker",
+      "diagnosis": "诊断",
+      "agentMcp": "智能体 / MCP",
+      "speed": "速度",
+      "bestFor": "最适合"
+    },
+    "plugin": {
+      "title": "对比 Management 插件",
+      "subtitle": "RabbitMQ 内置界面",
+      "setupQarote": "约 2 分钟，只读",
+      "setupOther": "随附内置",
+      "multiBrokerQarote": "多集群，一个视图",
+      "multiBrokerOther": "单个 broker",
+      "diagnosisQarote": "故障 + 根因",
+      "diagnosisOther": "没有 — 只有图表",
+      "agentMcpQarote": "完整工具面",
+      "agentMcpOther": "没有",
+      "speedQarote": "快速、聚焦",
+      "speedOther": "缓慢、杂乱"
+    },
+    "stack": {
+      "title": "对比 Prometheus + Grafana",
+      "subtitle": "需要自己拼装的指标栈",
+      "setupQarote": "零配置",
+      "setupOther": "Exporter、抓取、仪表盘",
+      "multiBrokerQarote": "内置支持",
+      "multiBrokerOther": "需要自己接线",
+      "diagnosisQarote": "故障 + 根因",
+      "diagnosisOther": "指标 + PromQL",
+      "agentMcpQarote": "完整工具面",
+      "agentMcpOther": "没有",
+      "bestForQarote": "诊断 + 智能体",
+      "bestForOther": "自定义指标历史"
+    }
   }
 }

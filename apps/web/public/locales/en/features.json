@@ -1,165 +1,99 @@
 {
   "seo": {
-    "title": "RabbitMQ Monitoring Features: Live Queues, Alerts, Analytics",
-    "description": "Explore Qarote's RabbitMQ monitoring features: live queue tracking, smart alerting, performance analytics, multi-server support, and queue management in one dashboard."
+    "title": "Features — Qarote RabbitMQ Monitoring",
+    "description": "Agent-native RabbitMQ monitoring: MCP tools, deterministic incident detection, AI root-cause, config scan, topology, alerting, and self-hosting."
   },
-  "hero": {
-    "title": "Everything you need to monitor RabbitMQ",
-    "subtitle": "One dashboard for all your RabbitMQ servers. Replaces the management plugin, simpler than Prometheus + Grafana.",
-    "pills": {
-      "liveMonitoring": "Live Monitoring",
-      "alerting": "Alerting",
-      "analytics": "Analytics",
-      "queueManagement": "Queue Management",
-      "multiServer": "Multi-Server",
-      "queueHistory": "Queue History",
-      "messageSpy": "Message Spy",
-      "dailyDigest": "Daily Digest",
-      "incidentDiagnosis": "Incident Diagnosis",
-      "messageTracing": "Message Tracing"
-    }
+  "head": {
+    "eyebrow": "Features",
+    "title": "Everything your agent needs to debug RabbitMQ.",
+    "lead": "Qarote detects incidents, explains root cause, and exposes all of it to your AI coding agent over MCP. Here's the whole product — starting with the part nothing else has."
   },
-  "coreFeature": "CORE FEATURE",
-  "liveMonitoring": {
-    "title": "Live queue monitoring",
-    "description": "Real-time queue depth, message rates, and consumer counts at a glance. Visual indicators highlight healthy, warning, and critical states so you never miss a degradation.",
-    "metric1Value": "< 1s",
-    "metric1Label": "Refresh rate",
-    "metric2Value": "3",
-    "metric2Label": "Health states",
-    "metric3Value": "0",
-    "metric3Label": "Config needed",
-    "point1": "Message rates: publish, deliver, acknowledge per second",
-    "point2": "Consumer utilization and queue age tracking",
-    "point3": "Instant visual feedback for queue health"
+  "worksWith": {
+    "label": "Works with",
+    "any": "+ any MCP client"
   },
-  "insightsSection": {
-    "title": "Insights that prevent outages"
+  "agentNative": {
+    "eyebrow": "Agent-native · the moat",
+    "title": "An MCP surface your agent already speaks.",
+    "body": "Most RabbitMQ tooling stops at metrics. Qarote ships a deterministic incident engine and managed root-cause analysis behind one MCP surface — so you debug by asking, in the editor you're already in."
   },
-  "alerting": {
-    "title": "Smart alerting system",
-    "badge": "Developer+",
-    "description": "Configurable thresholds per queue and per server. Get notified before problems become outages.",
-    "point1": "Notification channels: email, Slack, webhooks",
-    "point2": "Alert history and acknowledgment workflow",
-    "point3": "Per-queue and per-server threshold configuration"
+  "incident": {
+    "eyebrow": "Incident detection",
+    "badge": "CE · free",
+    "title": "A deterministic rules engine, not a guess.",
+    "body": "Live, rules-based detection fires the moment broker state crosses a threshold — dropped consumers, depth anomalies, stalled acks. No baseline period, no dashboards to build. Open source, MIT.",
+    "findingTitle": "consumers dropped",
+    "severity": "Critical",
+    "time": "fired 6 min ago",
+    "depth": "depth 0 → 52k"
   },
-  "analytics": {
-    "title": "Performance analytics",
-    "description": "Historical charts for message throughput, queue depth, and node resources. Spot trends and plan capacity with confidence.",
-    "point1": "Customizable time ranges: 1 hour to 30 days",
-    "point2": "Memory, disk, file descriptor, and CPU tracking",
-    "point3": "Trend detection for capacity planning"
+  "aiExplain": {
+    "eyebrow": "AI Explain",
+    "badge": "EE · paid",
+    "title": "Root cause, written for you on demand.",
+    "bodyPre": "One",
+    "bodyPost": "call turns an incident plus the surrounding broker state into a plain-language root cause. Bring your own key, run it managed, or keep it fully local on Ollama. Plan-gated — never deploy-gated.",
+    "cardLabel": "Root cause analysis",
+    "cardBody": "The 3 consumers disconnected at 15:06; depth climbs ~8k/min with zero drain — likely a crashed worker downstream. Check deploys around 15:05.",
+    "cardCofire": "↳ co-firing: events.payment also lost consumers."
   },
-  "queueManagement": {
-    "title": "Queue management",
-    "description": "Purge, delete, and create queues from the UI. Inspect bindings, view topology, and publish test messages without touching the command line.",
-    "point1": "Binding inspection and topology view",
-    "point2": "Message publishing for testing and debugging",
-    "point3": "Exchange and routing key management"
-  },
-  "multiServer": {
-    "title": "Multi-server support",
-    "badge": "Dev: 3 | Enterprise: unlimited",
-    "description": "Connect multiple RabbitMQ instances from different environments. One unified view across staging, production, and development.",
-    "point1": "TLS encrypted connections",
-    "point2": "Unified dashboard across all environments",
-    "point3": "Switch between servers seamlessly"
-  },
-  "builtForDevs": {
-    "title": "Built for developers",
-    "description": "No YAML configuration. No Prometheus or Grafana to maintain. Connect your RabbitMQ server in 60 seconds with a connection string.",
-    "point1": "Self-hosted or cloud option",
-    "point2": "Open source Community Edition on GitHub",
-    "point3": "No infrastructure to maintain"
-  },
-  "comparison": {
-    "title": "Managing RabbitMQ servers doesn't have to be painful",
-    "traditional": {
-      "title": "Traditional management interfaces",
-      "point1": "An outdated UI that slows you down",
-      "point2": "No unified view across servers or environments",
-      "point3": "No reliable, actionable alerts",
-      "point4": "DIY dashboards and scripts everywhere"
-    },
-    "qarote": {
-      "title": "Qarote",
-      "point1": "A clean, modern UI built for speed and clarity",
-      "point2": "A unified dashboard for all your servers and environments",
-      "point3": "Smart, actionable alerts that catch issues early",
-      "point4": "Zero-setup monitoring, no scripts, no maintenance"
-    },
-    "messagesPerSec": "Messages/sec",
-    "activeQueues": "Active Queues",
-    "allSystemsOperational": "All systems operational"
-  },
-  "queueIntelligence": {
-    "title": "Queue intelligence that goes deep"
-  },
-  "messageVisibility": {
-    "title": "Inspect any message without touching the queue"
-  },
-  "messagePipeline": {
-    "title": "Full visibility into message flow"
-  },
-  "queueHistory": {
-    "description": "30 days of queue depth, consumer counts, and message rates captured every 5 minutes. Graph any queue over any time window — see exactly when it started filling and when it drained, even if you weren't watching."
-  },
-  "messageSpy": {
-    "description": "Browse message headers and payloads directly inside any queue — read-only, non-destructive, safe for production. No AMQP consumer. No throwaway scripts. The messages stay exactly where they are.",
-    "point1": "Read-only — messages are never consumed or acknowledged",
-    "point2": "Full payload with JSON syntax highlighting",
-    "point3": "Headers, routing key, delivery mode, redelivery status"
-  },
-  "dailyDigest": {
-    "description": "A morning email summary of your broker's health: queue depth trends, DLQ growth, and anomalies from the past 24 hours. Async awareness without a dashboard open."
-  },
-  "incidentDiagnosis": {
-    "description": "Automated root cause analysis for RabbitMQ incidents. Correlates queue depth spikes, consumer drops, and throughput changes into a single readable timeline — so you know what happened and in what order."
-  },
-  "messageTracing": {
-    "description": "Full message tracing across your broker using the RabbitMQ Firehose. Every publish, every deliver, every acknowledge — captured in real time with routing key, exchange, and payload size."
-  },
-  "comingSoon": {
-    "eyebrow": "More features",
-    "heading": "Five more tools in one dashboard",
-    "subtitle": "Each links to a dedicated page with full documentation, use cases, and FAQs.",
-    "learnMore": "Learn more",
-    "items": [
+  "configScan": {
+    "eyebrow": "Config scan",
+    "badge": "CE · free",
+    "title": "Catch the anti-patterns before they page you.",
+    "body": "A structural scan flags the RabbitMQ mistakes that become 3 a.m. incidents — missing dead-letter exchanges, idle no-consumer queues, default-exchange overuse — each one something your agent can read back to you.",
+    "finds": [
       {
-        "icon": "chart.svg",
-        "title": "Metrics",
-        "description": "30 days of queue depth, consumer counts, and message rates captured every 5 minutes. For incident retrospectives and capacity planning — no Prometheus required.",
-        "href": "/features/metrics/"
+        "code": "no DLX on orders.*",
+        "text": "Rejected messages are dropped silently across 5 queues.",
+        "sev": "amber"
       },
       {
-        "icon": "message.svg",
-        "title": "Message Spy",
-        "description": "Inspect message headers and payloads inside any queue — read-only, non-destructive, safe for production. No throwaway consumer scripts.",
-        "href": "/features/message-spy/"
+        "code": "idle no-consumer queue",
+        "text": "emails.outbound has had zero consumers for 9 days.",
+        "sev": "amber"
       },
       {
-        "icon": "email.svg",
-        "title": "Daily Digest",
-        "description": "A morning email summary of your broker's health: queue depth trends, DLQ growth, and anomalies from the past 24 hours. Async awareness without a dashboard open.",
-        "href": "/features/digest/"
-      },
-      {
-        "icon": "flag.svg",
-        "title": "Incident Diagnosis Engine",
-        "description": "Automated root cause analysis for RabbitMQ incidents. Correlates queue depth spikes, consumer drops, and throughput changes into a single readable timeline.",
-        "href": "/features/incident-diagnosis/"
-      },
-      {
-        "icon": "real-time.svg",
-        "title": "Message Tracing (Firehose)",
-        "description": "Full message tracing across your broker using the RabbitMQ Firehose. Every message, every route, every consumer — in real time with filtering and search.",
-        "href": "/features/message-tracing/"
+        "code": "default-exchange overuse",
+        "text": "82% of publishes route through the default exchange.",
+        "sev": "blue"
       }
     ]
   },
+  "topology": {
+    "eyebrow": "Topology",
+    "badge": "CE · free",
+    "title": "The live broker map, with drill-down.",
+    "body": "See exchanges, queues, and bindings as a graph. Click any node to inspect depth, consumers, and bindings — the old object-list \"Browse\" dissolved into a map you can actually reason about. Charts keep 30 days of metric history.",
+    "caption": "live topology · click a node to drill in"
+  },
+  "alerting": {
+    "eyebrow": "Alerting",
+    "badge": "EE · paid channels",
+    "title": "Route what matters, where it matters.",
+    "body": "Findings reach you by email, Slack, or webhook, with per-severity routing so criticals page and the rest digest. Email is free; Slack and webhooks unlock on Developer.",
+    "emailScope": "critical · high",
+    "on": "on"
+  },
+  "connect": {
+    "eyebrow": "Connect & scale",
+    "title": "Two minutes to your first finding.",
+    "body": "Connect over the Management HTTP API on TLS — no exporter, no agent on the box. One broker or many; RabbitMQ 3.x & 4.x; single-node or clustered; CloudAMQP and Amazon MQ included.",
+    "codeComment": "point Qarote at the Management API",
+    "codeResult": "14 queues · 6 exchanges · 3 findings"
+  },
+  "deploy": {
+    "eyebrow": "Deploy your way",
+    "title": "Your network, your model, your rules.",
+    "body": "Run Qarote cloud-hosted, or self-host with Docker, Compose, Dokku, or a standalone binary. Self-hosted validates its license offline — no phone-home — and AI Explain can run on local Ollama, so broker data never leaves your network.",
+    "licensePill": "offline JWT license",
+    "cardLabel": "data control",
+    "cardBody": "Detection core is MIT and open source. Self-hosted license validation is offline. Local Ollama keeps every byte of broker state inside your perimeter."
+  },
   "cta": {
-    "title": "Ready to monitor your RabbitMQ servers?",
-    "subtitle": "Start with the free Community plan. No credit card required."
+    "heading": "See it on your own broker.",
+    "body": "Connect in under two minutes, then ask your agent what's wrong.",
+    "primary": "Get started for free",
+    "secondary": "See pricing"
   }
 }

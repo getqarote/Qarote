@@ -5,12 +5,15 @@
   },
   "back": "Volver",
   "hero": {
-    "title": "Construido por ingenieros que vivieron el problema",
-    "subtitle": "Qarote nació de años de frustración con herramientas de monitoreo de RabbitMQ que eran demasiado complejas de configurar o demasiado limitadas para ser útiles. Construimos el panel que siempre quisimos."
+    "title": "Dejamos de construir paneles.",
+    "subtitle": "Así que lo reconstruimos todo en torno a eso. Qarote es ahora diagnóstico de incidentes de RabbitMQ pensado para agentes: un motor de reglas determinista detecta los incidentes, un LLM explica la causa raíz y todo ello se expone a tu agente a través de MCP. Depuras preguntando — no recorriendo gráficas.",
+    "intro": "Qarote empezó como una forma más rápida de vigilar RabbitMQ. Luego notamos cómo trabajaban en realidad nuestros usuarios — no en nuestras pestañas, sino en su editor, hablando con un agente de IA.",
+    "eyebrow": "Acerca de"
   },
   "mission": {
-    "title": "Nuestra misión",
-    "description": "RabbitMQ impulsa la infraestructura crítica de miles de empresas, pero monitorearla siempre ha sido más difícil de lo necesario. Qarote ofrece a cada equipo — desde desarrolladores independientes hasta operaciones enterprise — un panel moderno y limpio que simplemente funciona. Sin necesidad de una stack Prometheus."
+    "title": "Cerrar la brecha entre detectar y entender.",
+    "description": "Saber que una cola está saturada es fácil. Saber por qué, rápido, a las 3 de la madrugada, es la parte difícil — y es ahí donde se va de verdad el tiempo de guardia. Queremos que esa respuesta llegue al mismo lugar donde ya trabajas.",
+    "eyebrow": "Misión"
   },
   "team": {
     "photoAlt": "{{name}}, {{role}} en Qarote",
@@ -39,5 +42,52 @@
         "Certificado en Google Ads, Google Analytics, Klaviyo y Brevo"
       ]
     }
+  },
+  "pivot": {
+    "eyebrow": "Por qué agent-first",
+    "title": "La interfaz se movió. La seguimos.",
+    "description": "Los desarrolladores trabajan cada vez más a través de un agente de IA en su editor. Lo último que quiere un ingeniero de guardia agotado es otro panel que aprender. Por eso entregamos herramientas que el agente invoca — no otra pestaña en la que hacer clic.",
+    "old": {
+      "label": "El enfoque antiguo",
+      "title": "Un panel más al que mirar fijamente",
+      "body": "Una interfaz web que abres durante un incidente, en la que rebuscas e intentas correlacionar a ojo. Útil, pero queda fuera de tu flujo de trabajo y solo te muestra el qué — nunca el porqué."
+    },
+    "new": {
+      "label": "Lo que construimos ahora",
+      "title": "Herramientas que tu agente invoca",
+      "body": "Qarote expone incidentes, findings y análisis de causa raíz a través de MCP. Le preguntas a tu agente en el editor; este invoca las herramientas y la explicación regresa al mismo chat en el que ya estás."
+    }
+  },
+  "beliefs": {
+    "eyebrow": "En qué creemos",
+    "title": "Cómo construimos.",
+    "openSource": {
+      "title": "Núcleo open-source",
+      "body": "La detección y las herramientas MCP de lectura tienen licencia MIT. Lee las reglas, ejecuta el núcleo, confía en lo que hace — sin caja negra en los cimientos."
+    },
+    "dataControl": {
+      "title": "Control de tus datos",
+      "body": "Autohospedaje con validación de licencia offline — sin phone-home. AI Explain puede ejecutarse en un modelo Ollama local, para que los datos del broker nunca salgan de tu red."
+    },
+    "honest": {
+      "title": "Honestos, de dev a dev",
+      "body": "Lenguaje claro, sin hype ni dark patterns. Preferimos mostrarte un fragmento o un finding real antes que decirte que somos revolucionarios."
+    }
+  },
+  "teamHeading": {
+    "eyebrow": "Equipo",
+    "title": "Quién construye Qarote.",
+    "hiring": "Un equipo pequeño que contrata discretamente. ¿Quieres ayudar a construir herramientas de ops nativas para agentes?",
+    "hiringLink": "Saluda"
+  },
+  "cta": {
+    "heading": "Descubre lo que tu agente puede encontrar.",
+    "body": "Conecta un broker en menos de dos minutos y pregunta.",
+    "primary": "Probar gratis",
+    "secondary": "Explorar funciones"
+  },
+  "teamCard": {
+    "role": "Fundador · CTO",
+    "bio": "Construye el motor de detección y la superficie de agente. Pasó suficientes noches de guardia mirando gráficas de colas como para querer una mejor respuesta."
   }
 }

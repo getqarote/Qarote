@@ -5,13 +5,18 @@ import { useNavigate } from "react-router";
 import { AgentBlock } from "@/components/cockpit/AgentBlock";
 import { AskYourAgent } from "@/components/cockpit/AskYourAgent";
 import { ConnectionBar } from "@/components/cockpit/ConnectionBar";
+import { FirstRunCockpit } from "@/components/cockpit/FirstRunCockpit";
+import { PushBanner } from "@/components/cockpit/PushBanner";
 import { WhatAgentSees } from "@/components/cockpit/WhatAgentSees";
-import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { NoServerSelectedCard, PageShell } from "@/components/PageShell";
+import { CockpitSkeleton } from "@/components/skeletons/CockpitSkeleton";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 import { useServerContext } from "@/contexts/ServerContext";
+
+import { useUserWorkspaces } from "@/hooks/queries/useWorkspaceApi";
+import { useDelayedLoading } from "@/hooks/ui/useDelayedLoading";
 
 /**
  * Home cockpit — the agent-first centerpiece. One state-driven page built
@@ -27,26 +32,43 @@ import { useServerContext } from "@/contexts/ServerContext";
  */
 const Index = () => {
   const { t } = useTranslation("dashboard");
-  const { selectedServerId, hasServers } = useServerContext();
-  const { user, isAuthenticated } = useAuth();
+  const { selectedServerId, hasServers, isLoading } = useServerContext();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  // Users without a workspace land in onboarding (create workspace + connect
-  // first server). Guard against redirect loops by only acting off "/".
+  // Anti-flash: while the servers query is in flight, hasServers is false, so
+  // the empty-state would flash before data lands. Gate it behind the cockpit
+  // skeleton (shown only past ~180ms).
+  const showSkeleton = useDelayedLoading(isLoading);
+
+  // Send users with NO workspace to onboarding. Decide off the workspaces query
+  // — the SAME source onboarding's own guard uses — so the two can't disagree.
+  // (Keying this off the auth-context `user.workspaceId` race-loops with
+  // onboarding: that field lags the session refetch after a workspace switch,
+  // reading stale-null here while the workspace already exists there.) Wait for
+  // the query to resolve so we never bounce on the in-flight empty state.
+  const { data: workspacesData, isLoading: workspacesLoading } =
+    useUserWorkspaces();
   useEffect(() => {
-    if (isAuthenticated && !user?.workspaceId) {
+    if (
+      isAuthenticated &&
+      !workspacesLoading &&
+      !workspacesData?.workspaces?.length
+    ) {
       navigate("/onboarding", { replace: true });
     }
-  }, [isAuthenticated, user?.workspaceId, navigate]);
+  }, [isAuthenticated, workspacesLoading, workspacesData, navigate]);
+
+  if (isLoading) {
+    return (
+      <PageShell bare>{showSkeleton ? <CockpitSkeleton /> : null}</PageShell>
+    );
+  }
 
   if (!hasServers) {
     return (
       <PageShell bare>
-        <NoServerConfigured
-          title={t("rabbitMQDashboard")}
-          subtitle={t("pageSubtitle")}
-          description={t("addServerDescription")}
-        />
+        <FirstRunCockpit />
       </PageShell>
     );
   }
@@ -74,6 +96,16 @@ const Index = () => {
           <h1 className="sr-only">{t("home.title")}</h1>
         </div>
 
+        {/* Intent note (prototype `.intent-note`) — a monospace one-liner that
+            frames the page's design intent. The "// intent — " prefix is
+            rendered as literal copy here (we can't use the prototype's CSS
+            ::before pseudo-element with an i18n value). */}
+        <p className="border-l-2 border-border pl-2.5 font-mono text-[11px] leading-relaxed text-muted-foreground">
+          <span className="text-primary">// intent — </span>
+          {t("home.intent")}
+        </p>
+
+        <PushBanner />
         <ConnectionBar />
         <AgentBlock />
         <WhatAgentSees />

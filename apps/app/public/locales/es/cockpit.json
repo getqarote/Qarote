@@ -32,12 +32,37 @@
     "configureAiExplain": "Configurar AI Explain"
   },
   "sees": {
-    "title": "Lo que tu agente ve ahora",
+    "title": "Lo que ve tu agente",
     "refresh": "Actualizar",
-    "allQuiet": "Todo tranquilo — sin hallazgos activos en las últimas 2 h",
     "staleMetrics": "No se pueden obtener métricas en vivo mientras el broker está inalcanzable.",
     "retry": "Reintentar",
-    "clusterDetail": "Detalle del clúster"
+    "clusterDetail": "Detalle del clúster",
+    "timeRange": {
+      "label": "Rango de tiempo"
+    },
+    "cluster": "Clúster",
+    "calm": {
+      "headline": "Todo en calma — sin hallazgos activos en las últimas {{window}}",
+      "lastScan": "último escaneo {{ago}}",
+      "justNow": "ahora mismo"
+    },
+    "concerns": {
+      "headline_one": "{{count}} problema en las últimas {{window}}",
+      "headline_other": "{{count}} problemas en las últimas {{window}}",
+      "severity": {
+        "critical_one": "{{count}} crítico",
+        "critical_other": "{{count}} críticos",
+        "high_one": "{{count}} alto",
+        "high_other": "{{count}} altos",
+        "medium_one": "{{count}} medio",
+        "medium_other": "{{count}} medios",
+        "low_one": "{{count}} bajo",
+        "low_other": "{{count}} bajos",
+        "info_one": "{{count}} info",
+        "info_other": "{{count}} infos"
+      },
+      "view": "Ver en Diagnóstico"
+    }
   },
   "cluster": {
     "title": "Clúster",
@@ -46,7 +71,12 @@
     "connections": "Conexiones · {{count}}",
     "channels": "Canales · {{count}}",
     "none": "Ninguno ahora mismo.",
-    "agentNote": "Estos objetos también están disponibles para tu agente vía list_servers y get_overview."
+    "agentNote": "Estos objetos también están disponibles para tu agente vía list_servers y get_overview.",
+    "nodeRunQueue": "{{value}} en cola",
+    "channelOpen": "Abiertos",
+    "channelUnacked": "Sin confirmar",
+    "channelPrefetchAvg": "Prefetch (prom.)",
+    "agentNoteTools": "Estos objetos también están disponibles para tu agente mediante <listServers>list_servers</listServers> y <getOverview>get_overview</getOverview>."
   },
   "ask": {
     "label": "Pregunta a tu agente",
@@ -62,5 +92,16 @@
     "prompt4": "¿Por qué sube la profundidad de payments.capture?",
     "prompt5": "Muestra los hallazgos de configuración ordenados por severidad",
     "prompt6": "¿Cambió algo en el broker en la última hora?"
+  },
+  "pushBanner": {
+    "title": "Recibe avisos en tu teléfono",
+    "enable": "Activar alertas",
+    "dismiss": "Descartar"
+  },
+  "noAlertChannel": {
+    "title": "Aún no hay canal de alertas",
+    "body": "Un hallazgo crítico puede dispararse sin forma de avisarte. Añade correo, Slack o un webhook para que los incidentes te lleguen.",
+    "action": "Configurar alertas",
+    "dismiss": "Descartar"
   }
 }

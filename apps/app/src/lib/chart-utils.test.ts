@@ -57,3 +57,72 @@ describe("formatChartTimestamp", () => {
     });
   });
 });
+
+// Inlined (same SSR-transform reason as above).
+interface TimedChartPoint {
+  timestamp: number;
+  time: string;
+}
+function matchIncidentTime(
+  chartData: readonly TimedChartPoint[] | undefined,
+  incidentTs: number
+): string | null {
+  if (!chartData || chartData.length === 0) return null;
+  let min = chartData[0].timestamp;
+  let max = chartData[0].timestamp;
+  for (const point of chartData) {
+    if (point.timestamp < min) min = point.timestamp;
+    if (point.timestamp > max) max = point.timestamp;
+  }
+  if (incidentTs < min || incidentTs > max) return null;
+  let nearest = chartData[0];
+  let bestDelta = Math.abs(chartData[0].timestamp - incidentTs);
+  for (const point of chartData) {
+    const delta = Math.abs(point.timestamp - incidentTs);
+    if (delta < bestDelta) {
+      bestDelta = delta;
+      nearest = point;
+    }
+  }
+  return nearest.time;
+}
+
+describe("matchIncidentTime", () => {
+  const data: TimedChartPoint[] = [
+    { timestamp: 1000, time: "15:00" },
+    { timestamp: 2000, time: "15:01" },
+    { timestamp: 3000, time: "15:02" },
+  ];
+
+  it("returns null for undefined data", () => {
+    expect(matchIncidentTime(undefined, 1500)).toBeNull();
+  });
+
+  it("returns null for empty data", () => {
+    expect(matchIncidentTime([], 1500)).toBeNull();
+  });
+
+  it("returns null when incident is before the window", () => {
+    expect(matchIncidentTime(data, 500)).toBeNull();
+  });
+
+  it("returns null when incident is after the window", () => {
+    expect(matchIncidentTime(data, 3500)).toBeNull();
+  });
+
+  it("matches the nearest point inside the window", () => {
+    expect(matchIncidentTime(data, 1900)).toBe("15:01");
+  });
+
+  it("matches an exact point timestamp", () => {
+    expect(matchIncidentTime(data, 3000)).toBe("15:02");
+  });
+
+  it("matches the window edge (first point)", () => {
+    expect(matchIncidentTime(data, 1000)).toBe("15:00");
+  });
+
+  it("matches the window edge (last point)", () => {
+    expect(matchIncidentTime(data, 3000)).toBe("15:02");
+  });
+});

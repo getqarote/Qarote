@@ -32,15 +32,22 @@ interface Server {
    * Nullable — empty means "no environment tag set".
    */
   environment?: string | null;
+  /**
+   * Firehose payload-capture flag. Drives the initial state of the
+   * "Capture payloads" toggle in the Manage-server tracing section.
+   * v1 persists the flag only (no capture pipeline yet).
+   */
+  payloadCaptureEnabled?: boolean;
 }
 
 export interface AddServerFormProps {
   onServerAdded?: () => void;
   onServerUpdated?: () => void;
+  /** Fired after the server is removed from the edit drawer's danger zone. */
+  onServerRemoved?: () => void;
   trigger?: React.ReactNode;
   server?: Server; // For edit mode
   mode?: "add" | "edit";
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
-  isFirstServer?: boolean;
 }

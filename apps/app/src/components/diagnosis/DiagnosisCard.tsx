@@ -23,6 +23,7 @@ import { findingKey } from "@/lib/findingKey";
 import { formatRelativeAgo } from "@/lib/formatRelativeAgo";
 
 import { ExplanationActions } from "@/components/llm/ExplanationActions";
+import { ExplanationProvenance } from "@/components/llm/ExplanationProvenance";
 import { QuotaExceededCard } from "@/components/llm/QuotaExceededCard";
 import { QuotaProgressPill } from "@/components/llm/QuotaProgressPill";
 import { ScanLogStream } from "@/components/scan/ScanLogStream";
@@ -32,6 +33,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
+import { useExplanation } from "@/hooks/queries/useExplanation";
 import { useStreamingExplain } from "@/hooks/ui/useStreamingExplain";
 import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
@@ -41,7 +43,6 @@ import { UserPlan } from "@/types/plans";
 
 import type { DiagnosisRuleType } from "./DiagnosisRuleBadge";
 import { DiagnosisRuleBadge } from "./DiagnosisRuleBadge";
-import { RecommendationText } from "./RecommendationText";
 import { formatCitationLabel, RULE_CITATIONS } from "./ruleCitations";
 
 interface TimelinePoint {
@@ -66,7 +67,6 @@ interface DiagnosisCardProps {
   queueName: string;
   vhost: string;
   description: string;
-  recommendation: string;
   timeline: TimelinePoint[];
   detectedAt: string;
   /** Set when another rule's firing is the documented cause. */
@@ -95,12 +95,24 @@ interface DiagnosisCardProps {
   autoStream?: boolean;
 }
 
+// Severity → outlined pill (border + tinted text + wash fill), token-only.
+// Critical maps to destructive; high/medium share the warning (amber) tone —
+// the label text distinguishes them, matching the prototype's 2-tone pills.
 const SEVERITY_BADGE: Record<string, string> = {
-  CRITICAL: "bg-destructive text-destructive-foreground",
-  HIGH: "bg-orange-500 text-white",
-  MEDIUM: "bg-yellow-500 text-black",
-  LOW: "bg-muted text-muted-foreground border border-border",
-  INFO: "bg-blue-500/10 text-blue-700 border border-blue-500/20 dark:text-blue-400",
+  CRITICAL: "border border-destructive/40 text-destructive bg-destructive/10",
+  HIGH: "border border-warning/40 text-warning bg-warning/10",
+  MEDIUM: "border border-warning/40 text-warning bg-warning/10",
+  LOW: "border border-border text-muted-foreground bg-muted/40",
+  INFO: "border border-info/40 text-info bg-info/10",
+};
+
+// Severity → left accent bar tone for the finding card.
+const SEVERITY_BORDER: Record<string, string> = {
+  CRITICAL: "border-l-destructive",
+  HIGH: "border-l-warning",
+  MEDIUM: "border-l-warning",
+  LOW: "border-l-border",
+  INFO: "border-l-info",
 };
 
 const DOMPURIFY_CONFIG: Parameters<typeof DOMPurify.sanitize>[1] = {
@@ -133,7 +145,6 @@ export function DiagnosisCard({
   queueName,
   vhost,
   description,
-  recommendation,
   timeline,
   detectedAt,
   supersededBy,
@@ -162,6 +173,11 @@ export function DiagnosisCard({
     stream,
     reset,
   } = useStreamingExplain();
+  // Provenance for the in-panel Explain output. `explanationId` only arrives
+  // with the stream's meta event (or immediately when served from cache); the
+  // hook stays idle until then. Shared <ExplanationProvenance> with the
+  // standalone page so both surfaces report identical model/version/freshness.
+  const { data: explanation } = useExplanation(explanationId ?? "");
   // At most one step is in-flight at a time (the hook marks priors done on
   // each new step), so the first not-done step is the active one.
   const activeStep = steps.find((s) => !s.done);
@@ -304,9 +320,10 @@ export function DiagnosisCard({
   // Cards superseded by another rule's firing are visually subordinate
   // — operators still see them (recovery verification), but the eye
   // lands on the cause first.
-  const containerClass = supersededBy
-    ? "rounded-lg border border-border bg-card overflow-hidden opacity-70"
-    : "rounded-lg border border-border bg-card overflow-hidden";
+  const severityBorder = SEVERITY_BORDER[severity] ?? "border-l-border";
+  const containerClass = `rounded-lg border border-border border-l-4 ${severityBorder} bg-card overflow-hidden${
+    supersededBy ? " opacity-70" : ""
+  }`;
 
   return (
     <div className={containerClass}>
@@ -315,7 +332,7 @@ export function DiagnosisCard({
           <div className="flex items-center gap-2 flex-wrap">
             <DiagnosisRuleBadge rule={rule} />
             <span
-              className={`inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-sm ${badgeClass}`}
+              className={`inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full ${badgeClass}`}
             >
               {t(`severity.${severity.toLowerCase()}`)}
             </span>
@@ -326,8 +343,26 @@ export function DiagnosisCard({
               {rule}
             </span>
             <span className="text-xs text-muted-foreground">
-              {formatRelativeAgo(detectedAt, t("justNow"))}
+              {t("card.fired")} {formatRelativeAgo(detectedAt, t("justNow"))}
             </span>
+            {/* Queue-depth trajectory over the window (real timeline data) —
+                the delta climbs in destructive when depth is rising. */}
+            {!isClusterScoped && timeline.length >= 2 && (
+              <span className="text-xs font-mono text-muted-foreground">
+                <span aria-hidden="true">·</span> {t("card.depth")}{" "}
+                {timeline[0].messages.toLocaleString()} →{" "}
+                <span
+                  className={
+                    timeline[timeline.length - 1].messages >
+                    timeline[0].messages
+                      ? "font-medium text-destructive"
+                      : "text-foreground"
+                  }
+                >
+                  {timeline[timeline.length - 1].messages.toLocaleString()}
+                </span>
+              </span>
+            )}
             {firstSeenAt &&
               // Render "open since" only when the finding has been
               // observed long enough ago that the relative-time
@@ -349,7 +384,7 @@ export function DiagnosisCard({
               t("clusterScope")
             ) : (
               <>
-                {queueName}
+                <span className="font-mono">{queueName}</span>
                 {vhost !== "/" && (
                   <span className="ml-1 text-xs font-normal text-muted-foreground">
                     ({vhost})
@@ -374,12 +409,6 @@ export function DiagnosisCard({
 
       <div className="px-4 py-3 space-y-3">
         <p className="text-sm text-foreground">{description}</p>
-        <p className="text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">
-            {t("card.recommendation")}:
-          </span>{" "}
-          <RecommendationText text={recommendation} />
-        </p>
 
         {/* "Why this diagnosis?" — Radix Collapsible disclosure with
             citation link. Hidden by default to avoid pushing the
@@ -413,31 +442,32 @@ export function DiagnosisCard({
             </Collapsible>
           )}
           {canExplain && (
-            <button
-              type="button"
-              onClick={handleExplainClick}
-              // Stay clickable while streaming so the user can close/cancel
-              // the panel mid-stream. Only block while the panel is closed
-              // and a stream is somehow still in flight (defensive).
-              disabled={isStreaming && !explainOpen}
-              aria-expanded={explainOpen}
-              aria-controls={panelId}
-              aria-label={`${t("card.explain")} ${rule}`}
-              className={`inline-flex items-center gap-1.5 px-2 py-1 text-xs rounded-sm border transition-colors ${
-                explainOpen
-                  ? "bg-primary/20 border-primary/40 text-primary"
-                  : "bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/40"
-              } disabled:opacity-50`}
-            >
-              {isStreaming ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : explainOpen ? (
-                <X className="h-3 w-3" />
-              ) : (
-                <Sparkles className="h-3 w-3" />
-              )}
-              {t("card.explain")}
-            </button>
+            <div className="flex flex-col items-start gap-0.5">
+              <button
+                type="button"
+                onClick={handleExplainClick}
+                // Stay clickable while streaming so the user can close/cancel
+                // the panel mid-stream. Only block while the panel is closed
+                // and a stream is somehow still in flight (defensive).
+                disabled={isStreaming && !explainOpen}
+                aria-expanded={explainOpen}
+                aria-controls={panelId}
+                aria-label={`${t("card.explain")} ${rule}`}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+              >
+                {isStreaming ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : explainOpen ? (
+                  <X className="h-3 w-3" />
+                ) : (
+                  <Sparkles className="h-3 w-3" />
+                )}
+                {t("card.explain")}
+              </button>
+              <span className="text-[11px] font-mono text-muted-foreground">
+                {t("card.onDemand")}
+              </span>
+            </div>
           )}
           {/* Locked affordance — the finding exists but the user isn't
               entitled to AI Explain (free plan / unlicensed). Never let the
@@ -556,6 +586,14 @@ export function DiagnosisCard({
                     <ThumbsDown className="h-3 w-3" />
                   </button>
                 </div>
+                {explanation && (
+                  <ExplanationProvenance
+                    provider={explanation.provider}
+                    model={explanation.model}
+                    promptVersion={explanation.promptVersion}
+                    createdAt={explanation.createdAt}
+                  />
+                )}
               </>
             ) : null}
           </div>

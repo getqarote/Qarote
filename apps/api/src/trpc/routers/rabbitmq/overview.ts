@@ -2,11 +2,7 @@ import { TRPCError } from "@trpc/server";
 
 import { classifyBrokerError } from "@/core/rabbitmq/brokerError";
 
-import {
-  getOrgPlan,
-  getOverLimitWarningMessage,
-  getUpgradeRecommendationForOverLimit,
-} from "@/services/plan/plan.service";
+import { MAX_QUEUES_PER_SERVER } from "@/services/queue-limit";
 
 import {
   ServerWorkspaceInputSchema,
@@ -19,7 +15,6 @@ import { router, workspacePermissionProcedure } from "@/trpc/trpc";
 
 import { createRabbitMQClient, verifyServerAccess } from "./shared";
 
-import { UserPlan } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -57,12 +52,10 @@ export const overviewRouter = router({
           overview: typeof mappedOverview;
           warning?: {
             isOverLimit: boolean;
+            /** Already translated for the caller's locale — render as-is. */
             message: string;
             currentQueueCount: number;
-            queueCountAtConnect: number | null;
-            upgradeRecommendation: string;
-            recommendedPlan: string | null;
-            warningShown: boolean;
+            limit: number;
           };
         } = {
           overview: mappedOverview,
@@ -71,26 +64,24 @@ export const overviewRouter = router({
         // Add warning information if server is over the queue limit
         // Note: We still need the original overview for queue_totals calculation
         if (server.isOverQueueLimit && server.workspace && ctx.user) {
-          const orgInfo = await ctx.resolveOrg();
-          const userPlan = orgInfo?.organizationId
-            ? await getOrgPlan(orgInfo.organizationId)
-            : UserPlan.FREE;
-          const warningMessage = getOverLimitWarningMessage(
-            userPlan,
-            overview.queue_totals?.messages || 0
-          );
+          // `object_totals.queues` is the QUEUE count. The previous code read
+          // `queue_totals.messages` — the number of MESSAGES — and reported it as
+          // a queue count. Dead code until the ceiling started writing the flag,
+          // live and wrong from then on.
+          const queueCount =
+            overview.object_totals?.queues ?? server.queueCountAtConnect ?? 0;
 
-          const upgradeRecommendation =
-            getUpgradeRecommendationForOverLimit(userPlan);
-
+          // NOT a plan limit: no tier raises this ceiling, so the upgrade
+          // recommendation is gone. Pointing the customer at billing would be a
+          // dead end — the answer is to contact us.
           response.warning = {
             isOverLimit: true,
-            message: warningMessage,
-            currentQueueCount: overview.queue_totals?.messages || 0,
-            queueCountAtConnect: server.queueCountAtConnect,
-            upgradeRecommendation: upgradeRecommendation.message,
-            recommendedPlan: upgradeRecommendation.recommendedPlan,
-            warningShown: server.overLimitWarningShown,
+            message: te(ctx.locale, "rabbitmq.queueCeilingReached", {
+              count: queueCount,
+              limit: MAX_QUEUES_PER_SERVER,
+            }),
+            currentQueueCount: queueCount,
+            limit: MAX_QUEUES_PER_SERVER,
           };
         }
 

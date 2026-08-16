@@ -4,7 +4,6 @@
     "licenses": "Licences",
     "billing": "Facturation",
     "account": "Compte",
-
     "logout": "Déconnexion"
   },
   "billing": {
@@ -27,7 +26,18 @@
       "failed": "Échoué",
       "pending": "En attente",
       "refunded": "Remboursé"
-    }
+    },
+    "invoicesTitle": "Factures",
+    "invoicePdf": "PDF",
+    "paymentMethodTitle": "Moyen de paiement",
+    "cardLabel": "{{brand}} ···· {{last4}}",
+    "cardExpires": "expire {{month}}/{{year}}",
+    "update": "Mettre à jour",
+    "noPaymentMethod": "Aucun moyen de paiement enregistré.",
+    "addPaymentMethod": "Ajouter un moyen de paiement",
+    "contactTitle": "Contact de facturation",
+    "contactHint": "Adresse de réception de vos factures et avis de facturation.",
+    "contactEmail": "E-mail"
   },
   "footer": {
     "privacyPolicy": "Politique de confidentialité",
@@ -77,7 +87,24 @@
     },
     "status": {
       "active": "Actif",
-      "inactive": "Inactif"
+      "inactive": "Inactif",
+      "expiring": "Expire bientôt",
+      "expired": "Expirée"
+    },
+    "noLicensesValue": "Une licence auto-hébergée débloque AI Explain, les alertes, la topologie et le multi-serveur — validée hors ligne, sans appel distant.",
+    "cardSubtitle": "Auto-hébergé · licence annuelle · ID {{id}}",
+    "downloadKey": "Télécharger la clé de licence (.jwt)",
+    "pasteInstruction": "Collez ceci dans votre Qarote auto-hébergé :",
+    "pasteLocation": "Paramètres → Licence",
+    "renewNow": "Renouveler maintenant",
+    "expiringNudge_one": "Expire dans {{count}} jour ({{date}}). Renouvelez dès maintenant pour ne pas perdre AI Explain et les fonctionnalités payantes.",
+    "expiringNudge_other": "Expire dans {{count}} jours ({{date}}). Renouvelez dès maintenant pour ne pas perdre AI Explain et les fonctionnalités payantes.",
+    "expiredNudge": "Licence expirée ({{date}}). La détection continue de fonctionner, mais AI Explain, les alertes et les fonctionnalités payantes sont verrouillées.",
+    "meta": {
+      "tier": "Édition",
+      "validUntil": "Valable jusqu'au",
+      "issued": "Émise le",
+      "lastValidated": "Dernière validation"
     }
   },
   "licensePurchase": {
@@ -93,47 +120,49 @@
     "stripeHandoff": "Vous allez être redirigé vers Stripe pour un paiement sécurisé · la clé de licence sera envoyée par e-mail",
     "enterpriseContact": "Conditions personnalisées ou questions ?",
     "badges": {
-      "selected": "Sélectionné",
-      "soon": "Bientôt"
-    },
-    "categories": {
-      "coreFeatures": "Fonctionnalités principales",
-      "intelligenceDiagnostics": "Intelligence et diagnostics",
-      "security": "Sécurité et compatibilité",
-      "support": "Support"
-    },
-    "features": {
-      "servers": "Serveurs RabbitMQ",
-      "workspaces": "Espaces de travail",
-      "teamMembers": "Membres de l'équipe",
-      "advancedAnalytics": "Analytique avancée",
-      "queueManagement": "Gestion des files, échanges, VHost et utilisateurs",
-      "alertsWebhooks": "Alertes et webhooks",
-      "topologyVisualization": "Visualisation de la topologie",
-      "roleBasedAccess": "Contrôle d'accès par rôle",
-      "dailyDigest": "Résumé quotidien",
-      "messageSpy": "Message Spy",
-      "metricsPersistence": "Persistance des métriques",
-      "incidentDiagnosis": "Diagnostic d'incident",
-      "messageTracing": "Traçage des messages",
-      "ssoSamlOidc": "SSO, SAML et OIDC",
-      "soc2": "Conformité SOC 2",
-      "rabbitmqVersions": "Support des versions RabbitMQ",
-      "communitySupport": "Support communautaire",
-      "prioritySupport": "Support prioritaire"
-    },
-    "limits": {
-      "upTo3": "Jusqu'à 3",
-      "unlimited": "Illimité",
-      "rabbitmqVersionsValue": "Toutes versions 3.x et 4.x",
-      "limited": "Limité"
+      "mostPopular": "Le plus populaire"
     },
     "plans": {
       "developer": {
-        "name": "Développeur"
+        "name": "Développeur",
+        "audience": "Pour les indépendants et les petites équipes qui auto-hébergent Qarote."
       },
       "enterprise": {
-        "name": "Entreprise"
+        "name": "Entreprise",
+        "audience": "Pour les équipes plateforme qui ont besoin du SSO, de l'audit et du RBAC."
+      }
+    },
+    "intro": "Auto-hébergé, annuel. Choisissez une formule et procédez au paiement — votre clé de licence est émise instantanément.",
+    "tierGroupLabel": "Choisissez une formule de licence",
+    "orderSummary": {
+      "title": "Récapitulatif de la commande",
+      "tierLine": "{{name}} · annuel",
+      "seats": "Sièges",
+      "decreaseSeats": "Diminuer le nombre de sièges",
+      "increaseSeats": "Augmenter le nombre de sièges",
+      "total": "Total",
+      "checkout": "Passer au paiement",
+      "secureCheckout": "Paiement sécurisé via Stripe",
+      "cancel": "Annuler"
+    },
+    "cards": {
+      "developer": {
+        "bullets": [
+          "Tout Community",
+          "AI Explain — cause racine par LLM",
+          "BYOK ou Ollama local",
+          "Alertes : e-mail · Slack · webhooks",
+          "Multi-serveurs · topologie"
+        ]
+      },
+      "enterprise": {
+        "bullets": [
+          "Tout Developer",
+          "LLM géré (zéro configuration)",
+          "SSO / SAML · RBAC avancé",
+          "Journal d’audit · SOC 2",
+          "Support prioritaire & SLA"
+        ]
       }
     }
   },

@@ -1,0 +1,178 @@
+/* ============================================================================
+ * NEW CANONICAL TOKENS — drop-in for apps/app/src/styles/index.css
+ * ----------------------------------------------------------------------------
+ * Decision (Brice, Jun 11 2026): the PROTOTYPE design is now the canonical
+ * design system. This file re-expresses the prototype's palette/type/radius in
+ * the repo's exact Tailwind v4 + shadcn structure (same variable names, HSL
+ * triplets) so every existing component picks it up with zero code changes.
+ *
+ * HOW TO APPLY (3 surgical edits to index.css — keep everything else):
+ *   1. In `@theme`, replace the three --font-* definitions with the FONTS block.
+ *   2. Replace the whole `:root { … }` block inside `@layer base` with ours.
+ *   3. Replace the whole `.dark { … }` block with ours.
+ * KEEP UNCHANGED: the @theme color mappings (hsl(var(--…)) lines), rabbit
+ * animations, accordion/gentle-pulse keyframes, reduced-motion override,
+ * border-color compat layer, and all @utility blocks (btn-primary,
+ * card-unified, title-page…). They are value-driven and inherit the new look.
+ * CHART SERIES (--chart-*): kept from the current file — that palette is
+ * color-blind audited (lib/chartColors.ts); the prototype never redefined it.
+ * ALSO: update DESIGN.md in the same PR (fonts, radius, palette values) so doc
+ * and code stay in sync, and swap the font loading (see FONTS note).
+ * ==========================================================================*/
+
+/* ---------------------------------------------------------------------------
+ * 1) FONTS — replace the --font-* lines in @theme.
+ * Load via @fontsource (self-host, matches the zero-external-request ethos):
+ *   pnpm add @fontsource/space-grotesk @fontsource/ibm-plex-sans @fontsource/ibm-plex-mono
+ *   // in main.tsx:
+ *   import "@fontsource/space-grotesk/400.css"; … "/700.css";
+ *   import "@fontsource/ibm-plex-sans/400.css"; … "/600.css";
+ *   import "@fontsource/ibm-plex-mono/400.css"; … "/600.css";
+ * (Google Fonts <link> works too. Remove Bricolage Grotesque + Fragment Mono.)
+ * Same swap in apps/web (Astro) head.
+ * ------------------------------------------------------------------------- */
+/*
+  --font-heading: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans:
+    "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    roboto, "Helvetica Neue", arial, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono:
+    "IBM Plex Mono", ui-monospace, "SFMono-Regular", "SF Mono", menlo, monaco,
+    consolas, "Liberation Mono", "Courier New", monospace;
+*/
+/* Note: title-page/title-section keep font-optical-sizing:auto — harmless for
+   Space Grotesk (no opsz axis). title-gradient (wordmark) stays as is. */
+
+/* ---------------------------------------------------------------------------
+ * 2) LIGHT — replaces `:root` inside @layer base.
+ * Warm paper neutrals + carrot primary. (Prototype hex in comments.)
+ * ------------------------------------------------------------------------- */
+@layer base {
+  :root {
+    --background: 40 27% 98%; /* paper #FBFAF8 — warm off-white, was pure white */
+    --foreground: 34 20% 7%; /* ink #15120E */
+    --card: 0 0% 100%; /* surfaces are pure white on the warm paper */
+    --card-foreground: 34 20% 7%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 34 20% 7%;
+
+    /* Carrot primary #E8590C — slightly deeper & more saturated than the old
+       24 82% 52%; identical in light and dark (brand constant). */
+    --primary: 21 90% 48%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 43 30% 96%; /* surface-2 #F7F5F0 */
+    --secondary-foreground: 35 10% 24%; /* ink-2 #433E37 */
+
+    --muted: 44 25% 91%; /* surface-3 #EEEBE3 */
+    --muted-foreground: 37 8% 42%; /* ink-3 #756E63 */
+
+    /* Accent = carrot wash — selected/hover tint carries the brand. */
+    --accent: 26 74% 94%; /* #FBEEE4 */
+    --accent-foreground: 22 88% 25%; /* carrot-ink #7A3208 */
+
+    --destructive: 6 68% 52%; /* #D8412F */
+    --destructive-foreground: 0 0% 100%;
+
+    /* Status — actual health/state only, never decoration (rule unchanged). */
+    --success: 146 50% 36%; /* #2E8B57 */
+    --success-foreground: 0 0% 100%;
+    --success-muted: 146 40% 93%;
+
+    --warning: 35 75% 49%; /* #D98A1F */
+    --warning-foreground: 0 0% 100%;
+    --warning-muted: 35 75% 93%;
+
+    --info: 217 71% 51%; /* #2A6FDB */
+    --info-foreground: 0 0% 100%;
+    --info-muted: 217 70% 95%;
+
+    /* --chart-* : KEEP the existing 15-series block here, unchanged. */
+
+    --border: 42 19% 86%; /* line #E3DFD6 */
+    --input: 41 16% 80%; /* line-2 #D4CFC4 */
+    --ring: 21 90% 48%;
+
+    /* Radius 7px — softer than 0.25rem, still tool-like. rounded-lg cards may
+       read 12px via a local override where the design calls for it. */
+    --radius: 0.4375rem;
+
+    /* Sidebar — same warm paper family */
+    --sidebar-background: 40 27% 98%;
+    --sidebar-foreground: 34 20% 7%;
+    --sidebar-primary: 21 90% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 26 74% 94%;
+    --sidebar-accent-foreground: 22 88% 25%;
+    --sidebar-border: 42 19% 86%;
+    --sidebar-ring: 21 90% 48%;
+  }
+
+  /* -------------------------------------------------------------------------
+   * 3) DARK — replaces `.dark`. Cool deep-navy night palette (the prototype's
+   * signature dark), replacing the warm near-black. Status colors brighten.
+   * ----------------------------------------------------------------------- */
+  .dark {
+    --background: 220 29% 6%; /* night #0B0E14 */
+    --foreground: 220 23% 92%; /* #E7EAF0 */
+    --card: 221 28% 9%; /* surface #11151E */
+    --card-foreground: 220 23% 92%;
+    --popover: 221 28% 9%;
+    --popover-foreground: 220 23% 92%;
+
+    --primary: 21 90% 52%; /* carrot, +4L for contrast on night */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 221 27% 12%; /* surface-2 #161B26 */
+    --secondary-foreground: 218 16% 73%; /* #AEB6C4 */
+
+    --muted: 221 27% 12%;
+    --muted-foreground: 219 12% 54%; /* #7B8597 */
+
+    --accent: 15 30% 14%; /* carrot-soft over night */
+    --accent-foreground: 24 80% 71%; /* #F0A878 */
+
+    --destructive: 7 84% 64%; /* #F06A57 */
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 150 50% 50%; /* #3FBF7F */
+    --success-foreground: 220 29% 6%;
+    --success-muted: 150 45% 13%;
+
+    --warning: 40 73% 56%; /* #E0A93C */
+    --warning-foreground: 220 29% 6%;
+    --warning-muted: 40 60% 13%;
+
+    --info: 217 75% 64%;
+    --info-foreground: 220 29% 6%;
+    --info-muted: 217 50% 15%;
+
+    /* --chart-* : KEEP the existing dark chart block here, unchanged. */
+
+    --border: 222 23% 17%; /* #222836 */
+    --input: 220 21% 22%; /* #2C3444 */
+    --ring: 21 90% 52%;
+
+    --sidebar-background: 220 30% 8%; /* #0E121A */
+    --sidebar-foreground: 220 23% 92%;
+    --sidebar-primary: 21 90% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 15 30% 14%;
+    --sidebar-accent-foreground: 24 80% 71%;
+    --sidebar-border: 222 23% 17%;
+    --sidebar-ring: 21 90% 52%;
+  }
+}
+
+/* ============================================================================
+ * Sanity checks after applying (run /design-review):
+ *  - btn-primary, FeatureGate, severity badges, charts: unchanged code, new look.
+ *  - Contrast: carrot on white ~3.6:1 — passes AA for large text / UI (3:1),
+ *    NOT for normal body text (carrot is for fills/chrome, never text on paper).
+ *    Night fg/bg ~14:1 (pass).
+ *  - The warm paper background is the biggest visible shift in light mode;
+ *    cards stay white so elevation still reads.
+ *  - apps/web + apps/portal consume the same tokens → same 3 edits there if
+ *    they hold copies, or import from a shared package.
+ * ==========================================================================*/

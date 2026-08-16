@@ -1,14 +1,22 @@
 import { useTranslation } from "react-i18next";
 
 import { format } from "date-fns";
-import { AlertTriangle, ExternalLink, Receipt } from "lucide-react";
+import { AlertTriangle, CreditCard, ExternalLink, Receipt } from "lucide-react";
 import { toast } from "sonner";
 
 import { track } from "@/lib/analytics";
 import { getDateFnsLocale } from "@/lib/dateFnsLocale";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -43,6 +51,7 @@ const Billing = () => {
   };
 
   const payments = data?.recentPayments ?? [];
+  const card = data?.paymentMethod?.card ?? null;
   const currency = (data?.stripeSubscription?.currency ?? "usd").toUpperCase();
   const formatAmount = (cents: number) =>
     new Intl.NumberFormat(i18n.language, {
@@ -86,43 +95,14 @@ const Billing = () => {
           </CardContent>
         </Card>
       ) : (
-        <>
-          {/* Manage billing — payment method + invoices live in the Stripe
-              customer portal; we link out rather than re-implement them. */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("billing.manageTitle")}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                {t("billing.manageHint")}
-              </p>
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-                <div>
-                  <span className="text-muted-foreground">
-                    {t("billing.contact")}
-                  </span>{" "}
-                  <span className="font-medium">{user?.email}</span>
-                </div>
-              </div>
-              <Button
-                onClick={openStripePortal}
-                disabled={portalSession.isPending}
-              >
-                <ExternalLink className="h-4 w-4" />
-                {portalSession.isPending
-                  ? t("billing.manageOpening")
-                  : t("billing.manageButton")}
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Recent payments */}
+        <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
+          {/* Invoices — payments are recorded locally; the downloadable PDFs
+              live in the Stripe customer portal, so the action links out. */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Receipt className="h-4 w-4" />
-                {t("billing.recentPayments")}
+                {t("billing.invoicesTitle")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -137,7 +117,7 @@ const Billing = () => {
                     return (
                       <li
                         key={p.id}
-                        className="flex items-center justify-between gap-4 py-3"
+                        className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3"
                       >
                         <div className="min-w-0">
                           <p className="font-medium truncate">
@@ -154,16 +134,24 @@ const Billing = () => {
                             {formatAmount(p.amount)}
                           </span>
                           <span
-                            className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                              isPaid
-                                ? "text-success bg-success/10"
-                                : "text-muted-foreground bg-muted"
+                            className={`inline-flex items-center gap-1 text-xs font-medium ${
+                              isPaid ? "text-success" : "text-muted-foreground"
                             }`}
                           >
+                            <span aria-hidden="true">●</span>
                             {t(`billing.status.${p.status.toLowerCase()}`, {
                               defaultValue: p.status,
                             })}
                           </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={openStripePortal}
+                            disabled={portalSession.isPending}
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            {t("billing.invoicePdf")}
+                          </Button>
                         </div>
                       </li>
                     );
@@ -172,7 +160,95 @@ const Billing = () => {
               )}
             </CardContent>
           </Card>
-        </>
+
+          <div className="flex flex-col gap-6">
+            {/* Payment method — read from Stripe; editing happens in the portal. */}
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("billing.paymentMethodTitle")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {card ? (
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                      <CreditCard className="h-4 w-4" />
+                    </span>
+                    <div className="min-w-0">
+                      <div className="font-medium">
+                        {t("billing.cardLabel", {
+                          brand: card.brand,
+                          last4: card.last4,
+                        })}
+                      </div>
+                      <div className="font-mono text-xs text-muted-foreground">
+                        {t("billing.cardExpires", {
+                          month: String(card.exp_month).padStart(2, "0"),
+                          year: String(card.exp_year).slice(-2),
+                        })}
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="ml-auto"
+                      onClick={openStripePortal}
+                      disabled={portalSession.isPending}
+                    >
+                      {t("billing.update")}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      {t("billing.noPaymentMethod")}
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={openStripePortal}
+                      disabled={portalSession.isPending}
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      {t("billing.addPaymentMethod")}
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Billing contact — the email of record; managed in the portal. */}
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("billing.contactTitle")}</CardTitle>
+                <CardDescription>{t("billing.contactHint")}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="billing-contact-email">
+                    {t("billing.contactEmail")}
+                  </Label>
+                  <Input
+                    id="billing-contact-email"
+                    type="email"
+                    value={user?.email ?? ""}
+                    readOnly
+                  />
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={openStripePortal}
+                  disabled={portalSession.isPending}
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  {portalSession.isPending
+                    ? t("billing.manageOpening")
+                    : t("billing.update")}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       )}
     </div>
   );

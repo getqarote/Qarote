@@ -67,3 +67,18 @@ export const useRegisterSsoProvider = (options?: {
     onError: options?.onError,
   });
 };
+
+export const useSetSsoEnforcement = (options?: {
+  onSuccess?: () => void;
+  onError?: (error: { message: string }) => void;
+}) => {
+  const utils = trpc.useUtils();
+
+  return trpc.sso.setEnforcement.useMutation({
+    onSuccess: () => {
+      utils.sso.getProviderConfig.invalidate();
+      options?.onSuccess?.();
+    },
+    onError: options?.onError,
+  });
+};

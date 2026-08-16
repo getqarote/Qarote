@@ -41,6 +41,10 @@ export function useExplanation(id: string) {
   return useQuery({
     queryKey: ["llm-explanation", id],
     queryFn: () => fetchExplanation(id),
+    // Callers may pass an empty id before an explanation exists (e.g. the
+    // in-panel Explain output on DiagnosisCard, where the id only arrives
+    // with the stream's meta event). Don't fetch until we have a real id.
+    enabled: id.length > 0,
     retry: false,
     staleTime: 5 * 60 * 1000,
   });

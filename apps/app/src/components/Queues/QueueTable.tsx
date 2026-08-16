@@ -21,8 +21,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { IconChevronRight } from "@/components/ui/icons";
 import { PaginationControls } from "@/components/ui/PaginationControls";
-import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type SortField = "name" | "messages" | "messages_unacknowledged" | "consumers";
@@ -299,7 +299,7 @@ function QueueRow({
               {queue.consumers.toLocaleString()}
             </span>
             <div className="w-8 flex justify-center">
-              <PixelChevronRight
+              <IconChevronRight
                 className={`h-3 text-muted-foreground transition-transform duration-150 shrink-0 ${
                   isOpen ? "rotate-90" : ""
                 }`}

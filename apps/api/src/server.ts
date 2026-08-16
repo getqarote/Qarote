@@ -17,6 +17,7 @@ import { bootstrapSso } from "@/core/bootstrap-sso";
 import { logger } from "@/core/logger";
 import { runMigrations } from "@/core/migrate";
 import { configurePostgresTimeouts, prisma } from "@/core/prisma";
+import { runTimescaleBootstrap } from "@/core/ts-bootstrap";
 import { getDirname } from "@/core/utils";
 
 import { DeploymentService } from "@/services/deployment/deployment.service";
@@ -102,6 +103,7 @@ app.use(
 // DB lookups per POST, so throttle key brute-force / DoS at the edge.
 app.use("/api/mcp/*", standardRateLimiter);
 app.route("/api/mcp", mcpRouter);
+
 
 // OG unfurl route for /explanations/:id — registered BEFORE the SPA catch-all
 // and outside the !isCloudMode() gate so it works in both cloud and self-hosted.
@@ -260,6 +262,12 @@ async function startServer() {
     // Only the binary tarball ships this directory — Docker/Dokku/cloud
     // deployments use `prisma migrate deploy` via their own scripts instead.
     await runMigrations(config.DATABASE_URL);
+
+    // Create/refresh the TimescaleDB continuous aggregates (CAGG DDL can't run in
+    // a Prisma migration's transaction). Runs in every mode after migrations —
+    // the SQL ships inline, so unlike migrations/ it needs no directory to exist.
+    // Idempotent: safe on every boot.
+    await runTimescaleBootstrap(config.DATABASE_URL);
 
     await prisma.$connect();
     dbConnected = true;

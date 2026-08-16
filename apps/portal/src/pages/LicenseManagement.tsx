@@ -2,13 +2,17 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router";
 
-import { format, formatDistanceToNow } from "date-fns";
+import { differenceInDays, format, formatDistanceToNow } from "date-fns";
 import {
   AlertTriangle,
+  Bell,
   Check,
   CheckCheck,
   Copy,
+  Download,
+  Lock,
   RefreshCw,
+  Server,
   ShieldCheck,
   XCircle,
 } from "lucide-react";
@@ -22,6 +26,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { useLicenses, useRegenerateLicense } from "@/hooks/queries/useLicenses";
+
+// A license is "expiring soon" when it is still active but within this window.
+const EXPIRING_SOON_DAYS = 30;
+
+type LicenseStatus = "active" | "expiring" | "expired";
+
+const getLicenseStatus = (license: License): LicenseStatus => {
+  if (!license.isActive) return "expired";
+  const days = differenceInDays(new Date(license.expiresAt), new Date());
+  return days <= EXPIRING_SOON_DAYS ? "expiring" : "active";
+};
 
 const LicenseManagement = () => {
   const { data, isLoading, isError, refetch } = useLicenses();
@@ -82,6 +97,21 @@ const LicenseManagement = () => {
       .catch(() => {
         toast.error(t("licenseManagement.copyFailed"));
       });
+  };
+
+  const downloadKey = (text: string) => {
+    const blob = new Blob([text], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "qarote-license.jwt";
+    anchor.click();
+    URL.revokeObjectURL(url);
+    try {
+      track("license_key_downloaded");
+    } catch {
+      // non-blocking analytics
+    }
   };
 
   const toggleKey = (licenseId: string) => {
@@ -204,9 +234,12 @@ const LicenseManagement = () => {
       {licenses.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center space-y-3">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <ShieldCheck className="h-6 w-6" />
+            </div>
             <p className="font-medium">{t("licenseManagement.noLicenses")}</p>
-            <p className="text-sm text-muted-foreground">
-              {t("licenseManagement.noLicensesHint")}
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              {t("licenseManagement.noLicensesValue")}
             </p>
             <Link to="/purchase" className="inline-block mt-1">
               <Button>{t("licenseManagement.purchaseNew")}</Button>
@@ -220,6 +253,14 @@ const LicenseManagement = () => {
             const isExpanded = expandedKeys.has(license.id);
             const isCopied = copiedId === license.id;
             const tierLabel = TIER_LABELS[license.tier] ?? license.tier;
+            const status = getLicenseStatus(license);
+            const validUntil = format(new Date(license.expiresAt), "PPP", {
+              locale: dateLocale,
+            });
+            const daysLeft = differenceInDays(
+              new Date(license.expiresAt),
+              new Date()
+            );
 
             return (
               <Card key={license.id}>
@@ -229,77 +270,116 @@ const LicenseManagement = () => {
                       {t("licenseManagement.licenseOfTier", {
                         tier: tierLabel,
                       })}
-                      {license.isActive ? (
+                      {status === "active" && (
                         <span className="inline-flex items-center gap-1 text-xs font-medium text-success bg-success/10 px-2 py-0.5 rounded-full">
                           <ShieldCheck className="h-3 w-3" />
                           {t("licenseManagement.status.active")}
                         </span>
-                      ) : (
+                      )}
+                      {status === "expiring" && (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-warning bg-warning/10 px-2 py-0.5 rounded-full">
+                          <Bell className="h-3 w-3" />
+                          {t("licenseManagement.status.expiring")}
+                        </span>
+                      )}
+                      {status === "expired" && (
                         <span className="inline-flex items-center gap-1 text-xs font-medium text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
                           <XCircle className="h-3 w-3" />
-                          {t("licenseManagement.status.inactive")}
+                          {t("licenseManagement.status.expired")}
                         </span>
                       )}
                     </CardTitle>
-                    <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-sm text-muted-foreground">
-                      <span>
-                        {license.expiresAt
-                          ? t("licenseManagement.expires", {
-                              date: format(new Date(license.expiresAt), "PPP", {
-                                locale: dateLocale,
-                              }),
-                            })
-                          : t("licenseManagement.noExpiration")}
-                      </span>
-                      <span>
-                        {t("licenseManagement.purchasedOn", {
-                          date: format(new Date(license.createdAt), "PPP", {
-                            locale: dateLocale,
-                          }),
-                        })}
-                      </span>
-                      {license.lastValidatedAt && (
-                        <span
-                          title={formatDistanceToNow(
-                            new Date(license.lastValidatedAt),
-                            { addSuffix: true, locale: dateLocale }
-                          )}
-                        >
-                          {t("licenseManagement.lastValidated", {
-                            date: format(
-                              new Date(license.lastValidatedAt),
-                              "PPP",
-                              { locale: dateLocale }
-                            ),
-                          })}
-                        </span>
-                      )}
-                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {t("licenseManagement.cardSubtitle", { id: license.id })}
+                    </p>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {!license.isActive && (
+                  {status === "expiring" && (
+                    <div className="rounded-md bg-warning/5 border border-warning/30 px-4 py-3 flex items-center justify-between gap-4">
+                      <div className="flex items-start gap-2.5">
+                        <Bell className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+                        <p className="text-sm text-foreground">
+                          {t("licenseManagement.expiringNudge", {
+                            count: Math.max(daysLeft, 0),
+                            date: validUntil,
+                          })}
+                        </p>
+                      </div>
+                      <Link to="/purchase">
+                        <Button size="sm" className="shrink-0">
+                          {t("licenseManagement.renewLicense")}
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+
+                  {status === "expired" && (
                     <div className="rounded-md bg-destructive/5 border border-destructive/20 px-4 py-3 flex items-center justify-between gap-4">
-                      <p className="text-sm text-destructive">
-                        {license.expiresAt
-                          ? t("licenseManagement.expiredOn", {
-                              date: format(new Date(license.expiresAt), "PPP", {
-                                locale: dateLocale,
-                              }),
-                            })
-                          : t("licenseManagement.expiredNoDate")}
-                      </p>
+                      <div className="flex items-start gap-2.5">
+                        <Lock className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+                        <p className="text-sm text-destructive">
+                          {license.expiresAt
+                            ? t("licenseManagement.expiredNudge", {
+                                date: validUntil,
+                              })
+                            : t("licenseManagement.expiredNoDate")}
+                        </p>
+                      </div>
                       <Link to="/purchase">
                         <Button
                           size="sm"
                           variant="outline"
                           className="shrink-0"
                         >
-                          {t("licenseManagement.renewLicense")}
+                          {t("licenseManagement.renewNow")}
                         </Button>
                       </Link>
                     </div>
                   )}
+
+                  <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-2 text-sm">
+                    <div className="flex justify-between gap-4 border-b border-border py-1.5">
+                      <dt className="text-muted-foreground">
+                        {t("licenseManagement.meta.tier")}
+                      </dt>
+                      <dd className="font-medium">{tierLabel}</dd>
+                    </div>
+                    <div className="flex justify-between gap-4 border-b border-border py-1.5">
+                      <dt className="text-muted-foreground">
+                        {t("licenseManagement.meta.validUntil")}
+                      </dt>
+                      <dd className="font-medium">{validUntil}</dd>
+                    </div>
+                    <div className="flex justify-between gap-4 border-b border-border py-1.5">
+                      <dt className="text-muted-foreground">
+                        {t("licenseManagement.meta.issued")}
+                      </dt>
+                      <dd className="font-medium">
+                        {format(new Date(license.createdAt), "PPP", {
+                          locale: dateLocale,
+                        })}
+                      </dd>
+                    </div>
+                    {license.lastValidatedAt && (
+                      <div className="flex justify-between gap-4 border-b border-border py-1.5">
+                        <dt className="text-muted-foreground">
+                          {t("licenseManagement.meta.lastValidated")}
+                        </dt>
+                        <dd
+                          className="font-medium"
+                          title={formatDistanceToNow(
+                            new Date(license.lastValidatedAt),
+                            { addSuffix: true, locale: dateLocale }
+                          )}
+                        >
+                          {format(new Date(license.lastValidatedAt), "PPP", {
+                            locale: dateLocale,
+                          })}
+                        </dd>
+                      </div>
+                    )}
+                  </dl>
 
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">
@@ -324,27 +404,36 @@ const LicenseManagement = () => {
                             : t("licenseManagement.showFullKey")}
                         </button>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="shrink-0 mt-0.5"
-                        aria-label={
-                          isCopied
-                            ? t("licenseManagement.copiedToClipboard")
-                            : t("licenseManagement.copyLicenseKey")
-                        }
-                        onClick={() => copyToClipboard(keyValue, license.id)}
-                      >
-                        {isCopied ? (
-                          <Check className="h-4 w-4 icon-success" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
-                      </Button>
+                      <div className="flex shrink-0 gap-2 mt-0.5">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          aria-label={
+                            isCopied
+                              ? t("licenseManagement.copiedToClipboard")
+                              : t("licenseManagement.copyLicenseKey")
+                          }
+                          onClick={() => copyToClipboard(keyValue, license.id)}
+                        >
+                          {isCopied ? (
+                            <Check className="h-4 w-4 icon-success" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          aria-label={t("licenseManagement.downloadKey")}
+                          onClick={() => downloadKey(keyValue)}
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
 
-                  {license.isActive &&
+                  {status !== "expired" &&
                     (confirmingRegenId === license.id ? (
                       <div className="rounded-md border border-warning/30 bg-warning/5 px-4 py-3 space-y-2.5">
                         <p className="text-sm text-foreground">
@@ -384,16 +473,14 @@ const LicenseManagement = () => {
                       </Button>
                     ))}
 
-                  <p className="text-xs text-muted-foreground">
-                    {t("licenseManagement.activationGuide")}{" "}
-                    <a
-                      href="https://qarote.io/docs"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline underline-offset-2 hover:text-foreground transition-colors"
-                    >
-                      {t("licenseManagement.activationDocsLink")}
-                    </a>
+                  <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Server className="h-3.5 w-3.5 shrink-0" />
+                    <span>
+                      {t("licenseManagement.pasteInstruction")}{" "}
+                      <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-foreground">
+                        {t("licenseManagement.pasteLocation")}
+                      </code>
+                    </span>
                   </p>
                 </CardContent>
               </Card>

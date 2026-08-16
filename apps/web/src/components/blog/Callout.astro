@@ -1,0 +1,45 @@
+---
+interface Props {
+  type?: "note" | "warn";
+}
+const { type = "note" } = Astro.props;
+const icon = type === "warn" ? "⚠" : "✦";
+---
+
+<div class={`callout callout--${type}`}>
+  <span class="callout__ic" aria-hidden="true">{icon}</span>
+  <div><slot /></div>
+</div>
+
+<style>
+  .callout {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    margin: 18px 0;
+    font-size: 14.5px;
+    line-height: 1.55;
+  }
+  .callout :global(p) {
+    margin: 0;
+  }
+  .callout :global(strong) {
+    color: hsl(var(--foreground));
+    font-weight: 600;
+  }
+  .callout__ic {
+    flex-shrink: 0;
+    font-size: 16px;
+  }
+  .callout--note {
+    background: hsl(var(--accent));
+    border: 1px solid hsl(var(--primary) / 0.28);
+    color: hsl(var(--foreground));
+  }
+  .callout--warn {
+    background: hsl(40 75% 45% / 0.12);
+    border: 1px solid hsl(40 75% 45% / 0.32);
+    color: hsl(var(--foreground));
+  }
+</style>

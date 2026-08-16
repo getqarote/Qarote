@@ -3,25 +3,6 @@
  * Contains all TypeScript interfaces and types used across the API
  */
 
-export interface ApiError {
-  message: string;
-  status?: number;
-  code?: string;
-}
-
-export interface Server {
-  id: string;
-  name: string;
-  host: string;
-  port: number;
-  amqpPort: number;
-  username: string;
-  vhost: string;
-  useHttps: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
 interface QueueArguments {
   [key: string]: unknown;
   "x-max-length"?: number;

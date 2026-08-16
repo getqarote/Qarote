@@ -137,7 +137,6 @@ export const billingRouter = router({
             where: { id: ctx.organizationId },
             select: {
               stripeCustomerId: true,
-              stripeSubscriptionId: true,
             },
           }),
         ]);
@@ -155,7 +154,8 @@ export const billingRouter = router({
         }
 
         const orgStripeCustomerId = org?.stripeCustomerId ?? null;
-        const orgStripeSubscriptionId = org?.stripeSubscriptionId ?? null;
+        const orgStripeSubscriptionId =
+          orgSubscription?.stripeSubscriptionId ?? null;
 
         let stripeSubscription: Stripe.Subscription | null = null;
         let upcomingInvoice = null;

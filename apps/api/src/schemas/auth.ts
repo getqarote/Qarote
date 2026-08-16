@@ -1,14 +1,17 @@
 import { z } from "zod";
 
-// Schema for user registration
+// Schema for user registration.
+//
+// firstName/lastName are optional: the lightweight sign-up no longer collects
+// them (they arrive via OAuth/SSO claims or the optional onboarding step), and
+// terms acceptance is now the passive "by creating an account…" notice rather
+// than a checkbox — so no acceptTerms field. The invitation flow, which still
+// collects names, validates them in its own schema.
 export const RegisterUserSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  acceptTerms: z.boolean().refine((val) => val === true, {
-    message: "You must accept the terms of service to register",
-  }),
+  firstName: z.string().trim().max(100).optional(),
+  lastName: z.string().trim().max(100).optional(),
   sourceApp: z.enum(["app", "portal"]).optional().default("app"),
   referralSource: z.string().max(500).optional(),
   discoveryQuery: z.string().trim().max(500).optional(),

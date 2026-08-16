@@ -11,8 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdownMenu";
-import { PixelChevronDown } from "@/components/ui/pixel-chevron-down";
-import { PixelChevronLeft } from "@/components/ui/pixel-chevron-left";
+import { IconChevron, IconChevronLeft } from "@/components/ui/icons";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useQueuePauseStatus } from "@/hooks/queries/useRabbitMQ";
@@ -57,7 +56,7 @@ export function QueueHeader({
             onClick={onNavigateBack}
             className="mr-2 flex items-center gap-1 shrink-0"
           >
-            <PixelChevronLeft className="h-4 w-auto shrink-0" />
+            <IconChevronLeft className="h-4 w-auto shrink-0" />
           </Button>
           <h1 className="title-page break-all min-w-0">{queueName}</h1>
         </div>
@@ -69,7 +68,7 @@ export function QueueHeader({
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="rounded-none">
                   {t("actions")}
-                  <PixelChevronDown className="ml-1 h-3 w-auto shrink-0" />
+                  <IconChevron className="ml-1 h-3 w-auto shrink-0" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">

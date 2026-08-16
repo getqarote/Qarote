@@ -32,12 +32,12 @@ export const subscriptionRouter = router({
       const { user, prisma } = ctx;
 
       try {
-        const org = await prisma.organization.findUnique({
-          where: { id: ctx.organizationId },
+        const dbSubscription = await prisma.subscription.findUnique({
+          where: { organizationId: ctx.organizationId },
           select: { stripeSubscriptionId: true },
         });
 
-        const subscriptionId = org?.stripeSubscriptionId ?? null;
+        const subscriptionId = dbSubscription?.stripeSubscriptionId ?? null;
 
         if (!subscriptionId) {
           throw new TRPCError({

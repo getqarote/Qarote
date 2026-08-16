@@ -24,7 +24,7 @@ jobs:
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
     steps:
       - name: 🔍 Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: 📦 Setup pnpm
         uses: pnpm/action-setup@v6
@@ -32,7 +32,7 @@ jobs:
           version: "9.0.0"
 
       - name: 📦 Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: "24"
           cache: "pnpm"
@@ -67,7 +67,7 @@ jobs:
 
     steps:
       - name: 🔍 Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: 🔑 Setup SSH
         uses: webfactory/ssh-agent@v0.10.0
@@ -153,10 +153,19 @@ jobs:
     runs-on: ubuntu-latest
     environment: staging
     needs: [quality-checks, configure-worker-app]
+    # Shares the staging-dokku-deploy group with the api deploy so the two
+    # never build simultaneously on the shared 38 GB box (concurrent ~3 GB
+    # herokuish builds → ENOSPC). See deploy-api-staging.yml for the rationale.
+    # cancel-in-progress: false queues instead of cancelling so a build is never
+    # orphaned mid-push (zombie /build container) and GitHub keeps only the
+    # newest pending run per group.
+    concurrency:
+      group: staging-dokku-deploy
+      cancel-in-progress: false
 
     steps:
       - name: 🔍 Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0 # Full history for proper git operations
 
@@ -177,6 +186,18 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ vars.DOKKU_HOST_APP1 }} >> ~/.ssh/known_hosts
+
+      # Reclaim disk before deploying. The staging box is tiny (38 GB, shared by
+      # API + worker + Postgres + RabbitMQ) and a single merge to apps/api/**
+      # fires BOTH the api and worker staging deploys, each leaving a ~3 GB
+      # herokuish build container behind. Left to the daily prune cron, two
+      # back-to-back builds can hit 100% disk and fail the image write with
+      # "no space left on device". `dokku cleanup` removes exited/dead
+      # containers and dangling images and is safe to run before every deploy.
+      - name: 🧹 Reclaim disk on staging host
+        run: |
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} cleanup --global || \
+            echo "Cleanup returned non-zero (non-fatal); continuing with deploy"
 
       # Deploy the application.
       # The worker is a long-running cron process that never exits, so Dokku streams its

@@ -32,12 +32,37 @@
     "configureAiExplain": "配置 AI Explain"
   },
   "sees": {
-    "title": "你的智能体当前看到的",
+    "title": "你的智能体所见",
     "refresh": "刷新",
-    "allQuiet": "一切平静 — 过去 2 小时无活跃问题",
     "staleMetrics": "broker 不可达时无法获取实时指标。",
     "retry": "重试",
-    "clusterDetail": "集群详情"
+    "clusterDetail": "集群详情",
+    "timeRange": {
+      "label": "时间范围"
+    },
+    "cluster": "集群",
+    "calm": {
+      "headline": "一切正常 — 最近 {{window}} 内无活跃发现",
+      "lastScan": "上次扫描 {{ago}}",
+      "justNow": "刚刚"
+    },
+    "concerns": {
+      "headline_one": "最近 {{window}} 内有 {{count}} 项关注",
+      "headline_other": "最近 {{window}} 内有 {{count}} 项关注",
+      "severity": {
+        "critical_one": "严重 {{count}} 项",
+        "critical_other": "严重 {{count}} 项",
+        "high_one": "高危 {{count}} 项",
+        "high_other": "高危 {{count}} 项",
+        "medium_one": "中危 {{count}} 项",
+        "medium_other": "中危 {{count}} 项",
+        "low_one": "低危 {{count}} 项",
+        "low_other": "低危 {{count}} 项",
+        "info_one": "提示 {{count}} 项",
+        "info_other": "提示 {{count}} 项"
+      },
+      "view": "在诊断中查看"
+    }
   },
   "cluster": {
     "title": "集群",
@@ -46,7 +71,12 @@
     "connections": "连接 · {{count}}",
     "channels": "通道 · {{count}}",
     "none": "暂无。",
-    "agentNote": "这些对象也可通过 list_servers 和 get_overview 提供给你的智能体。"
+    "agentNote": "这些对象也可通过 list_servers 和 get_overview 提供给你的智能体。",
+    "nodeRunQueue": "运行队列 {{value}}",
+    "channelOpen": "打开",
+    "channelUnacked": "未确认",
+    "channelPrefetchAvg": "预取（平均）",
+    "agentNoteTools": "这些对象也可通过 <listServers>list_servers</listServers> 和 <getOverview>get_overview</getOverview> 提供给你的智能体。"
   },
   "ask": {
     "label": "问问你的智能体",
@@ -62,5 +92,16 @@
     "prompt4": "为什么 payments.capture 的深度在上升？",
     "prompt5": "按严重程度列出配置问题",
     "prompt6": "过去一小时 broker 上有任何变更吗？"
+  },
+  "pushBanner": {
+    "title": "在手机上接收告警",
+    "enable": "启用告警",
+    "dismiss": "忽略"
+  },
+  "noAlertChannel": {
+    "title": "尚未配置告警渠道",
+    "body": "严重问题触发时可能无法通知到你。添加邮件、Slack 或 Webhook，让事件第一时间送达。",
+    "action": "设置告警",
+    "dismiss": "忽略"
   }
 }

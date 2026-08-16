@@ -8,12 +8,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockRoleFindMany = vi.fn();
 const mockMemberFindFirst = vi.fn();
+const mockMemberGroupBy = vi.fn();
 
 vi.mock("@/core/prisma", () => ({
   prisma: {
     role: { findMany: (...a: unknown[]) => mockRoleFindMany(...a) },
     workspaceMember: {
       findFirst: (...a: unknown[]) => mockMemberFindFirst(...a),
+      groupBy: (...a: unknown[]) => mockMemberGroupBy(...a),
     },
   },
 }));
@@ -67,7 +69,10 @@ function makeCtx() {
   return {
     prisma: {
       role: { findMany: mockRoleFindMany },
-      workspaceMember: { findFirst: mockMemberFindFirst },
+      workspaceMember: {
+        findFirst: mockMemberFindFirst,
+        groupBy: mockMemberGroupBy,
+      },
     },
     logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
     user: {
@@ -100,6 +105,7 @@ describe("workspace.role.builtins", () => {
         name: "Read-only",
       },
     ]);
+    mockMemberGroupBy.mockResolvedValue([]);
 
     const caller = roleRouter.createCaller(makeCtx() as never);
     const result = await caller.builtins({
@@ -116,6 +122,35 @@ describe("workspace.role.builtins", () => {
     expect(mockRoleFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { workspaceId: null, isSystem: true },
+      })
+    );
+  });
+
+  it("counts this workspace's members per built-in role", async () => {
+    mockRoleFindMany.mockResolvedValue([
+      { id: "uuid-admin", builtinKey: WorkspaceRole.ADMIN, name: "Admin" },
+      { id: "uuid-member", builtinKey: WorkspaceRole.MEMBER, name: "Member" },
+    ]);
+    mockMemberGroupBy.mockResolvedValue([
+      { roleId: "uuid-admin", _count: { _all: 3 } },
+    ]);
+
+    const caller = roleRouter.createCaller(makeCtx() as never);
+    const result = await caller.builtins({
+      workspaceId: "00000000-0000-4000-8000-000000000001",
+    });
+
+    const byKey = Object.fromEntries(
+      result.items.map((r) => [r.builtinKey, r.memberCount])
+    );
+    expect(byKey[WorkspaceRole.ADMIN]).toBe(3);
+    expect(byKey[WorkspaceRole.MEMBER]).toBe(0);
+    expect(mockMemberGroupBy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          workspaceId: "00000000-0000-4000-8000-000000000001",
+          role: { isSystem: true },
+        },
       })
     );
   });

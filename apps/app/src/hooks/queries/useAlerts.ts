@@ -28,20 +28,6 @@ export const useAlertRules = (enabled: boolean = true) => {
   return query;
 };
 
-export const useCreateAlertRule = () => {
-  const utils = trpc.useUtils();
-
-  const mutation = trpc.alerts.rules.createRule.useMutation({
-    onSuccess: () => {
-      utils.alerts.rules.getRules.invalidate();
-    },
-  });
-
-  // The tRPC mutation already accepts the correct format, so we can return it directly
-  // But we need to ensure the response format matches the old API
-  return mutation;
-};
-
 export const useUpdateAlertRule = () => {
   const utils = trpc.useUtils();
 
@@ -49,18 +35,6 @@ export const useUpdateAlertRule = () => {
     onSuccess: () => {
       utils.alerts.rules.getRules.invalidate();
       utils.alerts.rules.getRule.invalidate();
-    },
-  });
-
-  return mutation;
-};
-
-export const useDeleteAlertRule = () => {
-  const utils = trpc.useUtils();
-
-  const mutation = trpc.alerts.rules.deleteRule.useMutation({
-    onSuccess: () => {
-      utils.alerts.rules.getRules.invalidate();
     },
   });
 
@@ -191,6 +165,37 @@ export const useUpdateAlertNotificationSettings = () => {
   });
 };
 
+// Alert lifecycle mutations. The active feed is a 10s subscription that
+// reconciles on its own, so these only invalidate the resolved-alerts query
+// (a resolve moves a row into it); the UI applies an optimistic local update
+// for instant feedback in the meantime.
+export const useAcknowledgeAlert = () => {
+  const utils = trpc.useUtils();
+  return trpc.rabbitmq.alerts.acknowledgeAlert.useMutation({
+    onSuccess: () => utils.rabbitmq.alerts.getResolvedAlerts.invalidate(),
+  });
+};
+
+export const useSnoozeAlert = () => {
+  return trpc.rabbitmq.alerts.snoozeAlert.useMutation();
+};
+
+export const useResolveAlert = () => {
+  const utils = trpc.useUtils();
+  return trpc.rabbitmq.alerts.resolveAlert.useMutation({
+    onSuccess: () => utils.rabbitmq.alerts.getResolvedAlerts.invalidate(),
+  });
+};
+
+// Reopen moves a row OUT of the resolved feed and back into active, so it
+// invalidates both queries; the UI also applies an optimistic local update.
+export const useReopenAlert = () => {
+  const utils = trpc.useUtils();
+  return trpc.rabbitmq.alerts.reopenAlert.useMutation({
+    onSuccess: () => utils.rabbitmq.alerts.getResolvedAlerts.invalidate(),
+  });
+};
+
 // Webhook hooks
 export const useWebhooks = (enabled: boolean = true) => {
   const { workspace } = useWorkspace();
@@ -221,16 +226,6 @@ export const useUpdateWebhook = () => {
   });
 };
 
-export const useDeleteWebhook = () => {
-  const utils = trpc.useUtils();
-
-  return trpc.alerts.webhook.deleteWebhook.useMutation({
-    onSuccess: () => {
-      utils.alerts.webhook.getWebhooks.invalidate();
-    },
-  });
-};
-
 // Slack hooks
 export const useSlackConfigs = (enabled: boolean = true) => {
   const { workspace } = useWorkspace();
@@ -251,20 +246,15 @@ export const useCreateSlackConfig = () => {
   });
 };
 
+// Sends a sample alert to one configured channel; returns { success, error? }.
+export const useTestChannel = () => {
+  return trpc.alerts.test.testChannel.useMutation();
+};
+
 export const useUpdateSlackConfig = () => {
   const utils = trpc.useUtils();
 
   return trpc.alerts.slack.updateConfig.useMutation({
-    onSuccess: () => {
-      utils.alerts.slack.getConfigs.invalidate();
-    },
-  });
-};
-
-export const useDeleteSlackConfig = () => {
-  const utils = trpc.useUtils();
-
-  return trpc.alerts.slack.deleteConfig.useMutation({
     onSuccess: () => {
       utils.alerts.slack.getConfigs.invalidate();
     },

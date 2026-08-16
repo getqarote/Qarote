@@ -1,35 +1,32 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
+
+import { CreditCard, Lock, Minus, Plus } from "lucide-react";
 
 import { track } from "@/lib/analytics";
 import { trpc } from "@/lib/trpc/client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PixelCheck } from "@/components/ui/pixel-check";
-
-type FeatureItem = {
-  label: string;
-  value?: string;
-  soon?: boolean;
-};
-
-type FeatureCategory = {
-  label: string;
-  items: FeatureItem[];
-};
 
 type Plan = {
   tier: "DEVELOPER" | "ENTERPRISE";
   name: string;
   annualPrice: string;
-  categories: FeatureCategory[];
+  unitPrice: number;
+  audience: string;
+  /** The "most popular" marketing highlight (carrot border + badge). */
+  popular: boolean;
+  /** Concise feature bullets, mirroring the marketing pricing cards. */
+  bullets: string[];
 };
 
 const LicensePurchase = () => {
   const [selectedTier, setSelectedTier] = useState<"DEVELOPER" | "ENTERPRISE">(
     "DEVELOPER"
   );
+  const [seats, setSeats] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const { t } = useTranslation("portal");
@@ -50,7 +47,7 @@ const LicensePurchase = () => {
     };
   }, []);
 
-  const handleTierSelect = useCallback((tier) => {
+  const handleTierSelect = useCallback((tier: "DEVELOPER" | "ENTERPRISE") => {
     setSelectedTier(tier);
     try {
       track("license_plan_selected", { tier });
@@ -135,47 +132,14 @@ const LicensePurchase = () => {
     [handleTierSelect]
   );
 
-  const sharedCoreFeatures = useCallback(
-    (limit: string): FeatureItem[] => [
-      { label: t("licensePurchase.features.servers"), value: limit },
-      { label: t("licensePurchase.features.workspaces"), value: limit },
-      { label: t("licensePurchase.features.teamMembers"), value: limit },
-      { label: t("licensePurchase.features.advancedAnalytics") },
-      { label: t("licensePurchase.features.queueManagement") },
-      { label: t("licensePurchase.features.alertsWebhooks") },
-      { label: t("licensePurchase.features.topologyVisualization") },
-      { label: t("licensePurchase.features.roleBasedAccess"), soon: true },
-    ],
-    [t]
-  );
-
-  const sharedIntelligenceFeatures = useMemo(
-    (): FeatureItem[] => [
-      { label: t("licensePurchase.features.dailyDigest") },
-      { label: t("licensePurchase.features.messageSpy") },
-      { label: t("licensePurchase.features.metricsPersistence") },
-      { label: t("licensePurchase.features.incidentDiagnosis") },
-      { label: t("licensePurchase.features.messageTracing") },
-    ],
-    [t]
-  );
-
-  const sharedSecurityBase = useMemo(
-    (): FeatureItem[] => [
-      {
-        label: t("licensePurchase.features.rabbitmqVersions"),
-        value: t("licensePurchase.limits.rabbitmqVersionsValue"),
-      },
-      { label: t("licensePurchase.features.soc2") },
-    ],
-    [t]
-  );
-
-  const sharedSupportFeatures = useMemo(
-    (): FeatureItem[] => [
-      { label: t("licensePurchase.features.communitySupport") },
-      { label: t("licensePurchase.features.prioritySupport") },
-    ],
+  // Concise feature bullets per tier — mirrors the marketing pricing cards.
+  const bulletsFor = useCallback(
+    (key: "developer" | "enterprise"): string[] => {
+      const raw = t(`licensePurchase.cards.${key}.bullets`, {
+        returnObjects: true,
+      });
+      return Array.isArray(raw) ? (raw as string[]) : [];
+    },
     [t]
   );
 
@@ -185,192 +149,226 @@ const LicensePurchase = () => {
         tier: "DEVELOPER",
         name: t("licensePurchase.plans.developer.name"),
         annualPrice: "$348",
-        categories: [
-          {
-            label: t("licensePurchase.categories.coreFeatures"),
-            items: sharedCoreFeatures(t("licensePurchase.limits.upTo3")),
-          },
-          {
-            label: t("licensePurchase.categories.intelligenceDiagnostics"),
-            items: sharedIntelligenceFeatures,
-          },
-          {
-            label: t("licensePurchase.categories.security"),
-            items: sharedSecurityBase,
-          },
-          {
-            label: t("licensePurchase.categories.support"),
-            items: sharedSupportFeatures,
-          },
-        ],
+        unitPrice: 348,
+        audience: t("licensePurchase.plans.developer.audience"),
+        popular: true,
+        bullets: bulletsFor("developer"),
       },
       {
         tier: "ENTERPRISE",
         name: t("licensePurchase.plans.enterprise.name"),
         annualPrice: "$1,188",
-        categories: [
-          {
-            label: t("licensePurchase.categories.coreFeatures"),
-            items: sharedCoreFeatures(t("licensePurchase.limits.unlimited")),
-          },
-          {
-            label: t("licensePurchase.categories.intelligenceDiagnostics"),
-            items: sharedIntelligenceFeatures,
-          },
-          {
-            label: t("licensePurchase.categories.security"),
-            items: [
-              { label: t("licensePurchase.features.ssoSamlOidc") },
-              ...sharedSecurityBase,
-            ],
-          },
-          {
-            label: t("licensePurchase.categories.support"),
-            items: sharedSupportFeatures,
-          },
-        ],
+        unitPrice: 1188,
+        audience: t("licensePurchase.plans.enterprise.audience"),
+        popular: false,
+        bullets: bulletsFor("enterprise"),
       },
     ],
-    [
-      t,
-      sharedCoreFeatures,
-      sharedIntelligenceFeatures,
-      sharedSecurityBase,
-      sharedSupportFeatures,
-    ]
+    [t, bulletsFor]
   );
 
   const selectedPlan = plans.find((p) => p.tier === selectedTier)!;
+  const total = selectedPlan.unitPrice * seats;
 
   return (
     <div className="space-y-6">
       <div className="max-w-2xl">
         <h1 className="title-page">{t("licensePurchase.title")}</h1>
         <p className="text-sm text-muted-foreground mt-2">
-          {t("licensePurchase.annualLicensing")}
+          {t("licensePurchase.intro")}
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        {plans.map((plan) => {
-          const isSelected = selectedTier === plan.tier;
-          return (
-            <Card
-              key={plan.tier}
-              role="button"
-              tabIndex={0}
-              aria-pressed={isSelected}
-              className={`cursor-pointer transition-all flex flex-col ${
-                isSelected ? "license-card-selected" : "license-card-hover"
-              }`}
-              onClick={() => handleTierSelect(plan.tier)}
-              onKeyDown={(e) => handleCardKeyDown(e, plan.tier)}
-            >
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between gap-2">
-                  <CardTitle className="text-xl">{plan.name}</CardTitle>
-                  {isSelected && (
-                    <span className="text-xs font-medium text-success border border-success/40 rounded px-2 py-0.5 shrink-0">
-                      {t("licensePurchase.badges.selected")}
-                    </span>
-                  )}
+      <div className="grid gap-6 lg:grid-cols-[1fr_20rem] lg:items-start">
+        <div
+          role="radiogroup"
+          aria-label={t("licensePurchase.tierGroupLabel")}
+          className="grid gap-6 md:grid-cols-2"
+        >
+          {plans.map((plan) => {
+            const isSelected = selectedTier === plan.tier;
+            return (
+              <div
+                key={plan.tier}
+                role="radio"
+                tabIndex={0}
+                aria-checked={isSelected}
+                onClick={() => handleTierSelect(plan.tier)}
+                onKeyDown={(e) => handleCardKeyDown(e, plan.tier)}
+                className={`relative flex h-full cursor-pointer flex-col rounded-xl bg-card p-[30px] transition-all ${
+                  plan.popular
+                    ? "border border-primary shadow-[0_24px_50px_-28px_rgba(232,89,12,0.4)]"
+                    : "border border-border"
+                } ${
+                  isSelected
+                    ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                    : ""
+                }`}
+              >
+                {plan.popular && (
+                  <span className="absolute -top-[11px] left-[30px] rounded-full bg-primary px-[11px] py-1 font-mono text-[11px] uppercase tracking-[0.06em] text-primary-foreground">
+                    {t("licensePurchase.badges.mostPopular")}
+                  </span>
+                )}
+
+                <div className="font-display text-[21px] font-semibold text-foreground">
+                  {plan.name}
                 </div>
-                <div className="mt-2 flex items-baseline gap-1">
-                  <span className="font-mono text-3xl font-bold">
+                <p className="mt-[6px] min-h-[40px] text-[14px] text-muted-foreground">
+                  {plan.audience}
+                </p>
+
+                <div className="mb-1 mt-[20px] flex items-baseline gap-[6px]">
+                  <span className="font-display text-[40px] font-semibold tracking-[-0.02em] text-foreground">
                     {plan.annualPrice}
                   </span>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-[14px] text-muted-foreground">
                     {t("licensePurchase.perYear")}
                   </span>
                 </div>
-              </CardHeader>
 
-              <CardContent className="space-y-5 flex-1">
-                <hr className="border-border" />
-                {plan.categories.map((category) => (
-                  <div key={category.label}>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                      {category.label}
-                    </p>
-                    <ul className="space-y-2.5">
-                      {category.items.map((item) => (
-                        <li key={item.label} className="flex items-start gap-3">
-                          <div className="mt-1.5 w-3.5 shrink-0 flex items-start">
-                            <PixelCheck className="h-[0.7rem] w-auto shrink-0 text-success" />
-                          </div>
-                          <span className="text-sm leading-snug">
-                            <span className="font-medium">{item.label}</span>
-                            {item.soon && (
-                              <span className="ml-1.5 text-xs border border-border rounded px-1 py-px text-muted-foreground">
-                                {t("licensePurchase.badges.soon")}
-                              </span>
-                            )}
-                            {item.value && (
-                              <span className="block text-muted-foreground text-xs mt-0.5">
-                                {item.value}
-                              </span>
-                            )}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                <ul className="my-[22px] flex flex-1 list-none flex-col gap-[11px]">
+                  {plan.bullets.map((bullet) => (
+                    <li
+                      key={bullet}
+                      className="flex items-start gap-[10px] text-[14.5px] text-muted-foreground"
+                    >
+                      <span
+                        className="mt-[2px] shrink-0 text-primary"
+                        aria-hidden="true"
+                      >
+                        ✓
+                      </span>
+                      {bullet}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
 
-      <div className="flex flex-col items-center gap-3">
-        <Button
-          onClick={handlePurchase}
-          disabled={isLoading}
-          size="lg"
-          className="px-8"
-        >
-          {isLoading
-            ? t("licensePurchase.redirectingToStripe")
-            : t("licensePurchase.purchasePlanLabel", {
-                name: selectedPlan.name,
-                price: selectedPlan.annualPrice,
-              })}
-        </Button>
+        <Card className="lg:sticky lg:top-6">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base">
+              {t("licensePurchase.orderSummary.title")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between gap-2 text-sm">
+              <span className="text-muted-foreground">
+                {t("licensePurchase.orderSummary.tierLine", {
+                  name: selectedPlan.name,
+                })}
+              </span>
+              <span className="font-mono font-medium">
+                {selectedPlan.annualPrice}
+              </span>
+            </div>
 
-        {purchaseError ? (
-          <p className="text-sm text-destructive text-center">
-            {purchaseError}{" "}
-            <button
-              type="button"
+            <div className="flex items-center justify-between gap-2 text-sm">
+              <span className="text-muted-foreground">
+                {t("licensePurchase.orderSummary.seats")}
+              </span>
+              <span className="flex items-center gap-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setSeats((q) => Math.max(1, q - 1))}
+                  disabled={seats <= 1}
+                  aria-label={t("licensePurchase.orderSummary.decreaseSeats")}
+                >
+                  <Minus aria-hidden="true" />
+                </Button>
+                <span
+                  className="w-8 text-center font-mono tabular-nums"
+                  aria-live="polite"
+                >
+                  {seats}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setSeats((q) => q + 1)}
+                  aria-label={t("licensePurchase.orderSummary.increaseSeats")}
+                >
+                  <Plus aria-hidden="true" />
+                </Button>
+              </span>
+            </div>
+
+            <hr className="border-border" />
+
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-sm font-medium">
+                {t("licensePurchase.orderSummary.total")}
+              </span>
+              <span className="font-mono text-lg font-bold">
+                ${total.toLocaleString()}
+                <span className="ml-0.5 text-xs font-normal text-muted-foreground">
+                  {t("licensePurchase.perYear")}
+                </span>
+              </span>
+            </div>
+
+            <Button
               onClick={handlePurchase}
-              className="underline hover:no-underline"
+              disabled={isLoading}
+              className="w-full"
             >
-              {t("licensePurchase.tryAgain")}
-            </button>{" "}
-            {t("licensePurchase.or")}{" "}
-            <a
-              href="mailto:hello@qarote.io"
-              className="underline hover:no-underline"
-            >
-              {t("licensePurchase.contactSupport")}
-            </a>
-          </p>
-        ) : (
-          <p className="text-xs text-muted-foreground">
-            {t("licensePurchase.stripeHandoff")}
-          </p>
-        )}
+              <CreditCard aria-hidden="true" />
+              {isLoading
+                ? t("licensePurchase.redirectingToStripe")
+                : t("licensePurchase.orderSummary.checkout")}
+            </Button>
 
-        <p className="text-xs text-muted-foreground">
-          {t("licensePurchase.enterpriseContact")}{" "}
-          <a
-            href="mailto:hello@qarote.io"
-            className="underline hover:no-underline"
-          >
-            hello@qarote.io
-          </a>
-        </p>
+            <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+              <Lock className="h-3 w-3 shrink-0" aria-hidden="true" />
+              {t("licensePurchase.orderSummary.secureCheckout")}
+            </p>
+
+            <Button asChild variant="ghost" size="sm" className="w-full">
+              <Link to="/licenses">
+                {t("licensePurchase.orderSummary.cancel")}
+              </Link>
+            </Button>
+
+            {purchaseError && (
+              <p className="text-center text-sm text-destructive">
+                {purchaseError}{" "}
+                <button
+                  type="button"
+                  onClick={handlePurchase}
+                  className="underline hover:no-underline"
+                >
+                  {t("licensePurchase.tryAgain")}
+                </button>{" "}
+                {t("licensePurchase.or")}{" "}
+                <a
+                  href="mailto:contact@qarote.io"
+                  className="underline hover:no-underline"
+                >
+                  {t("licensePurchase.contactSupport")}
+                </a>
+              </p>
+            )}
+          </CardContent>
+        </Card>
       </div>
+
+      <p className="text-xs text-muted-foreground">
+        {t("licensePurchase.enterpriseContact")}{" "}
+        <a
+          href="mailto:contact@qarote.io"
+          className="underline hover:no-underline"
+        >
+          contact@qarote.io
+        </a>
+      </p>
     </div>
   );
 };

@@ -1,31 +1,71 @@
 ---
-import type { MarkdownHeading } from "astro";
 import BaseLayout from "./BaseLayout.astro";
-import BlogNav from "../components/BlogNav.astro";
+import PostCover from "@/components/PostCover.astro";
+import FooterIsland from "@/components/FooterIsland";
+import { loadTranslations } from "@/lib/i18n-static";
+import { getBlogStrings, type BlogCategory } from "@/components/blog/blog-strings";
+
+interface RelatedPost {
+  slug: string;
+  title: string;
+  category: BlogCategory;
+  cover?: string;
+  coverCaption?: string;
+  readingTimeMin?: number;
+}
 
 interface Props {
   title: string;
   description: string;
   publishedAt: string;
   updatedAt?: string;
-  tags?: string[];
+  author?: string;
   readingTimeMin?: number;
-  headings?: MarkdownHeading[];
+  category: BlogCategory;
+  cover?: string;
+  coverCaption?: string;
   slug: string;
   locale?: string;
+  related?: RelatedPost[];
 }
 
-const { title, description, publishedAt, updatedAt, tags, readingTimeMin, headings, slug, locale = "en" } = Astro.props;
+const {
+  title,
+  description,
+  publishedAt,
+  updatedAt,
+  author,
+  readingTimeMin,
+  category,
+  cover,
+  coverCaption,
+  slug,
+  locale = "en",
+  related = [],
+} = Astro.props;
+
+const s = getBlogStrings(locale);
+const blogBase = locale === "en" ? "/blog" : `/${locale}/blog`;
+const signupUrl = `${import.meta.env.VITE_APP_BASE_URL || ""}/auth/sign-up`;
+const docsUrl = "/docs/getting-started/";
+
+const footerResources = {
+  landing: loadTranslations(locale, "landing"),
+  common: loadTranslations(locale, "common"),
+  nav: loadTranslations(locale, "nav"),
+};
 
 const dateStr = (iso: string) =>
-  new Date(iso).toLocaleDateString(locale, { year: "numeric", month: "long", day: "numeric" });
+  new Date(iso).toLocaleDateString(locale, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+
+const authorName = author ?? s.authorName;
 
 const baseUrl = "https://qarote.io";
-// Always pass the English-canonical path to BaseLayout.
-// BaseLayout constructs the actual canonical as `${baseUrl}/${locale}${canonicalPath}`
-// for non-English locales, and also auto-generates hreflang alternates for all locales.
 const canonicalBlogPath = `/blog/${slug}/`;
-// Full article URL for JSON-LD (locale-aware)
 const articleUrl =
   locale === "en"
     ? `${baseUrl}/blog/${slug}/`
@@ -37,18 +77,11 @@ const articleSchema = {
   headline: title,
   description,
   url: articleUrl,
-  mainEntityOfPage: {
-    "@type": "WebPage",
-    "@id": articleUrl,
-  },
+  mainEntityOfPage: { "@type": "WebPage", "@id": articleUrl },
   image: "https://qarote.io/images/new_icon.png",
   datePublished: publishedAt,
-  ...(updatedAt ? { dateModified: updatedAt } : { dateModified: publishedAt }),
-  author: {
-    "@type": "Organization",
-    name: "Qarote",
-    url: "https://qarote.io/",
-  },
+  dateModified: updatedAt ?? publishedAt,
+  author: { "@type": "Person", name: authorName },
   publisher: {
     "@type": "Organization",
     name: "Qarote",
@@ -67,124 +100,481 @@ const articleSchema = {
   locale={locale}
   canonicalPath={canonicalBlogPath}
 >
-  <slot name="head" slot="head">
-    <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
-  </slot>
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify(articleSchema)}
+    slot="head"
+  />
 
-  <!-- Top nav -->
-  <BlogNav backHref="/blog/" backText="All posts">
-    <a
-      href="https://github.com/getqarote/Qarote"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="text-muted-foreground hover:text-foreground transition-colors"
-      aria-label="View on GitHub"
-    >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-      </svg>
-    </a>
-  </BlogNav>
+  <main>
+    <article class="post">
+      <PostCover
+        cover={cover}
+        category={category}
+        caption={coverCaption}
+        boxClass="post__hero"
+      />
 
-  <!-- Article -->
-  <main class="max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
-    <div class="max-w-[65ch] mx-auto">
+      <nav aria-label="Breadcrumb" class="breadcrumb">
+        <a href={`${blogBase}/`}>{s.breadcrumbBlog}</a>
+        <span aria-hidden="true">/</span>
+        <span class="crumb-cat">{s.categories[category]}</span>
+      </nav>
 
-      <!-- Meta -->
-      <div class="mb-8">
-        {tags && tags.length > 0 && (
-          <div class="flex flex-wrap gap-2 mb-4">
-            {tags.map((tag) => (
-              <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-                {tag}
-              </span>
-            ))}
+      <div class="post__head">
+        <span class="posttag">{s.categories[category]}</span>
+        <h1>{title}</h1>
+        <div class="post__byline">
+          <img
+            src="/images/team/brice.jpg"
+            alt={authorName}
+            class="post__avatar"
+            width="40"
+            height="40"
+          />
+          <div class="who">
+            <div class="name">{authorName}</div>
+            <div class="meta">
+              <time datetime={publishedAt}>{dateStr(publishedAt)}</time>
+              {
+                readingTimeMin && (
+                  <>
+                    {" · "}
+                    {readingTimeMin} {s.minReadSuffix}
+                  </>
+                )
+              }
+            </div>
           </div>
-        )}
-
-        <h1 class="font-display text-3xl sm:text-4xl font-semibold text-foreground leading-tight tracking-tight mb-4">
-          {title}
-        </h1>
-
-        <p class="text-base text-muted-foreground leading-relaxed mb-6">{description}</p>
-
-        <div class="flex items-center gap-3 text-sm text-muted-foreground border-t border-border pt-5">
-          <div class="flex items-center gap-1.5">
-            <img src="/images/new_icon.svg" alt="" width={16} height={16} class="w-4 h-4 opacity-60" aria-hidden="true" />
-            <span>Qarote Team</span>
-          </div>
-          <span aria-hidden="true">·</span>
-          <time datetime={publishedAt}>{dateStr(publishedAt)}</time>
-          {updatedAt && (
-            <>
-              <span aria-hidden="true">·</span>
-              <span>Updated <time datetime={updatedAt}>{dateStr(updatedAt)}</time></span>
-            </>
-          )}
-          {readingTimeMin && (
-            <>
-              <span aria-hidden="true">·</span>
-              <span>{readingTimeMin} min read</span>
-            </>
-          )}
         </div>
       </div>
 
-      <!-- Table of contents -->
-      {headings && headings.length > 0 && (
-        <nav aria-label="Table of contents" class="mb-8 rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm">
-          <p class="font-semibold text-foreground mb-2 text-xs uppercase tracking-wider">On this page</p>
-          <ul class="space-y-1">
-            {headings.filter((h) => h.depth <= 3).map((h) => (
-              <li style={`padding-left: ${(h.depth - 1) * 12}px`}>
-                <a
-                  href={`#${h.slug}`}
-                  class="text-muted-foreground hover:text-foreground transition-colors no-underline"
-                >
-                  {h.text}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      )}
-
-      <!-- Content -->
-      <article class="docs-prose">
+      <div class="prose">
         <slot />
-      </article>
+      </div>
 
-      <!-- CTA -->
-      <div class="mt-16 pt-8 border-t border-border">
-        <div class="rounded-xl border border-border bg-muted/30 p-6 sm:p-8 text-center">
-          <p class="text-sm text-muted-foreground mb-1">Tired of debugging RabbitMQ blind?</p>
-          <p class="font-display text-xl font-semibold text-foreground mb-4">
-            Qarote gives you a real-time view of queues, consumers, and alarms — free.
-          </p>
-          <a
-            href="/"
-            class="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary/90 transition-colors"
-          >
-            Get started free
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
-          </a>
+      <div class="authorbio">
+        <img
+          src="/images/team/brice.jpg"
+          alt={authorName}
+          class="post__avatar post__avatar--lg"
+          width="48"
+          height="48"
+        />
+        <div>
+          <div class="name">{authorName}</div>
+          <div class="role">{s.authorRole}</div>
+          <p>{s.authorBio}</p>
         </div>
       </div>
 
-      <!-- Back to blog -->
-      <div class="mt-8">
-        <a
-          href="/blog/"
-          class="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-          All posts
-        </a>
+      {
+        related.length > 0 && (
+          <div class="related">
+            <div class="related__h">{s.relatedHeader}</div>
+            <div class="related__grid">
+              {related.map((r) => (
+                <a class="postcard" href={`${blogBase}/${r.slug}/`}>
+                  <PostCover
+                    cover={r.cover}
+                    category={r.category}
+                    caption={r.coverCaption}
+                    boxClass="postcard__media"
+                  />
+                  <div class="postcard__body">
+                    <div class="postmeta">
+                      <span class="posttag">{s.categories[r.category]}</span>
+                      {r.readingTimeMin && (
+                        <span>
+                          {r.readingTimeMin} {s.minShort}
+                        </span>
+                      )}
+                    </div>
+                    <h3>{r.title}</h3>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )
+      }
+
+      <div class="cta-band">
+        <h2>{s.articleCtaTitle}</h2>
+        <p>{s.articleCtaBody}</p>
+        <div class="cta-row">
+          <a class="btn btn--primary" href={signupUrl}>
+            {s.ctaPrimary} <span aria-hidden="true">→</span>
+          </a>
+          <a class="btn btn--ghost" href={docsUrl}>{s.articleCtaSecondary}</a>
+        </div>
       </div>
-    </div>
+    </article>
   </main>
+
+  <FooterIsland client:visible locale={locale} resources={footerResources} />
 </BaseLayout>
+
+<script>
+  // Code-copy enhancer: wrap every <pre> in the article (plain fenced blocks AND
+  // the ones inside <CodeWindow>'s `.codewin`) in a relatively-positioned shell
+  // and drop a keyboard-accessible "Copy" button top-right. The button copies
+  // the pre's textContent and flashes "Copied".
+  document.querySelectorAll<HTMLPreElement>(".prose pre").forEach((pre) => {
+    const wrap = document.createElement("div");
+    wrap.className = "codecopy-wrap";
+    pre.parentNode?.insertBefore(wrap, pre);
+    wrap.appendChild(pre);
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "codecopy";
+    btn.textContent = "Copy";
+    btn.setAttribute("aria-label", "Copy code");
+    btn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(pre.textContent ?? "");
+        btn.textContent = "Copied";
+        window.setTimeout(() => {
+          btn.textContent = "Copy";
+        }, 1500);
+      } catch {
+        /* clipboard unavailable (insecure context) — no-op */
+      }
+    });
+    wrap.appendChild(btn);
+  });
+</script>
+
+<style>
+  .post {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 36px 24px 0;
+  }
+
+  .post :global(.post__hero) {
+    height: clamp(220px, 32vw, 360px);
+    border-radius: 0.625rem;
+    border: 1px solid hsl(var(--border));
+    margin-bottom: 36px;
+  }
+
+  .breadcrumb {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 16px;
+  }
+  .breadcrumb a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .breadcrumb a:hover {
+    color: hsl(var(--primary));
+  }
+  .breadcrumb .crumb-cat {
+    color: hsl(var(--secondary-foreground));
+  }
+
+  .post__head {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .post__head h1 {
+    font-family: var(--font-display);
+    font-size: clamp(30px, 4.4vw, 46px);
+    letter-spacing: -0.025em;
+    line-height: 1.08;
+    margin-top: 16px;
+    color: hsl(var(--foreground));
+  }
+  .post__byline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 22px;
+  }
+  .post__avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .post__avatar--lg {
+    width: 48px;
+    height: 48px;
+  }
+  .post__byline .who {
+    text-align: left;
+  }
+  .post__byline .name {
+    font-weight: 600;
+    font-size: 14px;
+    color: hsl(var(--foreground));
+  }
+  .post__byline .meta {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .posttag {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 100px;
+    border: 1px solid hsl(var(--primary) / 0.28);
+    background: hsl(var(--accent));
+    color: hsl(var(--primary));
+  }
+
+  /* Prose — mirrors the prototype article body on tokens. The Callout +
+     CodeWindow components carry their own styles. */
+  .prose {
+    font-size: 16px;
+    line-height: 1.7;
+    color: hsl(var(--secondary-foreground));
+  }
+  .prose :global(h2) {
+    font-family: var(--font-display);
+    font-size: 24px;
+    color: hsl(var(--foreground));
+    margin: 32px 0 12px;
+    letter-spacing: -0.02em;
+  }
+  .prose :global(h3) {
+    font-family: var(--font-display);
+    font-size: 19px;
+    color: hsl(var(--foreground));
+    margin: 26px 0 10px;
+    letter-spacing: -0.01em;
+  }
+  .prose :global(p) {
+    margin: 14px 0;
+  }
+  .prose :global(ul),
+  .prose :global(ol) {
+    margin: 14px 0 14px 4px;
+    padding-left: 20px;
+  }
+  .prose :global(ul) {
+    list-style: disc;
+  }
+  .prose :global(ol) {
+    list-style: decimal;
+  }
+  .prose :global(li) {
+    margin: 7px 0;
+  }
+  .prose :global(a) {
+    color: hsl(var(--primary));
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .prose :global(strong) {
+    color: hsl(var(--foreground));
+    font-weight: 600;
+  }
+  .prose :global(em) {
+    font-style: italic;
+  }
+  /* Inline code only — fenced blocks (inside <pre>) keep their dark chrome. */
+  .prose :global(:not(pre) > code) {
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    background: hsl(var(--muted));
+    border: 1px solid hsl(var(--border));
+    padding: 1px 6px;
+    border-radius: 5px;
+    color: hsl(var(--accent-foreground));
+  }
+
+  /* Code-copy button shell (injected by the enhancer script). */
+  .prose :global(.codecopy-wrap) {
+    position: relative;
+  }
+  .prose :global(.codecopy) {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 2;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1;
+    padding: 5px 9px;
+    border-radius: 6px;
+    border: 1px solid rgba(231, 234, 240, 0.18);
+    background: rgba(11, 14, 20, 0.6);
+    color: #e7eaf0;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .prose :global(.codecopy-wrap:hover .codecopy),
+  .prose :global(.codecopy:focus-visible) {
+    opacity: 1;
+  }
+  .prose :global(.codecopy:focus-visible) {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+  }
+
+  .authorbio {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 22px;
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.625rem;
+    background: hsl(var(--card));
+    margin-top: 40px;
+  }
+  .authorbio .name {
+    font-weight: 600;
+    font-size: 15px;
+    color: hsl(var(--foreground));
+  }
+  .authorbio .role {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: hsl(var(--primary));
+    margin: 2px 0 8px;
+  }
+  .authorbio p {
+    font-size: 13.5px;
+    color: hsl(var(--secondary-foreground));
+    line-height: 1.55;
+  }
+
+  .related {
+    margin-top: 48px;
+  }
+  .related__h {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    margin-bottom: 16px;
+  }
+  .related__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .postcard {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.625rem;
+    overflow: hidden;
+    background: hsl(var(--card));
+    text-decoration: none;
+    color: inherit;
+    transition:
+      border-color 0.15s,
+      transform 0.12s;
+  }
+  .postcard:hover {
+    border-color: hsl(var(--input));
+    transform: translateY(-2px);
+  }
+  .postcard :global(.postcard__media) {
+    height: 120px;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+  .postcard__body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+  }
+  .postcard__body h3 {
+    font-family: var(--font-display);
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    color: hsl(var(--foreground));
+  }
+  .postmeta {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .cta-band {
+    margin: 48px 0 0;
+    text-align: center;
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.625rem;
+    background: hsl(var(--accent));
+    padding: clamp(32px, 5vw, 48px);
+  }
+  .cta-band h2 {
+    font-family: var(--font-display);
+    font-size: clamp(22px, 3vw, 30px);
+    letter-spacing: -0.02em;
+    color: hsl(var(--foreground));
+  }
+  .cta-band p {
+    margin: 12px auto 0;
+    max-width: 480px;
+    color: hsl(var(--secondary-foreground));
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .cta-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 12px 22px;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 15px;
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+  .btn--primary {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border: 1px solid hsl(var(--primary));
+  }
+  .btn--primary:hover {
+    background: hsl(var(--primary) / 0.9);
+  }
+  .btn--ghost {
+    background: transparent;
+    color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--border));
+  }
+  .btn--ghost:hover {
+    border-color: hsl(var(--muted-foreground));
+  }
+
+  @media (max-width: 700px) {
+    .related__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

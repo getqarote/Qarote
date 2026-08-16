@@ -7,7 +7,7 @@ import { AlertCircle, Check, Key, Loader2, Zap } from "lucide-react";
 import { isSelfHostedMode } from "@/lib/featureFlags";
 import { openPortalPath } from "@/lib/runtimeConfig";
 
-import { PixelX } from "@/components/ui/pixel-x";
+import { IconClose } from "@/components/ui/icons";
 
 import { useAllPlans } from "@/hooks/queries/usePlans";
 import { usePlanUpgrade } from "@/hooks/ui/usePlanUpgrade";
@@ -60,7 +60,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
               className="text-muted-foreground hover:text-foreground"
               aria-label="Close"
             >
-              <PixelX className="h-6 w-auto shrink-0" />
+              <IconClose className="h-6 w-auto shrink-0" />
             </button>
           </div>
           <div className="p-6 space-y-4">
@@ -122,7 +122,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
               className="text-muted-foreground hover:text-foreground"
               aria-label="Close"
             >
-              <PixelX className="h-5 w-auto shrink-0" />
+              <IconClose className="h-5 w-auto shrink-0" />
             </button>
           </div>
           {error && (
@@ -165,9 +165,10 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
           <button
             type="button"
             onClick={onClose}
+            aria-label="Close"
             className="text-muted-foreground hover:text-foreground"
           >
-            <PixelX className="h-6 w-auto shrink-0" />
+            <IconClose className="h-6 w-auto shrink-0" />
           </button>
         </div>
 

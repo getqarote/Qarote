@@ -5,7 +5,6 @@ import type { SupportedLocale } from "@qarote/i18n";
 
 import { IslandProvider } from "@/components/IslandProvider";
 import FooterSection from "@/components/landing/FooterSection";
-import StickyNav from "@/components/StickyNav";
 import { TawkTo } from "@/components/TawkTo";
 
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -19,14 +18,19 @@ interface ChangelogEntry {
   categories: { name: string; items: string[] }[];
 }
 
-const categoryColors: Record<string, string> = {
-  Added: "bg-emerald-100 text-emerald-800",
-  Changed: "bg-blue-100 text-blue-800",
-  Fixed: "bg-amber-100 text-amber-800",
-  Removed: "bg-red-100 text-red-800",
-  Security: "bg-purple-100 text-purple-800",
-  Deprecated: "bg-gray-100 text-gray-600",
+// Prototype treatment: an emoji + a colored label per category, drawn with
+// theme tokens (carrot for additions, success-green for changes, muted ink for
+// the rest). No solid pills — the timeline rail carries the structure instead.
+const categoryStyles: Record<string, { icon: string; className: string }> = {
+  Added: { icon: "✨", className: "text-primary" },
+  Changed: { icon: "⚡", className: "text-status-success-text" },
+  Fixed: { icon: "🐛", className: "text-muted-foreground" },
+  Removed: { icon: "🗑", className: "text-destructive" },
+  Security: { icon: "🔒", className: "text-status-success-text" },
+  Deprecated: { icon: "⚠", className: "text-muted-foreground" },
 };
+
+const fallbackCategoryStyle = { icon: "•", className: "text-muted-foreground" };
 
 function parseChangelog(raw: string, locale = "en"): ChangelogEntry[] {
   const entries: ChangelogEntry[] = [];
@@ -127,72 +131,80 @@ function ChangelogContent({
 
   return (
     <div className="min-h-screen bg-background font-sans">
-      <StickyNav currentPage="changelog" />
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Page header */}
-        <div
-          className="border border-border overflow-hidden mb-12"
-          style={mountEnter(0)}
-        >
-          <div className="px-6 py-3 bg-muted/30 border-b border-border">
-            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Changelog
-            </span>
-          </div>
-          <div className="p-8">
-            <h1 className="text-4xl font-normal text-foreground mb-2">
-              {t("changelog.title")}
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              {t("changelog.subtitle")}
-            </p>
-          </div>
-        </div>
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Page header — light eyebrow + heading, matching the prototype feed */}
+        <header className="mb-12" style={mountEnter(0)}>
+          <span className="font-mono text-xs uppercase tracking-wide text-primary">
+            {t("changelog.eyebrow", "Changelog")}
+          </span>
+          <h1 className="font-display text-4xl font-semibold text-foreground mt-2 mb-3">
+            {t("changelog.title")}
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            {t("changelog.subtitle")}
+          </p>
+        </header>
 
-        <div ref={listRef} className="space-y-8">
-          {entries.map((entry, i) => (
-            <article
-              key={entry.version}
-              className="border border-border overflow-hidden"
-              style={entryStyle(i)}
-            >
-              <div className="px-6 py-3 bg-muted/30 border-b border-border flex items-center justify-between">
-                <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                  {entry.version === "Unreleased"
-                    ? "Upcoming"
-                    : `v${entry.version}`}
-                </h2>
-                <span className="text-xs text-muted-foreground font-mono">
-                  {entry.date}
-                </span>
-              </div>
-              <div className="p-6 space-y-6">
-                {entry.categories.map((category) => (
-                  <div key={category.name}>
-                    <span
-                      className={`inline-block px-2.5 py-0.5 text-xs font-medium mb-3 ${
-                        categoryColors[category.name] ??
-                        "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {category.name}
-                    </span>
-                    <ul className="space-y-2">
-                      {category.items.map((item, j) => (
-                        <li
-                          key={j}
-                          className="text-muted-foreground flex items-start gap-2"
-                        >
-                          <span className="mt-2 shrink-0 block w-1.5 h-1.5 bg-primary/60" />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
+        {/* Reverse-chronological timeline: date rail + bodied entries */}
+        <div ref={listRef} className="flex flex-col">
+          {entries.map((entry, i) => {
+            const isUpcoming = entry.version === "Unreleased";
+            return (
+              <article
+                key={entry.version}
+                className="grid grid-cols-1 gap-3 pb-10 sm:grid-cols-[150px_1fr] sm:gap-7"
+                style={entryStyle(i)}
+              >
+                <div className="sm:relative">
+                  <div className="font-mono text-xs text-muted-foreground sm:sticky sm:top-[84px]">
+                    {entry.date}
                   </div>
-                ))}
-              </div>
-            </article>
-          ))}
+                  <div className="mt-1 inline-flex items-center gap-2 font-display text-base font-semibold text-foreground">
+                    {isUpcoming
+                      ? t("changelog.upcoming", "Upcoming")
+                      : `v${entry.version}`}
+                    {i === 0 && !isUpcoming && (
+                      <span className="rounded-full border border-primary/30 bg-accent px-[7px] py-[2px] font-mono text-[10px] text-primary">
+                        {t("changelog.latest", "latest")}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="relative border-border pb-1 sm:border-l-2 sm:pl-7">
+                  {/* Timeline node — a carrot-ringed dot on the rail (desktop only) */}
+                  <span
+                    aria-hidden
+                    className="absolute left-[-7px] top-1 hidden h-3 w-3 rounded-full border-2 border-primary bg-background sm:block"
+                  />
+                  {entry.categories.map((category) => {
+                    const style =
+                      categoryStyles[category.name] ?? fallbackCategoryStyle;
+                    return (
+                      <div key={category.name} className="mb-4 last:mb-0">
+                        <div
+                          className={`mb-2 inline-flex items-center gap-2 text-xs font-semibold ${style.className}`}
+                        >
+                          <span aria-hidden>{style.icon}</span>
+                          {category.name}
+                        </div>
+                        <ul className="flex flex-col gap-[7px]">
+                          {category.items.map((item, j) => (
+                            <li
+                              key={j}
+                              className="relative pl-4 text-sm leading-relaxed text-muted-foreground before:absolute before:left-0 before:text-muted-foreground/70 before:content-['–']"
+                            >
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  })}
+                </div>
+              </article>
+            );
+          })}
         </div>
       </div>
       <FooterSection currentLocale={locale} />

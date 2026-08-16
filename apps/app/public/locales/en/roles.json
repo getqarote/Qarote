@@ -8,7 +8,8 @@
     "members": "Members",
     "description": "Description",
     "updatedAt": "Last updated",
-    "actions": "Actions"
+    "actions": "Actions",
+    "type": "Type"
   },
   "empty": {
     "title": "No custom roles yet",
@@ -18,7 +19,8 @@
   "gate": {
     "title": "Custom Roles + Resource Scopes",
     "body": "Define named permission bundles scoped to specific servers or environments. Available on the Enterprise plan.",
-    "upgradeCta": "Upgrade to Enterprise"
+    "upgradeCta": "Upgrade to Enterprise",
+    "footnote": "Existing assignments stay in effect — upgrading only unlocks creating and editing roles."
   },
   "planDowngradeBanner": {
     "title": "Custom roles are read-only on this plan",
@@ -105,7 +107,14 @@
       "body_other": "{{count}} members will be reassigned to the Member built-in role.",
       "confirm": "Delete role",
       "cancel": "Keep role"
-    }
+    },
+    "basedOn": "Based on",
+    "basedOnBlank": "Blank role",
+    "basedOnClone": "{{role}} (clone)",
+    "enabledCount": "{{count}} permissions enabled",
+    "scopableBadge": "scopable",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all"
   },
   "errors": {
     "loadFailed": "Failed to load roles",
@@ -118,5 +127,8 @@
     "lastOwnerBlocked": "Can't demote — this would leave the workspace without an Owner. At least one member must remain Owner.",
     "saved": "Role assigned",
     "saveFailed": "Failed to assign role"
-  }
+  },
+  "typeSystem": "Built-in",
+  "typeCustom": "Custom",
+  "edit": "Edit {{name}}"
 }

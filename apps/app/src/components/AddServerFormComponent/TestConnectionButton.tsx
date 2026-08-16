@@ -9,6 +9,9 @@ interface TestConnectionButtonProps {
   isTestingConnection: boolean;
   isLoading: boolean;
   disabled?: boolean;
+  /** Render as a secondary action (outline) instead of the primary button —
+   *  used on the URL-first add flow where "Detect →" owns the primary slot. */
+  variant?: "primary" | "secondary";
 }
 
 export const TestConnectionButton = ({
@@ -16,12 +19,16 @@ export const TestConnectionButton = ({
   isTestingConnection,
   isLoading,
   disabled,
+  variant = "primary",
 }: TestConnectionButtonProps) => {
   const { t } = useTranslation("dashboard");
   return (
     <Button
       type="button"
-      className="btn-primary min-w-[160px]"
+      variant={variant === "secondary" ? "outline" : undefined}
+      className={
+        variant === "secondary" ? "min-w-[160px]" : "btn-primary min-w-[160px]"
+      }
       onClick={onTestConnection}
       disabled={disabled || isTestingConnection || isLoading}
     >

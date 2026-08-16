@@ -56,7 +56,11 @@ interface MetricsStatusStripProps {
   isLoading: boolean;
   metricsError?: Error | null;
   nodesError?: Error | null;
-  /** Optional diagnosis anomaly count. When provided, renders an extra cell. */
+  /**
+   * Diagnosis anomaly count for the permanent "Anomalies" cell. `undefined`
+   * (still resolving) renders a dash; `0` renders a calm zero; `> 0` renders
+   * the count in the warning tone.
+   */
   diagnosisCount?: number;
   /**
    * Optional publisher messageId coverage observation. When provided
@@ -77,11 +81,22 @@ interface MetricsStatusStripProps {
   suppressMessageIdPopover?: boolean;
 }
 
+// Shared cell styling (prototype `.metric` / `.metric__k` / `.metric__v` / `.u`)
+// — each cell paints bg-card over the border-colored grid backplate so the 1px
+// gaps read as hairlines. Value uses Space Grotesk (font-heading) at a compact
+// 18px/600, NOT an oversized heading; the unit is small, muted mono.
+const CELL_CLASS = "flex min-w-0 flex-col gap-[3px] bg-card px-[13px] py-3";
+const LABEL_CLASS =
+  "truncate font-mono text-[10px] uppercase tracking-[0.04em] text-muted-foreground";
+const VALUE_CLASS =
+  "font-heading text-[18px] font-semibold tracking-[-0.01em] leading-none";
+const UNIT_CLASS = "font-mono text-[11px] font-normal text-muted-foreground";
+
 /**
  * Compact status strip that replaces the 7-card hero grid.
  *
  * Design intent: "calm baseline, sharp alerts" — quiet by default, the value
- * switches to a status color ONLY when a real threshold is exceeded. This is
+ * switches to a status color ONLY during an incident (≥1 anomaly). This is
  * Qarote's core monitoring contract: color means something.
  *
  * Thresholds are deliberately conservative: warn early, escalate to critical
@@ -126,6 +141,12 @@ export const MetricsStatusStrip = ({
     );
   }
 
+  // Accent appears ONLY during an incident (≥1 anomaly); calm is fully neutral
+  // — the prototype's "color means something's wrong" rule. Within an incident
+  // the per-metric thresholds still decide which cells light up.
+  const isIncident = diagnosisCount !== undefined && diagnosisCount > 0;
+  const accent = (tone: string) => (isIncident ? tone : "text-foreground");
+
   // Threshold helpers — semantic color only when the signal actually warrants it.
   const queueDepthTone =
     metrics.queueDepth >= 1000
@@ -156,47 +177,53 @@ export const MetricsStatusStrip = ({
     value: string;
     unit?: string;
     tone: string;
+    /** Red ↑ on queue-depth when it's climbing during an incident. */
+    arrow?: boolean;
   }> = [
     {
-      label: t("messagesPerSec"),
+      label: t("strip.msgsPerSec"),
       value: formatInt(metrics.messagesPerSec),
       tone: "text-foreground",
     },
     {
-      label: t("queuesDepth"),
+      label: t("strip.queueDepth"),
       value: formatInt(metrics.queueDepth),
-      tone: queueDepthTone,
+      tone: accent(queueDepthTone),
+      arrow: isIncident && metrics.queueDepth >= 100,
     },
     {
-      label: t("avgLatency"),
+      label: t("strip.avgLatency"),
       value: formatDecimal(metrics.avgLatency),
       unit: "ms",
-      tone: latencyTone,
+      tone: accent(latencyTone),
     },
     {
-      label: t("activeQueues"),
+      label: t("strip.activeQueues"),
       value: formatInt(metrics.activeQueues),
       tone: "text-foreground",
     },
     {
-      label: t("connectedNodes"),
+      label: t("strip.nodes"),
       value: formatInt(metrics.connectedNodes),
-      tone: nodesTone,
+      tone: accent(nodesTone),
     },
     {
-      label: t("cpuUsage"),
+      label: t("strip.cpu"),
       value: formatDecimal(metrics.cpuUsage),
       unit: "%",
-      tone: cpuTone,
+      tone: accent(cpuTone),
     },
     {
-      label: t("memoryUsage"),
+      label: t("strip.memory"),
       value: formatDecimal(metrics.totalMemory),
       unit: "GB",
       tone: "text-foreground",
     },
   ];
 
+  // Anomalies is now a PERMANENT 8th cell. Red-leaning tone when there is at
+  // least one anomaly; neutral when calm (0) or still resolving (undefined →
+  // shown as a dash).
   const diagnosisTone =
     diagnosisCount !== undefined && diagnosisCount > 0
       ? "text-warning"
@@ -222,38 +249,40 @@ export const MetricsStatusStrip = ({
       ? "text-emerald-600 dark:text-emerald-500"
       : "text-muted-foreground";
 
+  // Prototype responsive: 8 cols (or 9 with coverage) > 1080px, 4 cols ≤1080px,
+  // 2 cols ≤560px. Hairline dividers come from a 1px grid gap over a
+  // border-colored backplate — each cell paints its own bg-card on top, so the
+  // gaps read as 1px lines (no per-cell borders). overflow-hidden + the rounded
+  // container clip the corners cleanly at every breakpoint.
+  const lgCols =
+    cells.length + 1 + (showCoverageCell ? 1 : 0) === 9
+      ? "min-[1080px]:grid-cols-9"
+      : "min-[1080px]:grid-cols-8";
+
   return (
-    <div className="flex flex-wrap items-stretch rounded-md border border-border bg-card overflow-hidden">
-      {cells.map((cell, i) => (
-        <div
-          key={cell.label}
-          className={`flex flex-col justify-between flex-1 min-w-[160px] min-h-[88px] px-5 py-3 ${
-            i < cells.length - 1 ||
-            diagnosisCount !== undefined ||
-            showCoverageCell
-              ? "border-r border-border"
-              : ""
-          }`}
-        >
-          {/* Label — wraps up to 2 lines for long translations (French
-              "Profondeur des files d'attente" etc.). leading-tight keeps
-              wrapped labels compact. */}
-          <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground leading-tight line-clamp-2">
-            {cell.label}
-          </div>
-          <div className="mt-1 flex items-baseline gap-1">
+    <div
+      className={`grid grid-cols-2 min-[560px]:grid-cols-4 ${lgCols} gap-px overflow-hidden rounded-lg border border-border bg-border`}
+    >
+      {cells.map((cell) => (
+        <div key={cell.label} className={CELL_CLASS}>
+          {/* Label — single mono line; truncates rather than wrapping or
+              breaking the grid for long translations. */}
+          <div className={LABEL_CLASS}>{cell.label}</div>
+          <div className="flex items-baseline gap-[3px]">
             {isLoading ? (
-              <Skeleton className="h-7 w-14" />
+              <Skeleton className="h-[18px] w-12" />
             ) : (
               <>
-                <span
-                  className={`text-2xl font-semibold font-mono tabular-nums ${cell.tone}`}
-                >
+                <span className={`${VALUE_CLASS} ${cell.tone}`}>
                   {cell.value}
                 </span>
-                {cell.unit && (
-                  <span className="text-sm text-muted-foreground font-mono">
-                    {cell.unit}
+                {cell.unit && <span className={UNIT_CLASS}>{cell.unit}</span>}
+                {cell.arrow && (
+                  <span
+                    className="text-[12px] leading-none text-destructive"
+                    aria-hidden="true"
+                  >
+                    ↑
                   </span>
                 )}
               </>
@@ -262,30 +291,26 @@ export const MetricsStatusStrip = ({
         </div>
       ))}
 
-      {/* Diagnosis cell — only rendered when the EE feature is active */}
-      {diagnosisCount !== undefined && (
-        <Link
-          to="/diagnosis"
-          className={`flex flex-col justify-between flex-1 min-w-[160px] min-h-[88px] px-5 py-3 hover:bg-muted/40 transition-colors ${
-            showCoverageCell ? "border-r border-border" : ""
-          }`}
-        >
-          <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground leading-tight">
-            {t("anomalies")}
-          </div>
-          <div className="mt-1 flex items-baseline gap-1">
-            {isLoading ? (
-              <Skeleton className="h-7 w-10" />
-            ) : (
-              <span
-                className={`text-2xl font-semibold font-mono tabular-nums ${diagnosisTone}`}
-              >
-                {formatInt(diagnosisCount)}
-              </span>
-            )}
-          </div>
-        </Link>
-      )}
+      {/* Anomalies — a permanent 8th cell. Shows the diagnosis count (0 when
+          calm), a dash while the count is still resolving (undefined), and a
+          skeleton while metrics load. */}
+      <Link
+        to="/diagnosis"
+        className={`${CELL_CLASS} transition-colors hover:bg-muted/40`}
+      >
+        <div className={LABEL_CLASS}>{t("anomalies")}</div>
+        <div className="flex items-baseline gap-[3px]">
+          {isLoading ? (
+            <Skeleton className="h-[18px] w-8" />
+          ) : diagnosisCount === undefined ? (
+            <span className={`${VALUE_CLASS} text-muted-foreground`}>—</span>
+          ) : (
+            <span className={`${VALUE_CLASS} ${diagnosisTone}`}>
+              {formatInt(diagnosisCount)}
+            </span>
+          )}
+        </div>
+      </Link>
 
       {/* messageId coverage cell — only rendered when firehose is enabled
           on this server. Uses <dl> metric pattern (NOT role="status",
@@ -294,31 +319,25 @@ export const MetricsStatusStrip = ({
           for this server — that finding owns the "why this matters"
           surface and we avoid the duplication. */}
       {showCoverageCell && messageIdCoverage && (
-        <div className="flex flex-col justify-between flex-1 min-w-[160px] min-h-[88px] px-5 py-3">
+        <div className={CELL_CLASS}>
           <dl className="contents">
-            <dt className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground leading-tight line-clamp-2">
-              {t("messageIdCoverage.label")}
-            </dt>
-            <dd className="mt-1 flex items-baseline gap-1.5">
+            <dt className={LABEL_CLASS}>{t("messageIdCoverage.label")}</dt>
+            <dd className="flex items-baseline gap-[3px]">
               {isLoading ? (
-                <Skeleton className="h-7 w-14" />
+                <Skeleton className="h-[18px] w-12" />
               ) : coverageRatioPct === null ? (
                 // Empty state — broker has no publishes in window.
-                <span className="text-2xl font-semibold font-mono tabular-nums text-muted-foreground">
+                <span className={`${VALUE_CLASS} text-muted-foreground`}>
                   —
                 </span>
               ) : (
                 <>
-                  <span
-                    className={`text-2xl font-semibold font-mono tabular-nums ${coverageTone}`}
-                  >
+                  <span className={`${VALUE_CLASS} ${coverageTone}`}>
                     {coverageRatioPct}
                   </span>
-                  <span className="text-sm text-muted-foreground font-mono">
-                    %
-                  </span>
+                  <span className={UNIT_CLASS}>%</span>
                   {coverageBand === "emerald" && (
-                    <CircleCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-500 ml-0.5" />
+                    <CircleCheck className="ml-0.5 h-3.5 w-3.5 text-emerald-600 dark:text-emerald-500" />
                   )}
                   {!suppressMessageIdPopover && (
                     <Popover>

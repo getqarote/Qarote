@@ -133,7 +133,10 @@
     "isNotMemberOfWorkspace": "User is not a member of this workspace",
     "cannotRemoveSelf": "Cannot remove yourself from the workspace",
     "onlyOwnerCanRemoveAdmin": "Only workspace owners can remove admin users",
-    "failedToRemoveFromWorkspace": "Failed to remove user from workspace"
+    "failedToRemoveFromWorkspace": "Failed to remove user from workspace",
+    "deleteAccountConfirmationMismatch": "Type your email exactly to confirm account deletion",
+    "deleteAccountSoleOwnerBlocked": "You are the only owner of an organization with other members. Transfer ownership or remove the members before deleting your account.",
+    "deleteAccountSubscriptionFailed": "Could not cancel a subscription — your account was not deleted. Please try again or contact support."
   },
   "feature": {
     "requiresLicense": "{{featureName}} requires an active license. Activate a license in Settings to unlock this feature.",
@@ -160,7 +163,11 @@
     "allWorkspaces": "your workspaces"
   },
   "organization": {
-    "slugTaken": "That slug is already taken. Try another."
+    "slugTaken": "That slug is already taken. Try another.",
+    "deleteOwnerOnly": "Only the organization owner can delete it",
+    "notFound": "Organization not found",
+    "deleteConfirmationMismatch": "The confirmation does not match the organization slug",
+    "deleteSubscriptionFailed": "Could not cancel the subscription — the organization was not deleted. Please try again or contact support."
   },
   "license": {
     "validationFailed": "License validation failed",
@@ -238,7 +245,10 @@
     "failedToImportDefinitions": "Failed to import broker definitions",
     "failedToUpdateTracingState": "Failed to update RabbitMQ broker tracing state. Check server connectivity.",
     "tracingQueryStartBeforeEnd": "Start time must be before end time.",
-    "tracingQueryWindowExceeded": "Time range cannot exceed 7 days."
+    "tracingQueryWindowExceeded": "Time range cannot exceed 7 days.",
+    "alertNotFound": "Alert not found",
+    "tooManyQueues": "This broker has {{count}} queues, above the {{limit}} we monitor. That is a specific need — please contact us so we can look at it with you.",
+    "queueCeilingReached": "Metrics collection is paused for this broker: it has {{count}} queues, above the {{limit}} we monitor. That is a specific need — please contact us so we can look at it with you."
   },
   "scan": {
     "findingNotFound": "Finding not found"

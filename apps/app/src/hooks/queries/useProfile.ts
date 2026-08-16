@@ -62,6 +62,13 @@ export const useCancelEmailChange = () => {
   });
 };
 
+// Resend the signup verification email for the authenticated user's current
+// address (the "Verify" affordance on an unverified email). The server reads
+// the account from the session, so no email arg is needed for type SIGNUP.
+export const useResendVerification = () => {
+  return trpc.auth.verification.resendVerification.useMutation();
+};
+
 // Email verification status hook
 export const useVerificationStatus = () => {
   const { isAuthenticated } = useAuth();

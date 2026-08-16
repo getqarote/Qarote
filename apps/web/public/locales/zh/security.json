@@ -1,88 +1,85 @@
 {
   "seo": {
     "title": "安全性 — Qarote RabbitMQ 监控",
-    "description": "Qarote 如何保护您的 RabbitMQ 凭据、处理您的数据并确保您的监控基础设施安全。自托管选项意味着您的数据永远不会离开您的网络。"
+    "description": "Qarote 如何处理您的数据：默认 TLS、不存储消息正文、明确的 AI 数据驻留、离线自托管，以及 Enterprise 版的 SOC 2。"
   },
   "hero": {
     "eyebrow": "安全性",
-    "title": "为无法承受数据泄露的团队而构建。",
-    "subtitle": "您正在将 Qarote 连接到您的消息代理。以下是我们对该访问权限的确切处理方式——以及我们不会做的事情。"
+    "title": "为读取您的 broker 而生，而非您的数据。",
+    "subtitle": "Qarote 通过 TLS 连接 RabbitMQ，仅读取管理和指标数据，从不存储您的消息正文。下面是它的确切含义。"
   },
-  "pillars": {
-    "eyebrow": "我们如何保护您",
-    "controlsCount": "{{count}} 项控制",
-    "heading": "安全设计",
-    "items": [
+  "data": {
+    "encryption": {
+      "title": "传输加密",
+      "body": "与您的 RabbitMQ broker 的连接默认使用 TLS。Qarote 通过加密通道与 Management HTTP API 通信——没有明文 broker 流量。"
+    },
+    "noStore": {
+      "title": "我们读取什么——以及不存储什么",
+      "body": "Qarote 仅通过 Management HTTP API 读取指标和管理数据。我们不存储：",
+      "items": [
+        "消息正文——从不读取或存储",
+        "Broker 凭据——不持久化",
+        "应用数据——不在范围内"
+      ],
+      "note": "仅持久化配置以及告警/通知偏好。"
+    }
+  },
+  "residency": {
+    "eyebrow": "AI 与数据驻留",
+    "heading": "由您选择 AI Explain 在何处运行。",
+    "body": "根因分析可以三种方式运行。该选择决定是否有数据离开您的网络——自托管者可将一切保留在网络内。",
+    "cols": {
+      "provider": "提供方",
+      "flow": "数据流向",
+      "residency": "驻留"
+    },
+    "rows": [
       {
-        "title": "静态凭据加密",
-        "description": "RabbitMQ 连接凭据在写入磁盘之前使用 AES-256 加密。您的密码永远不会以明文形式存储。"
+        "name": "托管云 · Qarote 密钥",
+        "detail": "事件及周边 broker 状态使用我们的密钥发送至 Qarote 的托管 LLM 提供方。最易使用——零配置。",
+        "badge": "离开网络",
+        "residency": "out"
       },
       {
-        "title": "传输中使用 TLS 1.2+",
-        "description": "您的浏览器与 Qarote API 之间的所有流量均使用 TLS 1.2 或更高版本加密。我们同样支持并推荐通过 TLS 连接到您的代理。"
+        "name": "BYOK · 您的 Anthropic / OpenAI 密钥",
+        "detail": "分析在您自己的模型提供方账户上使用您的 API 密钥运行。数据按您的条款发送至您选择的提供方——不经过 Qarote 的账户。",
+        "badge": "您的提供方",
+        "residency": "out"
       },
       {
-        "title": "消息内容从不离开你的 Broker",
-        "description": "Qarote 读取队列深度、消息速率和消费者数量，用于告警和趋势图表，并将这些指标保留最多 30 天。你消息的实际内容从不被访问、读取或存储。"
-      },
-      {
-        "title": "工作区隔离",
-        "description": "每个工作区完全隔离。用户只能访问其工作区内的代理和数据。跨租户数据访问在架构上是不可能的。"
-      },
-      {
-        "title": "基于角色的访问控制",
-        "description": "为每个工作区成员分配管理员或只读角色。限制谁可以修改连接、配置告警或访问敏感的代理详细信息。"
-      },
-      {
-        "title": "会话管理",
-        "description": "会话存续时间短，注销时立即失效。我们支持通过 OIDC 和 SAML 进行 SSO，适合使用集中式身份管理的企业团队。"
+        "name": "本地 Ollama · 自托管",
+        "detail": "分析在您自己硬件上的本地 Ollama 模型上运行。任何数据都不会离开您的网络——broker 状态绝不越过您的边界。",
+        "badge": "保留在网络内",
+        "residency": "in"
       }
     ]
   },
-  "toc": {
-    "heading": "目录"
-  },
-  "selfHosted": {
-    "eyebrow": "自托管选项",
-    "heading": "您的网络。您的规则。",
-    "body": "Qarote 可完全部署在您自己的基础设施上——裸机、Docker 或 Kubernetes。在自托管模式下，任何遥测数据、凭据和监控数据都不会离开您的网络。您可以获得完整的产品，完全不依赖 Qarote 的云服务。",
-    "cta": "阅读部署指南",
-    "features": [
-      "Docker 和 Kubernetes",
-      "无遥测",
-      "支持断网部署",
-      "MIT 许可核心"
-    ]
+  "control": {
+    "selfHost": {
+      "title": "自托管与数据控制",
+      "body": "在您自己的基础设施内完整运行 Qarote。所有数据都保留在您的网络中，许可证离线校验——没有回连、没有遥测信标，您的可用性也不依赖于我们的可用性。",
+      "items": [
+        "离线 JWT 许可证校验",
+        "本地 Ollama 实现完全网络内的 AI",
+        "MIT 开源检测核心"
+      ]
+    },
+    "compliance": {
+      "title": "合规",
+      "body": "SOC 2 在 Enterprise 计划中提供。若您的采购流程需要报告、安全评审或 DPA，我们的团队可以为您讲解。",
+      "cta": "申请 SOC 2 详情"
+    }
   },
   "disclosure": {
-    "eyebrow": "负责任的披露",
-    "heading": "发现了漏洞？",
-    "body": "我们认真对待安全报告。如果您在 Qarote 中发现漏洞，请发送电子邮件至 security@qarote.io。我们将在 48 小时内确认您的报告，并在修复过程中持续更新进展。我们不会对善意的安全研究人员采取法律行动。",
+    "heading": "负责任的漏洞披露",
+    "body": "发现了漏洞？我们希望收到您的反馈。请发送邮件至 security@qarote.io，附上详情与复现步骤。我们会确认您的报告、保持更新，并在修复后致谢。请在公开披露前给我们合理的修复时间。",
+    "cta": "报告漏洞",
     "email": "security@qarote.io"
   },
-  "faq": {
-    "heading": "安全常见问题",
-    "items": [
-      {
-        "question": "您是否存储我的 RabbitMQ 密码？",
-        "answer": "是的，但仅限于您使用云版本且需要 Qarote 代表您轮询代理的情况。密码在静态时使用 AES-256 加密。在自托管模式下，凭据保存在您自己的服务器上。"
-      },
-      {
-        "question": "Qarote 会读取我的消息内容吗？",
-        "answer": "不会。Qarote 访问 RabbitMQ 管理 API 以读取队列深度、消息速率和节点健康状态。它不会消费或检查消息负载内容。"
-      },
-      {
-        "question": "使用 Qarote 需要将我的代理暴露到互联网吗？",
-        "answer": "不需要。您可以在私有网络内运行 Qarote 代理。它向外连接到 Qarote 的 API——您的代理管理端口无需公开访问。"
-      },
-      {
-        "question": "您是否拥有 SOC 2 认证？",
-        "answer": "我们正在申请 SOC 2 Type II 认证。与此同时，我们的自托管版本是有严格合规要求的团队的正确选择——您掌控整个技术栈。"
-      },
-      {
-        "question": "我可以使用自己的 SSO 提供商吗？",
-        "answer": "可以。企业版支持基于 OIDC 和 SAML 的 SSO，允许您将 Qarote 集成到现有的身份提供商（Okta、Azure AD、Google Workspace 等）。"
-      }
-    ]
+  "cta": {
+    "heading": "关于安全性有疑问？",
+    "body": "我们的团队很乐意为您的环境详细说明数据处理、驻留与合规。",
+    "primary": "联系安全团队",
+    "secondary": "阅读隐私政策"
   }
 }

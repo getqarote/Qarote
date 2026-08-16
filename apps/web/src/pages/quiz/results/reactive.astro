@@ -1,19 +1,23 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
-import { loadAllTranslations } from "../../../lib/i18n-static";
-import QuizResultsIsland from "../../../components/QuizResultsIsland";
+import { loadTranslations } from "../../../lib/i18n-static";
+import QuizIsland from "../../../components/QuizIsland";
 
-const resources = loadAllTranslations("en");
+const resources = {
+  quiz: loadTranslations("en", "quiz"),
+  common: loadTranslations("en", "common"),
+};
 ---
 
 <BaseLayout
   title="RabbitMQ Skills Assessment — Reactive | Qarote"
   description="Your RabbitMQ monitoring is reactive. See what leading indicators you're missing and how to get ahead of incidents."
   canonicalPath="/quiz/results/reactive/"
-  image="https://qarote.io/images/og-quiz-reactive.jpg"
+  image="https://qarote.io/og/quiz-reactive.png"
+  nav={false}
 >
   <Fragment slot="head">
     <meta name="robots" content="noindex, nofollow" />
   </Fragment>
-  <QuizResultsIsland tier="reactive" resources={resources} client:load />
+  <QuizIsland forceTier="reactive" resources={resources} client:load />
 </BaseLayout>

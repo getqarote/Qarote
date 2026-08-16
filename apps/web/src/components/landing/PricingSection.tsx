@@ -1,133 +1,39 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { trackSignUpClick } from "@/lib/gtm";
-import { LAUNCH_HIDDEN_FEATURE_KEYS } from "@/lib/launchFlags";
 
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-
-const FeatureItem = ({ children }: { children: React.ReactNode }) => (
-  <li className="flex items-start gap-3">
-    <div className="mt-[0.4rem] w-3.5 shrink-0 flex items-start">
-      <img
-        src="/images/check.svg"
-        alt=""
-        aria-hidden="true"
-        className="image-crisp w-auto h-[0.7rem]"
-        width={14}
-        height={11}
-      />
-    </div>
-    <div className="flex-1 flex items-center gap-2">{children}</div>
-  </li>
-);
-
-type IntelligenceRow = {
-  name: string;
-  detailKey?: string;
-  tooltipKey?: string;
-  soon?: boolean;
-};
-
-function intelligenceRowsFor(planId: string): IntelligenceRow[] {
-  if (planId === "FREE") {
-    return [
-      { name: "dailyDigest", detailKey: "detailWeekly" },
-      {
-        name: "messageSpy",
-        detailKey: "detail5Messages",
-        tooltipKey: "featureNames.messageSpyLimitedHint",
-      },
-      { name: "metricsPersistence", detailKey: "detail24h" },
-      { name: "incidentDiagnosis", detailKey: "detailFullResults" },
-      { name: "messageTracing", detailKey: "detail6h" },
-      { name: "aiExplanations", detailKey: "detail5PerMonth", soon: true },
-    ];
-  }
-  if (planId === "DEVELOPER") {
-    return [
-      { name: "dailyDigest", detailKey: "detailDaily" },
-      { name: "messageSpy", detailKey: "detailUnlimitedMessages" },
-      { name: "metricsPersistence", detailKey: "detail14Days" },
-      { name: "incidentDiagnosis", detailKey: "detailFullResults" },
-      { name: "messageTracing", detailKey: "detail7Days" },
-      { name: "aiExplanations", detailKey: "detail50PerMonth", soon: true },
-    ];
-  }
-  // ENTERPRISE
-  return [
-    { name: "dailyDigest", detailKey: "detailDailyCustom" },
-    { name: "messageSpy", detailKey: "detailUnlimitedMessages" },
-    { name: "metricsPersistence", detailKey: "detail90Days" },
-    { name: "incidentDiagnosis", detailKey: "detailFullResults" },
-    { name: "messageTracing", detailKey: "detail30Days" },
-    { name: "aiExplanations", detailKey: "detailUnlimited", soon: true },
-    { name: "aiEnhancedDigest", soon: true },
-  ];
-}
+type PlanId = "FREE" | "DEVELOPER" | "ENTERPRISE";
 
 const PricingSection = () => {
-  const { t: tPricing, i18n } = useTranslation("pricing");
-  const lp = (path: string) =>
-    i18n.language === "en" ? path : `/${i18n.language}${path}`;
+  const { t: tPricing } = useTranslation("pricing");
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
     "yearly"
   );
-  const [hostingMode, setHostingMode] = useState("cloud");
-  const cloudTabRef = useRef<HTMLButtonElement>(null);
-  const selfhostTabRef = useRef<HTMLButtonElement>(null);
-  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+  const [hostingMode, setHostingMode] = useState<"cloud" | "selfhost">("cloud");
 
-  useEffect(() => {
-    const activeRef = hostingMode === "cloud" ? cloudTabRef : selfhostTabRef;
-    if (activeRef.current) {
-      setIndicatorStyle({
-        left: activeRef.current.offsetLeft,
-        width: activeRef.current.offsetWidth,
-      });
-    }
-  }, [hostingMode]);
-
-  // Init indicator on mount
-  useEffect(() => {
-    if (cloudTabRef.current) {
-      setIndicatorStyle({
-        left: cloudTabRef.current.offsetLeft,
-        width: cloudTabRef.current.offsetWidth,
-      });
-    }
-  }, []);
-
+  // Self-hosted annual license pricing (preserved).
   const selfHostPricing: Record<
-    string,
-    { price: string; period?: string; ctaKey: string; url: string }
+    PlanId,
+    { price: string; period?: string; url: string }
   > = {
     FREE: {
       price: "$0",
-      ctaKey: "instructions",
       url: "https://github.com/getqarote/Qarote",
     },
     DEVELOPER: {
       price: "$348",
-      period: "/ year",
-      ctaKey: "chooseDeveloper",
+      period: "/yr",
       url: `${import.meta.env.VITE_PORTAL_URL}/auth/sign-up`,
     },
     ENTERPRISE: {
       price: "$1,188",
-      period: "/ year",
-      ctaKey: "chooseEnterprise",
+      period: "/yr",
       url: `${import.meta.env.VITE_PORTAL_URL}/auth/sign-up`,
     },
   };
 
+  // Cloud pricing by billing period (preserved values).
   const planPricing = {
     monthly: {
       FREE: { price: "$0", originalPrice: undefined },
@@ -139,589 +45,277 @@ const PricingSection = () => {
       DEVELOPER: { price: "$29", originalPrice: "$34" },
       ENTERPRISE: { price: "$99", originalPrice: "$124" },
     },
+  } as const;
+
+  const startSignUp = (plan: PlanId) => {
+    const selfHost = selfHostPricing[plan];
+    if (hostingMode === "selfhost" && selfHost.url) {
+      window.open(selfHost.url, "_blank");
+      return;
+    }
+    const appBaseUrl = import.meta.env.VITE_APP_BASE_URL;
+    const token =
+      localStorage.getItem("authToken") ||
+      document.cookie.split(";").find((c) => c.trim().startsWith("authToken="));
+    if (token) {
+      window.location.assign(`${appBaseUrl}/plans`);
+    } else {
+      trackSignUpClick({ source: "pricing_card", location: "landing_page" });
+      window.location.assign(`${appBaseUrl}/auth/sign-up`);
+    }
   };
 
-  const plans = [
+  const plans: {
+    id: PlanId;
+    name: string;
+    description: string;
+    bullets: string[];
+    popular?: boolean;
+    cta: string;
+    ctaArrow?: boolean;
+    ctaPrimary?: boolean;
+    ctaSub?: string;
+    isContact?: boolean;
+  }[] = [
     {
       id: "FREE",
       name: tPricing("plans.starter.name"),
-      description: tPricing("plans.starter.description"),
-      color: "text-gray-600",
-      bgColor: "bg-gray-50",
-      borderColor: "border-orange-200",
-      features: {
-        auditLog: false as const,
-        servers: "upTo1" as const,
-        rabbitMQVersionSupport: tPricing("featureNames.onlyLTS"),
-        workspaces: "upTo1" as const,
-        teamMembers: "upTo1" as const,
-        queueManagement: true,
-        exchangeManagement: true,
-        virtualHostManagement: true,
-        rabbitMQUserManagement: true,
-        alertsNotification: false,
-        communitySupport: true,
-        emailSupport: false,
-        prioritySupport: false,
-        emailAlerts: false,
-        topologyVisualization: false,
-        roleBasedAccess: false,
-        advancedRoleBasedAccess: false,
-      },
+      description: tPricing("cards.community.description"),
+      bullets: [
+        tPricing("cards.community.b1"),
+        tPricing("cards.community.b2"),
+        tPricing("cards.community.b3"),
+        tPricing("cards.community.b4"),
+        tPricing("cards.community.b5"),
+      ],
+      cta: tPricing("cta.tryForFree"),
+      ctaSub: tPricing("cta.noCreditCard"),
     },
     {
       id: "DEVELOPER",
       name: tPricing("plans.pro.name"),
-      description: tPricing("plans.pro.description"),
-      color: "text-gray-600",
-      bgColor: "bg-gray-50",
-      borderColor: "border-gray-200",
-      isPopular: true,
-      features: {
-        auditLog: false as const,
-        servers: "upTo3" as const,
-        rabbitMQVersionSupport: tPricing("featureNames.allVersions"),
-        workspaces: "upTo3" as const,
-        teamMembers: "upTo3" as const,
-        queueManagement: true,
-        exchangeManagement: true,
-        virtualHostManagement: true,
-        rabbitMQUserManagement: true,
-        alertsNotification: true,
-        communitySupport: true,
-        emailSupport: true,
-        prioritySupport: false,
-        emailAlerts: true,
-        topologyVisualization: true,
-        roleBasedAccess: true,
-        advancedRoleBasedAccess: false,
-      },
+      description: tPricing("cards.developer.description"),
+      bullets: [
+        tPricing("cards.developer.b1"),
+        tPricing("cards.developer.b2"),
+        tPricing("cards.developer.b3"),
+        tPricing("cards.developer.b4"),
+        tPricing("cards.developer.b5"),
+      ],
+      popular: true,
+      cta: tPricing("cta.tryForFree"),
+      ctaArrow: true,
+      ctaPrimary: true,
+      ctaSub: tPricing("cta.developerTrial"),
     },
     {
       id: "ENTERPRISE",
       name: tPricing("plans.business.name"),
-      description: tPricing("plans.business.description"),
-      color: "text-gray-600",
-      bgColor: "bg-gray-50",
-      borderColor: "border-gray-200",
-      features: {
-        auditLog: "soon" as const,
-        servers: "unlimited" as const,
-        rabbitMQVersionSupport: tPricing("featureNames.allVersions"),
-        workspaces: "unlimited" as const,
-        teamMembers: "unlimited" as const,
-        queueManagement: true,
-        exchangeManagement: true,
-        virtualHostManagement: true,
-        rabbitMQUserManagement: true,
-        alertsNotification: true,
-        communitySupport: true,
-        emailSupport: false,
-        prioritySupport: true,
-        emailAlerts: true,
-        topologyVisualization: true,
-        roleBasedAccess: true,
-        advancedRoleBasedAccess: "soon" as const,
-      },
+      description: tPricing("cards.enterprise.description"),
+      bullets: [
+        tPricing("cards.enterprise.b1"),
+        tPricing("cards.enterprise.b2"),
+        tPricing("cards.enterprise.b3"),
+        tPricing("cards.enterprise.b4"),
+        tPricing("cards.enterprise.b5"),
+      ],
+      cta: tPricing("cta.contactSales"),
+      isContact: true,
     },
   ];
 
   return (
     <section id="pricing" className="pt-12 pb-20 bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 max-w-4xl mx-auto leading-[1.2] font-normal">
+      <div className="mx-auto max-w-[1180px] px-[clamp(20px,5vw,64px)]">
+        <div className="mb-12 max-w-[760px]">
+          <span className="font-mono text-[12.5px] uppercase tracking-[0.08em] text-primary">
+            {tPricing("eyebrow")}
+          </span>
+          <h2 className="font-display text-[clamp(28px,4vw,40px)] font-semibold leading-[1.1] text-foreground mt-2">
             {tPricing("title")}
           </h2>
+          <p className="text-[16px] leading-[1.6] text-muted-foreground mt-4">
+            {tPricing("subtitle")}
+          </p>
         </div>
 
-        {/* Hosting Tabs + Billing Toggle row */}
-        <div className="flex flex-col sm:relative sm:flex-row items-center justify-center gap-4 sm:gap-0 mb-8 max-w-7xl mx-auto w-full">
-          {/* Hosting Mode Tabs — centered */}
-          <div className="relative flex border border-border p-1">
-            {/* Sliding indicator */}
-            <div
-              className="absolute top-1 bottom-1 bg-foreground transition-all duration-200 ease-in-out"
-              style={{
-                left: indicatorStyle.left,
-                width: indicatorStyle.width,
-              }}
-            />
+        {/* Controls: deployment model + billing interval pill groups */}
+        <div className="flex flex-col items-center justify-center gap-[14px] mb-10">
+          <div
+            className="inline-flex gap-1 p-1 border border-border rounded-full bg-secondary"
+            role="group"
+            aria-label={tPricing("controls.deploymentModel")}
+          >
             <button
               type="button"
-              ref={cloudTabRef}
               onClick={() => setHostingMode("cloud")}
-              className={`relative z-10 flex flex-1 justify-center items-center gap-2 py-3 px-6 text-sm font-medium whitespace-nowrap transition-colors duration-200 ${hostingMode === "cloud" ? "text-background" : "text-foreground"}`}
+              aria-pressed={hostingMode === "cloud"}
+              className={`px-5 py-[9px] rounded-full text-[14px] font-medium transition-colors ${
+                hostingMode === "cloud"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
             >
-              <img
-                src="/images/cloud.svg"
-                alt="Cloud"
-                className="w-4 h-4"
-                width={16}
-                height={16}
-              />
-              Cloud
+              {tPricing("controls.cloud")}
             </button>
             <button
               type="button"
-              ref={selfhostTabRef}
               onClick={() => setHostingMode("selfhost")}
-              className={`relative z-10 flex flex-1 justify-center items-center gap-2 py-3 px-6 text-sm font-medium whitespace-nowrap transition-colors duration-200 ${hostingMode === "selfhost" ? "text-background" : "text-foreground"}`}
+              aria-pressed={hostingMode === "selfhost"}
+              className={`px-5 py-[9px] rounded-full text-[14px] font-medium transition-colors ${
+                hostingMode === "selfhost"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
             >
-              <img
-                src="/images/server.svg"
-                alt="Server"
-                className="w-4 h-4"
-                width={16}
-                height={16}
-              />
-              Self-host
+              {tPricing("controls.selfHosted")}
             </button>
           </div>
 
-          {/* Billing Toggle — right on desktop, centered on mobile */}
-          <div className="sm:absolute sm:right-0 flex items-center gap-2 min-h-[44px]">
-            <span
-              className={`text-sm font-medium ${billingPeriod === "monthly" ? "text-foreground" : "text-muted-foreground"}`}
+          <div
+            className="inline-flex gap-1 p-1 border border-border rounded-full bg-secondary"
+            role="group"
+            aria-label={tPricing("controls.billingInterval")}
+          >
+            <button
+              type="button"
+              onClick={() => setBillingPeriod("monthly")}
+              aria-pressed={billingPeriod === "monthly"}
+              className={`px-4 py-[7px] rounded-full text-[13.5px] font-medium transition-colors ${
+                billingPeriod === "monthly"
+                  ? "bg-foreground text-background"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
             >
-              {tPricing("billedMonthly")}
-            </span>
-            <Switch
-              checked={billingPeriod === "yearly"}
-              onCheckedChange={(checked) =>
-                setBillingPeriod(checked ? "yearly" : "monthly")
-              }
-              disabled={hostingMode === "selfhost"}
-              aria-label={tPricing("billedYearly")}
-            />
-            <span
-              className={`text-sm font-medium ${billingPeriod === "yearly" ? "text-foreground" : "text-muted-foreground"}`}
+              {tPricing("controls.monthly")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setBillingPeriod("yearly")}
+              aria-pressed={billingPeriod === "yearly"}
+              className={`px-4 py-[7px] rounded-full text-[13.5px] font-medium transition-colors ${
+                billingPeriod === "yearly"
+                  ? "bg-foreground text-background"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
             >
-              {tPricing("billedYearly")}
-            </span>
-            {billingPeriod === "yearly" && hostingMode !== "selfhost" && (
-              <span className="text-xs font-medium px-1.5 py-0.5 bg-primary/10 text-primary border border-primary/20">
+              {tPricing("controls.yearly")}
+              <span
+                className={`font-mono text-[10.5px] ml-[5px] ${
+                  billingPeriod === "yearly"
+                    ? "text-status-success-text"
+                    : "text-muted-foreground"
+                }`}
+              >
                 −20%
               </span>
-            )}
+            </button>
           </div>
         </div>
 
-        {/* Plans Grid */}
-        <div className="flex justify-center w-full">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-7xl">
-            {plans.map((plan) => {
-              const currentPricing =
-                plan.id in planPricing[billingPeriod]
-                  ? planPricing[billingPeriod][
-                      plan.id as keyof typeof planPricing.monthly
-                    ]
-                  : null;
-              const monthlyPricing =
-                plan.id in planPricing.monthly
-                  ? planPricing.monthly[
-                      plan.id as keyof typeof planPricing.monthly
-                    ]
-                  : null;
-              const yearlyPricing =
-                plan.id in planPricing.yearly
-                  ? planPricing.yearly[
-                      plan.id as keyof typeof planPricing.yearly
-                    ]
-                  : null;
-              const selfHost = selfHostPricing[plan.id] ?? null;
-              return (
-                <div
-                  key={plan.id}
-                  className="relative flex h-full flex-col border border-border overflow-hidden transition-colors duration-200 hover:border-primary/30"
-                >
-                  {/* Plan header strip */}
-                  <div className="px-6 py-3 bg-muted/30 border-b border-border flex items-center justify-between">
-                    <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                      {plan.name}
-                    </h3>
-                    {hostingMode === "cloud" && plan.id === "DEVELOPER" && (
-                      <span className="text-xs font-medium px-2 py-0.5 border border-primary text-primary">
-                        {tPricing("mostPopular")}
-                      </span>
-                    )}
-                    {hostingMode === "cloud" && plan.id === "ENTERPRISE" && (
-                      <span className="text-xs font-medium px-2 py-0.5 border border-primary text-primary">
-                        {tPricing("freeTrial")}
-                      </span>
-                    )}
-                  </div>
-                  <div className="p-6 flex flex-col h-full">
-                    <div className="text-left">
-                      <div className="mb-2 flex flex-col justify-start min-h-[90px]">
-                        {hostingMode === "selfhost" && selfHost ? (
-                          <div className="flex items-center justify-start gap-4">
-                            <span className="text-5xl font-medium text-foreground font-mono">
-                              {selfHost.price}
-                            </span>
-                            {selfHost.period && (
-                              <span className="text-sm text-muted-foreground">
-                                {selfHost.period}
-                              </span>
-                            )}
-                          </div>
-                        ) : currentPricing ? (
-                          <>
-                            <div className="flex items-center justify-start gap-4">
-                              <span className="text-5xl font-medium text-foreground font-mono">
-                                {currentPricing.price}
-                              </span>
-                              {currentPricing.price !== "$0" && (
-                                <div className="flex flex-col leading-tight">
-                                  <span className="text-sm text-muted-foreground">
-                                    {tPricing("perMonth")}
-                                  </span>
-                                  {billingPeriod === "yearly" && (
-                                    <span className="text-sm text-muted-foreground">
-                                      {tPricing("billedYearly")}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                            {billingPeriod === "yearly" &&
-                              monthlyPricing &&
-                              monthlyPricing.price !== "$0" && (
-                                <span className="text-sm text-muted-foreground mt-4">
-                                  <span className="font-medium text-foreground">
-                                    {monthlyPricing.price}
-                                  </span>{" "}
-                                  {tPricing("billedMonthly")}
-                                </span>
-                              )}
-                            {billingPeriod === "monthly" &&
-                              yearlyPricing &&
-                              yearlyPricing.price !== "$0" && (
-                                <span className="text-sm text-muted-foreground mt-4">
-                                  <span className="font-medium text-foreground">
-                                    {yearlyPricing.price}
-                                  </span>{" "}
-                                  {tPricing("billedYearly")}
-                                </span>
-                              )}
-                          </>
-                        ) : (
-                          <div className="flex items-center justify-start gap-2">
-                            <span className="text-xl font-semibold text-foreground">
-                              {tPricing("contactSales")}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+        {/* Plans grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-[22px] items-stretch">
+          {plans.map((plan) => {
+            const cloud = planPricing[billingPeriod][plan.id];
+            const selfHost = selfHostPricing[plan.id];
+            const isSelfHost = hostingMode === "selfhost";
+            const price = isSelfHost ? selfHost.price : cloud.price;
+            const period = isSelfHost
+              ? selfHost.period
+              : price === "$0"
+                ? tPricing("price.free")
+                : tPricing("perMonth");
+            const sub = isSelfHost
+              ? tPricing("sub.selfHosted")
+              : plan.id === "FREE"
+                ? tPricing("sub.mitForever")
+                : plan.id === "ENTERPRISE"
+                  ? billingPeriod === "yearly"
+                    ? tPricing("sub.billedYearlyPerOrg")
+                    : tPricing("sub.billedMonthlyPerOrg")
+                  : billingPeriod === "yearly"
+                    ? tPricing("sub.billedYearly")
+                    : tPricing("sub.billedMonthly");
 
-                    <hr className="border-border mt-4 mb-8" />
+            return (
+              <div
+                key={plan.id}
+                className={`relative flex h-full flex-col rounded-xl bg-card p-[30px] ${
+                  plan.popular
+                    ? "border border-primary shadow-[0_24px_50px_-28px_rgba(232,89,12,0.4)]"
+                    : "border border-border"
+                }`}
+              >
+                {plan.popular && (
+                  <span className="absolute -top-[11px] left-[30px] font-mono text-[11px] tracking-[0.06em] uppercase bg-primary text-primary-foreground px-[11px] py-1 rounded-full">
+                    {tPricing("mostPopular")}
+                  </span>
+                )}
 
-                    <div className="space-y-6 flex-1">
-                      <div>
-                        <h4 className="font-semibold text-foreground mb-3 text-xs sm:text-sm uppercase tracking-wide whitespace-nowrap">
-                          {tPricing("coreFeatures")}
-                        </h4>
-                        <ul className="space-y-2">
-                          <FeatureItem>
-                            <span className="text-sm text-foreground">
-                              {tPricing(
-                                `featureNames.server_${plan.features.servers}`
-                              )}
-                            </span>
-                          </FeatureItem>
-                          <FeatureItem>
-                            {plan.id === "DEVELOPER" ? (
-                              <div>
-                                <span className="text-sm text-foreground">
-                                  {tPricing(
-                                    `featureNames.workspace_${plan.features.workspaces}`
-                                  )}
-                                </span>
-                                <p className="text-xs text-muted-foreground mt-0.5">
-                                  {tPricing("featureNames.singleOrganization")}
-                                </p>
-                              </div>
-                            ) : (
-                              <span className="text-sm text-foreground">
-                                {tPricing(
-                                  `featureNames.workspace_${plan.features.workspaces}`
-                                )}
-                              </span>
-                            )}
-                          </FeatureItem>
-                          <FeatureItem>
-                            <span className="text-sm text-foreground">
-                              {tPricing(
-                                `featureNames.member_${plan.features.teamMembers}`
-                              )}
-                            </span>
-                          </FeatureItem>
-                          {plan.features.queueManagement && (
-                            <FeatureItem>
-                              <span className="text-sm text-foreground">
-                                {tPricing(
-                                  "featureNames.queueExchangeManagement"
-                                )}
-                              </span>
-                            </FeatureItem>
-                          )}
-                          {plan.features.alertsNotification && (
-                            <FeatureItem>
-                              <span className="text-sm text-foreground">
-                                {tPricing("featureNames.alertsWebhooks")}
-                              </span>
-                            </FeatureItem>
-                          )}
-                          {plan.features.topologyVisualization && (
-                            <FeatureItem>
-                              <span className="text-sm text-foreground">
-                                {tPricing("featureNames.topologyVisualization")}
-                              </span>
-                            </FeatureItem>
-                          )}
-                        </ul>
-                      </div>
-
-                      <div>
-                        <h4 className="font-semibold text-foreground mb-3 text-xs sm:text-sm uppercase tracking-wide whitespace-nowrap">
-                          {tPricing("intelligenceDiagnostics")}
-                        </h4>
-                        <ul className="space-y-2">
-                          {intelligenceRowsFor(plan.id)
-                            .filter(
-                              (row) =>
-                                !LAUNCH_HIDDEN_FEATURE_KEYS.includes(row.name)
-                            )
-                            .map((row) => (
-                              <FeatureItem key={row.name}>
-                                <div>
-                                  <span className="text-sm text-foreground flex items-center gap-2">
-                                    {tPricing(`featureNames.${row.name}`)}
-                                    {row.soon && (
-                                      <span className="font-medium px-1 border border-border text-muted-foreground text-[0.65rem]">
-                                        {tPricing("soon")}
-                                      </span>
-                                    )}
-                                    {row.tooltipKey && (
-                                      <TooltipProvider delayDuration={150}>
-                                        <Tooltip>
-                                          <TooltipTrigger asChild>
-                                            <button
-                                              type="button"
-                                              className="cursor-help inline-flex items-center font-medium text-muted-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                              aria-label={tPricing(
-                                                row.tooltipKey
-                                              )}
-                                            >
-                                              <svg
-                                                className="w-2.5 h-2.5 shrink-0"
-                                                viewBox="0 0 16 16"
-                                                fill="currentColor"
-                                                aria-hidden="true"
-                                              >
-                                                <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm0 3a.75.75 0 1 1 0 1.5A.75.75 0 0 1 8 4Zm-.25 2.75a.75.75 0 0 1 1.5 0v4a.75.75 0 0 1-1.5 0v-4Z" />
-                                              </svg>
-                                            </button>
-                                          </TooltipTrigger>
-                                          <TooltipContent
-                                            side="top"
-                                            className="max-w-[220px] text-xs"
-                                          >
-                                            {tPricing(row.tooltipKey)}
-                                          </TooltipContent>
-                                        </Tooltip>
-                                      </TooltipProvider>
-                                    )}
-                                  </span>
-                                  {row.detailKey && (
-                                    <p className="text-xs text-muted-foreground mt-0.5">
-                                      {tPricing(
-                                        `featureNames.${row.detailKey}`
-                                      )}
-                                    </p>
-                                  )}
-                                </div>
-                              </FeatureItem>
-                            ))}
-                        </ul>
-                      </div>
-
-                      <div className="mt-auto space-y-4">
-                        <h4 className="font-semibold text-foreground mb-3 text-sm uppercase tracking-wide">
-                          {tPricing("securityCompatibility")}
-                        </h4>
-                        <ul className="space-y-2">
-                          {plan.id === "ENTERPRISE" && (
-                            <FeatureItem>
-                              <span className="text-sm text-foreground">
-                                {tPricing("featureNames.ssoSamlOidc")}
-                              </span>
-                            </FeatureItem>
-                          )}
-                          {plan.features.advancedRoleBasedAccess && (
-                            <FeatureItem>
-                              <div>
-                                <span className="text-sm text-foreground flex items-center gap-2">
-                                  {tPricing(
-                                    "featureNames.advancedRoleBasedAccess"
-                                  )}
-                                  {plan.features.advancedRoleBasedAccess ===
-                                    "soon" && (
-                                    <span className="font-medium px-1 border border-border text-muted-foreground text-[0.65rem]">
-                                      {tPricing("soon")}
-                                    </span>
-                                  )}
-                                </span>
-                                <p className="text-xs text-muted-foreground mt-0.5">
-                                  {tPricing(
-                                    "featureNames.advancedRoleBasedAccessDesc"
-                                  )}
-                                </p>
-                              </div>
-                            </FeatureItem>
-                          )}
-                          {plan.features.roleBasedAccess && (
-                            <FeatureItem>
-                              <div>
-                                <span className="text-sm text-foreground">
-                                  {tPricing("featureNames.roleBasedAccess")}
-                                </span>
-                                <p className="text-xs text-muted-foreground mt-0.5">
-                                  {tPricing("featureNames.roleBasedAccessDesc")}
-                                </p>
-                              </div>
-                            </FeatureItem>
-                          )}
-                          {plan.features.auditLog && (
-                            <FeatureItem>
-                              <span className="text-sm text-foreground">
-                                {tPricing("featureNames.auditLog")}
-                              </span>
-                              {plan.features.auditLog === "soon" && (
-                                <span className="font-medium px-1 border border-border text-muted-foreground text-[0.65rem]">
-                                  {tPricing("soon")}
-                                </span>
-                              )}
-                            </FeatureItem>
-                          )}
-                          <FeatureItem>
-                            <span className="text-sm text-foreground">
-                              {tPricing("featureNames.soc2Compliance")}
-                            </span>
-                          </FeatureItem>
-                          {plan.features.servers === "upTo1" && (
-                            <FeatureItem>
-                              <div>
-                                <span className="text-sm text-foreground">
-                                  {tPricing("featureNames.ltsVersions")}
-                                </span>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {tPricing("featureNames.allLtsVersions")}
-                                </p>
-                              </div>
-                            </FeatureItem>
-                          )}
-                          {plan.features.servers !== "upTo1" && (
-                            <FeatureItem>
-                              <div>
-                                <span className="text-sm text-foreground">
-                                  {tPricing("featureNames.allRabbitMQVersions")}
-                                </span>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {tPricing("featureNames.allVersions")}
-                                </p>
-                              </div>
-                            </FeatureItem>
-                          )}
-                        </ul>
-                        <a
-                          href={lp("/security/")}
-                          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors duration-150 mt-3"
-                        >
-                          {tPricing("viewSecurity")}
-                          <svg
-                            className="w-3 h-3"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                            aria-hidden="true"
-                          >
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                          </svg>
-                        </a>
-                      </div>
-
-                      <div className="mt-auto space-y-4">
-                        <h4 className="font-semibold text-foreground mb-3 text-sm uppercase tracking-wide">
-                          {tPricing("support")}
-                        </h4>
-                        <ul className="space-y-2">
-                          {!plan.features.emailSupport &&
-                            !plan.features.prioritySupport && (
-                              <FeatureItem>
-                                <span className="text-sm text-foreground">
-                                  {tPricing("featureNames.communitySupport")}
-                                </span>
-                              </FeatureItem>
-                            )}
-                          {plan.features.emailSupport && (
-                            <FeatureItem>
-                              <span className="text-sm text-foreground">
-                                {tPricing("featureNames.emailSupport")}
-                              </span>
-                            </FeatureItem>
-                          )}
-                          {plan.features.prioritySupport && (
-                            <FeatureItem>
-                              <span className="text-sm text-foreground">
-                                {tPricing("featureNames.prioritySupport")}
-                              </span>
-                            </FeatureItem>
-                          )}
-                        </ul>
-                      </div>
-                    </div>
-                    <Button
-                      className={`w-full mt-6 px-4 py-3 sm:px-7 sm:py-3 transition-colors duration-200 text-base sm:text-lg h-auto ${plan.id === "FREE" ? "bg-transparent border border-border text-foreground hover:bg-muted" : "bg-primary hover:bg-primary/90 text-primary-foreground"}`}
-                      onClick={() => {
-                        if (hostingMode === "selfhost" && selfHost?.url) {
-                          window.open(selfHost.url, "_blank");
-                        } else {
-                          const appBaseUrl = import.meta.env.VITE_APP_BASE_URL;
-
-                          const token =
-                            localStorage.getItem("authToken") ||
-                            document.cookie
-                              .split(";")
-                              .find((c) => c.trim().startsWith("authToken="));
-
-                          if (token) {
-                            window.location.href = `${appBaseUrl}/plans`;
-                          } else {
-                            trackSignUpClick({
-                              source: "pricing_card",
-                              location: "landing_page",
-                            });
-                            window.location.href = `${appBaseUrl}/auth/sign-up`;
-                          }
-                        }
-                      }}
-                    >
-                      {hostingMode === "selfhost" && selfHost
-                        ? tPricing(selfHost.ctaKey)
-                        : plan.id === "FREE" || plan.id === "DEVELOPER"
-                          ? tPricing("getStarted")
-                          : plan.id === "ENTERPRISE"
-                            ? tPricing("tryNowForFree")
-                            : tPricing("startFree")}
-                    </Button>
-                  </div>
+                <div className="font-display text-[21px] font-semibold text-foreground">
+                  {plan.name}
                 </div>
-              );
-            })}
-          </div>
+                <p className="text-muted-foreground text-[14px] mt-[6px] min-h-[40px]">
+                  {plan.description}
+                </p>
+
+                <div className="mt-[20px] mb-1 flex items-baseline gap-[6px]">
+                  <span className="font-display text-[40px] font-semibold tracking-[-0.02em] text-foreground">
+                    {price}
+                  </span>
+                  {period && (
+                    <span className="text-muted-foreground text-[14px]">
+                      {period}
+                    </span>
+                  )}
+                </div>
+                <div className="font-mono text-[11.5px] text-muted-foreground min-h-[18px]">
+                  {sub}
+                </div>
+
+                <ul className="list-none my-[22px] flex flex-col gap-[11px] flex-1">
+                  {plan.bullets.map((bullet) => (
+                    <li
+                      key={bullet}
+                      className="text-[14.5px] text-muted-foreground flex gap-[10px] items-start"
+                    >
+                      <span
+                        className="text-primary shrink-0 mt-[2px]"
+                        aria-hidden="true"
+                      >
+                        ✓
+                      </span>
+                      {bullet}
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (plan.isContact) {
+                      window.location.assign("#contact-sales");
+                      return;
+                    }
+                    startSignUp(plan.id);
+                  }}
+                  className={`w-full inline-flex items-center justify-center gap-2 rounded-md px-7 py-3 text-[15px] font-medium transition-colors ${
+                    plan.ctaPrimary
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                      : "border border-border text-foreground hover:bg-muted"
+                  }`}
+                >
+                  {plan.cta}
+                  {plan.ctaArrow && <span aria-hidden="true">→</span>}
+                </button>
+                {plan.ctaSub && (
+                  <div className="font-mono text-center text-[11.5px] text-muted-foreground mt-[10px]">
+                    {plan.ctaSub}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

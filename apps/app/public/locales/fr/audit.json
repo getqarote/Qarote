@@ -28,12 +28,21 @@
     "system": "Système"
   },
   "filter": {
-    "category": { "placeholder": "Catégorie" },
-    "source": { "placeholder": "Source" },
-    "from": { "label": "Date de début" },
-    "to": { "label": "Date de fin" },
-    "actor": { "placeholder": "Acteur — email ou ID utilisateur" },
-    "clear": "Effacer les filtres"
+    "category": "Catégorie",
+    "source": {
+      "placeholder": "Source"
+    },
+    "from": {
+      "label": "Date de début"
+    },
+    "to": {
+      "label": "Date de fin"
+    },
+    "actor": {
+      "placeholder": "Acteur — email ou ID utilisateur"
+    },
+    "clear": "Effacer les filtres",
+    "range": "Période"
   },
   "status": {
     "loading": "Chargement…",
@@ -45,7 +54,10 @@
     "filtered": "Aucun évènement d'audit ne correspond aux filtres.",
     "none": "Aucun évènement d'audit pour le moment. Les changements sensibles s'afficheront ici.",
     "quiet": "Le journal est silencieux",
-    "quietDetail": "Aucune opération privilégiée enregistrée. Les changements sensibles apparaîtront ici en temps réel."
+    "quietDetail": "Aucune opération privilégiée enregistrée. Les changements sensibles apparaîtront ici en temps réel.",
+    "title": "Aucune action enregistrée",
+    "body": "Aucune action ne correspond encore à ces filtres.",
+    "denials": "Aucun refus d'autorisation sur cette période — rien n'a été bloqué."
   },
   "shortcuts": {
     "label": "Raccourcis clavier",
@@ -62,12 +74,41 @@
     "first": "Première page",
     "next": "Suivant",
     "more_one": "{{count}} évènement de plus",
-    "more_other": "{{count}} évènements de plus"
+    "more_other": "{{count}} évènements de plus",
+    "older": "Charger les plus anciennes"
   },
   "export": {
     "button": "Exporter CSV",
     "success": "{{count}} lignes exportées",
     "truncated": "Le résultat a été tronqué à la limite. Affinez les filtres pour capturer l'historique plus ancien.",
     "failed": "Échec de l'export"
+  },
+  "forbidden": {
+    "subtitle": "Un journal filtrable de qui a changé quoi, et quand.",
+    "title": "Vous n'avez pas accès au journal d'audit",
+    "body": "La consultation du journal d'audit nécessite la permission audit:read. Demandez à un administrateur ou un propriétaire de l'organisation d'accorder l'accès à votre rôle."
+  },
+  "subtitle": "Qui a fait quoi, et quand. Aussi un signal de diagnostic — Qarote lit ici les changements de configuration récents.",
+  "search": {
+    "placeholder": "Rechercher des actions, acteurs, entités…"
+  },
+  "range": {
+    "24h": "Dernières 24 h",
+    "7d": "7 derniers jours",
+    "30d": "30 derniers jours"
+  },
+  "denialsOnly": "Refus uniquement",
+  "system": "système",
+  "footer": {
+    "retention": "Entrées conservées {{days}} jours"
+  },
+  "gate": {
+    "subtitle": "Un journal persistant et filtrable des actions des opérateurs.",
+    "title": "Le journal d'audit est une fonctionnalité Enterprise",
+    "body": "Conservez un historique consultable de 90 jours de qui a changé quoi — et alimentez le diagnostic d'incident de Qarote avec les changements de configuration récents.",
+    "cta": "Mettre à niveau",
+    "activateLicense": "Activer la licence",
+    "purchaseLicense": "Acheter une licence",
+    "footnote": "Les journaux opérationnels restent côté serveur ; Enterprise ajoute la persistance, la recherche, l'export et le signal de diagnostic."
   }
 }

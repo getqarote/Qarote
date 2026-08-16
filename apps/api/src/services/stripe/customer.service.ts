@@ -457,13 +457,9 @@ export class StripeCustomerService {
       idempotencyKey,
     });
 
-    // Conditional write: only set if still null (race-safe)
-    await prisma.organization.updateMany({
-      where: { id: organizationId, stripeSubscriptionId: null },
-      data: { stripeSubscriptionId: subscription.id },
-    });
-
-    // Upsert subscription record linked to both user and org
+    // Upsert the org's subscription record. The Subscription row is the single
+    // source of truth for the Stripe subscription id — no denormalized mirror
+    // on Organization.
     const firstItem = subscription.items?.data?.[0];
     const currentPeriodStart = firstItem?.current_period_start
       ? new Date(firstItem.current_period_start * 1000)
@@ -473,7 +469,6 @@ export class StripeCustomerService {
       : new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000);
 
     const subscriptionData = {
-      userId,
       organizationId,
       stripeSubscriptionId: subscription.id,
       stripePriceId: firstItem?.price?.id || "",
@@ -497,10 +492,9 @@ export class StripeCustomerService {
     };
 
     const dbSubscription = await prisma.subscription.upsert({
-      where: { userId },
+      where: { organizationId },
       create: subscriptionData,
       update: {
-        organizationId,
         stripeSubscriptionId: subscriptionData.stripeSubscriptionId,
         stripePriceId: subscriptionData.stripePriceId,
         stripeCustomerId: subscriptionData.stripeCustomerId,
@@ -528,8 +522,9 @@ export class StripeCustomerService {
 
   /**
    * Provision a full trial for a newly registered user.
-   * Creates an Organization, provisions the trial on the org, and dual-writes
-   * Stripe IDs to User.
+   * Creates an Organization (with the user as OWNER) and provisions the trial
+   * on the org. Stripe ids live on the Organization + its Subscription — none
+   * are written to User.
    * Returns null if Stripe is not configured (self-hosted mode).
    * Does NOT send emails -- caller decides.
    */
@@ -554,7 +549,11 @@ export class StripeCustomerService {
     // Idempotency guard: check if user already has an organization
     const existingMembership = await prisma.organizationMember.findFirst({
       where: { userId },
-      include: { organization: true },
+      include: {
+        organization: {
+          include: { subscription: { select: { id: true } } },
+        },
+      },
     });
 
     if (existingMembership) {
@@ -563,7 +562,7 @@ export class StripeCustomerService {
         "User already has organization, skipping org creation"
       );
       // Provision trial on existing org if not already provisioned
-      if (!existingMembership.organization.stripeSubscriptionId) {
+      if (!existingMembership.organization.subscription) {
         return StripeCustomerService.provisionTrialForOrg({
           organizationId: existingMembership.organizationId,
           email,

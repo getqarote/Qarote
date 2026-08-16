@@ -1,7 +1,7 @@
 /**
  * Feature gate composition — type contract.
  *
- * See docs/adr/002-feature-gate-composition.md.
+ * See docs/internal/adr/002-feature-gate-composition.md.
  *
  * Three independent axes (capability, license, plan) compose into one
  * discriminated result consumed by every premium tRPC procedure and every

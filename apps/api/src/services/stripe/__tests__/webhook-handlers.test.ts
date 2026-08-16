@@ -30,6 +30,9 @@ vi.mock("@/core/prisma", () => {
       findUnique: vi.fn(),
       update: vi.fn(),
     },
+    organizationMember: {
+      findFirst: vi.fn(),
+    },
     license: {
       findMany: vi.fn(),
       findFirst: vi.fn(),
@@ -150,22 +153,18 @@ describe("handleCheckoutSessionCompleted", () => {
 
     await handleCheckoutSessionCompleted(session);
 
-    // Organization updated with Stripe IDs (not User)
-    expect(prisma.organization.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: "org-1" },
-        data: expect.objectContaining({
-          stripeCustomerId: "cus_123",
-          stripeSubscriptionId: "sub_new",
-        }),
-      })
-    );
+    // Organization updated with the Stripe customer id only — the
+    // subscription id is no longer denormalized onto Organization.
+    expect(prisma.organization.update).toHaveBeenCalledWith({
+      where: { id: "org-1" },
+      data: { stripeCustomerId: "cus_123" },
+    });
 
-    // Subscription created
+    // Subscription created — keyed on the organization, not a user.
     expect(prisma.subscription.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          userId: "user-1",
+          organizationId: "org-1",
           stripeSubscriptionId: "sub_new",
           plan: "DEVELOPER",
         }),
@@ -187,7 +186,13 @@ describe("handleCheckoutSessionCompleted", () => {
     } as any;
 
     vi.mocked(prisma.user.update).mockResolvedValue({} as any);
-    vi.mocked(prisma.organization.findUnique).mockResolvedValue(null);
+    // Valid org so the flow reaches the idempotency check (a missing org would
+    // short-circuit earlier via Fail Fast, for a different reason).
+    vi.mocked(prisma.organization.findUnique).mockResolvedValue({
+      id: "org-1",
+      stripeCustomerId: "cus_123",
+    } as any);
+    vi.mocked(prisma.organization.update).mockResolvedValue({} as any);
     vi.mocked(prisma.user.findUnique).mockResolvedValue({
       id: "user-1",
       email: "user@test.com",
@@ -221,9 +226,12 @@ describe("handleCustomerSubscriptionDeleted", () => {
     vi.mocked(prisma.subscription.findUnique).mockResolvedValue({
       id: "db-sub-id",
       stripeSubscriptionId: "sub_cancel_123",
-      user: { id: "user-1", email: "user@test.com" },
+      organizationId: "org-1",
     } as any);
     vi.mocked(prisma.subscription.update).mockResolvedValue({} as any);
+    vi.mocked(prisma.organizationMember.findFirst).mockResolvedValue({
+      user: { id: "user-1" },
+    } as any);
     vi.mocked(prisma.license.findMany).mockResolvedValue([
       {
         id: "lic-1",
@@ -276,9 +284,12 @@ describe("handleCustomerSubscriptionDeleted", () => {
     vi.mocked(prisma.subscription.findUnique).mockResolvedValue({
       id: "db-sub-id",
       stripeSubscriptionId: "sub_no_lic",
-      user: { id: "user-1" },
+      organizationId: "org-1",
     } as any);
     vi.mocked(prisma.subscription.update).mockResolvedValue({} as any);
+    vi.mocked(prisma.organizationMember.findFirst).mockResolvedValue({
+      user: { id: "user-1" },
+    } as any);
     vi.mocked(prisma.license.findMany).mockResolvedValue([]);
 
     await handleCustomerSubscriptionDeleted(subscription);
@@ -306,6 +317,16 @@ describe("handleCustomerSubscriptionDeleted", () => {
 describe("handleInvoicePaymentFailed", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // The billing contact is resolved via the org's OWNER membership.
+    vi.mocked(prisma.organizationMember.findFirst).mockResolvedValue({
+      user: {
+        id: "user-1",
+        email: "user@test.com",
+        firstName: "Test",
+        lastName: "User",
+        workspace: null,
+      },
+    } as any);
   });
 
   const makeInvoice = (subscriptionId: string) =>
@@ -326,12 +347,7 @@ describe("handleInvoicePaymentFailed", () => {
       id: "db-sub",
       stripeSubscriptionId: "sub_pastdue",
       currentPeriodEnd: new Date(), // Period just ended
-      user: {
-        id: "user-1",
-        email: "user@test.com",
-        firstName: "Test",
-        lastName: "User",
-      },
+      organizationId: "org-1",
     } as any);
     vi.mocked(prisma.subscription.update).mockResolvedValue({} as any);
     vi.mocked(prisma.license.findMany).mockResolvedValue([]);
@@ -355,12 +371,7 @@ describe("handleInvoicePaymentFailed", () => {
       id: "db-sub",
       stripeSubscriptionId: "sub_grace",
       currentPeriodEnd: recentPeriodEnd,
-      user: {
-        id: "user-1",
-        email: "user@test.com",
-        firstName: "Test",
-        lastName: "User",
-      },
+      organizationId: "org-1",
     } as any);
     vi.mocked(prisma.subscription.update).mockResolvedValue({} as any);
     vi.mocked(prisma.license.findMany).mockResolvedValue([
@@ -398,12 +409,7 @@ describe("handleInvoicePaymentFailed", () => {
       id: "db-sub",
       stripeSubscriptionId: "sub_expired",
       currentPeriodEnd: expiredPeriodEnd,
-      user: {
-        id: "user-1",
-        email: "user@test.com",
-        firstName: "Test",
-        lastName: "User",
-      },
+      organizationId: "org-1",
     } as any);
     vi.mocked(prisma.subscription.update).mockResolvedValue({} as any);
     vi.mocked(prisma.license.findMany).mockResolvedValue([
@@ -437,6 +443,40 @@ describe("handleInvoicePaymentFailed", () => {
       expect.objectContaining({ template: "license_payment_failed" }),
       expect.anything()
     );
+  });
+
+  it("deactivates licenses past grace even when the org has no OWNER (emails skipped)", async () => {
+    const invoice = makeInvoice("sub_no_owner");
+    const expiredPeriodEnd = subDays(new Date(), 20);
+
+    vi.mocked(prisma.subscription.findUnique).mockResolvedValue({
+      id: "db-sub",
+      stripeSubscriptionId: "sub_no_owner",
+      currentPeriodEnd: expiredPeriodEnd,
+      organizationId: "org-1",
+    } as any);
+    vi.mocked(prisma.subscription.update).mockResolvedValue({} as any);
+    // No OWNER member resolvable — license suspension must still happen.
+    vi.mocked(prisma.organizationMember.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.license.findMany).mockResolvedValue([
+      {
+        id: "lic-1",
+        licenseKey: "KEY-001",
+        tier: "ENTERPRISE",
+        isActive: true,
+        expiresAt: new Date("2026-01-01"),
+      },
+    ] as any);
+    vi.mocked(prisma.license.updateMany).mockResolvedValue({ count: 1 } as any);
+
+    await handleInvoicePaymentFailed(invoice);
+
+    // Billing-critical deactivation is NOT gated on owner resolution.
+    expect(prisma.license.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { isActive: false } })
+    );
+    // No owner → no notification emails.
+    expect(enqueueNotification).not.toHaveBeenCalled();
   });
 
   it("returns early when no subscription ID in invoice", async () => {

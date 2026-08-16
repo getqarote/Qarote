@@ -1,6 +1,11 @@
 {
   "pageTitle": "Topologie",
   "pageSubtitle": "Carte visuelle des échanges, files d'attente et liaisons",
+  "canvasHint": "cliquez un nœud pour inspecter · glissez pour déplacer",
+  "node": {
+    "bindings_one": "{{count}} liaison",
+    "bindings_other": "{{count}} liaisons"
+  },
   "noServerTitle": "Topologie",
   "noServerDescription": "Ajoutez un serveur RabbitMQ pour voir sa topologie.",
   "noServerSelected": "Aucun serveur sélectionné",
@@ -19,6 +24,27 @@
     "bindings": "bindings",
     "bindings_one": "liaison",
     "bindings_other": "liaisons"
+  },
+  "drawer": {
+    "description": "État en direct et liaisons de {{name}}",
+    "state": "État",
+    "depth": "Profondeur",
+    "consumers": "Consommateurs",
+    "ready": "Prêts",
+    "unacked": "Non acquittés",
+    "queueType": "Type",
+    "incidentTitle": "File en accumulation, aucun consommateur.",
+    "incidentBody": "{{count}} message s'accumule sans rien pour le traiter.",
+    "incidentBody_one": "{{count}} message s'accumule sans rien pour le traiter.",
+    "incidentBody_other": "{{count}} messages s'accumulent sans rien pour les traiter.",
+    "openInCockpit": "Ouvrir dans le cockpit",
+    "bindingsIn": "Liaisons entrantes",
+    "bindingsOut": "Liaisons sortantes",
+    "noBindings": "Aucune liaison",
+    "inspect": "Inspecter",
+    "exchange": "Échange",
+    "exchangeType": "Type",
+    "bindings": "Liaisons"
   },
   "filters": {
     "defaultExchange": "Échange par défaut",

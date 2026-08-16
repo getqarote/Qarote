@@ -90,14 +90,23 @@ export class RabbitMQApiClient extends RabbitMQBaseClient {
     }
   }
 
-  async getQueues(vhost?: string): Promise<RabbitMQQueue[]> {
+  /**
+   * @param signal Aborts the underlying request. Pass one from any caller that
+   *   owns a time budget: a `Promise.race` timeout only abandons the promise,
+   *   leaving the socket open and the response still arriving — which wastes the
+   *   very capacity the timeout was meant to protect.
+   */
+  async getQueues(
+    vhost?: string,
+    signal?: AbortSignal
+  ): Promise<RabbitMQQueue[]> {
     try {
       // Follow RabbitMQ API: /api/queues for all, /api/queues/vhost for filtered
       const endpoint = vhost
         ? `/queues/${encodeURIComponent(vhost)}`
         : "/queues";
       logger.debug({ vhost: vhost || "all" }, "Fetching RabbitMQ queues");
-      const queues = await this.request<RabbitMQQueue[]>(endpoint);
+      const queues = await this.request<RabbitMQQueue[]>(endpoint, { signal });
       logger.debug(
         {
           count: queues?.length || 0,

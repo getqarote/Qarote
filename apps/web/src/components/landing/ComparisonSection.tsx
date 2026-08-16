@@ -1,295 +1,170 @@
-import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useReducedMotion } from "@/hooks/useReducedMotion";
+/**
+ * Comparison teaser — two honest, at-a-glance mini-tables (vs the Management
+ * plugin, vs Prometheus + Grafana). A tight tease; the full SEO compare pages
+ * live in the footer. Ported from Qarote.html (#compare).
+ *
+ * Light/token section, mirroring WhatItCatchesSection's eyebrow + head pattern.
+ * Both tables are driven by a typed row structure to stay DRY (one <Row>).
+ */
 
-function useScrollEntry<T extends Element>(
-  threshold = 0.1
-): [React.RefObject<T>, boolean] {
-  const ref = useRef<T>(null);
-  const [entered, setEntered] = useState(false);
-  useEffect(() => {
-    if (!ref.current) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setEntered(true);
-          observer.disconnect();
-        }
-      },
-      { threshold }
-    );
-    observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [threshold]);
-  return [ref, entered];
-}
+type CompareRow = {
+  /** i18n key under compareTeaser.rows.* for the row label */
+  labelKey: string;
+  /** i18n key under the card namespace for the Qarote cell */
+  qaroteKey: string;
+  /** i18n key under the card namespace for the alternative cell */
+  otherKey: string;
+};
 
-const ComparisonPoint = ({
-  icon,
-  text,
-  entered,
-  delay,
-  reduceMotion,
+const PLUGIN_ROWS: CompareRow[] = [
+  { labelKey: "setup", qaroteKey: "setupQarote", otherKey: "setupOther" },
+  {
+    labelKey: "multiBroker",
+    qaroteKey: "multiBrokerQarote",
+    otherKey: "multiBrokerOther",
+  },
+  {
+    labelKey: "diagnosis",
+    qaroteKey: "diagnosisQarote",
+    otherKey: "diagnosisOther",
+  },
+  {
+    labelKey: "agentMcp",
+    qaroteKey: "agentMcpQarote",
+    otherKey: "agentMcpOther",
+  },
+  { labelKey: "speed", qaroteKey: "speedQarote", otherKey: "speedOther" },
+];
+
+const STACK_ROWS: CompareRow[] = [
+  { labelKey: "setup", qaroteKey: "setupQarote", otherKey: "setupOther" },
+  {
+    labelKey: "multiBroker",
+    qaroteKey: "multiBrokerQarote",
+    otherKey: "multiBrokerOther",
+  },
+  {
+    labelKey: "diagnosis",
+    qaroteKey: "diagnosisQarote",
+    otherKey: "diagnosisOther",
+  },
+  {
+    labelKey: "agentMcp",
+    qaroteKey: "agentMcpQarote",
+    otherKey: "agentMcpOther",
+  },
+  { labelKey: "bestFor", qaroteKey: "bestForQarote", otherKey: "bestForOther" },
+];
+
+const ROW_BASE =
+  "grid grid-cols-[1.1fr_1fr_1fr] gap-2 px-[22px] py-[13px] items-center text-[13.5px]";
+
+const Row = ({
+  label,
+  qarote,
+  other,
+  last,
 }: {
-  icon: string;
-  text: string;
-  entered: boolean;
-  delay: number;
-  reduceMotion: boolean;
+  label: string;
+  qarote: string;
+  other: string;
+  last: boolean;
+}) => (
+  <div className={`${ROW_BASE}${last ? "" : " border-b border-border"}`}>
+    <span className="font-mono text-[12px] uppercase tracking-[0.04em] text-muted-foreground">
+      {label}
+    </span>
+    <span className="font-semibold text-foreground">{qarote}</span>
+    <span className="text-muted-foreground">{other}</span>
+  </div>
+);
+
+const CompareCard = ({
+  title,
+  subtitle,
+  otherColumnLabel,
+  rows,
+  cardNs,
+}: {
+  title: string;
+  subtitle: string;
+  otherColumnLabel: string;
+  rows: CompareRow[];
+  /** translation namespace prefix for this card's cells, e.g. "compareTeaser.plugin" */
+  cardNs: string;
 }) => {
-  const style: CSSProperties = reduceMotion
-    ? {}
-    : {
-        opacity: entered ? 1 : 0,
-        transform: entered ? "none" : "translateX(-6px)",
-        transition: `opacity 0.45s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.45s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
-      };
+  const { t } = useTranslation("landing");
 
   return (
-    <div className="flex gap-4 items-center" style={style}>
-      <img
-        src={`/images/${icon}.svg`}
-        alt=""
-        aria-hidden="true"
-        className="h-3 shrink-0 w-auto image-crisp"
-        width={12}
-        height={12}
-      />
-      <p className="text-foreground">{text}</p>
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="border-b border-border px-[22px] py-[18px]">
+        <h3 className="font-display text-[18px] font-semibold text-foreground">
+          {title}
+        </h3>
+        <span className="font-mono text-[12px] text-muted-foreground">
+          {subtitle}
+        </span>
+      </div>
+
+      {/* Column header row (alternating bg) */}
+      <div className="grid grid-cols-[1.1fr_1fr_1fr] items-center gap-2 border-b border-border bg-secondary px-[22px] py-[13px]">
+        <span />
+        <span className="font-mono text-[11.5px] font-medium uppercase tracking-[0.06em] text-primary">
+          {t("compareTeaser.columnQarote")}
+        </span>
+        <span className="font-mono text-[11.5px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+          {otherColumnLabel}
+        </span>
+      </div>
+
+      {rows.map((row, i) => (
+        <Row
+          key={row.labelKey}
+          label={t(`compareTeaser.rows.${row.labelKey}`)}
+          qarote={t(`${cardNs}.${row.qaroteKey}`)}
+          other={t(`${cardNs}.${row.otherKey}`)}
+          last={i === rows.length - 1}
+        />
+      ))}
     </div>
   );
 };
 
 const ComparisonSection = () => {
   const { t } = useTranslation("landing");
-  const reduceMotion = useReducedMotion();
-  const [containerRef, containerEntered] = useScrollEntry<HTMLDivElement>(0.08);
 
   return (
-    <section className="pb-20 bg-background pt-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 max-w-4xl mx-auto leading-[1.2] font-normal">
-            {t("comparison.title")}
-            <span className="hidden md:inline">
-              <br />
-            </span>{" "}
-            {t("comparison.titleLine2")}
+    <section id="compare" className="bg-background py-[clamp(64px,9vw,128px)]">
+      <div className="mx-auto max-w-[1180px] px-[clamp(20px,5vw,64px)]">
+        <div className="max-w-[660px]">
+          <span className="font-mono text-[12.5px] uppercase tracking-[0.13em] text-primary">
+            {t("compareTeaser.eyebrow")}
+          </span>
+          <h2 className="mt-[18px] font-display text-[clamp(30px,4.4vw,46px)] font-semibold tracking-[-0.025em] text-foreground">
+            {t("compareTeaser.title")}
           </h2>
+          <p className="mt-[18px] max-w-[58ch] text-[clamp(17px,1.6vw,19px)] leading-relaxed text-muted-foreground [text-wrap:pretty]">
+            {t("compareTeaser.subtitle")}
+          </p>
         </div>
 
-        {/* Compare links */}
-        <nav
-          aria-label={t("comparison.compareWith")}
-          className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-10 text-sm text-muted-foreground"
-        >
-          <span aria-hidden="true">{t("comparison.compareWith")}</span>
-          <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2 list-none">
-            <li>
-              <a
-                href="/compare/datadog/"
-                className="text-primary hover:underline"
-              >
-                {t("footer.vsDatadog")}
-              </a>
-            </li>
-            <li>
-              <a
-                href="/compare/grafana-prometheus/"
-                className="text-primary hover:underline"
-              >
-                {t("footer.vsGrafana")}
-              </a>
-            </li>
-            <li>
-              <a
-                href="/compare/cloudamqp/"
-                className="text-primary hover:underline"
-              >
-                {t("footer.vsCloudAMQP")}
-              </a>
-            </li>
-            <li>
-              <a
-                href="/compare/new-relic/"
-                className="text-primary hover:underline"
-              >
-                {t("footer.vsNewRelic")}
-              </a>
-            </li>
-          </ul>
-        </nav>
-
-        {/* Main Comparison Container */}
-        <div
-          ref={containerRef}
-          className="border border-border overflow-hidden"
-        >
-          <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
-            {/* Left Column - Traditional */}
-            <div className="flex flex-col">
-              <div className="px-8 lg:px-12 py-3 bg-muted/30 border-b border-border">
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                  {t("comparison.traditional.title")}
-                </h3>
-              </div>
-              <div className="px-8 lg:px-12 pt-8 pb-0 flex flex-col flex-1">
-                <div className="space-y-5 mb-16">
-                  <ComparisonPoint
-                    icon="cross"
-                    text={t("comparison.traditional.point1")}
-                    entered={containerEntered}
-                    delay={0}
-                    reduceMotion={reduceMotion}
-                  />
-                  <ComparisonPoint
-                    icon="cross"
-                    text={t("comparison.traditional.point2")}
-                    entered={containerEntered}
-                    delay={50}
-                    reduceMotion={reduceMotion}
-                  />
-                  <ComparisonPoint
-                    icon="cross"
-                    text={t("comparison.traditional.point3")}
-                    entered={containerEntered}
-                    delay={100}
-                    reduceMotion={reduceMotion}
-                  />
-                  <ComparisonPoint
-                    icon="cross"
-                    text={t("comparison.traditional.point4")}
-                    entered={containerEntered}
-                    delay={150}
-                    reduceMotion={reduceMotion}
-                  />
-                </div>
-
-                {/* Visual Representation - Simple/Outdated */}
-                <div className="border border-border mt-auto overflow-hidden">
-                  <div className="px-4 py-2 bg-muted/30 border-b border-border flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 bg-red-400" />
-                    <div className="w-2.5 h-2.5 bg-yellow-400" />
-                    <div className="w-2.5 h-2.5 bg-green-400" />
-                    <span className="text-xs text-muted-foreground ml-2">
-                      management.local:15672
-                    </span>
-                  </div>
-                  <div className="bg-background p-6 flex items-center justify-center h-[160px]">
-                    <img
-                      src="/images/error.svg"
-                      alt=""
-                      aria-hidden="true"
-                      className="w-12 h-12 image-crisp"
-                      width={48}
-                      height={48}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column - Qarote */}
-            <div className="flex flex-col">
-              <div className="px-8 lg:px-12 py-3 bg-muted/30 border-b border-border">
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                  {t("comparison.qarote.title")}
-                </h3>
-              </div>
-              <div className="px-8 lg:px-12 pt-8 pb-0 flex flex-col flex-1">
-                <div className="space-y-5 mb-16">
-                  <ComparisonPoint
-                    icon="check"
-                    text={t("comparison.qarote.point1")}
-                    entered={containerEntered}
-                    delay={80}
-                    reduceMotion={reduceMotion}
-                  />
-                  <ComparisonPoint
-                    icon="check"
-                    text={t("comparison.qarote.point2")}
-                    entered={containerEntered}
-                    delay={130}
-                    reduceMotion={reduceMotion}
-                  />
-                  <ComparisonPoint
-                    icon="check"
-                    text={t("comparison.qarote.point3")}
-                    entered={containerEntered}
-                    delay={180}
-                    reduceMotion={reduceMotion}
-                  />
-                  <ComparisonPoint
-                    icon="check"
-                    text={t("comparison.qarote.point4")}
-                    entered={containerEntered}
-                    delay={230}
-                    reduceMotion={reduceMotion}
-                  />
-                </div>
-
-                {/* Visual Representation - Qarote Dashboard mock */}
-                <div className="border border-border mt-auto overflow-hidden">
-                  <div className="px-4 py-2 bg-muted/30 border-b border-border flex items-center gap-2">
-                    <img
-                      src="/images/new_icon.svg"
-                      alt=""
-                      aria-hidden="true"
-                      className="w-4 h-4"
-                      width={16}
-                      height={16}
-                    />
-                    <span className="text-xs font-medium text-foreground">
-                      Qarote
-                    </span>
-                    <span className="text-xs text-muted-foreground ml-auto">
-                      Dashboard
-                    </span>
-                  </div>
-                  <div className="bg-background divide-y divide-border">
-                    {/* Queue list — distinct from metrics panels elsewhere */}
-                    <div className="px-4 py-2.5 flex items-center justify-between">
-                      <span className="text-xs text-foreground">
-                        orders.process
-                      </span>
-                      <span className="text-xs font-mono text-status-success-text">
-                        0 ready
-                      </span>
-                    </div>
-                    <div className="px-4 py-2.5 flex items-center justify-between">
-                      <span className="text-xs text-foreground">
-                        email.notifications
-                      </span>
-                      <span className="text-xs font-mono text-status-success-text">
-                        3 ready
-                      </span>
-                    </div>
-                    <div className="px-4 py-2.5 flex items-center justify-between">
-                      <span className="text-xs text-foreground">
-                        analytics.events
-                      </span>
-                      <span className="text-xs font-mono text-status-success-text">
-                        12 ready
-                      </span>
-                    </div>
-                    {/* Status bar */}
-                    <div className="bg-status-success-bg px-3 py-2 text-xs text-status-success-text flex items-center gap-2">
-                      <img
-                        src="/images/check.svg"
-                        alt=""
-                        aria-hidden="true"
-                        className="shrink-0 w-auto h-[0.525rem] image-crisp"
-                        width={10}
-                        height={8}
-                      />
-                      {t("comparison.allSystemsOperational")}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className="mt-[clamp(32px,5vw,48px)] grid gap-[24px] md:grid-cols-2">
+          <CompareCard
+            title={t("compareTeaser.plugin.title")}
+            subtitle={t("compareTeaser.plugin.subtitle")}
+            otherColumnLabel={t("compareTeaser.columnPlugin")}
+            rows={PLUGIN_ROWS}
+            cardNs="compareTeaser.plugin"
+          />
+          <CompareCard
+            title={t("compareTeaser.stack.title")}
+            subtitle={t("compareTeaser.stack.subtitle")}
+            otherColumnLabel={t("compareTeaser.columnStack")}
+            rows={STACK_ROWS}
+            cardNs="compareTeaser.stack"
+          />
         </div>
       </div>
     </section>

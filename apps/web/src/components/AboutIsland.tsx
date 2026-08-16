@@ -2,13 +2,12 @@ import { type CSSProperties, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SupportedLocale } from "@qarote/i18n";
-import { Linkedin } from "lucide-react";
+import { AlignLeft, ArrowRight, Lock, Shield } from "lucide-react";
 
-import { teamMembers } from "@/lib/team-data";
-
+import AuthButtons from "@/components/AuthButtons";
 import { IslandProvider } from "@/components/IslandProvider";
 import FooterSection from "@/components/landing/FooterSection";
-import StickyNav from "@/components/StickyNav";
+import FounderQuoteSection from "@/components/landing/FounderQuoteSection";
 import { TawkTo } from "@/components/TawkTo";
 
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -26,7 +25,6 @@ export default function AboutIsland({
   return (
     <IslandProvider locale={locale} resources={resources}>
       <div className="min-h-screen font-sans bg-background">
-        <StickyNav />
         <AboutContent />
         <FooterSection currentLocale={locale} />
       </div>
@@ -41,6 +39,8 @@ function AboutContent() {
   const [mounted, setMounted] = useState(false);
   const [teamRef, teamEntered] = useScrollEntry<HTMLDivElement>(0.05);
   const [missionRef, missionEntered] = useScrollEntry<HTMLDivElement>(0.1);
+  const [pivotRef, pivotEntered] = useScrollEntry<HTMLDivElement>(0.1);
+  const [beliefsRef, beliefsEntered] = useScrollEntry<HTMLDivElement>(0.1);
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setMounted(true));
@@ -65,122 +65,202 @@ function AboutContent() {
           transition: `opacity 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.5s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
         };
 
+  const beliefs = [
+    { id: "openSource", Icon: Shield },
+    { id: "dataControl", Icon: Lock },
+    { id: "honest", Icon: AlignLeft },
+  ] as const;
+
   return (
-    <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {/* Page header */}
-      <div
-        className="border border-border overflow-hidden mb-12"
-        style={mountEnter(0)}
-      >
-        <div className="px-6 py-3 bg-muted/30 border-b border-border">
-          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            About
+    <>
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Page header — centered, prototype style */}
+        <div
+          className="mx-auto mb-12 max-w-3xl text-center"
+          style={mountEnter(0)}
+        >
+          <span className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-primary">
+            {t("hero.eyebrow")}
           </span>
-        </div>
-        <div className="p-8 text-center">
-          <h1 className="text-4xl sm:text-5xl font-normal text-foreground mb-6">
+          <h1 className="mt-3 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
             {t("hero.title")}
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-foreground [text-wrap:pretty]">
+            {t("hero.intro")}
+          </p>
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground [text-wrap:pretty]">
             {t("hero.subtitle")}
           </p>
         </div>
-      </div>
 
-      {/* Team members */}
-      <div ref={teamRef} className="space-y-8">
-        {teamMembers.map((member, i) => (
-          <article
-            key={member.id}
-            className="border border-border overflow-hidden transition-colors duration-200 hover:border-primary/30"
-            style={scrollEnter(teamEntered, i * 80)}
-          >
-            <div className="px-6 py-3 bg-muted/30 border-b border-border flex items-center justify-between">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                {t(`team.${member.id}.name`)}
-              </h2>
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-primary font-medium">
-                  {t(`team.${member.id}.role`)}
-                </span>
-                <a
-                  href={member.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                  aria-label={t("team.linkedinAria", {
-                    name: t(`team.${member.id}.name`),
-                  })}
-                >
-                  <Linkedin className="w-4 h-4" />
-                </a>
-              </div>
-            </div>
-            <div className="p-6 sm:p-8">
-              <div className="flex flex-col sm:flex-row gap-8 items-start">
-                <div className="shrink-0">
-                  <img
-                    src={member.photo}
-                    alt={t("team.photoAlt", {
-                      name: t(`team.${member.id}.name`),
-                      role: t(`team.${member.id}.role`),
-                    })}
-                    width={180}
-                    height={180}
-                    className="w-36 h-36 sm:w-44 sm:h-44 object-cover"
-                    loading="lazy"
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {t(`team.${member.id}.location`)}
-                  </p>
-                  <p className="text-muted-foreground mb-4">
-                    {t(`team.${member.id}.bio`)}
-                  </p>
-                  <ul className="space-y-2">
-                    {((): string[] => {
-                      const raw = t(`team.${member.id}.highlights`, {
-                        returnObjects: true,
-                      });
-                      return Array.isArray(raw) ? (raw as string[]) : [];
-                    })().map((highlight, j) => (
-                      <li
-                        key={j}
-                        className="flex items-start gap-2 text-sm text-muted-foreground"
-                      >
-                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 bg-primary/60" />
-                        {highlight}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </article>
-        ))}
-      </div>
-
-      {/* Mission section */}
-      <div
-        ref={missionRef}
-        className="border border-border overflow-hidden mt-12"
-        style={scrollEnter(missionEntered, 0)}
-      >
-        <div className="px-6 py-3 bg-muted/30 border-b border-border">
-          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Mission
+        {/* Mission — centered section head */}
+        <div
+          ref={missionRef}
+          className="mx-auto mb-4 max-w-[620px] text-center"
+          style={scrollEnter(missionEntered, 0)}
+        >
+          <span className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-primary">
+            {t("mission.eyebrow")}
           </span>
-        </div>
-        <div className="p-8 text-center">
-          <h2 className="text-2xl font-normal text-foreground mb-4">
+          <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
             {t("mission.title")}
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="mx-auto mt-3 max-w-xl text-base leading-relaxed text-muted-foreground [text-wrap:pretty]">
             {t("mission.description")}
           </p>
         </div>
-      </div>
-    </main>
+      </main>
+
+      {/* Founder quote — full-bleed dark band (shared with landing) */}
+      <FounderQuoteSection />
+
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Why agent-first — the pivot */}
+        <div
+          ref={pivotRef}
+          className="mb-12"
+          style={scrollEnter(pivotEntered, 0)}
+        >
+          <div className="text-center max-w-2xl mx-auto mb-8">
+            <span className="text-xs font-semibold uppercase tracking-wide text-primary">
+              {t("pivot.eyebrow")}
+            </span>
+            <h2 className="text-2xl font-normal text-foreground mt-2 mb-3">
+              {t("pivot.title")}
+            </h2>
+            <p className="text-muted-foreground [text-wrap:pretty]">
+              {t("pivot.description")}
+            </p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-[1fr_auto_1fr] items-center">
+            <div className="border border-border p-6 bg-muted/20">
+              <div className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground mb-3">
+                {t("pivot.old.label")}
+              </div>
+              <h3 className="text-lg text-foreground leading-tight">
+                {t("pivot.old.title")}
+              </h3>
+              <p className="text-sm text-muted-foreground mt-2.5 leading-relaxed [text-wrap:pretty]">
+                {t("pivot.old.body")}
+              </p>
+            </div>
+            <div
+              className="grid place-items-center text-primary md:rotate-0 rotate-90"
+              aria-hidden="true"
+            >
+              <ArrowRight className="w-8 h-8" strokeWidth={1.6} />
+            </div>
+            <div className="border border-primary p-6 bg-primary/5">
+              <div className="font-mono text-[11px] uppercase tracking-wide text-primary mb-3">
+                {t("pivot.new.label")}
+              </div>
+              <h3 className="text-lg text-foreground leading-tight">
+                {t("pivot.new.title")}
+              </h3>
+              <p className="text-sm text-muted-foreground mt-2.5 leading-relaxed [text-wrap:pretty]">
+                {t("pivot.new.body")}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* What we believe */}
+        <div
+          ref={beliefsRef}
+          className="mb-12"
+          style={scrollEnter(beliefsEntered, 0)}
+        >
+          <div className="text-center max-w-xl mx-auto mb-8">
+            <span className="text-xs font-semibold uppercase tracking-wide text-primary">
+              {t("beliefs.eyebrow")}
+            </span>
+            <h2 className="text-2xl font-normal text-foreground mt-2">
+              {t("beliefs.title")}
+            </h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {beliefs.map(({ id, Icon }) => (
+              <div key={id} className="border border-border p-6 bg-card">
+                <div className="w-10 h-10 grid place-items-center bg-primary/10 text-primary mb-3.5">
+                  <Icon className="w-5 h-5" strokeWidth={1.7} />
+                </div>
+                <h3 className="text-base text-foreground">
+                  {t(`beliefs.${id}.title`)}
+                </h3>
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed [text-wrap:pretty]">
+                  {t(`beliefs.${id}.body`)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Team — single compact card (prototype) */}
+        <div className="mx-auto mb-8 max-w-[560px] text-center">
+          <span className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-primary">
+            {t("teamHeading.eyebrow")}
+          </span>
+          <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+            {t("teamHeading.title")}
+          </h2>
+        </div>
+        <div
+          ref={teamRef}
+          className="mx-auto max-w-[560px]"
+          style={scrollEnter(teamEntered, 0)}
+        >
+          <article className="flex items-start gap-4 rounded-lg border border-border bg-card p-5">
+            <img
+              src="/images/team/brice.jpg"
+              alt={t("team.brice.name")}
+              width={52}
+              height={52}
+              className="h-[52px] w-[52px] shrink-0 rounded-full object-cover"
+              loading="lazy"
+            />
+            <div className="min-w-0">
+              <div className="text-[15px] font-semibold text-foreground">
+                {t("team.brice.name")}
+              </div>
+              <div className="mt-0.5 font-mono text-xs text-primary">
+                {t("teamCard.role")}
+              </div>
+              <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">
+                {t("teamCard.bio")}
+              </p>
+            </div>
+          </article>
+        </div>
+        <p className="mx-auto mt-6 max-w-[560px] text-center font-mono text-xs text-muted-foreground">
+          {t("teamHeading.hiring")}{" "}
+          <a
+            href="mailto:support@qarote.io"
+            className="font-medium text-primary hover:underline"
+          >
+            {t("teamHeading.hiringLink")}
+          </a>
+          .
+        </p>
+
+        {/* CTA band */}
+        <div className="mx-auto mt-16 max-w-3xl rounded-lg border border-border bg-muted/20 px-6 py-10 text-center sm:px-10">
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+            {t("cta.heading")}
+          </h2>
+          <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-muted-foreground">
+            {t("cta.body")}
+          </p>
+          <div className="mt-6 flex flex-col items-center gap-3">
+            <AuthButtons align="center" />
+            <a
+              href="/features/"
+              className="text-sm font-medium text-primary underline-offset-2 hover:underline"
+            >
+              {t("cta.secondary")}
+            </a>
+          </div>
+        </div>
+      </main>
+    </>
   );
 }

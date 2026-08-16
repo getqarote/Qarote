@@ -8,11 +8,9 @@ import { recordFromContext } from "@/services/audit";
 import {
   getOrgPlan,
   getOrgResourceCounts,
-  getOverLimitWarningMessage,
-  getPlanDisplayName,
-  getUpgradeRecommendationForOverLimit,
   validateQueueCreationOnServer,
 } from "@/services/plan/plan.service";
+import { MAX_QUEUES_PER_SERVER } from "@/services/queue-limit";
 
 import {
   CreateQueueSchema,
@@ -42,7 +40,6 @@ type QueuesServerInfo = {
   isOverQueueLimit: boolean;
   workspace?: unknown;
   queueCountAtConnect: number | null;
-  overLimitWarningShown: boolean;
 };
 
 /**
@@ -87,18 +84,17 @@ async function persistQueueData(
 async function buildQueuesResponse(
   queues: RawQueue[],
   server: QueuesServerInfo,
-  organizationId: string | null
+  organizationId: string | null,
+  locale: string
 ): Promise<{
   queues: ReturnType<typeof QueueMapper.toApiResponseArray>;
   stale?: boolean;
   warning?: {
     isOverLimit: boolean;
+    /** Already translated for the caller's locale — render as-is. */
     message: string;
     currentQueueCount: number;
-    queueCountAtConnect: number | null;
-    upgradeRecommendation: string;
-    recommendedPlan: string;
-    warningShown: boolean;
+    limit: number;
   };
 }> {
   // Sort: most messages first, then alphabetically
@@ -113,22 +109,26 @@ async function buildQueuesResponse(
   };
 
   if (server.isOverQueueLimit && server.workspace) {
-    const userPlan = organizationId
-      ? await getOrgPlan(organizationId)
-      : UserPlan.FREE;
-    const warningMessage = getOverLimitWarningMessage(userPlan, queues.length);
-    const upgradeRecommendation =
-      getUpgradeRecommendationForOverLimit(userPlan);
+    // The ceiling is broker-wide, so the count quoted to the customer must be
+    // too. `queues` is whatever this request asked for — both callers pass a
+    // vhost filter through — so on a 150-queue broker viewed through a 12-queue
+    // vhost, queues.length would read "12 queues, above the 100 we monitor".
+    // queueCountAtConnect is the broker-wide census, refreshed every cycle while
+    // a server is over the ceiling, which is exactly this branch. It falls back
+    // to the request's own count only when the census was never recorded.
+    const brokerQueueCount = server.queueCountAtConnect ?? queues.length;
+
+    // NOT a plan limit: no tier raises this ceiling, so the old
+    // upgrade-recommendation payload has been dropped. Telling the customer to
+    // upgrade would send them down a dead end — the answer is to contact us.
     response.warning = {
       isOverLimit: true,
-      message: warningMessage,
-      currentQueueCount: queues.length,
-      queueCountAtConnect: server.queueCountAtConnect,
-      upgradeRecommendation: upgradeRecommendation.message,
-      recommendedPlan: upgradeRecommendation.recommendedPlan
-        ? getPlanDisplayName(upgradeRecommendation.recommendedPlan)
-        : "N/A",
-      warningShown: server.overLimitWarningShown,
+      message: te(locale, "rabbitmq.queueCeilingReached", {
+        count: brokerQueueCount,
+        limit: MAX_QUEUES_PER_SERVER,
+      }),
+      currentQueueCount: brokerQueueCount,
+      limit: MAX_QUEUES_PER_SERVER,
     };
   }
 
@@ -170,7 +170,8 @@ export const queuesRouter = router({
         return await buildQueuesResponse(
           queues,
           server,
-          orgInfo?.organizationId ?? null
+          orgInfo?.organizationId ?? null,
+          ctx.locale
         );
       } catch (error) {
         ctx.logger.error(
@@ -823,7 +824,8 @@ export const queuesRouter = router({
           lastPayload = await buildQueuesResponse(
             queues,
             freshServer,
-            orgInfo?.organizationId ?? null
+            orgInfo?.organizationId ?? null,
+            ctx.locale
           );
           yield lastPayload;
         } catch (err) {

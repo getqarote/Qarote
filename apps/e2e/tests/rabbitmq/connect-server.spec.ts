@@ -7,9 +7,10 @@ test.describe("Connect RabbitMQ Server @p0", () => {
     await adminPage.goto("/");
     await adminPage.waitForLoadState("domcontentloaded");
 
-    // The dashboard should show "No RabbitMQ Server Configured"
+    // The agent-first home renders the first-run cockpit when no broker is
+    // connected: a "Connect your first broker" heading + an "Add server" CTA.
     await expect(
-      adminPage.getByText(/no rabbitmq server configured/i)
+      adminPage.getByRole("heading", { name: /connect your first broker/i })
     ).toBeVisible({ timeout: 15_000 });
     await expect(
       adminPage.getByRole("main").getByRole("button", { name: /add server/i })

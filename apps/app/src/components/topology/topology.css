@@ -1,0 +1,221 @@
+/* ============================================================
+   apps/app/src/components/topology/topology.css
+   Imported once in Topology.tsx, AFTER @xyflow/react styles.
+   Themes the React Flow surface + the custom .tnode nodes.
+   Does NOT touch the Dagre layout (positions come from
+   lib/topology/layout.ts:buildTopologyGraph()).
+
+   The prototype mockup used a `--surface/--ink/--carrot/...`
+   palette that does NOT exist in this app. We run on the
+   shadcn token system instead, so the block below aliases the
+   prototype names to the real tokens — scoped to `.react-flow`
+   so the rest of the file can stay close to the prototype CSS.
+   Reading root tokens means dark mode "just works" (the tokens
+   themselves flip under `.dark`).
+   ============================================================ */
+
+.react-flow {
+  --surface: hsl(var(--card));
+  --surface-2: hsl(var(--muted));
+  --line: hsl(var(--border));
+  --line-2: hsl(var(--muted-foreground) / 0.4);
+  --ink: hsl(var(--foreground));
+  --ink-2: hsl(var(--foreground));
+  --ink-3: hsl(var(--muted-foreground));
+  --carrot: hsl(var(--primary));
+  --carrot-soft: hsl(var(--accent));
+  --good: hsl(var(--success));
+  --amber: hsl(var(--warning));
+  --red: hsl(var(--destructive));
+  /* React Flow v12 dot-pattern colour (the dots are <circle>s, not paths,
+     so theming them via the public RF variable is the reliable path). */
+  --xy-background-pattern-color: hsl(var(--border) / 0.5);
+}
+
+/* ---- React Flow surface ---- */
+.react-flow__background {
+  background: hsl(var(--background));
+}
+.react-flow__background path, /* line / cross variants */
+.react-flow__background line {
+  color: var(--line);
+  opacity: 0.5;
+}
+
+.react-flow__edge-path {
+  stroke: var(--line-2);
+  stroke-width: 1.5;
+}
+/* Edge into an incident (crit) queue is highlighted carrot so the broken path
+   stands out. Defined before hover/selected so those still win. */
+.react-flow__edge.topo-edge--crit .react-flow__edge-path {
+  stroke: var(--carrot);
+  stroke-width: 2;
+}
+.react-flow__edge.selected .react-flow__edge-path,
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke: var(--carrot);
+}
+.react-flow__edge-textbg {
+  fill: var(--surface);
+}
+.react-flow__edge-text {
+  fill: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 9px;
+}
+
+.react-flow__controls {
+  box-shadow: none;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.react-flow__controls-button {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+  width: 32px;
+  height: 32px;
+}
+.react-flow__controls-button:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+  border-color: var(--line-2);
+}
+.react-flow__controls-button svg {
+  fill: currentColor;
+}
+.react-flow__attribution {
+  background: transparent;
+  color: var(--ink-3);
+  opacity: 0.5;
+}
+
+/* ---- custom node (QueueNode / ExchangeNode) ---- */
+.tnode {
+  width: 264px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(20, 16, 10, 0.05);
+  overflow: hidden;
+  font-family: var(--font-sans);
+}
+.tnode.selected,
+.tnode:hover {
+  border-color: var(--line-2);
+  box-shadow: 0 4px 14px -6px rgba(20, 16, 10, 0.18);
+}
+/* severity signal — the only real added information */
+.tnode--ok {
+  border-left-color: var(--good);
+}
+.tnode--warn {
+  border-left-color: var(--amber);
+}
+.tnode--crit {
+  border-left-color: var(--red);
+}
+.tnode--ex {
+  border-left-color: var(--line);
+} /* exchange = neutral */
+
+.tnode__head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 14px;
+}
+.tnode__ic {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.tnode--ex .tnode__ic {
+  background: var(--carrot-soft);
+  color: var(--carrot);
+}
+.tnode__main {
+  min-width: 0;
+  flex: 1;
+}
+.tnode__name {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tnode__type {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+.tnode__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.tnode__dot--ok {
+  background: var(--good);
+}
+.tnode__dot--warn {
+  background: var(--amber);
+}
+.tnode__dot--crit {
+  background: var(--red);
+}
+.tnode__kind {
+  font-size: 10.5px;
+  color: var(--ink-3);
+  text-transform: capitalize;
+}
+.tnode__tag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--ink-3);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0 4px;
+}
+
+.tnode__foot {
+  display: flex;
+  gap: 10px;
+  padding: 8px 14px;
+  border-top: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+}
+.tnode__foot .v {
+  font-variant-numeric: tabular-nums;
+}
+/* The whole footer line is tinted by severity: red for a backlog with no
+   consumer, amber for an idle/at-risk queue, muted for healthy. */
+.tnode__foot--warn {
+  color: var(--amber);
+  font-weight: 600;
+}
+.tnode__foot--crit {
+  color: var(--red);
+  font-weight: 600;
+}
+
+/* discreet handles */
+.react-flow__handle {
+  width: 6px;
+  height: 6px;
+  background: var(--line-2);
+  border: none;
+}

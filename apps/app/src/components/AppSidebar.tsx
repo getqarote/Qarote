@@ -2,41 +2,39 @@ import { type ComponentType, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router";
 
-import { Moon, Plus, Search, Sun } from "lucide-react";
-
 import { commandKeyLabel } from "@/lib/shortcut";
+import { displayName, initials } from "@/lib/userDisplay";
 
 import { AddServerForm } from "@/components/AddServerFormComponent";
 import { PlanUpgradeModal } from "@/components/plans/PlanUpgradeModal";
 import { RequirePermission } from "@/components/rbac/RequirePermission";
-import { ServerManagement } from "@/components/ServerManagement";
-import { Button } from "@/components/ui/button";
-import { PixelChart } from "@/components/ui/pixel-chart";
-import { PixelFlag } from "@/components/ui/pixel-flag";
-import { PixelHelp } from "@/components/ui/pixel-help";
-import { PixelLayers } from "@/components/ui/pixel-layers";
-import { PixelLogout } from "@/components/ui/pixel-logout";
-import { PixelNetwork } from "@/components/ui/pixel-network";
-import { PixelServer } from "@/components/ui/pixel-server";
-import { PixelSettings } from "@/components/ui/pixel-settings";
-import { PixelUser } from "@/components/ui/pixel-user";
+import { SelectTileSkeleton } from "@/components/skeletons/SidebarSkeletons";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Icon,
+  IconBell,
+  IconChevron,
+  IconFolder,
+  IconHelp,
+  IconHome,
+  IconLogout,
+  IconMoon,
+  IconPlus,
+  IconSearch,
+  IconServer,
+  IconSettings,
+  IconSun,
+  IconTopo,
+} from "@/components/ui/icons";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
   SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { CreateVHostModal } from "@/components/vhosts/CreateVHostModal";
 
@@ -53,18 +51,37 @@ import { useIsWorkspaceAdmin } from "@/hooks/queries/useWorkspaceRole";
 import { useLogout } from "@/hooks/ui/useAuth";
 import { useUser } from "@/hooks/ui/useUser";
 
-function ServerStatusDot({ serverId }: { serverId: string }) {
+/**
+ * Broker health → status dot tone. Mirrors the prototype's `<Dot tone>`:
+ * green when the overview resolves, red on error/empty, neutral while loading.
+ */
+type StatusTone = "good" | "loading" | "down";
+
+function useServerStatusTone(serverId: string | null): StatusTone {
   const { data, isLoading, isError } = useOverview(serverId);
-  if (isLoading)
-    return (
-      <span className="h-2 w-2 rounded-full bg-muted-foreground/30 shrink-0" />
-    );
-  if (isError || !data?.overview)
-    return <span className="h-2 w-2 rounded-full bg-destructive shrink-0" />;
-  return <span className="h-2 w-2 rounded-full bg-green-500 shrink-0" />;
+  if (!serverId || isLoading) return "loading";
+  if (isError || !data?.overview) return "down";
+  return "good";
+}
+
+function StatusDot({ tone }: { tone: StatusTone }) {
+  const cls =
+    tone === "good"
+      ? "bg-success"
+      : tone === "down"
+        ? "bg-destructive"
+        : "bg-muted-foreground/30";
+  return <span className={`h-2 w-2 shrink-0 rounded-full ${cls}`} />;
+}
+
+/** Standalone dot fetcher for a non-selected server row in the menu. */
+function ServerRowDot({ serverId }: { serverId: string }) {
+  const tone = useServerStatusTone(serverId);
+  return <StatusDot tone={tone} />;
 }
 
 type IconComponent = ComponentType<{
+  size?: number;
   className?: string;
   "aria-hidden"?: boolean | "true" | "false";
 }>;
@@ -98,14 +115,14 @@ type NavItem = {
  * in 2 cases out of 3. The page's `<FeatureGate>` is the source of truth.
  */
 const NAV_ITEMS: NavItem[] = [
-  { titleKey: "sidebar:cockpit", url: "/", icon: PixelChart },
+  { titleKey: "sidebar:cockpit", url: "/", icon: IconHome },
   {
     titleKey: "sidebar:notifications",
     url: "/alerts",
-    icon: PixelFlag,
+    icon: IconBell,
     badge: "diagnosis",
   },
-  { titleKey: "sidebar:topology", url: "/topology", icon: PixelNetwork },
+  { titleKey: "sidebar:topology", url: "/topology", icon: IconTopo },
 ];
 
 /**
@@ -146,46 +163,68 @@ function useDiagnosisActiveCount(
 function NavBadge({
   count,
   ariaLabel,
-  severity,
 }: {
   count: number | undefined;
   ariaLabel: string;
+  /** Severity is computed but the prototype renders a single red pill. */
   severity?: "critical" | "warning";
 }) {
   if (count === undefined || count <= 0) return null;
-  const colorClass =
-    severity === "warning"
-      ? "bg-warning/10 text-warning"
-      : "bg-destructive/10 text-destructive";
   return (
     <span
       aria-label={ariaLabel}
-      className={`ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-md px-1.5 font-mono text-xs font-medium leading-none tabular-nums ${colorClass}`}
+      className="ml-auto inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1.5 font-mono text-[11px] leading-none text-white tabular-nums group-data-[active=true]/nav:bg-primary"
     >
       {count > 99 ? "99+" : count}
     </span>
   );
 }
 
-// Helper function to shorten hostnames
-const shortenHost = (host: string, maxLength: number = 25) => {
-  if (host.length <= maxLength) return host;
-
-  // For CloudAMQP hosts, show the meaningful part
-  if (host.includes(".cloudamqp.com")) {
-    const parts = host.split(".");
-    return `${parts[0]}...cloudamqp.com`;
-  }
-
-  // For other cloud providers
-  if (host.includes(".amazonaws.com")) {
-    const parts = host.split(".");
-    return `${parts[0]}...aws`;
-  }
-
-  // For other hosts, truncate with ellipsis
-  return `${host.substring(0, maxLength - 3)}...`;
+/**
+ * Middle-truncate a hostname, keeping the head + tail so both the broker
+ * prefix and the meaningful suffix stay legible — `b-73d8…aws` rather than
+ * the end-truncated `b-73d862a3-8128…`. The scheme/TLS suffix is appended by
+ * the caller OUTSIDE this helper so it is never eaten by the ellipsis.
+ */
+const middleTruncateHost = (
+  host: string,
+  head: number = 6,
+  tail: number = 4
+): string => {
+  if (host.length <= head + tail + 1) return host;
+  return `${host.slice(0, head)}…${host.slice(-tail)}`;
 };
+
+const MENU_HEAD =
+  "px-2.5 pb-1 pt-1.5 font-mono text-[9.5px] uppercase tracking-[0.09em] text-muted-foreground";
+
+/**
+ * Shared context-card trigger styling (SERVER / VHOST cards in the sidebar).
+ * Ports the prototype `.selx__trigger`: full-width card, carrot ring +
+ * border on open, 26px NEUTRAL icon tile, label/value/host stack, chevron
+ * that rotates 180° when expanded. `min-h-[44px]` keeps both triggers the
+ * same height (prototype `.selx__trigger { min-height: 44px }`) even when the
+ * VHOST card has no host line.
+ */
+const SELX_TRIGGER =
+  "flex min-h-[44px] w-full items-center gap-2.5 rounded-md border border-sidebar-border bg-sidebar px-2.5 py-2 text-left transition-colors hover:bg-sidebar-accent focus-visible:outline-none data-[state=open]:border-primary data-[state=open]:ring-[3px] data-[state=open]:ring-primary/15";
+
+// Neutral greige tile — prototype `.selx__ic` is surface-2 bg + ink-2 icon.
+// Carrot is reserved for the active nav item and actions, never select icons.
+const SELX_TILE =
+  "grid h-[26px] w-[26px] shrink-0 place-items-center rounded-md bg-muted text-muted-foreground";
+
+const SELX_LABEL =
+  "font-mono text-[9.5px] uppercase leading-[1.3] tracking-[0.09em] text-muted-foreground";
+
+const SELX_CHEV =
+  "shrink-0 text-muted-foreground transition-transform group-data-[state=open]/selx:rotate-180";
+
+const SELX_ITEM =
+  "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm transition-colors hover:bg-sidebar-accent";
+
+const SELX_ACTION =
+  "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm text-foreground/80 transition-colors hover:bg-sidebar-accent";
 
 function NavMenuItem({
   item,
@@ -202,33 +241,36 @@ function NavMenuItem({
   badgeSeverity?: "critical" | "warning";
   badgeLabel?: string;
 }) {
-  const Icon = item.icon;
+  const ItemIcon = item.icon;
   return (
-    <SidebarMenuItem>
-      <SidebarMenuButton
-        asChild
-        className={`w-full justify-start transition-colors duration-150 ${
+    <Link
+      to={item.url}
+      data-active={isActive}
+      className={`group/nav flex items-center gap-2.5 rounded-md border border-transparent px-2.5 py-2 text-sm font-medium transition-colors ${
+        isActive
+          ? "bg-sidebar-accent text-primary"
+          : "text-foreground/70 hover:bg-sidebar-accent hover:text-foreground"
+      }`}
+      aria-current={isActive ? "page" : undefined}
+    >
+      <ItemIcon
+        size={18}
+        className={
           isActive
-            ? "bg-sidebar-accent text-primary font-semibold"
-            : "hover:bg-sidebar-accent text-sidebar-foreground"
-        }`}
-      >
-        <Link
-          to={item.url}
-          className="flex items-center gap-3 px-3 py-2 rounded-lg"
-        >
-          <Icon className="h-4 w-auto shrink-0" aria-hidden="true" />
-          <span className="font-medium truncate flex-1">{label}</span>
-          {item.badge === "diagnosis" && badgeLabel && (
-            <NavBadge
-              count={badgeCount}
-              ariaLabel={badgeLabel}
-              severity={badgeSeverity}
-            />
-          )}
-        </Link>
-      </SidebarMenuButton>
-    </SidebarMenuItem>
+            ? "text-primary"
+            : "text-muted-foreground group-hover/nav:text-foreground/70"
+        }
+        aria-hidden="true"
+      />
+      <span className="flex-1 truncate">{label}</span>
+      {item.badge === "diagnosis" && badgeLabel && (
+        <NavBadge
+          count={badgeCount}
+          ariaLabel={badgeLabel}
+          severity={badgeSeverity}
+        />
+      )}
+    </Link>
   );
 }
 
@@ -237,7 +279,10 @@ export function AppSidebar() {
   const location = useLocation();
   const { selectedServerId, setSelectedServerId } = useServerContext();
   const [showAddServerForm, setShowAddServerForm] = useState(false);
+  const [showManageServer, setShowManageServer] = useState(false);
   const [showCreateVHostModal, setShowCreateVHostModal] = useState(false);
+  const [serverMenuOpen, setServerMenuOpen] = useState(false);
+  const [vhostMenuOpen, setVhostMenuOpen] = useState(false);
   const {
     selectedVHost,
     setSelectedVHost,
@@ -247,7 +292,7 @@ export function AppSidebar() {
   const { user } = useAuth();
   const { canAddServer } = useUser();
   const logoutMutation = useLogout();
-  const { data: serversData } = useServers();
+  const { data: serversData, isLoading: serversLoading } = useServers();
   const servers = serversData?.servers || [];
   const isAdmin = useIsWorkspaceAdmin() === true;
   const { open: openCommandPalette } = useCommandPalette();
@@ -261,7 +306,20 @@ export function AppSidebar() {
   // Plan checking
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
-  const renderItem = (item: NavItem) => {
+  const selectedServer = servers.find((s) => s.id === selectedServerId);
+  const selectedTone = useServerStatusTone(selectedServerId);
+
+  const handleSelectServer = (id: string) => {
+    setServerMenuOpen(false);
+    setSelectedServerId(id);
+  };
+
+  const handleSelectVHost = (name: string) => {
+    setVhostMenuOpen(false);
+    setSelectedVHost(name);
+  };
+
+  const renderNav = (item: NavItem) => {
     const isActive = location.pathname === item.url;
     const badgeCount =
       item.badge === "diagnosis" ? diagnosisActiveCount : undefined;
@@ -285,253 +343,314 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="border-r-0 bg-sidebar backdrop-blur-xs">
-      <SidebarHeader className="border-b border-sidebar-border p-6">
-        <div className="flex items-center gap-3">
-          <img src="/images/new_icon.svg" alt="Qarote" className="w-6 h-6" />
-          <div>
-            {/* Brand mark — not a heading. Demoted from <h2> so the page <h1>
-                stays the first heading in the document outline. */}
-            <span className="font-normal text-[1.2rem] text-sidebar-foreground">
-              Qarote
-            </span>
-          </div>
+    <Sidebar className="border-r border-sidebar-border bg-sidebar">
+      {/* ── Brand + context cards (SERVER / VHOST) ───────────────────── */}
+      <SidebarHeader className="gap-0 p-0">
+        <div className="flex items-center gap-2 px-[18px] pb-3.5 pt-[18px]">
+          {/* Carrot-cursor brand mark. */}
+          <img
+            src="/images/new_icon.svg"
+            alt=""
+            aria-hidden="true"
+            width={15}
+            height={20}
+            className="h-5 w-auto shrink-0"
+          />
+          {/* Brand mark — not a heading. The page <h1> stays first in the outline. */}
+          <span className="font-heading text-[18px] font-semibold text-sidebar-foreground">
+            Qarote
+          </span>
         </div>
 
-        {/* Server Selection */}
-        <div className="mt-4 space-y-3">
-          {servers.length > 0 ? (
-            <>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 min-w-0">
-                  <Select
-                    value={selectedServerId}
-                    onValueChange={(value) => {
-                      if (value === "__add_server__") {
-                        setShowAddServerForm(true);
-                        return;
-                      }
-                      setSelectedServerId(value);
-                    }}
+        <div className="flex flex-col gap-[7px] px-3 pb-2.5 pt-1">
+          {/* SERVER context card */}
+          {serversLoading && servers.length === 0 ? (
+            // Initial fetch: hold the tile footprint with a loading-tone dot so
+            // we never flash the "no servers configured" empty state on the way
+            // to the real list.
+            <SelectTileSkeleton dot />
+          ) : servers.length > 0 ? (
+            <div className="min-w-0">
+              <div className="min-w-0 flex-1">
+                <Popover open={serverMenuOpen} onOpenChange={setServerMenuOpen}>
+                  <PopoverTrigger
+                    className={`group/selx ${SELX_TRIGGER}`}
+                    aria-label={t("selectServer")}
                   >
-                    <SelectTrigger className="w-full text-sm text-left h-auto py-2">
-                      <SelectValue placeholder={t("selectServer")}>
-                        {(() => {
-                          const s = servers.find(
-                            (s) => s.id === selectedServerId
-                          );
-                          if (!s) return null;
-                          return (
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <PixelServer className="h-4 text-primary shrink-0" />
-                              <div className="flex flex-col min-w-0 text-left">
-                                <span className="flex items-center gap-1.5 min-w-0">
-                                  {selectedServerId && (
-                                    <ServerStatusDot
-                                      serverId={selectedServerId}
-                                    />
-                                  )}
-                                  <span className="truncate font-medium leading-tight">
-                                    {s.name}
-                                  </span>
-                                </span>
-                                <span className="text-xs text-sidebar-foreground/60 truncate leading-tight">
-                                  {shortenHost(s.host)}
-                                  {s.useHttps ? " · TLS" : ""}
-                                </span>
-                              </div>
-                            </div>
-                          );
-                        })()}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent className="min-w-[280px]">
-                      {servers.map((server) => (
-                        <SelectItem
-                          key={server.id}
-                          value={server.id}
-                          className="py-3"
-                        >
-                          <div className="flex items-center justify-between w-full gap-3">
-                            <div className="flex items-center gap-3 min-w-0">
-                              <PixelServer className="h-4 text-primary shrink-0" />
-                              <div className="flex flex-col min-w-0">
-                                <span className="font-medium text-foreground leading-tight">
-                                  {server.name}
-                                </span>
-                                <span className="text-xs text-muted-foreground leading-tight">
-                                  {shortenHost(server.host)}
-                                  {server.useHttps ? " · TLS" : ""}
-                                </span>
-                              </div>
-                            </div>
-                            <ServerStatusDot serverId={server.id} />
-                          </div>
-                        </SelectItem>
-                      ))}
-                      {canAddServer && (
-                        <RequirePermission permission="server:create">
-                          <div className="-mx-1 my-1 h-px bg-muted" />
-                          <SelectItem
-                            value="__add_server__"
-                            className="cursor-pointer py-3"
-                          >
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">
-                                {t("addServer")}
-                              </span>
-                            </div>
-                          </SelectItem>
-                        </RequirePermission>
+                    <span className={SELX_TILE}>
+                      <IconServer size={15} className="text-muted-foreground" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className={`block ${SELX_LABEL}`}>
+                        {t("serverLabel")}
+                      </span>
+                      <span className="flex items-center gap-[7px] truncate text-[13.5px] font-medium leading-tight">
+                        {selectedServer && <StatusDot tone={selectedTone} />}
+                        <span className="truncate">
+                          {selectedServer?.name ?? t("selectServer")}
+                        </span>
+                      </span>
+                      {selectedServer && (
+                        <span className="block truncate font-mono text-[10.5px] text-muted-foreground">
+                          {middleTruncateHost(selectedServer.host)}
+                          {selectedServer.useHttps ? " · TLS" : ""}
+                        </span>
                       )}
-                    </SelectContent>
-                  </Select>
-                </div>
-                {isAdmin && (
-                  <ServerManagement
-                    trigger={
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 shrink-0"
-                        title={t("common:manageServers")}
-                        aria-label={t("common:manageServers")}
+                    </span>
+                    <IconChevron size={14} className={SELX_CHEV} />
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="start"
+                    className="w-[var(--radix-popover-trigger-width)] min-w-[240px] p-1.5"
+                  >
+                    <div className={MENU_HEAD}>{t("serversInWorkspace")}</div>
+                    {servers.map((server) => {
+                      const selected = server.id === selectedServerId;
+                      return (
+                        <button
+                          key={server.id}
+                          type="button"
+                          onClick={() => handleSelectServer(server.id)}
+                          role="option"
+                          aria-selected={selected}
+                          className={`${SELX_ITEM} ${
+                            selected ? "bg-sidebar-accent" : ""
+                          }`}
+                        >
+                          <span className={SELX_TILE}>
+                            <IconServer
+                              size={14}
+                              className="text-muted-foreground"
+                            />
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="flex items-center gap-[7px] truncate font-medium">
+                              <ServerRowDot serverId={server.id} />
+                              <span className="truncate">{server.name}</span>
+                            </span>
+                            <span className="block truncate font-mono text-[10.5px] text-muted-foreground">
+                              {middleTruncateHost(server.host)}
+                              {server.useHttps ? " · TLS" : ""}
+                            </span>
+                          </span>
+                          <Icon
+                            name="check"
+                            size={15}
+                            className={`ml-auto shrink-0 ${
+                              selected ? "text-primary" : "text-transparent"
+                            }`}
+                          />
+                        </button>
+                      );
+                    })}
+                    {(isAdmin || canAddServer) && (
+                      <div className="mx-1 my-1.5 h-px bg-sidebar-border" />
+                    )}
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setServerMenuOpen(false);
+                          setShowManageServer(true);
+                        }}
+                        className={SELX_ACTION}
                       >
-                        <PixelSettings className="h-3 w-auto" />
-                      </Button>
-                    }
-                  />
-                )}
+                        <IconSettings
+                          size={15}
+                          className="text-muted-foreground"
+                        />
+                        {t("manageCurrentServer")}
+                      </button>
+                    )}
+                    {canAddServer && (
+                      <RequirePermission permission="server:create">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setServerMenuOpen(false);
+                            setShowAddServerForm(true);
+                          }}
+                          className={SELX_ACTION}
+                        >
+                          <IconPlus
+                            size={15}
+                            className="text-muted-foreground"
+                          />
+                          {t("addServer")}
+                        </button>
+                      </RequirePermission>
+                    )}
+                  </PopoverContent>
+                </Popover>
               </div>
-              {/* Add Server Form (controlled by select CTA) */}
-              <AddServerForm
-                isOpen={showAddServerForm}
-                onOpenChange={setShowAddServerForm}
-              />
-            </>
+            </div>
           ) : (
-            <div className="text-center p-3 bg-sidebar-accent rounded-lg border-2 border-dashed border-sidebar-border">
-              <PixelServer className="h-8 text-sidebar-foreground/70 mx-auto mb-2" />
-              <p className="text-xs text-sidebar-foreground/70 mb-2">
+            <div className="rounded-md border border-dashed border-sidebar-border bg-sidebar-accent/50 p-4 text-center">
+              <IconServer
+                size={22}
+                className="mx-auto mb-2 text-muted-foreground"
+              />
+              <p className="mb-2.5 text-xs text-muted-foreground">
                 {t("noServersConfigured")}
               </p>
               <AddServerForm
-                isFirstServer={true}
                 trigger={
-                  <Button size="sm" variant="outline" className="text-xs">
-                    <Plus className="h-3 w-3 mr-1" />
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90"
+                  >
+                    <IconPlus size={13} />
                     {t("addServer")}
-                  </Button>
+                  </button>
                 }
               />
             </div>
           )}
 
-          {/* VHost Selection */}
+          {/* Add Server Form (controlled by the server menu CTA) */}
+          {servers.length > 0 && (
+            <AddServerForm
+              isOpen={showAddServerForm}
+              onOpenChange={setShowAddServerForm}
+            />
+          )}
+          {selectedServer && (
+            <AddServerForm
+              mode="edit"
+              server={selectedServer}
+              isOpen={showManageServer}
+              onOpenChange={setShowManageServer}
+              onServerRemoved={() => {
+                setShowManageServer(false);
+                setSelectedServerId(null);
+              }}
+            />
+          )}
+
+          {/* VHOST context card */}
           {selectedServerId && (
-            <div className="mt-1 space-y-2">
+            <>
               {vhostsLoading ? (
-                <div className="text-center p-3 bg-sidebar-accent rounded-lg">
-                  <p className="text-xs text-sidebar-foreground/70">
-                    {t("loadingVhosts")}
-                  </p>
+                <div className="flex min-h-[44px] items-center justify-center gap-2 rounded-md border border-sidebar-border bg-sidebar px-2.5 font-mono text-xs text-muted-foreground">
+                  <Icon name="refresh" size={14} className="animate-spin" />
+                  {t("loadingVhosts")}
                 </div>
               ) : availableVHosts.length > 0 ? (
-                <>
-                  <Select
-                    value={selectedVHost || ""}
-                    onValueChange={(value) => {
-                      if (value === "__create_vhost__") {
-                        setShowCreateVHostModal(true);
-                        return;
-                      }
-                      setSelectedVHost(value);
-                    }}
+                <Popover open={vhostMenuOpen} onOpenChange={setVhostMenuOpen}>
+                  <PopoverTrigger
+                    className={`group/selx ${SELX_TRIGGER}`}
+                    aria-label={t("selectVhost")}
                   >
-                    <SelectTrigger className="w-full text-sm">
-                      <SelectValue placeholder={t("selectVhost")}>
-                        {selectedVHost && (
-                          <div className="flex items-center gap-2 w-full min-w-0">
-                            <PixelLayers className="h-3 shrink-0" />
-                            <span className="truncate font-mono text-[0.8125rem]">
-                              {selectedVHost === "/"
-                                ? t("common:default")
-                                : selectedVHost}
-                            </span>
-                          </div>
-                        )}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent className="min-w-[300px]">
-                      {availableVHosts.map((vhost) => (
-                        <SelectItem key={vhost.name} value={vhost.name}>
-                          <div className="flex items-center gap-2 w-full min-w-0">
-                            <PixelLayers className="h-3 shrink-0" />
-                            <span className="font-mono text-[0.8125rem]">
-                              {vhost.name === "/"
-                                ? t("common:default")
-                                : vhost.name}
-                            </span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                      {isAdmin && (
-                        <>
-                          <div className="-mx-1 my-1 h-px bg-muted" />
-                          <SelectItem
-                            value="__create_vhost__"
-                            className="cursor-pointer py-3"
-                          >
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">
-                                {t("createVirtualHost")}
-                              </span>
-                            </div>
-                          </SelectItem>
-                        </>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </>
+                    <span className={SELX_TILE}>
+                      <IconFolder size={15} className="text-muted-foreground" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className={`block ${SELX_LABEL}`}>
+                        {t("vhostLabel")}
+                      </span>
+                      <span className="block truncate font-mono text-[12.5px] font-medium leading-tight">
+                        {selectedVHost === "/"
+                          ? t("common:default")
+                          : selectedVHost || t("selectVhost")}
+                      </span>
+                    </span>
+                    <IconChevron size={14} className={SELX_CHEV} />
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="start"
+                    className="w-[var(--radix-popover-trigger-width)] min-w-[240px] p-1.5"
+                  >
+                    <div className={MENU_HEAD}>{t("virtualHosts")}</div>
+                    {availableVHosts.map((vhost) => {
+                      const selected = vhost.name === selectedVHost;
+                      return (
+                        <button
+                          key={vhost.name}
+                          type="button"
+                          onClick={() => handleSelectVHost(vhost.name)}
+                          role="option"
+                          aria-selected={selected}
+                          className={`${SELX_ITEM} ${
+                            selected ? "bg-sidebar-accent" : ""
+                          }`}
+                        >
+                          <span className={SELX_TILE}>
+                            <IconFolder
+                              size={14}
+                              className="text-muted-foreground"
+                            />
+                          </span>
+                          <span className="min-w-0 flex-1 truncate font-mono text-[13px] font-medium">
+                            {vhost.name === "/"
+                              ? t("common:default")
+                              : vhost.name}
+                          </span>
+                          <Icon
+                            name="check"
+                            size={15}
+                            className={`ml-auto shrink-0 ${
+                              selected ? "text-primary" : "text-transparent"
+                            }`}
+                          />
+                        </button>
+                      );
+                    })}
+                    {isAdmin && (
+                      <>
+                        <div className="mx-1 my-1.5 h-px bg-sidebar-border" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setVhostMenuOpen(false);
+                            setShowCreateVHostModal(true);
+                          }}
+                          className={SELX_ACTION}
+                        >
+                          <IconPlus
+                            size={15}
+                            className="text-muted-foreground"
+                          />
+                          {t("createVirtualHost")}
+                        </button>
+                      </>
+                    )}
+                  </PopoverContent>
+                </Popover>
               ) : (
-                <div className="text-center p-3 bg-sidebar-accent rounded-lg border-2 border-dashed border-sidebar-border">
-                  <PixelLayers className="h-8 text-sidebar-foreground/70 mx-auto mb-2" />
-                  <p className="text-xs text-sidebar-foreground/70 mb-2">
+                <div className="rounded-md border border-dashed border-sidebar-border bg-sidebar-accent/50 p-4 text-center">
+                  <IconFolder
+                    size={22}
+                    className="mx-auto mb-2 text-muted-foreground"
+                  />
+                  <p className="mb-2.5 text-xs text-muted-foreground">
                     {t("noVhostsAvailable")}
                   </p>
                   {isAdmin && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-xs"
+                    <button
+                      type="button"
                       onClick={() => setShowCreateVHostModal(true)}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-sidebar-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-sidebar-accent"
                     >
-                      <Plus className="h-3 w-3 mr-1" />
+                      <IconPlus size={13} />
                       {t("createVirtualHost")}
-                    </Button>
+                    </button>
                   )}
                 </div>
               )}
-              {selectedServerId && (
-                <CreateVHostModal
-                  isOpen={showCreateVHostModal}
-                  onClose={() => setShowCreateVHostModal(false)}
-                  serverId={selectedServerId}
-                />
-              )}
-            </div>
+              <CreateVHostModal
+                isOpen={showCreateVHostModal}
+                onClose={() => setShowCreateVHostModal(false)}
+                serverId={selectedServerId}
+              />
+            </>
           )}
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-4 gap-4">
-        {/* Primary navigation — three agent-first destinations. */}
-        <nav aria-label="Primary" className="contents">
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>{NAV_ITEMS.map(renderItem)}</SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+      {/* ── Primary nav + ⌘K ─────────────────────────────────────────── */}
+      <SidebarContent className="gap-0 px-3 py-2">
+        <nav aria-label="Primary" className="flex flex-col gap-0.5">
+          {NAV_ITEMS.map(renderNav)}
         </nav>
 
         {/* ⌘K command palette — the escape hatch for everything off the nav
@@ -539,97 +658,90 @@ export function AppSidebar() {
         <button
           type="button"
           onClick={openCommandPalette}
-          className="flex w-full items-center gap-2 rounded-lg border border-sidebar-border bg-sidebar-accent/40 px-3 py-2 text-sm text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring/50"
+          className="mt-2.5 flex w-full items-center gap-2.5 rounded-md border border-sidebar-border bg-sidebar px-2.5 py-2 text-[13.5px] text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground/70 focus-visible:outline-none"
         >
-          <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <IconSearch size={15} className="shrink-0" />
           <span className="flex-1 text-left">{t("command:trigger")}…</span>
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-0.5 rounded border border-sidebar-border bg-sidebar px-1.5 font-mono text-[0.625rem] font-medium text-sidebar-foreground/60">
+          <kbd className="pointer-events-none ml-auto rounded-[5px] border border-border bg-muted px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground">
             {commandKeyLabel()}
           </kbd>
         </button>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-4 space-y-4">
-        {/* Help & Support */}
-        <Link
-          to="/help"
-          className={`flex items-center gap-2 text-sm rounded-md px-2 py-1.5 transition-colors ${
-            location.pathname === "/help"
-              ? "bg-sidebar-accent text-primary font-semibold"
-              : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
-          }`}
-        >
-          <PixelHelp className="h-4 w-auto shrink-0" />
-          {t("helpSupport")}
-        </Link>
-
-        {/* Settings */}
-        <Link
-          to="/settings"
-          className={`flex items-center gap-2 text-sm rounded-md px-2 py-1.5 transition-colors ${
-            location.pathname.startsWith("/settings")
-              ? "bg-sidebar-accent text-primary font-semibold"
-              : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
-          }`}
-        >
-          <PixelSettings className="h-4 w-auto shrink-0" />
-          {t("settings")}
-        </Link>
-
-        {/* User section */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm">
-            {user?.image ? (
-              <img
-                src={user.image}
-                alt=""
-                aria-hidden="true"
-                className="w-6 h-6 rounded-full object-cover shrink-0"
-                referrerPolicy="no-referrer"
-              />
+      {/* ── Footer: Settings, Help, theme, user, logout ──────────────── */}
+      <SidebarFooter className="gap-0.5 border-t border-sidebar-border p-3">
+        <div className="flex gap-0.5">
+          <Link
+            to="/settings"
+            className={`flex flex-1 items-center gap-2 rounded-md px-2.5 py-2 text-[13px] transition-colors ${
+              location.pathname.startsWith("/settings")
+                ? "bg-sidebar-accent text-primary"
+                : "text-foreground/80 hover:bg-sidebar-accent hover:text-foreground"
+            }`}
+          >
+            <IconSettings size={16} className="shrink-0" />
+            {t("settings")}
+          </Link>
+          <Link
+            to="/help"
+            className={`flex flex-1 items-center gap-2 rounded-md px-2.5 py-2 text-[13px] transition-colors ${
+              location.pathname === "/help"
+                ? "bg-sidebar-accent text-primary"
+                : "text-foreground/80 hover:bg-sidebar-accent hover:text-foreground"
+            }`}
+          >
+            <IconHelp size={16} className="shrink-0" />
+            {t("help")}
+          </Link>
+          <button
+            type="button"
+            onClick={() =>
+              setTheme(resolvedTheme === "dark" ? "light" : "dark")
+            }
+            title={t("toggleTheme")}
+            aria-label={t("toggleTheme")}
+            className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-md text-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-foreground"
+          >
+            {resolvedTheme === "dark" ? (
+              <IconSun size={16} />
             ) : (
-              <PixelUser
-                className="h-4 w-auto text-sidebar-foreground/70 shrink-0"
-                aria-hidden="true"
-              />
+              <IconMoon size={16} />
             )}
-            <div className="flex flex-col min-w-0">
-              <span className="font-medium text-sidebar-foreground">
-                {user?.firstName} {user?.lastName}
-              </span>
-              <span className="text-xs text-sidebar-foreground/70">
-                {user?.email}
-              </span>
+          </button>
+        </div>
+
+        <div className="mt-1 flex items-center gap-2.5 rounded-md px-2 py-2 transition-colors hover:bg-sidebar-accent">
+          {user?.image ? (
+            <img
+              src={user.image}
+              alt=""
+              aria-hidden="true"
+              className="h-[30px] w-[30px] shrink-0 rounded-full object-cover"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <span className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-full bg-primary font-heading text-xs font-semibold text-primary-foreground">
+              {initials(user)}
+            </span>
+          )}
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-[13px] font-medium text-sidebar-foreground">
+              {displayName(user)}
+            </div>
+            <div className="truncate font-mono text-[11px] text-muted-foreground">
+              {user?.email}
             </div>
           </div>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() =>
-                setTheme(resolvedTheme === "dark" ? "light" : "dark")
-              }
-              className="text-sidebar-foreground/70 hover:text-sidebar-foreground p-1"
-              title={t("toggleTheme")}
-              aria-label={t("toggleTheme")}
-            >
-              {resolvedTheme === "dark" ? (
-                <Sun className="h-4 w-4 shrink-0" />
-              ) : (
-                <Moon className="h-4 w-4 shrink-0" />
-              )}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => logoutMutation.mutate()}
-              disabled={logoutMutation.isPending}
-              className="text-sidebar-foreground/70 hover:text-destructive p-1"
-              title={t("auth:signOut")}
-            >
-              <PixelLogout className="h-4 w-auto shrink-0" />
-            </Button>
-          </div>
+          <button
+            type="button"
+            onClick={() => logoutMutation.mutate()}
+            disabled={logoutMutation.isPending}
+            title={t("auth:signOut")}
+            aria-label={t("auth:signOut")}
+            className="ml-auto shrink-0 rounded-[5px] p-1.5 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground disabled:opacity-50"
+          >
+            <IconLogout size={16} />
+          </button>
         </div>
       </SidebarFooter>
 

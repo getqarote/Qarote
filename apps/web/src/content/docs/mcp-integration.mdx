@@ -32,13 +32,14 @@ diagnose RabbitMQ incidents end-to-end" in under five minutes.
 
 ## 2. Wire it into your agent
 
-The mint dialog ships ready-to-paste snippets for six officially
-supported clients (Claude Desktop, Claude Code, Cursor, Cline, GitHub
-Copilot, Codex). Snippets for Claude Desktop, Claude Code, Cursor,
-Cline, and Codex are pre-substituted with your secret. The GitHub
-Copilot snippet is the exception: it intentionally uses Copilot's
-`${input:...}` placeholder so `.vscode/mcp.json` stays safe to commit
-— Copilot prompts for the secret at first run.
+The mint dialog ships ready-to-paste snippets for eight officially
+supported clients (Claude Desktop, Claude Code, Cursor, Cline, Windsurf,
+opencode, GitHub Copilot, Codex). Snippets for Claude Desktop, Claude
+Code, Cursor, Cline, Windsurf, opencode, and Codex are pre-substituted
+with your secret. The GitHub Copilot snippet is the exception: it
+intentionally uses Copilot's `${input:...}` placeholder so
+`.vscode/mcp.json` stays safe to commit — Copilot prompts for the secret
+at first run.
 
 ### Claude Desktop
 
@@ -116,6 +117,39 @@ extension's globalStorage directory). Drop in:
 > Config paths can change between client versions — see the vendor docs
 > ([Cline](https://docs.cline.bot/mcp/configuring-mcp-servers)) for the
 > current location if the in-app flow has moved.
+
+### Windsurf
+
+In Windsurf, open **Settings → Cascade → MCP Servers → Manage MCPs →
+View raw config** to edit `~/.codeium/windsurf/mcp_config.json`, which
+uses the standard `mcpServers` shape:
+
+```json
+{
+  "mcpServers": {
+    "qarote": {
+      "url": "https://app.qarote.io/api/mcp",
+      "headers": { "x-api-key": "qrt_…" }
+    }
+  }
+}
+```
+
+### opencode
+
+opencode reads the same `mcpServers` shape from its config (project-local
+`opencode.json` or the global `~/.config/opencode/config.json`):
+
+```json
+{
+  "mcpServers": {
+    "qarote": {
+      "url": "https://app.qarote.io/api/mcp",
+      "headers": { "x-api-key": "qrt_…" }
+    }
+  }
+}
+```
 
 ### GitHub Copilot
 

@@ -117,11 +117,11 @@ export const SSOLoginButton: React.FC<SSOLoginButtonProps> = ({
       <div className={`flex justify-center items-center ${className || ""}`}>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           className="w-full"
           onClick={() => setShowEmailInput(true)}
         >
-          <LockKeyholeIcon className="mr-2 h-4 w-4" />
+          <LockKeyholeIcon className="h-4 w-4" />
           {displayLabel}
         </Button>
       </div>
@@ -133,12 +133,12 @@ export const SSOLoginButton: React.FC<SSOLoginButtonProps> = ({
     <div className={`flex justify-center items-center ${className || ""}`}>
       <Button
         type="button"
-        variant="outline"
+        variant="secondary"
         className="w-full"
         onClick={handleSelfHostedClick}
         disabled={isPending}
       >
-        <LockKeyholeIcon className="mr-2 h-4 w-4" />
+        <LockKeyholeIcon className="h-4 w-4" />
         {displayLabel}
       </Button>
     </div>

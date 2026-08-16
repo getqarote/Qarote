@@ -11,8 +11,8 @@ import type { ChannelListItem } from "@/components/ChannelsList/types";
 import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { PageErrorOrGate } from "@/components/PageErrorOrGate";
 import { NoServerSelectedCard, PageShell } from "@/components/PageShell";
+import { IconClose } from "@/components/ui/icons";
 import { Input } from "@/components/ui/input";
-import { PixelX } from "@/components/ui/pixel-x";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { TitleWithCount } from "@/components/ui/TitleWithCount";
 
@@ -191,7 +191,7 @@ const Channels = () => {
               onClick={() => void setFilters({ q: "" })}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
-              <PixelX className="h-4 w-auto shrink-0" />
+              <IconClose className="h-4 w-auto shrink-0" />
             </button>
           )}
         </div>

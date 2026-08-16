@@ -3,7 +3,7 @@ import { Link } from "react-router";
 
 import { trpc } from "@/lib/trpc/client";
 
-import { PixelEmail } from "@/components/ui/pixel-email";
+import { IconMail } from "@/components/ui/icons";
 
 import { usePermission } from "@/hooks/queries/useWorkspaceRole";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
@@ -56,7 +56,7 @@ export function HomePulse() {
       aria-label={t("home.pulse.ariaLabel")}
       className="flex items-center gap-4 rounded-lg border border-dashed border-border bg-muted/20 px-5 py-3"
     >
-      <PixelEmail
+      <IconMail
         aria-hidden="true"
         className="h-5 w-auto shrink-0 text-muted-foreground"
       />

@@ -8,7 +8,7 @@ import { track } from "@/lib/analytics";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { PixelChevronLeft } from "@/components/ui/pixel-chevron-left";
+import { IconChevronLeft } from "@/components/ui/icons";
 
 import { usePlanUpgrade } from "@/hooks/ui/usePlanUpgrade";
 import { useUser } from "@/hooks/ui/useUser";
@@ -101,7 +101,7 @@ const PaymentCancelled = () => {
               onClick={() => navigate("/")}
               className="w-full"
             >
-              <PixelChevronLeft
+              <IconChevronLeft
                 className="h-4 w-auto shrink-0 mr-2"
                 aria-hidden="true"
               />

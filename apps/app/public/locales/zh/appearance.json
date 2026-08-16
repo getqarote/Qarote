@@ -1,8 +1,8 @@
 {
   "title": "外观",
-  "subtitle": "自定义仪表板的外观和感觉。",
+  "subtitle": "更改立即生效 —— 无需保存。",
   "themeTitle": "主题",
-  "themeDescription": "选择您偏好的配色方案。",
+  "themeDescription": "选择 Qarote 在此设备上的外观。",
   "themeSystemHint": "跟随系统会使用操作系统设置。",
   "light": "浅色",
   "dark": "深色",

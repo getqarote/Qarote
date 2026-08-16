@@ -48,25 +48,11 @@ test.describe("Policies Page Navigation @p0", () => {
     ).toBeVisible({ timeout: 15_000 });
   });
 
-  test("should show Policies link in sidebar", async ({ adminPage }) => {
-    await adminPage.goto("/");
-    await adminPage.waitForLoadState("domcontentloaded");
-
-    // Since the sidebar redesign (#52), the BROWSE section — which holds
-    // the Policies link — is collapsed by default. Expand it before
-    // asserting visibility. The trigger advertises `aria-expanded`, so
-    // we toggle only when it's not already open (the persisted state in
-    // localStorage may differ between sessions).
-    const browseTrigger = adminPage.getByRole("button", { name: /^browse$/i });
-    await expect(browseTrigger).toBeVisible({ timeout: 15_000 });
-    if ((await browseTrigger.getAttribute("aria-expanded")) !== "true") {
-      await browseTrigger.click();
-    }
-
-    await expect(
-      adminPage.getByRole("link", { name: /policies/i })
-    ).toBeVisible({ timeout: 15_000 });
-  });
+  // NOTE: There is intentionally no "Policies link in sidebar" test. The
+  // agent-first nav (docs/plans/agent-first-cockpit.md) surfaces only three
+  // destinations — Cockpit, Notifications, Topology — and the BROWSE group
+  // that used to hold Policies was dissolved. /policies remains reachable by
+  // deep-link, which "should navigate to policies page" above covers.
 });
 
 // ---------------------------------------------------------------------------

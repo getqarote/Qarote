@@ -148,7 +148,6 @@ const mockServer = {
   useHttps: false,
   isOverQueueLimit: false,
   queueCountAtConnect: null,
-  overLimitWarningShown: false,
   workspaceId: "ws-1",
   createdAt: new Date(),
   updatedAt: new Date(),

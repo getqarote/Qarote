@@ -42,9 +42,12 @@ export const useLogin = () => {
         if (result.error) {
           const err = new Error(
             result.error.message || "Login failed"
-          ) as Error & { code?: string };
+          ) as Error & { code?: string; status?: number };
           err.code = (result.error as Record<string, unknown>).code as
             | string
+            | undefined;
+          err.status = (result.error as Record<string, unknown>).status as
+            | number
             | undefined;
           setError(err);
           setIsError(true);

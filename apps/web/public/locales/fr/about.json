@@ -5,12 +5,15 @@
   },
   "back": "Retour",
   "hero": {
-    "title": "Conçu par des ingénieurs qui ont vécu le problème",
-    "subtitle": "Qarote est né de la frustration face aux outils de monitoring RabbitMQ, trop complexes à mettre en place ou trop limités pour être utiles. Nous avons construit le tableau de bord que nous avons toujours voulu."
+    "title": "Nous avons arrêté de construire des tableaux de bord.",
+    "subtitle": "Alors nous avons tout reconstruit autour de ça. Qarote, c'est désormais le diagnostic d'incidents RabbitMQ pensé pour les agents : un moteur de règles déterministe repère les incidents, un LLM explique la cause racine, et le tout est exposé à votre agent via MCP. Vous déboguez en posant une question — pas en parcourant des graphiques.",
+    "intro": "Qarote a démarré comme un moyen plus rapide de surveiller RabbitMQ. Puis nous avons remarqué comment nos utilisateurs travaillaient vraiment — pas dans nos onglets, mais dans leur éditeur, en discutant avec un agent IA.",
+    "eyebrow": "À propos"
   },
   "mission": {
-    "title": "Notre mission",
-    "description": "RabbitMQ alimente l'infrastructure critique de milliers d'entreprises, mais le surveiller a toujours été plus difficile que nécessaire. Qarote offre à chaque équipe — du développeur solo aux ops enterprise — un tableau de bord moderne et élégant qui fonctionne simplement. Pas besoin d'une stack Prometheus."
+    "title": "Combler l'écart entre la détection et la compréhension.",
+    "description": "Savoir qu'une file est saturée, c'est facile. Savoir pourquoi, vite, à 3 h du matin, c'est là que tout se joue — et c'est là que part vraiment le temps d'astreinte. Nous voulons que cette réponse arrive là où vous travaillez déjà.",
+    "eyebrow": "Mission"
   },
   "team": {
     "photoAlt": "{{name}}, {{role}} chez Qarote",
@@ -39,5 +42,52 @@
         "Certifié Google Ads, Google Analytics, Klaviyo et Brevo"
       ]
     }
+  },
+  "pivot": {
+    "eyebrow": "Pourquoi l'approche agent-first",
+    "title": "L'interface a bougé. Nous l'avons suivie.",
+    "description": "Les développeurs travaillent de plus en plus via un agent IA dans leur éditeur. La dernière chose qu'un ingénieur d'astreinte épuisé souhaite, c'est un tableau de bord de plus à apprendre. Nous livrons donc des outils que l'agent appelle — pas un énième onglet à cliquer.",
+    "old": {
+      "label": "L'ancienne approche",
+      "title": "Un tableau de bord de plus à scruter",
+      "body": "Une interface web que vous ouvrez pendant un incident, que vous fouillez, et que vous essayez de corréler à l'œil. Utile, mais elle reste en dehors de votre flux de travail et ne vous montre jamais que le quoi — jamais le pourquoi."
+    },
+    "new": {
+      "label": "Ce que nous construisons aujourd'hui",
+      "title": "Des outils que votre agent appelle",
+      "body": "Qarote expose les incidents, les findings et l'analyse de cause racine via MCP. Vous posez la question à votre agent dans l'éditeur ; il appelle les outils, et l'explication revient dans la conversation où vous êtes déjà."
+    }
+  },
+  "beliefs": {
+    "eyebrow": "Ce en quoi nous croyons",
+    "title": "Notre manière de construire.",
+    "openSource": {
+      "title": "Un cœur open-source",
+      "body": "La détection et les outils MCP en lecture sont sous licence MIT. Lisez les règles, exécutez le cœur, faites confiance à ce qu'il fait — aucune boîte noire à la base."
+    },
+    "dataControl": {
+      "title": "Maîtrise de vos données",
+      "body": "Auto-hébergement avec validation de licence hors-ligne — aucun phone-home. AI Explain peut tourner sur un modèle Ollama local, pour que les données du broker ne quittent jamais votre réseau."
+    },
+    "honest": {
+      "title": "Honnête, de dev à dev",
+      "body": "Un langage clair, sans hype ni dark patterns. Nous préférons vous montrer un vrai extrait ou un vrai finding plutôt que de vous dire que nous sommes révolutionnaires."
+    }
+  },
+  "teamHeading": {
+    "eyebrow": "Équipe",
+    "title": "Qui construit Qarote.",
+    "hiring": "Une petite équipe qui recrute discrètement. Envie d'aider à construire des outils ops agent-natifs ?",
+    "hiringLink": "Dites bonjour"
+  },
+  "cta": {
+    "heading": "Découvrez ce que votre agent peut trouver.",
+    "body": "Connectez un broker en moins de deux minutes et demandez.",
+    "primary": "Essayer gratuitement",
+    "secondary": "Explorer les fonctionnalités"
+  },
+  "teamCard": {
+    "role": "Fondateur · CTO",
+    "bio": "Construit le moteur de détection et la surface agent. A passé assez de nuits d'astreinte à fixer des graphes de files pour vouloir une meilleure réponse."
   }
 }

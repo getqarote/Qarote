@@ -1,7 +1,17 @@
 import type { AddServerFormData } from "@/schemas";
 import { urlValidationSchema } from "@/schemas";
 
-interface ParsedRabbitMQUrl {
+/**
+ * Where a parsed field's value came from:
+ *   - `detected`  → read verbatim from the URL the user pasted,
+ *   - `inferred`  → derived from a *different* part of the URL (e.g. the
+ *                   AMQP port computed from an HTTPS management URL),
+ *   - `defaulted` → a fallback because the URL gave no signal.
+ * Surfaced as chips so the user can tell a confident value from a guess.
+ */
+export type Provenance = "detected" | "inferred" | "defaulted";
+
+export interface ParsedRabbitMQUrl {
   host: string;
   port: number;
   amqpPort: number;
@@ -10,6 +20,41 @@ interface ParsedRabbitMQUrl {
   password?: string;
   vhost?: string;
   suggestedName?: string;
+  /**
+   * Per-field provenance for every field the parser shapes. `username` and
+   * `vhost` are only present when the URL actually carried them — an absent
+   * key means "the URL gave no signal", which the UI renders as no chip.
+   */
+  provenance: {
+    host: Provenance;
+    port: Provenance;
+    amqpPort: Provenance;
+    useHttps: Provenance;
+    username?: Provenance;
+    vhost?: Provenance;
+  };
+}
+
+/**
+ * Provider-aware display name from a hostname (e.g. `*.cloudamqp.com`
+ * → "CloudAMQP"). Pure helper, exported for reuse/testing.
+ */
+export function suggestServerName(host: string): string | undefined {
+  if (!host) return undefined;
+  const parts = host.split(".");
+  if (parts.length === 0) return undefined;
+  const firstPart = parts[0];
+  if (host.includes("aws") || host.includes("amazon")) return "AWS RabbitMQ";
+  if (host.includes("gcp") || host.includes("google")) return "GCP RabbitMQ";
+  if (host.includes("azure")) return "Azure RabbitMQ";
+  if (host.includes("cloudamqp")) return "CloudAMQP";
+  if (firstPart === "rabbitmq") {
+    const domain = parts.slice(-2).join(".");
+    if (domain.includes("aws")) return "AWS RabbitMQ";
+    if (domain.includes("gcp")) return "GCP RabbitMQ";
+    return "RabbitMQ Server";
+  }
+  return `${firstPart.charAt(0).toUpperCase()}${firstPart.slice(1)} RabbitMQ`;
 }
 
 /**
@@ -37,6 +82,11 @@ export function parseRabbitMQUrl(url: string): ParsedRabbitMQUrl | null {
     // Trim and prepare URL for parsing
     let urlToParse = url.trim();
 
+    // Whether the user typed an explicit scheme. When they did, the
+    // HTTPS/TLS choice was read verbatim from the URL ("detected"); when we
+    // synthesise one below, the TLS flag is a fallback ("defaulted").
+    const hasExplicitScheme = /^(https?|amqps?):\/\//i.test(urlToParse);
+
     // Check if URL already has a protocol
     if (!urlToParse.match(/^(https?|amqps?):\/\//i)) {
       // No protocol separator - add protocol if it looks like a domain
@@ -62,42 +112,35 @@ export function parseRabbitMQUrl(url: string): ParsedRabbitMQUrl | null {
     let port: number; // Management API port
     let amqpPort: number; // AMQP protocol port
 
+    let portProvenance: Provenance;
+    let amqpPortProvenance: Provenance;
+
     if (isAmqp) {
-      // This is an AMQP(S) connection string
-      // The port in the URL is the AMQP port
+      // AMQP(S) connection string — the URL's port IS the AMQP port; the
+      // management port is inferred from the AMQP protocol.
       if (urlObj.port) {
         amqpPort = parseInt(urlObj.port, 10);
+        amqpPortProvenance = "detected";
       } else {
-        // Default AMQP ports based on protocol
         amqpPort = isAmqps ? 5671 : 5672;
+        amqpPortProvenance = "defaulted";
       }
-
-      // Infer management API port from AMQP protocol
-      // AMQPS (5671) → Management HTTPS (443 for cloud)
-      // AMQP (5672) → Management HTTP (15672)
-      if (isAmqps) {
-        port = 443; // HTTPS management port (cloud default)
-      } else {
-        port = 15672; // HTTP management port
-      }
+      // AMQPS (5671) → Management HTTPS (443); AMQP (5672) → HTTP (15672).
+      port = isAmqps ? 443 : 15672;
+      portProvenance = "inferred";
     } else {
-      // This is an HTTP(S) management API URL
-      // The port in the URL is the management port
+      // HTTP(S) management URL — the URL's port IS the management port; the
+      // AMQP port is inferred from the management protocol.
       if (urlObj.port) {
         port = parseInt(urlObj.port, 10);
+        portProvenance = "detected";
       } else {
-        // Default management ports based on protocol
         port = useHttps ? 443 : 15672;
+        portProvenance = "defaulted";
       }
-
-      // Infer AMQP port from management protocol
-      // HTTPS management (443) → AMQPS (5671)
-      // HTTP management (15672) → AMQP (5672)
-      if (useHttps) {
-        amqpPort = 5671; // AMQPS
-      } else {
-        amqpPort = 5672; // AMQP
-      }
+      // HTTPS management → AMQPS (5671); HTTP management → AMQP (5672).
+      amqpPort = useHttps ? 5671 : 5672;
+      amqpPortProvenance = "inferred";
     }
 
     // Extract username and password from URL if present
@@ -127,42 +170,7 @@ export function parseRabbitMQUrl(url: string): ParsedRabbitMQUrl | null {
       vhost = cleanPath.startsWith("/") ? cleanPath : `/${cleanPath}`;
     }
 
-    // Generate suggested server name from hostname
-    let suggestedName: string | undefined;
-    if (host) {
-      // Extract meaningful parts from hostname
-      // e.g., "rabbitmq.aws-qarote.com" -> "AWS RabbitMQ"
-      const parts = host.split(".");
-      if (parts.length > 0) {
-        const firstPart = parts[0];
-        // Check if hostname contains provider hints
-        if (host.includes("aws") || host.includes("amazon")) {
-          suggestedName = "AWS RabbitMQ";
-        } else if (host.includes("gcp") || host.includes("google")) {
-          suggestedName = "GCP RabbitMQ";
-        } else if (host.includes("azure")) {
-          suggestedName = "Azure RabbitMQ";
-        } else if (host.includes("cloudamqp")) {
-          suggestedName = "CloudAMQP";
-        } else if (firstPart === "rabbitmq") {
-          // Try to extract provider from domain
-          const domain = parts.slice(-2).join(".");
-          if (domain.includes("aws")) {
-            suggestedName = "AWS RabbitMQ";
-          } else if (domain.includes("gcp")) {
-            suggestedName = "GCP RabbitMQ";
-          } else {
-            suggestedName = "RabbitMQ Server";
-          }
-        } else {
-          // Capitalize first part
-          suggestedName =
-            firstPart.charAt(0).toUpperCase() +
-            firstPart.slice(1) +
-            " RabbitMQ";
-        }
-      }
-    }
+    const suggestedName = suggestServerName(host);
 
     return {
       host,
@@ -173,6 +181,18 @@ export function parseRabbitMQUrl(url: string): ParsedRabbitMQUrl | null {
       password,
       vhost,
       suggestedName,
+      provenance: {
+        host: "detected",
+        port: portProvenance,
+        amqpPort: amqpPortProvenance,
+        // TLS choice is "detected" only when the user typed the scheme;
+        // otherwise we guessed https-for-domains / http-for-the-rest.
+        useHttps: hasExplicitScheme ? "detected" : "defaulted",
+        // Credentials and vhost are only ever read straight from the URL,
+        // so when present they are always "detected"; absent → key omitted.
+        ...(username ? { username: "detected" as const } : {}),
+        ...(vhost ? { vhost: "detected" as const } : {}),
+      },
     };
   } catch (error) {
     // Invalid URL

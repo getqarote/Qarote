@@ -70,6 +70,30 @@ import { te } from "@/i18n";
 // ─── helpers ─────────────────────────────────────────────────────────
 
 /**
+ * Permission categories whose grants can be narrowed to specific servers /
+ * environments (the resource-scope model is server.id / server.environment).
+ * Workspace-global concerns (members, roles, billing, integrations, audit,
+ * API keys, LLM/digest config) aren't server-bound, so they're not scopable.
+ */
+const SCOPABLE_PERMISSION_CATEGORIES = new Set([
+  "server",
+  "broker",
+  "vhost",
+  "queue",
+  "binding",
+  "exchange",
+  "policy",
+  "message",
+  "broker_user",
+  "definitions",
+  "metric",
+  "alerting",
+  "topology",
+  "incident",
+  "scan",
+]);
+
+/**
  * Catalog membership check at write time. Rejects permission keys
  * absent from `WORKSPACE_PERMISSION_REQUIREMENTS`. Deprecated-key
  * rejection (per plan §6 — check `Permission.deprecatedAt IS NOT NULL`)
@@ -188,17 +212,29 @@ export const roleRouter = router({
    */
   builtins: workspacePermissionProcedure("role:read")
     .input(ListBuiltinRolesInputSchema)
-    .query(async ({ ctx }) => {
+    .query(async ({ input, ctx }) => {
       const rows = await ctx.prisma.role.findMany({
         where: { workspaceId: null, isSystem: true },
         select: { id: true, builtinKey: true, name: true },
         orderBy: { builtinKey: "asc" },
       });
+      // System roles are global rows shared across workspaces, so their
+      // `_count.members` is not workspace-scoped. Count this workspace's
+      // members per built-in role in a single grouped query instead.
+      const counts = await ctx.prisma.workspaceMember.groupBy({
+        by: ["roleId"],
+        where: { workspaceId: input.workspaceId, role: { isSystem: true } },
+        _count: { _all: true },
+      });
+      const countByRoleId = new Map(
+        counts.map((c) => [c.roleId, c._count._all])
+      );
       return {
         items: rows.map((r) => ({
           id: r.id,
           builtinKey: r.builtinKey,
           name: r.name,
+          memberCount: countByRoleId.get(r.id) ?? 0,
         })),
       };
     }),
@@ -262,16 +298,31 @@ export const roleRouter = router({
    */
   permissionList: workspacePermissionProcedure("role:read")
     .input(ListPermissionsInputSchema)
-    .query(() => {
+    .query(async ({ ctx }) => {
+      // Join the authoritative key set + tier (the constant) with human
+      // metadata from the seeded Permission table (label + category), and
+      // flag which permissions can be resource-scoped to servers/environments.
+      const meta = await ctx.prisma.permission.findMany({
+        where: { deprecatedAt: null },
+        select: { key: true, category: true, description: true },
+      });
+      const metaByKey = new Map(meta.map((m) => [m.key, m]));
       return {
         permissions: (
           Object.keys(
             WORKSPACE_PERMISSION_REQUIREMENTS
           ) as WorkspacePermission[]
-        ).map((key) => ({
-          key,
-          minimumBuiltinTier: WORKSPACE_PERMISSION_REQUIREMENTS[key],
-        })),
+        ).map((key) => {
+          const m = metaByKey.get(key);
+          const category = m?.category ?? key.split(":")[0] ?? "other";
+          return {
+            key,
+            minimumBuiltinTier: WORKSPACE_PERMISSION_REQUIREMENTS[key],
+            label: m?.description ?? key,
+            category,
+            scopable: SCOPABLE_PERMISSION_CATEGORIES.has(category),
+          };
+        }),
       };
     }),
 

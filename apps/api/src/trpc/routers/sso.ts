@@ -147,6 +147,8 @@ export const ssoRouter = router({
       type: provider.oidcConfig ? ("oidc" as const) : ("saml" as const),
       oidcConfig,
       samlConfig,
+      autoProvision: orgConfig.autoProvision,
+      enforced: orgConfig.enforced,
     };
   }),
 
@@ -164,6 +166,7 @@ export const ssoRouter = router({
         oidcClientSecret: z.string().optional(),
         samlMetadataUrl: z.string().optional(),
         domain: z.string().optional(),
+        autoProvision: z.boolean().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -240,12 +243,12 @@ export const ssoRouter = router({
         await tx.orgSsoConfig.upsert({
           where: { providerId: provider.id },
           update: {
-            autoProvision: true,
+            autoProvision: input.autoProvision ?? true,
           },
           create: {
             organizationId,
             providerId: provider.id,
-            autoProvision: true,
+            autoProvision: input.autoProvision ?? true,
           },
         });
 
@@ -291,6 +294,7 @@ export const ssoRouter = router({
         samlMetadataUrl: z.string().optional(),
         enabled: z.boolean().optional(),
         domain: z.string().optional(),
+        autoProvision: z.boolean().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -365,6 +369,15 @@ export const ssoRouter = router({
         },
       });
 
+      // Persist autoProvision when supplied. OrgSsoConfig.providerId is a FK
+      // to SsoProvider.id, so scope the update by the updated provider's PK.
+      if (input.autoProvision !== undefined) {
+        await ctx.prisma.orgSsoConfig.update({
+          where: { providerId: updated.id },
+          data: { autoProvision: input.autoProvision },
+        });
+      }
+
       ctx.logger.info({ providerId }, "SSO provider updated");
 
       // Metadata derived from the *persisted* updated row, not the
@@ -401,6 +414,53 @@ export const ssoRouter = router({
         workspaceId: null,
         // Instance-wide providers (self-hosted) have no org scope —
         // don't attribute the audit row to the caller's org.
+        organizationId: isCloudMode() ? ctx.organizationId : null,
+      });
+
+      return { success: true };
+    }),
+
+  /**
+   * Toggle SSO enforcement for the caller's scope (ADMIN + Enterprise gate).
+   * When enforced, email/password sign-in is blocked for users whose domain
+   * (cloud) or instance (self-hosted) maps to this provider — they must use SSO.
+   * Cloud:       scoped to ctx.organizationId.
+   * Self-hosted: instance-wide config (organizationId = null, providerId "default").
+   */
+  setEnforcement: ssoAdminProcedure
+    .input(z.object({ enforced: z.boolean() }))
+    .mutation(async ({ input, ctx }) => {
+      const orgConfig = await ctx.prisma.orgSsoConfig.findFirst({
+        where: { organizationId: isCloudMode() ? ctx.organizationId : null },
+        include: { provider: true },
+      });
+
+      if (!orgConfig) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "SSO provider not configured",
+        });
+      }
+
+      await ctx.prisma.orgSsoConfig.update({
+        where: { id: orgConfig.id },
+        data: { enforced: input.enforced },
+      });
+
+      ctx.logger.info(
+        { providerId: orgConfig.provider.providerId, enforced: input.enforced },
+        "SSO enforcement updated"
+      );
+
+      void recordFromContext(ctx, {
+        action: "sso.enforcement.updated",
+        category: "auth",
+        entityType: "ssoProvider",
+        entityId: orgConfig.provider.id,
+        entityLabel: orgConfig.provider.providerId,
+        metadata: { enforced: input.enforced },
+        workspaceId: null,
+        // Instance-wide providers (self-hosted) have no org scope.
         organizationId: isCloudMode() ? ctx.organizationId : null,
       });
 

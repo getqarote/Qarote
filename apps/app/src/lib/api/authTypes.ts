@@ -35,9 +35,13 @@ export type WorkspacePermission =
   | "member:update_role"
   | "server:read"
   | "server:create"
+  | "server:update"
   | "server:delete"
   | "queue:read"
-  | "queue:write";
+  | "queue:write"
+  // OWNER-tier: minting/revoking machine API keys (backend maps
+  // apikey:manage → OWNER). Only OWNER (= ALL_PERMISSIONS) gets it below.
+  | "apikey:manage";
 
 const ALL_PERMISSIONS = new Set<WorkspacePermission>([
   "workspace:read",
@@ -48,9 +52,11 @@ const ALL_PERMISSIONS = new Set<WorkspacePermission>([
   "member:update_role",
   "server:read",
   "server:create",
+  "server:update",
   "server:delete",
   "queue:read",
   "queue:write",
+  "apikey:manage",
 ]);
 
 export const ROLE_PERMISSIONS: Record<
@@ -66,6 +72,7 @@ export const ROLE_PERMISSIONS: Record<
     "member:update_role",
     "server:read",
     "server:create",
+    "server:update",
     "server:delete",
     "queue:read",
     "queue:write",

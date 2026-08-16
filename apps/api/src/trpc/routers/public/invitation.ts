@@ -72,6 +72,21 @@ export const publicInvitationRouter = router({
         // Resolve plan via workspace → organization
         const ownerPlan = await getWorkspacePlan(invitation.workspace.id);
 
+        // When the request is authenticated, surface whether the caller is
+        // already a member of this workspace so the UI can show an
+        // "already a member" state instead of a redundant accept.
+        const alreadyMember = ctx.user
+          ? (await ctx.prisma.workspaceMember.findUnique({
+              where: {
+                userId_workspaceId: {
+                  userId: ctx.user.id,
+                  workspaceId: invitation.workspace.id,
+                },
+              },
+              select: { id: true },
+            })) !== null
+          : false;
+
         return {
           success: true,
           invitation: {
@@ -86,6 +101,7 @@ export const publicInvitationRouter = router({
               plan: ownerPlan,
             },
             invitedBy: formatInvitedBy(invitation.invitedBy),
+            alreadyMember,
           },
         };
       } catch (error) {

@@ -144,6 +144,11 @@
         "byok": "使用我的密钥",
         "configureKey": "配置 API 密钥"
       }
+    },
+    "share": {
+      "button": "分享",
+      "copied": "公开链接已复制到剪贴板",
+      "failed": "无法创建分享链接"
     }
   }
 }

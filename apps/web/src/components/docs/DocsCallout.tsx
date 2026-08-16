@@ -8,20 +8,21 @@ interface CalloutProps {
   children: ReactNode;
 }
 
+// Semantic theme tokens only (see apps/web/src/styles/index.css). The web
+// design system has no blue/info status token, so "info"/note maps to the
+// carrot primary — matching the prototype's carrot-wash note callout.
 const styles: Record<CalloutType, string> = {
-  info: "bg-blue-50 border-blue-200 text-blue-950 dark:bg-blue-950/30 dark:border-blue-800 dark:text-blue-100",
-  tip: "bg-green-50 border-green-200 text-green-950 dark:bg-green-950/30 dark:border-green-800 dark:text-green-100",
-  warning:
-    "bg-amber-50 border-amber-200 text-amber-950 dark:bg-amber-950/30 dark:border-amber-800 dark:text-amber-100",
-  danger:
-    "bg-red-50 border-red-200 text-red-950 dark:bg-red-950/30 dark:border-red-800 dark:text-red-100",
+  info: "bg-primary/5 border-primary/20 text-foreground",
+  tip: "bg-status-success-bg border-status-success-border text-foreground",
+  warning: "bg-status-warning-bg border-status-warning-text/25 text-foreground",
+  danger: "bg-status-danger-bg border-status-danger-text/25 text-foreground",
 };
 
 const iconColors: Record<CalloutType, string> = {
-  info: "text-blue-500",
-  tip: "text-green-500",
-  warning: "text-amber-500",
-  danger: "text-red-500",
+  info: "text-primary",
+  tip: "text-status-success-text",
+  warning: "text-status-warning-text",
+  danger: "text-status-danger-text",
 };
 
 const Icon = ({ type }: { type: CalloutType }) => {

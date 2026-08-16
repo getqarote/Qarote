@@ -8,7 +8,7 @@ import type { VHost } from "@/lib/api/vhostTypes";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PixelTrash } from "@/components/ui/pixel-trash";
+import { IconTrash } from "@/components/ui/icons";
 import {
   Tooltip,
   TooltipContent,
@@ -132,7 +132,7 @@ export function VHostsTableRow({
               className="h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
               aria-label={t("deleteVhost") + ": " + vhost.name}
             >
-              <PixelTrash className="h-4 w-auto shrink-0" aria-hidden="true" />
+              <IconTrash className="h-4 w-auto shrink-0" aria-hidden="true" />
             </Button>
           )}
         </div>

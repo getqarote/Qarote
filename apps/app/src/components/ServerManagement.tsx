@@ -9,6 +9,7 @@ import { logger } from "@/lib/logger";
 
 import { AddServerForm } from "@/components/AddServerFormComponent";
 import { ServerCapabilityBadge } from "@/components/feature-gate/ServerCapabilityBadge";
+import { ServerListSkeleton } from "@/components/skeletons/ServerListSkeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,12 +29,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { PixelEdit } from "@/components/ui/pixel-edit";
-import { PixelTrash } from "@/components/ui/pixel-trash";
+import { IconEdit, IconTrash } from "@/components/ui/icons";
 
 import { useServerContext } from "@/contexts/ServerContext";
 
 import { useDeleteServer, useServers } from "@/hooks/queries/useServer";
+import { useDelayedLoading } from "@/hooks/ui/useDelayedLoading";
 import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
@@ -43,8 +44,10 @@ interface ServerManagementProps {
 
 export function ServerManagement({ trigger }: ServerManagementProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { data: serversData, refetch } = useServers();
+  const { data: serversData, isLoading, refetch } = useServers();
   const servers = serversData?.servers || [];
+  // Anti-flash: only paint the list skeleton once the query outlives ~180ms.
+  const showSkeleton = useDelayedLoading(isLoading);
 
   const defaultTrigger = (
     <Button variant="outline" size="sm" className="gap-2">
@@ -71,8 +74,12 @@ export function ServerManagement({ trigger }: ServerManagementProps) {
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Your Servers</h3>
 
-          {/* Server List */}
-          {servers.length === 0 ? (
+          {/* Server List — anti-flash skeleton while the query loads */}
+          {isLoading ? (
+            showSkeleton ? (
+              <ServerListSkeleton />
+            ) : null
+          ) : servers.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <ServerIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <p className="text-lg font-medium mb-2">No servers configured</p>
@@ -178,7 +185,7 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
           className="text-muted-foreground hover:text-foreground hover:bg-muted"
           title="Edit Server"
         >
-          <PixelEdit className="h-4 w-auto shrink-0" />
+          <IconEdit className="h-4 w-auto shrink-0" />
         </Button>
         <Button
           variant="ghost"
@@ -187,17 +194,24 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
           className="text-destructive hover:text-destructive hover:bg-destructive/10"
           title="Delete Server"
         >
-          <PixelTrash className="h-4 w-auto shrink-0" />
+          <IconTrash className="h-4 w-auto shrink-0" />
         </Button>
       </div>
 
-      {/* Edit Server Dialog */}
+      {/* Edit Server Drawer — "Manage server" */}
       <AddServerForm
         mode="edit"
         server={server}
         isOpen={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
         onServerUpdated={handleServerUpdated}
+        onServerRemoved={() => {
+          setIsEditDialogOpen(false);
+          if (params.serverId === server.id) {
+            navigate("/");
+          }
+          onServerUpdated();
+        }}
       />
 
       {/* Delete Confirmation Dialog */}
@@ -241,7 +255,7 @@ function ServerCard({ server, onServerUpdated }: ServerCardProps) {
                 </>
               ) : (
                 <>
-                  <PixelTrash className="h-4 w-auto shrink-0 mr-2" />
+                  <IconTrash className="h-4 w-auto shrink-0 mr-2" />
                   Delete Server
                 </>
               )}

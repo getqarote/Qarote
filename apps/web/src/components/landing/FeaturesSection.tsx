@@ -209,8 +209,8 @@ const FeaturesSection = () => {
                     src="/images/new_icon.svg"
                     alt=""
                     aria-hidden="true"
-                    className="w-4 h-4"
-                    width={16}
+                    className="w-auto h-4"
+                    width={12}
                     height={16}
                   />
                   <span className="text-xs font-medium text-foreground">
@@ -367,14 +367,7 @@ const FeaturesSection = () => {
             }}
           >
             <span>{t("cta.startMonitoringForFree")}</span>
-            <img
-              src="/images/arrow-right.svg"
-              alt=""
-              aria-hidden="true"
-              className="h-[0.8em] w-auto image-crisp align-middle"
-              width={14}
-              height={14}
-            />
+            <span aria-hidden="true">→</span>
           </Button>
         </div>
       </div>

@@ -3,23 +3,29 @@ import { useTranslation } from "react-i18next";
 
 import { HelpCircle, RefreshCw } from "lucide-react";
 import {
+  Area,
+  AreaChart,
   CartesianGrid,
-  Line,
-  LineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import { toast } from "sonner";
 
+import { ChartIncidentMarker, matchIncidentTime } from "@/lib/chart-utils";
 import {
   CHART_QUEUED_READY,
   CHART_QUEUED_TOTAL,
   CHART_QUEUED_UNACKED,
 } from "@/lib/chartColors";
+import { copyToClipboard } from "@/lib/clipboard";
 
 import { RabbitMQPermissionError } from "@/components/RabbitMQPermissionError";
 import { TimeRange, TimeRangeSelector } from "@/components/TimeRangeSelector";
+import { IconSparkle } from "@/components/ui/icons";
+import { FlowLoader } from "@/components/ui/loaders/FlowLoader";
 import {
   Tooltip as UITooltip,
   TooltipContent,
@@ -40,6 +46,16 @@ interface QueuedMessagesChartProps {
   error?: Error | null;
   timeRange?: TimeRange;
   onTimeRangeChange?: (timeRange: TimeRange) => void;
+  incidentMarker?: ChartIncidentMarker;
+  /**
+   * Visual density. "full" (default) keeps the dashboard chrome (axes, grid,
+   * chip-grid legend, updates pill). "sparkline" strips the chrome down to a
+   * minimalist filled area for the agent cockpit: hidden axes, no grid,
+   * reduced height, a single-row inline legend, and a synthesis value in the
+   * header instead of the updates pill. The recharts engine and the incident
+   * marker / annotation / "ask your agent" chip are preserved in both modes.
+   */
+  variant?: "full" | "sparkline";
 }
 
 export const QueuedMessagesChart = ({
@@ -48,8 +64,11 @@ export const QueuedMessagesChart = ({
   error,
   timeRange = "1h",
   onTimeRangeChange,
+  incidentMarker,
+  variant = "full",
 }: QueuedMessagesChartProps) => {
   const { t } = useTranslation("dashboard");
+  const isSparkline = variant === "sparkline";
 
   // State for toggling line visibility
   const [visibleLines, setVisibleLines] = useState({
@@ -114,6 +133,52 @@ export const QueuedMessagesChart = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mappedData?.length]);
 
+  // Map the incident timestamp onto the rendered XAxis category, or null when
+  // the incident falls outside this chart's window.
+  const incidentTime = incidentMarker
+    ? matchIncidentTime(chartData, incidentMarker.timestamp)
+    : null;
+
+  // Calm detection (sparkline case 1): data is DEFINED and present, but every
+  // relevant series value (total + ready + unacked) is 0 across all points.
+  // This is a legitimate "quiet — no traffic" state, distinct from missing
+  // data (isLoading) or a down broker (parent overlay). Memoized on the data
+  // length so it only recomputes when the series shape changes.
+  const allZero = useMemo(() => {
+    if (!mappedData || mappedData.length === 0) return false;
+    return mappedData.every(
+      (point) => point.total === 0 && point.ready === 0 && point.unacked === 0
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mappedData?.length, mappedData]);
+
+  // Current-value chip (mirrors the prototype's `chart__val`): latest `total`
+  // with a trend arrow vs the previous point. Derived from real data only —
+  // hidden while loading or when the series is empty (placeholder zeros).
+  const headerValue = useMemo(() => {
+    if (!mappedData || mappedData.length === 0) return null;
+    const last = mappedData[mappedData.length - 1];
+    const prev =
+      mappedData.length > 1 ? mappedData[mappedData.length - 2] : undefined;
+    const trend =
+      prev === undefined || last.total === prev.total
+        ? ""
+        : last.total > prev.total
+          ? " ↑"
+          : " ↓";
+    return `${last.total.toLocaleString()}${trend}`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mappedData?.length, mappedData?.[mappedData.length - 1]?.total]);
+
+  const askPrompt = t("chartAsk.queuedPrompt");
+  const copyAskPrompt = async () => {
+    if (await copyToClipboard(askPrompt)) {
+      toast.success(t("chartAsk.copied"));
+    } else {
+      toast.error(t("chartAsk.copyFailed"));
+    }
+  };
+
   // Handle permission errors — rendered AFTER all hooks to satisfy
   // the rules-of-hooks invariant.
   if (error && isRabbitMQAuthError(error)) {
@@ -126,8 +191,195 @@ export const QueuedMessagesChart = ({
     );
   }
 
+  // Curated sparkline legend series (ready + unacked). Total is the stack
+  // sum, not a third series, in this mode.
+  const sparkMetrics = [
+    { key: "ready" as const, name: t("ready"), color: CHART_QUEUED_READY },
+    {
+      key: "unacked" as const,
+      name: t("unacked"),
+      color: CHART_QUEUED_UNACKED,
+    },
+  ];
+
+  // ── Sparkline branch (agent cockpit) ────────────────────────────────────
+  // SparkCard shell from docs/reference/cockpitCharts.reference.tsx: a clean
+  // bordered card with a header synthesis value (no "updates every 5s" pill,
+  // no help-tooltip), an axis-free 140px stacked area, the incident
+  // annotation, and the "ask your agent" chip.
+  if (isSparkline) {
+    return (
+      <div className="rounded-lg border border-border bg-card p-5">
+        <div className="mb-3 flex items-baseline justify-between gap-3">
+          <h3 className="title-section text-base">{t("queuedMessages")}</h3>
+          {!isLoading && headerValue && (
+            <span className="font-mono text-sm tabular-nums text-muted-foreground">
+              {headerValue}
+            </span>
+          )}
+        </div>
+        {isLoading ? (
+          <div className="flex h-[140px] w-full flex-col items-center justify-center gap-2">
+            <FlowLoader size={120} />
+            <span className="font-mono text-xs text-muted-foreground">
+              {t("chartState.collecting")}
+            </span>
+          </div>
+        ) : (
+          <>
+            <div className="h-[140px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={chartData}
+                  margin={{ top: 6, right: 4, bottom: 0, left: 4 }}
+                >
+                  <defs>
+                    <linearGradient
+                      id="queuedSparkReady"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor={CHART_QUEUED_READY}
+                        stopOpacity={0.3}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor={CHART_QUEUED_READY}
+                        stopOpacity={0}
+                      />
+                    </linearGradient>
+                    <linearGradient
+                      id="queuedSparkUnacked"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor={CHART_QUEUED_UNACKED}
+                        stopOpacity={0.3}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor={CHART_QUEUED_UNACKED}
+                        stopOpacity={0}
+                      />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="time" hide />
+                  <YAxis
+                    domain={[0, (dataMax: number) => Math.max(dataMax, 1)]}
+                    hide
+                  />
+                  {incidentTime !== null && (
+                    <ReferenceLine
+                      x={incidentTime}
+                      stroke="hsl(var(--destructive))"
+                      strokeDasharray="3 3"
+                      strokeOpacity={0.7}
+                      ifOverflow="extendDomain"
+                    />
+                  )}
+                  {visibleLines.ready && (
+                    <Area
+                      type="monotone"
+                      dataKey="ready"
+                      stackId="q"
+                      stroke={CHART_QUEUED_READY}
+                      strokeWidth={1.6}
+                      fill="url(#queuedSparkReady)"
+                      dot={false}
+                      isAnimationActive={false}
+                      name={t("ready")}
+                    />
+                  )}
+                  {visibleLines.unacked && (
+                    <Area
+                      type="monotone"
+                      dataKey="unacked"
+                      stackId="q"
+                      stroke={CHART_QUEUED_UNACKED}
+                      strokeWidth={1.6}
+                      fill="url(#queuedSparkUnacked)"
+                      dot={false}
+                      isAnimationActive={false}
+                      name={t("unacked")}
+                    />
+                  )}
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Calm (case 1): data present but every series is 0 — replace
+                the legend with a single muted "quiet" note. Otherwise the
+                one-line SparkLegend: dot + label toggle buttons. */}
+            {allZero ? (
+              <p className="mt-2 text-xs text-muted-foreground">
+                {t("chartState.quiet")}
+              </p>
+            ) : (
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+                {sparkMetrics.map((metric) => {
+                  const on = visibleLines[metric.key];
+                  return (
+                    <button
+                      key={metric.key}
+                      type="button"
+                      onClick={() => toggleLine(metric.key)}
+                      aria-pressed={on}
+                      className={`inline-flex items-center gap-1.5 transition-opacity ${
+                        on ? "" : "opacity-40"
+                      }`}
+                    >
+                      <span
+                        className="h-2 w-2 rounded-full"
+                        style={{ backgroundColor: metric.color }}
+                        aria-hidden="true"
+                      />
+                      <span className="text-muted-foreground">
+                        {metric.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {incidentMarker && incidentTime !== null && (
+              <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                <span
+                  className="h-1.5 w-1.5 shrink-0 rounded-full bg-destructive"
+                  aria-hidden="true"
+                />
+                <span>{incidentMarker.label}</span>
+                {incidentMarker.onSeeFinding && (
+                  <button
+                    type="button"
+                    onClick={incidentMarker.onSeeFinding}
+                    className="underline underline-offset-2 hover:text-foreground"
+                  >
+                    {t("chartAsk.seeFinding")}
+                  </button>
+                )}
+              </p>
+            )}
+            {/* No "Ask your agent" chip here — Queued messages is just
+                ready/unacked; the agent-first bridge lives only on Message
+                rates (where the deep series breakdown is delegated). */}
+          </>
+        )}
+      </div>
+    );
+  }
+
+  // ── Full branch (dashboard / QueueDetail) ───────────────────────────────
   return (
-    <div className="rounded-lg border border-border overflow-hidden">
+    <div className="rounded-lg border border-border bg-card overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
         <div className="flex items-center gap-2">
           <h2 className="title-section">{t("queuedMessages")}</h2>
@@ -157,6 +409,11 @@ export const QueuedMessagesChart = ({
               </TooltipContent>
             </UITooltip>
           </TooltipProvider>
+          {!isLoading && headerValue && (
+            <span className="font-mono text-sm tabular-nums text-muted-foreground">
+              {headerValue}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
@@ -188,15 +445,79 @@ export const QueuedMessagesChart = ({
             {/* Chart */}
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart
+                <AreaChart
                   data={chartData}
                   margin={{ top: 20, right: 30, left: 60, bottom: 20 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" />
+                  <defs>
+                    <linearGradient
+                      id="queuedFillTotal"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor={CHART_QUEUED_TOTAL}
+                        stopOpacity={0.18}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor={CHART_QUEUED_TOTAL}
+                        stopOpacity={0}
+                      />
+                    </linearGradient>
+                    <linearGradient
+                      id="queuedFillReady"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor={CHART_QUEUED_READY}
+                        stopOpacity={0.18}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor={CHART_QUEUED_READY}
+                        stopOpacity={0}
+                      />
+                    </linearGradient>
+                    <linearGradient
+                      id="queuedFillUnacked"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor={CHART_QUEUED_UNACKED}
+                        stopOpacity={0.18}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor={CHART_QUEUED_UNACKED}
+                        stopOpacity={0}
+                      />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="hsl(var(--border))"
+                  />
                   <XAxis
                     dataKey="time"
-                    fontSize={11}
                     interval="preserveStartEnd"
+                    stroke="hsl(var(--border))"
+                    tick={{
+                      fontSize: 11,
+                      fontFamily: "var(--font-mono)",
+                      fill: "hsl(var(--muted-foreground))",
+                    }}
                   />
                   <YAxis
                     domain={[0, (dataMax: number) => Math.max(dataMax, 1)]}
@@ -206,9 +527,23 @@ export const QueuedMessagesChart = ({
                       position: "insideLeft",
                       style: { textAnchor: "middle" },
                     }}
-                    tick={{ fontSize: 11 }}
+                    stroke="hsl(var(--border))"
+                    tick={{
+                      fontSize: 11,
+                      fontFamily: "var(--font-mono)",
+                      fill: "hsl(var(--muted-foreground))",
+                    }}
                   />
                   <Tooltip
+                    contentStyle={{
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "var(--radius)",
+                      color: "hsl(var(--foreground))",
+                      fontSize: 12,
+                    }}
+                    labelStyle={{ color: "hsl(var(--muted-foreground))" }}
+                    itemStyle={{ color: "hsl(var(--foreground))" }}
                     formatter={(value: number, name: string) => [
                       `${value.toLocaleString()} ${t("messagesUnit")}`,
                       name === "total"
@@ -231,43 +566,55 @@ export const QueuedMessagesChart = ({
                       return t("timeLabel", { time });
                     }}
                   />
+                  {incidentTime !== null && (
+                    <ReferenceLine
+                      x={incidentTime}
+                      stroke="hsl(var(--destructive))"
+                      strokeDasharray="3 3"
+                      strokeOpacity={0.7}
+                      ifOverflow="extendDomain"
+                    />
+                  )}
                   {visibleLines.total && (
-                    <Line
+                    <Area
                       type="monotone"
                       dataKey="total"
                       stroke={CHART_QUEUED_TOTAL}
                       strokeWidth={2}
+                      fill="url(#queuedFillTotal)"
                       dot={false}
                       name={t("total")}
                     />
                   )}
                   {visibleLines.ready && (
-                    <Line
+                    <Area
                       type="monotone"
                       dataKey="ready"
                       stroke={CHART_QUEUED_READY}
                       strokeWidth={2}
+                      fill="url(#queuedFillReady)"
                       dot={false}
                       name={t("ready")}
                     />
                   )}
                   {visibleLines.unacked && (
-                    <Line
+                    <Area
                       type="monotone"
                       dataKey="unacked"
                       stroke={CHART_QUEUED_UNACKED}
                       strokeWidth={2}
+                      fill="url(#queuedFillUnacked)"
                       dot={false}
                       name={t("unacked")}
                     />
                   )}
-                </LineChart>
+                </AreaChart>
               </ResponsiveContainer>
             </div>
 
-            {/* Custom Toggleable Legend */}
-            <div className="mt-4 flex gap-4 text-xs">
-              {[
+            {/* Custom Toggleable Legend — the chip grid. */}
+            {(() => {
+              const metrics = [
                 { key: "total", name: t("total"), color: CHART_QUEUED_TOTAL },
                 { key: "ready", name: t("ready"), color: CHART_QUEUED_READY },
                 {
@@ -275,25 +622,62 @@ export const QueuedMessagesChart = ({
                   name: t("unacked"),
                   color: CHART_QUEUED_UNACKED,
                 },
-              ].map((metric) => (
-                <div
-                  key={metric.key}
-                  className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
-                    visibleLines[metric.key as keyof typeof visibleLines]
-                      ? "bg-accent hover:bg-accent/80"
-                      : "bg-muted hover:bg-muted/80 opacity-60"
-                  }`}
-                  onClick={() =>
-                    toggleLine(metric.key as keyof typeof visibleLines)
-                  }
-                >
-                  <div
-                    className="w-3 h-3 rounded-sm"
-                    style={{ backgroundColor: metric.color }}
-                  />
-                  <span className="text-foreground">{metric.name}</span>
+              ] as const;
+
+              return (
+                <div className="mt-4 flex gap-4 text-xs">
+                  {metrics.map((metric) => (
+                    <div
+                      key={metric.key}
+                      className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
+                        visibleLines[metric.key]
+                          ? "bg-accent hover:bg-accent/80"
+                          : "bg-muted hover:bg-muted/80 opacity-60"
+                      }`}
+                      onClick={() => toggleLine(metric.key)}
+                    >
+                      <div
+                        className="w-3 h-3 rounded-sm"
+                        style={{ backgroundColor: metric.color }}
+                      />
+                      <span className="text-foreground">{metric.name}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              );
+            })()}
+
+            {incidentMarker && incidentTime !== null && (
+              <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                <span
+                  className="h-2 w-2 shrink-0 rounded-full bg-destructive"
+                  aria-hidden="true"
+                />
+                <span>{incidentMarker.label}</span>
+                {incidentMarker.onSeeFinding && (
+                  <button
+                    type="button"
+                    onClick={incidentMarker.onSeeFinding}
+                    className="text-xs font-medium text-primary hover:underline"
+                  >
+                    {t("chartAsk.seeFinding")}
+                  </button>
+                )}
+              </div>
+            )}
+
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <span className="text-muted-foreground">
+                {t("chartAsk.queuedHint")}
+              </span>
+              <button
+                type="button"
+                onClick={copyAskPrompt}
+                className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
+              >
+                <IconSparkle size={14} aria-hidden="true" />
+                {t("chartAsk.askButton")}
+              </button>
             </div>
           </div>
         )}

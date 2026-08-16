@@ -108,5 +108,5 @@ Queue Spy is for.
 ## Related
 
 - Architecture: `docs/plans/messages-unified-ux.md`
-- Feature gates: `docs/adr/002-feature-gate-composition.md`
+- Feature gates: `docs/internal/adr/002-feature-gate-composition.md`
 - Edition comparison: `docs/FEATURE_COMPARISON.md`

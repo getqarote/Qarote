@@ -9,43 +9,44 @@
  * (trigger-wrapped) so the cockpit page just renders <ConnectionBar />.
  */
 
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 
 import { Plus, RefreshCw } from "lucide-react";
 
 import { readBrokerErrorKind } from "@/lib/readBrokerError";
 
 import { AddServerForm } from "@/components/AddServerFormComponent";
-import { ServerManagement } from "@/components/ServerManagement";
 import { Button } from "@/components/ui/button";
-import { PixelSettings } from "@/components/ui/pixel-settings";
+import { IconSettings } from "@/components/ui/icons";
 
 import { useServerContext } from "@/contexts/ServerContext";
 
 import { useOverview } from "@/hooks/queries/useRabbitMQ";
 import { useServer } from "@/hooks/queries/useServer";
+import { usePermission } from "@/hooks/queries/useWorkspaceRole";
 
-/** A button that opens the Server Management dialog (trigger-based). */
+/** Opens the Manage-server edit Sheet for the current server. Hidden for users
+ *  without `server:update` — managing a connection is an admin action. */
 function ManageButton({
   label,
   variant,
   icon,
+  onClick,
 }: {
   label: string;
   variant: "ghost" | "outline" | "default";
   icon?: ReactNode;
+  onClick: () => void;
 }) {
+  const canManage = usePermission("server:update");
+  if (canManage !== true) return null;
   return (
-    <ServerManagement
-      trigger={
-        <Button variant={variant} size="sm">
-          {icon}
-          {label}
-        </Button>
-      }
-    />
+    <Button variant={variant} size="sm" onClick={onClick}>
+      {icon}
+      {label}
+    </Button>
   );
 }
 
@@ -62,6 +63,23 @@ export function ConnectionBar() {
     refetch,
   } = useOverview(selectedServerId);
   const [showAdd, setShowAdd] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // The command palette's "Add server" routes here with ?addServer=true — open
+  // the add form, then strip the param so a refresh doesn't re-open it.
+  useEffect(() => {
+    if (searchParams.get("addServer") === "true") {
+      setShowAdd(true);
+      setSearchParams(
+        (prev) => {
+          prev.delete("addServer");
+          return prev;
+        },
+        { replace: true }
+      );
+    }
+  }, [searchParams, setSearchParams]);
 
   const server = serverData?.server;
   const overview = overviewData?.overview;
@@ -86,56 +104,69 @@ export function ConnectionBar() {
     );
 
     return (
-      <div
-        className={`flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between ${
-          tone === "warning"
-            ? "border-warning/40 bg-warning-muted"
-            : "border-destructive/40 bg-destructive/10"
-        }`}
-        role="alert"
-      >
-        <div className="flex items-start gap-2 min-w-0">
-          <span
-            className={`mt-1 h-2 w-2 shrink-0 rounded-full ${
-              tone === "warning" ? "bg-warning" : "bg-destructive"
-            }`}
-            aria-hidden="true"
-          />
-          <span
-            className={`text-sm font-medium ${
-              tone === "warning"
-                ? "text-warning-foreground"
-                : "text-destructive"
-            }`}
-          >
-            {t(`connectionBar.error.${kind}`, { name })}
-          </span>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {kind === "auth" && (
-            <ManageButton
-              label={t("connectionBar.updateCredentials")}
-              variant="default"
+      <>
+        <div
+          className={`flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between ${
+            tone === "warning"
+              ? "border-warning/40 bg-warning-muted"
+              : "border-destructive/40 bg-destructive/10"
+          }`}
+          role="alert"
+        >
+          <div className="flex items-start gap-2 min-w-0">
+            <span
+              className={`mt-1 h-2 w-2 shrink-0 rounded-full ${
+                tone === "warning" ? "bg-warning" : "bg-destructive"
+              }`}
+              aria-hidden="true"
             />
-          )}
-          {retryBtn}
-          {kind === "unreachable" && (
-            <ManageButton
-              label={t("connectionBar.checkSettings")}
-              variant="outline"
-            />
-          )}
-          {kind === "error" && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => navigate("/help")}
+            <span
+              className={`text-sm font-medium ${
+                tone === "warning"
+                  ? "text-warning-foreground"
+                  : "text-destructive"
+              }`}
             >
-              {t("connectionBar.contactSupport")}
-            </Button>
-          )}
+              {t(`connectionBar.error.${kind}`, { name })}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {kind === "auth" && (
+              <ManageButton
+                label={t("connectionBar.updateCredentials")}
+                variant="default"
+                onClick={() => setShowEdit(true)}
+              />
+            )}
+            {retryBtn}
+            {kind === "unreachable" && (
+              <ManageButton
+                label={t("connectionBar.checkSettings")}
+                variant="outline"
+                onClick={() => setShowEdit(true)}
+              />
+            )}
+            {kind === "error" && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => navigate("/help")}
+              >
+                {t("connectionBar.contactSupport")}
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
+        {server && (
+          <AddServerForm
+            mode="edit"
+            server={server}
+            isOpen={showEdit}
+            onOpenChange={setShowEdit}
+            onServerUpdated={() => void refetch()}
+          />
+        )}
+      </>
     );
   }
 
@@ -171,7 +202,8 @@ export function ConnectionBar() {
         <ManageButton
           label={t("connectionBar.manage")}
           variant="ghost"
-          icon={<PixelSettings className="h-4 w-auto" aria-hidden="true" />}
+          icon={<IconSettings className="h-4 w-auto" aria-hidden="true" />}
+          onClick={() => setShowEdit(true)}
         />
         <Button variant="outline" size="sm" onClick={() => setShowAdd(true)}>
           <Plus className="h-4 w-4" aria-hidden="true" />
@@ -179,6 +211,15 @@ export function ConnectionBar() {
         </Button>
       </div>
       <AddServerForm isOpen={showAdd} onOpenChange={setShowAdd} />
+      {server && (
+        <AddServerForm
+          mode="edit"
+          server={server}
+          isOpen={showEdit}
+          onOpenChange={setShowEdit}
+          onServerUpdated={() => void refetch()}
+        />
+      )}
     </div>
   );
 }

@@ -5,12 +5,15 @@
   },
   "back": "Back",
   "hero": {
-    "title": "Built by engineers who lived the problem",
-    "subtitle": "Qarote was born from years of frustration with RabbitMQ monitoring tools that were either too complex to set up or too limited to be useful. We built the dashboard we always wanted."
+    "title": "We stopped building dashboards.",
+    "subtitle": "So we rebuilt around that. Qarote is now agent-first RabbitMQ incident diagnosis: a deterministic rules engine finds incidents, an LLM explains root cause, and all of it is exposed to your agent over MCP. You debug by asking — not by clicking through charts.",
+    "intro": "Qarote started as a faster way to watch RabbitMQ. Then we noticed how our own users were actually working — not in our tabs, but in their editors, talking to an AI agent.",
+    "eyebrow": "About"
   },
   "mission": {
-    "title": "Our mission",
-    "description": "RabbitMQ powers critical infrastructure for thousands of companies, yet monitoring it has always been harder than it should be. Qarote gives every team — from solo developers to enterprise ops — a clean, modern dashboard that just works. No Prometheus stack required."
+    "title": "Close the gap between detection and understanding.",
+    "description": "Knowing a queue is backed up is easy. Knowing why, fast, at 3 a.m., is the hard part — and it's where on-call time actually goes. We want that answer to arrive in the same place you already work.",
+    "eyebrow": "Mission"
   },
   "team": {
     "photoAlt": "{{name}}, {{role}} at Qarote",
@@ -39,5 +42,52 @@
         "Certified in Google Ads, Google Analytics, Klaviyo, and Brevo"
       ]
     }
+  },
+  "pivot": {
+    "eyebrow": "Why agent-first",
+    "title": "The interface moved. We followed it.",
+    "description": "Developers increasingly operate through an AI agent in their editor. The last thing a tired on-call engineer wants is another dashboard to learn. So we ship tools the agent calls — not another tab to click.",
+    "old": {
+      "label": "The old shape",
+      "title": "One more dashboard to stare at",
+      "body": "A web UI you open during an incident, hunt through, and try to correlate by eye. Useful, but it sits outside your workflow and it only ever shows you what — never why."
+    },
+    "new": {
+      "label": "What we build now",
+      "title": "Tools your agent calls",
+      "body": "Qarote exposes incidents, findings, and root-cause analysis over MCP. You ask your agent in the editor; it calls the tools, and the explanation comes back in the chat you're already in."
+    }
+  },
+  "beliefs": {
+    "eyebrow": "What we believe",
+    "title": "How we build.",
+    "openSource": {
+      "title": "Open-source core",
+      "body": "Detection and the read MCP tools are MIT-licensed. Read the rules, run the core, trust what it does — no black box at the foundation."
+    },
+    "dataControl": {
+      "title": "Data control",
+      "body": "Self-host with offline license validation — no phone-home. AI Explain can run on a local Ollama model, so broker data never leaves your network."
+    },
+    "honest": {
+      "title": "Honest, dev-to-dev",
+      "body": "Plain language, no hype, no dark patterns. We'd rather show you a real snippet or finding than tell you we're revolutionary."
+    }
+  },
+  "teamHeading": {
+    "eyebrow": "Team",
+    "title": "Who's building Qarote.",
+    "hiring": "A small team, hiring quietly. Want to help build agent-native ops tooling?",
+    "hiringLink": "Say hello"
+  },
+  "cta": {
+    "heading": "See what your agent can find.",
+    "body": "Connect a broker in under two minutes and ask.",
+    "primary": "Try for free",
+    "secondary": "Explore features"
+  },
+  "teamCard": {
+    "role": "Founder · CTO",
+    "bio": "Builds the detection engine and the agent surface. Spent enough on-call nights staring at queue charts to want a better answer."
   }
 }

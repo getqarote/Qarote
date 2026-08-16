@@ -6,9 +6,17 @@ export function PageLoader() {
   const { t } = useTranslation("common");
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div
+      className="flex items-center justify-center min-h-screen"
+      aria-busy="true"
+      role="status"
+      aria-live="polite"
+    >
       <div className="flex flex-col items-center gap-4">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Loader2
+          className="h-8 w-8 animate-spin text-muted-foreground"
+          aria-hidden="true"
+        />
         <p className="text-sm text-muted-foreground">{t("loading")}</p>
       </div>
     </div>

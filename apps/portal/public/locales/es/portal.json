@@ -4,7 +4,6 @@
     "licenses": "Licencias",
     "billing": "Facturación",
     "account": "Cuenta",
-
     "logout": "Cerrar sesión"
   },
   "billing": {
@@ -27,7 +26,18 @@
       "failed": "Fallido",
       "pending": "Pendiente",
       "refunded": "Reembolsado"
-    }
+    },
+    "invoicesTitle": "Facturas",
+    "invoicePdf": "PDF",
+    "paymentMethodTitle": "Método de pago",
+    "cardLabel": "{{brand}} ···· {{last4}}",
+    "cardExpires": "caduca {{month}}/{{year}}",
+    "update": "Actualizar",
+    "noPaymentMethod": "No hay método de pago registrado.",
+    "addPaymentMethod": "Añadir método de pago",
+    "contactTitle": "Contacto de facturación",
+    "contactHint": "Dónde se envían las facturas y los avisos de facturación.",
+    "contactEmail": "Correo"
   },
   "footer": {
     "privacyPolicy": "Política de privacidad",
@@ -77,7 +87,24 @@
     },
     "status": {
       "active": "Activo",
-      "inactive": "Inactivo"
+      "inactive": "Inactivo",
+      "expiring": "Caduca pronto",
+      "expired": "Caducada"
+    },
+    "noLicensesValue": "Una licencia autoalojada desbloquea AI Explain, alertas, topología y multiservidor — validada sin conexión, sin telemetría externa.",
+    "cardSubtitle": "Autoalojado · licencia anual · ID {{id}}",
+    "downloadKey": "Descargar clave de licencia (.jwt)",
+    "pasteInstruction": "Pega esto en tu Qarote autoalojado:",
+    "pasteLocation": "Ajustes → Licencia",
+    "renewNow": "Renovar ahora",
+    "expiringNudge_one": "Caduca en {{count}} día ({{date}}). Renueva ahora para no perder AI Explain ni las funciones de pago.",
+    "expiringNudge_other": "Caduca en {{count}} días ({{date}}). Renueva ahora para no perder AI Explain ni las funciones de pago.",
+    "expiredNudge": "Licencia caducada ({{date}}). La detección sigue funcionando, pero AI Explain, las alertas y las funciones de pago están bloqueadas.",
+    "meta": {
+      "tier": "Edición",
+      "validUntil": "Válida hasta",
+      "issued": "Emitida",
+      "lastValidated": "Última validación"
     }
   },
   "licensePurchase": {
@@ -93,47 +120,49 @@
     "stripeHandoff": "Redirigido a Stripe para pago seguro · Clave de licencia entregada por correo",
     "enterpriseContact": "¿Términos personalizados o preguntas?",
     "badges": {
-      "selected": "Seleccionado",
-      "soon": "Próximamente"
-    },
-    "categories": {
-      "coreFeatures": "Características principales",
-      "intelligenceDiagnostics": "Inteligencia y diagnósticos",
-      "security": "Seguridad y compatibilidad",
-      "support": "Soporte"
-    },
-    "features": {
-      "servers": "Servidores RabbitMQ",
-      "workspaces": "Espacios de trabajo",
-      "teamMembers": "Miembros del equipo",
-      "advancedAnalytics": "Análisis avanzado",
-      "queueManagement": "Gestión de colas, intercambios, VHost y usuarios",
-      "alertsWebhooks": "Alertas y webhooks",
-      "topologyVisualization": "Visualización de topología",
-      "roleBasedAccess": "Control de acceso por roles",
-      "dailyDigest": "Resumen diario",
-      "messageSpy": "Message Spy",
-      "metricsPersistence": "Persistencia de métricas",
-      "incidentDiagnosis": "Diagnóstico de incidentes",
-      "messageTracing": "Rastreo de mensajes",
-      "ssoSamlOidc": "SSO, SAML y OIDC",
-      "soc2": "Cumplimiento SOC 2",
-      "rabbitmqVersions": "Soporte de versiones RabbitMQ",
-      "communitySupport": "Soporte comunitario",
-      "prioritySupport": "Soporte prioritario"
-    },
-    "limits": {
-      "upTo3": "Hasta 3",
-      "unlimited": "Ilimitado",
-      "rabbitmqVersionsValue": "Todas las versiones 3.x y 4.x",
-      "limited": "Limitado"
+      "mostPopular": "Más popular"
     },
     "plans": {
       "developer": {
-        "name": "Desarrollador"
+        "name": "Desarrollador",
+        "audience": "Para individuos y equipos pequeños que autoalojan Qarote."
       },
       "enterprise": {
-        "name": "Empresa"
+        "name": "Empresa",
+        "audience": "Para equipos de plataforma que necesitan SSO, auditoría y RBAC."
+      }
+    },
+    "intro": "Autoalojado, anual. Elige un plan y paga — tu clave de licencia se emite al instante.",
+    "tierGroupLabel": "Elige un plan de licencia",
+    "orderSummary": {
+      "title": "Resumen del pedido",
+      "tierLine": "{{name}} · anual",
+      "seats": "Puestos",
+      "decreaseSeats": "Reducir puestos",
+      "increaseSeats": "Aumentar puestos",
+      "total": "Total",
+      "checkout": "Pagar",
+      "secureCheckout": "Pago seguro con Stripe",
+      "cancel": "Cancelar"
+    },
+    "cards": {
+      "developer": {
+        "bullets": [
+          "Todo lo de Community",
+          "AI Explain — causa raíz con LLM",
+          "BYOK u Ollama local",
+          "Alertas: email · Slack · webhooks",
+          "Multiservidor · topología"
+        ]
+      },
+      "enterprise": {
+        "bullets": [
+          "Todo lo de Developer",
+          "LLM gestionado (sin configuración)",
+          "SSO / SAML · RBAC avanzado",
+          "Registro de auditoría · SOC 2",
+          "Soporte prioritario y SLA"
+        ]
       }
     }
   },

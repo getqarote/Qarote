@@ -15,7 +15,7 @@ interface ExchangesOverviewCardsProps {
  * A single stat line summarising the exchange topology above the list.
  * Renders as: "13 exchanges — 4 direct · 3 fanout · 4 topic · 21 bindings"
  *
- * Numbers use Fragment Mono. Type labels carry the same semantic colours
+ * Numbers use IBM Plex Mono. Type labels carry the same semantic colours
  * as the type badges in the list below — so the colours are connective,
  * not decorative. The separator characters (— and ·) are muted so the
  * numbers and labels carry the weight.

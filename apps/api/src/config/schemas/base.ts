@@ -46,12 +46,28 @@ export const baseSchema = z
       .int()
       .positive()
       .default(300_000),
-    METRICS_POLL_CONCURRENCY: z.coerce.number().int().positive().default(5),
+    /**
+     * Servers polled in parallel, and the budget for one server's poll.
+     *
+     * These two are a RATIO, not independent knobs: a hung broker occupies one
+     * slot for the whole timeout, so it costs `timeout / (concurrency ×
+     * interval)` of the cycle's capacity. The old pair (5 slots × 30 s) meant a
+     * SINGLE slow broker burned 20% of capacity for 30 s, and five of them
+     * stalled every poll — at 1000 brokers with 1% hanging that was ~258 s of a
+     * 300 s budget, before anything actually went wrong.
+     *
+     * 25 × 10 s cuts that ~15×. The timeout stays ~10× the observed p95 (≈1 s),
+     * and a skipped poll is cheap by design: the next cycle is 5 minutes away
+     * and the reconcile pass catches stragglers. Raise concurrency further only
+     * with a measured p95 — the fleet must be sized on the distribution, not the
+     * mean (ADR-004 §2).
+     */
+    METRICS_POLL_CONCURRENCY: z.coerce.number().int().positive().default(25),
     METRICS_PER_SERVER_TIMEOUT_MS: z.coerce
       .number()
       .int()
       .positive()
-      .default(30_000),
+      .default(10_000),
 
     // Incident diagnosis: a finding that hasn't re-fired for this long is
     // marked resolved on the next diagnose pass. Defaults to one poll cycle

@@ -33,6 +33,13 @@ export type AlertType =
 
 export type AlertSeverity = "INFO" | "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 type AlertStatus = "ACTIVE" | "ACKNOWLEDGED" | "RESOLVED";
+
+/**
+ * Which evaluator owns a rule (mirrors the Prisma `AlertEvaluator` enum).
+ * METRIC rules are threshold checks run by the analyzer; CONFIG rules are
+ * config-scan checks run by the evaluator. Drives the rules-modal grouping.
+ */
+export type AlertEvaluator = "METRIC" | "CONFIG";
 export type ComparisonOperator =
   | "GREATER_THAN"
   | "LESS_THAN"
@@ -49,6 +56,10 @@ export interface AlertRule {
   severity: AlertSeverity;
   enabled: boolean;
   isDefault: boolean;
+  /** Evaluator that owns this rule; groups the rules modal by kind. */
+  evaluator?: AlertEvaluator;
+  /** Stable string id for CONFIG rules (e.g. "config.queue.missing_dlx"). */
+  configRuleKey?: string | null;
   serverId: string;
   workspaceId: string;
   createdById: string;
@@ -103,17 +114,6 @@ interface AlertInstance {
   };
 }
 
-export interface UpdateAlertRuleInput {
-  name?: string;
-  description?: string;
-  type?: AlertType;
-  threshold?: number;
-  operator?: ComparisonOperator;
-  severity?: AlertSeverity;
-  enabled?: boolean;
-  serverId?: string;
-}
-
 // ============================================================================
 // RabbitMQ Alert Types
 // ============================================================================
@@ -154,6 +154,15 @@ export interface RabbitMQAlert {
   timestamp: string;
   resolved: boolean;
   resolvedAt?: string;
+  // Lifecycle facets — present on the DB-backed active feed (watchAlerts),
+  // absent on live-computed paths. Drive the per-row lifecycle actions.
+  status?: "ACTIVE" | "ACKNOWLEDGED";
+  acknowledgedAt?: string;
+  // Config-scan finding this alert was raised from, when one exists. Present
+  // only for alerts with an underlying diagnosable finding; absent for plain
+  // metric-threshold alerts. Drives the "Explain →" link — rendered only when
+  // set, so the link never points at a diagnosis that does not exist.
+  findingId?: string;
   vhost?: string; // Virtual host for queue-related alerts
   source: {
     type: "node" | "queue" | "cluster";

@@ -27,7 +27,6 @@
  */
 
 import { logger } from "@/core/logger";
-import { prisma } from "@/core/prisma";
 
 import { CAPABILITY_FEATURES, FEATURES } from "@/config/features";
 
@@ -35,6 +34,8 @@ import type { CapabilitySnapshot } from "./capability-snapshot";
 import { getServerCapabilities } from "./capability-snapshot";
 import { getFeatureGateConfig } from "./gate.config";
 import type { FeatureGateResult, FeatureKey, GateContext } from "./types";
+
+import { metricsStore } from "@/stores/metrics";
 
 /**
  * Minutes a broker must have been collecting `QueueMetricSnapshot`
@@ -151,11 +152,7 @@ export async function resolveCapabilityAxis(
 async function isDiagnosisWarm(serverId: string): Promise<boolean> {
   const cutoff = new Date(Date.now() - DIAGNOSIS_WARMUP_MINUTES * 60 * 1000);
   try {
-    const oldest = await prisma.queueMetricSnapshot.findFirst({
-      where: { serverId, timestamp: { lte: cutoff } },
-      select: { id: true },
-    });
-    return oldest !== null;
+    return await metricsStore.existsSince({ serverId, olderThan: cutoff });
   } catch (error) {
     logger.error(
       { error, serverId },

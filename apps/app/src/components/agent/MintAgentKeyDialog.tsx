@@ -8,6 +8,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { KeyRound } from "lucide-react";
+
 import { MintAgentKeyForm } from "@/components/agent/MintAgentKeyForm";
 import { AgentKeyRevealDialog } from "@/components/AgentKeyRevealDialog";
 import {
@@ -39,15 +41,21 @@ export function MintAgentKeyDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>{t("agentAccess.mint.title")}</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="flex items-center gap-2">
+              <KeyRound className="h-[18px] w-auto shrink-0 text-foreground" />
+              {t("agentAccess.mint.title")}
+            </DialogTitle>
+            {/* Kept for a11y (aria-describedby) but visually omitted — the
+                prototype's mint modal goes straight from title to the form. */}
+            <DialogDescription className="sr-only">
               {t("agentAccess.description")}
             </DialogDescription>
           </DialogHeader>
           <MintAgentKeyForm
             workspaceId={workspaceId}
+            onCancel={() => onOpenChange(false)}
             onMinted={(secret, name) => {
               onOpenChange(false);
               setRevealed({ secret, name });

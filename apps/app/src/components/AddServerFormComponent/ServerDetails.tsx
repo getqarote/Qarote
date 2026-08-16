@@ -12,9 +12,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { IconChevron } from "@/components/ui/icons";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PixelChevronDown } from "@/components/ui/pixel-chevron-down";
 import { Switch } from "@/components/ui/switch";
 
 import type { AddServerFormData } from "@/schemas";
@@ -29,6 +29,15 @@ interface ServerDetailsProps {
   hideVhostField?: boolean;
   /** When true, programmatically expand the accordion (e.g. after URL parse or validation failure). */
   forceExpanded?: boolean;
+  /** When true, hide the manual-setup chevron toggle — the connection
+   *  fields are then driven solely by `forceExpanded`. Used where other
+   *  entry points (an intro link, a footer button) already expand the
+   *  section, so the toggle would be a redundant third affordance. */
+  hideToggle?: boolean;
+  /** Placeholder for the password field. In edit mode this is the
+   *  "leave blank to keep current" hint; an empty value never clears the
+   *  stored credential. */
+  passwordPlaceholder?: string;
 }
 
 export const ServerDetails = ({
@@ -37,6 +46,8 @@ export const ServerDetails = ({
   hideNameField = false,
   hideVhostField = false,
   forceExpanded = false,
+  hideToggle = false,
+  passwordPlaceholder,
 }: ServerDetailsProps) => {
   const { t } = useTranslation("dashboard");
   const [expanded, setExpanded] = useState(alwaysExpanded);
@@ -267,6 +278,7 @@ export const ServerDetails = ({
                     <Input
                       type={showPassword ? "text" : "password"}
                       autoComplete="off"
+                      placeholder={passwordPlaceholder}
                       {...field}
                     />
                     <Button
@@ -308,18 +320,20 @@ export const ServerDetails = ({
   return (
     <div className="space-y-3">
       {topFields}
-      <button
-        type="button"
-        onClick={() => setExpanded((prev) => !prev)}
-        className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-        aria-expanded={isOpen}
-        aria-controls="server-details-fields"
-      >
-        <PixelChevronDown
-          className={`h-3 w-auto shrink-0 transition-transform ${isOpen ? "rotate-0" : "-rotate-90"}`}
-        />
-        {isOpen ? t("manualSetupHide") : t("manualSetupShow")}
-      </button>
+      {!hideToggle && (
+        <button
+          type="button"
+          onClick={() => setExpanded((prev) => !prev)}
+          className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          aria-expanded={isOpen}
+          aria-controls="server-details-fields"
+        >
+          <IconChevron
+            className={`h-3 w-auto shrink-0 transition-transform ${isOpen ? "rotate-0" : "-rotate-90"}`}
+          />
+          {isOpen ? t("manualSetupHide") : t("manualSetupShow")}
+        </button>
+      )}
       {isOpen && (
         <div id="server-details-fields" className="pt-1">
           {connectionFields}

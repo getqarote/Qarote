@@ -1,8 +1,13 @@
 import { SUPPORTED_LOCALES } from "@qarote/i18n";
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 
 import { recordFromContext } from "@/services/audit";
 import { EmailVerificationService } from "@/services/email/email-verification.service";
+import {
+  deleteOrganizationCascade,
+  SubscriptionCancelFailedError,
+} from "@/services/organization/org-deletion.service";
 
 import { hasWorkspaceAccess } from "@/middlewares/workspace";
 
@@ -20,6 +25,7 @@ import { UserMapper } from "@/mappers/auth";
 import {
   rateLimitedProcedure,
   router,
+  strictRateLimitedProcedure,
   workspacePermissionProcedure,
 } from "@/trpc/trpc";
 
@@ -27,7 +33,7 @@ import {
   assertCanRemoveMember,
   assertWorkspaceWillKeepOwner,
 } from "@/auth/workspace-roles";
-import { WorkspaceRole } from "@/generated/prisma/client";
+import { OrgRole, WorkspaceRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -614,5 +620,111 @@ export const userRouter = router({
       });
 
       return { locale };
+    }),
+
+  /**
+   * Permanently delete the caller's own account. Smart cascade:
+   *   - Organizations where the caller is the SOLE member are torn down
+   *     (cancelling any live Stripe subscription, fail-safe).
+   *   - Organizations the caller solely OWNS but that have other members BLOCK
+   *     the deletion — leaving would orphan them (last-owner invariant). The
+   *     caller must transfer ownership / remove members first.
+   *   - Other shared orgs: the caller simply leaves (membership cascades).
+   *
+   * Deleting the User row cascades sessions (immediate sign-out), linked
+   * accounts, and remaining memberships. The caller must echo their email to
+   * confirm.
+   */
+  deleteAccount: strictRateLimitedProcedure
+    .input(z.object({ confirmation: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const userId = ctx.user.id;
+
+      if (
+        input.confirmation.trim().toLowerCase() !== ctx.user.email.toLowerCase()
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: te(ctx.locale, "user.deleteAccountConfirmationMismatch"),
+        });
+      }
+
+      const memberships = await ctx.prisma.organizationMember.findMany({
+        where: { userId },
+        select: {
+          organizationId: true,
+          role: true,
+          organization: {
+            select: { name: true, _count: { select: { members: true } } },
+          },
+        },
+      });
+
+      // Classify each org the caller belongs to.
+      const soloOrgIds: string[] = [];
+      const blocking: { id: string; name: string }[] = [];
+      for (const m of memberships) {
+        if (m.organization._count.members === 1) {
+          soloOrgIds.push(m.organizationId);
+          continue;
+        }
+        // Shared org — only a *sole owner* blocks (leaving orphans the org).
+        if (m.role === OrgRole.OWNER) {
+          const ownerCount = await ctx.prisma.organizationMember.count({
+            where: { organizationId: m.organizationId, role: OrgRole.OWNER },
+          });
+          if (ownerCount === 1) {
+            blocking.push({ id: m.organizationId, name: m.organization.name });
+          }
+        }
+        // Otherwise the caller simply leaves (membership cascades on delete).
+      }
+
+      if (blocking.length > 0) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: te(ctx.locale, "user.deleteAccountSoleOwnerBlocked"),
+          cause: { code: "SOLE_OWNER_BLOCKED", organizations: blocking },
+        });
+      }
+
+      // Tear down solo-owned orgs first, then the user. Each org is
+      // individually all-or-nothing (Stripe cancelled before its rows are
+      // touched), and the user is deleted only after every org succeeds. With
+      // multiple solo orgs the loop is sequential, so a later failure can leave
+      // earlier orgs already gone — but the op is retry-convergent (deleted
+      // orgs drop out of `memberships`) and the user is never half-deleted.
+      try {
+        for (const orgId of soloOrgIds) {
+          await deleteOrganizationCascade(orgId);
+        }
+      } catch (error) {
+        if (error instanceof SubscriptionCancelFailedError) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: te(ctx.locale, "user.deleteAccountSubscriptionFailed"),
+          });
+        }
+        throw error;
+      }
+
+      // Cascades sessions (sign-out), linked accounts, and remaining
+      // shared-org / workspace memberships. Log only AFTER it confirms.
+      try {
+        await ctx.prisma.user.delete({ where: { id: userId } });
+      } catch (error) {
+        ctx.logger.error(
+          { error, userId },
+          "User account deletion failed at user.delete"
+        );
+        throw error;
+      }
+
+      ctx.logger.info(
+        { userId, deletedOrgs: soloOrgIds.length },
+        "User account deleted (self-service)"
+      );
+
+      return { success: true };
     }),
 });

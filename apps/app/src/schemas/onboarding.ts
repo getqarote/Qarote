@@ -1,6 +1,12 @@
 import { z } from "zod";
 
 export const onboardingSchema = z.object({
+  // Optional name capture for accounts that arrived without it (email/password
+  // sign-up, or an SSO IdP that didn't supply name claims). Pre-filled and
+  // shown only when the name is still unknown — never required, so it can't
+  // stall the path to the cockpit.
+  firstName: z.string().trim().max(100).optional(),
+  lastName: z.string().trim().max(100).optional(),
   orgName: z
     .string()
     .trim()

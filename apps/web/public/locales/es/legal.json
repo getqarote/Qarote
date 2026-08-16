@@ -117,7 +117,10 @@
             "label": "Información de pago",
             "detail": "según lo exigido por la ley y los procesadores de pagos"
           },
-          { "label": "Comunicaciones de soporte", "detail": "hasta 3 años" }
+          {
+            "label": "Comunicaciones de soporte",
+            "detail": "hasta 3 años"
+          }
         ]
       },
       "yourRights": {
@@ -149,7 +152,7 @@
             "text": "Solicitar la limitación del tratamiento"
           }
         },
-        "contact": "Para ejercer estos derechos, contáctenos en privacy@qarote.io"
+        "contact": "Para ejercer estos derechos, contáctenos en security@qarote.io"
       },
       "cookies": {
         "title": "Cookies y seguimiento",
@@ -221,8 +224,23 @@
         "description": "Si tiene alguna pregunta sobre esta política de privacidad o nuestras prácticas de datos, contáctenos:",
         "email": "support@qarote.io",
         "address": "229 rue Saint-Honoré, 75001, Paris, France"
+      },
+      "aiFeatures": {
+        "title": "Funciones de IA y contexto del broker",
+        "description": "Cuando usas AI Explain (análisis de causa raíz), Qarote envía el contexto relevante del broker —como la cola afectada, las métricas, la topología y los cambios de configuración recientes— a un proveedor de modelo de lenguaje para generar una explicación. No enviamos el cuerpo de tus mensajes. Tú eliges el proveedor, y esa elección determina adónde van los datos:",
+        "items": [
+          "Gestionado — procesado por nuestro proveedor de modelos (Anthropic) con la cuenta de Qarote.",
+          "Trae tu propia clave — procesado por tu propia cuenta de Anthropic u OpenAI, bajo los términos de ese proveedor.",
+          "Local (Ollama) — procesado por completo en tu propia infraestructura; ningún contexto del broker sale de tu red."
+        ],
+        "note": "Los despliegues autoalojados que requieran una residencia de datos estricta pueden mantener todo el procesamiento de IA en la red con el proveedor local."
+      },
+      "agentAccess": {
+        "title": "Acceso de agentes (MCP)",
+        "description": "Puedes conectar agentes de IA a Qarote mediante el Model Context Protocol usando claves API con permisos limitados. Las claves se muestran una sola vez y se almacenan solo como un hash. Según el permiso que concedas, un agente puede leer datos de monitorización, solicitar diagnósticos y —cuando lo habilites— realizar acciones de gestión en tus brokers. Las acciones realizadas mediante un agente se registran para auditoría. Eres responsable de los permisos que concedes y de los agentes que autorizas."
       }
-    }
+    },
+    "summary": "Cómo Qarote recopila, usa y protege tus datos. En resumen: leemos datos de gestión y métricas de RabbitMQ para detectar y explicar incidentes — nunca accedemos ni almacenamos el contenido de tus mensajes salvo que actives explícitamente la captura de payload para el rastreo."
   },
   "termsOfService": {
     "title": "Condiciones de servicio",
@@ -238,12 +256,11 @@
         "title": "Descripción del servicio",
         "description": "Qarote proporciona una interfaz web moderna para la monitorización y gestión de brokers de mensajes RabbitMQ. Nuestro servicio incluye:",
         "items": [
-          "Monitorización en vivo de colas y analítica",
-          "Herramientas de publicación y consumo de mensajes",
-          "Gestión de colas e intercambios",
-          "Métricas de rendimiento y alertas",
-          "Soporte para clústeres multi-servidor",
-          "Gestión de usuarios y controles de acceso"
+          "Detección de incidentes mediante un motor de reglas determinista;",
+          "Análisis de causa raíz asistido por IA («AI Explain»);",
+          "Una interfaz para agentes de IA sobre el Model Context Protocol (MCP), mediante la cual tus agentes de IA autorizados pueden leer datos de monitorización, solicitar diagnósticos y —con los permisos que concedas— gestionar tus brokers;",
+          "Escaneo de configuración, visualización de topología, alertas y soporte multiservidor;",
+          "Opciones de despliegue en la nube y autoalojado."
         ]
       },
       "accounts": {
@@ -289,7 +306,26 @@
         "description": "Si tiene alguna pregunta sobre estas Condiciones, contáctenos:",
         "email": "support@qarote.io",
         "address": "229 rue Saint-Honoré, 75001, Paris, France"
+      },
+      "licensing": {
+        "title": "Licencias",
+        "description": "La edición Community de Qarote es de código abierto bajo licencia MIT. Las funciones Premium y Enterprise están licenciadas, no son de código abierto, y se rigen por estos Términos y tu clave de licencia. No puedes eludir la validación de licencia, ni redistribuir o revender funciones premium. Las licencias autoalojadas se validan sin conexión y siguen sujetas a estos Términos."
+      },
+      "agentAccess": {
+        "title": "Acceso de agentes y acciones automatizadas",
+        "description": "Puedes conceder claves API con permisos limitados que permitan a los agentes de IA interactuar con el Servicio y, cuando habilites permisos de gestión o remediación, crear, modificar, purgar o eliminar objetos en tus brokers RabbitMQ. Cualquier acción de este tipo se realiza bajo tu autorización y por tu cuenta y riesgo. Eres el único responsable de los permisos y claves que concedes, de revisar las acciones antes de habilitar su ejecución automática, y de mantener tus propias copias de seguridad. En la medida permitida por la ley, Qarote no se responsabiliza de los resultados de las acciones que tú o tus agentes autorizados inicien."
       }
-    }
-  }
+    },
+    "summary": "Estas Condiciones rigen tu uso de Qarote, una plataforma agent-first para diagnosticar y gestionar brokers de mensajes RabbitMQ. Al usar el Servicio, aceptas quedar vinculado por ellas."
+  },
+  "footer": {
+    "questions": "¿Preguntas? Escribe a",
+    "email": "support@qarote.io",
+    "address": "229 rue Saint-Honoré, 75001 Paris, France",
+    "seeAlsoPrefix": "Consulta también nuestra",
+    "privacy": "Política de privacidad",
+    "terms": "Condiciones del servicio"
+  },
+  "section": "Sección",
+  "contents": "Índice"
 }

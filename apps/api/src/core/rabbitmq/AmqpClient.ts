@@ -82,8 +82,6 @@ export class RabbitMQAmqpClient {
         return;
       }
 
-      const connectionUrl = `${this.config.protocol}://${this.config.username}:${this.config.password}@${this.config.hostname}:${this.config.port}${this.config.vhost}`;
-
       logger.info(
         {
           serverId: this.config.serverId,
@@ -96,10 +94,30 @@ export class RabbitMQAmqpClient {
         "Connecting to RabbitMQ via AMQP"
       );
 
-      this.connection = await amqp.connect(connectionUrl, {
-        heartbeat: this.config.heartbeat || 60,
-        timeout: this.config.connectionTimeout || 30000,
-      });
+      // Structured options rather than a hand-built URL: amqplib escapes the
+      // vhost and credentials itself. Interpolating them broke any named
+      // vhost and any password containing "@", ":" or "/".
+      this.connection = await amqp.connect(
+        {
+          protocol: this.config.protocol,
+          hostname: this.config.hostname,
+          port: this.config.port,
+          username: this.config.username,
+          password: this.config.password,
+          vhost: this.config.vhost || "/",
+          // heartbeat belongs in THIS object: amqplib reads it as
+          // `url.heartbeat` (connect.js:126), while the second argument is
+          // socket options and only yields `timeout` (connect.js:98). It was
+          // never actually applied before — a string URL with no
+          // `?heartbeat=` defaults to 0, i.e. disabled (connect.js:70) — so
+          // this turns heartbeats on for the first time rather than restoring
+          // them. `??` not `||`: 0 is a valid, meaningful value.
+          heartbeat: this.config.heartbeat ?? 60,
+        },
+        {
+          timeout: this.config.connectionTimeout ?? 30000,
+        }
+      );
 
       this.channel = await this.connection.createChannel();
 

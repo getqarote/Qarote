@@ -35,6 +35,11 @@ const BLOCKED_PATHS = new Set([
   "organization.members.invite",
   "organization.members.removeMember",
   "organization.members.updateRole",
+  // LLM provider config (workspace.llm.*). Writing this on a shared demo
+  // would let any visitor point AI Explain at a key — or disable the seeded
+  // config the showcase depends on.
+  "workspace.llm.updateConfig",
+  "workspace.llm.testConnection",
   // Alert rules (alerts.rules.*)
   "alerts.rules.createRule",
   "alerts.rules.updateRule",

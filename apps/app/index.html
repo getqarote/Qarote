@@ -2,29 +2,48 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="images/new_icon.svg" />
+    <!-- Absolute: a relative href resolves against the current route, so on any
+         nested path (/auth/login, /workspace/…) the browser asks for
+         /auth/images/new_icon.svg and gets a 404. -->
+    <link rel="icon" type="image/svg+xml" href="/images/new_icon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Qarote</title>
-    <meta name="description" content="Rabbit Generated Project" />
-    <meta name="author" content="rabbit" />
+    <title>Qarote — Your RabbitMQ, debugged by your AI agent</title>
+    <meta
+      name="description"
+      content="Agent-first RabbitMQ incident diagnosis. Detection is open source; pay only for AI Explain and team features."
+    />
+    <meta name="author" content="Qarote" />
 
-    <meta property="og:title" content="Qarote" />
-    <meta property="og:description" content="rabbit Generated Project" />
+    <meta
+      property="og:title"
+      content="Qarote — Your RabbitMQ, debugged by your AI agent"
+    />
+    <meta
+      property="og:description"
+      content="Agent-first RabbitMQ incident diagnosis. Detection is open source; pay only for AI Explain and team features."
+    />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="images/new_icon.svg" />
+    <meta property="og:url" content="https://app.qarote.io/" />
+    <meta property="og:site_name" content="Qarote" />
+    <meta property="og:image" content="https://app.qarote.io/og-default.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    <meta
+      property="og:image:alt"
+      content="Qarote — Your RabbitMQ, debugged by your AI agent. Dark card with a message-flow topology motif."
+    />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@rabbit_dev" />
-    <meta name="twitter:image" content="images/new_icon.svg" />
-
-    <!-- Bricolage Grotesque — heading/display font for page and section titles -->
-    <!-- Fragment Mono — monospace font for metric numbers, IDs, code -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Fragment+Mono&display=swap"
-      rel="stylesheet"
+    <meta name="twitter:site" content="@Qarote" />
+    <meta
+      property="twitter:title"
+      content="Qarote — Your RabbitMQ, debugged by your AI agent"
     />
+    <meta name="twitter:image" content="https://app.qarote.io/og-default.png" />
+
+    <!-- Fonts (Space Grotesk / IBM Plex Sans / IBM Plex Mono) are self-hosted
+         via @fontsource and imported in src/main.tsx — no external request. -->
 
     <!-- Runtime config for self-hosted binary (served dynamically by backend) -->
     <script src="/config.js"></script>

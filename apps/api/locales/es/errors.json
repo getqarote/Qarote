@@ -115,7 +115,10 @@
     "isNotMemberOfWorkspace": "El usuario no es miembro de este espacio de trabajo",
     "cannotRemoveSelf": "No puede eliminarse a sí mismo del espacio de trabajo",
     "onlyOwnerCanRemoveAdmin": "Solo los propietarios del espacio de trabajo pueden eliminar usuarios administradores",
-    "failedToRemoveFromWorkspace": "Error al eliminar al usuario del espacio de trabajo"
+    "failedToRemoveFromWorkspace": "Error al eliminar al usuario del espacio de trabajo",
+    "deleteAccountConfirmationMismatch": "Escriba su correo exactamente para confirmar la eliminación de la cuenta",
+    "deleteAccountSoleOwnerBlocked": "Usted es el único propietario de una organización con otros miembros. Transfiera la propiedad o elimine a los miembros antes de eliminar su cuenta.",
+    "deleteAccountSubscriptionFailed": "No se pudo cancelar una suscripción: su cuenta no se eliminó. Inténtelo de nuevo o contacte con soporte."
   },
   "feature": {
     "requiresEnterprise": "{{featureName}} requiere la edición Enterprise. Actualice desde la edición Community para desbloquear esta funcionalidad.",
@@ -143,7 +146,11 @@
     "allWorkspaces": "todos tus espacios de trabajo"
   },
   "organization": {
-    "slugTaken": "Ese slug ya está en uso. Pruebe con otro."
+    "slugTaken": "Ese slug ya está en uso. Pruebe con otro.",
+    "deleteOwnerOnly": "Solo el propietario de la organización puede eliminarla",
+    "notFound": "Organización no encontrada",
+    "deleteConfirmationMismatch": "La confirmación no coincide con el identificador de la organización",
+    "deleteSubscriptionFailed": "No se pudo cancelar la suscripción: la organización no se eliminó. Inténtelo de nuevo o contacte con soporte."
   },
   "license": {
     "validationFailed": "Error en la validación de la licencia",
@@ -221,7 +228,10 @@
     "failedToImportDefinitions": "Error al importar las definiciones del broker",
     "failedToUpdateTracingState": "No se pudo actualizar el estado de rastreo del broker RabbitMQ. Comprueba la conectividad con el servidor.",
     "tracingQueryStartBeforeEnd": "La hora de inicio debe ser anterior a la hora de fin.",
-    "tracingQueryWindowExceeded": "El rango de tiempo no puede exceder los 7 días."
+    "tracingQueryWindowExceeded": "El rango de tiempo no puede exceder los 7 días.",
+    "alertNotFound": "Alerta no encontrada",
+    "tooManyQueues": "Este broker tiene {{count}} colas, por encima de las {{limit}} que supervisamos. Es una necesidad específica: contáctanos y lo estudiamos contigo.",
+    "queueCeilingReached": "La recogida de métricas está en pausa para este broker: tiene {{count}} colas, por encima de las {{limit}} que supervisamos. Es una necesidad específica: contáctanos y lo estudiamos contigo."
   },
   "scan": {
     "findingNotFound": "Hallazgo no encontrado"

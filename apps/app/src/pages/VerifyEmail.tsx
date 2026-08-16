@@ -1,19 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useSearchParams } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 
-import { CheckCircle, Mail, RefreshCw, XCircle } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
 
-import { AuthPageHeader } from "@/components/auth/AuthPageHeader";
-import { AuthPageWrapper } from "@/components/auth/AuthPageWrapper";
+import { AuthSplitLayout } from "@/components/auth/AuthSplitLayout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { CardContent } from "@/components/ui/card";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
@@ -24,247 +22,232 @@ interface VerificationResult {
   error?: string;
 }
 
+const RESEND_COOLDOWN_SECONDS = 30;
+
+// Best-effort "Open inbox" deep links for common providers.
+const PROVIDER_INBOX: Record<string, string> = {
+  "gmail.com": "https://mail.google.com/",
+  "googlemail.com": "https://mail.google.com/",
+  "outlook.com": "https://outlook.live.com/mail/",
+  "hotmail.com": "https://outlook.live.com/mail/",
+  "live.com": "https://outlook.live.com/mail/",
+  "yahoo.com": "https://mail.yahoo.com/",
+  "icloud.com": "https://www.icloud.com/mail/",
+  "proton.me": "https://mail.proton.me/",
+  "protonmail.com": "https://mail.proton.me/",
+};
+
+const eyebrow = (label: string) => (
+  <p className="mb-3 select-none font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-primary">
+    {label}
+  </p>
+);
+
 export default function VerifyEmail() {
   const { t } = useTranslation("auth");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { isAuthenticated, updateUser } = useAuth();
+  const { isAuthenticated, user, updateUser } = useAuth();
   const verificationAttempted = useRef(false);
   const token = searchParams.get("token");
-  const [verificationState, setVerificationState] = useState<{
-    loading: boolean;
-    result: VerificationResult | null;
-  }>(() => {
-    if (!token) {
-      return {
-        loading: false,
-        result: {
-          success: false,
-          error: t("noVerificationToken"),
-        },
-      };
-    }
-    return {
-      loading: true,
-      result: null,
-    };
-  });
+  const email = searchParams.get("email") || user?.email || "";
 
-  // tRPC mutations
+  const [verifying, setVerifying] = useState(!!token);
+  const [result, setResult] = useState<VerificationResult | null>(null);
+  const [cooldown, setCooldown] = useState(0);
+
+  // Resend cooldown countdown.
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const id = setInterval(() => setCooldown((c) => c - 1), 1000);
+    return () => clearInterval(id);
+  }, [cooldown]);
+
   const { mutate: verifyEmail } =
     trpc.auth.verification.verifyEmail.useMutation({
       onSuccess: (data) => {
-        logger.log("Verification successful:", data);
-
-        // Update user context with the verified user data
-        if (data.user) {
-          updateUser(data.user);
-        }
-
-        // Invalidate verification status query to refresh any cached data
+        if (data.user) updateUser(data.user);
         queryClient.invalidateQueries({ queryKey: ["verification-status"] });
-
-        setVerificationState({
-          loading: false,
-          result: {
-            success: true,
-            message: data.message,
-            type: data.type,
-          },
-        });
-
+        setVerifying(false);
+        setResult({ success: true, message: data.message, type: data.type });
         toast.success(t("emailVerifiedToast"));
-
-        // Redirect based on authentication status
         setTimeout(() => {
-          if (isAuthenticated) {
-            navigate("/onboarding", { replace: true });
-          } else {
-            navigate("/auth/sign-in", { replace: true });
-          }
+          navigate(isAuthenticated ? "/onboarding" : "/auth/sign-in", {
+            replace: true,
+          });
         }, 3000);
       },
       onError: (error) => {
         logger.error("Email verification error:", error);
-
-        setVerificationState({
-          loading: false,
-          result: {
-            success: false,
-            error: error.message || t("failedVerifyEmail"),
-          },
-        });
+        setVerifying(false);
+        setResult({ success: false, error: error.message });
       },
     });
 
-  const resendVerificationMutation =
-    trpc.auth.verification.resendVerification.useMutation({
-      onSuccess: () => {
-        toast.success(t("verificationSentToast"));
-      },
-      onError: (error) => {
-        logger.error("Resend verification error:", error);
-        toast.error(error.message || t("failedResendVerification"));
-      },
-    });
+  const resendMutation = trpc.auth.verification.resendVerification.useMutation({
+    onSuccess: () => {
+      toast.success(t("verificationSentToast"));
+      setCooldown(RESEND_COOLDOWN_SECONDS);
+    },
+    onError: (error) => {
+      logger.error("Resend verification error:", error);
+      toast.error(error.message || t("failedResendVerification"));
+    },
+  });
 
   useEffect(() => {
-    logger.log("VerifyEmail useEffect triggered", {
-      token,
-      verificationAttempted: verificationAttempted.current,
-    });
-
-    if (!token) {
-      logger.log("No token found in URL");
-      return;
-    }
-
-    // Prevent duplicate verification attempts
-    if (verificationAttempted.current) {
-      logger.log("Verification already attempted, skipping");
-      return;
-    }
-
+    if (!token || verificationAttempted.current) return;
     verificationAttempted.current = true;
-
-    logger.log("Starting verification with token:", {
-      tokenLength: token.length,
-      tokenPrefix: token.substring(0, 8),
-    });
-
     verifyEmail({ token });
   }, [token, verifyEmail]);
 
-  const handleResendVerification = () => {
-    resendVerificationMutation.mutate({ type: "SIGNUP", sourceApp: "app" });
-  };
+  const handleResend = () =>
+    resendMutation.mutate({ type: "SIGNUP", sourceApp: "app" });
 
-  const handleGoToSignIn = () => {
-    navigate("/auth/sign-in");
-  };
+  const inboxUrl = email
+    ? PROVIDER_INBOX[email.split("@")[1]?.toLowerCase() ?? ""]
+    : undefined;
 
-  const handleGoToDashboard = () => {
-    // Always go to workspace creation
-    // The workspace page will handle redirecting to dashboard if user already has workspaces
-    navigate("/onboarding", { replace: true });
-  };
+  const resendButton = (
+    <Button
+      type="button"
+      variant="outline"
+      className="h-11 w-full"
+      onClick={handleResend}
+      disabled={resendMutation.isPending || cooldown > 0}
+    >
+      {resendMutation.isPending && (
+        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+      )}
+      {cooldown > 0
+        ? t("resendCooldown", { seconds: cooldown })
+        : t("resendEmail")}
+    </Button>
+  );
 
-  logger.log("Verification State:", verificationState);
-
-  if (verificationState.loading) {
+  // ── Verifying (from-link, loading) ────────────────────────────────────────
+  if (verifying) {
     return (
-      <AuthPageWrapper>
-        <AuthPageHeader
-          Icon={({ className }) => (
-            <RefreshCw className={`${className} animate-spin`} />
-          )}
-          title={t("verifyingEmail")}
-          description={t("verifyingEmailDescription")}
-        />
-      </AuthPageWrapper>
+      <AuthSplitLayout>
+        <div
+          className="flex flex-col items-center justify-center gap-3 py-10 text-center"
+          role="status"
+          aria-live="polite"
+        >
+          <Loader2
+            className="h-7 w-7 animate-spin text-primary"
+            aria-hidden="true"
+          />
+          <p className="text-sm text-muted-foreground">{t("verifyingEmail")}</p>
+        </div>
+      </AuthSplitLayout>
     );
   }
 
-  const { result } = verificationState;
-
-  if (!result) {
-    return null;
-  }
-
-  return (
-    <AuthPageWrapper>
-      <AuthPageHeader
-        Icon={result.success ? CheckCircle : XCircle}
-        title={result.success ? t("emailVerified") : t("verificationFailed")}
-        description={
-          result.success
-            ? result.type === "EMAIL_CHANGE"
-              ? t("emailChangeVerified")
-              : t("emailVerifiedSuccess")
-            : result.error
-        }
-        variant={result.success ? "success" : "destructive"}
-      />
-
-      <CardContent className="space-y-4">
-        {result.success ? (
-          <>
-            <Alert className="border-success/30 bg-success-muted">
-              <CheckCircle className="h-4 w-4 text-success" />
-              <AlertDescription className="text-success">
-                {result.message || t("emailVerificationComplete")}
-                {result.type === "SIGNUP" && t("signupVerifiedExtra")}
-              </AlertDescription>
-            </Alert>
-
-            <div className="space-y-2">
-              <Button
-                onClick={
-                  isAuthenticated ? handleGoToDashboard : handleGoToSignIn
-                }
-                className="w-full bg-primary hover:bg-primary/90"
-              >
-                {isAuthenticated ? t("goToDashboard") : t("signInToContinue")}
-              </Button>
-              <p className="text-sm text-muted-foreground text-center">
-                {t("redirectingAutomatically")}
+  // ── From-link result (success / already-verified / invalid-expired) ───────
+  if (result) {
+    if (result.success) {
+      return (
+        <AuthSplitLayout
+          header={
+            <div className="mb-6">
+              {eyebrow(t("panelEyebrow"))}
+              <h1 className="font-heading text-[clamp(26px,3vw,32px)] font-bold leading-[1.15] tracking-tight">
+                {t("emailVerified")}
+              </h1>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                {result.type === "EMAIL_CHANGE"
+                  ? t("emailChangeVerified")
+                  : t("emailVerifiedSuccess")}
               </p>
             </div>
-          </>
-        ) : (
-          <>
-            <Alert className="border-destructive/30 bg-destructive/10">
-              <XCircle className="h-4 w-4 text-destructive" />
-              <AlertDescription className="text-destructive">
-                {result.error}
-              </AlertDescription>
+          }
+        >
+          <div className="space-y-3">
+            <Button
+              className="btn-primary h-11 w-full"
+              onClick={() =>
+                navigate(isAuthenticated ? "/onboarding" : "/auth/sign-in", {
+                  replace: true,
+                })
+              }
+            >
+              {isAuthenticated ? t("goToDashboard") : t("signInToContinue")}
+            </Button>
+            <p className="text-center text-sm text-muted-foreground">
+              {t("redirectingAutomatically")}
+            </p>
+          </div>
+        </AuthSplitLayout>
+      );
+    }
+
+    // invalid / expired
+    return (
+      <AuthSplitLayout
+        header={
+          <div className="mb-6">
+            {eyebrow(t("panelEyebrow"))}
+            <h1 className="font-heading text-[clamp(26px,3vw,32px)] font-bold leading-[1.15] tracking-tight">
+              {t("verificationFailed")}
+            </h1>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              {t("verifyTokenInvalidDescription")}
+            </p>
+          </div>
+        }
+      >
+        <div className="space-y-3">
+          {result.error && (
+            <Alert variant="destructive" aria-live="assertive">
+              <AlertDescription>{result.error}</AlertDescription>
             </Alert>
+          )}
+          {resendButton}
+          <Button asChild variant="ghost" className="h-11 w-full">
+            <Link to="/auth/sign-in">{t("backToSignIn")}</Link>
+          </Button>
+        </div>
+      </AuthSplitLayout>
+    );
+  }
 
-            <div className="space-y-2">
-              {token && (
-                <Button
-                  onClick={() => window.location.reload()}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  {t("tryAgain")}
-                </Button>
-              )}
-
-              <Button
-                onClick={handleResendVerification}
-                variant="outline"
-                className="w-full"
-              >
-                <Mail className="h-4 w-4 mr-2" />
-                {t("resendVerificationEmail")}
-              </Button>
-
-              {!isAuthenticated && (
-                <Button
-                  onClick={handleGoToSignIn}
-                  variant="ghost"
-                  className="w-full"
-                >
-                  {t("backToSignIn")}
-                </Button>
-              )}
-
-              {isAuthenticated && (
-                <Button
-                  onClick={handleGoToDashboard}
-                  variant="ghost"
-                  className="w-full"
-                >
-                  {t("goToDashboard")}
-                </Button>
-              )}
-            </div>
-          </>
+  // ── Pending (no token, after signup) ──────────────────────────────────────
+  return (
+    <AuthSplitLayout
+      header={
+        <div className="mb-6">
+          {eyebrow(t("panelEyebrow"))}
+          <h1 className="font-heading text-[clamp(26px,3vw,32px)] font-bold leading-[1.15] tracking-tight">
+            {t("verifyEmailPendingTitle")}
+          </h1>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            {email
+              ? t("verifyEmailPendingDescription", { email })
+              : t("verifyEmailPendingDescriptionGeneric")}
+          </p>
+        </div>
+      }
+    >
+      <div className="space-y-3">
+        {inboxUrl && (
+          <Button asChild className="btn-primary h-11 w-full">
+            <a href={inboxUrl} target="_blank" rel="noopener noreferrer">
+              {t("openInbox")}
+            </a>
+          </Button>
         )}
-      </CardContent>
-    </AuthPageWrapper>
+        {resendButton}
+        <p className="pt-2 text-center text-sm text-muted-foreground">
+          <Link
+            to="/auth/sign-up"
+            className="font-medium text-primary underline-offset-2 hover:underline"
+          >
+            {t("wrongAddress")}
+          </Link>
+        </p>
+      </div>
+    </AuthSplitLayout>
   );
 }

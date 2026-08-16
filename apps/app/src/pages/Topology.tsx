@@ -1,8 +1,9 @@
 import "@xyflow/react/dist/style.css";
+// Topology theming overrides — must load AFTER the React Flow base styles.
+import "@/components/topology/topology.css";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
 
 import {
   Background,
@@ -22,17 +23,24 @@ import {
   useQueryStates,
 } from "nuqs";
 
-import { buildTopologyGraph } from "@/lib/topology/layout";
+import {
+  buildTopologyGraph,
+  type ExchangeNodeData,
+  type QueueNodeData,
+} from "@/lib/topology/layout";
 
+import { FirstRunCockpit } from "@/components/cockpit/FirstRunCockpit";
 import { FeatureGate } from "@/components/FeatureGate";
-import { NoServerConfigured } from "@/components/NoServerConfigured";
 import { PageErrorOrGate } from "@/components/PageErrorOrGate";
 import { PageLoader } from "@/components/PageLoader";
 import { NoServerSelectedCard, PageShell } from "@/components/PageShell";
+import { TopologySkeleton } from "@/components/skeletons/TopologySkeleton";
 import { ExchangeNode } from "@/components/topology/ExchangeNode";
+import { NodeDetail, type PickedNode } from "@/components/topology/NodeDetail";
 import { QueueNode } from "@/components/topology/QueueNode";
 import { TopologyFilterPanel } from "@/components/topology/TopologyFilterPanel";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useServerContext } from "@/contexts/ServerContext";
@@ -49,7 +57,6 @@ const nodeTypes = {
 
 const Topology = () => {
   const { t } = useTranslation("topology");
-  const navigate = useNavigate();
   const { selectedServerId, hasServers } = useServerContext();
   const { selectedVHost } = useVHostContext();
   const { resolvedTheme } = useTheme();
@@ -58,6 +65,22 @@ const Topology = () => {
 
   const reactFlowRef = useRef<ReactFlowInstance | null>(null);
   const [showFilterPanel, setShowFilterPanel] = useState(true);
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [picked, setPicked] = useState<PickedNode | null>(null);
+
+  // ≤860px: the filter panel becomes a left drawer instead of an inline column
+  // (the canvas needs the width on narrow screens).
+  const [isNarrow, setIsNarrow] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia("(max-width: 860px)").matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 860px)");
+    const onChange = (e: MediaQueryListEvent) => setIsNarrow(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
 
   const [
     {
@@ -124,23 +147,29 @@ const Topology = () => {
   useEffect(() => {
     setNodes(initialGraph.nodes);
     setEdges(initialGraph.edges);
-    // Re-fit the view after a short delay to let the layout settle
+    // Centre the graph on mount and after every filter change. A double rAF
+    // waits one painted frame so the custom nodes have been measured before
+    // fitView computes the bounds — otherwise it fits to stale/zero sizes and
+    // the graph sticks to the top-left.
     requestAnimationFrame(() => {
-      reactFlowRef.current?.fitView({ padding: 0.2, duration: 200 });
+      requestAnimationFrame(() => {
+        reactFlowRef.current?.fitView({ padding: 0.2, duration: 300 });
+      });
     });
   }, [initialGraph, setNodes, setEdges]);
 
-  const onNodeClick: NodeMouseHandler = useCallback(
-    (_event, node) => {
-      const label = (node.data as { label: string }).label;
-      if (node.type === "queueNode") {
-        navigate(`/queues/${encodeURIComponent(label)}`);
-      } else if (node.type === "exchangeNode" && label !== "(default)") {
-        navigate(`/exchanges/${encodeURIComponent(label)}`);
-      }
-    },
-    [navigate]
-  );
+  // Click a node → open the drill-down drawer (the replacement for "Browse").
+  // The synthetic "(default)" exchange is a render-only grouping for orphan
+  // queues — it has no backend object, so it isn't selectable.
+  const onNodeClick: NodeMouseHandler = useCallback((_event, node) => {
+    if (node.type === "queueNode") {
+      setPicked({ kind: "queue", data: node.data as unknown as QueueNodeData });
+    } else if (node.type === "exchangeNode") {
+      const data = node.data as unknown as ExchangeNodeData;
+      if (data.label === "(default)") return;
+      setPicked({ kind: "exchange", data });
+    }
+  }, []);
 
   const colorMode: ColorMode = resolvedTheme === "dark" ? "dark" : "light";
 
@@ -200,14 +229,7 @@ const Topology = () => {
   if (!hasServers) {
     return (
       <PageShell bare>
-        <div className="flex items-center gap-4">
-          <SidebarTrigger />
-        </div>
-        <NoServerConfigured
-          title={t("noServerTitle")}
-          subtitle={t("pageSubtitle")}
-          description={t("noServerDescription")}
-        />
+        <FirstRunCockpit />
       </PageShell>
     );
   }
@@ -244,14 +266,7 @@ const Topology = () => {
             fallbackMessage={t("common:serverConnectionError")}
           />
         ) : isLoading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-16 w-full rounded-lg bg-muted animate-pulse"
-              />
-            ))}
-          </div>
+          <TopologySkeleton />
         ) : nodes.length === 0 &&
           hiddenExchanges.size === 0 &&
           hiddenQueues.size === 0 ? (
@@ -265,9 +280,9 @@ const Topology = () => {
             </p>
           </div>
         ) : (
-          <div className="rounded-lg border border-border overflow-hidden">
-            {/* Toolbar */}
-            <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted/30">
+          <div className="space-y-4">
+            {/* Summary bar — its own card, like the prototype */}
+            <div className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3">
               <div className="flex items-center gap-5 text-sm text-muted-foreground">
                 <span>
                   <span className="font-mono tabular-nums font-medium text-foreground">
@@ -317,9 +332,17 @@ const Topology = () => {
                   {t("filters.defaultExchange")}
                 </Button>
                 <Button
-                  variant={showFilterPanel ? "secondary" : "ghost"}
+                  variant={
+                    (isNarrow ? filterSheetOpen : showFilterPanel)
+                      ? "secondary"
+                      : "ghost"
+                  }
                   size="sm"
-                  onClick={() => setShowFilterPanel(!showFilterPanel)}
+                  onClick={() =>
+                    isNarrow
+                      ? setFilterSheetOpen((o) => !o)
+                      : setShowFilterPanel((s) => !s)
+                  }
                   className="flex items-center gap-1.5 text-xs"
                 >
                   <ListFilter className="h-3.5 w-3.5" />
@@ -328,21 +351,46 @@ const Topology = () => {
               </div>
             </div>
 
-            {/* Canvas + Filter Panel */}
-            <div className="flex" style={{ height: "calc(100vh - 16rem)" }}>
-              {showFilterPanel && (
-                <TopologyFilterPanel
-                  exchanges={panelExchanges}
-                  queues={panelQueues}
-                  hiddenExchanges={hiddenExchanges}
-                  hiddenQueues={hiddenQueues}
-                  onToggleExchange={toggleExchange}
-                  onToggleQueue={toggleQueue}
-                  onToggleAllExchanges={toggleAllExchanges}
-                  onToggleAllQueues={toggleAllQueues}
-                />
+            {/* Panel + canvas — two separate cards in a row */}
+            <div
+              className="flex gap-4"
+              style={{ height: "calc(100vh - 18rem)" }}
+            >
+              {/* Desktop: inline filter card. ≤860px: a left drawer (below). */}
+              {!isNarrow && showFilterPanel && (
+                <div className="w-64 shrink-0 overflow-hidden rounded-xl border border-border bg-card">
+                  <TopologyFilterPanel
+                    exchanges={panelExchanges}
+                    queues={panelQueues}
+                    hiddenExchanges={hiddenExchanges}
+                    hiddenQueues={hiddenQueues}
+                    onToggleExchange={toggleExchange}
+                    onToggleQueue={toggleQueue}
+                    onToggleAllExchanges={toggleAllExchanges}
+                    onToggleAllQueues={toggleAllQueues}
+                  />
+                </div>
               )}
-              <div className="flex-1 min-w-0">
+
+              <Sheet
+                open={isNarrow && filterSheetOpen}
+                onOpenChange={setFilterSheetOpen}
+              >
+                <SheetContent side="left" className="w-72 p-0">
+                  <TopologyFilterPanel
+                    exchanges={panelExchanges}
+                    queues={panelQueues}
+                    hiddenExchanges={hiddenExchanges}
+                    hiddenQueues={hiddenQueues}
+                    onToggleExchange={toggleExchange}
+                    onToggleQueue={toggleQueue}
+                    onToggleAllExchanges={toggleAllExchanges}
+                    onToggleAllQueues={toggleAllQueues}
+                  />
+                </SheetContent>
+              </Sheet>
+
+              <div className="relative min-w-0 flex-1 overflow-hidden rounded-xl border border-border bg-card">
                 <ReactFlow
                   nodes={nodes}
                   edges={edges}
@@ -364,10 +412,19 @@ const Topology = () => {
                   <Background />
                   <Controls />
                 </ReactFlow>
+                <p className="pointer-events-none absolute bottom-3 right-4 select-none font-mono text-[11px] text-muted-foreground/70">
+                  {t("canvasHint")}
+                </p>
               </div>
             </div>
           </div>
         )}
+
+        <NodeDetail
+          picked={picked}
+          bindings={topologyData?.bindings ?? []}
+          onClose={() => setPicked(null)}
+        />
       </FeatureGate>
     </PageShell>
   );

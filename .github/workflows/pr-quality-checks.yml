@@ -37,7 +37,7 @@ jobs:
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
     steps:
       - name: 🔍 Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: 📦 Setup pnpm
         uses: pnpm/action-setup@v6
@@ -45,7 +45,7 @@ jobs:
           version: "9.0.0"
 
       - name: 📦 Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: "24"
           cache: "pnpm"
@@ -61,7 +61,7 @@ jobs:
         run: pnpm run syncpack:check
 
       - name: 🔍 Type Check
-        run: pnpm turbo run type-check --filter=qarote-api
+        run: pnpm turbo run type-check --filter=qarote-api --filter=qarote-web
 
       - name: 🔍 Knip (unused code check)
         run: pnpm run knip
@@ -80,3 +80,8 @@ jobs:
 
       - name: 🧪 Run App Tests
         run: pnpm turbo run test:run --filter=qarote-app
+
+      # The landing site is otherwise only built at deploy time, so an astro or
+      # integration bump could go green here and break the deploy (see #284).
+      - name: 🏗️ Build Landing Site
+        run: pnpm turbo run build --filter=qarote-web

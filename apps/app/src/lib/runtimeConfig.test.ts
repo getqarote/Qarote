@@ -25,6 +25,15 @@ function setRuntimeConfig(patch: Partial<Window["__QAROTE_CONFIG__"]>) {
 
 describe("runtimeConfig", () => {
   beforeEach(() => {
+    // Hermetic baseline: clear the build-time vars so the "unset" cases test
+    // the real resolution chain regardless of a developer's local `.env`
+    // (which sets VITE_API_URL / VITE_PORTAL_URL / VITE_DEPLOYMENT_MODE for
+    // `pnpm dev`). Without this, those vars leak into `import.meta.env` and
+    // build-time always wins — green in CI (no `.env`), red locally.
+    vi.stubEnv("VITE_API_URL", undefined);
+    vi.stubEnv("VITE_PORTAL_URL", undefined);
+    vi.stubEnv("VITE_DEPLOYMENT_MODE", undefined);
+    vi.stubEnv("VITE_DEMO_MODE", undefined);
     window.__QAROTE_CONFIG__ = undefined;
   });
 

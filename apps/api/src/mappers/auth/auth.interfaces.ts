@@ -4,11 +4,6 @@
  * Types for auth-related API responses with proper date serialization.
  */
 
-type SubscriptionData = {
-  plan: string;
-  status: string;
-} | null;
-
 type WorkspaceData = {
   id: string;
 } | null;
@@ -45,6 +40,5 @@ export type UserApiResponse = {
   pendingEmail?: string | null;
   authProvider?: "google" | "password";
   hasPassword?: boolean;
-  subscription?: SubscriptionData;
   workspace?: WorkspaceData;
 };

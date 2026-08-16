@@ -4,11 +4,12 @@ import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useSearchParams } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 
 import { logger } from "@/lib/logger";
 import { isDemoMode } from "@/lib/runtimeConfig";
 
-import { AuthPageWrapper } from "@/components/auth/AuthPageWrapper";
+import { AuthSplitLayout } from "@/components/auth/AuthSplitLayout";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import { SSOLoginButton } from "@/components/auth/SSOLoginButton";
 import {
@@ -17,12 +18,6 @@ import {
 } from "@/components/auth/TurnstileCaptcha";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -37,19 +32,23 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { usePublicConfig } from "@/hooks/queries/usePublicConfig";
 import { useShowAlternativeAuth } from "@/hooks/queries/useSsoConfig";
 import { useLogin } from "@/hooks/ui/useAuth";
+import { useSessionToast } from "@/hooks/ui/useSessionToast";
 
 import { type SignInFormData, signInSchema } from "@/schemas";
 
 /**
- * Sign-in page. Matches the signup page's typographic header treatment:
- * Fragment Mono orange eyebrow → Bricolage Grotesque heading, no icon badge.
+ * Sign-in page — prototype split layout (form left, night brand panel right).
  *
- * Delight layer:
- * - Staggered entrance animation (respects prefers-reduced-motion)
- * - Submit button reveals a → arrow on hover
+ * Auth wiring is unchanged: better-auth login mutation, Cloudflare Turnstile,
+ * Google / SSO, validation, generic error handling, demo auto-login, and
+ * redirect handling. Only the surrounding layout is the new split shell.
  */
 const SignIn = () => {
   const { t } = useTranslation("auth");
+  // Surface (and consume) any toast stashed before a hard-nav to login — e.g.
+  // the "account deleted" confirmation. The login screen lives outside the
+  // authenticated shell, so it must read the stash itself.
+  useSessionToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const rawRedirect = searchParams.get("redirect");
@@ -64,6 +63,10 @@ const SignIn = () => {
 
   const demoAutoLoginAttempted = useRef(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  // Whether Turnstile has surfaced an interactive challenge. In managed mode
+  // the widget is invisible for low-risk logins; we only announce/show it when
+  // Cloudflare actually requires interaction.
+  const [challengeVisible, setChallengeVisible] = useState(false);
   // Incrementing this key forces the Turnstile widget to remount and issue a
   // fresh challenge after a failed login attempt (Cloudflare tokens are single-use).
   const [captchaKey, setCaptchaKey] = useState(0);
@@ -112,6 +115,7 @@ const SignIn = () => {
           // Reset the widget so the user gets a fresh challenge — Turnstile
           // tokens are single-use and the previous one is now consumed.
           setTurnstileToken(null);
+          setChallengeVisible(false);
           setCaptchaKey((k) => k + 1);
         },
       }
@@ -119,197 +123,198 @@ const SignIn = () => {
   };
 
   return (
-    <AuthPageWrapper>
-      {/* ── Header — no icon badge ────────────────────────────────── */}
-      <CardHeader className="px-8 pt-8 pb-2 space-y-0">
-        <p className="si-in si-delay-0 text-[10px] tracking-[0.18em] uppercase text-primary font-medium mb-3 select-none font-mono">
-          Qarote
-        </p>
-        <CardTitle className="si-in si-delay-40 text-[1.65rem] font-bold tracking-tight leading-[1.15] font-heading">
-          {t("welcomeBack")}
-        </CardTitle>
-        <CardDescription className="si-in si-delay-80 text-sm leading-relaxed mt-2">
-          {t("enterCredentials")}
-        </CardDescription>
-      </CardHeader>
-
-      {/* ── Body ─────────────────────────────────────────────────── */}
-      <CardContent className="px-8 pb-8 pt-5">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {loginMutation.isError && (
-              <Alert variant="destructive" className="si-in">
-                <AlertDescription>
-                  <SignInErrorMessage
-                    error={loginMutation.error}
-                    onGoToVerification={() => navigate("/verify-email")}
-                  />
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {/* ── Email ── */}
-            <div className="si-in si-delay-120">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("emailAddress")}</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder={t("enterEmail")}
-                        disabled={loginMutation.isPending}
-                        autoComplete="username"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* ── Password + forgot link ── */}
-            <div className="si-in si-delay-160">
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center justify-between">
-                      <FormLabel>{t("password")}</FormLabel>
-                      <Link
-                        to="/forgot-password"
-                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                      >
-                        {t("forgotPassword")}
-                      </Link>
-                    </div>
-                    <FormControl>
-                      <PasswordInput
-                        placeholder={t("enterPassword")}
-                        disabled={loginMutation.isPending}
-                        autoComplete="current-password"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* ── Turnstile CAPTCHA ── */}
-            {turnstileEnabled && (
-              <div className="si-in [animation-delay:180ms] space-y-1.5">
-                <TurnstileCaptcha
-                  key={captchaKey}
-                  onVerify={setTurnstileToken}
-                  onExpire={() => setTurnstileToken(null)}
-                  onError={() => setTurnstileToken(null)}
-                />
-                {!turnstileToken && (
-                  <p
-                    aria-live="polite"
-                    className="text-center text-xs text-muted-foreground"
-                  >
-                    {t("turnstileWaiting")}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* ── Submit ── */}
-            <div className="si-in si-delay-200 pt-1">
-              <Button
-                type="submit"
-                className="w-full btn-primary h-11 group"
-                disabled={
-                  loginMutation.isPending ||
-                  (turnstileEnabled && !turnstileToken)
-                }
-              >
-                <span className="flex items-center justify-center gap-1.5">
-                  {loginMutation.isPending
-                    ? t("signingIn")
-                    : turnstileEnabled && !turnstileToken
-                      ? t("turnstileWaitingShort")
-                      : t("signIn")}
-                  {!loginMutation.isPending &&
-                    !(turnstileEnabled && !turnstileToken) && (
-                      <span
-                        className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
-                        aria-hidden="true"
-                      >
-                        →
-                      </span>
-                    )}
-                </span>
-              </Button>
-            </div>
-          </form>
-        </Form>
-
-        {/* ── Alternative auth ── */}
-        {showAlternativeAuth && (
-          <>
-            <div className="relative my-6">
-              <div
-                className="absolute inset-0 flex items-center"
-                aria-hidden="true"
-              >
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="bg-card px-2 text-muted-foreground">
-                  {t("orContinueWith")}
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <GoogleLoginButton
-                onError={(error) => logger.error("Google login error:", error)}
-              />
-              <SSOLoginButton
-                onError={(error) => logger.error("SSO login error:", error)}
-              />
-            </div>
-          </>
-        )}
-
-        {/* ── Create account link ── */}
-        {publicConfig?.registrationEnabled === true && (
-          <p className="pt-4 text-center text-sm text-muted-foreground">
-            {t("or")}{" "}
-            <Link
-              to="/auth/sign-up"
-              className="font-medium text-primary hover:underline underline-offset-2"
-            >
-              {t("createAccount")}
-            </Link>
+    <AuthSplitLayout
+      header={
+        <div className="mb-6">
+          <p className="mb-3 select-none font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-primary">
+            {t("panelEyebrow")}
           </p>
-        )}
-
-        {/* ── Legal links ── */}
-        <div className="pt-4 flex justify-center gap-4 text-sm text-muted-foreground">
-          <Link
-            to="/terms-of-service"
-            className="hover:text-primary transition-colors"
-          >
-            {t("common:termsOfService")}
-          </Link>
-          <Link
-            to="/privacy-policy"
-            className="hover:text-primary transition-colors"
-          >
-            {t("common:privacyPolicy")}
-          </Link>
+          <h1 className="font-heading text-[clamp(26px,3vw,32px)] font-bold leading-[1.15] tracking-tight">
+            {t("welcomeBack")}
+          </h1>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            {t("enterCredentials")}
+          </p>
         </div>
-      </CardContent>
-    </AuthPageWrapper>
+      }
+    >
+      {/* ── OAuth first — mirrors the sign-up layout for visual consistency ── */}
+      {showAlternativeAuth && (
+        <>
+          <div className="space-y-2">
+            <GoogleLoginButton
+              onError={(error) => logger.error("Google login error:", error)}
+            />
+            <SSOLoginButton
+              onError={(error) => logger.error("SSO login error:", error)}
+            />
+          </div>
+
+          <div className="relative my-5">
+            <div
+              className="absolute inset-0 flex items-center"
+              aria-hidden="true"
+            >
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-background px-2 text-muted-foreground">
+                {t("orWithEmail")}
+              </span>
+            </div>
+          </div>
+        </>
+      )}
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          {loginMutation.isError && (
+            <Alert variant="destructive" aria-live="assertive">
+              <AlertDescription>
+                <SignInErrorMessage
+                  error={loginMutation.error}
+                  onGoToVerification={() => navigate("/verify-email")}
+                />
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* ── Email ── */}
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("emailAddress")}</FormLabel>
+                <FormControl>
+                  <Input
+                    type="email"
+                    placeholder={t("enterEmail")}
+                    disabled={loginMutation.isPending}
+                    autoComplete="username"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* ── Password + forgot link ── */}
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-center justify-between">
+                  <FormLabel>{t("password")}</FormLabel>
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                  >
+                    {t("forgotPassword")}
+                  </Link>
+                </div>
+                <FormControl>
+                  <PasswordInput
+                    placeholder={t("enterPassword")}
+                    disabled={loginMutation.isPending}
+                    autoComplete="current-password"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* ── Turnstile CAPTCHA (managed / invisible) ──
+              Runs in the background and issues a token silently for low-risk
+              logins — no widget, no "verifying" copy. It only becomes visible
+              (and announced) if Cloudflare requires an interactive challenge. */}
+          {turnstileEnabled && (
+            <div className={challengeVisible ? "space-y-1.5" : "sr-only"}>
+              <TurnstileCaptcha
+                key={captchaKey}
+                appearance="interaction-only"
+                onVerify={(token) => {
+                  setTurnstileToken(token);
+                  setChallengeVisible(false);
+                }}
+                onExpire={() => setTurnstileToken(null)}
+                onError={() => {
+                  setTurnstileToken(null);
+                  setChallengeVisible(false);
+                }}
+                onBeforeInteractive={() => setChallengeVisible(true)}
+                onAfterInteractive={() => setChallengeVisible(false)}
+              />
+              {challengeVisible && !turnstileToken && (
+                <p
+                  aria-live="polite"
+                  className="text-center text-xs text-muted-foreground"
+                >
+                  {t("turnstileChallenge")}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* ── Submit ── */}
+          <Button
+            type="submit"
+            className="btn-primary group h-11 w-full"
+            disabled={
+              loginMutation.isPending || (turnstileEnabled && !turnstileToken)
+            }
+          >
+            <span className="flex items-center justify-center gap-1.5">
+              {loginMutation.isPending && (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              )}
+              {loginMutation.isPending ? t("signingIn") : t("signIn")}
+              {!loginMutation.isPending && (
+                <span
+                  className="-translate-x-1 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100"
+                  aria-hidden="true"
+                >
+                  →
+                </span>
+              )}
+            </span>
+          </Button>
+        </form>
+      </Form>
+
+      {/* ── Create account footer ── */}
+      {publicConfig?.registrationEnabled === true && (
+        <p className="mt-6 border-t pt-5 text-center text-sm text-muted-foreground">
+          {t("dontHaveAccount")}{" "}
+          <Link
+            to="/auth/sign-up"
+            className="font-medium text-primary hover:underline underline-offset-2"
+          >
+            {t("signUp")}
+          </Link>
+        </p>
+      )}
+
+      {/* ── Legal links ── */}
+      <div className="flex justify-center gap-4 pt-4 text-sm text-muted-foreground">
+        <Link
+          to="/terms-of-service"
+          className="transition-colors hover:text-primary"
+        >
+          {t("common:termsOfService")}
+        </Link>
+        <Link
+          to="/privacy-policy"
+          className="transition-colors hover:text-primary"
+        >
+          {t("common:privacyPolicy")}
+        </Link>
+      </div>
+    </AuthSplitLayout>
   );
 };
 
@@ -329,24 +334,27 @@ function SignInErrorMessage({
   const { t } = useTranslation("auth");
 
   if (!(error instanceof Error)) {
-    return <>{t("failedSignIn")}</>;
+    return <>{t("invalidCredentials")}</>;
   }
 
+  const code = (error as Error & { code?: string }).code;
+  const status = (error as Error & { status?: number }).status;
+
   const isEmailNotVerified =
-    (error as Error & { code?: string }).code === "EMAIL_NOT_VERIFIED" ||
+    code === "EMAIL_NOT_VERIFIED" ||
     error.message.includes("Email not verified");
 
   if (isEmailNotVerified) {
     return (
       <div>
-        <div className="font-medium mb-2">{t("emailNotVerified")}</div>
-        <p className="text-sm mb-3">{t("emailNotVerifiedDescription")}</p>
+        <div className="mb-2 font-medium">{t("emailNotVerified")}</div>
+        <p className="mb-3 text-sm">{t("emailNotVerifiedDescription")}</p>
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={onGoToVerification}
-          className="text-destructive border-destructive/30 hover:bg-destructive/10"
+          className="border-destructive/30 text-destructive hover:bg-destructive/10"
         >
           {t("goToVerification")}
         </Button>
@@ -354,7 +362,20 @@ function SignInErrorMessage({
     );
   }
 
-  return <>{error.message}</>;
+  // Rate limit / temporary lock after repeated attempts — show a wait-and-retry
+  // message rather than the credential error.
+  const isRateLimited =
+    status === 429 ||
+    code === "TOO_MANY_REQUESTS" ||
+    /too many|rate limit|try again later/i.test(error.message);
+
+  if (isRateLimited) {
+    return <>{t("tooManyAttempts")}</>;
+  }
+
+  // Everything else collapses to one generic message — never reveal whether it
+  // was the email or the password (no user enumeration).
+  return <>{t("invalidCredentials")}</>;
 }
 
 export default SignIn;

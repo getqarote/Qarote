@@ -1,10 +1,12 @@
 {
   "hero": {
+    "eyebrow": "Agent-first RabbitMQ monitoring",
     "titleBefore": "Stop debugging RabbitMQ. Your",
     "titleHighlight": "AI agent",
     "titleAfter": " does it.",
     "subtitle": "Qarote ships RabbitMQ monitoring with a built-in MCP endpoint. Plug Claude Desktop or Cursor in under 5 minutes — the agent pulls your incidents, reads the firehose evidence, and returns the root cause in your workflow, not a dashboard tab.",
-    "noCreditCard": "5-minute agent setup · Free CE for read-only tools · Root-cause analysis on EE from $29/mo"
+    "noExporter": "No exporter, no Grafana, no config",
+    "versions": "RabbitMQ 3.x & 4.x"
   },
   "cta": {
     "getStartedForFree": "Get started for free",
@@ -12,10 +14,11 @@
     "startMonitoringForFree": "Start monitoring for free",
     "selfHostedSolution": "Self-Hosted Solution",
     "contactUs": "Contact us",
-    "tryLiveDemo": "Try the live demo",
     "seeItInAction": "See it in action —",
     "tryTheLiveDemo": "try the live demo",
-    "opensInNewTab": "(opens in new tab)"
+    "opensInNewTab": "(opens in new tab)",
+    "tryForFree": "Try for free",
+    "seeLiveDemo": "See the live demo"
   },
   "comparison": {
     "title": "You find out about issues from your users,",
@@ -146,23 +149,24 @@
     "freeForever": "Free forever (self-hosted)",
     "freeTierScope": "Free tier: 1 server, live monitoring, queue management — no time limit. Alerting and multi-server from $29/mo."
   },
+  "pricingCta": {
+    "title": "Start free, in under two minutes.",
+    "subtitle": "Connect a broker over the Management API and wire your agent. No exporter, no Grafana, no config.",
+    "readDocs": "Read the docs"
+  },
   "footer": {
     "tagline": "RabbitMQ, debugged by your agent.",
     "about": "About",
     "blog": "Blog",
-    "alerting": "Alerting",
+    "features": "Features",
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
     "status": "Status",
     "contact": "Contact",
     "cookiePreferences": "Cookie preferences",
-    "vsDatadog": "Qarote vs Datadog",
-    "vsGrafana": "Qarote vs Grafana + Prometheus",
     "quiz": "Quiz",
     "security": "Security",
     "pricing": "Pricing",
-    "vsCloudAMQP": "Qarote vs CloudAMQP",
-    "vsNewRelic": "Qarote vs New Relic",
     "docs": "Docs",
     "changelog": "Changelog"
   },
@@ -213,5 +217,131 @@
     "worksWithRest": "…and any MCP-compatible client",
     "ctaSignup": "Start free",
     "ctaDocs": "Read the integration guide"
+  },
+  "whatCatches": {
+    "eyebrow": "What it catches",
+    "title": "Incidents as they happen. Anti-patterns before they bite.",
+    "subtitle": "A deterministic rules engine watches live state for incidents, and a config scan flags the structural problems that turn into 3 a.m. pages. Every finding is something your agent can read back to you.",
+    "incidentTitle": "Incident detection",
+    "incidentDesc": "Live, rules-based — fires the moment broker state crosses a threshold. Free and open source.",
+    "configTitle": "Config scan",
+    "configDesc": "Catches RabbitMQ anti-patterns in your topology before they cause an incident.",
+    "footnote": "Plus topology visualization to see the whole graph, and alerting via email, Slack, and webhooks when something fires."
+  },
+  "selfHosted": {
+    "eyebrow": "Self-hosted & data control",
+    "title": "Run it entirely inside your network.",
+    "subtitle": "Cloud-hosted when you want it managed. Self-hosted when you don’t. The self-hosted path is built so nothing has to phone home — including the AI.",
+    "offline": {
+      "label": "Offline license",
+      "title": "No phone-home",
+      "desc": "Self-hosted Qarote validates its license with offline JWT verification. No callback to our servers, no telemetry beacon, no dependency on our uptime for yours."
+    },
+    "localAi": {
+      "label": "Local AI Explain",
+      "title": "Root cause on a local model",
+      "desc": "Point explain_incident at a local Ollama model and root-cause analysis runs on your hardware. Your broker state never leaves your network."
+    },
+    "mitCore": {
+      "label": "MIT core",
+      "title": "Open-source detection",
+      "desc": "The incident-detection engine and the free MCP tools are MIT-licensed and open source. Read the rules, run the core, trust what it does."
+    }
+  },
+  "agentSurface": {
+    "eyebrow": "The agent surface",
+    "title": "Your agent calls the tools. You read the answer.",
+    "subtitle": "Most RabbitMQ tooling stops at metrics. Qarote ships a deterministic incident engine and managed root-cause analysis behind one MCP surface your agent already speaks — so you debug by asking, in the chat you're already in.",
+    "steps": {
+      "connect": {
+        "title": "Connect broker",
+        "desc": "Point Qarote at your Management HTTP API over TLS. No exporter, no agent on the box."
+      },
+      "mint": {
+        "title": "Mint a key",
+        "desc": "Generate an API key scoped to your workspace. Free incident tools, or unlock Explain."
+      },
+      "wire": {
+        "title": "Wire your agent",
+        "desc": "Drop the server into your .mcp.json. Claude Code, Cursor, Copilot — all the same."
+      },
+      "ask": {
+        "title": "Ask it",
+        "desc": "\"What's wrong with my RabbitMQ?\" The agent calls the tools and explains the root cause."
+      }
+    },
+    "freeTools": "Free tools",
+    "paidTool": "Paid tool",
+    "paidPara": "Deterministic detection is free and stays free. explain_incident takes the incident plus the surrounding broker state and writes the root-cause line your agent reads back to you. Run it on our managed model, or a local Ollama model when self-hosted.",
+    "worksWith": "Works with"
+  },
+  "howItWorks": {
+    "eyebrow": "How it works",
+    "title": "Connected in under two minutes.",
+    "subtitle": "No Prometheus exporter to deploy. No Grafana to wire. No scrape config to babysit. Three steps from broker to a working agent surface.",
+    "step1": {
+      "label": "Step 1",
+      "title": "Connect over the Management API",
+      "desc": "Give Qarote your broker's Management HTTP API URL and read-only credentials, over TLS. It works against RabbitMQ 3.x and 4.x, single-node or clustered, including CloudAMQP and Amazon MQ.",
+      "timing": "~60s · nothing installed on the broker"
+    },
+    "step2": {
+      "label": "Step 2",
+      "title": "Qarote starts detecting",
+      "desc": "The rules engine begins scanning immediately — incidents, depth anomalies, dropped consumers, and config anti-patterns. No baseline period, no dashboards to build.",
+      "timing": "~30s · first findings appear"
+    },
+    "step3": {
+      "label": "Step 3",
+      "title": "Wire your agent over MCP",
+      "desc": "Add the Qarote MCP server to your editor's config and your agent can call every tool. Ask it a question; it does the clicking for you.",
+      "timing": "~30s · paste one config block"
+    },
+    "copy": "Copy",
+    "copied": "Copied"
+  },
+  "compareTeaser": {
+    "eyebrow": "How it compares",
+    "title": "Purpose-built where the alternatives aren't.",
+    "subtitle": "The built-in plugin is fine for a quick look. A metrics stack is powerful if you assemble it. Qarote is fast to value, multi-broker, and the only one that explains incidents and answers to your agent. It complements a metrics stack — it doesn't replace it.",
+    "columnQarote": "Qarote",
+    "columnPlugin": "Plugin",
+    "columnStack": "Prom + Grafana",
+    "rows": {
+      "setup": "Setup",
+      "multiBroker": "Multi-broker",
+      "diagnosis": "Diagnosis",
+      "agentMcp": "Agent / MCP",
+      "speed": "Speed",
+      "bestFor": "Best for"
+    },
+    "plugin": {
+      "title": "vs the Management plugin",
+      "subtitle": "RabbitMQ's built-in UI",
+      "setupQarote": "~2 min, read-only",
+      "setupOther": "Bundled",
+      "multiBrokerQarote": "Many clusters, one view",
+      "multiBrokerOther": "One broker",
+      "diagnosisQarote": "Incidents + root cause",
+      "diagnosisOther": "None — charts only",
+      "agentMcpQarote": "Full tool surface",
+      "agentMcpOther": "None",
+      "speedQarote": "Fast, focused",
+      "speedOther": "Slow, cluttered"
+    },
+    "stack": {
+      "title": "vs Prometheus + Grafana",
+      "subtitle": "the assemble-it-yourself metrics stack",
+      "setupQarote": "Zero-config",
+      "setupOther": "Exporter, scrape, dashboards",
+      "multiBrokerQarote": "Built in",
+      "multiBrokerOther": "You wire it",
+      "diagnosisQarote": "Incidents + root cause",
+      "diagnosisOther": "Metrics + PromQL",
+      "agentMcpQarote": "Full tool surface",
+      "agentMcpOther": "None",
+      "bestForQarote": "Diagnosis + agent",
+      "bestForOther": "Custom metrics history"
+    }
   }
 }

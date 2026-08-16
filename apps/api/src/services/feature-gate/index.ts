@@ -1,7 +1,7 @@
 /**
  * Feature gate composition — public entry points.
  *
- * See ADR-002 (`docs/adr/002-feature-gate-composition.md`).
+ * See ADR-002 (`docs/internal/adr/002-feature-gate-composition.md`).
  *
  * Procedures:
  *   const gate = await resolveFeatureGate("alerting", { organizationId });

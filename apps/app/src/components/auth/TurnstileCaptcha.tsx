@@ -10,6 +10,18 @@ interface TurnstileCaptchaProps {
   onVerify: (token: string) => void;
   onExpire: () => void;
   onError: () => void;
+  /**
+   * Widget appearance.
+   * - "always" (default, sign-up): the widget is visible before the CTA.
+   * - "interaction-only" (sign-in): managed/invisible — it runs in the
+   *   background and a token is issued silently for low-risk visitors; the
+   *   widget is shown only if an interactive challenge is required.
+   */
+  appearance?: "always" | "interaction-only";
+  /** Fires when an interactive challenge is about to be shown to the user. */
+  onBeforeInteractive?: () => void;
+  /** Fires once an interactive challenge has been resolved/dismissed. */
+  onAfterInteractive?: () => void;
 }
 
 // TurnstileCaptcha is split into two components so that hooks (useEffect,
@@ -29,6 +41,9 @@ function TurnstileWidget({
   onVerify,
   onExpire,
   onError,
+  appearance = "always",
+  onBeforeInteractive,
+  onAfterInteractive,
 }: TurnstileCaptchaProps & { siteKey: string }) {
   // Lazy initializer reads matchMedia once synchronously so the widget renders
   // at the correct size on first paint — avoids a normal→compact re-render
@@ -50,7 +65,9 @@ function TurnstileWidget({
         onSuccess={onVerify}
         onExpire={onExpire}
         onError={onError}
-        options={{ theme: "auto", size }}
+        onBeforeInteractive={onBeforeInteractive}
+        onAfterInteractive={onAfterInteractive}
+        options={{ theme: "auto", size, appearance }}
       />
     </div>
   );

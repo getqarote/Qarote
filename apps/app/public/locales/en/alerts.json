@@ -1,20 +1,66 @@
 {
   "pageTitle": "Notifications",
   "pageSubtitle": "Monitor system alerts and notifications",
+  "subtitle": "Alerts and config findings pushed from your brokers.",
+  "intent": "Notifications — push surface for what the agent can't do itself: page a human. Friendly empty states, never dead rooms.",
   "noServerTitle": "Notifications",
   "noServerDescription": "Monitor system alerts and notifications",
-  "alertRules": "Alert Rules",
-  "notificationSettings": "Notification Settings",
+  "alertRules": "Alert rules",
+  "notificationSettings": "Notification settings",
   "alerts": "Alerts",
   "activeAlerts": "Active Alerts",
   "resolvedAlerts": "Resolved Alerts",
   "active": {
     "noneTitle": "No active alerts",
     "noneDesc": "Your RabbitMQ cluster is running smoothly with no alerts.",
+    "noneDescChannels": "Your cluster is running smoothly. Alerts arrive here by email, Slack, and webhook the moment a rule fires.",
+    "showResolvedCount": "Show resolved ({{count}})",
     "upgradeCta": "Upgrade now",
     "previewHiddenCount": "{{count}} more alert hidden — upgrade to see all",
     "previewHiddenCount_other": "{{count}} more alerts hidden — upgrade to see all",
     "previewUpgradeHint": "Upgrade to Developer to get email and Slack notifications for every alert."
+  },
+  "filter": {
+    "all": "All",
+    "bySeverity": "Filter by severity",
+    "noneForFilter": "No alerts match this filter."
+  },
+  "sevLabel": {
+    "critical": "Critical",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "info": "Info"
+  },
+  "status": {
+    "active": "Active",
+    "ack": "Claimed",
+    "resolved": "Resolved",
+    "snoozed": "Snoozed"
+  },
+  "pager": {
+    "prev": "Prev",
+    "next": "Next",
+    "range": "{{from}}–{{to}} of {{total}}"
+  },
+  "detail": {
+    "source": "Source",
+    "server": "Server",
+    "queueVhost": "Queue · vhost",
+    "thresholdVsActual": "Threshold vs actual",
+    "actual": "Actual",
+    "timeline": "Timeline",
+    "explainTitle": "This alert maps to a diagnosable incident.",
+    "explainHint": "Get a root-cause analysis right here.",
+    "rca": "Root cause analysis",
+    "rcaLoading": "Analyzing…",
+    "rcaError": "Couldn't generate an explanation. Try again."
+  },
+  "timeline": {
+    "firstSeen": "First seen",
+    "claimed": "Claimed",
+    "resolved": "Resolved",
+    "lastSeen": "Last seen"
   },
   "failedToLoad": "Failed to load alerts data. Please try again.",
   "loadingResolved": "Loading resolved alerts...",
@@ -146,9 +192,10 @@
       "firstSeen": "First seen",
       "resolved": "Resolved",
       "source": "{{type}}: {{name}}"
-    }
+    },
+    "explain": "Explain"
   },
-  "configScan": "Config Scan",
+  "configScan": "Config scan",
   "scan": {
     "allSeverities": "All severities",
     "showResolved": "Show resolved",
@@ -183,6 +230,42 @@
       "resolveSuccess": "Finding resolved",
       "dismissSuccess": "Finding dismissed",
       "actionError": "Something went wrong — please try again"
+    },
+    "configFinding": "Config finding",
+    "whatWhy": "What & why",
+    "explainThis": "Explain this finding",
+    "aiExplanation": "AI explanation",
+    "ruleGuidance": "rule guidance",
+    "noAutoFix": "No automatic fix — Qarote can't safely apply this change for you yet.",
+    "rescan": "Re-scan",
+    "markResolved": "Mark resolved",
+    "inspect": "Inspect",
+    "openFindings_one": "{{count}} open finding",
+    "openFindings_other": "{{count}} open findings",
+    "showResolvedIgnored": "Show resolved and ignored",
+    "emptyCategory": "No findings in this category.",
+    "dismissReasonSelect": "Select a reason",
+    "dismissReasons": {
+      "byDesign": "Won't fix — by design",
+      "acceptableRisk": "Acceptable risk",
+      "falsePositive": "False positive",
+      "handledElsewhere": "Handled elsewhere"
+    },
+    "banner": {
+      "resolved": "Marked resolved. It will reappear if the scan detects it again.",
+      "dismissed": "Dismissed. Hidden from the list but recoverable.",
+      "dismissedWithReason": "Dismissed · {{reason}}. Hidden but recoverable."
+    },
+    "categories": {
+      "queues": "queues",
+      "exchanges": "exchanges",
+      "bindings": "bindings",
+      "consumers": "consumers",
+      "connections": "connections",
+      "nodes": "nodes",
+      "policies": "policies",
+      "users": "users",
+      "vhosts": "vhosts"
     }
   },
   "modal": {
@@ -328,5 +411,284 @@
         "default_unscoped": "Production traffic on default vhost"
       }
     }
+  },
+  "lifecycle": {
+    "acknowledge": "Claim",
+    "unacknowledge": "Unclaim",
+    "snooze": "Snooze",
+    "snoozeForLabel": "Snooze for…",
+    "resolve": "Resolve",
+    "reopen": "Reopen",
+    "acknowledgedBadge": "Claimed",
+    "snoozeFor": {
+      "1h": "For 1 hour",
+      "4h": "For 4 hours",
+      "24h": "Until tomorrow"
+    },
+    "toast": {
+      "acknowledged": "Alert claimed",
+      "unacknowledged": "Claim removed",
+      "snoozed": "Alert snoozed",
+      "resolved": "Alert resolved",
+      "reopened": "Alert reopened",
+      "error": "Something went wrong — please try again"
+    },
+    "claimTooltip": "Claim — tell the team you're on it; the alert stays active until resolved",
+    "resolveTooltip": "Resolve — marks the alert fixed and moves it to resolved",
+    "reopenTooltip": "Reopen — move this back to active alerts"
+  },
+  "viewAlertRules": "View alert rules",
+  "bulk": {
+    "selectedCount": "{{count}} selected",
+    "clear": "Clear",
+    "selectAll": "Select all",
+    "selectRow": "Select alert {{title}}",
+    "confirmResolveTitle": "Resolve selected alerts?",
+    "confirmResolveBody": "This marks {{count}} alerts as resolved and moves them out of the active list.",
+    "toast": {
+      "claimed": "{{count}} alert claimed",
+      "resolved": "{{count}} alert resolved",
+      "partialError": "{{count}} action failed"
+    }
+  },
+  "rules": {
+    "customComingSoon": "Custom rules coming soon",
+    "kind": {
+      "threshold": "Threshold",
+      "diagnostic": "Diagnostic",
+      "config": "Config"
+    },
+    "intent": "Alert rules — launch is read + toggle, not a threshold editor. Qarote ships sensible defaults; you turn off what's noisy for your setup.",
+    "searchPlaceholderShort": "Search rules…",
+    "countOn": "{{on}} / {{total}} on",
+    "defaultsNote": "Using Qarote's default rules — toggle off anything too noisy for your setup.",
+    "customSoon": "custom soon",
+    "customSoonTooltip": "Custom thresholds coming soon",
+    "groupCount": "{{on}}/{{total}} on",
+    "selfCalibrating": "self-calibrating · no threshold to set",
+    "undo": "Undo",
+    "disableRule": "Disable {{name}}",
+    "enableRule": "Enable {{name}}",
+    "kindDesc": {
+      "threshold": "Point-in-time — fires when a value crosses a fixed line.",
+      "diagnostic": "Windowed — self-calibrating, no threshold to tune.",
+      "config": "Structural anti-patterns in your topology."
+    },
+    "toast": {
+      "enabled": "Rule enabled",
+      "disabled": "Rule disabled"
+    }
+  },
+  "ruleGuidance": {
+    "config": {
+      "cluster": {
+        "even_node_count": {
+          "what": "This cluster runs an even number of nodes, so a network partition can split it into two equal halves with no majority — quorum queues then can't elect a leader and may stall. Run an odd node count so a majority always survives.",
+          "fixTitle": "Move to an odd node count",
+          "fixSteps": [
+            "Add or remove one node so the total is odd (3, 5, …).",
+            "Spread quorum-queue replicas across the surviving majority.",
+            "Re-scan to confirm the finding clears."
+          ]
+        },
+        "version_skew": {
+          "what": "Nodes in this cluster run different RabbitMQ versions. Mixed versions are only meant to exist briefly during an upgrade — left in place they risk behaviour drift and block quorum/Khepri operations.",
+          "fixTitle": "Align the RabbitMQ versions",
+          "fixSteps": [
+            "Plan a rolling upgrade so every node lands on the same minor version.",
+            "Upgrade lagging nodes one at a time, checking cluster health between each.",
+            "Re-scan once all nodes report the same version."
+          ]
+        }
+      },
+      "consumer": {
+        "prefetch_misconfig": {
+          "what": "Consumers on {{resource}} use a prefetch (QoS) setting likely to hurt throughput or fairness — unbounded prefetch lets one consumer hoard messages, while a prefetch of 1 serialises work and adds round-trips.",
+          "fixTitle": "Tune consumer prefetch",
+          "fixSteps": [
+            "Set a bounded channel prefetch (start around 20–100 and measure).",
+            "Make sure every consumer acks so prefetch credit is returned.",
+            "Re-scan after redeploying the consumers."
+          ]
+        }
+      },
+      "exchange": {
+        "orphan": {
+          "what": "Exchange {{resource}} has no bindings, so anything published to it is silently dropped (or returned if mandatory). It's usually a leftover from a renamed route or a deleted queue.",
+          "fixTitle": "Bind or remove the exchange",
+          "fixSteps": [
+            "Confirm whether any publisher still targets this exchange.",
+            "If it's needed, bind it to the queue(s) it should route to.",
+            "If it's truly orphaned, delete it, then re-scan."
+          ]
+        }
+      },
+      "node": {
+        "fd_limit_low": {
+          "what": "A node's file-descriptor limit is low relative to its connection and queue count. RabbitMQ uses one FD per connection and several per queue — running near the limit causes accept() failures and dropped connections under load.",
+          "fixTitle": "Raise the file-descriptor limit",
+          "fixSteps": [
+            "Raise the OS ulimit (and systemd LimitNOFILE) for the broker process.",
+            "Aim for headroom well above peak connections × ~1.5.",
+            "Restart the node and re-scan."
+          ]
+        },
+        "watermark_misconfig": {
+          "what": "The memory high-watermark on {{resource}} is set high enough that, under load, the broker can hit the alarm and block all publishers cluster-wide before you have room to react.",
+          "fixTitle": "Lower the memory watermark",
+          "fixSteps": [
+            "Review per-node memory headroom first.",
+            "Lower vm_memory_high_watermark (e.g. to 0.6) on the affected nodes.",
+            "Watch the alarm state after applying, then re-scan."
+          ]
+        }
+      },
+      "policy": {
+        "conflicting": {
+          "what": "Two policies match {{resource}} at the same priority, and RabbitMQ applies only one — the winner is non-deterministic at equal priority, so your queues may silently get the wrong settings.",
+          "fixTitle": "Resolve the policy conflict",
+          "fixSteps": [
+            "Decide which definitions {{resource}} actually needs.",
+            "Merge them, narrow the patterns so they don't overlap, or re-prioritise so the intended one wins.",
+            "Re-scan to confirm only one policy applies."
+          ]
+        }
+      },
+      "queue": {
+        "classic_mirrored_deprecated": {
+          "what": "{{resource}} is a classic mirrored queue. Classic mirroring is deprecated and removed in RabbitMQ 4.x — quorum queues are the supported replacement for replicated durability.",
+          "fixTitle": "Migrate to a quorum queue",
+          "fixSteps": [
+            "Create a new quorum queue alongside the classic one (it can't be converted in place).",
+            "Drain consumers, cut publishers over, then retire the old queue.",
+            "Re-scan once the classic queue is gone."
+          ]
+        },
+        "exclusive_in_production": {
+          "what": "{{resource}} is an exclusive queue — it's deleted the moment its declaring connection drops. That's fine for RPC reply queues but dangerous for anything that must survive a reconnect.",
+          "fixTitle": "Reconsider the exclusive flag",
+          "fixSteps": [
+            "Confirm the queue is genuinely tied to one short-lived connection.",
+            "If the data must outlive the connection, redeclare it durable and non-exclusive.",
+            "Re-scan after the change."
+          ]
+        },
+        "missing_dlx": {
+          "what": "{{resource}} has no dead-letter exchange, so rejected (requeue=false) or TTL-expired messages are dropped silently with no audit trail — you can't inspect or replay failures.",
+          "fixTitle": "Add a dead-letter setup",
+          "fixSteps": [
+            "Create a dead-letter exchange and a queue bound to it that you control.",
+            "Apply x-dead-letter-exchange via policy or queue argument on {{resource}}.",
+            "Re-scan to confirm the finding clears."
+          ]
+        },
+        "no_consumer_backlog": {
+          "what": "{{resource}} has no protection against an unbounded backlog — with no length limit, TTL, or overflow handling, a stalled consumer lets messages pile up until memory or disk alarms fire.",
+          "fixTitle": "Bound the backlog",
+          "fixSteps": [
+            "Set a max-length or message-TTL appropriate to the workload.",
+            "Choose an overflow behaviour (drop-head or reject-publish) deliberately.",
+            "Re-scan after applying the policy."
+          ]
+        },
+        "no_length_bound": {
+          "what": "{{resource}} has neither a max-length nor a message-TTL, so it can grow without bound if producers outpace consumers — eventually triggering memory or disk alarms that block the whole node.",
+          "fixTitle": "Add a length or TTL bound",
+          "fixSteps": [
+            "Decide the right ceiling (max-length, max-length-bytes, or message-TTL).",
+            "Apply it via a policy so it's easy to tune later.",
+            "Re-scan to confirm the bound is in place."
+          ]
+        },
+        "quorum_queue_ha_policy": {
+          "what": "{{resource}} is a quorum queue but a classic HA (ha-mode) policy still matches it. HA policies are meaningless for quorum queues and signal a half-finished migration off classic mirroring.",
+          "fixTitle": "Drop the HA policy",
+          "fixSteps": [
+            "Narrow or remove the ha-mode policy so it no longer matches quorum queues.",
+            "Confirm replication is governed by the quorum queue's own replica settings.",
+            "Re-scan to confirm the stale policy is gone."
+          ]
+        },
+        "quorum_queue_minority_replicas": {
+          "what": "{{resource}} has its quorum-queue replicas placed so that a single node failure loses the majority — the queue then becomes unavailable until the node returns.",
+          "fixTitle": "Rebalance the replicas",
+          "fixSteps": [
+            "Grow the replica set to an odd number spread across distinct nodes.",
+            "Use rabbitmq-queues add_member / grow to rebalance.",
+            "Re-scan to confirm a majority survives one node loss."
+          ]
+        },
+        "quorum_queue_no_delivery_limit": {
+          "what": "{{resource}} is a quorum queue with no delivery-limit, so a poison message can be redelivered forever — looping through consumers without ever being dead-lettered.",
+          "fixTitle": "Set a delivery limit",
+          "fixSteps": [
+            "Set x-delivery-limit (via policy) to a sensible retry count.",
+            "Pair it with a dead-letter exchange so exhausted messages are captured.",
+            "Re-scan after applying."
+          ]
+        },
+        "transient_in_production": {
+          "what": "{{resource}} is a transient (non-durable) queue — it's lost on broker restart along with its messages. That's rarely what you want for a production workload.",
+          "fixTitle": "Make the queue durable",
+          "fixSteps": [
+            "Confirm the queue's data should survive a restart.",
+            "Redeclare it durable (transient/durable can't be toggled in place).",
+            "Re-scan after the change."
+          ]
+        }
+      },
+      "user": {
+        "guest_enabled": {
+          "what": "The default guest user is still enabled. Even limited to localhost by default, leaving it active is a well-known weak spot and fails most hardening checks.",
+          "fixTitle": "Disable or replace the guest user",
+          "fixSteps": [
+            "Create named users with least-privilege permissions for each app.",
+            "Delete the guest user (or at minimum change its password and restrict it).",
+            "Re-scan to confirm guest is gone."
+          ]
+        }
+      },
+      "vhost": {
+        "default_unscoped": {
+          "what": "Production traffic is running on the default vhost (\"/\"). A single shared vhost gives no isolation boundary for permissions, policies, or limits between apps.",
+          "fixTitle": "Scope traffic into named vhosts",
+          "fixSteps": [
+            "Create a vhost per app or environment.",
+            "Move queues/exchanges and grant scoped permissions there.",
+            "Re-scan once the default vhost no longer carries production traffic."
+          ]
+        }
+      }
+    }
+  },
+  "notifSettings": {
+    "title": "Notification settings",
+    "channels": "Channels",
+    "channelsDesc": "Where alerts are delivered.",
+    "email": "Email",
+    "slack": "Slack",
+    "webhooks": "Webhooks",
+    "webhook": "Webhook",
+    "notConfigured": "Not configured",
+    "configured": "Configured",
+    "configure": "Configure",
+    "developerPlus": "Developer+",
+    "upgrade": "Upgrade",
+    "upgradeHint": "Upgrade to route alerts here",
+    "enableChannel": "Enable {{channel}}",
+    "channelUpdated": "{{channel}} updated",
+    "saved": "Saved",
+    "saveError": "Something went wrong — please try again",
+    "saveChanges": "Save changes",
+    "severityRouting": "Severity routing",
+    "severityRoutingDesc": "Choose which severities go to which channel.",
+    "allSeveritiesNote": "Slack and webhook receive all severities while enabled; use the Email column to filter which severities are emailed.",
+    "opensNewTab": "(opens in a new tab)",
+    "showSecret": "Show secret",
+    "hideSecret": "Hide secret",
+    "test": "Test",
+    "testSending": "Sending…",
+    "testOk": "sample sent",
+    "testFailed": "test failed"
   }
 }

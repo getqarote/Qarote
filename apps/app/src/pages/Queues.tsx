@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { Search } from "lucide-react";
+import { AlertTriangle, Search } from "lucide-react";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 
 import { NoServerConfigured } from "@/components/NoServerConfigured";
@@ -11,8 +11,9 @@ import { NoServerSelectedCard, PageShell } from "@/components/PageShell";
 import { QueueHeader } from "@/components/Queues/QueueHeader";
 import { QueuesOverviewCards } from "@/components/Queues/QueuesOverviewCards";
 import { QueueTable } from "@/components/Queues/QueueTable";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { IconClose } from "@/components/ui/icons";
 import { Input } from "@/components/ui/input";
-import { PixelX } from "@/components/ui/pixel-x";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 import { useServerContext } from "@/contexts/ServerContext";
@@ -130,6 +131,18 @@ const Queues = () => {
         </div>
       </div>
 
+      {/* Queue ceiling reached: metrics collection is paused for this broker.
+          Without this the collection just stops and the customer has no way to
+          know why — the backend cuts off silently by design, so the explanation
+          has to surface here. The message arrives already translated. */}
+      {queuesData?.warning?.isOverLimit && (
+        <Alert variant="destructive" className="mt-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>{t("ceilingReached")}</AlertTitle>
+          <AlertDescription>{queuesData.warning.message}</AlertDescription>
+        </Alert>
+      )}
+
       <QueuesOverviewCards queues={queues} isLoading={isLoading} />
 
       {/* Search / filter */}
@@ -150,7 +163,7 @@ const Queues = () => {
               onClick={() => void setFilters({ q: "", page: 1 })}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
-              <PixelX className="h-4 w-auto shrink-0" />
+              <IconClose className="h-4 w-auto shrink-0" />
             </button>
           )}
         </div>

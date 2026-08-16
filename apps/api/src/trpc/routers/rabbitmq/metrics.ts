@@ -21,6 +21,7 @@ import { router, workspacePermissionProcedure } from "@/trpc/trpc";
 import { createRabbitMQClientFromServer, verifyServerAccess } from "./shared";
 
 import { te } from "@/i18n";
+import { metricsStore } from "@/stores/metrics";
 
 // Time range configurations for RabbitMQ API
 const timeRangeConfigs = {
@@ -437,32 +438,26 @@ export const metricsRouter = router({
 
       const since = new Date(Date.now() - hours * 60 * 60 * 1000);
 
-      const snapshots = await prisma.queueMetricSnapshot.findMany({
-        where: {
-          serverId,
-          workspaceId,
-          queueName,
-          vhost,
-          timestamp: { gte: since },
-        },
-        orderBy: { timestamp: "asc" },
-        select: {
-          timestamp: true,
-          messages: true,
-          messagesReady: true,
-          messagesUnack: true,
-          publishRate: true,
-          consumeRate: true,
-          consumerCount: true,
-        },
+      // Rate derived at read time from the stored counters via counter_agg,
+      // bucketed at 2 minutes (Philosophy B, ADR-004 §1). Gauges are the bucket's
+      // last() value.
+      const snapshots = await metricsStore.getQueueRateSeries({
+        workspaceId,
+        serverId,
+        queueName,
+        vhost,
+        since,
       });
 
       return {
         snapshots: snapshots.map((s) => ({
-          ...s,
+          timestamp: s.timestamp,
           messages: s.messages.toString(),
           messagesReady: s.messagesReady.toString(),
           messagesUnack: s.messagesUnack.toString(),
+          publishRate: s.publishRate,
+          consumeRate: s.consumeRate,
+          consumerCount: s.consumerCount,
         })),
         wasClamped,
         resolvedHours: hours,
@@ -523,35 +518,20 @@ export const metricsRouter = router({
         until = new Date();
       }
 
-      // Aggregate in Postgres — avoids loading all per-queue rows into Node.js memory.
-      // DATE_TRUNC('minute') groups all queues polled in the same 5-min cycle.
-      const rows = await prisma.$queryRaw<
-        Array<{
-          bucket: Date;
-          totalMessages: bigint;
-          totalReady: bigint;
-          totalUnacked: bigint;
-        }>
-      >`
-        SELECT
-          DATE_TRUNC('minute', timestamp) AS bucket,
-          SUM(messages)        AS "totalMessages",
-          SUM("messagesReady") AS "totalReady",
-          SUM("messagesUnack") AS "totalUnacked"
-        FROM queue_metric_snapshots
-        WHERE "serverId"    = ${serverId}
-          AND "workspaceId" = ${workspaceId}
-          AND timestamp >= ${since}
-          AND timestamp <= ${until}
-        GROUP BY DATE_TRUNC('minute', timestamp)
-        ORDER BY bucket ASC
-      `;
+      // Per-minute server-wide depth totals (aggregated in the store to avoid
+      // loading all per-queue rows into Node.js memory).
+      const buckets = await metricsStore.getServerQueueTotals({
+        workspaceId,
+        serverId,
+        since,
+        until,
+      });
 
-      const snapshots = rows.map((r) => ({
-        timestamp: r.bucket,
-        totalMessages: r.totalMessages.toString(),
-        totalReady: r.totalReady.toString(),
-        totalUnacked: r.totalUnacked.toString(),
+      const snapshots = buckets.map((b) => ({
+        timestamp: b.timestamp,
+        totalMessages: b.totalMessages.toString(),
+        totalReady: b.totalReady.toString(),
+        totalUnacked: b.totalUnacked.toString(),
       }));
 
       return { snapshots, wasClamped, resolvedHours: hours };

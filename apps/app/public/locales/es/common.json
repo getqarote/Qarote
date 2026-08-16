@@ -110,5 +110,6 @@
   "justUpdated": "Recién actualizado",
   "backToDashboard": "Volver al panel",
   "backToSettings": "Volver a tus ajustes",
-  "loadingPermissions": "Comprobando permisos…"
+  "loadingPermissions": "Comprobando permisos…",
+  "srLoading": "Cargando…"
 }

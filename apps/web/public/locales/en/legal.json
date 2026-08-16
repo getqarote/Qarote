@@ -117,7 +117,10 @@
             "label": "Payment information",
             "detail": "As required by law and payment processors"
           },
-          { "label": "Support communications", "detail": "Up to 3 years" }
+          {
+            "label": "Support communications",
+            "detail": "Up to 3 years"
+          }
         ]
       },
       "yourRights": {
@@ -149,7 +152,7 @@
             "text": "Request limitation of processing"
           }
         },
-        "contact": "To exercise these rights, please contact us at privacy@qarote.io"
+        "contact": "To exercise these rights, please contact us at security@qarote.io"
       },
       "cookies": {
         "title": "Cookies and Tracking",
@@ -221,8 +224,23 @@
         "description": "If you have any questions about this privacy policy or our data practices, please contact us:",
         "email": "support@qarote.io",
         "address": "229 rue Saint-Honoré, 75001, Paris, France"
+      },
+      "aiFeatures": {
+        "title": "AI Features and Broker Context",
+        "description": "When you use AI Explain (root-cause analysis), Qarote sends relevant broker context — such as the affected queue, metrics, topology, and recent configuration changes — to a language-model provider to generate an explanation. We do not send your message payloads. You choose the provider, and this choice determines where the data goes:",
+        "items": [
+          "Managed — processed by our model provider (Anthropic) using Qarote's account.",
+          "Bring your own key — processed by your own Anthropic or OpenAI account, under that provider's terms.",
+          "Local (Ollama) — processed entirely on your own infrastructure; no broker context leaves your network."
+        ],
+        "note": "Self-hosted deployments that require strict data residency can keep all AI processing in-network with the local provider."
+      },
+      "agentAccess": {
+        "title": "Agent Access (MCP)",
+        "description": "You may connect AI agents to Qarote over the Model Context Protocol using scoped API keys. Keys are shown once and stored only as a hash. Depending on the scope you grant, an agent can read monitoring data, request diagnoses, and — where you enable it — perform management actions on your brokers. Actions taken via an agent are logged for audit. You are responsible for the scopes you grant and for the agents you authorize."
       }
-    }
+    },
+    "summary": "How Qarote collects, uses, and protects your data. In short: we read RabbitMQ management and metrics data to detect and explain incidents — we never access or store your message payloads unless you explicitly enable payload capture for tracing."
   },
   "termsOfService": {
     "title": "Terms of Service",
@@ -238,12 +256,11 @@
         "title": "Description of Service",
         "description": "Qarote provides a modern, web-based interface for monitoring and managing RabbitMQ message brokers. Our service includes:",
         "items": [
-          "Live queue monitoring and analytics",
-          "Message publishing and consumption tools",
-          "Queue and exchange management",
-          "Performance metrics and alerting",
-          "Multi-server cluster support",
-          "User management and access controls"
+          "Incident detection via a deterministic rules engine;",
+          "AI-assisted root-cause analysis (\"AI Explain\");",
+          "An AI-agent interface over the Model Context Protocol (MCP), through which your authorized AI agents can read monitoring data, request diagnoses, and — with the scopes you grant — manage your brokers;",
+          "Configuration scanning, topology visualization, alerting, and multi-server support;",
+          "Cloud-hosted and self-hosted deployment options."
         ]
       },
       "accounts": {
@@ -289,7 +306,26 @@
         "description": "If you have any questions about these Terms, please contact us:",
         "email": "support@qarote.io",
         "address": "229 rue Saint-Honoré, 75001, Paris, France"
+      },
+      "licensing": {
+        "title": "Licensing",
+        "description": "Qarote's Community edition is open source under the MIT license. Premium and Enterprise features are licensed, not open source, and are governed by these Terms and your license key. You may not circumvent license validation, nor redistribute or resell premium features. Self-hosted licenses validate offline and remain subject to these Terms."
+      },
+      "agentAccess": {
+        "title": "Agent Access and Automated Actions",
+        "description": "You may grant scoped API keys that allow AI agents to interact with the Service and, where you enable management or remediation scopes, to create, modify, purge, or delete objects on your RabbitMQ brokers. Any such action is performed under your authorization and at your own risk. You are solely responsible for the scopes and keys you grant, for reviewing actions before enabling automatic execution, and for maintaining your own backups. To the extent permitted by law, Qarote is not liable for the outcomes of actions you or your authorized agents initiate."
       }
-    }
-  }
+    },
+    "summary": "These Terms govern your use of Qarote, an agent-first platform for diagnosing and managing RabbitMQ message brokers. By using the Service you agree to be bound by them."
+  },
+  "footer": {
+    "questions": "Questions? Email",
+    "email": "support@qarote.io",
+    "address": "229 rue Saint-Honoré, 75001 Paris, France",
+    "seeAlsoPrefix": "See also our",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service"
+  },
+  "section": "Section",
+  "contents": "Contents"
 }

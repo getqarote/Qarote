@@ -1,6 +1,7 @@
 ---
 import { getCollection, render, type CollectionEntry } from "astro:content";
-import BlogLayout from "../../layouts/BlogLayout.astro";
+
+import BlogLayout from "@/layouts/BlogLayout.astro";
 
 export async function getStaticPaths() {
   // Only generate routes for English posts (no locale/ prefix in id)
@@ -16,7 +17,28 @@ interface Props {
 }
 
 const { post } = Astro.props as Props;
-const { Content, headings } = await render(post);
+const { Content } = await render(post);
+
+// Related posts: same-category English posts first, then most recent, excluding
+// the current post. Capped at 3. Derived from the collection — no hardcoding.
+const allPosts = (await getCollection("blog"))
+  .filter((p) => !p.id.includes("/") && p.id !== post.id)
+  .sort(
+    (a, b) =>
+      new Date(b.data.publishedAt).getTime() -
+      new Date(a.data.publishedAt).getTime()
+  );
+const sameCat = allPosts.filter((p) => p.data.category === post.data.category);
+const related = [...sameCat, ...allPosts.filter((p) => !sameCat.includes(p))]
+  .slice(0, 3)
+  .map((p) => ({
+    slug: p.id,
+    title: p.data.title,
+    category: p.data.category,
+    cover: p.data.cover,
+    coverCaption: p.data.coverCaption,
+    readingTimeMin: p.data.readingTimeMin,
+  }));
 ---
 
 <BlogLayout
@@ -24,10 +46,13 @@ const { Content, headings } = await render(post);
   description={post.data.description}
   publishedAt={post.data.publishedAt}
   updatedAt={post.data.updatedAt}
-  tags={post.data.tags}
+  author={post.data.author}
   readingTimeMin={post.data.readingTimeMin}
-  headings={headings}
+  category={post.data.category}
+  cover={post.data.cover}
+  coverCaption={post.data.coverCaption}
   slug={post.id}
+  related={related}
 >
   <Content />
 </BlogLayout>

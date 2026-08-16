@@ -23,6 +23,10 @@ import {
   validateRabbitMqVersion,
   validateServerCreation,
 } from "@/services/plan/plan.service";
+import {
+  exceedsQueueLimit,
+  MAX_QUEUES_PER_SERVER,
+} from "@/services/queue-limit";
 
 import {
   CreateServerWithWorkspaceSchema,
@@ -73,8 +77,8 @@ export const serverRouter = router({
             useHttps: true,
             isOverQueueLimit: true,
             queueCountAtConnect: true,
-            overLimitWarningShown: true,
             environment: true,
+            payloadCaptureEnabled: true,
             createdAt: true,
             updatedAt: true,
             workspaceId: true,
@@ -93,8 +97,8 @@ export const serverRouter = router({
           useHttps: server.useHttps,
           isOverQueueLimit: server.isOverQueueLimit,
           queueCountAtConnect: server.queueCountAtConnect,
-          overLimitWarningShown: server.overLimitWarningShown,
           environment: server.environment,
+          payloadCaptureEnabled: server.payloadCaptureEnabled,
           createdAt: server.createdAt.toISOString(),
           updatedAt: server.updatedAt.toISOString(),
           workspaceId: server.workspaceId,
@@ -138,8 +142,8 @@ export const serverRouter = router({
             useHttps: true,
             isOverQueueLimit: true,
             queueCountAtConnect: true,
-            overLimitWarningShown: true,
             environment: true,
+            payloadCaptureEnabled: true,
             createdAt: true,
             updatedAt: true,
             workspaceId: true,
@@ -165,8 +169,8 @@ export const serverRouter = router({
           useHttps: server.useHttps,
           isOverQueueLimit: server.isOverQueueLimit,
           queueCountAtConnect: server.queueCountAtConnect,
-          overLimitWarningShown: server.overLimitWarningShown,
           environment: server.environment,
+          payloadCaptureEnabled: server.payloadCaptureEnabled,
           createdAt: server.createdAt.toISOString(),
           updatedAt: server.updatedAt.toISOString(),
           workspaceId: server.workspaceId,
@@ -234,6 +238,24 @@ export const serverRouter = router({
         // Validate RabbitMQ version against plan restrictions
         validateRabbitMqVersion(plan, rabbitMqVersion);
 
+        // Refuse a broker above the queue ceiling. `object_totals` comes with the
+        // overview we already fetched, so this costs no extra request — no need
+        // to pull the (expensive) full queue list just to count.
+        //
+        // Deliberately NOT a PlanValidationError: no tier unlocks this, so
+        // surfacing it as an upsell would send the customer down a dead end. The
+        // answer is to contact us.
+        const queueCountAtConnect = overview.object_totals.queues;
+        if (exceedsQueueLimit(queueCountAtConnect)) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: te(ctx.locale, "rabbitmq.tooManyQueues", {
+              count: queueCountAtConnect,
+              limit: MAX_QUEUES_PER_SERVER,
+            }),
+          });
+        }
+
         // Encrypt sensitive data before storing
         const server = await prisma.rabbitMQServer.create({
           data: {
@@ -250,8 +272,13 @@ export const serverRouter = router({
             environment: data.environment ?? null,
             version: rabbitMqVersion, // Store full version
             versionMajorMinor: majorMinorVersion, // Store major.minor for plan validation
-            // Store over-limit information
-            overLimitWarningShown: false,
+            // Queue-ceiling state. `queueCountAtConnect` is written here and then
+            // REFRESHED on every poll cycle — despite its name it holds the LAST
+            // OBSERVED count, because a connect-time snapshot cannot catch a
+            // server that grows past the ceiling later. Renaming it would touch
+            // the schema and every reader, so the misnomer is documented instead.
+            queueCountAtConnect,
+            isOverQueueLimit: false, // just checked above
             // Assign server to workspace
             workspaceId,
           },
@@ -363,6 +390,7 @@ export const serverRouter = router({
           version?: string;
           versionMajorMinor?: string;
           environment?: string | null;
+          payloadCaptureEnabled?: boolean;
         } = {};
 
         // If any connection-affecting field changed, re-test the connection
@@ -423,6 +451,12 @@ export const serverRouter = router({
         if (data.environment !== undefined) {
           updateData.environment = data.environment;
         }
+        // Forward-looking firehose payload-capture toggle — v1 persists the
+        // flag only (no capture pipeline yet). `server:update` permission
+        // already gates this mutation.
+        if (data.payloadCaptureEnabled !== undefined) {
+          updateData.payloadCaptureEnabled = data.payloadCaptureEnabled;
+        }
 
         const server = await prisma.rabbitMQServer.update({
           where: { id },
@@ -453,6 +487,9 @@ export const serverRouter = router({
             from: existingServer.environment ?? null,
             to: data.environment ?? null,
           };
+        }
+        if (data.payloadCaptureEnabled !== undefined) {
+          auditChanges.payloadCaptureEnabled = data.payloadCaptureEnabled;
         }
 
         void recordFromContext(ctx, {

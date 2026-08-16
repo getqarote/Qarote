@@ -1,0 +1,70 @@
+---
+title: "Wiring Claude Code to your broker over MCP"
+description: "A five-minute setup: mint a key, drop it in .mcp.json, and ask your agent what's wrong."
+publishedAt: "2026-05-28"
+author: "Brice Tessier"
+category: "mcp"
+cover: "cover-mcp-config.svg"
+coverCaption: ".mcp.json"
+readingTimeMin: 5
+tags: ["mcp", "claude-code", "setup"]
+---
+
+import Callout from "@/components/blog/Callout.astro";
+import CodeWindow from "@/components/blog/CodeWindow.astro";
+
+You already live in your editor. Your RabbitMQ broker lives somewhere else, behind a management UI you only open when something is already on fire. Model Context Protocol (MCP) closes that gap: it lets your agent call Qarote's diagnosis tools directly. Setup takes about five minutes.
+
+## Mint an API key
+
+In Qarote, open **Settings → Agent Access** and create a key. It's scoped to the MCP surface — `list_incidents`, `get_incident`, `explain_incident`, and the config-scan tools — and nothing else. Copy it once; you won't see it again.
+
+<Callout type="note">
+  **Treat the key like a secret.** Don't paste it into a committed file. Use an
+  environment variable or your client's secret store, and rotate it from
+  Settings → Agent Access if it leaks.
+</Callout>
+
+## Add it to .mcp.json
+
+Claude Code reads MCP servers from `.mcp.json` at your project root. Add a `qarote` entry pointing at the MCP endpoint, with the key passed as a header:
+
+```json
+{
+  "mcpServers": {
+    "qarote": {
+      "type": "http",
+      "url": "https://your-qarote.example.com/api/mcp",
+      "headers": {
+        "Authorization": "Bearer ${QAROTE_API_KEY}"
+      }
+    }
+  }
+}
+```
+
+Export the key in your shell so the `${QAROTE_API_KEY}` reference resolves:
+
+```bash
+export QAROTE_API_KEY="qarote_sk_..."
+```
+
+## Restart and ask
+
+Restart Claude Code so it picks up the new server, then ask the obvious question:
+
+<CodeWindow title="agent · claude code">
+```text
+you ▸ what's wrong with my rabbitmq?
+
+agent ▸ called list_incidents
+no open incidents. orders.incoming and events.payment
+both draining normally; consumers healthy.
+
+```
+</CodeWindow>
+
+That's the whole loop. When something *is* wrong, the same question surfaces the open incident and, if you ask, an `explain_incident` root-cause call.
+
+Detection is deterministic and free — the rules engine flags findings whether or not you ever ask. The agent isn't inventing a diagnosis; it's reading one that already exists, and only spends an LLM call when you explicitly request the explanation.
+```

@@ -20,20 +20,30 @@ COPY apps/portal/package.json ./apps/portal/
 COPY apps/api/prisma ./apps/api/prisma/
 
 # Copy shared package manifests
+# Every workspace dep declared in apps/api/package.json must appear here, or
+# `pnpm install --frozen-lockfile` resolves against a lockfile describing
+# packages that are not in the build context.
 COPY packages/i18n/package.json ./packages/i18n/
 COPY packages/analytics/package.json ./packages/analytics/
+COPY packages/og-cards/package.json ./packages/og-cards/
 
 # Install all dependencies (monorepo) - skip scripts to avoid Prisma generate during install
 # Then install dependencies in the API workspace to ensure all are available
 RUN pnpm install --frozen-lockfile --ignore-scripts && \
     cd apps/api && pnpm install --frozen-lockfile --ignore-scripts
 
-# Copy shared packages and build them (both @qarote/i18n and @qarote/analytics
-# are workspace deps imported by the API — e.g. analytics in posthog.ts)
+# Copy shared packages and build them. `pnpm install` only symlinks workspace
+# deps — it does not compile them — so each one needs an explicit tsc here or
+# the API's own build fails with TS2307 "cannot find module".
+#   @qarote/i18n      — translations
+#   @qarote/analytics — posthog.ts
+#   @qarote/og-cards  — routers/rca-page.router.ts
 COPY packages/i18n ./packages/i18n
 RUN cd packages/i18n && npx tsc
 COPY packages/analytics ./packages/analytics
 RUN cd packages/analytics && npx tsc
+COPY packages/og-cards ./packages/og-cards
+RUN cd packages/og-cards && npx tsc
 
 # Copy API source code
 COPY apps/api ./apps/api

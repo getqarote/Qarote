@@ -11,7 +11,9 @@
 export interface OrganizationSummary {
   id: string;
   name: string;
+  slug: string;
   contactEmail?: string | null;
+  logoUrl?: string | null;
   createdAt: string | Date;
   _count?: {
     members?: number;
@@ -27,6 +29,8 @@ export interface OrgMember {
   lastName: string;
   image?: string | null;
   role: string;
+  /** Names of the org workspaces this member belongs to (owners → all). */
+  workspaces?: string[];
 }
 
 export interface PendingOrgInvitation {

@@ -9,9 +9,15 @@ import { Button } from "@/components/ui/button";
 interface AuthButtonsProps {
   align?: "left" | "center" | "right";
   describedById?: string;
+  /** i18n key (in the `landing` namespace) for the button label. */
+  labelKey?: string;
 }
 
-const AuthButtons = ({ align = "center", describedById }: AuthButtonsProps) => {
+const AuthButtons = ({
+  align = "center",
+  describedById,
+  labelKey = "cta.getStartedForFree",
+}: AuthButtonsProps) => {
   const { t } = useTranslation("landing");
   const authBaseUrl = import.meta.env.VITE_APP_BASE_URL || "";
 
@@ -62,17 +68,15 @@ const AuthButtons = ({ align = "center", describedById }: AuthButtonsProps) => {
         size="pill"
         onClick={handleSignUp}
         aria-describedby={describedById}
-        className="w-full sm:w-auto"
+        className="group w-full sm:w-auto"
       >
-        <span className="whitespace-nowrap">{t("cta.getStartedForFree")}</span>
-        <img
-          src="/images/arrow-right.svg"
-          alt=""
+        <span className="whitespace-nowrap">{t(labelKey)}</span>
+        <span
           aria-hidden="true"
-          width={13}
-          height={13}
-          className="h-[0.8em] w-auto align-middle image-crisp"
-        />
+          className="transition-transform duration-150 group-hover:translate-x-0.5"
+        >
+          →
+        </span>
       </Button>
     </div>
   );

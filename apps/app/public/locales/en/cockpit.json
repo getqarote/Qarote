@@ -32,12 +32,37 @@
     "configureAiExplain": "Configure AI Explain"
   },
   "sees": {
-    "title": "What your agent sees right now",
+    "title": "What your agent sees",
     "refresh": "Refresh",
-    "allQuiet": "All quiet — no active findings in the last 2h",
     "staleMetrics": "Can't fetch live metrics while the broker is unreachable.",
     "retry": "Retry",
-    "clusterDetail": "Cluster detail"
+    "clusterDetail": "Cluster detail",
+    "timeRange": {
+      "label": "Time range"
+    },
+    "cluster": "Cluster",
+    "calm": {
+      "headline": "All quiet — no active findings in the last {{window}}",
+      "lastScan": "last scan {{ago}}",
+      "justNow": "just now"
+    },
+    "concerns": {
+      "headline_one": "{{count}} concern in the last {{window}}",
+      "headline_other": "{{count}} concerns in the last {{window}}",
+      "severity": {
+        "critical_one": "{{count}} critical",
+        "critical_other": "{{count}} critical",
+        "high_one": "{{count}} high",
+        "high_other": "{{count}} high",
+        "medium_one": "{{count}} medium",
+        "medium_other": "{{count}} medium",
+        "low_one": "{{count}} low",
+        "low_other": "{{count}} low",
+        "info_one": "{{count}} info",
+        "info_other": "{{count}} info"
+      },
+      "view": "View in Diagnosis"
+    }
   },
   "cluster": {
     "title": "Cluster",
@@ -46,7 +71,12 @@
     "connections": "Connections · {{count}}",
     "channels": "Channels · {{count}}",
     "none": "None right now.",
-    "agentNote": "These objects are also available to your agent via list_servers and get_overview."
+    "agentNote": "These objects are also available to your agent via list_servers and get_overview.",
+    "nodeRunQueue": "{{value}} run queue",
+    "channelOpen": "Open",
+    "channelUnacked": "Unacknowledged",
+    "channelPrefetchAvg": "Prefetch (avg)",
+    "agentNoteTools": "These objects are also available to your agent via <listServers>list_servers</listServers> and <getOverview>get_overview</getOverview>."
   },
   "ask": {
     "label": "Ask your agent",
@@ -62,5 +92,16 @@
     "prompt4": "Why is payments.capture depth climbing?",
     "prompt5": "Show config findings ranked by severity",
     "prompt6": "Did anything change on the broker in the last hour?"
+  },
+  "pushBanner": {
+    "title": "Get paged on your phone",
+    "enable": "Enable alerts",
+    "dismiss": "Dismiss"
+  },
+  "noAlertChannel": {
+    "title": "No alert channel yet",
+    "body": "A critical finding can fire with no way to reach you. Add email, Slack, or a webhook so incidents land where you’ll see them.",
+    "action": "Set up alerts",
+    "dismiss": "Dismiss"
   }
 }

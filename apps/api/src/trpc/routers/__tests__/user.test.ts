@@ -19,7 +19,17 @@ const mockWorkspaceUpdate = vi.fn();
 const mockWorkspaceFindUnique = vi.fn();
 const mockInvitationFindMany = vi.fn();
 const mockOrganizationMemberFindFirst = vi.fn();
+const mockOrgMemberFindMany = vi.fn();
+const mockOrgMemberCount = vi.fn();
+const mockUserDelete = vi.fn();
 const mockTransaction = vi.fn();
+
+const mockDeleteOrgCascade = vi.fn();
+class MockSubscriptionCancelFailedError extends Error {}
+vi.mock("@/services/organization/org-deletion.service", () => ({
+  deleteOrganizationCascade: (...a: unknown[]) => mockDeleteOrgCascade(...a),
+  SubscriptionCancelFailedError: MockSubscriptionCancelFailedError,
+}));
 
 vi.mock("@/core/prisma", () => ({
   prisma: {
@@ -120,6 +130,7 @@ function makeCtx(overrides: Record<string, unknown> = {}) {
         findUnique: mockUserFindUnique,
         update: mockUserUpdate,
         findMany: mockUserFindMany,
+        delete: mockUserDelete,
       },
       workspaceMember: {
         findUnique: mockWorkspaceMemberFindUnique,
@@ -132,7 +143,11 @@ function makeCtx(overrides: Record<string, unknown> = {}) {
         findUnique: mockWorkspaceFindUnique,
       },
       invitation: { findMany: mockInvitationFindMany },
-      organizationMember: { findFirst: mockOrganizationMemberFindFirst },
+      organizationMember: {
+        findFirst: mockOrganizationMemberFindFirst,
+        findMany: mockOrgMemberFindMany,
+        count: mockOrgMemberCount,
+      },
       $transaction: mockTransaction,
     },
     logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
@@ -426,5 +441,88 @@ describe("userRouter.updateLocale", () => {
         data: { locale: "en" },
       })
     );
+  });
+});
+
+describe("userRouter.deleteAccount", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const membership = (
+    organizationId: string,
+    role: string,
+    members: number,
+    name = "Org"
+  ) => ({
+    organizationId,
+    role,
+    organization: { name, _count: { members } },
+  });
+
+  it("throws BAD_REQUEST when the email confirmation does not match", async () => {
+    const caller = userRouter.createCaller(makeCtx() as never);
+    await expect(
+      caller.deleteAccount({ confirmation: "wrong@test.com" })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(mockUserDelete).not.toHaveBeenCalled();
+    expect(mockDeleteOrgCascade).not.toHaveBeenCalled();
+  });
+
+  it("cascade-deletes solo-owned orgs, then deletes the user (email match is case-insensitive)", async () => {
+    mockOrgMemberFindMany.mockResolvedValue([
+      membership("org-solo", "OWNER", 1, "Personal"),
+    ]);
+    mockDeleteOrgCascade.mockResolvedValue(undefined);
+    mockUserDelete.mockResolvedValue({});
+
+    const caller = userRouter.createCaller(makeCtx() as never);
+    const res = await caller.deleteAccount({ confirmation: "ADMIN@TEST.COM" });
+
+    expect(res).toEqual({ success: true });
+    expect(mockDeleteOrgCascade).toHaveBeenCalledWith("org-solo");
+    expect(mockUserDelete).toHaveBeenCalledWith({ where: { id: "user-1" } });
+  });
+
+  it("BLOCKS (PRECONDITION_FAILED, no delete) when sole owner of a shared org", async () => {
+    mockOrgMemberFindMany.mockResolvedValue([
+      membership("org-team", "OWNER", 3, "Team"),
+    ]);
+    mockOrgMemberCount.mockResolvedValue(1); // only one owner
+
+    const caller = userRouter.createCaller(makeCtx() as never);
+    await expect(
+      caller.deleteAccount({ confirmation: "admin@test.com" })
+    ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
+    expect(mockUserDelete).not.toHaveBeenCalled();
+    expect(mockDeleteOrgCascade).not.toHaveBeenCalled();
+  });
+
+  it("lets the user leave a shared org that has another owner (no org delete)", async () => {
+    mockOrgMemberFindMany.mockResolvedValue([
+      membership("org-team", "OWNER", 3, "Team"),
+    ]);
+    mockOrgMemberCount.mockResolvedValue(2); // another owner remains
+    mockUserDelete.mockResolvedValue({});
+
+    const caller = userRouter.createCaller(makeCtx() as never);
+    const res = await caller.deleteAccount({ confirmation: "admin@test.com" });
+
+    expect(res).toEqual({ success: true });
+    expect(mockDeleteOrgCascade).not.toHaveBeenCalled();
+    expect(mockUserDelete).toHaveBeenCalledWith({ where: { id: "user-1" } });
+  });
+
+  it("maps a subscription-cancel failure to 500 and does NOT delete the user", async () => {
+    mockOrgMemberFindMany.mockResolvedValue([
+      membership("org-solo", "OWNER", 1),
+    ]);
+    mockDeleteOrgCascade.mockRejectedValue(
+      new MockSubscriptionCancelFailedError("org-solo")
+    );
+
+    const caller = userRouter.createCaller(makeCtx() as never);
+    await expect(
+      caller.deleteAccount({ confirmation: "admin@test.com" })
+    ).rejects.toMatchObject({ code: "INTERNAL_SERVER_ERROR" });
+    expect(mockUserDelete).not.toHaveBeenCalled();
   });
 });

@@ -1,9 +1,55 @@
 {
-  "calculatingResults": "正在计算您的结果…",
   "seo": {
-    "title": "RabbitMQ 技能评估 — 测试您的知识",
-    "description": "参加免费的 20 题 RabbitMQ 测验。测试您对队列、交换机、消费者和生产模式的掌握程度，获取分数和评级结论。",
-    "resultsTitle": "我的 RabbitMQ 技能评估结果",
-    "resultsDescription": "我在 Qarote 上参加了免费的 RabbitMQ 技能评估。看看您与我相比如何。"
+    "title": "你有多了解自己的 RabbitMQ 配置？ — Qarote",
+    "description": "一份免费的 20 题 RabbitMQ 测评。获取分数、等级评定，并准确了解你的薄弱环节。无需注册。",
+    "resultsTitle": "我的 RabbitMQ 测评结果 — Qarote",
+    "resultsDescription": "我做了 Qarote 的免费 RabbitMQ 测评。来看看你的等级和薄弱环节。"
+  },
+  "bar": {
+    "answered": "已回答 {{answered}}/{{total}}",
+    "exit": "退出",
+    "toggleTheme": "切换主题"
+  },
+  "start": {
+    "badge": "免费 · 20 题 · 约 5 分钟",
+    "title": "你有多了解自己的 RabbitMQ 配置？",
+    "body": "20 道题，涵盖队列、交换机、消费者和生产实践。获取分数、等级评定，并准确了解你的薄弱环节。",
+    "cta": "开始免费测评",
+    "sub": "无需注册。"
+  },
+  "question": {
+    "counter": "{{index}} / {{total}}",
+    "answerLabel": "回答",
+    "back": "返回",
+    "next": "下一题",
+    "seeResults": "查看结果",
+    "hint": "按 A–D 或 1–4",
+    "progressLabel": "第 {{index}} 题，共 {{total}} 题"
+  },
+  "email": {
+    "title": "想要完整的分析？",
+    "body": "留下你的邮箱，我们会发送你的详细结果和各领域薄弱点。可选——无论如何你的分数都已就绪。",
+    "placeholder": "you@company.com",
+    "ariaLabel": "邮箱（可选）",
+    "submit": "把结果发给我",
+    "skip": "跳过——查看结果",
+    "note": "无需账户，没有垃圾邮件。只发你的分析。"
+  },
+  "results": {
+    "tierLabel": "你的等级",
+    "copy": "复制结果链接",
+    "copied": "已复制！",
+    "shareX": "分享到 X",
+    "shareLinkedIn": "LinkedIn",
+    "shareText": "我在 Qarote 的 RabbitMQ 测评中得了 {{score}}% — {{tier}} 等级。",
+    "breakdownTitle": "你的薄弱环节",
+    "breakdownSub": "四个主题的各领域得分。",
+    "areaScore": "{{correct}} / {{total}} · {{pct}}%",
+    "opportunity": "最大提升空间：<b>{{area}}</b>——复习这个领域以更上一层楼。",
+    "ctaEyebrow": "以 Agent 为先的 RabbitMQ 诊断",
+    "ctaTitle": "别再从告警中才发现问题。",
+    "ctaBody": "Qarote 检测事件并解释根因——再通过 MCP 交给你的 AI Agent，让你在编辑器中调试。",
+    "ctaButton": "免费试用 Qarote",
+    "retake": "↺ 重新测评"
   }
 }

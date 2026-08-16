@@ -5,9 +5,10 @@ import { Check, Loader2, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 import { logger } from "@/lib/logger";
+import { displayName } from "@/lib/userDisplay";
 
 import { Button } from "@/components/ui/button";
-import { PixelX } from "@/components/ui/pixel-x";
+import { IconClose } from "@/components/ui/icons";
 
 import {
   useAcceptOrgInvitation,
@@ -130,7 +131,7 @@ export function OrgMyInvitationsCard({
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {t("org.invitedByAs", {
-                      name: `${inv.invitedBy.firstName} ${inv.invitedBy.lastName}`,
+                      name: displayName(inv.invitedBy),
                       role: roleLabels[inv.role] ?? inv.role,
                     })}
                   </div>
@@ -166,7 +167,7 @@ export function OrgMyInvitationsCard({
                       />
                     ) : (
                       <>
-                        <PixelX
+                        <IconClose
                           className="h-4 w-auto shrink-0 mr-1"
                           aria-hidden="true"
                         />

@@ -1,108 +1,27 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { toast } from "sonner";
-
-import { logger } from "@/lib/logger";
-
-import {
-  PersonalInfoTab,
-  ProfileFormState,
-  ProfileLoading,
-} from "@/components/profile";
+import { ConnectedAccountsCard } from "@/components/profile/ConnectedAccountsCard";
+import { DeleteAccountCard } from "@/components/profile/DeleteAccountCard";
+import { IdentityCard } from "@/components/profile/IdentityCard";
+import { PasswordCard } from "@/components/profile/PasswordCard";
+import { ProfileLoading } from "@/components/profile/ProfileLoading";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-import {
-  useCancelEmailChange,
-  useChangePassword,
-  useProfile,
-  useRequestEmailChange,
-  useUpdateProfile,
-  useVerificationStatus,
-} from "@/hooks/queries/useProfile";
+import { useProfile } from "@/hooks/queries/useProfile";
 
-import { extractErrorMessage } from "./utils";
-
+/**
+ * `/settings/profile` — the operator's personal account. A SectionHead over a
+ * stack of cards (prototype `.scard`): identity, password (password accounts
+ * only), connected accounts + sessions, and the delete-account danger zone.
+ * Each card owns its own form state and mutations; this shell just composes
+ * them.
+ */
 const ProfileSection = () => {
   const { t } = useTranslation("profile");
-  const { data: profileData, isLoading: profileLoading } = useProfile();
-  const { data: verificationStatusData } = useVerificationStatus();
-  const updateProfileMutation = useUpdateProfile();
-  const changePasswordMutation = useChangePassword();
-  const requestEmailChangeMutation = useRequestEmailChange();
-  const cancelEmailChangeMutation = useCancelEmailChange();
-
-  const [editingProfile, setEditingProfile] = useState(false);
-  const [profileForm, setProfileForm] = useState<ProfileFormState>({
-    firstName: "",
-    lastName: "",
-  });
-
+  const { data: profileData, isLoading } = useProfile();
   const profile = profileData?.user;
 
-  const resetFormFromProfile = () => {
-    setProfileForm({
-      firstName: profile?.firstName || "",
-      lastName: profile?.lastName || "",
-    });
-  };
-
-  const handleUpdateProfile = async () => {
-    try {
-      await updateProfileMutation.mutateAsync(profileForm);
-      setEditingProfile(false);
-      toast.success(t("toast.profileUpdated"));
-    } catch (error) {
-      logger.error("Profile update error:", error);
-      toast.error(t("toast.profileUpdateFailed"), {
-        description: extractErrorMessage(error),
-      });
-    }
-  };
-
-  const handlePasswordChange = async (data: {
-    currentPassword: string;
-    newPassword: string;
-  }) => {
-    try {
-      await changePasswordMutation.mutateAsync(data);
-      toast.success(t("toast.passwordChanged"));
-    } catch (error) {
-      logger.error("Password change error:", error);
-      const errorMessage = extractErrorMessage(error);
-      toast.error(errorMessage);
-      throw error;
-    }
-  };
-
-  const handleEmailChangeRequest = async (data: {
-    newEmail: string;
-    password: string;
-  }) => {
-    try {
-      await requestEmailChangeMutation.mutateAsync(data);
-      toast.success(t("toast.verificationEmailSent"));
-    } catch (error) {
-      logger.error("Email change request error:", error);
-      const errorMessage = extractErrorMessage(error);
-      toast.error(errorMessage);
-      throw error;
-    }
-  };
-
-  const handleCancelEmailChange = async () => {
-    try {
-      await cancelEmailChangeMutation.mutateAsync();
-      toast.success(t("toast.emailChangeCancelled"));
-    } catch (error) {
-      logger.error("Cancel email change error:", error);
-      const errorMessage = extractErrorMessage(error);
-      toast.error(errorMessage);
-      throw error;
-    }
-  };
-
-  if (profileLoading) {
+  if (isLoading) {
     return <ProfileLoading />;
   }
 
@@ -116,29 +35,23 @@ const ProfileSection = () => {
 
   return (
     <div className="space-y-6">
-      <PersonalInfoTab
-        profile={profile}
-        editingProfile={editingProfile}
-        profileForm={profileForm}
-        setProfileForm={setProfileForm}
-        onStartEdit={() => {
-          resetFormFromProfile();
-          setEditingProfile(true);
-        }}
-        onCancelEdit={() => {
-          resetFormFromProfile();
-          setEditingProfile(false);
-        }}
-        onUpdateProfile={handleUpdateProfile}
-        onPasswordChange={handlePasswordChange}
-        onEmailChangeRequest={handleEmailChangeRequest}
-        onCancelEmailChange={handleCancelEmailChange}
-        verificationStatus={verificationStatusData}
-        isUpdating={updateProfileMutation.isPending}
-        isChangingPassword={changePasswordMutation.isPending}
-        isRequestingEmailChange={requestEmailChangeMutation.isPending}
-        isCancellingEmailChange={cancelEmailChangeMutation.isPending}
-      />
+      <div>
+        <h2 className="text-2xl font-semibold tracking-tight">
+          {t("section.title")}
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {t("section.subtitle")}
+        </p>
+      </div>
+
+      <IdentityCard profile={profile} />
+
+      {/* Password only for password accounts — social/SSO-only has none. */}
+      {profile.authProvider === "password" && <PasswordCard />}
+
+      <ConnectedAccountsCard email={profile.email} />
+
+      {profile.email && <DeleteAccountCard email={profile.email} />}
     </div>
   );
 };

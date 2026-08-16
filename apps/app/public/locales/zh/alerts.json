@@ -1,6 +1,8 @@
 {
   "pageTitle": "通知",
   "pageSubtitle": "监控系统告警和通知",
+  "subtitle": "由你的 broker 推送的告警与配置发现。",
+  "intent": "通知 —— 用于智能体自己无法完成的事：呼叫真人。友好的空状态，绝不冷场。",
   "noServerTitle": "通知",
   "noServerDescription": "监控系统告警和通知",
   "alertRules": "告警规则",
@@ -11,10 +13,54 @@
   "active": {
     "noneTitle": "暂无活跃告警",
     "noneDesc": "你的 RabbitMQ 集群运行正常，没有告警。",
+    "noneDescChannels": "你的集群运行平稳。一旦规则触发，告警会立即通过邮件、Slack 和 webhook 送达这里。",
+    "showResolvedCount": "显示已解决（{{count}}）",
     "upgradeCta": "立即升级",
     "previewHiddenCount": "还有 {{count}} 条告警被隐藏 — 升级后查看全部",
     "previewHiddenCount_other": "还有 {{count}} 条告警被隐藏 — 升级后查看全部",
     "previewUpgradeHint": "升级到 Developer 计划，即可通过邮件和 Slack 接收每条告警通知。"
+  },
+  "filter": {
+    "all": "全部",
+    "bySeverity": "按严重程度筛选",
+    "noneForFilter": "没有告警符合此筛选条件。"
+  },
+  "sevLabel": {
+    "critical": "严重",
+    "high": "高",
+    "medium": "中",
+    "low": "低",
+    "info": "信息"
+  },
+  "status": {
+    "active": "活跃",
+    "ack": "已认领",
+    "resolved": "已解决",
+    "snoozed": "已暂停"
+  },
+  "pager": {
+    "prev": "上一页",
+    "next": "下一页",
+    "range": "第 {{from}}–{{to}} 条，共 {{total}} 条"
+  },
+  "detail": {
+    "source": "来源",
+    "server": "服务器",
+    "queueVhost": "队列 · vhost",
+    "thresholdVsActual": "阈值 vs 实际",
+    "actual": "实际",
+    "timeline": "时间线",
+    "explainTitle": "此告警对应一个可诊断的故障。",
+    "explainHint": "在此直接获取根因分析。",
+    "rca": "根因分析",
+    "rcaLoading": "分析中…",
+    "rcaError": "无法生成解释。请重试。"
+  },
+  "timeline": {
+    "firstSeen": "首次出现",
+    "claimed": "已认领",
+    "resolved": "已解决",
+    "lastSeen": "最近出现"
   },
   "failedToLoad": "加载告警数据失败，请重试。",
   "loadingResolved": "正在加载已解决的告警...",
@@ -146,7 +192,8 @@
       "firstSeen": "首次出现",
       "resolved": "已解决",
       "source": "{{type}}：{{name}}"
-    }
+    },
+    "explain": "解释"
   },
   "configScan": "配置扫描",
   "scan": {
@@ -183,6 +230,42 @@
       "resolveSuccess": "问题已解决",
       "dismissSuccess": "问题已忽略",
       "actionError": "出现错误，请重试"
+    },
+    "configFinding": "配置发现",
+    "whatWhy": "是什么和为什么",
+    "explainThis": "解释此发现",
+    "aiExplanation": "AI 解释",
+    "ruleGuidance": "规则指引",
+    "noAutoFix": "无自动修复 —— Qarote 暂时无法安全地替你应用此更改。",
+    "rescan": "重新扫描",
+    "markResolved": "标记为已解决",
+    "inspect": "查看",
+    "openFindings_one": "{{count}} 个未处理发现",
+    "openFindings_other": "{{count}} 个未处理发现",
+    "showResolvedIgnored": "显示已解决和已忽略",
+    "emptyCategory": "此类别下没有发现。",
+    "dismissReasonSelect": "选择原因",
+    "dismissReasons": {
+      "byDesign": "不修复 —— 设计如此",
+      "acceptableRisk": "可接受的风险",
+      "falsePositive": "误报",
+      "handledElsewhere": "已在别处处理"
+    },
+    "banner": {
+      "resolved": "已标记为已解决。若扫描再次检测到将重新出现。",
+      "dismissed": "已忽略。已从列表隐藏，但可恢复。",
+      "dismissedWithReason": "已忽略 · {{reason}}。已隐藏但可恢复。"
+    },
+    "categories": {
+      "queues": "队列",
+      "exchanges": "exchange",
+      "bindings": "绑定",
+      "consumers": "消费者",
+      "connections": "连接",
+      "nodes": "节点",
+      "policies": "policy",
+      "users": "用户",
+      "vhosts": "vhost"
     }
   },
   "modal": {
@@ -328,5 +411,284 @@
         "default_unscoped": "默认 VHost 上的生产流量"
       }
     }
+  },
+  "lifecycle": {
+    "acknowledge": "认领",
+    "unacknowledge": "取消认领",
+    "snooze": "暂停",
+    "snoozeForLabel": "暂停至…",
+    "resolve": "解决",
+    "reopen": "重新打开",
+    "acknowledgedBadge": "已认领",
+    "snoozeFor": {
+      "1h": "1 小时",
+      "4h": "4 小时",
+      "24h": "至明天"
+    },
+    "toast": {
+      "acknowledged": "告警已认领",
+      "unacknowledged": "已取消认领",
+      "snoozed": "告警已暂停",
+      "resolved": "告警已解决",
+      "reopened": "告警已重新打开",
+      "error": "出现错误，请重试"
+    },
+    "claimTooltip": "认领 — 告诉团队由你处理；告警在解决前保持活跃",
+    "resolveTooltip": "解决 — 将告警标记为已修复并移入已解决",
+    "reopenTooltip": "重新打开 — 将其移回活跃告警"
+  },
+  "viewAlertRules": "查看告警规则",
+  "bulk": {
+    "selectedCount": "已选择 {{count}} 条",
+    "clear": "清除",
+    "selectAll": "全选",
+    "selectRow": "选择告警 {{title}}",
+    "confirmResolveTitle": "解决所选告警？",
+    "confirmResolveBody": "这会将 {{count}} 条告警标记为已解决，并将其移出活跃列表。",
+    "toast": {
+      "claimed": "已认领 {{count}} 条告警",
+      "resolved": "已解决 {{count}} 条告警",
+      "partialError": "{{count}} 项操作失败"
+    }
+  },
+  "rules": {
+    "customComingSoon": "自定义规则即将推出",
+    "kind": {
+      "threshold": "阈值",
+      "diagnostic": "诊断",
+      "config": "配置"
+    },
+    "intent": "告警规则 —— 上线版本是查看 + 开关，而非阈值编辑器。Qarote 提供了合理的默认规则；把对你的环境过于嘈杂的关掉即可。",
+    "searchPlaceholderShort": "搜索规则…",
+    "countOn": "{{on}} / {{total}} 已开启",
+    "defaultsNote": "正在使用 Qarote 的默认规则 —— 把对你的环境过于嘈杂的关掉即可。",
+    "customSoon": "自定义即将推出",
+    "customSoonTooltip": "自定义阈值即将推出",
+    "groupCount": "{{on}}/{{total}} 已开启",
+    "selfCalibrating": "自校准 · 无需设置阈值",
+    "undo": "撤销",
+    "disableRule": "禁用 {{name}}",
+    "enableRule": "启用 {{name}}",
+    "kindDesc": {
+      "threshold": "时点型 —— 当某个值越过固定线时触发。",
+      "diagnostic": "窗口型 —— 自校准，无阈值可调。",
+      "config": "拓扑中的结构性反模式。"
+    },
+    "toast": {
+      "enabled": "规则已启用",
+      "disabled": "规则已禁用"
+    }
+  },
+  "ruleGuidance": {
+    "config": {
+      "cluster": {
+        "even_node_count": {
+          "what": "该集群的节点数为偶数，网络分区时可能被切成势均力敌的两半、没有多数派 —— quorum queue 将无法选出领导者并可能停滞。请使用奇数节点，确保总有多数派存活。",
+          "fixTitle": "改为奇数节点",
+          "fixSteps": [
+            "增减一个节点，使总数为奇数（3、5……）。",
+            "将 quorum queue 的副本分散到存活的多数派上。",
+            "重新扫描以确认该发现消失。"
+          ]
+        },
+        "version_skew": {
+          "what": "集群中的节点运行着不同的 RabbitMQ 版本。混合版本只应在升级窗口内短暂存在 —— 长期保留会导致行为漂移并阻塞 quorum/Khepri 操作。",
+          "fixTitle": "统一 RabbitMQ 版本",
+          "fixSteps": [
+            "规划滚动升级，使所有节点都到同一个小版本。",
+            "逐个升级落后的节点，每次之间检查集群健康。",
+            "待所有节点版本一致后重新扫描。"
+          ]
+        }
+      },
+      "consumer": {
+        "prefetch_misconfig": {
+          "what": "{{resource}} 上的消费者使用的 prefetch（QoS）设置可能损害吞吐或公平性 —— 无上限的 prefetch 会让某个消费者囤积消息，而 prefetch=1 则串行化处理并增加往返。",
+          "fixTitle": "调优消费者 prefetch",
+          "fixSteps": [
+            "设置有上限的通道 prefetch（从 20–100 起步并测量）。",
+            "确保每个消费者都 ack，以归还 prefetch 额度。",
+            "重新部署消费者后重新扫描。"
+          ]
+        }
+      },
+      "exchange": {
+        "orphan": {
+          "what": "Exchange {{resource}} 没有任何 binding，发布到它的内容会被静默丢弃（mandatory 时被退回）。这通常是重命名路由或删除队列后的残留。",
+          "fixTitle": "绑定或删除该 exchange",
+          "fixSteps": [
+            "确认是否还有发布者指向该 exchange。",
+            "若仍需要，将其绑定到应路由的队列。",
+            "若确属孤立，删除后重新扫描。"
+          ]
+        }
+      },
+      "node": {
+        "fd_limit_low": {
+          "what": "某节点的文件描述符上限相对其连接数和队列数偏低。RabbitMQ 每个连接占一个 FD、每个队列占数个 —— 接近上限时会出现 accept() 失败并在高负载下丢连接。",
+          "fixTitle": "提高文件描述符上限",
+          "fixSteps": [
+            "提高 broker 进程的系统 ulimit（及 systemd 的 LimitNOFILE）。",
+            "目标是远高于峰值连接数 × 约 1.5 的余量。",
+            "重启节点并重新扫描。"
+          ]
+        },
+        "watermark_misconfig": {
+          "what": "{{resource}} 的内存 high-watermark 设得过高，高负载下 broker 可能触发告警并在你来不及反应前阻塞全集群的发布者。",
+          "fixTitle": "降低内存 watermark",
+          "fixSteps": [
+            "先检查每个节点的内存余量。",
+            "在受影响节点上降低 vm_memory_high_watermark（例如至 0.6）。",
+            "应用后观察告警状态，然后重新扫描。"
+          ]
+        }
+      },
+      "policy": {
+        "conflicting": {
+          "what": "两条 policy 以相同优先级匹配 {{resource}}，而 RabbitMQ 只应用其中一条 —— 同优先级下胜出者不确定，你的队列可能被静默地套上错误设置。",
+          "fixTitle": "解决 policy 冲突",
+          "fixSteps": [
+            "确定 {{resource}} 真正需要哪些定义。",
+            "将它们合并、收窄模式使其不再重叠，或重新设定优先级。",
+            "重新扫描以确认只应用一条 policy。"
+          ]
+        }
+      },
+      "queue": {
+        "classic_mirrored_deprecated": {
+          "what": "{{resource}} 是经典镜像队列。经典镜像已弃用并在 RabbitMQ 4.x 中移除 —— quorum queue 是受支持的、用于复制持久化的替代方案。",
+          "fixTitle": "迁移到 quorum queue",
+          "fixSteps": [
+            "在经典队列旁新建一个 quorum queue（无法原地转换）。",
+            "排空消费者、切换发布者，然后退役旧队列。",
+            "经典队列消失后重新扫描。"
+          ]
+        },
+        "exclusive_in_production": {
+          "what": "{{resource}} 是 exclusive 队列 —— 声明它的连接一断开就会被删除。用于 RPC 回复队列尚可，但对需要在重连后存活的内容很危险。",
+          "fixTitle": "重新考虑 exclusive 标志",
+          "fixSteps": [
+            "确认该队列确实只绑定到一个短暂连接。",
+            "若数据需要在连接之外存活，重新声明为 durable 且非 exclusive。",
+            "更改后重新扫描。"
+          ]
+        },
+        "missing_dlx": {
+          "what": "{{resource}} 没有死信交换机，被拒绝（requeue=false）或 TTL 过期的消息会被静默丢弃、毫无审计痕迹 —— 无法检查或重放失败。",
+          "fixTitle": "添加死信配置",
+          "fixSteps": [
+            "创建你可控的死信交换机及与之绑定的队列。",
+            "通过 policy 或队列参数在 {{resource}} 上应用 x-dead-letter-exchange。",
+            "重新扫描以确认该发现消失。"
+          ]
+        },
+        "no_consumer_backlog": {
+          "what": "{{resource}} 没有对无上限积压的任何防护 —— 没有长度上限、TTL 或溢出处理，消费者一旦停滞，消息会一直堆积直到触发内存或磁盘告警。",
+          "fixTitle": "限制积压",
+          "fixSteps": [
+            "按工作负载设置合适的 max-length 或 message-TTL。",
+            "有意识地选择溢出行为（drop-head 或 reject-publish）。",
+            "应用 policy 后重新扫描。"
+          ]
+        },
+        "no_length_bound": {
+          "what": "{{resource}} 既没有 max-length 也没有 message-TTL，若生产快于消费便会无上限增长，最终触发阻塞整个节点的内存或磁盘告警。",
+          "fixTitle": "添加长度或 TTL 上限",
+          "fixSteps": [
+            "确定合适的上限（max-length、max-length-bytes 或 message-TTL）。",
+            "通过 policy 应用，便于日后调整。",
+            "重新扫描以确认上限生效。"
+          ]
+        },
+        "quorum_queue_ha_policy": {
+          "what": "{{resource}} 是 quorum queue，但仍有一条经典 HA（ha-mode）policy 匹配它。HA policy 对 quorum queue 毫无意义，往往意味着未完成的迁移。",
+          "fixTitle": "移除 HA policy",
+          "fixSteps": [
+            "收窄或删除 ha-mode policy，使其不再匹配 quorum queue。",
+            "确认复制由 quorum queue 自身的副本设置管理。",
+            "重新扫描以确认过时 policy 已消失。"
+          ]
+        },
+        "quorum_queue_minority_replicas": {
+          "what": "{{resource}} 这个 quorum queue 的副本布局，使得单个节点故障即丢失多数派 —— 队列在该节点恢复前将不可用。",
+          "fixTitle": "重新平衡副本",
+          "fixSteps": [
+            "把副本集扩到分布在不同节点上的奇数个。",
+            "用 rabbitmq-queues add_member / grow 重新平衡。",
+            "重新扫描以确认丢失一个节点后多数派仍存活。"
+          ]
+        },
+        "quorum_queue_no_delivery_limit": {
+          "what": "{{resource}} 是没有 delivery-limit 的 quorum queue，毒消息可能被无限重投，在消费者间打转却永远不进死信。",
+          "fixTitle": "设置 delivery-limit",
+          "fixSteps": [
+            "通过 policy 设置合理重试次数的 x-delivery-limit。",
+            "搭配死信交换机以捕获耗尽的消息。",
+            "应用后重新扫描。"
+          ]
+        },
+        "transient_in_production": {
+          "what": "{{resource}} 是 transient（非持久）队列 —— broker 重启时连同消息一起丢失。这对生产负载几乎从来不是你想要的。",
+          "fixTitle": "将队列改为持久",
+          "fixSteps": [
+            "确认该队列的数据需要在重启后存活。",
+            "重新声明为 durable（transient/durable 无法原地切换）。",
+            "更改后重新扫描。"
+          ]
+        }
+      },
+      "user": {
+        "guest_enabled": {
+          "what": "默认的 guest 用户仍处于启用状态。即便默认仅限 localhost，保留其启用也是众所周知的弱点，会通不过大多数加固检查。",
+          "fixTitle": "禁用或替换 guest 用户",
+          "fixSteps": [
+            "为每个应用创建最小权限的具名用户。",
+            "删除 guest 用户（至少更改其密码并加以限制）。",
+            "重新扫描以确认 guest 已消失。"
+          ]
+        }
+      },
+      "vhost": {
+        "default_unscoped": {
+          "what": "生产流量正运行在默认 vhost（“/”）上。单一共享 vhost 无法在应用之间为权限、policy 或限额提供任何隔离边界。",
+          "fixTitle": "将流量划分到具名 vhost",
+          "fixSteps": [
+            "为每个应用或环境创建一个 vhost。",
+            "把队列/exchange 迁移过去并授予受限权限。",
+            "待默认 vhost 不再承载生产流量后重新扫描。"
+          ]
+        }
+      }
+    }
+  },
+  "notifSettings": {
+    "title": "通知设置",
+    "channels": "渠道",
+    "channelsDesc": "告警的送达位置。",
+    "email": "Email",
+    "slack": "Slack",
+    "webhooks": "Webhooks",
+    "webhook": "Webhook",
+    "notConfigured": "未配置",
+    "configured": "已配置",
+    "configure": "配置",
+    "developerPlus": "Developer+",
+    "upgrade": "升级",
+    "upgradeHint": "升级后可将告警路由到此处",
+    "enableChannel": "启用 {{channel}}",
+    "channelUpdated": "{{channel}} 已更新",
+    "saved": "已保存",
+    "saveError": "出现错误，请重试",
+    "saveChanges": "保存更改",
+    "severityRouting": "按严重程度路由",
+    "severityRoutingDesc": "选择哪些严重程度发送到哪个渠道。",
+    "allSeveritiesNote": "Slack 和 webhook 在启用时会接收所有严重程度；使用 Email 列来筛选通过邮件发送的严重程度。",
+    "opensNewTab": "（在新标签页打开）",
+    "showSecret": "显示密钥",
+    "hideSecret": "隐藏密钥",
+    "test": "测试",
+    "testSending": "发送中…",
+    "testOk": "已发送样本",
+    "testFailed": "测试失败"
   }
 }

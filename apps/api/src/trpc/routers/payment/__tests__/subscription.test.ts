@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockOrgFindUnique = vi.fn();
 const mockOrgUpdate = vi.fn();
+const mockSubscriptionFindUnique = vi.fn();
 const mockSubscriptionUpdateMany = vi.fn();
 
 vi.mock("@/core/prisma", () => ({
@@ -13,6 +14,7 @@ vi.mock("@/core/prisma", () => ({
       update: (...a: unknown[]) => mockOrgUpdate(...a),
     },
     subscription: {
+      findUnique: (...a: unknown[]) => mockSubscriptionFindUnique(...a),
       updateMany: (...a: unknown[]) => mockSubscriptionUpdateMany(...a),
     },
   },
@@ -68,7 +70,10 @@ function makeCtx(overrides: Record<string, unknown> = {}) {
   return {
     prisma: {
       organization: { findUnique: mockOrgFindUnique, update: mockOrgUpdate },
-      subscription: { updateMany: mockSubscriptionUpdateMany },
+      subscription: {
+        findUnique: mockSubscriptionFindUnique,
+        updateMany: mockSubscriptionUpdateMany,
+      },
     },
     logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
     user: {
@@ -94,7 +99,7 @@ describe("subscriptionRouter.cancelSubscription", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("throws BAD_REQUEST when org has no active subscription", async () => {
-    mockOrgFindUnique.mockResolvedValue({ stripeSubscriptionId: null });
+    mockSubscriptionFindUnique.mockResolvedValue(null);
 
     const caller = subscriptionRouter.createCaller(makeCtx() as never);
     await expect(caller.cancelSubscription({})).rejects.toMatchObject({
@@ -103,7 +108,9 @@ describe("subscriptionRouter.cancelSubscription", () => {
   });
 
   it("cancels subscription and returns success", async () => {
-    mockOrgFindUnique.mockResolvedValue({ stripeSubscriptionId: "sub-123" });
+    mockSubscriptionFindUnique.mockResolvedValue({
+      stripeSubscriptionId: "sub-123",
+    });
     mockCancelSubscription.mockResolvedValue({
       id: "sub-123",
       status: "canceled",

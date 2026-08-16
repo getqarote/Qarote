@@ -8,7 +8,8 @@
     "members": "Miembros",
     "description": "Descripción",
     "updatedAt": "Última actualización",
-    "actions": "Acciones"
+    "actions": "Acciones",
+    "type": "Tipo"
   },
   "empty": {
     "title": "Aún no hay roles personalizados",
@@ -18,7 +19,8 @@
   "gate": {
     "title": "Roles personalizados + ámbitos de recursos",
     "body": "Define paquetes de permisos con nombre, restringidos a servidores o entornos específicos. Disponible en el plan Enterprise.",
-    "upgradeCta": "Pasar a Enterprise"
+    "upgradeCta": "Pasar a Enterprise",
+    "footnote": "Las asignaciones existentes siguen vigentes; la actualización solo desbloquea la creación y edición de roles."
   },
   "planDowngradeBanner": {
     "title": "Los roles personalizados son de solo lectura en este plan",
@@ -105,7 +107,14 @@
       "body_other": "{{count}} miembros serán reasignados al rol integrado Miembro.",
       "confirm": "Eliminar rol",
       "cancel": "Conservar rol"
-    }
+    },
+    "basedOn": "Basado en",
+    "basedOnBlank": "Rol en blanco",
+    "basedOnClone": "{{role}} (copia)",
+    "enabledCount": "{{count}} permisos activados",
+    "scopableBadge": "limitable",
+    "selectAll": "Seleccionar todo",
+    "deselectAll": "Deseleccionar todo"
   },
   "errors": {
     "loadFailed": "Error al cargar los roles",
@@ -118,5 +127,8 @@
     "lastOwnerBlocked": "No se puede degradar — esto dejaría el espacio de trabajo sin propietario. Al menos un miembro debe seguir siendo Propietario.",
     "saved": "Rol asignado",
     "saveFailed": "Error al asignar el rol"
-  }
+  },
+  "typeSystem": "Integrado",
+  "typeCustom": "Personalizado",
+  "edit": "Editar {{name}}"
 }

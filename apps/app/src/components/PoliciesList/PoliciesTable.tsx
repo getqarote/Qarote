@@ -5,8 +5,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown, FileText } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PixelEdit } from "@/components/ui/pixel-edit";
-import { PixelTrash } from "@/components/ui/pixel-trash";
+import { IconEdit, IconTrash } from "@/components/ui/icons";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import type { PolicyListItem } from "./types";
@@ -191,7 +190,7 @@ function PolicyRow({
                 title={t("editPolicy")}
                 aria-label={t("editPolicy")}
               >
-                <PixelEdit
+                <IconEdit
                   className="h-3.5 w-auto shrink-0"
                   aria-hidden="true"
                 />
@@ -207,7 +206,7 @@ function PolicyRow({
                 title={t("deletePolicy")}
                 aria-label={t("deletePolicy")}
               >
-                <PixelTrash
+                <IconTrash
                   className="h-3.5 w-auto shrink-0"
                   aria-hidden="true"
                 />

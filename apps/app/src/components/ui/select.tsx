@@ -4,9 +4,7 @@ import * as SelectPrimitive from "@radix-ui/react-select";
 
 import { cn } from "@/lib/utils";
 
-import { PixelCheck } from "@/components/ui/pixel-check";
-import { PixelChevronDown } from "@/components/ui/pixel-chevron-down";
-import { PixelChevronUp } from "@/components/ui/pixel-chevron-up";
+import { IconCheck, IconChevron, IconChevronUp } from "@/components/ui/icons";
 
 const Select = SelectPrimitive.Root;
 
@@ -28,7 +26,7 @@ const SelectTrigger = React.forwardRef<
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <PixelChevronDown className="h-3 w-auto shrink-0 opacity-50" />
+      <IconChevron className="h-3 w-auto shrink-0 opacity-50" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ));
@@ -46,7 +44,7 @@ const SelectScrollUpButton = React.forwardRef<
     )}
     {...props}
   >
-    <PixelChevronUp className="h-3 w-auto shrink-0" />
+    <IconChevronUp className="h-3 w-auto shrink-0" />
   </SelectPrimitive.ScrollUpButton>
 ));
 SelectScrollUpButton.displayName = SelectPrimitive.ScrollUpButton.displayName;
@@ -63,7 +61,7 @@ const SelectScrollDownButton = React.forwardRef<
     )}
     {...props}
   >
-    <PixelChevronDown className="h-3 w-auto shrink-0" />
+    <IconChevron className="h-3 w-auto shrink-0" />
   </SelectPrimitive.ScrollDownButton>
 ));
 SelectScrollDownButton.displayName =
@@ -127,7 +125,7 @@ const SelectItem = React.forwardRef<
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <SelectPrimitive.ItemIndicator>
-        <PixelCheck className="h-2.5 text-green-500" />
+        <IconCheck className="h-2.5 text-green-500" />
       </SelectPrimitive.ItemIndicator>
     </span>
 

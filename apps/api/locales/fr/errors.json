@@ -115,7 +115,10 @@
     "isNotMemberOfWorkspace": "L'utilisateur n'est pas membre de cet espace de travail",
     "cannotRemoveSelf": "Impossible de vous retirer de l'espace de travail",
     "onlyOwnerCanRemoveAdmin": "Seuls les propriétaires de l'espace de travail peuvent retirer les administrateurs",
-    "failedToRemoveFromWorkspace": "Échec du retrait de l'utilisateur de l'espace de travail"
+    "failedToRemoveFromWorkspace": "Échec du retrait de l'utilisateur de l'espace de travail",
+    "deleteAccountConfirmationMismatch": "Saisissez votre e-mail exactement pour confirmer la suppression du compte",
+    "deleteAccountSoleOwnerBlocked": "Vous êtes le seul propriétaire d’une organisation comptant d’autres membres. Transférez la propriété ou retirez les membres avant de supprimer votre compte.",
+    "deleteAccountSubscriptionFailed": "Impossible d’annuler un abonnement — votre compte n’a pas été supprimé. Veuillez réessayer ou contacter le support."
   },
   "feature": {
     "requiresEnterprise": "{{featureName}} nécessite l'édition Enterprise. Passez de l'édition Community à l'édition Enterprise pour débloquer cette fonctionnalité.",
@@ -143,7 +146,11 @@
     "allWorkspaces": "tous vos espaces de travail"
   },
   "organization": {
-    "slugTaken": "Ce slug est déjà utilisé. Essayez-en un autre."
+    "slugTaken": "Ce slug est déjà utilisé. Essayez-en un autre.",
+    "deleteOwnerOnly": "Seul le propriétaire de l’organisation peut la supprimer",
+    "notFound": "Organisation introuvable",
+    "deleteConfirmationMismatch": "La confirmation ne correspond pas à l’identifiant de l’organisation",
+    "deleteSubscriptionFailed": "Impossible d’annuler l’abonnement — l’organisation n’a pas été supprimée. Veuillez réessayer ou contacter le support."
   },
   "license": {
     "validationFailed": "Échec de la validation de la licence",
@@ -221,7 +228,10 @@
     "failedToImportDefinitions": "Échec de l'importation des définitions du broker",
     "failedToUpdateTracingState": "Échec de la mise à jour de l'état de traçage du broker RabbitMQ. Vérifiez la connectivité au serveur.",
     "tracingQueryStartBeforeEnd": "L'heure de début doit être avant l'heure de fin.",
-    "tracingQueryWindowExceeded": "La plage temporelle ne peut pas dépasser 7 jours."
+    "tracingQueryWindowExceeded": "La plage temporelle ne peut pas dépasser 7 jours.",
+    "alertNotFound": "Alerte introuvable",
+    "tooManyQueues": "Ce broker a {{count}} files d'attente, au-delà des {{limit}} que nous supervisons. C'est un besoin spécifique — contactez-nous, nous l'étudierons avec vous.",
+    "queueCeilingReached": "La collecte de métriques est en pause pour ce broker : il a {{count}} files d'attente, au-delà des {{limit}} que nous supervisons. C'est un besoin spécifique — contactez-nous, nous l'étudierons avec vous."
   },
   "scan": {
     "findingNotFound": "Finding introuvable"

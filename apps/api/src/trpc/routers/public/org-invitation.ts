@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 
 import { hashPassword } from "@/core/auth";
 import { applyWorkspaceAssignments } from "@/core/org-invitation-accept";
@@ -8,6 +9,7 @@ import {
   AcceptInvitationWithRegistrationSchema,
   InvitationTokenSchema,
 } from "@/schemas/auth";
+import { WorkspaceAssignmentSchema } from "@/schemas/organization";
 
 import { rateLimitedPublicProcedure, router } from "@/trpc/trpc";
 
@@ -43,6 +45,7 @@ export const publicOrgInvitationRouter = router({
               select: {
                 id: true,
                 name: true,
+                logoUrl: true,
               },
             },
             invitedBy: {
@@ -68,6 +71,39 @@ export const publicOrgInvitationRouter = router({
           select: { id: true },
         });
 
+        // Resolve the explicitly-assigned workspaces (IDs + roles on the
+        // invitation) to their names for display. Empty = "all workspaces",
+        // which we surface as an empty list (the UI omits the section).
+        const assignments = z
+          .array(WorkspaceAssignmentSchema)
+          .safeParse(invitation.workspaceAssignments);
+        const assignedIds = assignments.success
+          ? assignments.data.map((a) => a.workspaceId)
+          : [];
+        const workspaceNames = assignedIds.length
+          ? await ctx.prisma.workspace.findMany({
+              where: { id: { in: assignedIds } },
+              select: { id: true, name: true },
+            })
+          : [];
+        const workspaces = workspaceNames.map((w) => ({
+          id: w.id,
+          name: w.name,
+        }));
+
+        // Already a member of this org? Only meaningful when authenticated.
+        const alreadyMember = ctx.user
+          ? (await ctx.prisma.organizationMember.findUnique({
+              where: {
+                userId_organizationId: {
+                  userId: ctx.user.id,
+                  organizationId: invitation.organization.id,
+                },
+              },
+              select: { id: true },
+            })) !== null
+          : false;
+
         return {
           success: true,
           invitation: {
@@ -78,9 +114,12 @@ export const publicOrgInvitationRouter = router({
             organization: {
               id: invitation.organization.id,
               name: invitation.organization.name,
+              logoUrl: invitation.organization.logoUrl,
             },
             invitedBy: formatInvitedBy(invitation.invitedBy),
             userExists: !!existingUser,
+            alreadyMember,
+            workspaces,
           },
         };
       } catch (error) {

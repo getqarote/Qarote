@@ -20,12 +20,6 @@
       "unavailableSubline": "Mettez à niveau ou vérifiez les capabilities du broker pour activer le diagnostic d'incident.",
       "regionLabel": "Vue d'ensemble du statut du broker"
     },
-    "activeConcerns": {
-      "heading": "Points d'attention",
-      "viewAll": "Tout voir dans Diagnostic",
-      "viewAllWithOverflow": "Tout voir (+{{count}} de plus)",
-      "openInDiagnosis": "Ouvrir dans Diagnostic"
-    },
     "activity": {
       "label": "Activité"
     },
@@ -39,6 +33,19 @@
       "enabledSublineNoTime": "Heure de livraison non encore planifiée.",
       "setUp": "Configurer",
       "configure": "Configurer"
+    },
+    "intent": "Une page pilotée par l'état, centrée sur votre agent — elle vérifie ce que votre agent voit, jamais une pièce vide.",
+    "firstRun": {
+      "title": "Connectez votre premier broker",
+      "description": "Qarote détecte les incidents et en explique la cause racine dès que vous êtes connecté — via la Management API, en lecture seule, en moins de deux minutes.",
+      "removedTitle": "Aucun broker connecté",
+      "removedDescription": "{{name}} a été supprimé. Connectez-en un autre pour reprendre la surveillance et le diagnostic.",
+      "addServer": "Ajouter un serveur",
+      "meta": "~2 min · sans exporter · sans Grafana · sans configuration",
+      "gated": "Demandez à un administrateur du workspace de connecter un broker.",
+      "hintBefore": "Une fois connecté, demandez à votre agent ",
+      "hintQuestion": "« qu'est-ce qui ne va pas avec mon RabbitMQ ? »",
+      "hintAfter": " — il interroge Qarote via MCP et vous renvoie le diagnostic."
     }
   },
   "pageTitle": "Tableau de bord",
@@ -268,5 +275,98 @@
       },
       "footer": "Une couverture plus élevée débloque un diagnostic plus précis."
     }
-  }
+  },
+  "prov": {
+    "detected": "détecté",
+    "inferred": "déduit",
+    "defaulted": "par défaut",
+    "mgmtPort": "Port de gestion",
+    "amqpPort": "Port AMQP",
+    "host": "Hôte",
+    "tls": "TLS",
+    "tlsOn": "Activé",
+    "tlsOff": "Désactivé",
+    "username": "Identifiant",
+    "vhost": "Hôte virtuel",
+    "fromUrl": "depuis l’URL",
+    "legend": "détecté = lu depuis l’URL · déduit = dérivé (ex. AMQPS ⇒ port mgmt 443) · par défaut = valeur de repli standard",
+    "password": "Mot de passe"
+  },
+  "addServerLead": "Collez une URL de connexion et Qarote détecte le reste — hôte, ports, TLS et identifiants. Pas d'URL ?",
+  "connectAndScan": "Connecter et analyser",
+  "serverUrlAccepts": "Accepte :",
+  "manageServer": "Gérer le serveur",
+  "redetectFromUrl": "Redétecter depuis l'URL",
+  "redetectPanelTitle": "Collez une nouvelle URL pour redétecter",
+  "redetectPanelHint": "Pour la rotation des identifiants, un changement d'hôte ou le passage en TLS.",
+  "detect": "Détecter",
+  "close": "Fermer",
+  "cancel": "Annuler",
+  "saveChanges": "Enregistrer les modifications",
+  "serverRemovedSuccess": "Le serveur « {{name}} » a été supprimé.",
+  "serverRemovedError": "Échec de la suppression du serveur. Veuillez réessayer.",
+  "removeServerTitle": "Supprimer le serveur",
+  "removeServerDescription": "Supprime ce serveur de l'espace de travail. La surveillance et le diagnostic s'arrêtent ; ses clés d'agent continuent de fonctionner mais ne renvoient aucune donnée.",
+  "removeServerConfirmTitle": "Supprimer « {{name}} » ?",
+  "removeServerConfirmDescription": "Cela supprime le serveur de cet espace de travail. La surveillance et le diagnostic s'arrêtent immédiatement. Vous pourrez l'ajouter à nouveau plus tard, mais son historique et ses constats ne seront pas restaurés.",
+  "enterManually": "Saisir manuellement",
+  "connectionDetected": "Connexion détectée",
+  "addServerScanDescription": "Connexion et analyse de votre broker",
+  "scanningServer": "Connexion et analyse de {{name}}…",
+  "scanningSubtext": "instantané · sans préchauffage",
+  "connectedActive": "Connecté. {{name}} est désormais le serveur actif.",
+  "queuesPill_one": "{{count}} file",
+  "queuesPill_other": "{{count}} files",
+  "exchangesPill_one": "{{count}} exchange",
+  "exchangesPill_other": "{{count}} exchanges",
+  "findingsPill_one": "{{count}} anomalie de configuration",
+  "findingsPill_other": "{{count}} anomalies de configuration",
+  "findingsScanRunning": "analyse en cours",
+  "findingsSummary": "L’analyse de configuration a signalé : {{resources}}.",
+  "findingsClean": "Aucun signalement de configuration — votre topologie est saine.",
+  "goToCockpit": "Aller au cockpit",
+  "serverFallbackName": "broker",
+  "chartAsk": {
+    "seeFinding": "voir le diagnostic",
+    "askButton": "Demander à votre agent",
+    "copied": "Invite copiée dans le presse-papiers",
+    "copyFailed": "Impossible de copier l'invite",
+    "queuedHint": "Vous voulez que l'agent analyse cette tendance d'accumulation ?",
+    "queuedPrompt": "Que vous révèle la tendance des messages en file d'attente sur l'incident en cours ?",
+    "ratesHint": "Besoin du détail complet — confirmations éditeur, get, E/S disque ?",
+    "ratesPromptCalm": "Décompose les taux de messages de mon broker — publisher confirms, get, redelivered, disk I/O — et signale toute anomalie.",
+    "ratesPromptIncident": "Que révèlent les taux de messages sur {{queue}} à propos de l’incident en cours ?"
+  },
+  "strip": {
+    "msgsPerSec": "Msgs/sec",
+    "queueDepth": "Profondeur",
+    "avgLatency": "Latence moy.",
+    "activeQueues": "Files actives",
+    "nodes": "Nœuds",
+    "cpu": "CPU",
+    "memory": "Mémoire"
+  },
+  "chartState": {
+    "collecting": "Collecte des métriques…",
+    "quiet": "Calme — aucun trafic sur cette période",
+    "ratesUnavailable": "Métriques de débit indisponibles — ce broker ne rapporte pas les taux de messages.",
+    "learnMore": "En savoir plus"
+  },
+  "leaveBlankKeepCurrent": "Laissez vide pour conserver l'actuel",
+  "redetectReviewHeading": "Détecté depuis {{host}} — vérifiez les modifications",
+  "redetectNothingChanged": "Rien ne diffère de la connexion actuelle.",
+  "redetectApplyField": "Appliquer {{field}}",
+  "redetectPasswordRotated": "renouvelé",
+  "redetectApplyNone": "Fermer",
+  "applyNChanges": "Appliquer {{count}} modifications",
+  "scanChecklist": {
+    "overview": "Lecture de /api/overview…",
+    "enumerate": "Énumération des queues et exchanges…",
+    "dlx": "Vérification des dead-letter exchanges…",
+    "consumers": "Analyse de la santé des consumers…",
+    "routing": "Évaluation du routage des exchanges…"
+  },
+  "findingsFlaggedPrefix": "Le scan de configuration a signalé :",
+  "findingsMore": "+{{count}} de plus",
+  "viewFindings": "Voir les résultats du scan de configuration"
 }

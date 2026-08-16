@@ -115,7 +115,10 @@
     "isNotMemberOfWorkspace": "用户不是此工作区的成员",
     "cannotRemoveSelf": "无法将自己从工作区中移除",
     "onlyOwnerCanRemoveAdmin": "只有工作区所有者才能移除管理员用户",
-    "failedToRemoveFromWorkspace": "从工作区移除用户失败"
+    "failedToRemoveFromWorkspace": "从工作区移除用户失败",
+    "deleteAccountConfirmationMismatch": "请准确输入您的邮箱以确认删除账号",
+    "deleteAccountSoleOwnerBlocked": "您是某个仍有其他成员的组织的唯一所有者。请先转移所有权或移除成员，然后再删除账号。",
+    "deleteAccountSubscriptionFailed": "无法取消某个订阅 — 您的账号未被删除。请重试或联系支持。"
   },
   "feature": {
     "requiresEnterprise": "{{featureName}} 需要企业版。请从社区版升级以解锁此功能。",
@@ -143,7 +146,11 @@
     "allWorkspaces": "您的所有工作区"
   },
   "organization": {
-    "slugTaken": "该 slug 已被占用，请换一个。"
+    "slugTaken": "该 slug 已被占用，请换一个。",
+    "deleteOwnerOnly": "只有组织所有者才能删除组织",
+    "notFound": "未找到组织",
+    "deleteConfirmationMismatch": "确认内容与组织标识不匹配",
+    "deleteSubscriptionFailed": "无法取消订阅 — 组织未被删除。请重试或联系支持。"
   },
   "license": {
     "validationFailed": "许可证验证失败",
@@ -221,7 +228,10 @@
     "failedToImportDefinitions": "导入Broker定义失败",
     "failedToUpdateTracingState": "更新 RabbitMQ Broker 追踪状态失败。请检查服务器连接。",
     "tracingQueryStartBeforeEnd": "开始时间必须早于结束时间。",
-    "tracingQueryWindowExceeded": "时间范围不能超过 7 天。"
+    "tracingQueryWindowExceeded": "时间范围不能超过 7 天。",
+    "alertNotFound": "未找到该告警",
+    "tooManyQueues": "该 broker 有 {{count}} 个队列，超过我们监控的 {{limit}} 个上限。这属于特殊需求——请联系我们，我们会与您一起处理。",
+    "queueCeilingReached": "该 broker 的指标采集已暂停：它有 {{count}} 个队列，超过我们监控的 {{limit}} 个上限。这属于特殊需求——请联系我们，我们会与您一起处理。"
   },
   "scan": {
     "findingNotFound": "未找到该问题"

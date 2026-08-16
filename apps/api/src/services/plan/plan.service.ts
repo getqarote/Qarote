@@ -54,34 +54,6 @@ export class PlanLimitExceededError extends Error {
 }
 
 /**
- * Get upgrade recommendation for over-limit scenario
- */
-export function getUpgradeRecommendationForOverLimit(currentPlan: UserPlan): {
-  recommendedPlan: UserPlan | null;
-  message: string;
-} {
-  // Simple upgrade path: Free -> Developer -> Enterprise
-  if (currentPlan === UserPlan.FREE) {
-    return {
-      recommendedPlan: UserPlan.DEVELOPER,
-      message: `Upgrade to Developer plan for enhanced features and queue management.`,
-    };
-  }
-
-  if (currentPlan === UserPlan.DEVELOPER) {
-    return {
-      recommendedPlan: UserPlan.ENTERPRISE,
-      message: `Upgrade to Enterprise plan for unlimited resources and priority support.`,
-    };
-  }
-
-  return {
-    recommendedPlan: null,
-    message: `You are already on the highest plan.`,
-  };
-}
-
-/**
  * Extract major.minor version from full RabbitMQ version string
  * Examples: "3.12.10" -> "3.12", "4.0.1" -> "4.0", "4.1.0-rc.1" -> "4.1"
  */
@@ -200,12 +172,41 @@ export function validateUserInvitation(
 }
 
 // Display helpers
-export function getPlanDisplayName(plan: UserPlan): string {
+function getPlanDisplayName(plan: UserPlan): string {
   return getPlanFeatures(plan).displayName;
 }
 
 /**
- * Get the plan for an organization by looking up its subscription.
+ * New organizations get a 14-day Enterprise trial from signup so the whole
+ * product is usable out of the box. The trial is computed from the org's
+ * createdAt — no Subscription row, no fake Stripe data — and auto-expires to
+ * FREE once the window passes. A real paid Subscription always takes
+ * precedence over the trial.
+ */
+const SIGNUP_TRIAL_DAYS = 14;
+const SIGNUP_TRIAL_MS = SIGNUP_TRIAL_DAYS * 24 * 60 * 60 * 1000;
+
+function isWithinSignupTrial(orgCreatedAt: Date): boolean {
+  return Date.now() < orgCreatedAt.getTime() + SIGNUP_TRIAL_MS;
+}
+
+/**
+ * Resolve an org's effective plan: a real subscription if present, else the
+ * Enterprise signup trial while the window is open, else FREE.
+ */
+function resolvePlan(
+  subscriptionPlan: UserPlan | undefined,
+  orgCreatedAt: Date | undefined
+): UserPlan {
+  if (subscriptionPlan) return subscriptionPlan;
+  if (orgCreatedAt && isWithinSignupTrial(orgCreatedAt)) {
+    return UserPlan.ENTERPRISE;
+  }
+  return UserPlan.FREE;
+}
+
+/**
+ * Get the plan for an organization: paid subscription > signup trial > FREE.
  */
 export async function getOrgPlan(orgId: string): Promise<UserPlan> {
   // Demo mode: treat as Enterprise so all plan-gated features are visible
@@ -213,12 +214,15 @@ export async function getOrgPlan(orgId: string): Promise<UserPlan> {
     return UserPlan.ENTERPRISE;
   }
 
-  const subscription = await prisma.subscription.findUnique({
-    where: { organizationId: orgId },
-    select: { plan: true },
+  const org = await prisma.organization.findUnique({
+    where: { id: orgId },
+    select: {
+      createdAt: true,
+      subscription: { select: { plan: true } },
+    },
   });
 
-  return subscription?.plan ?? UserPlan.FREE;
+  return resolvePlan(org?.subscription?.plan, org?.createdAt);
 }
 
 /**
@@ -240,15 +244,15 @@ export async function getWorkspacePlan(workspaceId: string): Promise<UserPlan> {
     select: {
       organization: {
         select: {
-          subscription: {
-            select: { plan: true },
-          },
+          createdAt: true,
+          subscription: { select: { plan: true } },
         },
       },
     },
   });
 
-  return workspace?.organization?.subscription?.plan ?? UserPlan.FREE;
+  const org = workspace?.organization;
+  return resolvePlan(org?.subscription?.plan, org?.createdAt);
 }
 
 /**
@@ -276,14 +280,6 @@ export async function getOrgResourceCounts(orgId: string) {
     users: memberCount,
     workspaces: workspaceCount,
   };
-}
-
-export function getOverLimitWarningMessage(
-  plan: UserPlan,
-  currentCount: number
-): string {
-  const planName = getPlanDisplayName(plan);
-  return `Queue management available on ${planName} plan. Current queues: ${currentCount}`;
 }
 
 // Simplified validation for queue creation (no limits in new plan structure)

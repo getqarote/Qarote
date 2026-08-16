@@ -3,11 +3,13 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import { loadTranslations } from "../lib/i18n-static";
 import QuizIsland from "../components/QuizIsland";
 
+const quiz = loadTranslations("en", "quiz") as {
+  seo: { title: string; description: string };
+};
+
 const resources = {
   quiz: loadTranslations("en", "quiz"),
   common: loadTranslations("en", "common"),
-  nav: loadTranslations("en", "nav"),
-  landing: loadTranslations("en", "landing"),
 };
 
 const quizSchema = {
@@ -24,10 +26,11 @@ const quizSchema = {
 ---
 
 <BaseLayout
-  title="RabbitMQ Skills Assessment — Test Your Knowledge | Qarote"
-  description="Take the free 20-question RabbitMQ quiz. Test your knowledge of queues, exchanges, consumers, and production patterns. Get a score and tier verdict."
+  title={quiz.seo.title}
+  description={quiz.seo.description}
   canonicalPath="/quiz/"
-  image="https://qarote.io/images/og-quiz-default.jpg"
+  image="https://qarote.io/og/quiz-default.png"
+  nav={false}
 >
   <Fragment slot="head">
     <script type="application/ld+json" set:html={JSON.stringify(quizSchema)} />

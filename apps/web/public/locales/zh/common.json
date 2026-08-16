@@ -79,7 +79,10 @@
   "noCreditCard": "无需信用卡",
   "changelog": {
     "title": "最新动态",
-    "subtitle": "Qarote 的所有重要变更，按版本逐一记录。"
+    "subtitle": "Qarote 的所有重要变更，按版本逐一记录。",
+    "eyebrow": "更新日志",
+    "latest": "最新",
+    "upcoming": "即将推出"
   },
   "notFound": {
     "code": "404",

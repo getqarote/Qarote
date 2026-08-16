@@ -1,0 +1,66 @@
+---
+title: "Validating licenses offline, with no phone-home"
+description: "How self-hosted Qarote checks entitlement with signed JWTs so nothing leaves your network — not even a heartbeat."
+publishedAt: "2026-04-12"
+author: "Brice Tessier"
+category: "engineering"
+cover: "cover-engineering-license.svg"
+coverCaption: "offline jwt"
+readingTimeMin: 9
+tags: ["engineering", "licensing", "security", "self-hosted"]
+---
+
+import Callout from "@/components/blog/Callout.astro";
+
+If you run software in an air-gapped network, "just call our license server" is a non-starter. Plenty of self-hosted tools quietly phone home to verify entitlement — a heartbeat, a periodic check-in, a license ping. Each one is a connection your security team has to reason about and, often, refuse. Qarote's licensed edition validates entitlement entirely offline. Nothing leaves your network, ever.
+
+## The problem with phone-home
+
+Online license checks fail in exactly the environments that need self-hosting most. Air-gapped clusters can't reach the internet by design. Security-conscious teams treat every outbound connection as attack surface and audit it accordingly. And a vendor's license server is a single point of failure: if it's down, does your monitoring stack stop working? For an ops tool, that's unacceptable — the thing that watches your brokers can't depend on someone else's uptime.
+
+The fix is to make the license self-verifying, so the check needs no network at all.
+
+## Signed JWTs, verified locally
+
+A Qarote license key is a JSON Web Token (JWT). It carries the entitlement claims — tier, expiry, seat scope — and it's signed with a private key that only we hold. Qarote ships with the corresponding **public** key baked into the binary.
+
+Verification is pure local cryptography:
+
+1. Parse the JWT from the license key.
+2. Verify its signature against the baked-in public key.
+3. If the signature is valid, trust the claims inside it.
+
+Asymmetric signing is what makes this safe. The public key can only _verify_ a signature — it can't _create_ one. So shipping it inside every binary gives away nothing; a forged license would need the private key, which never leaves us.
+
+```text
+license key (JWT)
+  ├─ header   { alg: "EdDSA" }
+  ├─ payload  { tier: "enterprise", exp: 1780000000, ... }
+  └─ signature  ← verified against baked-in public key, offline
+```
+
+<Callout type="note">
+  Public-key crypto is the whole trick: the key we embed can confirm a license
+  is genuine but can't mint a new one. That's why the check works with zero
+  network and still can't be faked.
+</Callout>
+
+## What this buys you
+
+Because verification is offline and deterministic, a few good properties fall out:
+
+- **Nothing leaves your network** — no heartbeat, no check-in, no telemetry tied to licensing. Your egress firewall stays closed.
+- **Air-gapped works the same as connected.** The validation path is identical whether the box can reach the internet or not.
+- **No vendor dependency at runtime.** Our infrastructure being up or down has no bearing on whether your monitoring runs.
+
+<Callout type="warn">
+  Offline signing means a JWT is valid until it expires — there's no revocation
+  call to reach a disconnected box. Expiry lives in the token's claims, so
+  renewals ship as a new key. (Qarote also offers an online, DB-validated key
+  for teams that *want* revocation; the offline JWT is the air-gap-friendly
+  path.)
+</Callout>
+
+## The principle
+
+Entitlement is a math problem, not a network problem. A signature either verifies against the public key or it doesn't, and that question can be answered on a machine that has never seen the internet. For air-gapped and security-conscious teams, that's the difference between "we can run this" and "legal said no."

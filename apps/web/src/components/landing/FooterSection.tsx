@@ -12,7 +12,7 @@ interface FooterSectionProps {
 }
 
 const navLinkClass =
-  "relative text-muted-foreground hover:text-foreground transition-colors text-sm after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-200 hover:after:scale-x-100 pb-px";
+  "relative text-[#9AA3B2] hover:text-white transition-colors text-sm after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-200 hover:after:scale-x-100 pb-px";
 
 const legalLinkClass = navLinkClass;
 
@@ -22,7 +22,7 @@ const SocialIcons = () => (
       href="https://github.com/getqarote/Qarote"
       target="_blank"
       rel="noopener noreferrer"
-      className="text-muted-foreground hover:text-foreground hover:-translate-y-0.5 transition-all duration-150 inline-block"
+      className="text-[#9AA3B2] hover:text-carrot hover:-translate-y-0.5 transition-all duration-150 inline-block"
       aria-label="GitHub"
     >
       <svg
@@ -42,7 +42,7 @@ const SocialIcons = () => (
       href="https://discord.gg/GwHRbGwyUG"
       target="_blank"
       rel="noopener noreferrer"
-      className="text-muted-foreground hover:text-indigo-500 hover:-translate-y-0.5 transition-all duration-150 inline-block"
+      className="text-[#9AA3B2] hover:text-carrot hover:-translate-y-0.5 transition-all duration-150 inline-block"
       aria-label="Discord"
     >
       <svg
@@ -58,7 +58,7 @@ const SocialIcons = () => (
       href="https://www.linkedin.com/company/qarote/"
       target="_blank"
       rel="noopener noreferrer"
-      className="text-muted-foreground hover:text-blue-600 hover:-translate-y-0.5 transition-all duration-150 inline-block"
+      className="text-[#9AA3B2] hover:text-carrot hover:-translate-y-0.5 transition-all duration-150 inline-block"
       aria-label="LinkedIn"
     >
       <svg
@@ -152,7 +152,7 @@ const FooterSection = ({ currentLocale = "en" }: FooterSectionProps) => {
   }, []);
 
   return (
-    <footer className="text-card-foreground py-10 border-t border-border bg-background">
+    <footer className="text-white py-10 bg-[#15120E]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Mobile layout */}
         <div className="flex flex-col gap-6 md:hidden">
@@ -161,13 +161,11 @@ const FooterSection = ({ currentLocale = "en" }: FooterSectionProps) => {
               src="/images/new_icon.svg"
               alt=""
               aria-hidden="true"
-              className="w-6 h-6 transition-transform duration-200 group-hover:scale-110"
-              width={24}
+              className="w-auto h-6 transition-transform duration-200 group-hover:scale-110"
+              width={18}
               height={24}
             />
-            <h3 className="text-foreground font-normal text-[1.2rem]">
-              Qarote
-            </h3>
+            <h3 className="text-white font-normal text-[1.2rem]">Qarote</h3>
           </div>
           <div className="flex flex-wrap gap-x-5 gap-y-3">
             <a href="/docs/getting-started/" className={navLinkClass}>
@@ -185,26 +183,11 @@ const FooterSection = ({ currentLocale = "en" }: FooterSectionProps) => {
             <a href={`${prefix}/about/`} className={navLinkClass}>
               {t("footer.about", "About")}
             </a>
-            <a href={`${prefix}/features/alerting/`} className={navLinkClass}>
-              {t("footer.alerting", "Alerting")}
+            <a href={`${prefix}/features/`} className={navLinkClass}>
+              {t("footer.features", "Features")}
             </a>
             <a href="/quiz/" className={navLinkClass}>
               {t("footer.quiz", "Quiz")}
-            </a>
-            <a href={`${prefix}/compare/datadog/`} className={navLinkClass}>
-              {t("footer.vsDatadog")}
-            </a>
-            <a
-              href={`${prefix}/compare/grafana-prometheus/`}
-              className={navLinkClass}
-            >
-              {t("footer.vsGrafana")}
-            </a>
-            <a href={`${prefix}/compare/cloudamqp/`} className={navLinkClass}>
-              {t("footer.vsCloudAMQP")}
-            </a>
-            <a href={`${prefix}/compare/new-relic/`} className={navLinkClass}>
-              {t("footer.vsNewRelic")}
             </a>
             <a href={`${prefix}/security/`} className={legalLinkClass}>
               {t("footer.security", "Security")}
@@ -259,15 +242,15 @@ const FooterSection = ({ currentLocale = "en" }: FooterSectionProps) => {
                 src="/images/new_icon.svg"
                 alt=""
                 aria-hidden="true"
-                width={32}
+                width={23}
                 height={32}
-                className="w-8 h-8 transition-transform duration-200 group-hover:scale-110"
+                className="w-auto h-8 transition-transform duration-200 group-hover:scale-110"
               />
               <div>
-                <h3 className="text-foreground font-normal text-[1.2rem] leading-none">
+                <h3 className="text-white font-normal text-[1.2rem] leading-none">
                   Qarote
                 </h3>
-                <p className="text-xs text-muted-foreground/60 mt-0.5">
+                <p className="text-xs text-[#9AA3B2] mt-0.5">
                   {t("footer.tagline", "RabbitMQ, debugged by your agent.")}
                 </p>
               </div>
@@ -288,32 +271,17 @@ const FooterSection = ({ currentLocale = "en" }: FooterSectionProps) => {
               <a href={`${prefix}/about/`} className={navLinkClass}>
                 {t("footer.about", "About")}
               </a>
-              <a href={`${prefix}/features/alerting/`} className={navLinkClass}>
-                {t("footer.alerting", "Alerting")}
+              <a href={`${prefix}/features/`} className={navLinkClass}>
+                {t("footer.features", "Features")}
               </a>
               <a href="/quiz/" className={navLinkClass}>
                 {t("footer.quiz", "Quiz")}
-              </a>
-              <a href={`${prefix}/compare/datadog/`} className={navLinkClass}>
-                {t("footer.vsDatadog")}
-              </a>
-              <a
-                href={`${prefix}/compare/grafana-prometheus/`}
-                className={navLinkClass}
-              >
-                {t("footer.vsGrafana")}
-              </a>
-              <a href={`${prefix}/compare/cloudamqp/`} className={navLinkClass}>
-                {t("footer.vsCloudAMQP")}
-              </a>
-              <a href={`${prefix}/compare/new-relic/`} className={navLinkClass}>
-                {t("footer.vsNewRelic")}
               </a>
             </nav>
           </div>
 
           {/* Row 2: legal links + social + language */}
-          <div className="flex items-center justify-between border-t border-border/50 pt-5">
+          <div className="flex items-center justify-between border-t border-white/10 pt-5">
             <div className="flex items-center gap-6">
               <a href={`${prefix}/security/`} className={legalLinkClass}>
                 {t("footer.security", "Security")}

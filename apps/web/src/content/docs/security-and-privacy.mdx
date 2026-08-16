@@ -14,7 +14,7 @@ Qarote uses two protocols depending on the operation:
 
 **Management HTTP API** reads queue and exchange metadata, metrics, bindings, and node stats. It invokes mutation endpoints when you perform management actions like purging a queue or publishing a message. This is RabbitMQ's built-in HTTP API — no plugins beyond `rabbitmq_management` are required.
 
-**AMQP** is used for features that require a live, low-level connection to the broker. The primary example is [spying on live queues](/docs/queues/spy-on-live-queues/): Qarote opens a direct AMQP connection to intercept a copy of in-flight messages. The connection is opened on demand and closed as soon as the spy session ends.
+**AMQP** is used for features that require a live, low-level connection to the broker. The primary example is spying on live queues: Qarote opens a direct AMQP connection to intercept a copy of in-flight messages. The connection is opened on demand and closed as soon as the spy session ends.
 
 Neither protocol routes traffic through Qarote's infrastructure. The connection goes:
 
@@ -44,7 +44,7 @@ Qarote stores the following in its own PostgreSQL database:
 
 Qarote does **not** store message bodies. Two features touch message-level data, and they handle it differently:
 
-- **[Tracing](/docs/tracing-vs-spy/)** captures broker metadata for every published and delivered message — routing key, exchange, queue, content-type, payload size, and timestamp — and persists it in your PostgreSQL database for a fixed 7-day retention window. The body itself is never read or stored.
+- **Tracing** captures broker metadata for every published and delivered message — routing key, exchange, queue, content-type, payload size, and timestamp — and persists it in your PostgreSQL database for a fixed 7-day retention window. The body itself is never read or stored.
 - **Spy** displays full message bodies live in your browser only. They are never written to disk. When the spy session ends, the captured data is gone.
 
 <Callout type="warning" title="Protect your database">

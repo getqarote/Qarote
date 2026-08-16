@@ -110,5 +110,6 @@
   "justUpdated": "À l'instant",
   "backToDashboard": "Retour au tableau de bord",
   "backToSettings": "Retour aux paramètres",
-  "loadingPermissions": "Vérification des permissions…"
+  "loadingPermissions": "Vérification des permissions…",
+  "srLoading": "Chargement…"
 }

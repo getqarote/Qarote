@@ -19,8 +19,11 @@ const config: KnipConfig = {
     },
     "apps/web": {
       project: ["src/**/*.{ts,tsx}"],
-      // react-dom is a peer dep of @astrojs/react — not directly imported but required
-      ignoreDependencies: ["react-dom"],
+      // react-dom is a peer dep of @astrojs/react — not directly imported but required.
+      // @resvg/resvg-js is a direct dep so the build-time OG endpoint can resolve
+      // it at prerender (it's a transitive dep of @qarote/og-cards otherwise) —
+      // used at runtime, never import-referenced in source.
+      ignoreDependencies: ["react-dom", "@resvg/resvg-js"],
       // .astro files import these but knip can't scan .astro syntax
       entry: [
         ...DEFAULT_ENTRY,
@@ -83,6 +86,9 @@ const config: KnipConfig = {
     },
   },
   ignore: [
+    // Documentation + design reference (prototype HTML/JSX, ADRs, plans) —
+    // never part of the dependency graph, so knip must not scan it.
+    "docs/**",
     // Ignore E2E test package (has its own dependency management)
     "apps/e2e/**",
     // Ignore UI component directories (as requested)
@@ -121,6 +127,13 @@ const config: KnipConfig = {
     ".claire/**",
     // In-progress blog section component — not yet wired into the landing page
     "apps/web/src/components/landing/BlogSection.tsx",
+    // Landing sections dropped from the faithful Qarote.html port (hide, don't
+    // delete) — no longer rendered by LandingIsland; kept for reuse.
+    "apps/web/src/components/landing/ConnectionSection.tsx",
+    "apps/web/src/components/landing/AudienceSection.tsx",
+    "apps/web/src/components/landing/FeaturesSection.tsx",
+    // only used by the hidden FeaturesSection above
+    "apps/web/src/lib/launchFlags.ts",
     // Daily Digest teaser — gated out of the frontend at launch (T5), kept in
     // the tree (hide-don't-delete) for when Digest returns. Not rendered, so
     // knip flags it; ignore until it's re-wired into Home.
@@ -129,6 +142,13 @@ const config: KnipConfig = {
     // so diagnosis findings are the single concern surface. Kept in the tree
     // (hide-don't-delete) for when the notifications surface expands.
     "apps/app/src/components/RecentAlerts.tsx",
+    // Legacy server-list management Dialog — superseded by the prototype flow:
+    // switch via the sidebar Server dropdown, edit via the Manage-server Sheet
+    // (AddServerForm mode="edit"), add via AddServerForm, remove via the Sheet's
+    // danger zone. Kept (hide-don't-delete) for a possible future "Servers"
+    // settings surface. ServerListSkeleton was its only consumer.
+    "apps/app/src/components/ServerManagement.tsx",
+    "apps/app/src/components/skeletons/ServerListSkeleton.tsx",
     // Feature-gate frontend primitives — wired via CapabilityGate +
     // ServerCapabilityBadge as of PR-B. The barrel + readGateError are
     // imported by error-driven render paths that knip can't trace; the

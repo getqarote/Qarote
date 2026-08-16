@@ -10,8 +10,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { PixelChevronRight } from "@/components/ui/pixel-chevron-right";
-import { PixelTrash } from "@/components/ui/pixel-trash";
+import { IconChevronRight, IconTrash } from "@/components/ui/icons";
 
 import { ExchangeFeatureBadges } from "./ExchangeFeatureBadges";
 import { getExchangeTypeBadgeClass } from "./exchangeTypeUi";
@@ -101,7 +100,7 @@ export function ExchangeRow({
               {(exchange.message_stats?.publish_out ?? 0).toLocaleString()}
             </span>
             <div className="w-8 flex justify-center">
-              <PixelChevronRight
+              <IconChevronRight
                 className={`h-3 text-muted-foreground transition-transform duration-150 shrink-0 ${
                   isOpen ? "rotate-90" : ""
                 }`}
@@ -212,7 +211,7 @@ function ExchangeDetailsPanel({
             onClick={onDelete}
             disabled={isDeleting}
           >
-            <PixelTrash
+            <IconTrash
               className="h-3.5 w-auto shrink-0 mr-1.5"
               aria-hidden="true"
             />

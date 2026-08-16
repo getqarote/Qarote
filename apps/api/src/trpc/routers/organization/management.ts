@@ -1,6 +1,11 @@
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 
 import { recordFromContext } from "@/services/audit";
+import {
+  deleteOrganizationCascade,
+  SubscriptionCancelFailedError,
+} from "@/services/organization/org-deletion.service";
 import { getOrgPlan } from "@/services/plan/plan.service";
 
 import { UpdateOrganizationSchema } from "@/schemas/organization";
@@ -12,6 +17,7 @@ import {
   router,
 } from "@/trpc/trpc";
 
+import { OrgRole } from "@/generated/prisma/client";
 import { te } from "@/i18n";
 
 /**
@@ -53,6 +59,31 @@ export const managementRouter = router({
       role: ctx.orgRole,
     };
   }),
+
+  /**
+   * Check whether a slug is available (PROTECTED). Returns `available: true`
+   * when no OTHER organization owns it — the caller's own current slug counts
+   * as available so re-saving an unchanged slug isn't flagged as taken. The
+   * unique constraint on save is still the source of truth; this just powers
+   * the inline indicator on the org settings form.
+   */
+  checkSlug: rateLimitedOrgProcedure
+    .input(
+      z.object({
+        slug: z
+          .string()
+          .min(3)
+          .max(48)
+          .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const existing = await ctx.prisma.organization.findFirst({
+        where: { slug: input.slug, NOT: { id: ctx.organizationId } },
+        select: { id: true },
+      });
+      return { available: !existing };
+    }),
 
   /**
    * List all organizations the current user belongs to (PROTECTED)
@@ -200,4 +231,75 @@ export const managementRouter = router({
         : null,
     };
   }),
+
+  /**
+   * Permanently delete the current organization (OWNER only). Cascades all
+   * workspaces, members, servers, alerts, etc., and cancels any live Stripe
+   * subscription immediately (fail-safe — a Stripe failure aborts the delete).
+   *
+   * The caller must echo the org slug as `confirmation` — a deliberate friction
+   * guard against accidental or automated destruction.
+   */
+  delete: rateLimitedOrgAdminProcedure
+    .input(z.object({ confirmation: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      // OWNER-only: an ADMIN can manage the org but not destroy it.
+      if (ctx.orgRole !== OrgRole.OWNER) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: te(ctx.locale, "organization.deleteOwnerOnly"),
+        });
+      }
+
+      const org = await ctx.prisma.organization.findUnique({
+        where: { id: ctx.organizationId },
+        select: { id: true, name: true, slug: true },
+      });
+      if (!org) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: te(ctx.locale, "organization.notFound"),
+        });
+      }
+
+      // Typed confirmation must match the slug exactly.
+      if (input.confirmation.trim() !== org.slug) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: te(ctx.locale, "organization.deleteConfirmationMismatch"),
+        });
+      }
+
+      try {
+        await deleteOrganizationCascade(org.id);
+      } catch (error) {
+        if (error instanceof SubscriptionCancelFailedError) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: te(ctx.locale, "organization.deleteSubscriptionFailed"),
+          });
+        }
+        throw error;
+      }
+
+      ctx.logger.info(
+        { organizationId: org.id, userId: ctx.user.id },
+        "Organization deleted by owner"
+      );
+
+      // Audit after the row is gone: organizationId is null (FK target deleted),
+      // the org identity lives in entityId/label + metadata.
+      void recordFromContext(ctx, {
+        action: "org.deleted",
+        category: "org",
+        entityType: "organization",
+        entityId: org.id,
+        entityLabel: org.name,
+        organizationId: null,
+        workspaceId: null,
+        metadata: { slug: org.slug },
+      });
+
+      return { success: true };
+    }),
 });

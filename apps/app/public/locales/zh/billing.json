@@ -29,7 +29,6 @@
   "plans": {
     "chooseYourPlan": "选择您的方案",
     "subtitle": "通过专为各种规模团队设计的方案扩展您的 RabbitMQ 监控能力。",
-    "pricingTitle": "简单透明的定价",
     "currentPlan": "当前方案",
     "mostPopular": "最受欢迎",
     "startFree": "免费开始",
@@ -240,5 +239,62 @@
     "preferSelfHost": "更喜欢自托管？",
     "preferSelfHostDesc": "使用许可证密钥在您自己的基础设施上部署 Qarote。",
     "learnMore": "了解更多"
+  },
+  "hero": {
+    "subtitle": "本组织的账单。",
+    "billedStripe": "{{interval}}计费 · 通过 Stripe",
+    "billedContract": "{{interval}}计费 · 定制合同",
+    "intervalMonthly": "按月",
+    "intervalYearly": "按年",
+    "perMonth": "/月",
+    "perYear": "/年",
+    "interval": "周期",
+    "currentPeriodEnds": "当前周期结束",
+    "renewsOn": "续订日期",
+    "cancelsOn": "取消日期",
+    "auto": "（自动）",
+    "seats": "席位",
+    "seatsValue": "{{current}} / {{limit}}",
+    "paymentMethod": "支付方式",
+    "changePlan": "更改套餐",
+    "switchYearly": "切换为按年",
+    "save20": "省 20%",
+    "updatePayment": "更新支付方式",
+    "cancel": "取消"
+  },
+  "statusPill": {
+    "pastDue": "逾期",
+    "canceled": "已取消"
+  },
+  "pastDue": {
+    "title": "支付失败。",
+    "body": "我们无法从您的卡扣款。请更新支付方式以保留付费功能。",
+    "update": "立即更新 →"
+  },
+  "community": {
+    "name": "Community",
+    "tagline": "永久免费 · 检测核心 + 只读工具。",
+    "upgrade": "升级",
+    "hint": "升级到 Developer 即可获得托管的 AI Explain、Slack/webhook 告警以及更多 broker。"
+  },
+  "invoices": {
+    "title": "发票",
+    "empty": "暂无发票",
+    "view": "查看"
+  },
+  "cancelDialog": {
+    "title": "取消订阅？",
+    "warn": "您的套餐在本周期结束前仍然有效。之后将降级为 Community——托管的 Explain 和付费集成将停止。",
+    "reasonLabel": "方便告诉我们原因吗？（可选）",
+    "reasonPlaceholder": "选择一个原因",
+    "confirm": "在周期结束时取消",
+    "keep": "保留我的套餐",
+    "reasons": {
+      "tooExpensive": "太贵了",
+      "missingFeature": "缺少功能",
+      "switchingTools": "更换工具",
+      "exploring": "只是看看",
+      "other": "其他"
+    }
   }
 }

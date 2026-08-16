@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
 
 import { UserPlus } from "lucide-react";
 import { toast } from "sonner";
@@ -13,7 +12,6 @@ import { EnhancedTeamTab, InviteFormState } from "@/components/profile";
 import { WorkspaceForbidden } from "@/components/rbac/WorkspaceForbidden";
 import { AddFromOrgDialog } from "@/components/settings/team/AddFromOrgDialog";
 import { Button } from "@/components/ui/button";
-import { PixelUser } from "@/components/ui/pixel-user";
 import {
   Select,
   SelectContent,
@@ -231,33 +229,12 @@ const TeamSection = () => {
     "";
 
   return (
-    <div className="space-y-6">
-      {/* Context header bar */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-border">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10 shrink-0">
-            <PixelUser className="h-5 w-auto shrink-0 text-primary" />
-          </div>
-          <div className="min-w-0">
-            <h2 className="text-lg font-semibold leading-tight">
-              {t("team.workspaceMembersTitle")}
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {t("team.workspaceMembersSubtitle", {
-                workspace: selectedWorkspaceName,
-              })}{" "}
-              <Link
-                to="/settings/organization"
-                className="underline underline-offset-4 decoration-border hover:decoration-foreground hover:text-foreground"
-              >
-                {t("team.manageOrgMembersLink")}
-              </Link>
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2.5 shrink-0">
-          {orgWorkspaces.length > 0 && (
+    <div className="space-y-4">
+      {/* Workspace selector + add-from-org. The card below owns the title. */}
+      {(orgWorkspaces.length > 1 ||
+        (isAdmin && availableOrgMembers.length > 0)) && (
+        <div className="flex flex-wrap items-center justify-end gap-2.5">
+          {orgWorkspaces.length > 1 && (
             <Select
               value={effectiveWorkspaceId}
               onValueChange={(id) => {
@@ -290,7 +267,7 @@ const TeamSection = () => {
             </Button>
           )}
         </div>
-      </div>
+      )}
 
       <EnhancedTeamTab
         isAdmin={isAdmin}

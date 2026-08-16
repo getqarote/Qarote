@@ -2,9 +2,10 @@ import React, { KeyboardEvent, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
+import { IconClose } from "@/components/ui/icons";
+
 import { Badge } from "./badge";
 import { Input } from "./input";
-import { PixelX } from "./pixel-x";
 
 interface TagsInputProps {
   value: string[];
@@ -94,7 +95,7 @@ const TagsInput: React.FC<TagsInputProps> = ({
               }}
               className="ml-1 rounded-full hover:bg-destructive hover:text-destructive-foreground"
             >
-              <PixelX className="h-3 w-3 shrink-0" />
+              <IconClose className="h-3 w-3 shrink-0" />
             </button>
           )}
         </Badge>

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Check } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { PixelX } from "@/components/ui/pixel-x";
+import { IconClose } from "@/components/ui/icons";
 import {
   Select,
   SelectContent,
@@ -63,7 +63,7 @@ export function WorkspaceRow({
         {selected ? (
           <Check className="h-4 w-4 mr-1" aria-hidden="true" />
         ) : (
-          <PixelX
+          <IconClose
             className="h-4 w-auto shrink-0 mr-1 opacity-40"
             aria-hidden="true"
           />

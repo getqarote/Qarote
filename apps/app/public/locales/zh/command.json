@@ -23,6 +23,14 @@
     "definitions": "定义"
   },
   "actions": {
-    "configureAiExplain": "配置 AI Explain"
+    "configureAiExplain": "配置 AI Explain",
+    "runConfigScan": "运行配置扫描",
+    "addServer": "添加服务器",
+    "mintAgentKey": "生成智能体密钥"
+  },
+  "footer": {
+    "navigate": "导航",
+    "open": "打开",
+    "close": "关闭"
   }
 }

@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Building, Loader2, Mail, Users } from "lucide-react";
+import { Building, Loader2, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { identify, track } from "@/lib/analytics";
@@ -12,8 +12,7 @@ import { authClient } from "@/lib/auth-client";
 import { logger } from "@/lib/logger";
 import { trpc } from "@/lib/trpc/client";
 
-import { AuthPageHeader } from "@/components/auth/AuthPageHeader";
-import { AuthPageWrapper } from "@/components/auth/AuthPageWrapper";
+import { AuthSplitLayout } from "@/components/auth/AuthSplitLayout";
 import { InviteAcceptanceForm } from "@/components/auth/InviteAcceptanceForm";
 import {
   type InviteInfoField,
@@ -21,7 +20,6 @@ import {
 } from "@/components/auth/InviteInfoPanel";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { CardContent } from "@/components/ui/card";
 
 import { useAuth } from "@/contexts/AuthContextDefinition";
 
@@ -45,6 +43,7 @@ interface InvitationDetails {
     email: string;
     displayName: string;
   };
+  alreadyMember?: boolean;
 }
 
 type InvitationState = {
@@ -98,8 +97,10 @@ const AcceptInvitation = () => {
   const { t } = useTranslation("auth");
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { user: authUser, login } = useAuth();
   const acceptInvitationMutation = trpc.public.invitation.accept.useMutation();
+  const acceptAuthInvitationMutation =
+    trpc.auth.invitation.acceptInvitation.useMutation();
   const utils = trpc.useUtils();
 
   const [{ invitation, loading, error }, dispatch] = useReducer(
@@ -210,31 +211,84 @@ const AcceptInvitation = () => {
     );
   };
 
+  // Signed-in user with a matching email accepts directly (password-less —
+  // the session already proves identity).
+  const handleAuthAccept = () => {
+    if (!token) return;
+    dispatch({ type: "SET_ERROR", error: "" });
+    acceptAuthInvitationMutation.mutate(
+      { token },
+      {
+        onSuccess: () => {
+          track("invitation_accepted", {
+            workspace_id: invitation?.workspace.id,
+            workspace_name: invitation?.workspace.name,
+            role: invitation?.role,
+          });
+          toast(t("welcomeToQarote"), {
+            description: t("successfullyJoinedWorkspace", {
+              workspace: invitation?.workspace.name,
+            }),
+          });
+          // Hard nav so the new active workspace is picked up everywhere.
+          window.location.href = "/";
+        },
+        onError: (err: unknown) => {
+          dispatch({
+            type: "SET_ERROR",
+            error:
+              err instanceof Error ? err.message : t("failedAcceptInvitation"),
+          });
+        },
+      }
+    );
+  };
+
+  const eyebrow = (
+    <p className="mb-3 select-none font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-primary">
+      {t("panelEyebrow")}
+    </p>
+  );
+
   if (loading) {
     return (
-      <AuthPageWrapper>
-        <CardContent className="flex items-center justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin" aria-hidden="true" />
-        </CardContent>
-      </AuthPageWrapper>
+      <AuthSplitLayout>
+        <div
+          className="flex items-center justify-center py-10"
+          role="status"
+          aria-live="polite"
+        >
+          <Loader2
+            className="h-7 w-7 animate-spin text-primary"
+            aria-hidden="true"
+          />
+        </div>
+      </AuthSplitLayout>
     );
   }
 
   if (error && !invitation) {
     return (
-      <AuthPageWrapper>
-        <AuthPageHeader
-          Icon={Mail}
-          title={t("invalidInvitation")}
-          description={error}
-          variant="destructive"
-        />
-        <CardContent>
-          <Button onClick={() => navigate("/auth/sign-in")} className="w-full">
-            {t("goToSignIn")}
-          </Button>
-        </CardContent>
-      </AuthPageWrapper>
+      <AuthSplitLayout
+        header={
+          <div className="mb-6">
+            {eyebrow}
+            <h1 className="font-heading text-[clamp(26px,3vw,32px)] font-bold leading-[1.15] tracking-tight">
+              {t("invalidInvitation")}
+            </h1>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              {error}
+            </p>
+          </div>
+        }
+      >
+        <Button
+          onClick={() => navigate("/auth/sign-in")}
+          className="btn-primary h-11 w-full"
+        >
+          {t("goToSignIn")}
+        </Button>
+      </AuthSplitLayout>
     );
   }
 
@@ -262,19 +316,132 @@ const AcceptInvitation = () => {
       ]
     : [];
 
-  return (
-    <AuthPageWrapper>
-      <AuthPageHeader
-        Icon={Mail}
-        title={t("joinQaroteTitle")}
-        description={t("setUpAccount")}
-      />
+  const headerBlock = (title: string, description: string) => (
+    <div className="mb-6">
+      {eyebrow}
+      <h1 className="font-heading text-[clamp(26px,3vw,32px)] font-bold leading-[1.15] tracking-tight">
+        {title}
+      </h1>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+        {description}
+      </p>
+    </div>
+  );
 
-      <CardContent className="space-y-6">
+  // ── Signed-in flows ───────────────────────────────────────────────────────
+  if (authUser && invitation) {
+    const sameEmail =
+      authUser.email.toLowerCase().trim() ===
+      invitation.email.toLowerCase().trim();
+
+    // Wrong account — signed in as a different email than the invite
+    if (!sameEmail) {
+      return (
+        <AuthSplitLayout
+          header={headerBlock(
+            t("joinQaroteTitle"),
+            t("wrongAccountDescription", { email: invitation.email })
+          )}
+        >
+          <div className="space-y-6">
+            <InviteInfoPanel fields={infoFields} />
+            <div className="space-y-3">
+              <Button
+                className="btn-primary h-11 w-full"
+                onClick={async () => {
+                  await authClient.signOut();
+                  navigate(`/auth/sign-in?redirect=/invite/${token}`);
+                }}
+              >
+                {t("switchAccount")}
+              </Button>
+              <Button asChild variant="ghost" className="h-11 w-full">
+                <Link to="/">{t("goToDashboard")}</Link>
+              </Button>
+            </div>
+          </div>
+        </AuthSplitLayout>
+      );
+    }
+
+    // Already a member of this workspace
+    if (invitation.alreadyMember) {
+      return (
+        <AuthSplitLayout
+          header={headerBlock(
+            t("alreadyMemberTitle", { workspace: invitation.workspace.name }),
+            t("alreadyMemberDescription")
+          )}
+        >
+          <Button
+            className="btn-primary h-11 w-full"
+            onClick={() => {
+              window.location.href = "/";
+            }}
+          >
+            {t("goToWorkspace")}
+          </Button>
+        </AuthSplitLayout>
+      );
+    }
+
+    // Direct accept (password-less)
+    return (
+      <AuthSplitLayout
+        header={headerBlock(
+          t("joinQaroteTitle"),
+          t("acceptInvitationDescription")
+        )}
+      >
+        <div className="space-y-6">
+          <InviteInfoPanel fields={infoFields} />
+          {error && (
+            <Alert variant="destructive" aria-live="assertive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          <Button
+            className="btn-primary h-11 w-full"
+            onClick={handleAuthAccept}
+            disabled={acceptAuthInvitationMutation.isPending}
+          >
+            {acceptAuthInvitationMutation.isPending ? (
+              <>
+                <Loader2
+                  className="mr-2 h-4 w-4 animate-spin"
+                  aria-hidden="true"
+                />
+                {t("accepting")}
+              </>
+            ) : (
+              t("acceptInvitation")
+            )}
+          </Button>
+        </div>
+      </AuthSplitLayout>
+    );
+  }
+
+  // ── Signed-out flow (registration) ────────────────────────────────────────
+  return (
+    <AuthSplitLayout
+      header={
+        <div className="mb-6">
+          {eyebrow}
+          <h1 className="font-heading text-[clamp(26px,3vw,32px)] font-bold leading-[1.15] tracking-tight">
+            {t("joinQaroteTitle")}
+          </h1>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            {t("setUpAccount")}
+          </p>
+        </div>
+      }
+    >
+      <div className="space-y-6">
         {invitation && <InviteInfoPanel fields={infoFields} />}
 
         {error && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" aria-live="assertive">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
@@ -284,10 +451,12 @@ const AcceptInvitation = () => {
           email={invitation?.email || ""}
           isPending={acceptInvitationMutation.isPending}
           onSubmit={onSubmit}
-          onNavigateSignIn={() => navigate("/auth/sign-in")}
+          onNavigateSignIn={() =>
+            navigate(`/auth/sign-in?redirect=/invite/${token}`)
+          }
         />
-      </CardContent>
-    </AuthPageWrapper>
+      </div>
+    </AuthSplitLayout>
   );
 };
 
