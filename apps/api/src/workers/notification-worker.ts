@@ -9,6 +9,7 @@ import { config } from "@/config";
 
 import { notificationOutboxCronService } from "@/cron/notification-outbox.cron";
 import { notificationRetentionCronService } from "@/cron/notification-retention.cron";
+import { acquireSingletonLock } from "@/workers/advisory-lock";
 import { ADVISORY_LOCK_KEYS } from "@/workers/advisory-lock-keys";
 
 /**
@@ -42,15 +43,12 @@ async function startWorker() {
     lockClient = new Client({ connectionString: config.DATABASE_URL });
     await lockClient.connect();
 
-    const result = await lockClient.query<{ acquired: boolean }>(
-      "SELECT pg_try_advisory_lock($1::bigint) AS acquired",
-      [ADVISORY_LOCK_KEYS.notification]
+    const acquired = await acquireSingletonLock(
+      lockClient,
+      ADVISORY_LOCK_KEYS.notification,
+      "notification-worker"
     );
-    if (!result.rows[0].acquired) {
-      logger.warn(
-        { lockKey: ADVISORY_LOCK_KEYS.notification },
-        "notification-worker: advisory lock already held — another instance is running. Exiting."
-      );
+    if (!acquired) {
       await lockClient.end();
       await prisma.$disconnect();
       process.exit(0);

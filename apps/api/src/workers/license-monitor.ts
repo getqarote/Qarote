@@ -12,6 +12,7 @@ import { ghcrPatExpiryCronService } from "@/cron/ghcr-pat-expiry.cron";
 import { licenseExpirationRemindersCronService } from "@/cron/license-expiration-reminders.cron";
 import { licenseFileCleanupCronService } from "@/cron/license-file-cleanup.cron";
 import { licenseTierSyncCronService } from "@/cron/license-tier-sync.cron";
+import { acquireSingletonLock } from "@/workers/advisory-lock";
 import { ADVISORY_LOCK_KEYS } from "@/workers/advisory-lock-keys";
 
 /**
@@ -52,15 +53,12 @@ async function startWorker() {
     lockClient = new Client({ connectionString: config.DATABASE_URL });
     await lockClient.connect();
 
-    const result = await lockClient.query<{ acquired: boolean }>(
-      "SELECT pg_try_advisory_lock($1::bigint) AS acquired",
-      [ADVISORY_LOCK_KEYS.license]
+    const acquired = await acquireSingletonLock(
+      lockClient,
+      ADVISORY_LOCK_KEYS.license,
+      "license-monitor"
     );
-    if (!result.rows[0].acquired) {
-      logger.warn(
-        { lockKey: ADVISORY_LOCK_KEYS.license },
-        "license-monitor: advisory lock already held — another instance is running. Exiting."
-      );
+    if (!acquired) {
       await lockClient.end();
       await prisma.$disconnect();
       process.exit(0);

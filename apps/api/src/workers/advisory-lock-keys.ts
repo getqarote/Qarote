@@ -1,10 +1,12 @@
 /**
  * PostgreSQL session-level advisory lock keys for singleton workers.
  *
- * Each key is a unique bigint. The lock is acquired with pg_try_advisory_lock
- * (non-blocking) at worker startup and released automatically when the process
- * exits. If the lock is already held, the process exits 0 (intentional yield
- * to the running peer — not a crash, so the supervisor does not restart it).
+ * Each key is a unique bigint. The lock is taken at worker startup through
+ * `acquireSingletonLock` (see ./advisory-lock.ts) and released automatically
+ * when the process exits. If a peer still holds it, the starting worker waits
+ * for a bounded window — a rolling deploy overlaps the two instances on
+ * purpose — and only then exits 0 (intentional yield to the running peer, not
+ * a crash, so the supervisor does not restart it).
  *
  * Adding a new worker: pick an integer not already listed here and document it.
  */
