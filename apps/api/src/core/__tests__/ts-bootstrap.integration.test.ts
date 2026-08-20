@@ -51,7 +51,7 @@ describe.skipIf(!runIntegration)(
       await pool.query(`CREATE EXTENSION IF NOT EXISTS timescaledb_toolkit`);
       await pool.query(`
         CREATE TABLE queue_metric_snapshots (
-          "serverId" text, "workspaceId" text, "queueName" text, vhost text,
+          "serverId" uuid, "workspaceId" text, "queueName" text, vhost text,
           messages bigint, "messagesReady" bigint, "messagesUnack" bigint,
           "publishCount" bigint, "deliverCount" bigint,
           "consumerCount" int, "timestamp" timestamp)`);
@@ -63,7 +63,7 @@ describe.skipIf(!runIntegration)(
       // messagesReady 90. Cumulative counters derived from epoch so rate() is exact.
       await pool.query(`
         INSERT INTO queue_metric_snapshots
-        SELECT 'srv1','ws1','q1','/',
+        SELECT '11111111-1111-4111-8111-111111111111','ws1','q1','/',
           100, 90, 10,
           (extract(epoch from ts)::bigint * 1000),
           (extract(epoch from ts)::bigint * 500),
@@ -113,7 +113,7 @@ describe.skipIf(!runIntegration)(
         WITH hourly AS (
           SELECT rate(publish_ctr) AS r, n
           FROM queue_metric_hourly
-          WHERE "workspaceId" = 'ws1' AND "serverId" = 'srv1'
+          WHERE "workspaceId" = 'ws1' AND "serverId" = '11111111-1111-4111-8111-111111111111'
             AND "queueName" = 'q1' AND "vhost" = '/'
             AND bucket >= now() - INTERVAL '7 days'
             AND EXTRACT(HOUR FROM bucket) = 14
@@ -129,7 +129,7 @@ describe.skipIf(!runIntegration)(
         WITH bucketed AS (
           SELECT rate(counter_agg("timestamp" AT TIME ZONE 'UTC', "publishCount"::double precision)) AS r
           FROM queue_metric_snapshots
-          WHERE "workspaceId" = 'ws1' AND "serverId" = 'srv1'
+          WHERE "workspaceId" = 'ws1' AND "serverId" = '11111111-1111-4111-8111-111111111111'
             AND "queueName" = 'q1' AND "vhost" = '/'
             AND "timestamp" >= now() - INTERVAL '7 days'
             AND EXTRACT(HOUR FROM "timestamp") = 14
@@ -149,7 +149,7 @@ describe.skipIf(!runIntegration)(
       // number (the exact count depends on now()'s position within the day).
       const { rows: rawCount } = await pool.query<{ n: string }>(`
         SELECT count(*)::bigint AS n FROM queue_metric_snapshots
-        WHERE "workspaceId" = 'ws1' AND "serverId" = 'srv1'
+        WHERE "workspaceId" = 'ws1' AND "serverId" = '11111111-1111-4111-8111-111111111111'
           AND "queueName" = 'q1' AND "vhost" = '/'
           AND "timestamp" >= now() - INTERVAL '7 days'
           AND EXTRACT(HOUR FROM "timestamp") = 14`);
@@ -166,7 +166,7 @@ describe.skipIf(!runIntegration)(
       const { rows } = await pool.query<{ median: number }>(`
         SELECT approx_percentile(0.5, rollup(ready_pct))::float AS median
         FROM queue_metric_hourly
-        WHERE "workspaceId" = 'ws1' AND "serverId" = 'srv1'
+        WHERE "workspaceId" = 'ws1' AND "serverId" = '11111111-1111-4111-8111-111111111111'
           AND "queueName" = 'q1' AND "vhost" = '/'
           AND bucket >= now() - INTERVAL '7 days'
           AND EXTRACT(HOUR FROM bucket) = 14`);

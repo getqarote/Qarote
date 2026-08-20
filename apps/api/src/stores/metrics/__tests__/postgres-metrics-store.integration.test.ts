@@ -60,7 +60,7 @@ describe.skipIf(!runIntegration)(
       await pool.query(`CREATE EXTENSION IF NOT EXISTS timescaledb_toolkit`);
       await pool.query(`
         CREATE TABLE queue_metric_snapshots (
-          "serverId" text, "workspaceId" text, "queueName" text, vhost text,
+          "serverId" uuid, "workspaceId" text, "queueName" text, vhost text,
           messages bigint, "messagesReady" bigint, "messagesUnack" bigint,
           "publishCount" bigint, "deliverCount" bigint,
           "consumerCount" int, "timestamp" timestamp)`);
@@ -71,7 +71,7 @@ describe.skipIf(!runIntegration)(
       // q1: steady — publish +1000/s, deliver +500/s, 21 points 1 min apart.
       await pool.query(`
         INSERT INTO queue_metric_snapshots
-        SELECT 'srv1','ws1','q1','/', 100,90,10,
+        SELECT '11111111-1111-4111-8111-111111111111','ws1','q1','/', 100,90,10,
           (n*60000)::bigint, (n*30000)::bigint, 3,
           now() - (20 - n) * interval '1 minute'
         FROM generate_series(0,20) n`);
@@ -79,7 +79,7 @@ describe.skipIf(!runIntegration)(
       // counter_agg must handle it without a huge negative rate.
       await pool.query(`
         INSERT INTO queue_metric_snapshots
-        SELECT 'srv1','ws1','q2','/', 50,40,10,
+        SELECT '11111111-1111-4111-8111-111111111111','ws1','q2','/', 50,40,10,
           (CASE WHEN n < 10 THEN n*48000 ELSE (n-10)*48000 END)::bigint,
           (n*24000)::bigint, 2,
           now() - (20 - n) * interval '1 minute'
@@ -87,7 +87,7 @@ describe.skipIf(!runIntegration)(
       // q3: a single sample — no basis for a rate.
       await pool.query(`
         INSERT INTO queue_metric_snapshots VALUES
-          ('srv1','ws1','q3','/', 7,7,0, 123456, 65432, 1, now() - interval '1 minute')`);
+          ('11111111-1111-4111-8111-111111111111','ws1','q3','/', 7,7,0, 123456, 65432, 1, now() - interval '1 minute')`);
     }, 180_000);
 
     afterAll(async () => {
@@ -99,7 +99,7 @@ describe.skipIf(!runIntegration)(
     it("derives publish/consume rate from the counter delta", async () => {
       const rows = await store.getQueueRateSeries({
         workspaceId: "ws1",
-        serverId: "srv1",
+        serverId: "11111111-1111-4111-8111-111111111111",
         queueName: "q1",
         vhost: "/",
         since: new Date(Date.now() - 60 * 60 * 1000),
@@ -118,7 +118,7 @@ describe.skipIf(!runIntegration)(
     it("carries the point-in-time gauges via last()", async () => {
       const rows = await store.getQueueRateSeries({
         workspaceId: "ws1",
-        serverId: "srv1",
+        serverId: "11111111-1111-4111-8111-111111111111",
         queueName: "q1",
         vhost: "/",
         since: new Date(Date.now() - 60 * 60 * 1000),
@@ -133,7 +133,7 @@ describe.skipIf(!runIntegration)(
     it("handles a counter reset without a negative rate", async () => {
       const rows = await store.getQueueRateSeries({
         workspaceId: "ws1",
-        serverId: "srv1",
+        serverId: "11111111-1111-4111-8111-111111111111",
         queueName: "q2",
         vhost: "/",
         since: new Date(Date.now() - 60 * 60 * 1000),
@@ -150,7 +150,7 @@ describe.skipIf(!runIntegration)(
     it("returns rate 0 for a single-sample bucket (no basis)", async () => {
       const rows = await store.getQueueRateSeries({
         workspaceId: "ws1",
-        serverId: "srv1",
+        serverId: "11111111-1111-4111-8111-111111111111",
         queueName: "q3",
         vhost: "/",
         since: new Date(Date.now() - 60 * 60 * 1000),
@@ -164,7 +164,7 @@ describe.skipIf(!runIntegration)(
     it("filters to a single queue when queueName/vhost are given", async () => {
       const rows = await store.getQueueRateSeries({
         workspaceId: "ws1",
-        serverId: "srv1",
+        serverId: "11111111-1111-4111-8111-111111111111",
         queueName: "q1",
         vhost: "/",
         since: new Date(Date.now() - 60 * 60 * 1000),
@@ -181,7 +181,7 @@ describe.skipIf(!runIntegration)(
         WITH bucketed AS (
           SELECT rate(counter_agg("timestamp" AT TIME ZONE 'UTC', "publishCount"::double precision)) AS r
           FROM queue_metric_snapshots
-          WHERE "workspaceId" = 'ws1' AND "serverId" = 'srv1'
+          WHERE "workspaceId" = 'ws1' AND "serverId" = '11111111-1111-4111-8111-111111111111'
             AND "queueName" = 'q1' AND "vhost" = '/'
             AND "timestamp" >= now() - INTERVAL '7 days'
           GROUP BY time_bucket(INTERVAL '5 minutes', "timestamp")
