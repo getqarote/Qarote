@@ -23,6 +23,7 @@ import { z } from "zod/v4";
 
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
+import { excludeInternalQueues } from "@/core/rabbitmq/internal-queues";
 
 import {
   createRabbitMQClientFromServer,
@@ -100,7 +101,7 @@ export function registerBrokerReadTools(
       }
       try {
         const client = createRabbitMQClientFromServer(server);
-        const queues = await client.getQueues(vhost);
+        const queues = excludeInternalQueues(await client.getQueues(vhost));
         return toolOk(queues);
       } catch (err) {
         logger.warn(

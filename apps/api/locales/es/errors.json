@@ -231,7 +231,8 @@
     "tracingQueryWindowExceeded": "El rango de tiempo no puede exceder los 7 días.",
     "alertNotFound": "Alerta no encontrada",
     "tooManyQueues": "Este broker tiene {{count}} colas, por encima de las {{limit}} que supervisamos. Es una necesidad específica: contáctanos y lo estudiamos contigo.",
-    "queueCeilingReached": "La recogida de métricas está en pausa para este broker: tiene {{count}} colas, por encima de las {{limit}} que supervisamos. Es una necesidad específica: contáctanos y lo estudiamos contigo."
+    "queueCeilingReached": "La recogida de métricas está en pausa para este broker: tiene {{count}} colas, por encima de las {{limit}} que supervisamos. Es una necesidad específica: contáctanos y lo estudiamos contigo.",
+    "queueNotFound": "Cola no encontrada."
   },
   "scan": {
     "findingNotFound": "Hallazgo no encontrado"

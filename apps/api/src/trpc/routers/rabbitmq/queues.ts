@@ -2,6 +2,10 @@ import { TRPCError } from "@trpc/server";
 
 import { prisma } from "@/core/prisma";
 import { RabbitMQAmqpClient } from "@/core/rabbitmq/AmqpClient";
+import {
+  excludeInternalQueues,
+  isQaroteInternalQueue,
+} from "@/core/rabbitmq/internal-queues";
 import { abortableSleep } from "@/core/utils";
 
 import { recordFromContext } from "@/services/audit";
@@ -162,7 +166,7 @@ export const queuesRouter = router({
         const client = createRabbitMQClientFromServer(server);
         // Get vhost from validated input (optional)
         const vhost = vhostParam ? decodeURIComponent(vhostParam) : undefined;
-        const queues = await client.getQueues(vhost);
+        const queues = excludeInternalQueues(await client.getQueues(vhost));
 
         await persistQueueData(queues, serverId);
 
@@ -197,6 +201,15 @@ export const queuesRouter = router({
     .input(ServerWorkspaceWithQueueNameSchema.merge(VHostRequiredQuerySchema))
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId, queueName, vhost: vhostParam } = input;
+      // Qarote's own firehose queue is not the user's to read or act on: it is
+      // hidden from every listing, so answering here would contradict that —
+      // and purging or deleting it would silently break message tracing.
+      if (isQaroteInternalQueue(queueName)) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: te(ctx.locale, "rabbitmq.queueNotFound"),
+        });
+      }
 
       // Verify the server belongs to the user's workspace and get over-limit info
       const server = await verifyServerAccess(serverId, workspaceId, true);
@@ -242,6 +255,15 @@ export const queuesRouter = router({
     .input(ServerWorkspaceWithQueueNameSchema.merge(VHostRequiredQuerySchema))
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId, queueName, vhost: vhostParam } = input;
+      // Qarote's own firehose queue is not the user's to read or act on: it is
+      // hidden from every listing, so answering here would contradict that —
+      // and purging or deleting it would silently break message tracing.
+      if (isQaroteInternalQueue(queueName)) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: te(ctx.locale, "rabbitmq.queueNotFound"),
+        });
+      }
 
       const server = await verifyServerAccess(serverId, workspaceId, true);
 
@@ -291,6 +313,15 @@ export const queuesRouter = router({
     .input(ServerWorkspaceWithQueueNameSchema.merge(VHostRequiredQuerySchema))
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId, queueName, vhost: vhostParam } = input;
+      // Qarote's own firehose queue is not the user's to read or act on: it is
+      // hidden from every listing, so answering here would contradict that —
+      // and purging or deleting it would silently break message tracing.
+      if (isQaroteInternalQueue(queueName)) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: te(ctx.locale, "rabbitmq.queueNotFound"),
+        });
+      }
 
       const server = await verifyServerAccess(serverId, workspaceId, true);
 
@@ -476,6 +507,15 @@ export const queuesRouter = router({
     .input(ServerWorkspaceWithQueueNameSchema.merge(VHostRequiredQuerySchema))
     .mutation(async ({ input, ctx }) => {
       const { serverId, workspaceId, queueName, vhost: vhostParam } = input;
+      // Qarote's own firehose queue is not the user's to read or act on: it is
+      // hidden from every listing, so answering here would contradict that —
+      // and purging or deleting it would silently break message tracing.
+      if (isQaroteInternalQueue(queueName)) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: te(ctx.locale, "rabbitmq.queueNotFound"),
+        });
+      }
 
       try {
         // Verify server access
@@ -543,6 +583,15 @@ export const queuesRouter = router({
         ifEmpty,
         vhost: vhostParam,
       } = input;
+      // Qarote's own firehose queue is not the user's to read or act on: it is
+      // hidden from every listing, so answering here would contradict that —
+      // and purging or deleting it would silently break message tracing.
+      if (isQaroteInternalQueue(queueName)) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: te(ctx.locale, "rabbitmq.queueNotFound"),
+        });
+      }
 
       try {
         // Verify server access
@@ -641,6 +690,15 @@ export const queuesRouter = router({
     .input(ServerWorkspaceWithQueueNameSchema)
     .mutation(async ({ input, ctx }) => {
       const { serverId, workspaceId, queueName } = input;
+      // Qarote's own firehose queue is not the user's to read or act on: it is
+      // hidden from every listing, so answering here would contradict that —
+      // and purging or deleting it would silently break message tracing.
+      if (isQaroteInternalQueue(queueName)) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: te(ctx.locale, "rabbitmq.queueNotFound"),
+        });
+      }
 
       try {
         // Verify server access
@@ -704,6 +762,15 @@ export const queuesRouter = router({
     .input(ServerWorkspaceWithQueueNameSchema)
     .mutation(async ({ input, ctx }) => {
       const { serverId, workspaceId, queueName } = input;
+      // Qarote's own firehose queue is not the user's to read or act on: it is
+      // hidden from every listing, so answering here would contradict that —
+      // and purging or deleting it would silently break message tracing.
+      if (isQaroteInternalQueue(queueName)) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: te(ctx.locale, "rabbitmq.queueNotFound"),
+        });
+      }
 
       let amqpClient: RabbitMQAmqpClient | null = null;
 
@@ -816,7 +883,7 @@ export const queuesRouter = router({
           }
 
           const client = createRabbitMQClientFromServer(freshServer);
-          const queues = await client.getQueues(vhost);
+          const queues = excludeInternalQueues(await client.getQueues(vhost));
 
           await persistQueueData(queues, serverId);
 
@@ -846,6 +913,15 @@ export const queuesRouter = router({
     .input(ServerWorkspaceWithQueueNameSchema)
     .query(async ({ input, ctx }) => {
       const { serverId, workspaceId, queueName } = input;
+      // Qarote's own firehose queue is not the user's to read or act on: it is
+      // hidden from every listing, so answering here would contradict that —
+      // and purging or deleting it would silently break message tracing.
+      if (isQaroteInternalQueue(queueName)) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: te(ctx.locale, "rabbitmq.queueNotFound"),
+        });
+      }
 
       let amqpClient: RabbitMQAmqpClient | null = null;
 

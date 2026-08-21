@@ -231,7 +231,8 @@
     "tracingQueryWindowExceeded": "La plage temporelle ne peut pas dépasser 7 jours.",
     "alertNotFound": "Alerte introuvable",
     "tooManyQueues": "Ce broker a {{count}} files d'attente, au-delà des {{limit}} que nous supervisons. C'est un besoin spécifique — contactez-nous, nous l'étudierons avec vous.",
-    "queueCeilingReached": "La collecte de métriques est en pause pour ce broker : il a {{count}} files d'attente, au-delà des {{limit}} que nous supervisons. C'est un besoin spécifique — contactez-nous, nous l'étudierons avec vous."
+    "queueCeilingReached": "La collecte de métriques est en pause pour ce broker : il a {{count}} files d'attente, au-delà des {{limit}} que nous supervisons. C'est un besoin spécifique — contactez-nous, nous l'étudierons avec vous.",
+    "queueNotFound": "File d'attente introuvable."
   },
   "scan": {
     "findingNotFound": "Finding introuvable"

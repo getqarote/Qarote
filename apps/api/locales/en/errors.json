@@ -248,7 +248,8 @@
     "tracingQueryWindowExceeded": "Time range cannot exceed 7 days.",
     "alertNotFound": "Alert not found",
     "tooManyQueues": "This broker has {{count}} queues, above the {{limit}} we monitor. That is a specific need — please contact us so we can look at it with you.",
-    "queueCeilingReached": "Metrics collection is paused for this broker: it has {{count}} queues, above the {{limit}} we monitor. That is a specific need — please contact us so we can look at it with you."
+    "queueCeilingReached": "Metrics collection is paused for this broker: it has {{count}} queues, above the {{limit}} we monitor. That is a specific need — please contact us so we can look at it with you.",
+    "queueNotFound": "Queue not found."
   },
   "scan": {
     "findingNotFound": "Finding not found"

@@ -231,7 +231,8 @@
     "tracingQueryWindowExceeded": "时间范围不能超过 7 天。",
     "alertNotFound": "未找到该告警",
     "tooManyQueues": "该 broker 有 {{count}} 个队列，超过我们监控的 {{limit}} 个上限。这属于特殊需求——请联系我们，我们会与您一起处理。",
-    "queueCeilingReached": "该 broker 的指标采集已暂停：它有 {{count}} 个队列，超过我们监控的 {{limit}} 个上限。这属于特殊需求——请联系我们，我们会与您一起处理。"
+    "queueCeilingReached": "该 broker 的指标采集已暂停：它有 {{count}} 个队列，超过我们监控的 {{limit}} 个上限。这属于特殊需求——请联系我们，我们会与您一起处理。",
+    "queueNotFound": "未找到队列。"
   },
   "scan": {
     "findingNotFound": "未找到该问题"
