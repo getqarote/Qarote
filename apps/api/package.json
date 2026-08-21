@@ -73,7 +73,8 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:ui": "vitest --ui",
-    "eval:llm": "promptfoo eval -c src/ee/services/llm/__evals__/promptfooconfig.yaml --no-cache"
+    "eval:llm": "promptfoo eval -c src/ee/services/llm/__evals__/promptfooconfig.yaml --no-cache",
+    "eval:llm:once": "promptfoo eval -c src/ee/services/llm/__evals__/promptfooconfig.yaml --no-cache --repeat 1"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.74",

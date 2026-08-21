@@ -107,7 +107,16 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ env.ANTHROPIC_API_KEY }}
           PROMPTFOO_DISABLE_TELEMETRY: "1"
-        run: pnpm run eval:llm
+        # 1x on PRs trades gate stability for cost: the three repeats exist so
+        # judge variance cannot flip a borderline criterion (promptfooconfig.yaml),
+        # so a PR run may report a regression the change did not cause — re-run
+        # before believing it. main keeps 3x; it is the baseline PRs compare to.
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            pnpm run eval:llm:once
+          else
+            pnpm run eval:llm
+          fi
 
       - name: 📤 Upload eval result
         if: always()
