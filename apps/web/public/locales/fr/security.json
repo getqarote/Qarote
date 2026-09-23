@@ -1,6 +1,6 @@
 {
   "seo": {
-    "title": "Sécurité — Supervision RabbitMQ Qarote",
+    "title": "Sécurité — Qarote, monitoring RabbitMQ pour agents IA",
     "description": "Comment Qarote traite vos données : TLS par défaut, aucun corps de message stocké, résidence des données IA explicite, auto-hébergement hors-ligne et SOC 2 sur Enterprise."
   },
   "hero": {

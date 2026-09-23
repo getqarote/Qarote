@@ -70,7 +70,7 @@
       "upgradeLink": "Upgrade your plan",
       "byok": "You're using your own API key — calls aren't metered against a Qarote quota."
     },
-    "intro": "Pick which LLM generates root-cause analysis. Detection stays free — this only powers <code>explain_incident</code>.",
+    "intro": "Pick which LLM generates root-cause analysis. Detection stays free — this only powers <code>explain_finding</code>.",
     "activeProvider": "Active provider:",
     "showKey": "Show key",
     "hideKey": "Hide key",
@@ -166,7 +166,7 @@
       "scopeRead": "read · free",
       "scopeReadConsequence": "Lists incidents, findings, queues, overview.",
       "scopeExplain": "explain · EE",
-      "scopeExplainConsequence": "Adds LLM root-cause analysis (explain_incident).",
+      "scopeExplainConsequence": "Adds LLM root-cause analysis (explain_finding).",
       "expiryLabel": "Expires",
       "expiry30": "30 days",
       "expiry90": "90 days",

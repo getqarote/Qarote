@@ -1,6 +1,6 @@
 {
   "seo": {
-    "title": "安全性 — Qarote RabbitMQ 监控",
+    "title": "安全性 — Qarote，面向 AI Agent 的 RabbitMQ 监控",
     "description": "Qarote 如何处理您的数据：默认 TLS、不存储消息正文、明确的 AI 数据驻留、离线自托管，以及 Enterprise 版的 SOC 2。"
   },
   "hero": {

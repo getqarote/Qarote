@@ -1,7 +1,7 @@
 {
   "seo": {
-    "title": "Precios — Qarote Monitoreo de RabbitMQ",
-    "description": "Edición Community gratuita, o desbloquea el monitoreo avanzado con los planes Developer ($29/mes) y Enterprise. Auto-alojado gratis, para siempre."
+    "title": "Precios — Qarote, monitorización de RabbitMQ para agentes IA",
+    "description": "Edición Community gratuita, o desbloquea la monitorización avanzada con los planes Developer ($29/mes) y Enterprise. Auto-alojado gratis, para siempre."
   },
   "title": "Núcleo gratis. Paga solo por el diagnóstico.",
   "billedMonthly": "Facturación mensual",
@@ -225,7 +225,7 @@
       "byok": "BYOK / Ollama local",
       "managedLlm": "LLM gestionado (sin configuración)",
       "readTools": "Herramientas de lectura (list/get/ping)",
-      "explainIncidentTool": "herramienta explain_incident",
+      "explainFindingTool": "herramienta explain_finding",
       "email": "Correo",
       "slackWebhooks": "Slack · webhooks",
       "ssoRbac": "SSO / SAML · RBAC",

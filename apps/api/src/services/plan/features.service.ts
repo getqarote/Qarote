@@ -1,5 +1,31 @@
 import { UserPlan } from "@/generated/prisma/client";
 
+/**
+ * Broker versions Qarote can monitor. A DOMAIN RULE, not a plan limit —
+ * every plan gets the same list, and no tier unlocks a version. Refusing a
+ * broker reads as an incompatibility, which is not something a customer
+ * upgrades to fix.
+ */
+export const SUPPORTED_RABBITMQ_VERSIONS = [
+  "3.0",
+  "3.1",
+  "3.2",
+  "3.3",
+  "3.4",
+  "3.5",
+  "3.6",
+  "3.7",
+  "3.8",
+  "3.9",
+  "3.10",
+  "3.11",
+  "3.12",
+  "3.13",
+  "4.0",
+  "4.1",
+  "4.2",
+];
+
 export interface PlanFeatures {
   // Core permissions
   canAddQueue: boolean;
@@ -17,39 +43,18 @@ export interface PlanFeatures {
   maxInvitations: number | null;
 
   // Support features
-  hasCommunitySupport: boolean;
-  hasEmailSupport: boolean;
   hasPrioritySupport: boolean;
-  hasEmailAlerts: boolean;
 
   // Display features (for pricing page rendering)
   hasAdvancedAnalytics: boolean;
   hasAlerts: boolean;
-  hasTopologyVisualization: boolean;
-  hasRoleBasedAccess: boolean | "coming_soon";
-  hasAdvancedRoleBasedAccess: boolean | "coming_soon";
-  hasSsoSamlOidc: boolean;
-  hasSoc2Compliance: boolean;
   isPopular: boolean;
 
   // Intelligence & Diagnostics display features
   // "limited" = feature exists on FREE but with enforced quotas
-  hasDailyDigest: boolean | "limited";
-  hasMessageSpy: boolean | "limited";
-  hasMetricsPersistence: boolean | "limited";
-  // Diagnosis detection is free and full on every plan (CE/EE split) — never
-  // "limited". The premium differentiator is the AI Explain layer.
-  hasIncidentDiagnosis: boolean;
-  hasMessageTracing: boolean | "limited";
-
-  // Security display features
-  hasAuditLog: boolean | "coming_soon";
 
   // LLM display features (cloud managed by default, BYOK optional on Enterprise)
-  hasLlmExplain: boolean | "coming_soon";
   llmExplainsPerMonth: number | null; // 5 / 50 / null (unlimited)
-  hasLlmDigest: boolean | "coming_soon";
-  canUseBYOK: boolean;
 
   // Per-plan trace QUERY window cap (in hours). Not a storage knob — trace
   // storage is a uniform 7-day TimescaleDB chunk-drop. This gates how far back
@@ -59,12 +64,10 @@ export interface PlanFeatures {
 
   // RabbitMQ version support
   supportedRabbitMqVersions: string[];
-  ltsOnly: boolean;
 
   // Pricing (in cents)
   monthlyPrice: number;
   yearlyPrice: number;
-  userCostPerMonth?: number;
 
   // Display
   displayName: string;
@@ -91,44 +94,22 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
     maxInvitations: 0,
 
     // Support features
-    hasCommunitySupport: true,
-    hasEmailSupport: false,
     hasPrioritySupport: false,
-    hasEmailAlerts: false,
 
     // Display features
     hasAdvancedAnalytics: false,
     hasAlerts: false,
-    hasTopologyVisualization: false,
-    hasRoleBasedAccess: false,
-    hasAdvancedRoleBasedAccess: false,
-    hasSsoSamlOidc: false,
-    hasSoc2Compliance: true,
     isPopular: false,
 
-    // Security
-    hasAuditLog: false,
-
     // LLM (Community: 5 explains / month — wow factor at first-time experience)
-    hasLlmExplain: "coming_soon",
     llmExplainsPerMonth: 5,
-    hasLlmDigest: false,
-    canUseBYOK: false,
-
-    // Intelligence & Diagnostics (limited on FREE)
-    hasDailyDigest: "limited", // weekly digest only on Community
-    hasMessageSpy: "limited", // 5 messages / capture (FREE_SPY_PREVIEW_COUNT)
-    hasMetricsPersistence: "limited", // 6h queryable preview (storage is 30d)
-    hasIncidentDiagnosis: true, // full detection — free on every plan (CE/EE split)
-    hasMessageTracing: "limited", // 6 h retention — wow factor without storage burden
 
     // Trace query window — 6h preview (wow factor without storage cost).
     // Metrics query window is a separate FREE 6h cap in resolve-allowed-range.
     maxTraceRetentionHours: 6,
 
     // RabbitMQ support
-    supportedRabbitMqVersions: ["3.12", "3.13", "4.0", "4.1"],
-    ltsOnly: true,
+    supportedRabbitMqVersions: SUPPORTED_RABBITMQ_VERSIONS,
 
     // Pricing
     monthlyPrice: 0,
@@ -167,61 +148,21 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
     maxInvitations: 2,
 
     // Support features
-    hasCommunitySupport: true,
-    hasEmailSupport: true,
     hasPrioritySupport: false,
-    hasEmailAlerts: true,
 
     // Display features
     hasAdvancedAnalytics: true,
     hasAlerts: true,
-    hasTopologyVisualization: true,
-    hasRoleBasedAccess: true,
-    hasAdvancedRoleBasedAccess: false,
-    hasSsoSamlOidc: false,
-    hasSoc2Compliance: true,
     isPopular: true,
 
-    // Security
-    hasAuditLog: false,
-
     // LLM (Developer: 50 explains / month included, managed by Qarote)
-    hasLlmExplain: "coming_soon",
     llmExplainsPerMonth: 50,
-    hasLlmDigest: false,
-    canUseBYOK: false,
-
-    // Intelligence & Diagnostics (full access on Developer)
-    hasDailyDigest: true, // daily digest
-    hasMessageSpy: true,
-    hasMetricsPersistence: true,
-    hasIncidentDiagnosis: true,
-    hasMessageTracing: true,
 
     // Trace query window — full 7-day storage window is queryable.
     maxTraceRetentionHours: 168,
 
     // RabbitMQ support
-    supportedRabbitMqVersions: [
-      "3.13",
-      "3.12",
-      "3.11",
-      "3.10",
-      "3.9",
-      "3.8",
-      "3.7",
-      "3.6",
-      "3.5",
-      "3.4",
-      "3.3",
-      "3.2",
-      "3.1",
-      "3.0",
-      "4.0",
-      "4.1",
-      "4.2",
-    ],
-    ltsOnly: false,
+    supportedRabbitMqVersions: SUPPORTED_RABBITMQ_VERSIONS,
 
     // Pricing
     monthlyPrice: 3400, // $34.00
@@ -259,36 +200,15 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
     maxInvitations: null, // unlimited
 
     // Support features
-    hasCommunitySupport: true,
-    hasEmailSupport: false,
     hasPrioritySupport: true,
-    hasEmailAlerts: true,
 
     // Display features
     hasAdvancedAnalytics: true,
     hasAlerts: true,
-    hasTopologyVisualization: true,
-    hasRoleBasedAccess: true,
-    hasAdvancedRoleBasedAccess: "coming_soon",
-    hasSsoSamlOidc: true,
-    hasSoc2Compliance: true,
     isPopular: false,
 
-    // Security
-    hasAuditLog: true,
-
     // LLM (Enterprise: unlimited explains + LLM digest + BYOK option)
-    hasLlmExplain: "coming_soon",
     llmExplainsPerMonth: null, // unlimited
-    hasLlmDigest: "coming_soon",
-    canUseBYOK: true,
-
-    // Intelligence & Diagnostics (full access on Enterprise)
-    hasDailyDigest: true, // daily + custom schedule (Soon)
-    hasMessageSpy: true,
-    hasMetricsPersistence: true,
-    hasIncidentDiagnosis: true,
-    hasMessageTracing: true,
 
     // Trace query window — the full 7-day storage window. Kept at 168h (not
     // higher) so a 30-day request can't silently return only the 7 days that
@@ -296,31 +216,11 @@ export const PLAN_FEATURES: Record<UserPlan, PlanFeatures> = {
     maxTraceRetentionHours: 168,
 
     // RabbitMQ support
-    supportedRabbitMqVersions: [
-      "3.13",
-      "3.12",
-      "3.11",
-      "3.10",
-      "3.9",
-      "3.8",
-      "3.7",
-      "3.6",
-      "3.5",
-      "3.4",
-      "3.3",
-      "3.2",
-      "3.1",
-      "3.0",
-      "4.0",
-      "4.1",
-      "4.2",
-    ],
-    ltsOnly: false,
+    supportedRabbitMqVersions: SUPPORTED_RABBITMQ_VERSIONS,
 
     // Pricing
     monthlyPrice: 12400, // $124.00
     yearlyPrice: 118800, // $1,188.00/year ($99/month)
-    userCostPerMonth: 500, // $5.00 per additional user
 
     // Display
     displayName: "Enterprise",

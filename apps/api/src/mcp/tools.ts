@@ -95,7 +95,7 @@ export function registerReadTools(server: McpServer, auth: ApiKeyAuth): void {
     {
       title: "List config findings",
       description:
-        "List configuration-scan findings for the workspace — static anti-patterns such as a missing dead-letter exchange or an orphan exchange.",
+        "List configuration-scan findings for the workspace — static anti-patterns such as a missing dead-letter exchange or an orphan exchange. `details` carries the rule's measured values and its recommended thresholds; `id` feeds `explain_finding`.",
       inputSchema: {
         serverId: z.string().optional(),
         unresolvedOnly: z.boolean().optional(),
@@ -116,6 +116,10 @@ export function registerReadTools(server: McpServer, auth: ApiKeyAuth): void {
           resourceType: true,
           resourceName: true,
           vhost: true,
+          // Without this the agent learns THAT a threshold is wrong but not
+          // which one or by how much — the rule measured both and stored them
+          // here. Recovering them cost an LLM call to read two numbers.
+          details: true,
           detectedAt: true,
           lastSeenAt: true,
           resolvedAt: true,

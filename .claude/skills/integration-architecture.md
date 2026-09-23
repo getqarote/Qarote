@@ -184,13 +184,6 @@ await prisma.user.findUnique({
 - **Integration:** `@react-oauth/google` (frontend), `google-auth-library` (backend)
 - **Flow:** Frontend gets OAuth token → Backend validates with Google
 
-#### Notion (Optional)
-- **From:** `apps/api`
-- **To:** Notion API
-- **Integration:** `@notionhq/client`
-- **Service:** `src/services/integrations/notion.service.ts`
-- **Purpose:** User synchronization
-
 ---
 
 ## Data Flow Examples

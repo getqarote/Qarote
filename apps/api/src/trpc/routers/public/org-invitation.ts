@@ -5,6 +5,8 @@ import { hashPassword } from "@/core/auth";
 import { applyWorkspaceAssignments } from "@/core/org-invitation-accept";
 import { formatInvitedBy } from "@/core/utils";
 
+import { notifyInternalNewSignup } from "@/services/notification/new-signup-notification";
+
 import {
   AcceptInvitationWithRegistrationSchema,
   InvitationTokenSchema,
@@ -251,6 +253,16 @@ export const publicOrgInvitationRouter = router({
           });
 
           return tx.user.findUniqueOrThrow({ where: { id: user.id } });
+        });
+
+        // Internal ops ping — an invited teammate is still a new account.
+        void notifyInternalNewSignup({
+          userId: newUser.id,
+          email: newUser.email,
+          name: `${newUser.firstName} ${newUser.lastName}`.trim(),
+          signupMethod: "invitation",
+          invitedByEmail: invitation.invitedBy.email,
+          invitedToName: invitation.organization.name,
         });
 
         return {

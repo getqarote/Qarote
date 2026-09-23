@@ -32,24 +32,16 @@ export interface CurrentPlanResponse {
     maxUsers: number | null;
     maxInvitations: number | null;
     // Support features
-    hasCommunitySupport: boolean;
     hasPrioritySupport: boolean;
-    hasEmailAlerts: boolean;
     // Display features
     hasAdvancedAnalytics: boolean;
     hasAlerts: boolean;
-    hasTopologyVisualization: boolean;
-    hasRoleBasedAccess: boolean | "coming_soon";
-    hasSsoSamlOidc: boolean;
-    hasSoc2Compliance: boolean;
     isPopular: boolean;
     // RabbitMQ Version Support
     supportedRabbitMqVersions: string[];
-    ltsOnly: boolean;
     // Pricing (in cents)
     monthlyPrice: number;
     yearlyPrice: number;
-    userCostPerMonth?: number;
     // Display information
     displayName: string;
     description: string;

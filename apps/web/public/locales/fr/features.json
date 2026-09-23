@@ -1,7 +1,7 @@
 {
   "seo": {
-    "title": "Fonctionnalités — Supervision RabbitMQ Qarote",
-    "description": "Supervision RabbitMQ pensée pour les agents : outils MCP, détection d'incidents déterministe, cause racine par IA, scan de config, topologie, alerting et auto-hébergement."
+    "title": "Fonctionnalités — Qarote, monitoring RabbitMQ pour agents IA",
+    "description": "Monitoring RabbitMQ pensé pour les agents : outils MCP, détection d'incidents, cause racine par IA, scan de config, topologie et alerting."
   },
   "head": {
     "eyebrow": "Fonctionnalités",

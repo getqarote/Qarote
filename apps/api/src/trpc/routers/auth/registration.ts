@@ -4,7 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { hashPassword } from "@/core/auth";
 
 import { EmailVerificationService } from "@/services/email/email-verification.service";
-import { notionService } from "@/services/integrations/notion.service";
+import { notifyInternalNewSignup } from "@/services/notification/new-signup-notification";
 import { identifyUser, trackEvent } from "@/services/posthog";
 import { trackSignUpError } from "@/services/sentry";
 import { StripeCustomerService } from "@/services/stripe/customer.service";
@@ -26,10 +26,10 @@ import { te } from "@/i18n";
 
 /**
  * Registration router
- * Handles user registration with custom business logic (Stripe trials, Notion sync, etc.)
+ * Handles user registration with custom business logic (Stripe trials, etc.)
  * Note: This is kept as a tRPC mutation rather than using better-auth's signUp endpoint
  * because of the extensive custom logic (registration toggle, terms acceptance, email
- * verification via our own service, Stripe trial provisioning, Notion sync).
+ * verification via our own service, Stripe trial provisioning).
  */
 export const registrationRouter = router({
   /**
@@ -223,6 +223,13 @@ export const registrationRouter = router({
           }
         }
 
+        // One derivation feeds both PostHog and the internal ops ping.
+        const acquisitionChannel = deriveAcquisitionChannel({
+          utmMedium: initialUtmMedium,
+          utmSource: initialUtmSource,
+          referrer: initialReferrer,
+        });
+
         try {
           identifyUser({
             id: user.id,
@@ -239,11 +246,7 @@ export const registrationRouter = router({
             initialUtmContent: initialUtmContent ?? null,
             initialReferrer: initialReferrer ?? null,
             initialLandingPage: initialLandingPage ?? null,
-            acquisitionChannel: deriveAcquisitionChannel({
-              utmMedium: initialUtmMedium,
-              utmSource: initialUtmSource,
-              referrer: initialReferrer,
-            }),
+            acquisitionChannel,
             isSelfHosted: !isCloudMode(),
           });
           trackEvent(
@@ -268,22 +271,20 @@ export const registrationRouter = router({
           );
         }
 
-        // Update user in Notion (non-blocking)
-        ctx.prisma.user
-          .findUnique({
-            where: { id: user.id },
-          })
-          .then((fullUser) => {
-            if (fullUser) {
-              return notionService.syncUser(fullUser);
-            }
-          })
-          .catch((notionError) => {
-            ctx.logger.warn(
-              { notionError, userId: user.id },
-              "Failed to update Notion"
-            );
-          });
+        // Internal ops ping — Qarote emails itself about the new account.
+        // Fire-and-forget: the helper never rejects and logs its own failures.
+        void notifyInternalNewSignup({
+          userId: user.id,
+          email: user.email,
+          name: fullName,
+          signupMethod: "form",
+          referralSource,
+          discoveryQuery,
+          acquisitionChannel,
+          utmSource: initialUtmSource,
+          utmMedium: initialUtmMedium,
+          utmCampaign: initialUtmCampaign,
+        });
 
         return {
           message: autoVerify

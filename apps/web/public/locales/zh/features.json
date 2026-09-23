@@ -1,6 +1,6 @@
 {
   "seo": {
-    "title": "功能 — Qarote RabbitMQ 监控",
+    "title": "功能 — Qarote，面向 AI Agent 的 RabbitMQ 监控",
     "description": "面向代理的 RabbitMQ 监控：MCP 工具、确定性事件检测、AI 根因、配置扫描、拓扑、告警与自托管。"
   },
   "head": {

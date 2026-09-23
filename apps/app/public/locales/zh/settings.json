@@ -70,7 +70,7 @@
       "upgradeLink": "升级套餐",
       "byok": "您正在使用自己的 API 密钥 — 调用不计入 Qarote 配额。"
     },
-    "intro": "选择由哪个 LLM 生成根因分析。检测始终免费 —— 这仅用于 <code>explain_incident</code>。",
+    "intro": "选择由哪个 LLM 生成根因分析。检测始终免费 —— 这仅用于 <code>explain_finding</code>。",
     "activeProvider": "当前提供方：",
     "showKey": "显示密钥",
     "hideKey": "隐藏密钥",
@@ -166,7 +166,7 @@
       "scopeRead": "read · free",
       "scopeReadConsequence": "列出事件、发现、queues、overview。",
       "scopeExplain": "explain · EE",
-      "scopeExplainConsequence": "增加 LLM 根因分析（explain_incident）。",
+      "scopeExplainConsequence": "增加 LLM 根因分析（explain_finding）。",
       "expiryLabel": "有效期",
       "expiry30": "30 天",
       "expiry90": "90 天",

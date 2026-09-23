@@ -40,9 +40,9 @@ That's the *what*, and it took one sentence. The rules engine had already flagge
 
 ## Let it explain the root cause
 
-Detection tells you *what* happened. `explain_incident` tells you *why* by feeding the incident plus the surrounding broker state to an LLM and asking it to reason over the timeline.
+Detection tells you *what* happened. `explain_finding` tells you *why* by feeding the incident plus the surrounding broker state to an LLM and asking it to reason over the timeline.
 
-<CodeWindow title="explain_incident">
+<CodeWindow title="explain_finding">
 ```text
 The 3 consumers disconnected simultaneously at 15:06 —
 a crashed worker pool, not one bad instance. Timing lines
@@ -66,7 +66,7 @@ The co-firing line is the tell. Two unrelated queues losing consumers in the sam
 You roll back the 15:05 deploy, watch the consumers re-subscribe, and the depth drains. Total time spent in a dashboard: zero.
 
 - **What** came from the rules engine, instantly.
-- **Why** came from one `explain_incident` call.
+- **Why** came from one `explain_finding` call.
 - **Where to look** — the 15:05 deploy — came free in the same answer.
 
 The fix took five minutes. Finding it took one question.

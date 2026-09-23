@@ -137,9 +137,6 @@
     "orderSummary": {
       "title": "Order summary",
       "tierLine": "{{name}} · annual",
-      "seats": "Seats",
-      "decreaseSeats": "Decrease seats",
-      "increaseSeats": "Increase seats",
       "total": "Total",
       "checkout": "Checkout",
       "secureCheckout": "Secure checkout via Stripe",

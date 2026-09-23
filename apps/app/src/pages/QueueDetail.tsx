@@ -55,7 +55,7 @@ import { useIsWorkspaceAdmin } from "@/hooks/queries/useWorkspaceRole";
 import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 
-import { UserPlan } from "@/types/plans";
+import { isPaidPlan } from "@/types/plans";
 
 const QueueDetail = () => {
   const { t } = useTranslation("queues");
@@ -106,8 +106,7 @@ const QueueDetail = () => {
   const timeRange = tr;
   const histRange = hr;
   const { userPlan } = useUser();
-  const isPremium =
-    userPlan === UserPlan.DEVELOPER || userPlan === UserPlan.ENTERPRISE;
+  const isPremium = isPaidPlan(userPlan);
 
   // Metrics retention is a uniform 30-day TimescaleDB chunk-drop. FREE plans
   // are hard-clamped to a 6h query window server-side

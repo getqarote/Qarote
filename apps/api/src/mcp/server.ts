@@ -1,6 +1,11 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
+import { isFeatureEnabled } from "@/services/feature-gate/license";
+
+import { FEATURES } from "@/config/features";
+
 import { registerBrokerReadTools } from "./broker-tools";
+import { getExplainFindingImpl } from "./explain-finding.registry";
 import { registerReadTools } from "./tools";
 
 import type { ApiKeyAuth } from "@/auth/resolve-api-key";
@@ -12,7 +17,7 @@ import type { ApiKeyAuth } from "@/auth/resolve-api-key";
  *
  * Diagnosis read tools (list_incidents, get_incident, list_config_findings)
  * and live-broker read tools (list_servers, list_queues, get_overview) are
- * always registered — they're the CE surface. `explain_incident` (EE) is
+ * always registered — they're the CE surface. `explain_finding` (EE) is
  * registered ONLY when the workspace has the AI_EXPLAIN_INLINE gate on AND
  * the api key was minted with `scope.mode === "explain"`. That keeps the
  * tool out of `tools/list` for CE workspaces and read-scoped keys, so the
@@ -40,6 +45,15 @@ export async function buildMcpServer(auth: ApiKeyAuth): Promise<McpServer> {
 
   registerReadTools(server, auth);
   registerBrokerReadTools(server, auth);
+
+  const registerExplainFinding = getExplainFindingImpl();
+  if (
+    registerExplainFinding &&
+    auth.scope.mode === "explain" &&
+    (await isFeatureEnabled(FEATURES.AI_EXPLAIN_INLINE))
+  ) {
+    registerExplainFinding(server, auth);
+  }
 
   return server;
 }

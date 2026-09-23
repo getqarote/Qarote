@@ -187,8 +187,8 @@
     "stillHaveQuestionsDesc": "Vous ne trouvez pas la réponse que vous cherchez ? N'hésitez pas à contacter notre équipe."
   },
   "seo": {
-    "title": "Qarote — Monitoring RabbitMQ, Alertes & Historique des files",
-    "description": "Monitoring RabbitMQ auto-hébergé : alertes, historique 30 jours, diagnostic d'incidents. Sans Prometheus. Gratuit, opérationnel en 2 minutes."
+    "title": "Qarote — Monitoring RabbitMQ pour votre agent IA",
+    "description": "Reliez votre agent IA à RabbitMQ via MCP : il diagnostique les incidents et explique la cause racine. Alertes et historique 30 jours. Sans Prometheus."
   },
   "agent": {
     "title": "Le monitoring RabbitMQ que votre agent appelle directement",
@@ -240,7 +240,7 @@
     "localAi": {
       "label": "AI Explain local",
       "title": "Analyse de cause racine sur un modèle local",
-      "desc": "Pointez explain_incident vers un modèle Ollama local et l’analyse de cause racine s’exécute sur votre matériel. L’état de votre broker ne quitte jamais votre réseau."
+      "desc": "Pointez explain_finding vers un modèle Ollama local et l’analyse de cause racine s’exécute sur votre matériel. L’état de votre broker ne quitte jamais votre réseau."
     },
     "mitCore": {
       "label": "Cœur MIT",
@@ -272,7 +272,7 @@
     },
     "freeTools": "Outils gratuits",
     "paidTool": "Outil payant",
-    "paidPara": "La détection déterministe est gratuite et le reste. explain_incident prend l'incident plus l'état du broker autour et rédige la ligne de cause racine que votre agent vous restitue. Exécutez-le sur notre modèle managé, ou sur un modèle Ollama local en auto-hébergé.",
+    "paidPara": "La détection déterministe est gratuite et le reste. explain_finding prend un incident avec l'état du broker autour — ou un écart de configuration avec les valeurs mesurées par la règle — et rédige la ligne de cause racine que votre agent vous restitue. Exécutez-le sur notre modèle managé, ou sur un modèle Ollama local en auto-hébergé.",
     "worksWith": "Compatible avec"
   },
   "howItWorks": {

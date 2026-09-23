@@ -1,6 +1,6 @@
 {
   "seo": {
-    "title": "Seguridad — Monitorización RabbitMQ Qarote",
+    "title": "Seguridad — Qarote, monitorización de RabbitMQ para agentes IA",
     "description": "Cómo Qarote trata tus datos: TLS por defecto, sin almacenar cuerpos de mensajes, residencia de datos de IA explícita, autoalojamiento sin conexión y SOC 2 en Enterprise."
   },
   "hero": {

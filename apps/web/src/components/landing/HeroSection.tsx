@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
 
 import AuthButtons from "@/components/AuthButtons";
-import DemoVideoModal from "@/components/DemoVideoModal";
 import HeroAgentChat from "@/components/HeroAgentChat";
 import HeroFlowCanvas from "@/components/HeroFlowCanvas";
 
@@ -56,10 +55,6 @@ const HeroSection = () => {
                 {t("cta.seeLiveDemo")}
                 <span className="sr-only">{t("cta.opensInNewTab")}</span>
               </a>
-            </div>
-
-            <div className="mt-[18px]">
-              <DemoVideoModal videoId="x1GvnivauyA" />
             </div>
 
             <p

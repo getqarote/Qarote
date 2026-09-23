@@ -137,9 +137,6 @@
     "orderSummary": {
       "title": "Resumen del pedido",
       "tierLine": "{{name}} · anual",
-      "seats": "Puestos",
-      "decreaseSeats": "Reducir puestos",
-      "increaseSeats": "Aumentar puestos",
       "total": "Total",
       "checkout": "Pagar",
       "secureCheckout": "Pago seguro con Stripe",

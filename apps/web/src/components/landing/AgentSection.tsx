@@ -155,7 +155,7 @@ const AgentSection = () => {
             </h4>
             <div className="flex flex-col">
               <ToolRow
-                name="explain_incident"
+                name="explain_finding"
                 desc="LLM root-cause, in chat"
                 paid
                 last

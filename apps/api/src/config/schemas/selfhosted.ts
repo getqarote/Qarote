@@ -102,10 +102,4 @@ export const selfhostedSchema = baseSchema.extend({
   // Admin bootstrap (used once on first boot, then removed from .env)
   ADMIN_EMAIL: z.email().optional(),
   ADMIN_PASSWORD: z.string().min(8).optional(),
-
-  // Notion Configuration - Optional
-  NOTION_API_KEY: z.string().optional(),
-  NOTION_DATABASE_ID: z.string().optional(),
-  NOTION_SYNC_ENABLED: z.coerce.boolean().default(false),
-  ENABLE_NOTION: z.coerce.boolean().default(false),
 });

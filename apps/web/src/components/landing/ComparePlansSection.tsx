@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
  * "Compare plans" — grouped feature table for the /pricing page only.
  * Ported from Pricing.html (#compare). Light section, theme tokens.
  *
- * Symbols (✓ / —) and the literal "explain_incident" tool name are not i18n'd
+ * Symbols (✓ / —) and the literal "explain_finding" tool name are not i18n'd
  * (they are product/markup, not prose); column heads, group names, row labels,
  * and text values ("30 days", "Unlimited") come from the `pricing` namespace.
  *
@@ -19,7 +19,7 @@ type Cell = "yes" | "no" | { literal: string } | { key: string };
 type FeatureRow = {
   /** i18n key under pricing.compare.rows for the label */
   labelKey: string;
-  /** render the label as a monospace <code> (e.g. explain_incident) */
+  /** render the label as a monospace <code> (e.g. explain_finding) */
   code?: boolean;
   c: Cell;
   d: Cell;
@@ -70,7 +70,7 @@ const GROUPS: Group[] = [
     rows: [
       { labelKey: "readTools", c: yes, d: yes, e: yes },
       {
-        labelKey: "explainIncidentTool",
+        labelKey: "explainFindingTool",
         code: true,
         c: no,
         d: yes,

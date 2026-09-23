@@ -89,11 +89,3 @@ export const ResendVerificationSchema = z.object({
 export const InvitationTokenSchema = z.object({
   token: z.string().min(1, "Token is required"),
 });
-
-// Schema for accepting invitation with registration
-export const AcceptInvitationWithRegistrationTokenSchema = z.object({
-  token: z.string().min(1, "Token is required"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-});

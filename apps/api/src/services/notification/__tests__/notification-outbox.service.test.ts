@@ -87,6 +87,13 @@ vi.mock("@/services/email/auth-email.service", () => ({
   },
 }));
 
+const sendInternalNewSignup = vi.fn();
+vi.mock("@/services/email/internal-email.service", () => ({
+  InternalEmailService: {
+    sendNewSignupEmail: (...args: unknown[]) => sendInternalNewSignup(...args),
+  },
+}));
+
 vi.mock("@/services/email/password-reset-email.service", () => ({
   passwordResetEmailService: {
     sendPasswordResetEmail: (...args: unknown[]) => sendPasswordReset(...args),
@@ -445,6 +452,44 @@ describe("drainNotificationOutbox", () => {
         type: "SIGNUP",
       })
     );
+  });
+
+  // Leak safety: `target` is the internal ops recipient and payload.signupEmail
+  // is the customer's own address. Passing the wrong one would mail every new
+  // user their own attribution profile — and nothing else in the pipeline
+  // (type-check, lint, knip) can catch the swap, because both are strings.
+  it("dispatches internal_new_signup to the internal recipient, never the signup", async () => {
+    rowsByChannel([
+      {
+        id: "signup-1",
+        channel: "email",
+        template: "internal_new_signup",
+        target: "ops@qarote.io",
+        payload: {
+          signupEmail: "customer@example.com",
+          signupName: "Ada Lovelace",
+          userId: "user-123",
+          signupMethod: "invitation",
+          invitedByEmail: "marie@acme.com",
+        },
+        attempts: 0,
+      },
+    ]);
+    sendInternalNewSignup.mockResolvedValue({ success: true });
+    updateMock.mockResolvedValue({});
+
+    await drainNotificationOutbox();
+
+    expect(sendInternalNewSignup).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: "ops@qarote.io",
+        signupEmail: "customer@example.com",
+        signupMethod: "invitation",
+        invitedByEmail: "marie@acme.com",
+      })
+    );
+    const { to } = sendInternalNewSignup.mock.calls[0][0];
+    expect(to).not.toBe("customer@example.com");
   });
 
   it("password_reset wrapper turns void/throw into success/error result", async () => {

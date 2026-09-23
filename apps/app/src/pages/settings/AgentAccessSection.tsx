@@ -1,7 +1,7 @@
 /**
  * Settings → Agent keys. Owners and admins mint and revoke machine API keys
  * here so external AI agents can call Qarote's MCP endpoint (list incidents,
- * read config findings, and — on EE — get the grounded RCA via explain_incident).
+ * read config findings, and — on EE — get the grounded RCA via explain_finding).
  *
  * "Mint key" opens the shared MintAgentKeyDialog (also used by the cockpit
  * "Connect your agent" flow), which owns the mint form AND the copy-once

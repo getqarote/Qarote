@@ -152,7 +152,7 @@ Qarote exposes its monitoring and incident-diagnosis surface to autonomous AI ag
 - Endpoint: https://app.qarote.io/api/mcp (streamable HTTP).
 - Authentication: x-api-key header. Mint and revoke keys from Settings → Agent Access. Two scopes: `read` (free, lists incidents and findings) and `explain` (EE, includes grounded root-cause analysis).
 - Tools (CE, free): list_incidents, get_incident, list_config_findings, list_servers, list_queues, get_overview, ping.
-- Tools (EE): explain_incident — returns a grounded RCA synthesised from firehose evidence, queue topology, seasonal baselines, and co-firing context. Read-through cached per workspace.
+- Tools (EE): explain_finding — returns a grounded RCA for either an incident id or a config-scan finding id. An incident is synthesised from firehose evidence, queue topology, seasonal baselines, and co-firing context; a config finding is explained from the rule and its measured values, with no broker read. Read-through cached per workspace.
 
 ### Why Qarote for agents?
 Most RabbitMQ-aware AI tooling stops at metrics. Qarote ships a deterministic rules engine for incident detection and a managed-LLM pipeline for the analysis — both reachable from the same agent surface. The same RCA your on-call sees in the UI is what your agent receives over MCP.

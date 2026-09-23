@@ -214,7 +214,7 @@ function FeaturesContent() {
                 <Pill>get_incident</Pill>
                 <Pill>list_config_findings</Pill>
                 <Pill>get_overview</Pill>
-                <Pill tone="carrot">explain_incident</Pill>
+                <Pill tone="carrot">explain_finding</Pill>
               </>
             }
           />
@@ -297,7 +297,7 @@ function FeaturesContent() {
               <>
                 {t("aiExplain.bodyPre")}{" "}
                 <code className="font-mono text-accent-foreground">
-                  explain_incident
+                  explain_finding
                 </code>{" "}
                 {t("aiExplain.bodyPost")}
               </>

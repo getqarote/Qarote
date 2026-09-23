@@ -3,12 +3,15 @@ import { describe, expect, it, vi } from "vitest";
 import { prisma } from "@/core/prisma";
 
 import {
+  getPlanFeatures,
+  SUPPORTED_RABBITMQ_VERSIONS,
+} from "../features.service";
+import {
   extractMajorMinorVersion,
   getOrgPlan,
   PlanLimitExceededError,
   PlanValidationError,
   validateQueueCreationOnServer,
-  validateRabbitMqVersion,
   validateServerCreation,
   validateUserInvitation,
   validateWorkspaceCreation,
@@ -134,70 +137,22 @@ describe("extractMajorMinorVersion", () => {
   });
 });
 
-describe("validateRabbitMqVersion", () => {
-  describe("FREE plan", () => {
-    it("does not throw for a supported version (3.12)", () => {
-      expect(() =>
-        validateRabbitMqVersion(UserPlan.FREE, "3.12.10")
-      ).not.toThrow();
-    });
-
-    it("does not throw for version 4.0", () => {
-      expect(() =>
-        validateRabbitMqVersion(UserPlan.FREE, "4.0.5")
-      ).not.toThrow();
-    });
-
-    it("throws PlanValidationError for unsupported version (3.0)", () => {
-      expect(() => validateRabbitMqVersion(UserPlan.FREE, "3.0.5")).toThrow(
-        PlanValidationError
+describe("SUPPORTED_RABBITMQ_VERSIONS", () => {
+  it("is identical on every plan — version support is not a tier lever", () => {
+    for (const plan of Object.values(UserPlan)) {
+      expect(getPlanFeatures(plan).supportedRabbitMqVersions).toBe(
+        SUPPORTED_RABBITMQ_VERSIONS
       );
-    });
-
-    it("throws PlanValidationError for version 4.2 (not in FREE)", () => {
-      expect(() => validateRabbitMqVersion(UserPlan.FREE, "4.2.0")).toThrow(
-        PlanValidationError
-      );
-    });
-
-    it("includes supported versions in the error message", () => {
-      let caught: PlanValidationError | undefined;
-      try {
-        validateRabbitMqVersion(UserPlan.FREE, "3.0.0");
-      } catch (e) {
-        caught = e as PlanValidationError;
-      }
-      expect(caught).toBeDefined();
-      expect(caught!.message).toContain("3.12");
-    });
+    }
   });
 
-  describe("DEVELOPER plan", () => {
-    it("does not throw for version 3.0", () => {
-      expect(() =>
-        validateRabbitMqVersion(UserPlan.DEVELOPER, "3.0.0")
-      ).not.toThrow();
-    });
-
-    it("does not throw for version 4.2", () => {
-      expect(() =>
-        validateRabbitMqVersion(UserPlan.DEVELOPER, "4.2.0")
-      ).not.toThrow();
-    });
-  });
-
-  describe("ENTERPRISE plan", () => {
-    it("does not throw for version 3.0", () => {
-      expect(() =>
-        validateRabbitMqVersion(UserPlan.ENTERPRISE, "3.0.0")
-      ).not.toThrow();
-    });
-
-    it("does not throw for version 4.2", () => {
-      expect(() =>
-        validateRabbitMqVersion(UserPlan.ENTERPRISE, "4.2.0")
-      ).not.toThrow();
-    });
+  it("spans 3.0 through 4.2 with no gap", () => {
+    for (const minor of Array.from({ length: 14 }, (_, i) => `3.${i}`)) {
+      expect(SUPPORTED_RABBITMQ_VERSIONS).toContain(minor);
+    }
+    expect(SUPPORTED_RABBITMQ_VERSIONS).toContain("4.0");
+    expect(SUPPORTED_RABBITMQ_VERSIONS).toContain("4.1");
+    expect(SUPPORTED_RABBITMQ_VERSIONS).toContain("4.2");
   });
 });
 

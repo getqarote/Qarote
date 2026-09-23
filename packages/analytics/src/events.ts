@@ -15,7 +15,7 @@ export type AcquisitionChannel =
   | "unknown";
 export type AppName = "web" | "app" | "portal" | "api";
 
-export type IntegrationProvider = "slack" | "email" | "notion" | "webhook";
+export type IntegrationProvider = "slack" | "email" | "webhook";
 
 export interface CommonProperties {
   app?: AppName;

@@ -60,7 +60,11 @@ Why:
 | `googleConfig` | `GOOGLE_CLIENT_ID`, `ENABLE_OAUTH` |
 | `ssoConfig` | `SSO_ENABLED`, `SSO_TYPE`, OIDC discovery/client settings, SAML metadata, tenant/product/button label |
 | `licenseConfig` | `LICENSE_PRIVATE_KEY` (cloud only, for generating licenses) |
+<<<<<<< HEAD
 | `notionConfig` | `NOTION_API_KEY`, `NOTION_DATABASE_ID`, `NOTION_SYNC_ENABLED`, `ENABLE_NOTION` |
+| `internalNotificationConfig` | `INTERNAL_NOTIFICATION_EMAIL` (cloud only, optional) |
+=======
+>>>>>>> d9283151 (chore(api): decommission the Notion user sync)
 | `alertConfig` | `ALERT_CHECK_INTERVAL_MS`, `ALERT_CHECK_CONCURRENCY` |
 | `logConfig` | `LOG_LEVEL`, `isDevelopment` |
 | `deploymentConfig` | `DEPLOYMENT_MODE` + `isCloud()` / `isSelfHosted()` helpers |
@@ -130,6 +134,7 @@ If a required variable is missing for the selected mode, the process exits with 
 | `PORTAL_FRONTEND_URL` | `url` | (required) | Portal URL for portal email links |
 | `ENABLE_EMAIL` | `boolean` | `true` | Enable email features |
 | `EMAIL_PROVIDER` | `"resend" \| "smtp"` | `"resend"` | Email provider |
+| `INTERNAL_NOTIFICATION_EMAIL` | `email` | (optional) | Ops address emailed on every new signup; unset disables |
 | `SMTP_HOST` | `string` | (optional) | SMTP server hostname |
 | `SMTP_PORT` | `number` | (optional) | SMTP server port |
 | `SMTP_USER` | `string` | (optional) | SMTP username |
@@ -146,10 +151,6 @@ If a required variable is missing for the selected mode, the process exits with 
 | `ENABLE_OAUTH` | `boolean` | `true` | Enable Google OAuth |
 | `LICENSE_PRIVATE_KEY` | `string` | (required) | RSA private key for generating customer licenses |
 | `LICENSE_PUBLIC_KEY` | `string` | (optional) | RSA public key |
-| `NOTION_API_KEY` | `string` | (optional) | Notion API key |
-| `NOTION_DATABASE_ID` | `string` | (optional) | Notion database ID |
-| `NOTION_SYNC_ENABLED` | `boolean` | `false` | Enable Notion sync |
-| `ENABLE_NOTION` | `boolean` | `false` | Enable Notion integration |
 
 ### Self-Hosted Variables -- `apps/api/src/config/schemas/selfhosted.ts`
 
@@ -190,10 +191,6 @@ If a required variable is missing for the selected mode, the process exits with 
 | `SENTRY_ENABLED` | `boolean` | `false` | Enable Sentry |
 | `GOOGLE_CLIENT_ID` | `string` | (optional) | Not used in selfhosted |
 | `ENABLE_OAUTH` | `boolean` | `false` | Not used in selfhosted |
-| `NOTION_API_KEY` | `string` | (optional) | Notion API key |
-| `NOTION_DATABASE_ID` | `string` | (optional) | Notion database ID |
-| `NOTION_SYNC_ENABLED` | `boolean` | `false` | Enable Notion sync |
-| `ENABLE_NOTION` | `boolean` | `false` | Enable Notion integration |
 
 ### Docker Compose Variables -- `.env.selfhosted.example`
 

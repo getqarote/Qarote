@@ -52,7 +52,6 @@ export default defineConfig({
         ENABLE_EMAIL: process.env.ENABLE_EMAIL || "",
         ENABLE_OAUTH: process.env.ENABLE_OAUTH || "",
         SENTRY_ENABLED: "",
-        ENABLE_NOTION: "",
       },
     },
     {

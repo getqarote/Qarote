@@ -1,6 +1,6 @@
 {
   "seo": {
-    "title": "定价 — Qarote RabbitMQ 监控",
+    "title": "定价 — Qarote，面向 AI Agent 的 RabbitMQ 监控",
     "description": "免费社区版，或升级到 Developer（$29/月）和 Enterprise 计划解锁高级监控功能。永久免费自托管。"
   },
   "title": "核心免费，只为诊断付费。",
@@ -225,7 +225,7 @@
       "byok": "自带密钥 / 本地 Ollama",
       "managedLlm": "托管 LLM（零配置）",
       "readTools": "读取工具（list/get/ping）",
-      "explainIncidentTool": "explain_incident 工具",
+      "explainFindingTool": "explain_finding 工具",
       "email": "邮件",
       "slackWebhooks": "Slack · webhook",
       "ssoRbac": "SSO / SAML · RBAC",

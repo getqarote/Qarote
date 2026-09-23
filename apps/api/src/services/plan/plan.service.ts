@@ -62,30 +62,6 @@ export function extractMajorMinorVersion(fullVersion: string): string {
   return versionMatch ? versionMatch[1] : fullVersion;
 }
 
-/**
- * Validate if a RabbitMQ version is supported by the current plan
- */
-export function validateRabbitMqVersion(
-  plan: UserPlan,
-  rabbitMqVersion: string
-): void {
-  const limits = getPlanFeatures(plan);
-  const majorMinorVersion = extractMajorMinorVersion(rabbitMqVersion);
-
-  if (!limits.supportedRabbitMqVersions.includes(majorMinorVersion)) {
-    const supportedVersionsStr = limits.supportedRabbitMqVersions.join(", ");
-
-    throw new PlanValidationError(
-      `RabbitMQ version ${majorMinorVersion}`,
-      plan,
-      plan === UserPlan.FREE ? "Developer or Enterprise" : "Enterprise",
-      undefined,
-      undefined,
-      `Supported versions for ${plan} plan: ${supportedVersionsStr}`
-    );
-  }
-}
-
 export function validateServerCreation(
   plan: UserPlan,
   currentServerCount: number

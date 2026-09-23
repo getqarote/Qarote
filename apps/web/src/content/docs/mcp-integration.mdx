@@ -224,7 +224,7 @@ env_http_headers = { "x-api-key" = "QAROTE_API_KEY" }
 Restart the agent. It should list `ping`, `list_servers`,
 `list_queues`, `get_overview`, `list_incidents`, `get_incident`,
 `list_config_findings`, and (for `explain` scope on EE)
-`explain_incident` in its tool inventory.
+`explain_finding` in its tool inventory.
 
 ## 3. Tools
 
@@ -298,18 +298,23 @@ dead-letter exchange, orphan exchange, etc.).
 | `serverId`       | string?  | Filter to one server.   |
 | `unresolvedOnly` | boolean? | Hide resolved findings. |
 
-### `explain_incident` (EE)
+### `explain_finding` (EE)
 
-Returns a grounded root-cause analysis for an incident — rule context +
-firehose evidence + queue topology + seasonal baselines + co-firing
-correlations, synthesised by your workspace's configured LLM.
+Returns a grounded root-cause analysis, synthesised by your workspace's
+configured LLM. The evidence depends on what you pass:
 
-| Input        | Type   | Description                         |
-| ------------ | ------ | ----------------------------------- |
-| `incidentId` | string | The incident finding id to explain. |
+- **An incident** — rule context + firehose evidence + queue topology +
+  seasonal baselines + co-firing correlations. Reads live broker state.
+- **A config-scan finding** — the rule and the values it measured, taken from
+  the stored finding. No broker read, so it answers faster and works even when
+  the broker is unreachable.
+
+| Input       | Type   | Description                                                                                    |
+| ----------- | ------ | ---------------------------------------------------------------------------------------------- |
+| `findingId` | string | An incident id from `list_incidents`, or a config-scan finding id from `list_config_findings`. |
 
 Returns `{ explanation, explanationId, fromCache }`. Repeat calls on the
-same incident pay zero LLM tokens — the response is cached per
+same finding pay zero LLM tokens — the response is cached per
 `(subject, prompt version, provider, model)`.
 
 Visibility: this tool is registered ONLY when the key was minted with
@@ -325,13 +330,14 @@ A typical agent loop after a Slack alert:
    what's currently broken.
 2. For each high-severity incident: `get_incident({ incidentId })` to
    pull the full record.
-3. For the highest-priority one: `explain_incident({ incidentId })` to
-   get the grounded RCA and the suggested action.
+3. For the highest-priority one: `explain_finding({ findingId: incidentId })`
+   to get the grounded RCA and the suggested action. The same call takes an id
+   from `list_config_findings` when the problem is a misconfiguration.
 4. Post the analysis back to Slack, or — if your agent has the auth —
    apply the suggested fix.
 
-Cache-friendly: step 3 on the SAME incident returns instantly with zero
-tokens. Loop the same incidentId during a discussion and you're not
+Cache-friendly: step 3 on the SAME finding returns instantly with zero
+tokens. Loop the same findingId during a discussion and you're not
 billed twice.
 
 ## 5. Errors
@@ -341,7 +347,7 @@ agent can branch on rather than transport exceptions:
 
 | Message                                                                                  | Cause                                           | Suggested agent action                                     |
 | ---------------------------------------------------------------------------------------- | ----------------------------------------------- | ---------------------------------------------------------- |
-| `Incident not found.`                                                                    | Wrong id, wrong workspace, or deleted mid-call. | Surface to the user; do not retry.                         |
+| `Finding not found.`                                                                     | Wrong id, wrong workspace, or deleted mid-call. | Surface to the user; do not retry.                         |
 | `LLM not configured or disabled on this workspace.`                                      | No LlmConfig row, or it's disabled.             | Surface; ask the user to configure in Settings → AI / LLM. |
 | `Managed LLM unavailable on this workspace.`                                             | Managed tier off (kill switch).                 | Surface; user can switch to BYOK or wait.                  |
 | `Monthly LLM quota reached (USED/CAP tokens).`                                           | Workspace at managed cap.                       | Back off until next cycle; resume next month.              |
@@ -365,7 +371,7 @@ agent can branch on rather than transport exceptions:
 ## 7. Rate limits
 
 - Per-key: 120 requests/minute (better-auth apiKey plugin defaults).
-- Per-workspace: max 3 concurrent `explain_incident` calls (shared
+- Per-workspace: max 3 concurrent `explain_finding` calls (shared
   across UI and agent traffic). Exceeding returns the busy error above.
 
 ## 8. Self-hosted

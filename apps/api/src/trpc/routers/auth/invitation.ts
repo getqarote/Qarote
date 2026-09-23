@@ -6,14 +6,11 @@ import { formatInvitedBy } from "@/core/utils";
 import { ensureWorkspaceMember } from "@/core/workspace-access";
 
 import { recordFromContext } from "@/services/audit";
+import { notifyInternalNewSignup } from "@/services/notification/new-signup-notification";
 import { getWorkspacePlan } from "@/services/plan/plan.service";
-import { identifyUser, posthog, trackEvent } from "@/services/posthog";
+import { posthog, trackEvent } from "@/services/posthog";
 
-import {
-  AcceptInvitationSchema,
-  AcceptInvitationWithRegistrationTokenSchema,
-  InvitationTokenSchema,
-} from "@/schemas/auth";
+import { AcceptInvitationSchema, InvitationTokenSchema } from "@/schemas/auth";
 
 import { UserMapper } from "@/mappers/auth";
 import { WorkspaceMapper } from "@/mappers/workspace";
@@ -121,7 +118,12 @@ export const invitationRouter = router({
       try {
         const invitation = await ctx.prisma.invitation.findUnique({
           where: { tokenHash: hashInvitationToken(token) },
-          include: { workspace: true },
+          // invitedBy is selected for the internal new-signup ping; the other
+          // two invitation-accept routes already include it.
+          include: {
+            workspace: true,
+            invitedBy: { select: { email: true } },
+          },
         });
 
         if (!invitation) {
@@ -239,6 +241,11 @@ export const invitationRouter = router({
         // Track whether existing user needs an Account row created
         const needsAccountMigration = user && !hasCredentialAccount;
 
+        // Captured BEFORE the transaction, which reassigns `user`. This is the
+        // exact condition the transaction branches on: an existing user only
+        // gets moved to the workspace, and moving is not a signup.
+        const isNewAccount = !user;
+
         const result = await ctx.prisma.$transaction(async (tx) => {
           // R-INV-3 inside the accept transaction: inviter's current
           // workspace role MUST still allow granting the invited role.
@@ -327,6 +334,19 @@ export const invitationRouter = router({
           return user;
         });
 
+        // Internal ops ping — only when this accept actually created an
+        // account. An existing user joining a workspace is not a new signup.
+        if (isNewAccount) {
+          void notifyInternalNewSignup({
+            userId: result.id,
+            email: result.email,
+            name: `${result.firstName} ${result.lastName}`.trim(),
+            signupMethod: "invitation",
+            invitedByEmail: invitation.invitedBy.email,
+            invitedToName: invitation.workspace.name,
+          });
+        }
+
         // Invalidate any existing sessions for this user — workspaceId changed.
         await prisma.session
           .deleteMany({ where: { userId: result.id } })
@@ -387,188 +407,6 @@ export const invitationRouter = router({
           throw error;
         }
         ctx.logger.error({ error }, "Accept invitation error");
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: te(ctx.locale, "auth.failedToAcceptInvitation"),
-        });
-      }
-    }),
-
-  /**
-   * Accept invitation with registration (PUBLIC)
-   * After success, the frontend signs in via authClient.signIn.email()
-   */
-  acceptInvitationWithRegistration: rateLimitedPublicProcedure
-    .input(AcceptInvitationWithRegistrationTokenSchema)
-    .mutation(async ({ input, ctx }) => {
-      const { token, password, firstName, lastName } = input;
-
-      try {
-        const invitation = await ctx.prisma.invitation.findFirst({
-          where: {
-            tokenHash: hashInvitationToken(token),
-            status: InvitationStatus.PENDING,
-            expiresAt: {
-              gt: new Date(),
-            },
-          },
-          include: {
-            workspace: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-            invitedBy: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-              },
-            },
-          },
-        });
-
-        if (!invitation) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: te(ctx.locale, "auth.invalidOrExpiredInvitation"),
-          });
-        }
-
-        const existingUser = await ctx.prisma.user.findUnique({
-          where: { email: invitation.email },
-        });
-
-        if (existingUser) {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: te(ctx.locale, "auth.userWithEmailAlreadyExists"),
-          });
-        }
-
-        const hashedPassword = await hashPassword(password);
-
-        const now = new Date();
-        const newUser = await ctx.prisma.$transaction(async (tx) => {
-          // R-INV-3 inside the accept transaction.
-          await assertInviterStillGrantable(tx, invitation);
-
-          const user = await tx.user.create({
-            data: {
-              email: invitation.email,
-              passwordHash: hashedPassword,
-              firstName,
-              lastName,
-              name: `${firstName} ${lastName}`.trim(),
-              workspaceId: invitation.workspaceId,
-              isActive: true,
-              emailVerified: true,
-              emailVerifiedAt: new Date(),
-            },
-            select: {
-              id: true,
-              email: true,
-              firstName: true,
-              lastName: true,
-              workspaceId: true,
-              isActive: true,
-              emailVerified: true,
-              lastLogin: true,
-              createdAt: true,
-              updatedAt: true,
-            },
-          });
-
-          // Create better-auth Account record for credential-based auth
-          await tx.account.create({
-            data: {
-              userId: user.id,
-              accountId: user.id,
-              providerId: "credential",
-              password: hashedPassword,
-            },
-          });
-
-          await ensureWorkspaceMember(
-            user.id,
-            invitation.workspaceId,
-            invitation.role,
-            tx
-          );
-
-          // Atomic single-use status transition (R-INV-1).
-          const flipped = await tx.invitation.updateMany({
-            where: {
-              id: invitation.id,
-              status: InvitationStatus.PENDING,
-              expiresAt: { gt: now },
-            },
-            data: {
-              status: InvitationStatus.ACCEPTED,
-              invitedUserId: user.id,
-              acceptedAt: now,
-              acceptedByUserId: user.id,
-            },
-          });
-          if (flipped.count === 0) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: te(ctx.locale, "auth.invitationAlreadyUsedOrExpired"),
-            });
-          }
-
-          return user;
-        });
-
-        // New user — no sessions yet, but invalidate defensively in case of
-        // concurrent sign-in between registration and invitation acceptance.
-        await prisma.session
-          .deleteMany({ where: { userId: newUser.id } })
-          .catch((err) => {
-            ctx.logger.warn(
-              { err, userId: newUser.id },
-              "Failed to invalidate sessions after registration invitation acceptance"
-            );
-          });
-
-        identifyUser({
-          id: newUser.id,
-          email: newUser.email,
-          planTier: "free",
-          workspaceId: invitation.workspaceId,
-          signupAt: newUser.createdAt,
-        });
-        trackEvent(
-          {
-            distinctId: newUser.id,
-            superProperties: {
-              app: "api",
-              plan_tier: "free",
-              workspace_id: invitation.workspaceId,
-            },
-          },
-          "invitation_registration_completed",
-          {
-            workspace_id: invitation.workspaceId,
-            invited_role: invitation.role,
-          }
-        );
-
-        return {
-          message: te(ctx.locale, "messages.invitationAccepted"),
-          user: UserMapper.toApiResponse(newUser),
-          workspace: {
-            id: invitation.workspace.id,
-            name: invitation.workspace.name,
-          },
-        };
-      } catch (error) {
-        if (error instanceof TRPCError) {
-          throw error;
-        }
-        ctx.logger.error({ error }, "Error accepting invitation");
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: te(ctx.locale, "auth.failedToAcceptInvitation"),

@@ -1,6 +1,6 @@
 {
   "seo": {
-    "title": "Features — Qarote RabbitMQ Monitoring",
+    "title": "Features — Qarote, RabbitMQ monitoring for AI agents",
     "description": "Agent-native RabbitMQ monitoring: MCP tools, deterministic incident detection, AI root-cause, config scan, topology, alerting, and self-hosting."
   },
   "head": {

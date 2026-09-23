@@ -1,3 +1,6 @@
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+
 // Subcommand routing — must run before any config/dotenv imports
 if (
   process.argv.includes("--version") ||
@@ -11,25 +14,46 @@ if (
 
 const subcommand = process.argv[2];
 
+// Workers that live under ee/. The specifier is a variable on purpose: the CE
+// build ships without ee/, so a literal import would fail to type-check there.
+// Running one of these on a CE build is a configuration error, not a crash to
+// debug, so say which subcommand and why.
+const EE_WORKERS: Record<string, string> = {
+  worker: "./ee/workers/alert-monitor.js",
+  "digest-worker": "./ee/workers/digest-monitor.js",
+  "metrics-worker": "./ee/workers/metrics-monitor.js",
+  "firehose-worker": "./ee/workers/firehose-monitor.js",
+};
+
 if (subcommand === "setup") {
   const { runSetup } = await import("./cli/setup.js");
   await runSetup();
   process.exit(0);
-} else if (subcommand === "worker") {
-  await import("./ee/workers/alert-monitor.js");
-  await new Promise(() => {}); // Never resolves — signal handlers shut down the process
 } else if (subcommand === "notification-worker") {
   await import("./workers/notification-worker.js");
   await new Promise(() => {}); // Never resolves — signal handlers shut down the process
-} else if (subcommand === "digest-worker") {
-  await import("./ee/workers/digest-monitor.js");
-  await new Promise(() => {});
-} else if (subcommand === "metrics-worker") {
-  await import("./ee/workers/metrics-monitor.js");
-  await new Promise(() => {});
-} else if (subcommand === "firehose-worker") {
-  await import("./ee/workers/firehose-monitor.js");
-  await new Promise(() => {});
+} else if (subcommand && Object.hasOwn(EE_WORKERS, subcommand)) {
+  // Test the worker file itself so the two failures stay distinct: absent
+  // means a CE build, while anything thrown once it loads — including a
+  // dependency of its own that is missing, which raises the same
+  // ERR_MODULE_NOT_FOUND — is a real startup error and must surface as
+  // itself. import.meta.resolve alone cannot tell them apart: for a relative
+  // specifier it returns a URL without checking that anything is there.
+  // The specifiers are ".js" because that is what the compiled build imports;
+  // under tsx the same import resolves to the ".ts" source, so accept either.
+  const workerUrl = import.meta.resolve(EE_WORKERS[subcommand]);
+  const workerPath = fileURLToPath(workerUrl);
+  if (
+    !existsSync(workerPath) &&
+    !existsSync(workerPath.replace(/\.js$/, ".ts"))
+  ) {
+    process.stderr.write(
+      `qarote: "${subcommand}" is an Enterprise Edition worker and is not included in this build\n`
+    );
+    process.exit(1);
+  }
+  await import(workerUrl);
+  await new Promise(() => {}); // Never resolves — signal handlers shut down the process
 }
 
 import { parseArgs } from "node:util";

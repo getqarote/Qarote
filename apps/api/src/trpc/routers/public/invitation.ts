@@ -4,6 +4,7 @@ import { hashPassword } from "@/core/auth";
 import { formatInvitedBy } from "@/core/utils";
 import { ensureWorkspaceMember } from "@/core/workspace-access";
 
+import { notifyInternalNewSignup } from "@/services/notification/new-signup-notification";
 import { getWorkspacePlan } from "@/services/plan/plan.service";
 
 import {
@@ -230,6 +231,16 @@ export const publicInvitationRouter = router({
           }
 
           return user;
+        });
+
+        // Internal ops ping — an invited teammate is still a new account.
+        void notifyInternalNewSignup({
+          userId: newUser.id,
+          email: newUser.email,
+          name: `${newUser.firstName} ${newUser.lastName}`.trim(),
+          signupMethod: "invitation",
+          invitedByEmail: invitation.invitedBy.email,
+          invitedToName: invitation.workspace.name,
         });
 
         return {

@@ -95,7 +95,8 @@ export const config = parseConfig();
 
 // Helper functions to check configuration
 export const isDevelopment = () => config.NODE_ENV === "development";
-export const isProduction = () => config.NODE_ENV === "production";
+// Not exported: notion.service.ts was the last external consumer.
+const isProduction = () => config.NODE_ENV === "production";
 
 // Specific config getters with validation
 export const serverConfig = {
@@ -146,6 +147,21 @@ export const emailConfig = {
 
 export const registrationConfig = {
   enabled: "ENABLE_REGISTRATION" in config ? config.ENABLE_REGISTRATION : true,
+} as const;
+
+/**
+ * Internal ops notifications. `recipient` is the address Qarote emails on
+ * business events worth a human glance (today: every new signup).
+ *
+ * Cloud-only by construction — the env var lives in the cloud schema alone,
+ * so self-hosted instances resolve `undefined` and never phone home.
+ * Undefined = notifications off.
+ */
+export const internalNotificationConfig = {
+  recipient:
+    "INTERNAL_NOTIFICATION_EMAIL" in config
+      ? config.INTERNAL_NOTIFICATION_EMAIL
+      : undefined,
 } as const;
 
 export const adminBootstrapConfig = {
@@ -223,13 +239,6 @@ export const ssoConfig = {
 export const licenseConfig = {
   privateKey:
     "LICENSE_PRIVATE_KEY" in config ? config.LICENSE_PRIVATE_KEY : undefined,
-} as const;
-
-export const notionConfig = {
-  apiKey: config.NOTION_API_KEY,
-  databaseId: config.NOTION_DATABASE_ID,
-  syncEnabled: config.NOTION_SYNC_ENABLED && config.ENABLE_NOTION,
-  enabled: config.ENABLE_NOTION,
 } as const;
 
 export const digestConfig = {

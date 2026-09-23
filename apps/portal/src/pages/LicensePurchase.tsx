@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
-import { CreditCard, Lock, Minus, Plus } from "lucide-react";
+import { CreditCard, Lock } from "lucide-react";
 
 import { track } from "@/lib/analytics";
 import { trpc } from "@/lib/trpc/client";
@@ -26,7 +26,6 @@ const LicensePurchase = () => {
   const [selectedTier, setSelectedTier] = useState<"DEVELOPER" | "ENTERPRISE">(
     "DEVELOPER"
   );
-  const [seats, setSeats] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const { t } = useTranslation("portal");
@@ -168,7 +167,7 @@ const LicensePurchase = () => {
   );
 
   const selectedPlan = plans.find((p) => p.tier === selectedTier)!;
-  const total = selectedPlan.unitPrice * seats;
+  const total = selectedPlan.unitPrice;
 
   return (
     <div className="space-y-6">
@@ -263,41 +262,6 @@ const LicensePurchase = () => {
               </span>
               <span className="font-mono font-medium">
                 {selectedPlan.annualPrice}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between gap-2 text-sm">
-              <span className="text-muted-foreground">
-                {t("licensePurchase.orderSummary.seats")}
-              </span>
-              <span className="flex items-center gap-1">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setSeats((q) => Math.max(1, q - 1))}
-                  disabled={seats <= 1}
-                  aria-label={t("licensePurchase.orderSummary.decreaseSeats")}
-                >
-                  <Minus aria-hidden="true" />
-                </Button>
-                <span
-                  className="w-8 text-center font-mono tabular-nums"
-                  aria-live="polite"
-                >
-                  {seats}
-                </span>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setSeats((q) => q + 1)}
-                  aria-label={t("licensePurchase.orderSummary.increaseSeats")}
-                >
-                  <Plus aria-hidden="true" />
-                </Button>
               </span>
             </div>
 

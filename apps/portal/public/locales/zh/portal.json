@@ -137,9 +137,6 @@
     "orderSummary": {
       "title": "订单摘要",
       "tierLine": "{{name}} · 年度",
-      "seats": "席位",
-      "decreaseSeats": "减少席位",
-      "increaseSeats": "增加席位",
       "total": "合计",
       "checkout": "结账",
       "secureCheckout": "通过 Stripe 安全结账",

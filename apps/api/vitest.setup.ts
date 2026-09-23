@@ -31,8 +31,6 @@ process.env.STRIPE_DEVELOPER_YEARLY_PRICE_ID = "price_test_mock";
 process.env.STRIPE_ENTERPRISE_MONTHLY_PRICE_ID = "price_test_mock";
 process.env.STRIPE_ENTERPRISE_YEARLY_PRICE_ID = "price_test_mock";
 process.env.GOOGLE_CLIENT_ID = "mock-google-client-id";
-process.env.NOTION_API_KEY = "mock-notion-api-key";
-process.env.NOTION_DATABASE_ID = "mock-notion-db-id";
 // Mock private key for testing license file generation in webhook tests
 // This is required for tests that exercise license renewal flows
 // Using multiline template literal to ensure proper newline handling

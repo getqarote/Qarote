@@ -4,87 +4,92 @@ This document provides a detailed comparison of features between Community Editi
 
 ## Quick Comparison
 
-| Feature Category | Community Edition | Enterprise Edition |
-|----------------|-------------------|-------------------|
-| **License** | MIT (Open Source) | Commercial License |
-| **Price** | Free | Paid |
-| **RabbitMQ Monitoring** | ✅ | ✅ |
-| **Workspace Management** | ❌ | ✅ |
-| **Team Collaboration** | ❌ | ✅ |
-| **Alerting** | ❌ | ✅ |
-| **Integrations** | ❌ | ✅ |
-| **Data Export** | ❌ | ✅ |
+| Feature Category         | Community Edition | Enterprise Edition |
+| ------------------------ | ----------------- | ------------------ |
+| **License**              | MIT (Open Source) | Commercial License |
+| **Price**                | Free              | Paid               |
+| **RabbitMQ Monitoring**  | ✅                | ✅                 |
+| **Workspace Management** | ❌                | ✅                 |
+| **Team Collaboration**   | ❌                | ✅                 |
+| **Alerting**             | ❌                | ✅                 |
+| **Integrations**         | ❌                | ✅                 |
+| **Data Export**          | ❌                | ✅                 |
 
 ## Detailed Feature Comparison
 
 ### Core Monitoring Features
 
-| Feature | Community | Enterprise | Notes |
-|---------|-----------|------------|-------|
-| **Server Management** |  |  |  |
-| Connect to RabbitMQ servers | ✅ | ✅ | Unlimited servers |
-| View server overview | ✅ | ✅ | Real-time statistics |
-| Monitor cluster nodes | ✅ | ✅ | Health and status |
-| **Queue Management** |  |  |  |
-| View queues | ✅ | ✅ | All virtual hosts |
-| Monitor queue depth | ✅ | ✅ | Real-time updates |
-| View queue messages | ✅ | ✅ | Browse and inspect |
-| Publish messages | ✅ | ✅ | Direct publishing |
-| Consume messages | ✅ | ✅ | Test consumption |
-| **Message Inspection** |  |  |  |
-| Queue Spy (live tap) | ✅ | ✅ | Tail one queue, full payload — `cat` for queues |
-| Message Tracing (recorded firehose) | ❌ | ✅ | Vhost-wide routing history — `tcpdump` for messages |
-| **Exchange Management** |  |  |  |
-| View exchanges | ✅ | ✅ | All types |
-| Inspect bindings | ✅ | ✅ | Queue bindings |
-| Monitor statistics | ✅ | ✅ | Message rates |
-| **Virtual Host Management** |  |  |  |
-| View virtual hosts | ✅ | ✅ | All vhosts |
-| Monitor statistics | ✅ | ✅ | Per-vhost metrics |
-| View permissions | ✅ | ✅ | User permissions |
-| **User Management** |  |  |  |
-| View users | ✅ | ✅ | All users |
-| Inspect permissions | ✅ | ✅ | Detailed permissions |
-| Monitor activity | ✅ | ✅ | User activity |
-| **Connections & Channels** |  |  |  |
-| View connections | ✅ | ✅ | Active connections |
-| Monitor channels | ✅ | ✅ | Channel statistics |
-| Track statistics | ✅ | ✅ | Connection metrics |
+| Feature                     | Community | Enterprise | Notes                                                                                  |
+| --------------------------- | --------- | ---------- | -------------------------------------------------------------------------------------- |
+| **Server Management**       |           |            |                                                                                        |
+| Connect to RabbitMQ servers | ✅        | ✅         | Unlimited servers                                                                      |
+| View server overview        | ✅        | ✅         | Real-time statistics                                                                   |
+| Monitor cluster nodes       | ✅        | ✅         | Health and status                                                                      |
+| **Queue Management**        |           |            |                                                                                        |
+| View queues                 | ✅        | ✅         | All virtual hosts                                                                      |
+| Monitor queue depth         | ✅        | ✅         | Real-time updates                                                                      |
+| Publish messages            | ✅        | ✅         | Direct publishing                                                                      |
+| **Message Recording**       |           |            |                                                                                        |
+| Firehose recording          | ❌        | ✅         | Records routing decisions as evidence for the diagnosis engine — not a message browser |
+| **Exchange Management**     |           |            |                                                                                        |
+| View exchanges              | ✅        | ✅         | All types                                                                              |
+| Inspect bindings            | ✅        | ✅         | Queue bindings                                                                         |
+| Monitor statistics          | ✅        | ✅         | Message rates                                                                          |
+| **Virtual Host Management** |           |            |                                                                                        |
+| View virtual hosts          | ✅        | ✅         | All vhosts                                                                             |
+| Monitor statistics          | ✅        | ✅         | Per-vhost metrics                                                                      |
+| View permissions            | ✅        | ✅         | User permissions                                                                       |
+| **User Management**         |           |            |                                                                                        |
+| View users                  | ✅        | ✅         | All users                                                                              |
+| Inspect permissions         | ✅        | ✅         | Detailed permissions                                                                   |
+| Monitor activity            | ✅        | ✅         | User activity                                                                          |
+| **Connections & Channels**  |           |            |                                                                                        |
+| View connections            | ✅        | ✅         | Active connections                                                                     |
+| Monitor channels            | ✅        | ✅         | Channel statistics                                                                     |
+| Track statistics            | ✅        | ✅         | Connection metrics                                                                     |
 
 ### Premium Features (Enterprise Only)
 
-| Feature | Community | Enterprise | Description |
-|---------|-----------|------------|-------------|
-| **Workspace Management** |  |  |  |
-| Multiple workspaces | ❌ | ✅ | Organize servers by workspace |
-| Workspace switching | ❌ | ✅ | Switch between workspaces |
-| Workspace settings | ❌ | ✅ | Configure workspace options |
-| **Team Collaboration** |  |  |  |
-| Invite team members | ❌ | ✅ | Invite users to workspaces |
-| Manage user roles | ❌ | ✅ | Assign roles and permissions |
-| Track team activity | ❌ | ✅ | View team activity logs |
-| **Alerting System** |  |  |  |
-| Real-time alerts | ❌ | ✅ | Monitor RabbitMQ issues |
-| Email notifications | ❌ | ✅ | Receive alert emails |
-| Alert history | ❌ | ✅ | View past alerts |
-| Alert resolution | ❌ | ✅ | Mark alerts as resolved |
-| **Advanced Alert Rules** |  |  |  |
-| Custom alert rules | ❌ | ✅ | Create custom rules |
-| Complex conditions | ❌ | ✅ | Set up complex logic |
-| Alert actions | ❌ | ✅ | Configure actions |
-| **Slack Integration** |  |  |  |
-| Slack notifications | ❌ | ✅ | Send alerts to Slack |
-| Multiple workspaces | ❌ | ✅ | Configure multiple Slack workspaces |
-| Custom formatting | ❌ | ✅ | Customize alert format |
-| **Webhook Integration** |  |  |  |
-| Webhook notifications | ❌ | ✅ | Send alerts to webhooks |
-| Custom endpoints | ❌ | ✅ | Configure endpoints |
-| Custom payloads | ❌ | ✅ | Customize payload format |
-| **Data Export** |  |  |  |
-| Export workspace data | ❌ | ✅ | Export all data |
-| Backup/restore | ❌ | ✅ | Backup capabilities |
-| CSV export | ❌ | ✅ | Export to CSV |
-| JSON export | ❌ | ✅ | Export to JSON |
+| Feature                  | Community | Enterprise | Description                         |
+| ------------------------ | --------- | ---------- | ----------------------------------- |
+| **Workspace Management** |           |            |                                     |
+| Multiple workspaces      | ❌        | ✅         | Organize servers by workspace       |
+| Workspace switching      | ❌        | ✅         | Switch between workspaces           |
+| Workspace settings       | ❌        | ✅         | Configure workspace options         |
+| **Team Collaboration**   |           |            |                                     |
+| Invite team members      | ❌        | ✅         | Invite users to workspaces          |
+| Manage user roles        | ❌        | ✅         | Assign roles and permissions        |
+| Track team activity      | ❌        | ✅         | View team activity logs             |
+| **Alerting System**      |           |            |                                     |
+| Real-time alerts         | ❌        | ✅         | Monitor RabbitMQ issues             |
+| Email notifications      | ❌        | ✅         | Receive alert emails                |
+| Alert history            | ❌        | ✅         | View past alerts                    |
+| Alert resolution         | ❌        | ✅         | Mark alerts as resolved             |
+| **Advanced Alert Rules** |           |            |                                     |
+| Custom alert rules       | ❌        | ✅         | Create custom rules                 |
+| Complex conditions       | ❌        | ✅         | Set up complex logic                |
+| Alert actions            | ❌        | ✅         | Configure actions                   |
+| **Slack Integration**    |           |            |                                     |
+| Slack notifications      | ❌        | ✅         | Send alerts to Slack                |
+| Multiple workspaces      | ❌        | ✅         | Configure multiple Slack workspaces |
+| Custom formatting        | ❌        | ✅         | Customize alert format              |
+| **Webhook Integration**  |           |            |                                     |
+| Webhook notifications    | ❌        | ✅         | Send alerts to webhooks             |
+| Custom endpoints         | ❌        | ✅         | Configure endpoints                 |
+| Custom payloads          | ❌        | ✅         | Customize payload format            |
+| **Data Export**          |           |            |                                     |
+| Export workspace data    | ❌        | ✅         | Export all data                     |
+| Backup/restore           | ❌        | ✅         | Backup capabilities                 |
+| CSV export               | ❌        | ✅         | Export to CSV                       |
+| JSON export              | ❌        | ✅         | Export to JSON                      |
+| **Diagnosis**            |           |            |                                     |
+| Incident detection       | ✅        | ✅         | Rules engine — free on every plan   |
+| AI Explain               | ❌        | ✅         | LLM root-cause on a finding         |
+| **Governance**           |           |            |                                     |
+| SSO / SAML / OIDC        | ❌        | ✅         | Enterprise identity providers       |
+| Audit log                | ❌        | ✅         | Operator action history             |
+| Advanced RBAC            | ❌        | ✅         | Custom roles + resource scopes      |
+| Priority support         | ❌        | ✅         | Priority email support              |
 
 ## Deployment Modes
 
@@ -140,12 +145,8 @@ You can start with Community Edition and upgrade to Enterprise Edition at any ti
 
 ### Planned Enterprise Features
 
-- SSO/SAML authentication
-- Advanced analytics
 - Custom branding
 - API rate limits
-- Audit logs
-- Priority support
 
 ## Support
 
@@ -205,4 +206,3 @@ You can start with Community Edition and upgrade to Enterprise Edition at any ti
 ## Questions?
 
 If you're unsure which edition is right for you, contact us at sales@qarote.io or visit our [Customer Portal](https://portal.qarote.io).
-

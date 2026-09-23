@@ -94,56 +94,12 @@ function isStripe5xxError(error: unknown): boolean {
 }
 
 /**
- * Check if an error is a Notion 5xx error or rate limiting error
- * Rate limiting is included as it's a transient error that should be retried
- */
-function isNotion5xxError(error: unknown): boolean {
-  if (!error) return false;
-
-  // Notion errors have a code property that can be an enum value or string
-  if (typeof error === "object" && error !== null && "code" in error) {
-    const notionError = error as { code?: string | number | unknown };
-    const code = notionError.code;
-
-    // Check for Notion 5xx error codes (enum values or strings)
-    if (typeof code === "string") {
-      // Check for string representations of Notion error codes
-      return (
-        code === "internal_server_error" ||
-        code === "service_unavailable" ||
-        code === "RequestTimeout" ||
-        code === "rate_limited" ||
-        code.includes("InternalServerError") ||
-        code.includes("ServiceUnavailable")
-      );
-    }
-
-    // Check if code is an object (enum value) - compare by string representation
-    if (typeof code === "object" && code !== null) {
-      const codeStr = String(code);
-      return (
-        codeStr.includes("InternalServerError") ||
-        codeStr.includes("ServiceUnavailable") ||
-        codeStr.includes("RequestTimeout")
-      );
-    }
-
-    // Check for numeric status codes (5xx or 429)
-    if (typeof code === "number") {
-      return code >= 500 || code === 429;
-    }
-  }
-
-  return false;
-}
-
-/**
  * Check if an error should be retried
  * Retries on 5xx errors and timeout errors, but not on 4xx errors
  */
 function shouldRetry(
   error: unknown,
-  errorType?: "resend" | "stripe" | "notion" | "generic"
+  errorType?: "resend" | "stripe" | "generic"
 ): boolean {
   // Always retry on timeout errors
   if (isTimeoutError(error)) {
@@ -154,8 +110,6 @@ function shouldRetry(
   switch (errorType) {
     case "stripe":
       return isStripe5xxError(error);
-    case "notion":
-      return isNotion5xxError(error);
     case "resend":
     case "generic":
     default:
@@ -192,7 +146,7 @@ function createTimeout(timeoutMs: number): {
 export async function retryWithBackoff<T>(
   fn: () => Promise<T>,
   config: RetryConfig = {},
-  errorType: "resend" | "stripe" | "notion" | "generic" = "generic"
+  errorType: "resend" | "stripe" | "generic" = "generic"
 ): Promise<T> {
   const { maxRetries, retryDelayMs, timeoutMs } = {
     ...DEFAULT_RETRY_CONFIG,
@@ -275,7 +229,7 @@ export async function retryWithBackoff<T>(
 export async function retryWithBackoffAndTimeout<T>(
   fn: (signal: AbortSignal) => Promise<T>,
   config: RetryConfig = {},
-  errorType: "resend" | "stripe" | "notion" | "generic" = "generic"
+  errorType: "resend" | "stripe" | "generic" = "generic"
 ): Promise<T> {
   const { maxRetries, retryDelayMs, timeoutMs } = {
     ...DEFAULT_RETRY_CONFIG,

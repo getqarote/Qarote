@@ -2,7 +2,6 @@ import { TRPCError } from "@trpc/server";
 
 import { recordFromContext } from "@/services/audit";
 import { EmailVerificationService } from "@/services/email/email-verification.service";
-import { notionService } from "@/services/integrations/notion.service";
 
 import { ResendVerificationSchema, VerifyEmailSchema } from "@/schemas/auth";
 
@@ -60,26 +59,6 @@ export const verificationRouter = router({
             updatedAt: true,
           },
         });
-
-        // Update user in Notion when email is verified (non-blocking)
-        // Fire and forget - don't await to avoid blocking the response
-        if (updatedUser && updatedUser.emailVerified) {
-          ctx.prisma.user
-            .findUnique({
-              where: { id: updatedUser.id },
-            })
-            .then((fullUser) => {
-              if (fullUser) {
-                return notionService.syncUser(fullUser);
-              }
-            })
-            .catch((notionError) => {
-              ctx.logger.warn(
-                { notionError, userId: updatedUser.id },
-                "Failed to update Notion after email verification"
-              );
-            });
-        }
 
         if (!updatedUser) {
           throw new TRPCError({

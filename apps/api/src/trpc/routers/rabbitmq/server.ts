@@ -16,11 +16,11 @@ import {
   applyCapabilityOverride,
   parseCapabilitySnapshot,
 } from "@/services/feature-gate/capability-snapshot";
+import { SUPPORTED_RABBITMQ_VERSIONS } from "@/services/plan/features.service";
 import {
   extractMajorMinorVersion,
   getOrgPlan,
   getOrgResourceCounts,
-  validateRabbitMqVersion,
   validateServerCreation,
 } from "@/services/plan/plan.service";
 import {
@@ -235,8 +235,18 @@ export const serverRouter = router({
         const rabbitMqVersion = overview.rabbitmq_version;
         const majorMinorVersion = extractMajorMinorVersion(rabbitMqVersion);
 
-        // Validate RabbitMQ version against plan restrictions
-        validateRabbitMqVersion(plan, rabbitMqVersion);
+        // Deliberately NOT a PlanValidationError: every plan supports the
+        // same versions, so offering an upgrade would send the customer down
+        // a dead end. An unsupported broker is an incompatibility.
+        if (!SUPPORTED_RABBITMQ_VERSIONS.includes(majorMinorVersion)) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: te(ctx.locale, "rabbitmq.unsupportedVersion", {
+              version: majorMinorVersion,
+              supported: SUPPORTED_RABBITMQ_VERSIONS.join(", "),
+            }),
+          });
+        }
 
         // Refuse a broker above the queue ceiling. `object_totals` comes with the
         // overview we already fetched, so this costs no extra request — no need
@@ -424,12 +434,16 @@ export const serverRouter = router({
           const overview = await client.getOverview();
           const rabbitMqVersion = overview.rabbitmq_version;
 
-          // Re-validate plan version: a repointed server must satisfy the
-          // org's plan, and stale version metadata must not bypass gates.
-          const plan = ctx.organizationId
-            ? await getOrgPlan(ctx.organizationId)
-            : UserPlan.FREE;
-          validateRabbitMqVersion(plan, rabbitMqVersion);
+          const repointed = extractMajorMinorVersion(rabbitMqVersion);
+          if (!SUPPORTED_RABBITMQ_VERSIONS.includes(repointed)) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: te(ctx.locale, "rabbitmq.unsupportedVersion", {
+                version: repointed,
+                supported: SUPPORTED_RABBITMQ_VERSIONS.join(", "),
+              }),
+            });
+          }
 
           updateData.version = rabbitMqVersion;
           updateData.versionMajorMinor =

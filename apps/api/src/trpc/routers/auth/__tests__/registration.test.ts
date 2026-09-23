@@ -29,10 +29,6 @@ vi.mock("@/services/email/email-verification.service", () => ({
   },
 }));
 
-vi.mock("@/services/integrations/notion.service", () => ({
-  notionService: { syncUser: vi.fn() },
-}));
-
 vi.mock("@/services/sentry", () => ({
   trackSignUpError: vi.fn(),
 }));

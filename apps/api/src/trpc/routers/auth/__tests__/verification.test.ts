@@ -23,10 +23,6 @@ vi.mock("@/services/email/email-verification.service", () => ({
   },
 }));
 
-vi.mock("@/services/integrations/notion.service", () => ({
-  notionService: { syncUser: vi.fn() },
-}));
-
 vi.mock("@/core/logger", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));

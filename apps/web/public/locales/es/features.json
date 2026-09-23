@@ -1,6 +1,6 @@
 {
   "seo": {
-    "title": "Funciones — Monitorización RabbitMQ Qarote",
+    "title": "Funciones — Qarote, monitorización de RabbitMQ para agentes IA",
     "description": "Monitorización de RabbitMQ pensada para agentes: herramientas MCP, detección de incidentes determinista, causa raíz con IA, escaneo de config, topología, alertas y autoalojamiento."
   },
   "head": {

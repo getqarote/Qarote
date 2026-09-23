@@ -62,7 +62,6 @@ The Qarote API exposes all endpoints via **tRPC** at `/trpc/*`, providing end-to
 #### Invitations (`auth.invitation`)
 - `getInvitationDetails` (query, rateLimitedPublic) - Get invitation details by token
 - `acceptInvitation` (mutation, rateLimitedPublic) - Accept invitation (existing or new user with password)
-- `acceptInvitationWithRegistration` (mutation, rateLimitedPublic) - Accept invitation with new account registration
 - `acceptInvitationWithGoogle` (mutation, rateLimitedPublic) - Accept invitation with Google OAuth
 
 ---
@@ -370,7 +369,6 @@ All tRPC procedures return typed errors using `TRPCError`:
 - **Sentry** - Error tracking and user context (optional)
 - **Slack** - Alert notifications (`alerts.slack.*`)
 - **Google OAuth** - Authentication (`auth.google.*`, invitation acceptance)
-- **Notion** - User synchronization on registration/verification (non-blocking)
 
 ### RabbitMQ Connectivity
 - **Management HTTP API** - Server monitoring, queue/exchange/vhost/user management

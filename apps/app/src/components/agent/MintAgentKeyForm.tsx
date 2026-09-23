@@ -59,7 +59,7 @@ export function MintAgentKeyForm({
 }) {
   const { t } = useTranslation("settings");
   const { mint } = useApiKeys(workspaceId);
-  // explain scope adds the LLM tool (explain_incident) — plan-gated, never
+  // explain scope adds the LLM tool (explain_finding) — plan-gated, never
   // hidden: on community it's a disabled segment with an upgrade hint.
   const { hasFeature } = useFeatureFlags();
   const canExplain = hasFeature("ai_explain_inline");

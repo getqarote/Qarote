@@ -70,7 +70,7 @@
       "upgradeLink": "Actualiza tu plan",
       "byok": "Estás usando tu propia clave API — las llamadas no se cuentan contra una cuota de Qarote."
     },
-    "intro": "Elige qué LLM genera el análisis de causa raíz. La detección sigue siendo gratuita — esto solo impulsa <code>explain_incident</code>.",
+    "intro": "Elige qué LLM genera el análisis de causa raíz. La detección sigue siendo gratuita — esto solo impulsa <code>explain_finding</code>.",
     "activeProvider": "Proveedor activo:",
     "showKey": "Mostrar clave",
     "hideKey": "Ocultar clave",
@@ -166,7 +166,7 @@
       "scopeRead": "read · free",
       "scopeReadConsequence": "Lista incidentes, hallazgos, queues, overview.",
       "scopeExplain": "explain · EE",
-      "scopeExplainConsequence": "Añade análisis de causa raíz por LLM (explain_incident).",
+      "scopeExplainConsequence": "Añade análisis de causa raíz por LLM (explain_finding).",
       "expiryLabel": "Caduca",
       "expiry30": "30 días",
       "expiry90": "90 días",

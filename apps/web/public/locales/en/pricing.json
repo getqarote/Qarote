@@ -1,6 +1,6 @@
 {
   "seo": {
-    "title": "Pricing — Qarote RabbitMQ Monitoring",
+    "title": "Pricing — Qarote, RabbitMQ monitoring for AI agents",
     "description": "Free community edition, or unlock advanced monitoring with Developer ($29/mo) and Enterprise plans. Self-host for free, forever."
   },
   "title": "Free core. Pay only for diagnosis.",
@@ -225,7 +225,7 @@
       "byok": "BYOK / local Ollama",
       "managedLlm": "Managed LLM (zero-config)",
       "readTools": "Read tools (list/get/ping)",
-      "explainIncidentTool": "explain_incident tool",
+      "explainFindingTool": "explain_finding tool",
       "email": "Email",
       "slackWebhooks": "Slack · webhooks",
       "ssoRbac": "SSO / SAML · RBAC",

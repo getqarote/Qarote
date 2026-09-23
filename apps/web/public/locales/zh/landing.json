@@ -187,8 +187,8 @@
     "stillHaveQuestionsDesc": "找不到你想要的答案？请联系我们友好的团队。"
   },
   "seo": {
-    "title": "Qarote — RabbitMQ 监控、告警与队列历史",
-    "description": "自托管 RabbitMQ 监控，提供实时队列深度、消费者健康告警、30 天队列历史和故障诊断。无需 Prometheus，无需 Grafana。免费版，2 分钟完成接入。"
+    "title": "Qarote — 面向 AI Agent 的 RabbitMQ 监控",
+    "description": "通过 MCP 将你的 AI Agent 接入 RabbitMQ：它会诊断事件并解释根因。内置监控、告警与 30 天队列历史，无需 Prometheus。"
   },
   "agent": {
     "title": "你的代理可直接调用的 RabbitMQ 监控",
@@ -240,7 +240,7 @@
     "localAi": {
       "label": "本地 AI Explain",
       "title": "在本地模型上做根因分析",
-      "desc": "将 explain_incident 指向本地 Ollama 模型，根因分析便在你的硬件上运行。你的 broker 状态永不离开你的网络。"
+      "desc": "将 explain_finding 指向本地 Ollama 模型，根因分析便在你的硬件上运行。你的 broker 状态永不离开你的网络。"
     },
     "mitCore": {
       "label": "MIT 内核",
@@ -272,7 +272,7 @@
     },
     "freeTools": "免费工具",
     "paidTool": "付费工具",
-    "paidPara": "确定性检测永久免费。explain_incident 会结合事件本身及周围的 broker 状态，写出你的 Agent 回读给你的根因结论。可在我们的托管模型上运行，自托管时也可用本地 Ollama 模型。",
+    "paidPara": "确定性检测永久免费。explain_finding 既可以结合事件本身及周围的 broker 状态，也可以结合配置扫描发现及规则测得的数值，写出你的 Agent 回读给你的根因结论。可在我们的托管模型上运行，自托管时也可用本地 Ollama 模型。",
     "worksWith": "支持"
   },
   "howItWorks": {

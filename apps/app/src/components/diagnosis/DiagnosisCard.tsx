@@ -39,7 +39,7 @@ import { useUser } from "@/hooks/ui/useUser";
 import { useWorkspace } from "@/hooks/ui/useWorkspace";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
-import { UserPlan } from "@/types/plans";
+import { isPaidPlan } from "@/types/plans";
 
 import type { DiagnosisRuleType } from "./DiagnosisRuleBadge";
 import { DiagnosisRuleBadge } from "./DiagnosisRuleBadge";
@@ -189,9 +189,7 @@ export function DiagnosisCard({
   // now that diagnosis detection itself is free (CE/EE split). First-cycle
   // findings (no id yet) show the button once the next poll persists the id.
   const canExplain =
-    !!findingId &&
-    (userPlan === UserPlan.DEVELOPER || userPlan === UserPlan.ENTERPRISE) &&
-    hasFeature("ai_explain_inline");
+    !!findingId && isPaidPlan(userPlan) && hasFeature("ai_explain_inline");
 
   const workspaceId = workspace?.id;
 

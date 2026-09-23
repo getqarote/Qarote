@@ -225,7 +225,7 @@
       "byok": "自带密钥 / 本地 Ollama",
       "managedLlm": "托管 LLM（零配置）",
       "readTools": "读取工具（list/get/ping）",
-      "explainIncidentTool": "explain_incident 工具",
+      "explainFindingTool": "explain_finding 工具",
       "email": "邮件",
       "slackWebhooks": "Slack · webhook",
       "ssoRbac": "SSO / SAML · RBAC",

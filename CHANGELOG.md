@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- MCP tool `explain_incident` renamed to `explain_finding`, and its `incidentId`
+  parameter to `findingId`. The tool always accepted a config-scan finding id as
+  well as an incident id; only its name and description said otherwise, so no
+  agent ever tried. `get_incident` is unchanged.
+
+### Fixed
+
+- `list_config_findings` now returns each finding's `details` — the measured
+  value and the recommended threshold — instead of forcing an LLM call to
+  recover numbers already stored on the row.
+
 ## [2.0.0]
 
 Qarote becomes agent-native. Connect any AI agent to your RabbitMQ estate over

@@ -19,7 +19,7 @@ const prefersReducedMotion = () =>
  *
  * A carrot reticle — a slowly spinning ring with four corner brackets — around
  * a gently breathing, pulsing core. Used for Qarote's two *inspection* gestures:
- * a broker Connect & scan, and a streaming `explain_incident` diagnosis. (The
+ * a broker Connect & scan, and a streaming `explain_finding` diagnosis. (The
  * message-flow {@link FlowLoader} stays for broker *traffic* — test connection,
  * cockpit first load, boot.)
  *

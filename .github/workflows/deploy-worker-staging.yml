@@ -121,10 +121,6 @@ jobs:
             SENTRY_ENABLED=${{ vars.SENTRY_ENABLED }} \
             GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
             GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
-            NOTION_API_KEY=${{ secrets.NOTION_API_KEY }} \
-            NOTION_DATABASE_ID=${{ vars.NOTION_DATABASE_ID }} \
-            NOTION_SYNC_ENABLED=${{ vars.NOTION_SYNC_ENABLED }} \
-            ENABLE_NOTION=${{ vars.ENABLE_NOTION }} \
             API_URL=${{ vars.API_URL }} \
             DATABASE_POOL_SIZE=${{ vars.DATABASE_POOL_SIZE }} \
             POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }} \
@@ -214,20 +210,39 @@ jobs:
 
       - name: 📈 Scale processes (disable web, enable workers)
         run: |
-          echo "Scaling processes: web=0, worker=1, license-worker=1, release-notifier=1..."
-          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:scale ${{ env.APP_NAME }} web=0 worker=1 || true
+          # `alert-worker` is the Procfile proctype. This step used to scale
+          # `worker=1`, a name the Procfile has never declared, so Dokku held a
+          # phantom entry it could never start while the real alert monitor sat
+          # at 0. `worker=0` clears that leftover on existing apps.
+          echo "Scaling processes: web=0, alert-worker=1, license-worker=1, release-notifier=1, notification-worker=1..."
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:scale ${{ env.APP_NAME }} web=0 worker=0 || true
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:scale ${{ env.APP_NAME }} alert-worker=1 || true
           ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:scale ${{ env.APP_NAME }} license-worker=1 || true
           ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:scale ${{ env.APP_NAME }} release-notifier=1 || true
+          # Drains NotificationOutbox — every transactional email (verification,
+          # password reset, Stripe, licences) is enqueued there and delivered by
+          # this process alone. A pg advisory lock keeps it safe at exactly 1.
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:scale ${{ env.APP_NAME }} notification-worker=1 || true
 
       - name: 🔍 Verify worker is running
         run: |
-          echo "Verifying worker process is running..."
+          echo "Verifying worker processes are running..."
           REPORT=$(ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:report ${{ env.APP_NAME }})
           echo "$REPORT"
-          if echo "$REPORT" | grep -q "running"; then
-            echo "✅ Worker is running!"
+          # Assert each expected proctype by name. The previous check grepped
+          # for "running" anywhere in the report, so one healthy process masked
+          # every dead one — which is how a phantom `worker` entry stayed
+          # invisible while reporting success.
+          MISSING=""
+          for PROC in "alert worker" "license worker" "release notifier" "notification worker"; do
+            if ! echo "$REPORT" | grep -qE "Status ${PROC} 1:[[:space:]]+running"; then
+              MISSING="${MISSING} ${PROC}"
+            fi
+          done
+          if [ -z "$MISSING" ]; then
+            echo "✅ All worker processes are running!"
           else
-            echo "❌ Worker process is not running after deploy!"
+            echo "❌ Not running after deploy:${MISSING}"
             exit 1
           fi
 

@@ -10,7 +10,7 @@ import { prisma } from "@/core/prisma";
 
 import { EmailVerificationService } from "@/services/email/email-verification.service";
 import { getLicensePayload } from "@/services/feature-gate";
-import { notionService } from "@/services/integrations/notion.service";
+import { notifyInternalNewSignup } from "@/services/notification/new-signup-notification";
 import { getOrgPlan } from "@/services/plan/plan.service";
 import { StripeCustomerService } from "@/services/stripe/customer.service";
 
@@ -526,32 +526,29 @@ export const auth = betterAuth({
               });
           }
 
-          // Sync user to Notion (fire-and-forget)
-          prisma.user
-            .findUnique({ where: { id: user.id } })
-            .then((fullUser) => {
-              if (fullUser) {
-                return notionService.syncUser(fullUser);
-              }
-            })
-            .catch((notionError) => {
-              logger.warn(
-                { notionError, userId: user.id },
-                "Failed to sync user to Notion"
-              );
-            });
+          const nameFromClaims =
+            `${(baUser.firstName as string) || ""} ${(baUser.lastName as string) || ""}`.trim();
 
           // Set name from firstName + lastName if not already set
           if (!user.name && (baUser.firstName || baUser.lastName)) {
             await prisma.user
               .update({
                 where: { id: user.id },
-                data: {
-                  name: `${(baUser.firstName as string) || ""} ${(baUser.lastName as string) || ""}`.trim(),
-                },
+                data: { name: nameFromClaims },
               })
               .catch(() => {});
           }
+
+          // Internal ops ping. Uses the same backfilled name, so an IdP that
+          // supplies given_name/family_name but no `name` claim still yields a
+          // named ping. "external" covers Google, SSO and better-auth's own
+          // /sign-up/email endpoint — all of which reach this hook.
+          void notifyInternalNewSignup({
+            userId: user.id,
+            email: user.email,
+            name: user.name || nameFromClaims,
+            signupMethod: "external",
+          });
         },
       },
     },

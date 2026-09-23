@@ -30,6 +30,7 @@ import { prisma } from "@/core/prisma";
 
 import { AuthEmailService } from "@/services/email/auth-email.service";
 import { BillingEmailService } from "@/services/email/billing-email.service";
+import { InternalEmailService } from "@/services/email/internal-email.service";
 import { LicenseEmailService } from "@/services/email/license-email.service";
 import { passwordResetEmailService } from "@/services/email/password-reset-email.service";
 import { Sentry, trackMetricCount } from "@/services/sentry";
@@ -37,6 +38,13 @@ import { Sentry, trackMetricCount } from "@/services/sentry";
 import { ghcrConfig } from "@/config";
 
 import { Prisma, UserPlan } from "@/generated/prisma/client";
+
+/**
+ * How an account came to exist. Describes the *route*, not the credential:
+ * `external` covers Google, SSO and better-auth's own `/sign-up/email`, which
+ * all land in the same database hook, so the label stays true whichever fires.
+ */
+export type SignupMethod = "form" | "external" | "invitation";
 
 const MAX_ATTEMPTS = 10;
 
@@ -262,7 +270,25 @@ type OutboxJob =
         locale?: string;
       };
     }
-    }
+  | {
+      // Internal ops ping (Qarote → Qarote), not a customer email. `target`
+      // is the internal recipient; the signup's own address is payload data.
+      channel: "email";
+      template: "internal_new_signup";
+      payload: {
+        signupEmail: string;
+        signupName?: string;
+        userId: string;
+        signupMethod: SignupMethod;
+        referralSource?: string;
+        discoveryQuery?: string;
+        acquisitionChannel?: string;
+        utmSource?: string;
+        utmMedium?: string;
+        utmCampaign?: string;
+        invitedByEmail?: string;
+        invitedToName?: string;
+      };
     };
 
 type EnqueueArgs = OutboxJob & {

@@ -128,7 +128,6 @@ apps/api/
 │   │   ├── webhook/           # Webhook delivery
 │   │   ├── sentry/            # Error tracking
 │   │   └── integrations/      # Third-party integrations
-│   │       └── notion.service.ts
 │   ├── trpc/                  # 🚀 tRPC API layer
 │   │   ├── routers/           # Route handlers (40 files)
 │   │   │   ├── auth/          # Authentication (8 routers)

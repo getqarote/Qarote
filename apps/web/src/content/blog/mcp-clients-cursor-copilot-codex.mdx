@@ -12,7 +12,7 @@ tags: ["mcp", "clients", "integrations"]
 
 import Callout from "@/components/blog/Callout.astro";
 
-Qarote exposes one MCP surface — `list_incidents`, `get_incident`, `explain_incident`, and the config-scan tools. Any MCP-capable agent can call it. The tools are identical no matter who's asking; the only thing that changes is where each client keeps its server config.
+Qarote exposes one MCP surface — `list_incidents`, `get_incident`, `explain_finding`, and the config-scan tools. Any MCP-capable agent can call it. The tools are identical no matter who's asking; the only thing that changes is where each client keeps its server config.
 
 ## Same tools, five clients
 
@@ -50,4 +50,4 @@ Copilot uses `servers` instead of `mcpServers`. Codex uses TOML rather than JSON
 
 ## Why a single surface matters
 
-One surface means one thing to secure, one key to rotate, and one mental model to teach. Whether your team lives in Cursor, Copilot, Codex, Windsurf, or opencode, they're all hitting the same deterministic detection and the same on-demand `explain_incident`. The agent is interchangeable; the diagnosis is not.
+One surface means one thing to secure, one key to rotate, and one mental model to teach. Whether your team lives in Cursor, Copilot, Codex, Windsurf, or opencode, they're all hitting the same deterministic detection and the same on-demand `explain_finding`. The agent is interchangeable; the diagnosis is not.

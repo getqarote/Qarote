@@ -35,7 +35,7 @@
       "point1": "Las alertas se disparan antes de que tus usuarios lo noten — email, Slack, webhooks",
       "point2": "Tasa de cambio, salud de consumidores y causa raíz en una sola pantalla",
       "point3": "Todos tus servidores y entornos en un único dashboard",
-      "point4": "Monitoreo zero-config — conecta en 2 minutos, sin scripts, sin mantenimiento"
+      "point4": "Monitorización zero-config — conecta en 2 minutos, sin scripts, sin mantenimiento"
     },
     "compareWith": "Comparar Qarote con:",
     "messagesPerSec": "Mensajes/seg",
@@ -47,7 +47,7 @@
     "titleLine2": "plugin de gestión no tiene.",
     "freeTierNote": "El monitoreo en tiempo real y la gestión de colas son gratuitos, sin límite de tiempo. Developer+ añade alertas, 30 días de Historial de colas, Message Spy y Diagnóstico de incidentes — desde $29/mes.",
     "liveQueueMonitoring": {
-      "title": "Monitoreo de colas en tiempo real",
+      "title": "Monitorización de colas en tiempo real",
       "description": "Profundidad de colas, tasas de mensajes y conteo de consumidores — actualizados cada segundo. Detecta un consumidor bloqueado o una cola que se llena en el momento en que sucede, no 60 segundos después."
     },
     "smartAlertingSystem": {
@@ -187,8 +187,8 @@
     "stillHaveQuestionsDesc": "¿No encuentras la respuesta que buscas? Contacta con nuestro amable equipo."
   },
   "seo": {
-    "title": "Qarote — Monitoreo RabbitMQ, Alertas e Historial de colas",
-    "description": "Monitoreo RabbitMQ autoalojado con profundidad de cola en vivo, alertas de salud de consumidores, 30 días de Historial de colas y Diagnóstico de incidentes. Sin Prometheus, sin Grafana. Plan gratuito, conecta en 2 minutos."
+    "title": "Qarote — Monitorización de RabbitMQ para tu agente IA",
+    "description": "Conecta tu agente IA a RabbitMQ vía MCP: diagnostica incidentes y te explica la causa raíz. Monitorización, alertas e historial de 30 días. Sin Prometheus."
   },
   "agent": {
     "title": "Monitoring de RabbitMQ que tu agente llama directamente",
@@ -240,7 +240,7 @@
     "localAi": {
       "label": "AI Explain local",
       "title": "Causa raíz en un modelo local",
-      "desc": "Apunta explain_incident a un modelo Ollama local y el análisis de causa raíz se ejecuta en tu hardware. El estado de tu broker nunca sale de tu red."
+      "desc": "Apunta explain_finding a un modelo Ollama local y el análisis de causa raíz se ejecuta en tu hardware. El estado de tu broker nunca sale de tu red."
     },
     "mitCore": {
       "label": "Núcleo MIT",
@@ -272,7 +272,7 @@
     },
     "freeTools": "Herramientas gratuitas",
     "paidTool": "Herramienta de pago",
-    "paidPara": "La detección determinista es gratis y seguirá siéndolo. explain_incident toma el incidente más el estado del broker que lo rodea y escribe la línea de causa raíz que tu agente te devuelve. Ejecútalo en nuestro modelo gestionado, o en un modelo Ollama local cuando es autoalojado.",
+    "paidPara": "La detección determinista es gratis y seguirá siéndolo. explain_finding toma un incidente con el estado del broker que lo rodea —o un hallazgo de configuración con los valores que midió la regla— y escribe la línea de causa raíz que tu agente te devuelve. Ejecútalo en nuestro modelo gestionado, o en un modelo Ollama local cuando es autoalojado.",
     "worksWith": "Compatible con"
   },
   "howItWorks": {

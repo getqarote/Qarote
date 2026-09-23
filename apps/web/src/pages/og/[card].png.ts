@@ -14,12 +14,71 @@ import { getCollection } from "astro:content";
 /** Sanitize a content id (e.g. "fr/some-post") into a filename-safe slug. */
 const safe = (id: string) => id.replace(/\//g, "-");
 
-const COMPARE: { name: string; display: string }[] = [
-  { name: "cloudamqp", display: "CloudAMQP" },
-  { name: "datadog", display: "Datadog" },
-  { name: "grafana-prometheus", display: "Grafana + Prometheus" },
-  { name: "new-relic", display: "New Relic" },
-];
+/**
+ * Locale variants of the cards whose routes exist under `[locale]/`. English
+ * keeps the bare slug; the others are prefixed, mirroring the `blog-<locale>-`
+ * convention already used below. A French reader was getting an English card
+ * next to French text — the copy is the loudest part of the unfurl, so it has
+ * to speak the page's language.
+ *
+ * Only landing/pricing/features/changelog appear here: docs and compare/* have
+ * no localised route, so a locale-prefixed card for them would never be
+ * requested.
+ *
+ * zh is deliberately absent. The renderer's font carries no CJK glyphs, so a
+ * Chinese card renders every ideogram as a tofu box — strictly worse than the
+ * English card it would replace. Adding it back means shipping a CJK face
+ * (megabytes) into the build first; until then zh falls through to English.
+ */
+const LOCALISED_CARDS: Record<
+  "fr" | "es",
+  Record<
+    string,
+    { eyebrow: string; title: string; accent?: string; sub?: string }
+  >
+> = {
+  fr: {
+    landing: {
+      eyebrow: "Monitoring agent-first",
+      title: "Votre RabbitMQ, débogué par votre agent IA.",
+      accent: "débogué par votre agent IA.",
+    },
+    pricing: {
+      eyebrow: "Tarifs",
+      title: "Le cœur est gratuit. Le diagnostic est payant.",
+      accent: "Le diagnostic est payant.",
+      sub: "La détection est open source. Vous ne payez que l'explication IA et les fonctions d'équipe.",
+    },
+    features: {
+      eyebrow: "Fonctionnalités",
+      title: "Diagnostiquez les incidents, ne regardez pas des courbes.",
+      accent: "ne regardez pas des courbes.",
+    },
+    changelog: {
+      eyebrow: "Journal des versions",
+      title: "Les nouveautés de Qarote.",
+    },
+  },
+  es: {
+    landing: {
+      eyebrow: "Monitorización agent-first",
+      title: "Tu RabbitMQ, depurado por tu agente IA.",
+      accent: "depurado por tu agente IA.",
+    },
+    pricing: {
+      eyebrow: "Precios",
+      title: "El núcleo es gratis. El diagnóstico se paga.",
+      accent: "El diagnóstico se paga.",
+      sub: "La detección es open source. Solo pagas la explicación con IA y las funciones de equipo.",
+    },
+    features: {
+      eyebrow: "Funciones",
+      title: "Diagnostica incidentes, no mires métricas.",
+      accent: "no mires métricas.",
+    },
+    changelog: { eyebrow: "Novedades", title: "Lo nuevo en Qarote." },
+  },
+};
 
 export async function getStaticPaths() {
   const staticCards: { slug: string; spec: CardSpec }[] = [
@@ -115,17 +174,6 @@ export async function getStaticPaths() {
     },
   ];
 
-  const compareCards = COMPARE.map(({ name, display }) => ({
-    slug: `compare-${name}`,
-    spec: {
-      type: "page",
-      eyebrow: "Comparison",
-      title: `Qarote vs ${display}`,
-      accent: `vs ${display}`,
-      sub: "Different category — agent-native RabbitMQ diagnosis, not general observability.",
-    } satisfies CardSpec,
-  }));
-
   const posts = await getCollection("blog");
   const blogCards = posts.map((post) => ({
     slug: `blog-${safe(post.id)}`,
@@ -136,7 +184,15 @@ export async function getStaticPaths() {
     } satisfies CardSpec,
   }));
 
-  return [...staticCards, ...compareCards, ...blogCards].map(
+  const localisedCards = Object.entries(LOCALISED_CARDS).flatMap(
+    ([locale, cards]) =>
+      Object.entries(cards).map(([slug, copy]) => ({
+        slug: `${locale}-${slug}`,
+        spec: { type: "page", ...copy } satisfies CardSpec,
+      }))
+  );
+
+  return [...staticCards, ...localisedCards, ...blogCards].map(
     ({ slug, spec }) => ({
       params: { card: slug },
       props: { spec },

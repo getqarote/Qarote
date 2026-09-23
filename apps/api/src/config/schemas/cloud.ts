@@ -29,6 +29,22 @@ export const cloudSchema = baseSchema.extend({
   ENABLE_EMAIL: z.coerce.boolean().default(true),
   EMAIL_PROVIDER: z.enum(["resend", "smtp"]).default("resend"),
 
+  // Internal ops notifications — where Qarote emails itself on business
+  // events worth a human glance (today: every new signup). Cloud-only and
+  // optional: absent disables the notification entirely.
+  //
+  // Blank is normalised to absent BEFORE validating. The deploy workflows
+  // expand an unset GitHub variable to an empty string, so without this an
+  // unconfigured recipient — the default state — would fail config parsing
+  // and take the API down at boot instead of simply disabling the feature.
+  INTERNAL_NOTIFICATION_EMAIL: z.preprocess(
+    (value) =>
+      typeof value === "string" && value.trim() === "" ? undefined : value,
+    z
+      .email("INTERNAL_NOTIFICATION_EMAIL must be a valid email address")
+      .optional()
+  ),
+
   // SMTP Configuration - Optional even in cloud (in case they want SMTP instead of Resend)
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().optional(),
@@ -99,10 +115,4 @@ export const cloudSchema = baseSchema.extend({
     .optional(),
   // ISO date string (YYYY-MM-DD). Used for expiry warning monitoring.
   GHCR_PAT_EXPIRY_DATE: z.string().date().optional(),
-
-  // Notion Configuration - Optional
-  NOTION_API_KEY: z.string().optional(),
-  NOTION_DATABASE_ID: z.string().optional(),
-  NOTION_SYNC_ENABLED: z.coerce.boolean().default(false),
-  ENABLE_NOTION: z.coerce.boolean().default(false),
 });

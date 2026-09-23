@@ -4,6 +4,7 @@
 import { AuthEmailService } from "./auth-email.service";
 import { BillingEmailService } from "./billing-email.service";
 import { LicenseEmailService } from "./license-email.service";
+import { ReleaseEmailService } from "./release-email.service";
 
 
 /**
@@ -22,6 +23,10 @@ export class EmailService {
     BillingEmailService.sendUpgradeConfirmationEmail;
   static sendWelcomeBackEmail = BillingEmailService.sendWelcomeBackEmail;
 
+
+  // Release emails — CE, outside the EE-delegating block above
+  static sendUpdateAvailableEmail =
+    ReleaseEmailService.sendUpdateAvailableEmail;
 
   // License emails
   static sendLicenseDeliveryEmail =

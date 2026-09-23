@@ -11,6 +11,10 @@ export enum UserPlan {
   ENTERPRISE = "ENTERPRISE",
 }
 
+export function isPaidPlan(plan: UserPlan | undefined | null): boolean {
+  return plan === UserPlan.DEVELOPER || plan === UserPlan.ENTERPRISE;
+}
+
 export function getPlanDisplayName(plan: UserPlan): string {
   switch (plan) {
     case UserPlan.FREE:

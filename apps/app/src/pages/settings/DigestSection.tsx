@@ -24,7 +24,7 @@ import { Switch } from "@/components/ui/switch";
 
 import { useUser } from "@/hooks/ui/useUser";
 
-import { UserPlan } from "@/types/plans";
+import { isPaidPlan } from "@/types/plans";
 
 const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
 
@@ -75,8 +75,7 @@ function computeNextDigest(
 const DigestSection = () => {
   const { t } = useTranslation("digest");
   const { userPlan } = useUser();
-  const isEE =
-    userPlan === UserPlan.DEVELOPER || userPlan === UserPlan.ENTERPRISE;
+  const isEE = isPaidPlan(userPlan);
 
   const {
     data: settings,

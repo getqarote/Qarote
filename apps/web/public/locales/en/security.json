@@ -1,6 +1,6 @@
 {
   "seo": {
-    "title": "Security — Qarote RabbitMQ Monitoring",
+    "title": "Security — Qarote, RabbitMQ monitoring for AI agents",
     "description": "How Qarote handles your data: TLS by default, no message payloads stored, explicit AI data residency, offline self-hosting, and SOC 2 on Enterprise."
   },
   "hero": {

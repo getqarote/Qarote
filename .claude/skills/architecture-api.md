@@ -77,7 +77,6 @@ apps/api/
 │   └── schema.prisma          # Database schema (27 models)
 ├── scripts/                   # Utility scripts
 │   ├── email/                 # Email testing (nodemailer, resend)
-│   ├── notion/                # Notion user sync
 │   ├── rabbitmq/              # RabbitMQ seeding and discovery
 │   ├── sentry/                # Sentry testing
 │   ├── stripe/                # Stripe setup and testing
@@ -167,7 +166,6 @@ apps/api/
 │   │   ├── deployment/       # Deployment detection and update instructions
 │   │   ├── email/            # Email services (Resend + SMTP)
 │   │   ├── encryption.service.ts # AES-256-CBC encryption
-│   │   ├── integrations/     # Third-party integrations (Notion)
 │   │   ├── license/          # License generation and validation
 │   │   ├── plan/             # Plan features and validation
 │   │   ├── sentry/           # Error tracking helpers
@@ -381,7 +379,6 @@ Combines 13 sub-routers:
 - `sentry/` - Sentry integration helpers (capture, metrics, context)
 - `slack/` - Slack webhook integration for alert notifications
 - `webhook/` - Generic webhook delivery with retry
-- `integrations/notion.service.ts` - Notion database sync (user tracking)
 
 ### Feature Flags System
 
@@ -481,7 +478,6 @@ See [data-models-api.md](./data-models-api.md) for complete schema documentation
 - `ENABLE_OAUTH` - Enable Google OAuth
 - `LICENSE_PRIVATE_KEY` - RSA private key for license signing
 - `PORTAL_FRONTEND_URL` - License portal URL
-- `NOTION_API_KEY`, `NOTION_DATABASE_ID` - Notion integration
 
 **CLI Flags (binary mode):**
 Flags like `--port`, `--database-url`, `--jwt-secret`, `--encryption-key`, `--smtp-host`, etc. are mapped to environment variables for zero-config binary deployments.
@@ -586,15 +582,14 @@ Flags like `--port`, `--database-url`, `--jwt-secret`, `--encryption-key`, `--sm
 8. **BoxyHQ Jackson** - SAML/OIDC SSO (self-hosted + cloud)
 9. **Slack** - Alert notifications (licensed feature)
 10. **Discord** - Alert notifications (licensed feature)
-11. **Notion** - User sync (optional, cloud mode)
-12. **GitHub API** - Release version checking (cloud release notifier)
+11. **GitHub API** - Release version checking (cloud release notifier)
 
 ## Performance Considerations
 
 - **Connection Pooling:** RabbitMQ AMQP (max 3 per server) and PostgreSQL (Prisma pg adapter)
 - **Query Optimization:** Indexed database queries, selective field loading
 - **Response Mapping:** Lean API responses via dedicated mapper layer
-- **Retry Logic:** Exponential backoff with timeout for all external services (Resend, Stripe, Notion, generic)
+- **Retry Logic:** Exponential backoff with timeout for all external services (Resend, Stripe, generic)
 - **Caching:** In-memory license JWT cache (60s TTL), React Query caching on frontend
 - **Concurrency:** Sliding-window concurrency for alert monitoring (configurable via ALERT_CHECK_CONCURRENCY)
 - **Performance Monitoring:** Slow request detection (>1s), Sentry metric distributions

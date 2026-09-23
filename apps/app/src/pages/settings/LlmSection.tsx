@@ -27,7 +27,7 @@ import { Switch } from "@/components/ui/switch";
 
 import { useUser } from "@/hooks/ui/useUser";
 
-import { UserPlan } from "@/types/plans";
+import { isPaidPlan } from "@/types/plans";
 
 type LlmProvider = "MANAGED" | "ANTHROPIC" | "OPENAI" | "OLLAMA";
 
@@ -219,8 +219,7 @@ function ProviderCard({
 const LlmSection = () => {
   const { t } = useTranslation("settings");
   const { userPlan } = useUser();
-  const hasAccess =
-    userPlan === UserPlan.DEVELOPER || userPlan === UserPlan.ENTERPRISE;
+  const hasAccess = isPaidPlan(userPlan);
 
   const {
     data: config,

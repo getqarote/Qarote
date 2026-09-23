@@ -187,8 +187,8 @@
     "stillHaveQuestionsDesc": "Can't find the answer you're looking for? Please chat to our friendly team."
   },
   "seo": {
-    "title": "Qarote — RabbitMQ Monitoring, Alerting & Queue History",
-    "description": "Self-hosted RabbitMQ monitoring with live queue depth, consumer health alerting, 30-day Queue History, and Incident Diagnosis. No Prometheus, no Grafana. Free tier, connect in 2 minutes."
+    "title": "Qarote — RabbitMQ Monitoring for Your AI Agent",
+    "description": "Wire your AI agent to RabbitMQ over MCP: it diagnoses incidents and explains the root cause. Monitoring, alerting and 30-day queue history. No Prometheus."
   },
   "agent": {
     "title": "RabbitMQ monitoring your agent calls directly",
@@ -240,7 +240,7 @@
     "localAi": {
       "label": "Local AI Explain",
       "title": "Root cause on a local model",
-      "desc": "Point explain_incident at a local Ollama model and root-cause analysis runs on your hardware. Your broker state never leaves your network."
+      "desc": "Point explain_finding at a local Ollama model and root-cause analysis runs on your hardware. Your broker state never leaves your network."
     },
     "mitCore": {
       "label": "MIT core",
@@ -272,7 +272,7 @@
     },
     "freeTools": "Free tools",
     "paidTool": "Paid tool",
-    "paidPara": "Deterministic detection is free and stays free. explain_incident takes the incident plus the surrounding broker state and writes the root-cause line your agent reads back to you. Run it on our managed model, or a local Ollama model when self-hosted.",
+    "paidPara": "Deterministic detection is free and stays free. explain_finding takes an incident with the surrounding broker state — or a config finding with the values the rule measured — and writes the root-cause line your agent reads back to you. Run it on our managed model, or a local Ollama model when self-hosted.",
     "worksWith": "Works with"
   },
   "howItWorks": {

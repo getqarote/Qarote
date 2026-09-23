@@ -46,9 +46,6 @@ vi.mock("@/services/email/email-verification.service", () => ({
   EmailVerificationService: {},
 }));
 vi.mock("@/services/feature-gate", () => ({ getLicensePayload: vi.fn() }));
-vi.mock("@/services/integrations/notion.service", () => ({
-  notionService: { syncUser: vi.fn() },
-}));
 vi.mock("@/services/plan/plan.service", () => ({ getOrgPlan: vi.fn() }));
 vi.mock("@/services/stripe/customer.service", () => ({
   StripeCustomerService: {},

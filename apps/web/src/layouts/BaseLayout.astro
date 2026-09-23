@@ -73,16 +73,26 @@ function deriveCardSlug(pathname: string): string | null {
   const localeMatch = pathname.match(/^\/(fr|es|zh)(?:\/|$)/);
   const routeLocale = localeMatch ? localeMatch[1] : "en";
 
-  if (path === "") return "landing";
-  if (path === "pricing") return "pricing";
-  if (path === "features" || path.startsWith("features/")) return "features";
+  // These four have routes under [locale]/, and a card per locale — English
+  // keeps the bare slug, the others take the prefix the generator emits.
+  // zh has no localised card (no CJK glyphs in the renderer's font), so it
+  // falls through to English alongside en.
+  const localised = (slug: string) =>
+    routeLocale === "fr" || routeLocale === "es"
+      ? `${routeLocale}-${slug}`
+      : slug;
+
+  if (path === "") return localised("landing");
+  if (path === "pricing") return localised("pricing");
+  if (path === "features" || path.startsWith("features/"))
+    return localised("features");
+  // docs has no localised route, so it stays on the English card.
   if (path === "docs" || path.startsWith("docs")) return "docs";
-  if (path === "changelog") return "changelog";
+  if (path === "changelog") return localised("changelog");
   if (path.startsWith("blog/")) {
     const slug = path.slice("blog/".length);
     return routeLocale === "en" ? `blog-${slug}` : `blog-${routeLocale}-${slug}`;
   }
-  if (path.startsWith("compare/")) return `compare-${path.slice("compare/".length)}`;
   return null;
 }
 
@@ -277,6 +287,7 @@ const isProd = import.meta.env.PROD;
     <meta name="googlebot" content={noindex ? "noindex, follow" : "index, follow"} />
 
     <!-- Favicon and App Manifest -->
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" type="image/svg+xml" href="/images/new_icon.svg" />
     <link rel="icon" type="image/png" sizes="256x256" href="/favicon-256.png" />
     <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />

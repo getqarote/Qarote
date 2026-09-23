@@ -17,7 +17,7 @@ You already live in your editor. Your RabbitMQ broker lives somewhere else, behi
 
 ## Mint an API key
 
-In Qarote, open **Settings → Agent Access** and create a key. It's scoped to the MCP surface — `list_incidents`, `get_incident`, `explain_incident`, and the config-scan tools — and nothing else. Copy it once; you won't see it again.
+In Qarote, open **Settings → Agent Access** and create a key. It's scoped to the MCP surface — `list_incidents`, `get_incident`, `explain_finding`, and the config-scan tools — and nothing else. Copy it once; you won't see it again.
 
 <Callout type="note">
   **Treat the key like a secret.** Don't paste it into a committed file. Use an
@@ -64,7 +64,7 @@ both draining normally; consumers healthy.
 ```
 </CodeWindow>
 
-That's the whole loop. When something *is* wrong, the same question surfaces the open incident and, if you ask, an `explain_incident` root-cause call.
+That's the whole loop. When something *is* wrong, the same question surfaces the open incident and, if you ask, an `explain_finding` root-cause call.
 
 Detection is deterministic and free — the rules engine flags findings whether or not you ever ask. The agent isn't inventing a diagnosis; it's reading one that already exists, and only spends an LLM call when you explicitly request the explanation.
 ```

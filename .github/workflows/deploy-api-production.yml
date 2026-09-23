@@ -113,9 +113,6 @@ jobs:
           echo "STRIPE_DEVELOPER_YEARLY_PRICE_ID: ${{ vars.STRIPE_DEVELOPER_YEARLY_PRICE_ID }}"
           echo "STRIPE_ENTERPRISE_MONTHLY_PRICE_ID: ${{ vars.STRIPE_ENTERPRISE_MONTHLY_PRICE_ID }}"
           echo "STRIPE_ENTERPRISE_YEARLY_PRICE_ID: ${{ vars.STRIPE_ENTERPRISE_YEARLY_PRICE_ID }}"
-          echo "NOTION_DATABASE_ID: ${{ vars.NOTION_DATABASE_ID }}"
-          echo "NOTION_SYNC_ENABLED: ${{ vars.NOTION_SYNC_ENABLED }}"
-          echo "ENABLE_NOTION: ${{ vars.ENABLE_NOTION }}"
           echo "API_URL: ${{ vars.API_URL }}"
           echo ""
           echo "⚠️  If any values above are incorrect, update them in GitHub Repository Settings > Secrets and variables > Actions > Variables tab"
@@ -151,15 +148,30 @@ jobs:
             SENTRY_ENABLED=${{ vars.SENTRY_ENABLED }} \
             GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
             GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
-            NOTION_API_KEY=${{ secrets.NOTION_API_KEY }} \
-            NOTION_DATABASE_ID=${{ vars.NOTION_DATABASE_ID }} \
-            NOTION_SYNC_ENABLED=${{ vars.NOTION_SYNC_ENABLED }} \
-            ENABLE_NOTION=${{ vars.ENABLE_NOTION }} \
             API_URL=${{ vars.API_URL }} \
             DATABASE_POOL_SIZE=${{ vars.DATABASE_POOL_SIZE }} \
             POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }} \
             POSTHOG_HOST=${{ vars.POSTHOG_HOST }}
           ssh dokku@${{ vars.DOKKU_HOST_APP1 }} "config:set --no-restart ${{ env.APP_NAME }} FROM_EMAIL='${{ vars.FROM_EMAIL }}'"
+
+      # Optional recipient: set it only when non-empty. Passing it in the block
+      # above would expand an unset variable to "", which the cloud schema
+      # rejects as an invalid email — taking the API down at boot. Unset it
+      # when blank so clearing the GitHub variable actually turns the feature
+      # off instead of leaving a stale recipient. Read via env, not a direct
+      # ${{ }} expansion, so the value can never be interpreted as shell.
+      - name: 📧 Configure internal notification recipient
+        env:
+          INTERNAL_NOTIFICATION_EMAIL: ${{ vars.INTERNAL_NOTIFICATION_EMAIL }}
+        run: |
+          if [ -n "$INTERNAL_NOTIFICATION_EMAIL" ]; then
+            ssh dokku@${{ vars.DOKKU_HOST_APP1 }} \
+              "config:set --no-restart ${{ env.APP_NAME }} INTERNAL_NOTIFICATION_EMAIL='$INTERNAL_NOTIFICATION_EMAIL'"
+          else
+            # Tolerate the key already being absent — the common case.
+            ssh dokku@${{ vars.DOKKU_HOST_APP1 }} \
+              "config:unset --no-restart ${{ env.APP_NAME }} INTERNAL_NOTIFICATION_EMAIL" || true
+          fi
 
       - name: 🔍 Debug Dokku Environment
         run: |

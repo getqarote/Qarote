@@ -225,7 +225,7 @@
       "byok": "BYOK / Ollama local",
       "managedLlm": "LLM géré (zéro configuration)",
       "readTools": "Outils en lecture (list/get/ping)",
-      "explainIncidentTool": "outil explain_incident",
+      "explainFindingTool": "outil explain_finding",
       "email": "E-mail",
       "slackWebhooks": "Slack · webhooks",
       "ssoRbac": "SSO / SAML · RBAC",
