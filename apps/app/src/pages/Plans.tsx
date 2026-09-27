@@ -28,8 +28,26 @@ const PRICING: Record<
   yearly: { price: "$99", originalPrice: "$124", yearlyTotal: "$1,188" },
 };
 
-/** Brokers above the queue ceiling are a conversation, not a checkout. */
-const CONTACT_URL = "mailto:support@qarote.io";
+/**
+ * Brokers above the queue ceiling are a conversation, not a checkout: drive
+ * the globally mounted Tawk.to widget (same handling as HelpSupport — the stub
+ * object exists before the script is ready, so a click during load defers to
+ * onLoad), else fall back to email for self-hosted installs where the widget
+ * never loads.
+ */
+const openContact = () => {
+  const api = window.Tawk_API;
+  if (!api) {
+    window.location.href = "mailto:support@qarote.io";
+    return;
+  }
+  if (typeof api.maximize === "function") {
+    api.maximize();
+  } else {
+    // Widget script present but not ready yet — maximize once it loads.
+    api.onLoad = () => window.Tawk_API?.maximize?.();
+  }
+};
 
 const BULLET_KEYS = [
   "cards.cloud.b1",
@@ -102,7 +120,7 @@ const Plans = () => {
             </div>
 
             {/* Billing interval pill group */}
-            <div className="flex items-center mb-10">
+            <div className="flex items-center justify-center mb-10">
               <div
                 className="inline-flex gap-1 p-1 border border-border rounded-full bg-secondary"
                 role="group"
@@ -148,7 +166,7 @@ const Plans = () => {
             </div>
 
             {/* The plan */}
-            <div className="max-w-[520px]">
+            <div className="mx-auto max-w-[520px]">
               <div className="relative flex flex-col rounded-xl bg-card p-8 border border-primary shadow-[0_24px_50px_-28px_rgba(232,89,12,0.4)]">
                 {isCurrentPlan && (
                   <span className="absolute top-4 right-4 rounded border border-primary px-2 py-0.5 text-xs font-medium text-primary">
@@ -213,14 +231,15 @@ const Plans = () => {
                 </Button>
               </div>
 
-              <p className="mt-6 text-sm text-muted-foreground">
+              <p className="mt-6 text-center text-sm text-muted-foreground">
                 {t("cta.moreQueues")}{" "}
-                <a
-                  href={CONTACT_URL}
+                <button
+                  type="button"
+                  onClick={openContact}
                   className="text-foreground underline underline-offset-4 hover:text-primary"
                 >
                   {t("cta.contactUs")}
-                </a>
+                </button>
               </p>
             </div>
           </div>
