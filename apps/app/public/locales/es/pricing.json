@@ -1,7 +1,7 @@
 {
   "seo": {
     "title": "Precios — Qarote Monitoreo de RabbitMQ",
-    "description": "Edición Community gratuita, o desbloquea el monitoreo avanzado con los planes Developer ($29/mes) y Enterprise. Auto-alojado gratis, para siempre."
+    "description": "Núcleo gratuito y de código abierto — o un único plan cloud con análisis de causa raíz por IA, alertas y controles de equipo. Prueba gratis de 14 días, sin tarjeta de crédito."
   },
   "title": "Núcleo gratis. Paga solo por el diagnóstico.",
   "billedMonthly": "Facturación mensual",
@@ -9,6 +9,7 @@
   "saveUpTo20Yearly": "Ahorra hasta un 20 % con la facturación anual",
   "switchToYearly": "Cambia a facturación anual para ahorrar hasta un 20 %",
   "perMonth": "/mes",
+  "perYear": "/año",
   "startFree": "Comenzar gratis",
   "getStarted": "Comenzar",
   "tryNowForFree": "Probar gratis ahora",
@@ -20,7 +21,6 @@
   "coreFeatures": "Funcionalidades",
   "support": "Soporte",
   "enterpriseFeatures": "Funcionalidades empresariales",
-  "mostPopular": "Más popular",
   "freeTrial": "Prueba gratuita",
   "contactSales": "Contactar ventas",
   "soon": "Próximamente",
@@ -29,23 +29,9 @@
   "securityCompatibility": "Seguridad & compatibilidad",
   "viewSecurity": "Ver nuestras prácticas de seguridad",
   "plans": {
-    "starter": {
-      "name": "Community",
-      "description": "Perfecto para empezar"
-    },
-    "pro": {
-      "name": "Developer",
-      "description": "Para desarrolladores individuales y proyectos pequeños"
-    },
-    "business": {
-      "name": "Enterprise",
-      "description": "Para grandes equipos y empresas"
-    },
-    "enterprise": {
-      "name": "Edición Empresarial",
-      "selfHosted": "Solución autoalojada",
-      "customPricing": "Precios personalizados",
-      "contactSales": "Contacta con ventas para precios"
+    "cloud": {
+      "name": "Qarote Cloud",
+      "description": "Todo incluido. Un plan, un precio."
     }
   },
   "featureNames": {
@@ -147,57 +133,32 @@
     "unlimited": "Ilimitado"
   },
   "eyebrow": "Precios",
-  "subtitle": "La detección de incidentes y las herramientas MCP son gratuitas y de código abierto. Los planes de pago añaden análisis de causa raíz gestionado, más brókers y controles de equipo.",
-  "placeholderNote": "⚑ precios provisionales — confirmar antes del lanzamiento",
+  "subtitle": "La detección de incidentes y las herramientas MCP son gratuitas y de código abierto. Un único plan cloud añade análisis de causa raíz gestionado, alertas y controles de equipo.",
   "controls": {
-    "deploymentModel": "Modelo de despliegue",
     "billingInterval": "Periodo de facturación",
-    "cloud": "Cloud",
-    "selfHosted": "Autoalojado",
     "monthly": "Mensual",
     "yearly": "Anual"
   },
-  "price": {
-    "free": "gratis"
-  },
   "sub": {
-    "mitForever": "MIT · para siempre",
-    "billedMonthly": "facturación mensual",
-    "billedYearly": "facturación anual",
     "billedMonthlyPerOrg": "facturación mensual · por organización",
-    "billedYearlyPerOrg": "facturación anual · por organización",
-    "selfHosted": "licencia anual · autoalojado"
+    "billedYearlyPerOrg": "facturación anual · por organización"
   },
   "cta": {
-    "tryForFree": "Prueba gratis",
-    "contactSales": "Contactar con ventas",
     "noCreditCard": "Sin tarjeta de crédito",
-    "developerTrial": "Prueba Developer de 14 días"
+    "startTrial": "Empezar la prueba gratis",
+    "freeTrial": "Prueba gratis de 14 días",
+    "moreQueues": "¿Más de 100 colas?",
+    "contactUs": "Contáctanos",
+    "subscribe": "Suscribirse"
   },
   "cards": {
-    "community": {
-      "description": "El núcleo de código abierto. Monitorización, detección y herramientas MCP de lectura.",
-      "b1": "Detección de incidentes (motor de reglas)",
-      "b2": "Superficie de agente MCP · 7 herramientas de lectura",
-      "b3": "Análisis de configuración y topología",
-      "b4": "1 bróker · alertas por email",
-      "b5": "Autoalojado, sin telemetría externa"
-    },
-    "developer": {
-      "description": "Para individuos y equipos pequeños. Añade análisis de causa raíz con IA y alertas completas.",
-      "b1": "Todo lo de Community",
-      "b2": "AI Explain — causa raíz con LLM",
-      "b3": "BYOK u Ollama local",
-      "b4": "Alertas: email · Slack · webhooks",
-      "b5": "Multiservidor · topología"
-    },
-    "enterprise": {
-      "description": "Para equipos de plataforma. SSO, IA gestionada, auditoría y controles de seguridad.",
-      "b1": "Todo lo de Developer",
-      "b2": "LLM gestionado (sin configuración)",
-      "b3": "SSO / SAML · RBAC avanzado",
-      "b4": "Registro de auditoría · SOC 2",
-      "b5": "Soporte prioritario y SLA"
+    "cloud": {
+      "b1": "AI Explain — causa raíz por LLM",
+      "b2": "LLM gestionado, sin configuración — o tu propia clave",
+      "b3": "Alertas: correo · Slack · webhooks",
+      "b4": "SSO / SAML · RBAC · registro de auditoría",
+      "b5": "Soporte prioritario",
+      "limit": "Hasta 100 colas por bróker · más bajo petición"
     }
   },
   "compare": {
@@ -205,8 +166,7 @@
     "feature": "Función",
     "columns": {
       "community": "Community",
-      "developer": "Developer",
-      "enterprise": "Enterprise"
+      "cloud": "Cloud"
     },
     "groups": {
       "monitoring": "Monitorización",
@@ -222,7 +182,7 @@
       "metricHistory": "Historial de métricas",
       "servers": "Servidores",
       "aiExplain": "AI Explain (causa raíz con LLM)",
-      "byok": "BYOK / Ollama local",
+      "byok": "Tu propia clave LLM",
       "managedLlm": "LLM gestionado (sin configuración)",
       "readTools": "Herramientas de lectura (list/get/ping)",
       "explainFindingTool": "herramienta explain_finding",
@@ -230,8 +190,8 @@
       "slackWebhooks": "Slack · webhooks",
       "ssoRbac": "SSO / SAML · RBAC",
       "auditSoc2": "Registro de auditoría · SOC 2",
-      "cloudSelfHosted": "Cloud o autoalojado",
-      "offlineLicense": "Licencia sin conexión · Ollama local"
+      "selfHostedOss": "Autoalojado · código abierto",
+      "managedCloud": "Cloud gestionado"
     },
     "values": {
       "days30": "30 días",
@@ -243,19 +203,19 @@
     "items": {
       "billing": {
         "q": "¿Cómo funciona la facturación?",
-        "a": "El cloud es una suscripción a través de Stripe — mensual o anual (la anual ahorra ~20 %). Los planes autoalojados son licencias anuales validadas sin conexión. Community es gratis para siempre. Todos los precios anteriores son provisionales, a la espera de confirmación."
+        "a": "Qarote Cloud es una suscripción a través de Stripe — mensual o anual (la anual ahorra ~20 %). Puedes cancelar en cualquier momento desde tus ajustes de facturación. Community es gratis para siempre."
       },
       "selfHostedCloud": {
         "q": "Autoalojado o cloud: ¿cuál es la diferencia?",
-        "a": "El mismo producto. El cloud lo gestionamos nosotros; el autoalojado se ejecuta en tu red mediante Docker, Compose, Dokku o un binario, con una licencia JWT sin conexión (sin telemetría externa). AI Explain autoalojado puede ejecutarse con un modelo Ollama local, de modo que nada sale de tu red."
+        "a": "Community es el núcleo de código abierto: se ejecuta en tu red, autoalojado y con soporte de la comunidad. Qarote Cloud es el servicio gestionado: añade análisis de causa raíz por IA, LLM gestionado, alertas y controles de equipo, y se ejecuta en nuestra infraestructura."
       },
       "quota": {
         "q": "¿Qué cuenta para la cuota de AI Explain?",
-        "a": "Solo las explicaciones gestionadas (el LLM sin configuración de Enterprise) se contabilizan al mes. Si traes tu propia clave o ejecutas Ollama en local, el uso es ilimitado — pagas tu propio coste de LLM. Las explicaciones idénticas repetidas se almacenan en caché y no cuentan."
+        "a": "Solo las explicaciones gestionadas (el LLM sin configuración) se contabilizan cada mes. Si usas tu propia clave, el uso es ilimitado — pagas tu propio coste de LLM. Las explicaciones idénticas repetidas se almacenan en caché y no cuentan."
       },
       "switching": {
-        "q": "¿Puedo cambiar de plan o de modelo más adelante?",
-        "a": "Sí. Puedes mejorar, bajar de plan o pasar entre cloud y autoalojado en cualquier momento. Las bajadas de plan se aplican al final del periodo de facturación; el núcleo de código abierto sigue funcionando en cualquier caso."
+        "q": "¿Puedo cancelar o cambiar de modelo más adelante?",
+        "a": "Sí. Cancela cuando quieras; el acceso continúa hasta el final del periodo de facturación. Puedes alternar entre el LLM gestionado y tu propia clave en cualquier momento, y el núcleo de código abierto sigue funcionando en cualquier caso."
       }
     }
   }

@@ -5,7 +5,6 @@ import { useNavigate } from "react-router";
 import { ArrowRight } from "lucide-react";
 
 import { track } from "@/lib/analytics";
-import { openPortalPath } from "@/lib/runtimeConfig";
 import { cn } from "@/lib/utils";
 
 import { AppSidebar } from "@/components/AppSidebar";
@@ -18,97 +17,35 @@ import { useUser } from "@/hooks/ui/useUser";
 
 import { UserPlan } from "@/types/plans";
 
-type PlanId = "FREE" | "DEVELOPER" | "ENTERPRISE";
 type BillingPeriod = "monthly" | "yearly";
-type HostingMode = "cloud" | "selfhost";
 
-const GITHUB_URL = "https://github.com/getqarote/Qarote";
-
-/** Cloud subscription pricing by billing period — mirrors the marketing landing. */
-const CLOUD_PRICING: Record<
+/** The single cloud plan, by billing period — mirrors the marketing landing. */
+const PRICING: Record<
   BillingPeriod,
-  Record<PlanId, { price: string; originalPrice?: string }>
+  { price: string; originalPrice?: string; yearlyTotal?: string }
 > = {
-  monthly: {
-    FREE: { price: "$0" },
-    DEVELOPER: { price: "$34" },
-    ENTERPRISE: { price: "$124" },
-  },
-  yearly: {
-    FREE: { price: "$0" },
-    DEVELOPER: { price: "$29", originalPrice: "$34" },
-    ENTERPRISE: { price: "$99", originalPrice: "$124" },
-  },
+  monthly: { price: "$124" },
+  yearly: { price: "$99", originalPrice: "$124", yearlyTotal: "$1,188" },
 };
 
-/** Self-hosted annual license pricing — mirrors the marketing landing. */
-const SELF_HOST_PRICING: Record<PlanId, { price: string; period?: string }> = {
-  FREE: { price: "$0" },
-  DEVELOPER: { price: "$348", period: "/yr" },
-  ENTERPRISE: { price: "$1,188", period: "/yr" },
-};
+/** Brokers above the queue ceiling are a conversation, not a checkout. */
+const CONTACT_URL = "mailto:support@qarote.io";
 
-interface PlanDef {
-  id: PlanId;
-  nameKey: string;
-  descKey: string;
-  bulletKeys: string[];
-  popular?: boolean;
-  ctaArrow?: boolean;
-  ctaPrimary?: boolean;
-  ctaSubKey?: string;
-}
-
-const PLAN_DEFS: PlanDef[] = [
-  {
-    id: "FREE",
-    nameKey: "plans.starter.name",
-    descKey: "cards.community.description",
-    bulletKeys: [
-      "cards.community.b1",
-      "cards.community.b2",
-      "cards.community.b3",
-      "cards.community.b4",
-      "cards.community.b5",
-    ],
-    ctaSubKey: "cta.noCreditCard",
-  },
-  {
-    id: "DEVELOPER",
-    nameKey: "plans.pro.name",
-    descKey: "cards.developer.description",
-    bulletKeys: [
-      "cards.developer.b1",
-      "cards.developer.b2",
-      "cards.developer.b3",
-      "cards.developer.b4",
-      "cards.developer.b5",
-    ],
-    popular: true,
-    ctaArrow: true,
-    ctaPrimary: true,
-    ctaSubKey: "cta.developerTrial",
-  },
-  {
-    id: "ENTERPRISE",
-    nameKey: "plans.business.name",
-    descKey: "cards.enterprise.description",
-    bulletKeys: [
-      "cards.enterprise.b1",
-      "cards.enterprise.b2",
-      "cards.enterprise.b3",
-      "cards.enterprise.b4",
-      "cards.enterprise.b5",
-    ],
-  },
-];
+const BULLET_KEYS = [
+  "cards.cloud.b1",
+  "cards.cloud.b2",
+  "cards.cloud.b3",
+  "cards.cloud.b4",
+  "cards.cloud.b5",
+] as const;
 
 /**
- * In-app pricing page. Renders the same curated three-plan layout as the
- * marketing landing (`apps/web` PricingSection) — deployment + billing pill
- * toggles, per-plan description, and five concise bullets — so the surfaces
- * read as one product. CTAs are wired to the authenticated upgrade flow
- * (Stripe checkout for cloud) rather than the landing's sign-up redirect.
+ * In-app pricing page. Renders the same single-plan card as the marketing
+ * landing (`apps/web` PricingSection) — billing pill toggle, description, and
+ * five concise bullets — so the surfaces read as one product. The CTA is wired
+ * to the authenticated Stripe checkout rather than the landing's sign-up
+ * redirect. That checkout collects a card and starts billing (the 14-day trial
+ * is granted at sign-up, not here), so this page promises no trial.
  */
 const Plans = () => {
   const { t } = useTranslation("pricing");
@@ -117,27 +54,18 @@ const Plans = () => {
   const { userPlan } = useUser();
   const { handleUpgrade, isUpgrading } = usePlanUpgrade();
 
-  const [hostingMode, setHostingMode] = useState<HostingMode>("cloud");
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("yearly");
+  const pricing = PRICING[billingPeriod];
+  const isCurrentPlan = userPlan === UserPlan.ENTERPRISE;
 
-  const isCurrent = (id: PlanId) => id === userPlan?.toUpperCase();
-
-  const handleCta = (id: PlanId) => {
-    if (hostingMode === "selfhost") {
-      if (id === "FREE") {
-        window.open(GITHUB_URL, "_blank", "noopener,noreferrer");
-        return;
-      }
-      openPortalPath("/auth/sign-up");
-      return;
-    }
-    if (isCurrent(id)) return;
+  const handleCta = () => {
+    if (isCurrentPlan) return;
     track("plan_upgrade_initiated", {
-      plan: id,
+      plan: UserPlan.ENTERPRISE,
       billing_interval: billingPeriod,
       current_plan: userPlan,
     });
-    handleUpgrade(id as UserPlan, billingPeriod);
+    handleUpgrade(UserPlan.ENTERPRISE, billingPeriod);
   };
 
   return (
@@ -173,35 +101,8 @@ const Plans = () => {
               </div>
             </div>
 
-            {/* Controls: deployment model + billing interval pill groups */}
-            <div className="flex flex-col items-center justify-center gap-[14px] mb-10">
-              <div
-                className="inline-flex gap-1 p-1 border border-border rounded-full bg-secondary"
-                role="group"
-                aria-label={t("controls.deploymentModel")}
-              >
-                {(["cloud", "selfhost"] as const).map((mode) => (
-                  <button
-                    key={mode}
-                    type="button"
-                    onClick={() => setHostingMode(mode)}
-                    aria-pressed={hostingMode === mode}
-                    className={cn(
-                      "px-5 py-[9px] rounded-full text-[14px] font-medium transition-colors",
-                      hostingMode === mode
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {t(
-                      mode === "cloud"
-                        ? "controls.cloud"
-                        : "controls.selfHosted"
-                    )}
-                  </button>
-                ))}
-              </div>
-
+            {/* Billing interval pill group */}
+            <div className="flex items-center mb-10">
               <div
                 className="inline-flex gap-1 p-1 border border-border rounded-full bg-secondary"
                 role="group"
@@ -246,19 +147,81 @@ const Plans = () => {
               </div>
             </div>
 
-            {/* Plans grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch max-w-7xl mx-auto">
-              {PLAN_DEFS.map((plan) => (
-                <PlanCard
-                  key={plan.id}
-                  plan={plan}
-                  hostingMode={hostingMode}
-                  billingPeriod={billingPeriod}
-                  isCurrentPlan={hostingMode === "cloud" && isCurrent(plan.id)}
-                  isUpgrading={isUpgrading}
-                  onCta={() => handleCta(plan.id)}
-                />
-              ))}
+            {/* The plan */}
+            <div className="max-w-[520px]">
+              <div className="relative flex flex-col rounded-xl bg-card p-8 border border-primary shadow-[0_24px_50px_-28px_rgba(232,89,12,0.4)]">
+                {isCurrentPlan && (
+                  <span className="absolute top-4 right-4 rounded border border-primary px-2 py-0.5 text-xs font-medium text-primary">
+                    {t("currentPlan")}
+                  </span>
+                )}
+
+                <h3 className="text-2xl font-semibold text-foreground">
+                  {t("plans.cloud.name")}
+                </h3>
+                <p className="mt-1.5 text-sm text-muted-foreground">
+                  {t("plans.cloud.description")}
+                </p>
+
+                <div className="mt-5 mb-1 flex items-baseline gap-1.5">
+                  <span className="text-5xl font-medium text-foreground font-mono tabular-nums">
+                    {pricing.price}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    {t("perMonth")}
+                  </span>
+                  {pricing.originalPrice && (
+                    <span className="text-sm text-muted-foreground line-through ml-1">
+                      {pricing.originalPrice}
+                    </span>
+                  )}
+                </div>
+                <div className="min-h-[18px] font-mono text-[11.5px] text-muted-foreground">
+                  {billingPeriod === "yearly"
+                    ? `${pricing.yearlyTotal}${t("perYear")} · ${t("sub.billedYearlyPerOrg")}`
+                    : t("sub.billedMonthlyPerOrg")}
+                </div>
+
+                <ul className="mt-6 mb-2 flex list-none flex-col gap-3">
+                  {BULLET_KEYS.map((key) => (
+                    <li
+                      key={key}
+                      className="flex items-start gap-2.5 text-sm text-muted-foreground"
+                    >
+                      <IconCheck
+                        className="mt-1 h-[0.7rem] w-auto shrink-0 text-primary"
+                        aria-hidden="true"
+                      />
+                      {t(key)}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mb-4 font-mono text-[11.5px] text-muted-foreground">
+                  {t("cards.cloud.limit")}
+                </p>
+
+                <Button
+                  onClick={handleCta}
+                  variant={isCurrentPlan ? "outline" : "default"}
+                  className="w-full rounded-md px-7 py-3 text-base h-auto"
+                  disabled={isCurrentPlan || isUpgrading}
+                >
+                  {isCurrentPlan ? t("currentPlan") : t("cta.subscribe")}
+                  {!isCurrentPlan && (
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  )}
+                </Button>
+              </div>
+
+              <p className="mt-6 text-sm text-muted-foreground">
+                {t("cta.moreQueues")}{" "}
+                <a
+                  href={CONTACT_URL}
+                  className="text-foreground underline underline-offset-4 hover:text-primary"
+                >
+                  {t("cta.contactUs")}
+                </a>
+              </p>
             </div>
           </div>
         </main>
@@ -266,122 +229,5 @@ const Plans = () => {
     </SidebarProvider>
   );
 };
-
-interface PlanCardProps {
-  plan: PlanDef;
-  hostingMode: HostingMode;
-  billingPeriod: BillingPeriod;
-  isCurrentPlan: boolean;
-  isUpgrading: boolean;
-  onCta: () => void;
-}
-
-function PlanCard({
-  plan,
-  hostingMode,
-  billingPeriod,
-  isCurrentPlan,
-  isUpgrading,
-  onCta,
-}: PlanCardProps) {
-  const { t } = useTranslation("pricing");
-
-  const isSelfHost = hostingMode === "selfhost";
-  const cloud = CLOUD_PRICING[billingPeriod][plan.id];
-  const selfHost = SELF_HOST_PRICING[plan.id];
-
-  const price = isSelfHost ? selfHost.price : cloud.price;
-  const period = isSelfHost
-    ? selfHost.period
-    : price === "$0"
-      ? t("price.free")
-      : t("perMonth");
-  const sub = isSelfHost
-    ? t("sub.selfHosted")
-    : plan.id === "FREE"
-      ? t("sub.mitForever")
-      : plan.id === "ENTERPRISE"
-        ? billingPeriod === "yearly"
-          ? t("sub.billedYearlyPerOrg")
-          : t("sub.billedMonthlyPerOrg")
-        : billingPeriod === "yearly"
-          ? t("sub.billedYearly")
-          : t("sub.billedMonthly");
-
-  const ctaLabel = isCurrentPlan ? t("currentPlan") : t("cta.tryForFree");
-
-  return (
-    <div
-      className={cn(
-        "relative flex h-full flex-col rounded-xl bg-card p-8",
-        plan.popular
-          ? "border border-primary shadow-[0_24px_50px_-28px_rgba(232,89,12,0.4)]"
-          : "border border-border"
-      )}
-    >
-      {plan.popular && (
-        <span className="absolute -top-3 left-8 font-mono text-[11px] font-medium uppercase tracking-[0.06em] px-3 py-1 rounded-full bg-primary text-primary-foreground">
-          {t("mostPopular")}
-        </span>
-      )}
-      {isCurrentPlan && (
-        <span className="absolute top-4 right-4 rounded border border-primary px-2 py-0.5 text-xs font-medium text-primary">
-          {t("currentPlan")}
-        </span>
-      )}
-
-      <h3 className="text-2xl font-semibold text-foreground">
-        {t(plan.nameKey)}
-      </h3>
-      <p className="mt-1.5 min-h-[40px] text-sm text-muted-foreground">
-        {t(plan.descKey)}
-      </p>
-
-      <div className="mt-5 mb-1 flex items-baseline gap-1.5">
-        <span className="text-5xl font-medium text-foreground font-mono tabular-nums">
-          {price}
-        </span>
-        {period && (
-          <span className="text-sm text-muted-foreground">{period}</span>
-        )}
-      </div>
-      <div className="min-h-[18px] font-mono text-[11.5px] text-muted-foreground">
-        {sub}
-      </div>
-
-      <ul className="my-6 flex flex-1 list-none flex-col gap-3">
-        {plan.bulletKeys.map((key) => (
-          <li
-            key={key}
-            className="flex items-start gap-2.5 text-sm text-muted-foreground"
-          >
-            <IconCheck
-              className="mt-1 h-[0.7rem] w-auto shrink-0 text-primary"
-              aria-hidden="true"
-            />
-            {t(key)}
-          </li>
-        ))}
-      </ul>
-
-      <Button
-        onClick={onCta}
-        variant={plan.ctaPrimary && !isCurrentPlan ? "default" : "outline"}
-        className="w-full rounded-md px-7 py-3 text-base h-auto"
-        disabled={isCurrentPlan || isUpgrading}
-      >
-        {ctaLabel}
-        {plan.ctaArrow && !isCurrentPlan && (
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
-        )}
-      </Button>
-      {plan.ctaSubKey && (
-        <div className="mt-2.5 text-center font-mono text-[11.5px] text-muted-foreground">
-          {t(plan.ctaSubKey)}
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default Plans;

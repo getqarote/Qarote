@@ -27,8 +27,8 @@
     "requiresAction": "Acción requerida"
   },
   "plans": {
-    "chooseYourPlan": "Elige tu plan",
-    "subtitle": "Escala tu monitoreo de RabbitMQ con planes diseñados para equipos de todos los tamaños.",
+    "chooseYourPlan": "Suscribirse",
+    "subtitle": "Un único plan con todo incluido.",
     "currentPlan": "Plan actual",
     "mostPopular": "Más popular",
     "startFree": "Comenzar gratis",
@@ -145,7 +145,6 @@
     "upgradeFailed": "Error al iniciar el proceso de mejora. Inténtalo de nuevo.",
     "mostPopular": "Más popular",
     "perMonth": "/mes",
-    "unlimitedQueues": "Colas ilimitadas",
     "unlimitedServers": "Servidores ilimitados",
     "servers": "{{count}} servidores",
     "teamMembers": "{{count}} miembros del equipo",

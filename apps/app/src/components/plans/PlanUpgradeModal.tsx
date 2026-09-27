@@ -33,6 +33,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
   feature,
 }) => {
   const { t } = useTranslation("billing");
+  const { t: tPricing } = useTranslation("pricing");
   const { planData, userPlan } = useUser();
   const navigate = useNavigate();
   const { handleUpgrade, isUpgrading } = usePlanUpgrade();
@@ -142,9 +143,13 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
     );
   }
 
+  // Only the single cloud plan is on sale; the backend still describes the
+  // legacy tiers until the plan model itself is collapsed.
   const currentPlanRank = PLAN_TIER_RANK[userPlan ?? UserPlan.FREE] ?? 0;
   const plans = allPlansData.plans.filter(
-    (p) => (PLAN_TIER_RANK[p.plan] ?? 0) > currentPlanRank
+    (p) =>
+      p.plan === UserPlan.ENTERPRISE &&
+      (PLAN_TIER_RANK[p.plan] ?? 0) > currentPlanRank
   );
 
   return (
@@ -173,9 +178,13 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
         </div>
 
         <div className="p-6">
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="mx-auto grid max-w-md gap-6">
             {plans.map((plan) => {
-              const price = `$${Math.round(plan.monthlyPrice / 100)}`;
+              // Lead with the yearly rate, like the storefront ($99/mo billed
+              // yearly rather than the $124 monthly figure).
+              const price = `$${Math.round(plan.yearlyPrice / 100 / 12)}`;
+              const yearlyTotal = `$${(plan.yearlyPrice / 100).toLocaleString("en-US")}`;
+              const displayName = tPricing("plans.cloud.name");
               const teamMembersText =
                 plan.maxUsers === null
                   ? t("upgradeModal.unlimitedTeamMembers")
@@ -204,7 +213,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
 
                   <div className="text-center mb-6">
                     <h3 className="text-xl font-bold text-foreground">
-                      {plan.displayName}
+                      {displayName}
                     </h3>
                     <div className="mt-2">
                       <span className="text-3xl font-bold text-foreground">
@@ -214,13 +223,18 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                         {t("upgradeModal.perMonth")}
                       </span>
                     </div>
+                    <div className="mt-1 font-mono text-[11.5px] text-muted-foreground">
+                      {yearlyTotal}
+                      {tPricing("perYear")} ·{" "}
+                      {tPricing("sub.billedYearlyPerOrg")}
+                    </div>
                   </div>
 
                   <ul className="space-y-3 mb-6">
                     <li className="flex items-center">
                       <Check className="w-4 h-4 text-success mr-2" />
                       <span className="text-sm text-muted-foreground">
-                        {t("upgradeModal.unlimitedQueues")}
+                        {tPricing("cards.cloud.limit")}
                       </span>
                     </li>
                     <li className="flex items-center">
@@ -274,7 +288,9 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                         ? "bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                         : "bg-muted hover:bg-border text-foreground disabled:bg-muted disabled:text-muted-foreground"
                     }`}
-                    onClick={() => handleUpgrade(plan.plan as UserPlan)}
+                    onClick={() =>
+                      handleUpgrade(plan.plan as UserPlan, "yearly")
+                    }
                     disabled={isUpgrading}
                   >
                     {isUpgrading ? (
@@ -285,9 +301,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                     ) : (
                       <>
                         <Zap className="w-4 h-4 inline-block mr-2" />
-                        {t("upgradeModal.upgradeTo", {
-                          plan: plan.displayName,
-                        })}
+                        {t("upgradeModal.upgradeTo", { plan: displayName })}
                       </>
                     )}
                   </button>

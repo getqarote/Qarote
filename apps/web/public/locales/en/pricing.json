@@ -1,7 +1,7 @@
 {
   "seo": {
     "title": "Pricing — Qarote, RabbitMQ monitoring for AI agents",
-    "description": "Free community edition, or unlock advanced monitoring with Developer ($29/mo) and Enterprise plans. Self-host for free, forever."
+    "description": "Free, open-source core — or one cloud plan with AI root-cause analysis, alerting and team controls. 14-day free trial, no credit card."
   },
   "title": "Free core. Pay only for diagnosis.",
   "billedMonthly": "Billed monthly",
@@ -9,6 +9,7 @@
   "saveUpTo20Yearly": "Save up to 20% with annual billing",
   "switchToYearly": "Switch to yearly billing to save up to 20%",
   "perMonth": "/month",
+  "perYear": "/year",
   "startFree": "Start free",
   "getStarted": "Get started",
   "tryNowForFree": "Try now for free",
@@ -20,7 +21,6 @@
   "coreFeatures": "Features",
   "support": "Support",
   "enterpriseFeatures": "Enterprise Features",
-  "mostPopular": "Most popular",
   "freeTrial": "Free trial",
   "contactSales": "Contact sales",
   "soon": "Soon",
@@ -29,23 +29,9 @@
   "securityCompatibility": "Security & compatibility",
   "viewSecurity": "View our security practices",
   "plans": {
-    "starter": {
-      "name": "Community",
-      "description": "Perfect for getting started"
-    },
-    "pro": {
-      "name": "Developer",
-      "description": "For solo developers and small projects"
-    },
-    "business": {
-      "name": "Enterprise",
-      "description": "For large teams and enterprises"
-    },
-    "enterprise": {
-      "name": "Enterprise Edition",
-      "selfHosted": "Self-Hosted Solution",
-      "customPricing": "Custom Pricing",
-      "contactSales": "Contact sales for pricing"
+    "cloud": {
+      "name": "Qarote Cloud",
+      "description": "Everything included. One plan, one price."
     }
   },
   "featureNames": {
@@ -147,57 +133,33 @@
     "unlimited": "Unlimited"
   },
   "eyebrow": "Pricing",
-  "subtitle": "Incident detection and the MCP tools are free and open source. The paid tiers add managed root-cause analysis, more brokers, and team controls.",
-  "placeholderNote": "⚑ placeholder pricing — confirm before launch",
+  "subtitle": "Incident detection and the MCP tools are free and open source. One cloud plan adds managed root-cause analysis, alerting, and team controls.",
   "controls": {
-    "deploymentModel": "Deployment model",
     "billingInterval": "Billing interval",
-    "cloud": "Cloud",
-    "selfHosted": "Self-hosted",
     "monthly": "Monthly",
     "yearly": "Yearly"
   },
-  "price": {
-    "free": "free"
-  },
   "sub": {
-    "mitForever": "MIT · forever",
-    "billedMonthly": "billed monthly",
-    "billedYearly": "billed yearly",
     "billedMonthlyPerOrg": "billed monthly · per org",
-    "billedYearlyPerOrg": "billed yearly · per org",
-    "selfHosted": "annual license · self-hosted"
+    "billedYearlyPerOrg": "billed yearly · per org"
   },
   "cta": {
     "tryForFree": "Try for free",
-    "contactSales": "Contact sales",
     "noCreditCard": "No credit card",
-    "developerTrial": "14-day Developer trial"
+    "startTrial": "Start free trial",
+    "freeTrial": "14-day free trial",
+    "moreQueues": "Need more than 100 queues?",
+    "contactUs": "Contact us",
+    "subscribe": "Subscribe"
   },
   "cards": {
-    "community": {
-      "description": "The open-source core. Monitoring, detection, and the read MCP tools.",
-      "b1": "Incident detection (rules engine)",
-      "b2": "MCP agent surface · 7 read tools",
-      "b3": "Config scan & topology",
-      "b4": "1 broker · email alerts",
-      "b5": "Self-hosted, no phone-home"
-    },
-    "developer": {
-      "description": "For individuals and small teams. Adds AI root-cause and full alerting.",
-      "b1": "Everything in Community",
-      "b2": "AI Explain — LLM root-cause",
-      "b3": "BYOK or local Ollama",
-      "b4": "Alerting: email · Slack · webhooks",
-      "b5": "Multi-server · topology"
-    },
-    "enterprise": {
-      "description": "For platform teams. SSO, managed AI, audit, and security controls.",
-      "b1": "Everything in Developer",
-      "b2": "Managed LLM (zero-config)",
-      "b3": "SSO / SAML · advanced RBAC",
-      "b4": "Audit log · SOC 2",
-      "b5": "Priority support & SLA"
+    "cloud": {
+      "b1": "AI Explain — LLM root-cause",
+      "b2": "Managed LLM, zero config — or bring your own key",
+      "b3": "Alerting: email · Slack · webhooks",
+      "b4": "SSO / SAML · RBAC · audit log",
+      "b5": "Priority support",
+      "limit": "Up to 100 queues per broker · larger estates on request"
     }
   },
   "compare": {
@@ -205,8 +167,7 @@
     "feature": "Feature",
     "columns": {
       "community": "Community",
-      "developer": "Developer",
-      "enterprise": "Enterprise"
+      "cloud": "Cloud"
     },
     "groups": {
       "monitoring": "Monitoring",
@@ -222,7 +183,7 @@
       "metricHistory": "Metric history",
       "servers": "Servers",
       "aiExplain": "AI Explain (LLM root-cause)",
-      "byok": "BYOK / local Ollama",
+      "byok": "Bring your own LLM key",
       "managedLlm": "Managed LLM (zero-config)",
       "readTools": "Read tools (list/get/ping)",
       "explainFindingTool": "explain_finding tool",
@@ -230,8 +191,8 @@
       "slackWebhooks": "Slack · webhooks",
       "ssoRbac": "SSO / SAML · RBAC",
       "auditSoc2": "Audit log · SOC 2",
-      "cloudSelfHosted": "Cloud or self-hosted",
-      "offlineLicense": "Offline license · local Ollama"
+      "selfHostedOss": "Self-hosted · open source",
+      "managedCloud": "Managed cloud"
     },
     "values": {
       "days30": "30 days",
@@ -243,19 +204,19 @@
     "items": {
       "billing": {
         "q": "How does billing work?",
-        "a": "Cloud is a subscription via Stripe — monthly or yearly (yearly saves ~20%). Self-hosted tiers are annual licenses validated offline. Community is free forever. All prices above are placeholders pending confirmation."
+        "a": "Qarote Cloud is a subscription via Stripe — monthly or yearly (yearly saves ~20%). Cancel any time from your billing settings. Community is free forever."
       },
       "selfHostedCloud": {
         "q": "Self-hosted or cloud — what's the difference?",
-        "a": "Same product. Cloud is managed by us; self-hosted runs in your network via Docker, Compose, Dokku, or a binary, with an offline JWT license (no phone-home). Self-hosted AI Explain can run on a local Ollama model so nothing leaves your network."
+        "a": "Community is the open-source core: it runs in your network, self-hosted and community-supported. Qarote Cloud is the managed service: it adds AI root-cause analysis, the managed LLM, alerting, and team controls, and it runs on our infrastructure."
       },
       "quota": {
         "q": "What counts toward the AI Explain quota?",
-        "a": "Only managed explanations (Enterprise's zero-config LLM) are metered per month. If you bring your own key or run local Ollama, usage is unlimited — you pay your own LLM cost. Repeated identical explanations are cached and don't count."
+        "a": "Only managed explanations (the zero-config LLM) are metered per month. If you bring your own key, usage is unlimited — you pay your own LLM cost. Repeated identical explanations are cached and don't count."
       },
       "switching": {
-        "q": "Can I switch plans or models later?",
-        "a": "Yes. Upgrade, downgrade, or move between cloud and self-hosted any time. Downgrades take effect at the end of the billing period; the open-source core keeps running regardless."
+        "q": "Can I cancel or change models later?",
+        "a": "Yes. Cancel any time; access continues until the end of the billing period. You can switch between the managed LLM and your own key at any moment, and the open-source core keeps running regardless."
       }
     }
   }

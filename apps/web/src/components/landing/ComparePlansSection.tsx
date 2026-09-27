@@ -1,7 +1,8 @@
 import { useTranslation } from "react-i18next";
 
 /**
- * "Compare plans" — grouped feature table for the /pricing page only.
+ * "Compare plans" — grouped feature table for the /pricing page only:
+ * the open-source core against the single cloud plan.
  * Ported from Pricing.html (#compare). Light section, theme tokens.
  *
  * Symbols (✓ / —) and the literal "explain_finding" tool name are not i18n'd
@@ -21,8 +22,9 @@ type FeatureRow = {
   labelKey: string;
   /** render the label as a monospace <code> (e.g. explain_finding) */
   code?: boolean;
+  /** Community — the open-source core */
   c: Cell;
-  d: Cell;
+  /** Cloud — the single paid plan */
   e: Cell;
 };
 
@@ -41,67 +43,51 @@ const GROUPS: Group[] = [
   {
     groupKey: "monitoring",
     rows: [
-      { labelKey: "incidentDetection", c: yes, d: yes, e: yes },
-      { labelKey: "configScan", c: yes, d: yes, e: yes },
-      {
-        labelKey: "metricHistory",
-        c: txt("days30"),
-        d: txt("days30"),
-        e: txt("days30"),
-      },
-      {
-        labelKey: "servers",
-        c: lit("1"),
-        d: lit("5"),
-        e: txt("unlimited"),
-      },
+      { labelKey: "incidentDetection", c: yes, e: yes },
+      { labelKey: "configScan", c: yes, e: yes },
+      { labelKey: "metricHistory", c: txt("days30"), e: txt("days30") },
+      { labelKey: "servers", c: lit("1"), e: txt("unlimited") },
     ],
   },
   {
     groupKey: "diagnosis",
     rows: [
-      { labelKey: "aiExplain", c: no, d: yes, e: yes },
-      { labelKey: "byok", c: no, d: yes, e: yes },
-      { labelKey: "managedLlm", c: no, d: no, e: yes },
+      { labelKey: "aiExplain", c: no, e: yes },
+      { labelKey: "byok", c: no, e: yes },
+      { labelKey: "managedLlm", c: no, e: yes },
     ],
   },
   {
     groupKey: "agent",
     rows: [
-      { labelKey: "readTools", c: yes, d: yes, e: yes },
-      {
-        labelKey: "explainFindingTool",
-        code: true,
-        c: no,
-        d: yes,
-        e: yes,
-      },
+      { labelKey: "readTools", c: yes, e: yes },
+      { labelKey: "explainFindingTool", code: true, c: no, e: yes },
     ],
   },
   {
     groupKey: "alerting",
     rows: [
-      { labelKey: "email", c: yes, d: yes, e: yes },
-      { labelKey: "slackWebhooks", c: no, d: yes, e: yes },
+      { labelKey: "email", c: yes, e: yes },
+      { labelKey: "slackWebhooks", c: no, e: yes },
     ],
   },
   {
     groupKey: "team",
     rows: [
-      { labelKey: "ssoRbac", c: no, d: no, e: yes },
-      { labelKey: "auditSoc2", c: no, d: no, e: yes },
+      { labelKey: "ssoRbac", c: no, e: yes },
+      { labelKey: "auditSoc2", c: no, e: yes },
     ],
   },
   {
     groupKey: "deployment",
     rows: [
-      { labelKey: "cloudSelfHosted", c: yes, d: yes, e: yes },
-      { labelKey: "offlineLicense", c: yes, d: yes, e: yes },
+      { labelKey: "selfHostedOss", c: yes, e: no },
+      { labelKey: "managedCloud", c: no, e: yes },
     ],
   },
 ];
 
-const COLUMN_KEYS = ["community", "developer", "enterprise"] as const;
+const COLUMN_KEYS = ["community", "cloud"] as const;
 
 const CompareCell = ({
   value,
@@ -112,7 +98,10 @@ const CompareCell = ({
 }) => {
   if (value === "yes") {
     return (
-      <span className="text-[15px] text-[#2E8B57]" aria-label="Included">
+      <span
+        className="text-[15px] text-status-success-text"
+        aria-label="Included"
+      >
         ✓
       </span>
     );
@@ -144,13 +133,16 @@ const ComparePlansSection = () => {
 
         <div className="mt-[clamp(32px,5vw,48px)] overflow-x-auto rounded-xl border border-border">
           <div
-            className="grid min-w-[640px] grid-cols-[1.6fr_1fr_1fr_1fr]"
+            className="grid min-w-[640px] grid-cols-[1.6fr_1fr_1fr]"
             role="table"
             aria-label={t("compare.title")}
           >
             {/* Header row */}
             <div className="contents" role="row">
-              <span className="bg-secondary px-4 py-[13px] font-mono text-[11.5px] uppercase tracking-[0.1em] text-muted-foreground">
+              <span
+                role="columnheader"
+                className="bg-secondary px-4 py-[13px] font-mono text-[11.5px] uppercase tracking-[0.1em] text-muted-foreground"
+              >
                 {t("compare.feature")}
               </span>
               {COLUMN_KEYS.map((col) => (
@@ -168,17 +160,23 @@ const ComparePlansSection = () => {
             {GROUPS.map((group) => (
               <div className="contents" key={group.groupKey}>
                 {/* Group band */}
-                <div
-                  role="row"
-                  className="col-span-4 border-t border-border bg-secondary px-4 py-[10px] font-mono text-[11.5px] uppercase tracking-[0.1em] text-muted-foreground"
-                >
-                  {t(`compare.groups.${group.groupKey}`)}
+                <div className="contents" role="row">
+                  <div
+                    role="cell"
+                    aria-colspan={3}
+                    className="col-span-3 border-t border-border bg-secondary px-4 py-[10px] font-mono text-[11.5px] uppercase tracking-[0.1em] text-muted-foreground"
+                  >
+                    {t(`compare.groups.${group.groupKey}`)}
+                  </div>
                 </div>
 
                 {/* Feature rows */}
                 {group.rows.map((row) => (
                   <div className="contents" key={row.labelKey} role="row">
-                    <span className="flex items-center border-t border-border bg-card px-4 py-[13px] text-[14px] text-foreground">
+                    <span
+                      role="cell"
+                      className="flex items-center border-t border-border bg-card px-4 py-[13px] text-[14px] text-foreground"
+                    >
                       {row.code ? (
                         <code className="font-mono text-[13px] text-primary">
                           {t(`compare.rows.${row.labelKey}`)}
@@ -187,13 +185,16 @@ const ComparePlansSection = () => {
                         t(`compare.rows.${row.labelKey}`)
                       )}
                     </span>
-                    <span className="flex items-center justify-center border-t border-border bg-card px-4 py-[13px] text-center">
+                    <span
+                      role="cell"
+                      className="flex items-center justify-center border-t border-border bg-card px-4 py-[13px] text-center"
+                    >
                       <CompareCell value={row.c} t={t} />
                     </span>
-                    <span className="flex items-center justify-center border-t border-border bg-card px-4 py-[13px] text-center">
-                      <CompareCell value={row.d} t={t} />
-                    </span>
-                    <span className="flex items-center justify-center border-t border-border bg-card px-4 py-[13px] text-center">
+                    <span
+                      role="cell"
+                      className="flex items-center justify-center border-t border-border bg-card px-4 py-[13px] text-center"
+                    >
                       <CompareCell value={row.e} t={t} />
                     </span>
                   </div>

@@ -27,8 +27,8 @@
     "requiresAction": "Action required"
   },
   "plans": {
-    "chooseYourPlan": "Choose Your Plan",
-    "subtitle": "Scale your RabbitMQ monitoring with plans designed for teams of all sizes.",
+    "chooseYourPlan": "Subscribe",
+    "subtitle": "One plan with everything included.",
     "currentPlan": "Current Plan",
     "mostPopular": "Most popular",
     "startFree": "Start free",
@@ -145,7 +145,6 @@
     "upgradeFailed": "Failed to start upgrade process. Please try again.",
     "mostPopular": "Most Popular",
     "perMonth": "/month",
-    "unlimitedQueues": "Unlimited queues",
     "unlimitedServers": "Unlimited servers",
     "servers": "{{count}} servers",
     "teamMembers": "{{count}} team members",

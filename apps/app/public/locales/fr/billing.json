@@ -27,8 +27,8 @@
     "requiresAction": "Action requise"
   },
   "plans": {
-    "chooseYourPlan": "Choisissez votre forfait",
-    "subtitle": "Faites évoluer votre surveillance RabbitMQ avec des forfaits conçus pour des équipes de toutes tailles.",
+    "chooseYourPlan": "S’abonner",
+    "subtitle": "Un seul plan, tout inclus.",
     "currentPlan": "Forfait actuel",
     "mostPopular": "Le plus populaire",
     "startFree": "Commencer gratuitement",
@@ -145,7 +145,6 @@
     "upgradeFailed": "Échec du processus de mise à niveau. Veuillez réessayer.",
     "mostPopular": "Le plus populaire",
     "perMonth": "/mois",
-    "unlimitedQueues": "Files d'attente illimitées",
     "unlimitedServers": "Serveurs illimités",
     "servers": "{{count}} serveurs",
     "teamMembers": "{{count}} membres d'équipe",
