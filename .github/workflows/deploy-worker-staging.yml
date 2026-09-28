@@ -234,16 +234,20 @@ jobs:
       - name: 🔍 Verify every singleton holds its lock
         run: |
           # Dokku health-checks the new containers, then retires the old ones
-          # ~60s later; a singleton takes over only once the old one releases
-          # its advisory lock. "running" alone proves nothing — a worker still
-          # waiting for its lock is running and does nothing, and that is how a
-          # deploy went green with four dead workers on 2026-09-28. So: poll
-          # each proctype's log for the acquisition, up to 3 minutes. The
+          # — not "60s later": `dokku-retire.timer` fires every 5 minutes and
+          # retires whatever has been waiting ≥ 60s, so the handover lands
+          # anywhere up to ~6 minutes after the deploy. A singleton takes over
+          # only once the old one releases its advisory lock. "running" alone
+          # proves nothing — a worker still waiting for its lock is running
+          # and does nothing, and that is how a deploy went green with four
+          # dead workers on 2026-09-28. So: poll each proctype's log for the
+          # acquisition, up to 7 minutes (the first run on the new code hit
+          # 151s of waiting and failed a 3-minute deadline). The
           # acquisition has to come AFTER the newest start line: a container
           # restarted in place keeps its earlier log, and so would an old
           # container still being tailed during the overlap.
           PROCS="alert-worker license-worker release-notifier notification-worker metrics-worker firehose-worker digest-worker"
-          DEADLINE=$((SECONDS + 180))
+          DEADLINE=$((SECONDS + 420))
           while :; do
             PENDING=""
             for P in $PROCS; do
@@ -253,7 +257,7 @@ jobs:
             done
             [ -z "$PENDING" ] && break
             if [ $SECONDS -ge $DEADLINE ]; then
-              echo "❌ Still waiting for the advisory lock after 3 minutes:${PENDING}"
+              echo "❌ Still waiting for the advisory lock after 7 minutes:${PENDING}"
               break
             fi
             echo "⏳ Waiting for lock acquisition:${PENDING}"
