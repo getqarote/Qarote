@@ -45,7 +45,7 @@
   "features": {
     "title": "管理插件所缺少的",
     "titleLine2": "智能监控层，由 Qarote 提供。",
-    "freeTierNote": "实时监控和队列管理永久免费。Developer+ 新增告警、30 天队列历史、消息监听和故障诊断 — 从 $29/月起。",
+    "freeTierNote": "事件检测、配置扫描和 MCP 读取工具免费且开源。Qarote Cloud 增加 AI 根因分析、告警、队列历史和团队控制功能。",
     "liveQueueMonitoring": {
       "title": "实时队列监控",
       "description": "队列深度、消息速率和消费者数量 — 每秒更新。在消费者卡住或队列积压的第一时间发现问题，而不是 60 秒后。"
@@ -146,8 +146,7 @@
     "noCreditCard": "无需信用卡",
     "openSource": "Open source",
     "selfHostable": "Self-hostable",
-    "freeForever": "永久免费（自托管）",
-    "freeTierScope": "免费版：1台服务器，实时监控，队列管理 — 无时间限制。告警和多服务器从 $29/月起。"
+    "freeForever": "永久免费（自托管）"
   },
   "pricingCta": {
     "title": "免费开始，两分钟内搞定。",

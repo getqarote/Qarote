@@ -45,7 +45,7 @@
   "features": {
     "title": "La capa de inteligencia que tu",
     "titleLine2": "plugin de gestión no tiene.",
-    "freeTierNote": "El monitoreo en tiempo real y la gestión de colas son gratuitos, sin límite de tiempo. Developer+ añade alertas, 30 días de Historial de colas, Message Spy y Diagnóstico de incidentes — desde $29/mes.",
+    "freeTierNote": "La detección de incidentes, el análisis de configuración y las herramientas MCP de lectura son gratuitos y de código abierto. Qarote Cloud añade causa raíz por IA, alertas, historial de colas y controles de equipo.",
     "liveQueueMonitoring": {
       "title": "Monitorización de colas en tiempo real",
       "description": "Profundidad de colas, tasas de mensajes y conteo de consumidores — actualizados cada segundo. Detecta un consumidor bloqueado o una cola que se llena en el momento en que sucede, no 60 segundos después."
@@ -146,8 +146,7 @@
     "noCreditCard": "No se requiere tarjeta de crédito",
     "openSource": "Open source",
     "selfHostable": "Self-hostable",
-    "freeForever": "Gratis para siempre (autoalojado)",
-    "freeTierScope": "Plan gratuito: 1 servidor, monitoreo en vivo, gestión de colas — sin límite de tiempo. Alertas y multi-servidor desde $29/mes."
+    "freeForever": "Gratis para siempre (autoalojado)"
   },
   "pricingCta": {
     "title": "Empieza gratis, en menos de dos minutos.",

@@ -45,7 +45,7 @@
   "features": {
     "title": "La couche d'intelligence que votre",
     "titleLine2": "plugin de gestion n'a pas.",
-    "freeTierNote": "Le monitoring en temps réel et la gestion des files sont gratuits, sans limite de durée. Developer+ ajoute les alertes, 30 jours d'Historique des files, Message Spy et le Diagnostic d'incidents — à partir de 29 $/mois.",
+    "freeTierNote": "La détection d’incidents, l’analyse de configuration et les outils MCP de lecture sont gratuits et open source. Qarote Cloud ajoute la cause racine par IA, les alertes, l’historique des files et les contrôles d’équipe.",
     "liveQueueMonitoring": {
       "title": "Monitoring des files en temps réel",
       "description": "Profondeur des files, débits de messages et nombre de consommateurs — mis à jour chaque seconde. Détectez un consommateur bloqué ou une file qui se remplit dès que ça arrive, pas 60 secondes plus tard."
@@ -146,8 +146,7 @@
     "noCreditCard": "Aucune carte de crédit requise",
     "openSource": "Open source",
     "selfHostable": "Self-hostable",
-    "freeForever": "Gratuit à vie (auto-hébergé)",
-    "freeTierScope": "Plan gratuit : 1 serveur, monitoring en temps réel, gestion des files — sans limite de durée. Alertes et multi-serveur à partir de 29 $/mois."
+    "freeForever": "Gratuit à vie (auto-hébergé)"
   },
   "pricingCta": {
     "title": "Démarrez gratuitement, en moins de deux minutes.",
