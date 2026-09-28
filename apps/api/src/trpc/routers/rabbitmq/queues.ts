@@ -14,7 +14,7 @@ import {
   getOrgResourceCounts,
   validateQueueCreationOnServer,
 } from "@/services/plan/plan.service";
-import { MAX_QUEUES_PER_SERVER } from "@/services/queue-limit";
+import { exceedsQueueLimit, queueLimitFor } from "@/services/queue-limit";
 
 import {
   CreateQueueSchema,
@@ -44,11 +44,36 @@ type QueuesServerInfo = {
   isOverQueueLimit: boolean;
   workspace?: unknown;
   queueCountAtConnect: number | null;
+  /** Per-server exception to the ceiling; null means the default applies. */
+  queueLimitOverride: number | null;
 };
 
 /**
+ * Whether this request may write the queues it fetched.
+ *
+ * Two bounds, both needed. The stored flag is what the metrics cron decided at
+ * its last cycle — up to five minutes stale, or older if the worker is down.
+ * The live count is what THIS request just fetched: a lower bound of the
+ * broker-wide census (the request may be vhost-filtered), so when even that
+ * exceeds the server's ceiling, nothing is written. A broker that outgrows
+ * the ceiling on a vhost this request did not ask for is caught by the cron
+ * within a cycle; that residual window is accepted.
+ */
+function mayPersistQueues(
+  server: Pick<QueuesServerInfo, "isOverQueueLimit" | "queueLimitOverride">,
+  queues: RawQueue[]
+): boolean {
+  return (
+    !server.isOverQueueLimit &&
+    !exceedsQueueLimit(queues.length, server.queueLimitOverride)
+  );
+}
+
+/**
  * Persist queue data and metrics to the database.
- * Shared by getQueues (query) and watchQueues (subscription).
+ * Shared by getQueues (query) and watchQueues (subscription). Callers gate it
+ * with `mayPersistQueues` — a server over the queue ceiling is display-only
+ * until an override is granted.
  */
 async function persistQueueData(
   queues: RawQueue[],
@@ -129,10 +154,10 @@ async function buildQueuesResponse(
       isOverLimit: true,
       message: te(locale, "rabbitmq.queueCeilingReached", {
         count: brokerQueueCount,
-        limit: MAX_QUEUES_PER_SERVER,
+        limit: queueLimitFor(server.queueLimitOverride),
       }),
       currentQueueCount: brokerQueueCount,
-      limit: MAX_QUEUES_PER_SERVER,
+      limit: queueLimitFor(server.queueLimitOverride),
     };
   }
 
@@ -168,7 +193,12 @@ export const queuesRouter = router({
         const vhost = vhostParam ? decodeURIComponent(vhostParam) : undefined;
         const queues = excludeInternalQueues(await client.getQueues(vhost));
 
-        await persistQueueData(queues, serverId);
+        // A broker over the ceiling is shown live but never written: the
+        // metrics cron already skips it, and this request path must not
+        // become the unbounded write the ceiling exists to prevent.
+        if (mayPersistQueues(server, queues)) {
+          await persistQueueData(queues, serverId);
+        }
 
         const orgInfo = await ctx.resolveOrg();
         return await buildQueuesResponse(
@@ -885,7 +915,10 @@ export const queuesRouter = router({
           const client = createRabbitMQClientFromServer(freshServer);
           const queues = excludeInternalQueues(await client.getQueues(vhost));
 
-          await persistQueueData(queues, serverId);
+          // Same bound as getQueues: over the ceiling, display only.
+          if (mayPersistQueues(freshServer, queues)) {
+            await persistQueueData(queues, serverId);
+          }
 
           const orgInfo = await ctx.resolveOrg();
           lastPayload = await buildQueuesResponse(

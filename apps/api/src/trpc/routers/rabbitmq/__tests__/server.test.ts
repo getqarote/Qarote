@@ -6,6 +6,7 @@ const mockServerFindMany = vi.fn();
 const mockServerFindUnique = vi.fn();
 const mockServerUpdate = vi.fn();
 const mockServerDelete = vi.fn();
+const mockServerCreate = vi.fn();
 
 vi.mock("@/core/prisma", () => ({
   prisma: {
@@ -14,7 +15,7 @@ vi.mock("@/core/prisma", () => ({
       findUnique: (...a: unknown[]) => mockServerFindUnique(...a),
       update: (...a: unknown[]) => mockServerUpdate(...a),
       delete: (...a: unknown[]) => mockServerDelete(...a),
-      create: vi.fn(),
+      create: (...a: unknown[]) => mockServerCreate(...a),
     },
     workspaceMember: {
       findFirst: vi.fn().mockResolvedValue({
@@ -71,6 +72,18 @@ vi.mock("../shared", () => ({
   createRabbitMQClientFromServer: vi.fn(),
 }));
 
+vi.mock("@/services/alerts/alert-seeding.service", () => ({
+  seedDefaultAlertRules: vi.fn().mockResolvedValue(undefined),
+}));
+// Partial: the FORBIDDEN paths still go through the real recordAuditLog.
+vi.mock("@/services/audit", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/services/audit")>()),
+  recordFromContext: vi.fn(),
+  recordCapabilityRecheck: vi.fn(),
+}));
+vi.mock("@/services/feature-gate/capability-refresh", () => ({
+  refreshServerCapabilities: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("@/services/alerts/alert.default-rules", () => ({
   seedDefaultAlertRules: vi.fn().mockResolvedValue(undefined),
 }));
@@ -148,6 +161,7 @@ const mockServer = {
   useHttps: false,
   isOverQueueLimit: false,
   queueCountAtConnect: null,
+  queueLimitOverride: null,
   workspaceId: "ws-1",
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -324,5 +338,73 @@ describe("serverRouter.testConnection (ADMIN only)", () => {
       })
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
     expect(mockGetOverview).not.toHaveBeenCalled();
+  });
+});
+
+describe("serverRouter.createServer — queue ceiling at connect", () => {
+  beforeEach(() => {
+    mockServerCreate.mockReset();
+    mockGetOverview.mockReset();
+  });
+
+  const input = {
+    workspaceId: "ws-1",
+    name: "Big broker",
+    host: "rabbitmq.example.com",
+    port: 15672,
+    amqpPort: 5672,
+    username: "guest",
+    password: "guest",
+    vhost: "/",
+    useHttps: false,
+  };
+
+  it("admits a broker above the ceiling, flagged, instead of refusing it", async () => {
+    // Refusing left "contact us" with no row to grant an exception on. The
+    // broker is stored with the flag set, so the cron skips it and the
+    // override has something to attach to.
+    mockGetOverview.mockResolvedValue({
+      rabbitmq_version: "4.1.0",
+      object_totals: { queues: 348 },
+    });
+    mockServerCreate.mockImplementation(async ({ data }) => ({
+      ...mockServer,
+      id: "srv-new",
+      ...data,
+    }));
+
+    const ctx = makeCtx();
+    const caller = serverRouter.createCaller(ctx as never);
+    await expect(caller.createServer(input)).resolves.toBeDefined();
+
+    expect(mockServerCreate).toHaveBeenCalledTimes(1);
+    expect(mockServerCreate.mock.calls[0]![0].data).toMatchObject({
+      isOverQueueLimit: true,
+      queueCountAtConnect: 348,
+    });
+    expect(ctx.logger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({ queueCount: 348, limit: 100 }),
+      expect.stringContaining("admitted above the queue ceiling")
+    );
+  });
+
+  it("stores a broker at or below the ceiling unflagged", async () => {
+    mockGetOverview.mockResolvedValue({
+      rabbitmq_version: "4.1.0",
+      object_totals: { queues: 100 },
+    });
+    mockServerCreate.mockImplementation(async ({ data }) => ({
+      ...mockServer,
+      id: "srv-new",
+      ...data,
+    }));
+
+    const caller = serverRouter.createCaller(makeCtx() as never);
+    await caller.createServer(input);
+
+    expect(mockServerCreate.mock.calls[0]![0].data).toMatchObject({
+      isOverQueueLimit: false,
+      queueCountAtConnect: 100,
+    });
   });
 });

@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockVerifyServerAccess = vi.fn();
 const mockCreateRabbitMQClientFromServer = vi.fn();
+const mockTransaction = vi.fn().mockResolvedValue(undefined);
 
 vi.mock("@/core/prisma", () => ({
   prisma: {
@@ -25,7 +26,7 @@ vi.mock("@/core/prisma", () => ({
       create: vi.fn().mockResolvedValue({}),
       deleteMany: vi.fn().mockResolvedValue({}),
     },
-    $transaction: vi.fn().mockResolvedValue(undefined),
+    $transaction: (...a: unknown[]) => mockTransaction(...a),
   },
 }));
 
@@ -131,6 +132,7 @@ const mockServer = {
   useHttps: false,
   isOverQueueLimit: false,
   queueCountAtConnect: null,
+  queueLimitOverride: null,
   workspaceId: "ws-1",
   workspace: { id: "ws-1", name: "Test WS" },
 };
@@ -220,6 +222,80 @@ describe("queuesRouter.getQueues", () => {
     });
     // Translated for the caller's locale, not a key or a raw template.
     expect(result.warning?.message).toContain("120");
+    expect(result.warning?.message).not.toContain("{{");
+    // No tier raises this ceiling: an upsell here would be a dead end.
+    expect(result.warning).not.toHaveProperty("recommendedPlan");
+    expect(result.warning?.message.toLowerCase()).not.toContain("upgrade");
+    // Display only: writing 120 queues per request would be the unbounded
+    // ingestion the ceiling exists to prevent.
+    expect(mockTransaction).not.toHaveBeenCalled();
+  });
+
+  it("does not persist when the live count is over the ceiling, even if the flag is stale", async () => {
+    // The cron may not have run yet (or at all): the flag still says false,
+    // but this request just fetched 120 queues. Nothing is written.
+    mockVerifyServerAccess.mockResolvedValue({
+      ...mockServer,
+      isOverQueueLimit: false,
+    });
+    mockClient.getQueues.mockResolvedValue(
+      Array.from({ length: 120 }, (_, i) => ({
+        name: `q${i}`,
+        vhost: "/",
+        messages: 0,
+      }))
+    );
+
+    const caller = queuesRouter.createCaller(makeCtx() as never);
+    await caller.getQueues({ serverId: "srv-1", workspaceId: "ws-1" });
+
+    expect(mockTransaction).not.toHaveBeenCalled();
+  });
+
+  it("persists queues for a server under the ceiling", async () => {
+    mockVerifyServerAccess.mockResolvedValue(mockServer);
+    mockClient.getQueues.mockResolvedValue(
+      Array.from({ length: 3 }, (_, i) => ({
+        name: `q${i}`,
+        vhost: "/",
+        messages: 0,
+      }))
+    );
+
+    const caller = queuesRouter.createCaller(makeCtx() as never);
+    await caller.getQueues({ serverId: "srv-1", workspaceId: "ws-1" });
+
+    expect(mockTransaction).toHaveBeenCalledTimes(1);
+  });
+
+  it("quotes the server's own ceiling when an override was granted", async () => {
+    mockVerifyServerAccess.mockResolvedValue({
+      ...mockServer,
+      isOverQueueLimit: true,
+      queueCountAtConnect: 620,
+      queueLimitOverride: 500,
+    });
+    mockClient.getQueues.mockResolvedValue(
+      Array.from({ length: 120 }, (_, i) => ({
+        name: `q${i}`,
+        vhost: "/",
+        messages: 0,
+      }))
+    );
+
+    const caller = queuesRouter.createCaller(makeCtx() as never);
+    const result = await caller.getQueues({
+      serverId: "srv-1",
+      workspaceId: "ws-1",
+    });
+
+    expect(result.warning).toMatchObject({
+      isOverLimit: true,
+      currentQueueCount: 620,
+      limit: 500,
+    });
+    // Translated for the caller's locale, not a key or a raw template.
+    expect(result.warning?.message).toContain("500");
     expect(result.warning?.message).not.toContain("{{");
     // No tier raises this ceiling: an upsell here would be a dead end.
     expect(result.warning).not.toHaveProperty("recommendedPlan");

@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 
 import { classifyBrokerError } from "@/core/rabbitmq/brokerError";
 
-import { MAX_QUEUES_PER_SERVER } from "@/services/queue-limit";
+import { queueLimitFor } from "@/services/queue-limit";
 
 import {
   ServerWorkspaceInputSchema,
@@ -78,10 +78,10 @@ export const overviewRouter = router({
             isOverLimit: true,
             message: te(ctx.locale, "rabbitmq.queueCeilingReached", {
               count: queueCount,
-              limit: MAX_QUEUES_PER_SERVER,
+              limit: queueLimitFor(server.queueLimitOverride),
             }),
             currentQueueCount: queueCount,
-            limit: MAX_QUEUES_PER_SERVER,
+            limit: queueLimitFor(server.queueLimitOverride),
           };
         }
 

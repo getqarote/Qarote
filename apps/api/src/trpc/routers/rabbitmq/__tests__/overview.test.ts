@@ -84,6 +84,7 @@ const mockServer = {
   workspaceId: "ws-1",
   isOverQueueLimit: false,
   queueCountAtConnect: null,
+  queueLimitOverride: null,
   workspace: null,
 };
 
@@ -145,6 +146,27 @@ describe("overviewRouter.getOverview", () => {
 
     expect(result.warning).toBeDefined();
     expect(result.warning?.isOverLimit).toBe(true);
+  });
+
+  it("quotes the server's own ceiling when an override was granted", async () => {
+    mockVerifyServerAccess.mockResolvedValue({
+      ...mockServer,
+      isOverQueueLimit: true,
+      queueCountAtConnect: 620,
+      queueLimitOverride: 500,
+      workspace: { id: "ws-1", name: "Test WS" },
+    });
+    mockCreateRabbitMQClient.mockResolvedValue({
+      getOverview: vi.fn().mockResolvedValue(mockOverviewData),
+    });
+
+    const caller = overviewRouter.createCaller(makeCtx() as never);
+    const result = await caller.getOverview({
+      serverId: "srv-1",
+      workspaceId: "ws-1",
+    });
+
+    expect(result.warning?.limit).toBe(500);
   });
 });
 

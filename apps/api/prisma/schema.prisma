@@ -205,6 +205,12 @@ model RabbitMQServer {
   versionMajorMinor     String?
   isOverQueueLimit      Boolean                   @default(false)
   queueCountAtConnect   Int?
+  /// Per-server exception to the 100-queue ceiling, granted by hand after the
+  /// customer contacts us. NULL means the default applies. This is what makes
+  /// "contact us" an answer rather than a dead end. Grant it together with
+  /// `isOverQueueLimit = false` so the warning does not contradict itself
+  /// before the metrics worker's next cycle. DB CHECK: > 0.
+  queueLimitOverride    Int?
   /// Free-text environment tag (`prod`, `staging`, `dev`, …) consumed
   /// by the RBAC Phase 3 `server.environment` resource-scope
   /// predicate. Operator-controlled — no automated derivation.

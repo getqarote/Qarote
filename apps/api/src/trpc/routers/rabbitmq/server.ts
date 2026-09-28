@@ -248,22 +248,27 @@ export const serverRouter = router({
           });
         }
 
-        // Refuse a broker above the queue ceiling. `object_totals` comes with the
-        // overview we already fetched, so this costs no extra request — no need
-        // to pull the (expensive) full queue list just to count.
+        // A broker above the queue ceiling is ADMITTED, flagged, and not
+        // collected — not refused. Refusing it left "contact us" with nothing to
+        // act on: no row, so no exception to grant. Admitting it creates the row
+        // the exception attaches to; the UI shows the ceiling warning, the
+        // metrics cron skips it until `queueLimitOverride` is set, and clears
+        // the flag on its own the cycle after. `object_totals` comes with the
+        // overview we already fetched, so the count costs no extra request.
         //
-        // Deliberately NOT a PlanValidationError: no tier unlocks this, so
-        // surfacing it as an upsell would send the customer down a dead end. The
-        // answer is to contact us.
+        // Override-blind by design: no exception can have been granted to a row
+        // that does not exist yet. `null` says so explicitly.
         const queueCountAtConnect = overview.object_totals.queues;
-        if (exceedsQueueLimit(queueCountAtConnect)) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: te(ctx.locale, "rabbitmq.tooManyQueues", {
-              count: queueCountAtConnect,
+        const isOverQueueLimit = exceedsQueueLimit(queueCountAtConnect, null);
+        if (isOverQueueLimit) {
+          ctx.logger.warn(
+            {
+              workspaceId,
+              queueCount: queueCountAtConnect,
               limit: MAX_QUEUES_PER_SERVER,
-            }),
-          });
+            },
+            "Broker admitted above the queue ceiling — collection stays off until an override is granted"
+          );
         }
 
         // Encrypt sensitive data before storing
@@ -288,7 +293,7 @@ export const serverRouter = router({
             // server that grows past the ceiling later. Renaming it would touch
             // the schema and every reader, so the misnomer is documented instead.
             queueCountAtConnect,
-            isOverQueueLimit: false, // just checked above
+            isOverQueueLimit,
             // Assign server to workspace
             workspaceId,
           },
