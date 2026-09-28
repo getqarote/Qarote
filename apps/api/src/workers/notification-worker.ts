@@ -9,7 +9,10 @@ import { config } from "@/config";
 
 import { notificationOutboxCronService } from "@/cron/notification-outbox.cron";
 import { notificationRetentionCronService } from "@/cron/notification-retention.cron";
-import { acquireSingletonLock } from "@/workers/advisory-lock";
+import {
+  acquireSingletonLock,
+  createLockClient,
+} from "@/workers/advisory-lock";
 import { ADVISORY_LOCK_KEYS } from "@/workers/advisory-lock-keys";
 
 /**
@@ -20,9 +23,12 @@ import { ADVISORY_LOCK_KEYS } from "@/workers/advisory-lock-keys";
  *
  * Singleton enforcement: PostgreSQL session-level advisory lock acquired at
  * startup via a dedicated pg.Client whose lifetime matches the process. If
- * the lock is already held another instance is running and this process
- * exits 0 (intentional yield — supervisor will not restart). On unexpected
- * lock disconnect we exit 1 so the supervisor restarts a fresh singleton.
+ * the lock is held, another instance is still running (typically the
+ * previous container during a rolling deploy) and this process waits for
+ * it — for as long as it takes, warning once a minute. It never yields with
+ * exit 0: that is how singletons went silently missing in production. On
+ * unexpected lock disconnect we exit 1 so the supervisor restarts a fresh
+ * singleton.
  *
  * The unique idempotencyKey on NotificationOutbox is the second line of
  * defense for the rolling-deploy overlap window.
@@ -40,20 +46,8 @@ async function startWorker() {
     await prisma.$connect();
     logger.info("Connected to database");
 
-    lockClient = new Client({ connectionString: config.DATABASE_URL });
+    lockClient = createLockClient(config.DATABASE_URL);
     await lockClient.connect();
-
-    const acquired = await acquireSingletonLock(
-      lockClient,
-      ADVISORY_LOCK_KEYS.notification,
-      "notification-worker"
-    );
-    if (!acquired) {
-      await lockClient.end();
-      await prisma.$disconnect();
-      process.exit(0);
-    }
-    logger.info("notification-worker: advisory lock acquired");
 
     lockClient.on("error", async (err) => {
       logger.error(
@@ -71,6 +65,13 @@ async function startWorker() {
       );
       await shutdown(1);
     });
+
+    await acquireSingletonLock(
+      lockClient,
+      ADVISORY_LOCK_KEYS.notification,
+      "notification-worker"
+    );
+    logger.info("notification-worker: advisory lock acquired");
 
     notificationOutboxCronService.start();
     logger.info("Notification outbox drain cron service started");
@@ -104,6 +105,10 @@ async function startWorker() {
 
     logger.info("Notification worker process is running");
   } catch (error) {
+    // A SIGTERM while waiting for the lock ends the lock client, which
+    // rejects the in-flight probe and lands here: that is the shutdown, not a
+    // startup failure. Let shutdown() own the exit code.
+    if (shuttingDown) return;
     logger.error({ error }, "Failed to start Notification worker");
     if (listenClient) {
       await listenClient.end().catch(() => {});

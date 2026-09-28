@@ -1,4 +1,4 @@
-import { Client } from "pg";
+import type { Client } from "pg";
 
 import { logger } from "@/core/logger";
 import { prisma } from "@/core/prisma";
@@ -9,7 +9,10 @@ import { config } from "@/config";
 import { isCloudMode } from "@/config/deployment";
 
 import { releaseNotifierCronService } from "@/cron/release-notifier.cron";
-import { acquireSingletonLock } from "@/workers/advisory-lock";
+import {
+  acquireSingletonLock,
+  createLockClient,
+} from "@/workers/advisory-lock";
 import { ADVISORY_LOCK_KEYS } from "@/workers/advisory-lock-keys";
 
 /**
@@ -22,10 +25,12 @@ import { ADVISORY_LOCK_KEYS } from "@/workers/advisory-lock-keys";
  * Singleton enforcement: acquires a PostgreSQL session-level advisory lock at
  * startup via a dedicated pg.Client (not the Prisma pool) so the lock is tied
  * to a connection that stays open for the full process lifetime. If the lock
- * cannot be obtained, another instance is already running and this process
- * exits 0 (intentional yield — not a crash, so the supervisor does not restart
- * it). If the lock client disconnects unexpectedly the process exits 1 so the
- * supervisor can restart a fresh singleton.
+ * is held, another instance is still running (typically the previous
+ * container during a rolling deploy) and this process waits for it — for
+ * as long as it takes, warning once a minute. It never yields with exit 0:
+ * that is how singletons went silently missing in production. If the lock
+ * client disconnects unexpectedly the process exits 1 so the supervisor can
+ * restart a fresh singleton.
  *
  * The DB-level unique constraint on ReleaseNotificationSent
  * (releaseVersion, recipient) is the second line of defense for the
@@ -46,20 +51,8 @@ async function startWorker() {
     await prisma.$connect();
     logger.info("Connected to database");
 
-    lockClient = new Client({ connectionString: config.DATABASE_URL });
+    lockClient = createLockClient(config.DATABASE_URL);
     await lockClient.connect();
-
-    const acquired = await acquireSingletonLock(
-      lockClient,
-      ADVISORY_LOCK_KEYS.release,
-      "release-notifier"
-    );
-    if (!acquired) {
-      await lockClient.end();
-      await prisma.$disconnect();
-      process.exit(0);
-    }
-    logger.info("release-notifier: advisory lock acquired");
 
     lockClient.on("error", async (err) => {
       logger.error(
@@ -78,11 +71,22 @@ async function startWorker() {
       await shutdown(1);
     });
 
+    await acquireSingletonLock(
+      lockClient,
+      ADVISORY_LOCK_KEYS.release,
+      "release-notifier"
+    );
+    logger.info("release-notifier: advisory lock acquired");
+
     releaseNotifierCronService.start();
     logger.info("Release notifier cron service started");
 
     logger.info("Release Notifier worker process is running");
   } catch (error) {
+    // A SIGTERM while waiting for the lock ends the lock client, which
+    // rejects the in-flight probe and lands here: that is the shutdown, not a
+    // startup failure. Let shutdown() own the exit code.
+    if (shuttingDown) return;
     logger.error({ error }, "Failed to start Release Notifier worker");
     if (lockClient) {
       await lockClient.end().catch(() => {});

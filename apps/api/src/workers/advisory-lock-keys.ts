@@ -4,9 +4,9 @@
  * Each key is a unique bigint. The lock is taken at worker startup through
  * `acquireSingletonLock` (see ./advisory-lock.ts) and released automatically
  * when the process exits. If a peer still holds it, the starting worker waits
- * for a bounded window — a rolling deploy overlaps the two instances on
- * purpose — and only then exits 0 (intentional yield to the running peer, not
- * a crash, so the supervisor does not restart it).
+ * for as long as it takes — a rolling deploy overlaps the two instances on
+ * purpose — warning once a minute; it never yields with exit 0. It exits 1
+ * only when the lock connection itself fails, so the supervisor restarts it.
  *
  * Adding a new worker: pick an integer not already listed here and document it.
  */
@@ -23,4 +23,6 @@ export const ADVISORY_LOCK_KEYS = {
   release: 1_919_512_434,
   /** notification-worker: drains NotificationOutbox; one drainer cluster-wide. */
   notification: 1_852_796_274,
+  /** digest-worker: prevents duplicate daily digest emails on rolling deploys. */
+  digest: 1_684_632_436,
 } as const;

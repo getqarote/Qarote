@@ -192,26 +192,57 @@ jobs:
           # password reset, Stripe, licences) is enqueued there and delivered by
           # this process alone. A pg advisory lock keeps it safe at exactly 1.
           ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:scale ${{ env.APP_NAME }} notification-worker=1 || true
+          # Collection plane. Each must run as EXACTLY 1 replica (see Procfile):
+          # metrics-worker dedups nothing across processes, firehose-worker owns
+          # an exclusive queue consumer. They were never scaled by this workflow
+          # before 2026-09-28 — production ran without metrics for months.
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:scale ${{ env.APP_NAME }} metrics-worker=1 || true
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:scale ${{ env.APP_NAME }} firehose-worker=1 || true
+          ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:scale ${{ env.APP_NAME }} digest-worker=1 || true
 
-      - name: 🔍 Verify worker is running
+      - name: 🔍 Verify every singleton holds its lock
         run: |
+          # Dokku health-checks the new containers, then retires the old ones
+          # ~60s later; a singleton takes over only once the old one releases
+          # its advisory lock. "running" alone proves nothing — a worker still
+          # waiting for its lock is running and does nothing, and that is how a
+          # deploy went green with four dead workers on 2026-09-28. So: poll
+          # each proctype's log for the acquisition, up to 3 minutes. The
+          # acquisition has to come AFTER the newest start line: a container
+          # restarted in place keeps its earlier log, and so would an old
+          # container still being tailed during the overlap.
+          PROCS="alert-worker license-worker release-notifier notification-worker metrics-worker firehose-worker digest-worker"
+          DEADLINE=$((SECONDS + 180))
+          while :; do
+            PENDING=""
+            for P in $PROCS; do
+              if ! ssh dokku@${{ vars.DOKKU_HOST_APP1 }} logs ${{ env.APP_NAME }} -p "$P" -n 3000 2>/dev/null | awk '/Starting .* worker process/ { held = 0 } /advisory lock acquired/ { held = 1 } END { exit !held }'; then
+                PENDING="${PENDING} ${P}"
+              fi
+            done
+            [ -z "$PENDING" ] && break
+            if [ $SECONDS -ge $DEADLINE ]; then
+              echo "❌ Still waiting for the advisory lock after 3 minutes:${PENDING}"
+              break
+            fi
+            echo "⏳ Waiting for lock acquisition:${PENDING}"
+            sleep 15
+          done
+
           echo "Verifying worker processes are running..."
           REPORT=$(ssh dokku@${{ vars.DOKKU_HOST_APP1 }} ps:report ${{ env.APP_NAME }})
           echo "$REPORT"
-          # Assert each expected proctype by name. The previous check grepped
-          # for "running" anywhere in the report, so one healthy process masked
-          # every dead one — which is how a phantom `worker` entry stayed
-          # invisible while reporting success.
           MISSING=""
-          for PROC in "alert worker" "license worker" "release notifier" "notification worker"; do
-            if ! echo "$REPORT" | grep -qE "Status ${PROC} 1:[[:space:]]+running"; then
-              MISSING="${MISSING} ${PROC}"
+          for P in $PROCS; do
+            # ps:report renders proctype hyphens as spaces: "Status alert worker 1:".
+            if ! echo "$REPORT" | grep -qE "Status ${P//-/ } 1:[[:space:]]+running"; then
+              MISSING="${MISSING} ${P}"
             fi
           done
-          if [ -z "$MISSING" ]; then
-            echo "✅ All worker processes are running!"
+          if [ -z "$MISSING" ] && [ -z "$PENDING" ]; then
+            echo "✅ All singleton workers are running and hold their locks!"
           else
-            echo "❌ Not running after deploy:${MISSING}"
+            [ -n "$MISSING" ] && echo "❌ Not running after deploy:${MISSING}"
             exit 1
           fi
 

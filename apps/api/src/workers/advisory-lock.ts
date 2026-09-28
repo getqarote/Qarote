@@ -1,43 +1,58 @@
-import type { Client } from "pg";
+import { Client } from "pg";
 
 import { logger } from "@/core/logger";
-
-/**
- * How long a starting worker waits for its predecessor to release the lock.
- *
- * Sized against Dokku's rolling deploy: the new container is started and
- * health-checked while the old one is still running, and the old one is only
- * scheduled for shutdown ~60s later. A worker that gave up before then failed
- * its healthcheck (`state=exited`), which failed the whole deploy — including
- * the post-deploy hooks that wire up networking. 90s clears that window with
- * margin without letting a genuinely stuck peer hold a deploy open forever.
- */
-const LOCK_WAIT_MS = 90_000;
 
 /**
  * Poll interval while waiting. Fixed, not backed off.
  *
  * Each probe is a real round trip: client, socket, and a server-side call.
  * `pg_try_advisory_lock` is non-blocking only in that it never waits on the
- * lock — it still costs a query. But a full 90s wait is ~90 such probes on a
- * connection that is already open, and only while a deploy overlaps two
- * containers. Backing off to save those saves nothing measurable, and charges
- * up to the ceiling in dead time at the handover — the one moment this code
- * exists to get right.
+ * lock — it still costs a query. One probe a second on an already-open
+ * connection is nothing, and it is only paid while two containers overlap.
+ * Backing off would save nothing measurable and charge the saving in dead
+ * time at the handover — the one moment this code exists to get right.
  */
 const LOCK_RETRY_MS = 1_000;
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+/**
+ * How long a single probe may take before the process gives up on this
+ * connection. Waiting forever is right when the lock is HELD — that is a peer
+ * doing the work. It is wrong when the database stops ANSWERING: `pg` runs one
+ * query per connection at a time, so a probe stuck on a dead socket queues
+ * every later probe behind it and the loop could never recover on this
+ * connection. A hung probe therefore throws; the entrypoint's catch exits
+ * non-zero, and the supervisor restarts the worker on a fresh connection.
+ */
+const PROBE_TIMEOUT_MS = 30_000;
+
+/** How often to say "still waiting" so a peer that never exits is visible. */
+const WAIT_WARN_EVERY_MS = 60_000;
 
 /**
- * Resolve to `null` if `promise` has not settled within `ms`.
+ * The dedicated single-connection client a singleton worker holds its lock
+ * on, so the lock's lifetime is the process's — not a pool connection's.
  *
- * The wait has to stay bounded even when Postgres stops answering, otherwise
- * the deadline below is only advisory and a hung probe wedges startup — the
- * exact failure this helper claims to avoid by not using the blocking
- * `pg_advisory_lock`. An abandoned probe is harmless: the process either
- * proceeds or exits, and the lock connection closes with it.
+ * Not connected yet: the caller attaches its `error`/`end` handlers first,
+ * then connects, then waits for the lock. Both timeouts guard the same thing
+ * — a database that stops answering — so they share one budget:
+ * - `connectionTimeoutMillis`: a connect that never completes throws instead
+ *   of hanging the startup forever (`pg` has no default).
+ * - `keepAlive`: `pg` runs one query at a time per connection, so a probe
+ *   stuck on a dead socket would queue every later probe behind it. TCP
+ *   keepalive is what makes that socket error out, which exits 1 for a fresh
+ *   restart.
  */
+export function createLockClient(connectionString: string): Client {
+  return new Client({
+    connectionString,
+    keepAlive: true,
+    connectionTimeoutMillis: PROBE_TIMEOUT_MS,
+  });
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** Resolve to `null` if `promise` has not settled within `ms`. */
 async function withDeadline<T>(
   promise: Promise<T>,
   ms: number
@@ -57,79 +72,78 @@ async function withDeadline<T>(
 
 /**
  * Take a singleton worker's session-level advisory lock, waiting for a peer to
- * let go rather than giving up on the first refusal.
+ * let go — for as long as it takes.
  *
- * `pg_try_advisory_lock` is non-blocking by design — we keep it that way and
- * retry in userland instead of switching to the blocking `pg_advisory_lock`, so
- * the wait is bounded, observable in the logs, and cannot wedge a process
- * forever against a peer that never exits.
+ * This used to give up after 90 s and exit 0. Dokku's rolling deploy starts
+ * the new container, health-checks it, and only then schedules the old one
+ * for shutdown ~60 s later; with several workers deploying at once and a
+ * graceful shutdown on the old side, the handover ran past 90 s. The new
+ * worker yielded, exited 0 — which Dokku never restarts — and the deploy's
+ * verify step had already passed while it was still waiting. Four singletons
+ * were silently dead in production until someone looked (2026-09-28).
  *
- * Returns true once held. Returns false if the peer still holds it after
- * LOCK_WAIT_MS, at which point the caller should yield (exit 0) exactly as
- * before — a legitimately running peer is not an error.
+ * So: never yield to a held lock. A singleton that waits does nothing and
+ * harms nothing; it takes over within a second of the peer releasing. A peer
+ * that never exits is an operator problem, made visible by a warning every
+ * minute rather than hidden by a clean exit.
+ *
+ * Resolves once the lock is held. A probe that hangs, a query that rejects,
+ * or a connection error all throw: the process exits non-zero, which the
+ * restart policy does act on, and the next instance starts on a fresh
+ * connection.
  */
 export async function acquireSingletonLock(
   client: Client,
   lockKey: number,
   workerName: string
-): Promise<boolean> {
-  const deadline = Date.now() + LOCK_WAIT_MS;
+): Promise<void> {
   let waitedFrom: number | null = null;
+  let lastWarnAt = 0;
 
   for (;;) {
-    const budget = deadline - Date.now();
-    if (budget <= 0) {
-      logger.warn(
-        {
-          lockKey,
-          waitedMs: waitedFrom === null ? 0 : Date.now() - waitedFrom,
-        },
-        `${workerName}: advisory lock still held after the wait window — another instance is running. Exiting.`
-      );
-      return false;
-    }
-
-    // Bound the probe itself, not just the gap between probes: a database that
-    // stops answering must not stretch the wait past the deadline.
     const result = await withDeadline(
       client.query<{ acquired: boolean }>(
         "SELECT pg_try_advisory_lock($1::bigint) AS acquired",
         [lockKey]
       ),
-      budget
+      PROBE_TIMEOUT_MS
     );
-
     if (result === null) {
-      logger.warn(
-        {
-          lockKey,
-          waitedMs: waitedFrom === null ? 0 : Date.now() - waitedFrom,
-        },
-        `${workerName}: advisory lock probe did not answer within the wait window. Exiting.`
+      throw new Error(
+        `${workerName}: advisory lock probe did not answer within ${PROBE_TIMEOUT_MS}ms`
       );
-      return false;
+    }
+    const row = result.rows[0];
+    if (!row) {
+      throw new Error(`${workerName}: advisory lock probe returned no row`);
     }
 
-    if (result.rows[0].acquired) {
+    if (row.acquired) {
       if (waitedFrom !== null) {
         logger.info(
           { lockKey, waitedMs: Date.now() - waitedFrom },
           `${workerName}: advisory lock acquired after waiting for the previous instance`
         );
       }
-      return true;
+      return;
     }
 
+    const now = Date.now();
     if (waitedFrom === null) {
-      waitedFrom = Date.now();
+      waitedFrom = now;
+      lastWarnAt = now;
       logger.info(
-        { lockKey, waitMs: LOCK_WAIT_MS },
+        { lockKey },
         `${workerName}: advisory lock held by another instance — waiting for it to exit`
+      );
+    } else if (now - lastWarnAt >= WAIT_WARN_EVERY_MS) {
+      lastWarnAt = now;
+      logger.warn(
+        { lockKey, waitedMs: now - waitedFrom },
+        `${workerName}: advisory lock still held by another instance — still waiting`
       );
     }
 
-    // The deadline is enforced at the top of the loop, so sleeping past it is
-    // harmless — the next pass reports the expiry and yields.
     await sleep(LOCK_RETRY_MS);
   }
 }
