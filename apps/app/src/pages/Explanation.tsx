@@ -2,14 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router";
 
-import { CONFIG_FINDING_PROMPT_VERSION } from "@api/ee/services/llm/context-builders/config-finding.context";
-import { FINDING_PROMPT_VERSION } from "@api/ee/services/llm/context-builders/finding.context";
 import DOMPurify from "dompurify";
 import { AlertTriangle, Share2 } from "lucide-react";
 import { marked } from "marked";
 import { toast } from "sonner";
 
 import { formatRelativeAgo } from "@/lib/formatRelativeAgo";
+import { hasPromptVersionDrift } from "@/lib/promptVersions";
 import { getApiUrl } from "@/lib/runtimeConfig";
 import { displayName } from "@/lib/userDisplay";
 
@@ -45,11 +44,6 @@ function renderMarkdown(text: string): string {
     DOMPURIFY_CONFIG
   );
 }
-
-const CURRENT_PROMPT_VERSIONS = new Set([
-  FINDING_PROMPT_VERSION,
-  CONFIG_FINDING_PROMPT_VERSION,
-]);
 
 function SupersededBanner({
   supersededAt,
@@ -155,7 +149,7 @@ export default function Explanation() {
 
   const isSuperseded = data.supersededAt != null;
   const isTrace = !data.incidentFindingId && !data.configFindingId;
-  const hasDrift = !isTrace && !CURRENT_PROMPT_VERSIONS.has(data.promptVersion);
+  const hasDrift = !isTrace && hasPromptVersionDrift(data.promptVersion);
 
   // Determine context link: route back to the source page with ?findingId=
   // The source page auto-opens the explain panel for the matching finding.
